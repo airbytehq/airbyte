@@ -1,0 +1,388 @@
+version: 0.78.3
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - pages
+
+streams:
+  - type: DeclarativeStream
+    name: users
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.notion.com/v1/
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config.get('credentials', {}).get('token') if config.get('credentials', {}).get('auth_type') == 'token' else config.get('credentials', {}).get('access_token') if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' else config.get('access_token', '') }}"
+        path: users
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Notion-Version: "2022-06-28"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: retry-after
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 429
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 400
+                  error_message_contains: "The start_cursor provided is invalid:"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: start_cursor
+        page_size_option:
+          type: RequestOption
+          field_name: page_size
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: '{{ response.get("next_cursor") }}'
+          stop_condition: '{{ not response.get("has_more") }}'
+      partition_router: []
+    transformations:
+      - type: CustomTransformation
+        class_name: source_notion.components.NotionUserTransformation
+
+  - type: DeclarativeStream
+    name: databases
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.notion.com/v1/
+        path: search
+        http_method: POST
+        request_parameters: {}
+        request_headers:
+          Notion-Version: "2022-06-28"
+        authenticator:
+          authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config.get('credentials', {}).get('token') if config.get('credentials', {}).get('auth_type') == 'token' else config.get('credentials', {}).get('access_token') if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' else config.get('access_token', '') }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: retry-after
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 429
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 400
+                  error_message_contains: "The start_cursor provided is invalid:"
+        request_body_json:
+          sort: '{ "direction": "descending", "timestamp": "last_edited_time" }'
+          filter: '{ "property": "object", "value": "database" }'
+      record_selector:
+        type: RecordSelector
+        record_filter:
+          type: CustomRecordFilter
+          class_name: source_notion.components.NotionDataFeedFilter
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: start_cursor
+        page_size_option:
+          type: RequestOption
+          field_name: page_size
+          inject_into: body_json
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: '{{ response.get("next_cursor") }}'
+          stop_condition: '{{ not response.get("has_more") }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: last_edited_time
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      is_data_feed: true
+    transformations:
+      - type: CustomTransformation
+        class_name: source_notion.components.NotionPropertiesTransformation
+
+  - type: DeclarativeStream
+    name: pages
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.notion.com/v1/
+        path: search
+        http_method: POST
+        request_parameters: {}
+        request_headers:
+          Notion-Version: "2022-06-28"
+        authenticator:
+          authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config.get('credentials', {}).get('token') if config.get('credentials', {}).get('auth_type') == 'token' else config.get('credentials', {}).get('access_token') if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' else config.get('access_token', '') }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: retry-after
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 429
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 400
+                  error_message_contains: "The start_cursor provided is invalid:"
+        request_body_json:
+          sort: '{ "direction": "descending", "timestamp": "last_edited_time" }'
+          filter: '{ "property": "object", "value": "page" }'
+      record_selector:
+        type: RecordSelector
+        record_filter:
+          type: CustomRecordFilter
+          class_name: source_notion.components.NotionDataFeedFilter
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: start_cursor
+        page_size_option:
+          type: RequestOption
+          field_name: page_size
+          inject_into: body_json
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: '{{ response.get("next_cursor") }}'
+          stop_condition: '{{ not response.get("has_more") }}'
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: last_edited_time
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      is_data_feed: true
+    transformations:
+      - type: CustomTransformation
+        class_name: source_notion.components.NotionPropertiesTransformation
+
+  - type: DeclarativeStream
+    name: comments
+    primary_key:
+      - id
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "last_edited_time"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', day_delta(-730, '%Y-%m-%dT%H:%M:%S.%fZ'))}}"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.notion.com/v1/
+        path: comments
+        http_method: GET
+        request_parameters: {}
+        request_headers:
+          Notion-Version: "2022-06-28"
+        authenticator:
+          authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config.get('credentials', {}).get('token') if config.get('credentials', {}).get('auth_type') == 'token' else config.get('credentials', {}).get('access_token') if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' else config.get('access_token', '') }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: retry-after
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RETRY
+                  http_codes:
+                    - 429
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 400
+                  error_message_contains: "The start_cursor provided is invalid:"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        record_filter:
+          type: CustomRecordFilter
+          class_name: source_notion.components.NotionSemiIncrementalFilter
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: start_cursor
+        page_size_option:
+          type: RequestOption
+          field_name: page_size
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: '{{ response.get("next_cursor") }}'
+          stop_condition: '{{ not response.get("has_more") }}'
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              request_option:
+                type: RequestOption
+                field_name: block_id
+                inject_into: request_parameter
+              partition_field: id
+              stream:
+                type: DeclarativeStream
+                name: pages
+                primary_key:
+                  - id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.notion.com/v1/
+                    path: search
+                    http_method: POST
+                    request_parameters: {}
+                    request_headers:
+                      Notion-Version: "2022-06-28"
+                    authenticator:
+                      type: BearerAuthenticator
+                      api_token: "{{ config.get('credentials', {}).get('token') if config.get('credentials', {}).get('auth_type') == 'token' else config.get('credentials', {}).get('access_token') if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' else config.get('access_token', '') }}"
+                    error_handler:
+                      type: CompositeErrorHandler
+                      error_handlers:
+                        - type: DefaultErrorHandler
+                          backoff_strategies:
+                            - type: WaitTimeFromHeader
+                              header: retry-after
+                          response_filters:
+                            - type: HttpResponseFilter
+                              action: RETRY
+                              http_codes:
+                                - 429
+                        - type: DefaultErrorHandler
+                          response_filters:
+                            - type: HttpResponseFilter
+                              action: IGNORE
+                              http_codes:
+                                - 400
+                              error_message_contains: "The start_cursor provided is invalid:"
+                    request_body_json:
+                      sort: >-
+                        { "direction": "descending", "timestamp":
+                        "last_edited_time" }
+                      filter: '{ "property": "object", "value": "page" }'
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - results
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestOption
+                      inject_into: body_json
+                      field_name: start_cursor
+                    page_size_option:
+                      type: RequestOption
+                      field_name: page_size
+                      inject_into: body_json
+                    pagination_strategy:
+                      type: CursorPagination
+                      page_size: 100
+                      cursor_value: '{{ response.get("next_cursor") }}'
+                      stop_condition: '{{ not response.get("has_more") }}'
+                  partition_router: []
+                incremental_sync:
+                  type: DatetimeBasedCursor
+                  cursor_field: last_edited_time
+                  cursor_datetime_formats:
+                    - "%Y-%m-%dT%H:%M:%S.%fZ"
+                  datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+                  start_datetime:
+                    type: MinMaxDatetime
+                    datetime: "{{ config['start_date'] }}"
+                    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+                  is_data_feed: true
