@@ -65,8 +65,8 @@ def get_state_from_path(state_path: Path) -> Optional[Dict]:
     return parse_state(state_path.read_text())
 
 
-def get_configured_catalog_from_path(path: Path) -> Optional[ConfiguredAirbyteCatalog]:
-    return parse_configured_catalog(path.read_text())
+def get_configured_catalog_from_path(path: Path, selected_streams: Optional[Set[str]] = None) -> Optional[ConfiguredAirbyteCatalog]:
+    return parse_configured_catalog(path.read_text(), selected_streams)
 
 
 COMMAND_TO_REQUIRED_OBJECT_TYPES = {
@@ -122,7 +122,9 @@ def get_connection_objects(
         raise ValueError("A connector image must be provided when using auto_select_connection.")
 
     custom_config = get_connector_config_from_path(custom_config_path) if custom_config_path else None
-    custom_configured_catalog = get_configured_catalog_from_path(custom_configured_catalog_path) if custom_configured_catalog_path else None
+    custom_configured_catalog = (
+        get_configured_catalog_from_path(custom_configured_catalog_path, selected_streams) if custom_configured_catalog_path else None
+    )
     custom_state = get_state_from_path(custom_state_path) if custom_state_path else None
 
     if not connection_id and not auto_select_connection:
@@ -156,6 +158,7 @@ def get_connection_objects(
                 requested_objects,
                 retrieval_reason=retrieval_reason,
                 connection_id=connection_id,
+                with_streams=selected_streams,
             )
         retrieved_source_config = parse_config(retrieved_objects.get(ConnectionObject.SOURCE_CONFIG))
         rerieved_destination_config = parse_config(retrieved_objects.get(ConnectionObject.DESTINATION_CONFIG))

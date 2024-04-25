@@ -26,9 +26,7 @@ pytest = "^8.1.1"
 pydash = "~=7.0.7"
 docker = ">=6,<7"
 asyncclick = "^8.1.7.1"
-# TODO: when this is open-sourced, don't require connection-retriever
-connection-retriever = {git = "git@github.com:airbytehq/airbyte-platform-internal", subdirectory = "tools/connection-retriever", branch = "augustin/04-16-connection_retriever_automatically_fetch_connections_for_testing"}
-#connection-retriever = { path = "/Users/augustin/workspace/airbyte-platform-internal/tools/connection-retriever/", develop = true }
+connection-retriever = {git = "git@github.com:airbytehq/airbyte-platform-internal", subdirectory = "tools/connection-retriever"}
 duckdb = "^0.10.0"
 pandas = "^2.2.1"
 pytest-sugar = "^1.0.0"
