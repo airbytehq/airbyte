@@ -4,32 +4,30 @@
 
 import json
 import os
+from pathlib import Path
 
 import responses
-from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from pytest import fixture
 from responses import matchers
 from source_jira.source import SourceJira
-from source_jira.streams import IssueComments, IssueFields, Issues, IssueWorklogs, Projects
+
+ENV_REQUEST_CACHE_PATH = "REQUEST_CACHE_PATH"
+os.environ["REQUEST_CACHE_PATH"] = ENV_REQUEST_CACHE_PATH
 
 
-@fixture(scope="session", autouse=True)
-def disable_cache():
-    classes = [
-        IssueComments,
-        IssueFields,
-        Issues,
-        IssueWorklogs,
-        Projects,
-    ]
-    for cls in classes:
-        # Disabling cache for all streams to assess the number of calls made for each stream.
-        # Additionally, this is necessary as the responses library has been returning unexpected call counts
-        # following the recent update to HttpStream
-        cls.use_cache = False
+def delete_cache_files(cache_directory):
+    directory_path = Path(cache_directory)
+    if directory_path.exists() and directory_path.is_dir():
+        for file_path in directory_path.glob("*.sqlite"):
+            file_path.unlink()
 
 
-os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
+@fixture(autouse=True)
+def clear_cache_before_each_test():
+    # The problem: Once the first request is cached, we will keep getting the cached result no matter what setup we prepared for a particular test.
+    # Solution: We must delete the cache before each test because for the same URL, we want to define multiple responses and status codes.
+    delete_cache_files(os.getenv(ENV_REQUEST_CACHE_PATH))
+    yield
 
 
 @fixture
@@ -289,7 +287,6 @@ def projects_versions_response():
 
 @fixture
 def mock_projects_responses(config, projects_response):
-    Projects.use_cache = False
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
@@ -299,7 +296,6 @@ def mock_projects_responses(config, projects_response):
 
 @fixture
 def mock_projects_responses_additional_project(config, projects_response):
-    Projects.use_cache = False
     projects_response["values"] += [{"id": "3", "key": "Project3"}, {"id": "4", "key": "Project4"}]
     responses.add(
         responses.GET,
@@ -309,7 +305,7 @@ def mock_projects_responses_additional_project(config, projects_response):
 
 
 @fixture
-def mock_issues_responses(config, issues_response):
+def mock_issues_responses_with_date_filter(config, issues_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/search",
@@ -318,7 +314,7 @@ def mock_issues_responses(config, issues_response):
                 {
                     "maxResults": 50,
                     "fields": "*all",
-                    "jql": "project in (1) ORDER BY updated asc",
+                    "jql": "updated >= '2021/01/01 00:00' and project in (1) ORDER BY updated asc",
                     "expand": "renderedFields,transitions,changelog",
                 }
             )
@@ -333,7 +329,7 @@ def mock_issues_responses(config, issues_response):
                 {
                     "maxResults": 50,
                     "fields": "*all",
-                    "jql": "project in (2) ORDER BY updated asc",
+                    "jql": "updated >= '2021/01/01 00:00' and project in (2) ORDER BY updated asc",
                     "expand": "renderedFields,transitions,changelog",
                 }
             )
@@ -348,7 +344,7 @@ def mock_issues_responses(config, issues_response):
                 {
                     "maxResults": 50,
                     "fields": "*all",
-                    "jql": "project in (3) ORDER BY updated asc",
+                    "jql": "updated >= '2021/01/01 00:00' and project in (3) ORDER BY updated asc",
                     "expand": "renderedFields,transitions,changelog",
                 }
             )
@@ -364,7 +360,7 @@ def mock_issues_responses(config, issues_response):
                 {
                     "maxResults": 50,
                     "fields": "*all",
-                    "jql": "project in (4) ORDER BY updated asc",
+                    "jql": "updated >= '2021/01/01 00:00' and project in (4) ORDER BY updated asc",
                     "expand": "renderedFields,transitions,changelog",
                 }
             )
@@ -542,15 +538,7 @@ def mock_sprints_response(config, sprints_response):
 
 
 def find_stream(stream_name, config):
-    streams = SourceJira().streams(config=config)
-
-    # cache should be disabled once this issue is fixed https://github.com/airbytehq/airbyte-internal-issues/issues/6513
-    for stream in streams:
-        if isinstance(stream, DeclarativeStream):
-            stream.retriever.requester.use_cache = True
-
-    # find by name
-    for stream in streams:
+    for stream in SourceJira().streams(config=config):
         if stream.name == stream_name:
             return stream
     raise ValueError(f"Stream {stream_name} not found")

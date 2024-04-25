@@ -13,7 +13,9 @@ definitions:
   error_handler:
     type: DefaultErrorHandler
     max_retries: 10
-    response_filters: []
+    response_filters:
+      - http_codes: [400]
+        action: IGNORE
 
   # Requesters
 
@@ -978,6 +980,19 @@ definitions:
     primary_key: "id"
     retriever:
       $ref: "#/definitions/retriever_v1_use_cache"
+      requester:
+        $ref: "#/definitions/retriever_v1_use_cache/requester"
+        error_handler:
+          $ref: "#/definitions/error_handler"
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes: [400]
+              action: IGNORE
+              # Even though the error_message is defined, it does not work; None is returned
+              error_message: >
+                "The board does not support sprints. The board does not have a sprint board. if it's a team-managed one, "
+                "does it have sprints enabled under project settings? If it's a company-managed one, "
+                "check that it has at least one Scrum board associated with it."
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -1121,7 +1136,7 @@ definitions:
           response_filters:
             - http_codes: [400]
               error_message: "The user doesn't have permission to the project. Please grant the user to the project."
-              action: FAIL
+              action: IGNORE
     transformations:
       - type: AddFields
         fields:

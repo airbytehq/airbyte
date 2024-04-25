@@ -5,13 +5,14 @@ from logging import Logger
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
-import requests
 from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pydantic.error_wrappers import ValidationError
+from requests.exceptions import InvalidURL
 
 from .streams import IssueComments, IssueFields, Issues, IssueWorklogs, PullRequests
 from .utils import read_full_refresh
@@ -44,30 +45,16 @@ class SourceJira(YamlDeclarativeSource):
                     logger.info(f"API Token have access to stream: {stream_name}, so check is successful.")
                     return True, None
             return False, "This API Token does not have permission to read any of the resources."
-        except ValidationError as validation_error:
-            return False, validation_error
-        except requests.exceptions.RequestException as request_error:
-            has_response = request_error.response is not None
-            is_invalid_domain = (
-                isinstance(request_error, requests.exceptions.InvalidURL)
-                or has_response
-                and request_error.response.status_code == requests.codes.not_found
-            )
-
-            if is_invalid_domain:
+        except ValidationError as e:
+            return False, e
+        except (ReadException, InvalidURL) as e:
+            if isinstance(e, InvalidURL) or "404" in str(e):
                 raise AirbyteTracedException(
                     message="Config validation error: please check that your domain is valid and does not include protocol (e.g: https://).",
-                    internal_message=str(request_error),
+                    internal_message=str(e),
                     failure_type=FailureType.config_error,
                 ) from None
-
-            # sometimes jira returns non json response
-            if has_response and request_error.response.headers.get("content-type") == "application/json":
-                message = " ".join(map(str, request_error.response.json().get("errorMessages", "")))
-                return False, f"{message} {request_error}"
-
-            # we don't know what this is, rethrow it
-            raise request_error
+            raise e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         streams = super().streams(config)
