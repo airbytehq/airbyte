@@ -12,6 +12,7 @@ data:
   githubIssueLabel: source-pinterest
   icon: pinterest.svg
   license: MIT
+  maxSecondsBetweenMessages: 86400
   name: Pinterest
   remoteRegistries:
     pypi:

@@ -34,6 +34,7 @@ The free plan allows 60 calls per minute and 1,000,000 calls per month, you won'
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.1 | 2024-04-07 | [36876](https://github.com/airbytehq/airbyte/pull/36876) | Fix bug in how lat and lon parameters can be set |
 | 0.2.0 | 2023-08-31 | [29983](https://github.com/airbytehq/airbyte/pull/29983) | Migrate to Low Code Framework |
 | 0.1.6 | 2022-06-21 | [16136](https://github.com/airbytehq/airbyte/pull/16136) | Update openweather onecall api to 3.0. |
 | 0.1.5 | 2022-06-21 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | No changes. Used connector to test publish workflow changes. |
