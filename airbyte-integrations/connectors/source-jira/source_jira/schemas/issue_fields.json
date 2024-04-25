@@ -3,37 +3,37 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string",
-      "description": "The ID of the field."
+      "description": "The ID of the field.",
+      "type": "string"
     },
     "key": {
-      "type": "string",
-      "description": "The key of the field."
+      "description": "The key of the field.",
+      "type": "string"
     },
     "name": {
-      "type": "string",
-      "description": "The name of the field."
+      "description": "The name of the field.",
+      "type": "string"
     },
     "custom": {
-      "type": "boolean",
-      "description": "Whether the field is a custom field."
+      "description": "Whether the field is a custom field.",
+      "type": "boolean"
     },
     "orderable": {
-      "type": "boolean",
-      "description": "Whether the content of the field can be used to order lists."
+      "description": "Whether the content of the field can be used to order lists.",
+      "type": "boolean"
     },
     "navigable": {
-      "type": "boolean",
-      "description": "Whether the field can be used as a column on the issue navigator."
+      "description": "Whether the field can be used as a column on the issue navigator.",
+      "type": "boolean"
     },
     "searchable": {
-      "type": "boolean",
-      "description": "Whether the content of the field can be searched."
+      "description": "Whether the content of the field can be searched.",
+      "type": "boolean"
     },
     "clauseNames": {
+      "description": "The names that can be used to reference the field in an advanced search. For more information, see [Advanced searching - fields reference](https://confluence.atlassian.com/x/gwORLQ).",
       "uniqueItems": true,
       "type": "array",
-      "description": "The names that can be used to reference the field in an advanced search. For more information, see [Advanced searching - fields reference](https://confluence.atlassian.com/x/gwORLQ).",
       "items": {
         "type": "string"
       }
@@ -43,8 +43,8 @@
       "type": ["object", "null"],
       "properties": {
         "type": {
-          "type": "string",
           "description": "The type of scope.",
+          "type": "string",
           "readOnly": true,
           "enum": ["PROJECT", "TEMPLATE"]
         },
@@ -54,33 +54,33 @@
           "type": "object",
           "properties": {
             "self": {
-              "type": "string",
               "description": "The URL of the project details.",
+              "type": "string",
               "readOnly": true
             },
             "id": {
-              "type": "string",
-              "description": "The ID of the project."
+              "description": "The ID of the project.",
+              "type": "string"
             },
             "key": {
-              "type": "string",
               "description": "The key of the project.",
+              "type": "string",
               "readOnly": true
             },
             "name": {
-              "type": "string",
               "description": "The name of the project.",
+              "type": "string",
               "readOnly": true
             },
             "projectTypeKey": {
-              "type": "string",
               "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
+              "type": "string",
               "readOnly": true,
               "enum": ["software", "service_desk", "business"]
             },
             "simplified": {
-              "type": "boolean",
               "description": "Whether or not the project is simplified.",
+              "type": "boolean",
               "readOnly": true
             },
             "avatarUrls": {
@@ -89,20 +89,20 @@
               "type": "object",
               "properties": {
                 "16x16": {
-                  "type": "string",
-                  "description": "The URL of the item's 16x16 pixel avatar."
+                  "description": "The URL of the item's 16x16 pixel avatar.",
+                  "type": "string"
                 },
                 "24x24": {
-                  "type": "string",
-                  "description": "The URL of the item's 24x24 pixel avatar."
+                  "description": "The URL of the item's 24x24 pixel avatar.",
+                  "type": "string"
                 },
                 "32x32": {
-                  "type": "string",
-                  "description": "The URL of the item's 32x32 pixel avatar."
+                  "description": "The URL of the item's 32x32 pixel avatar.",
+                  "type": "string"
                 },
                 "48x48": {
-                  "type": "string",
-                  "description": "The URL of the item's 48x48 pixel avatar."
+                  "description": "The URL of the item's 48x48 pixel avatar.",
+                  "type": "string"
                 }
               }
             },
@@ -112,23 +112,23 @@
               "type": "object",
               "properties": {
                 "self": {
-                  "type": "string",
                   "description": "The URL of the project category.",
+                  "type": "string",
                   "readOnly": true
                 },
                 "id": {
-                  "type": "string",
                   "description": "The ID of the project category.",
+                  "type": "string",
                   "readOnly": true
                 },
                 "description": {
-                  "type": "string",
                   "description": "The name of the project category.",
+                  "type": "string",
                   "readOnly": true
                 },
                 "name": {
-                  "type": "string",
                   "description": "The description of the project category.",
+                  "type": "string",
                   "readOnly": true
                 }
               }
@@ -142,39 +142,40 @@
       "type": "object",
       "properties": {
         "type": {
-          "type": "string",
           "description": "The data type of the field.",
+          "type": "string",
           "readOnly": true
         },
         "items": {
-          "type": "string",
           "description": "When the data type is an array, the name of the field items within the array.",
+          "type": "string",
           "readOnly": true
         },
         "system": {
-          "type": "string",
           "description": "If the field is a system field, the name of the field.",
+          "type": "string",
           "readOnly": true
         },
         "custom": {
-          "type": "string",
           "description": "If the field is a custom field, the URI of the field.",
+          "type": "string",
           "readOnly": true
         },
         "customId": {
-          "type": "integer",
           "description": "If the field is a custom field, the custom ID of the field.",
+          "type": "integer",
           "readOnly": true
         },
         "configuration": {
+          "description": "If the field is a custom field, the configuration of the field.",
           "type": "object",
           "additionalProperties": true,
-          "description": "If the field is a custom field, the configuration of the field.",
           "readOnly": true
         }
       }
     },
     "untranslatedName": {
+      "description": "The untranslated name of the field.",
       "type": ["null", "string"]
     }
   },

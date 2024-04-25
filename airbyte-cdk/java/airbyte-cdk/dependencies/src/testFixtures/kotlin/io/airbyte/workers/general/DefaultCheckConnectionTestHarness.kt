@@ -26,7 +26,7 @@ constructor(
     private val connectorConfigUpdater: ConnectorConfigUpdater,
     private val streamFactory: AirbyteStreamFactory = DefaultAirbyteStreamFactory()
 ) : CheckConnectionTestHarness {
-    private var process: Process? = null
+    private lateinit var process: Process
 
     @Throws(TestHarnessException::class)
     override fun run(input: StandardCheckConnectionInput, jobRoot: Path): ConnectorJobOutput {
@@ -34,31 +34,32 @@ constructor(
 
         try {
             val inputConfig = input.connectionConfiguration
-            process =
+            val process =
                 integrationLauncher.check(
                     jobRoot,
                     WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
                     Jsons.serialize(inputConfig)
                 )
+            this.process = process
 
             val jobOutput =
                 ConnectorJobOutput().withOutputType(ConnectorJobOutput.OutputType.CHECK_CONNECTION)
 
-            LineGobbler.gobble(process!!.errorStream, { msg: String? -> LOGGER.error(msg) })
+            LineGobbler.gobble(process.errorStream, { msg: String? -> LOGGER.error(msg) })
 
             val messagesByType = TestHarnessUtils.getMessagesByType(process, streamFactory, 30)
             val connectionStatus =
                 messagesByType
-                    .getOrDefault(AirbyteMessage.Type.CONNECTION_STATUS, ArrayList())!!
+                    .getOrDefault(AirbyteMessage.Type.CONNECTION_STATUS, ArrayList())
                     .stream()
-                    .map { obj: AirbyteMessage -> obj!!.connectionStatus }
+                    .map { obj: AirbyteMessage -> obj.connectionStatus }
                     .findFirst()
 
             if (input.actorId != null && input.actorType != null) {
                 val optionalConfigMsg =
                     TestHarnessUtils.getMostRecentConfigControlMessage(messagesByType)
                 if (
-                    optionalConfigMsg!!.isPresent &&
+                    optionalConfigMsg.isPresent &&
                         TestHarnessUtils.getDidControlMessageChangeConfig(
                             inputConfig,
                             optionalConfigMsg.get()
@@ -85,11 +86,11 @@ constructor(
                     ConnectorJobOutput.OutputType.CHECK_CONNECTION,
                     messagesByType
                 )
-            failureReason!!.ifPresent { failureReason: FailureReason? ->
+            failureReason.ifPresent { failureReason: FailureReason? ->
                 jobOutput.failureReason = failureReason
             }
 
-            val exitCode = process!!.exitValue()
+            val exitCode = process.exitValue()
             if (exitCode != 0) {
                 LOGGER.warn("Check connection job subprocess finished with exit code {}", exitCode)
             }

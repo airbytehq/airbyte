@@ -29,21 +29,16 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 
 class BufferedStreamConsumerTest {
-    private lateinit var consumer: BufferedStreamConsumer
-    private lateinit var onStart: OnStartFunction
-    private lateinit var recordWriter: RecordWriter<AirbyteRecordMessage>
-    private lateinit var onClose: OnCloseFunction
-    private lateinit var isValidRecord: CheckedFunction<JsonNode?, Boolean?, Exception?>
-    private lateinit var outputRecordCollector: Consumer<AirbyteMessage>
+    private var consumer: BufferedStreamConsumer = mock()
+    private var onStart: OnStartFunction = mock()
+    private var recordWriter: RecordWriter<AirbyteRecordMessage> = mock()
+    private var onClose: OnCloseFunction = mock()
+    private var isValidRecord: CheckedFunction<JsonNode?, Boolean?, Exception?> = mock()
+    private var outputRecordCollector: Consumer<AirbyteMessage> = mock()
 
     @BeforeEach
     @Throws(Exception::class)
     fun setup() {
-        onStart = mock()
-        recordWriter = mock()
-        onClose = mock()
-        isValidRecord = mock()
-        outputRecordCollector = mock()
         consumer =
             BufferedStreamConsumer(
                 outputRecordCollector,

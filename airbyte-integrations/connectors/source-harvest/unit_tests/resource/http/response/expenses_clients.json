@@ -1,0 +1,30 @@
+{
+  "results": [
+    {
+      "client_id": 5735776,
+      "client_name": "123 Industries",
+      "total_amount": 100,
+      "billable_amount": 100,
+      "currency": "EUR"
+    },
+    {
+      "client_id": 5735774,
+      "client_name": "ABC Corp",
+      "total_amount": 133.35,
+      "billable_amount": 133.35,
+      "currency": "USD"
+    }
+  ],
+  "per_page": 50,
+  "total_pages": 1,
+  "total_entries": 2,
+  "next_page": null,
+  "previous_page": null,
+  "page": 1,
+  "links": {
+    "first": null,
+    "next": null,
+    "previous": null,
+    "last": null
+  }
+}

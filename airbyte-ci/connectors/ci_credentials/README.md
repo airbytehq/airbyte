@@ -34,6 +34,12 @@ Once pyenv and pipx is installed then run the following (assuming you're in Airb
 pipx install --editable --force --python=python3.10 airbyte-ci/connectors/ci_credentials/
 ```
 
+Or install with a link to the default branch of the repo:
+
+```bash
+pipx install git+https://github.com/airbytehq/airbyte.git#subdirectory=airbyte-ci/connectors/ci_credentials
+```
+
 This command installs `ci_credentials` and makes it globally available in your terminal.
 
 > [!Note]

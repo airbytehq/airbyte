@@ -35,12 +35,12 @@ import org.slf4j.LoggerFactory
 class LoggingInvocationInterceptor : InvocationInterceptor {
     private class LoggingInvocationInterceptorHandler : InvocationHandler {
         @Throws(Throwable::class)
-        override fun invoke(proxy: Any?, method: Method?, args: Array<Any?>?): Any? {
+        override fun invoke(proxy: Any, method: Method, args: Array<Any>): Any? {
             if (
                 LoggingInvocationInterceptor::class
                     .java
                     .getDeclaredMethod(
-                        method!!.name,
+                        method.name,
                         InvocationInterceptor.Invocation::class.java,
                         ReflectiveInvocationContext::class.java,
                         ExtensionContext::class.java
@@ -164,15 +164,15 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
         companion object {
             private val methodPattern: Pattern? = Pattern.compile("intercept(.*)Method")
 
-            private val PATTERN: Pattern? =
+            private val PATTERN: Pattern =
                 Pattern.compile(
                     "([1-9]\\d*) *((?:[nμm]?s)|m|h|d)?",
                     Pattern.CASE_INSENSITIVE or Pattern.UNICODE_CASE
                 )
-            private val UNITS_BY_ABBREVIATION: MutableMap<String?, TimeUnit?>?
+            private val UNITS_BY_ABBREVIATION: MutableMap<String, TimeUnit>
 
             init {
-                val unitsByAbbreviation: MutableMap<String?, TimeUnit?> = HashMap()
+                val unitsByAbbreviation: MutableMap<String, TimeUnit> = HashMap()
                 unitsByAbbreviation["ns"] = TimeUnit.NANOSECONDS
                 unitsByAbbreviation["μs"] = TimeUnit.MICROSECONDS
                 unitsByAbbreviation["ms"] = TimeUnit.MILLISECONDS
@@ -184,15 +184,15 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
             }
 
             @Throws(DateTimeParseException::class)
-            fun parseDuration(text: String?): Duration? {
-                val matcher = PATTERN!!.matcher(text!!.trim { it <= ' ' })
+            fun parseDuration(text: String): Duration {
+                val matcher = PATTERN.matcher(text.trim { it <= ' ' })
                 if (matcher.matches()) {
                     val value = matcher.group(1).toLong()
                     val unitAbbreviation = matcher.group(2)
                     val unit =
                         if (unitAbbreviation == null) TimeUnit.SECONDS
-                        else UNITS_BY_ABBREVIATION!![unitAbbreviation.lowercase()]
-                    return Duration.ofSeconds(unit!!.toSeconds(value))
+                        else UNITS_BY_ABBREVIATION.getValue(unitAbbreviation.lowercase())
+                    return Duration.ofSeconds(unit.toSeconds(value))
                 }
                 throw DateTimeParseException(
                     "Timeout duration is not in the expected format (<number> [ns|μs|ms|s|m|h|d])",
@@ -282,11 +282,11 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
 
     @Throws(Throwable::class)
     override fun interceptTestMethod(
-        invocation: InvocationInterceptor.Invocation<Void?>?,
-        invocationContext: ReflectiveInvocationContext<Method?>?,
-        extensionContext: ExtensionContext?
+        invocation: InvocationInterceptor.Invocation<Void>,
+        invocationContext: ReflectiveInvocationContext<Method>,
+        extensionContext: ExtensionContext
     ) {
-        if (!Modifier.isPublic(invocationContext!!.executable!!.modifiers)) {
+        if (!Modifier.isPublic(invocationContext.executable!!.modifiers)) {
             LOGGER!!.warn(
                 "Junit method {}.{} is not declared as public",
                 invocationContext.executable!!.declaringClass.canonicalName,
