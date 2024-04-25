@@ -698,7 +698,6 @@
       "description": "The details of the total tax applied to the order.",
       "type": ["null", "object"],
       "properties": {
-        "description": "Total tax amount set for the order",
         "shop_money": {
           "type": ["null", "object"],
           "properties": {
