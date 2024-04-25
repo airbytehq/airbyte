@@ -24,7 +24,6 @@ SCOPES = ['https://www.googleapis.com/auth/bigquery', 'https://www.googleapis.co
 
 class BigqueryAuth:
     def __new__(cls, config: dict) -> Union[ServiceAccountCredentials, Oauth2Authenticator, TokenAuthenticator]:       
-        credentials_json = config["credentials_json"]
         credentials_json = json.loads(config["credentials_json"], strict=False)
 
         credentials = ServiceAccountCredentials(credentials_json["client_email"], RSASigner.from_string(credentials_json["private_key"], credentials_json["private_key_id"]),\
