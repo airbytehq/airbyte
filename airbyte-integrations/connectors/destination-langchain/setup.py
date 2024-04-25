@@ -15,7 +15,7 @@ MAIN_REQUIREMENTS = [
     "pinecone-client",
     "typing-inspect==0.8.0",
     "typing_extensions==4.5.0",
-    "pydantic==1.10.8",
+    "pydantic==1.10.13",
     "pandas==1.4.2",
     "chromadb==0.4.3",
 ]
