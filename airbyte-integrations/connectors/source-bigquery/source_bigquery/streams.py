@@ -100,9 +100,9 @@ class BigqueryTables(BigqueryDatasets):
     name = "tables"
 
     def __init__(self, dataset_id: list, project_id: list, **kwargs):
-        super().__init__(project_id=project_id, **kwargs)
         self.dataset_id = dataset_id
         self.project_id = project_id
+        super().__init__(project_id=project_id, **kwargs)
 
     def path(self, **kwargs) -> str:
         """
@@ -115,8 +115,8 @@ class BigqueryTable(BigqueryTables):
     name = "table"
 
     def __init__(self, dataset_id: list, project_id: list, table_id: list, **kwargs):
-        super().__init__(dataset_id=dataset_id, project_id=project_id, **kwargs)
         self.table_id = table_id
+        super().__init__(dataset_id=dataset_id, project_id=project_id, **kwargs)
 
     def path(self, **kwargs) -> str:
         """
