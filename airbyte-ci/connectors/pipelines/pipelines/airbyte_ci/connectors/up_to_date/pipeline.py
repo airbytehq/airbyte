@@ -338,7 +338,7 @@ async def run_connector_up_to_date_pipeline(
                         context,
                         await context.get_repo_dir(include=[str(context.connector.local_connector_documentation_directory)]),
                         new_version,
-                        f"TODO: better message - Poetry update.",
+                        "TODO: better message - Poetry update.",
                         "0",
                         export_docs=True,
                     ),
