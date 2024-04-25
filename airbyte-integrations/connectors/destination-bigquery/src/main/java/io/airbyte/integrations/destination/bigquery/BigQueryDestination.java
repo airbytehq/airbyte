@@ -224,6 +224,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   @Override
+  @SuppressWarnings("deprecation")
   public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
                                                                        final ConfiguredAirbyteCatalog catalog,
                                                                        final Consumer<AirbyteMessage> outputRecordCollector)
@@ -306,7 +307,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         final String targetTableName;
 
         parsedStream = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
-        targetTableName = parsedStream.id().rawName();
+        targetTableName = parsedStream.getId().getRawName();
 
         final UploaderConfig uploaderConfig = UploaderConfig
             .builder()
@@ -369,7 +370,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         catalog,
         parsedCatalog);
 
-    final String bqNamespace = BigQueryUtils.getDatasetId(config);
+    final Optional<String> bqNamespace = Optional.ofNullable(BigQueryUtils.getDatasetId(config));
 
     return new BigQueryRecordStandardConsumer(
         outputRecordCollector,
@@ -379,11 +380,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           // Set up our raw tables
           writeConfigs.get().forEach((streamId, uploader) -> {
             final StreamConfig stream = parsedCatalog.getStream(streamId);
-            if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+            if (stream.getDestinationSyncMode() == DestinationSyncMode.OVERWRITE) {
               // For streams in overwrite mode, truncate the raw table.
               // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in
               // 1s1t mode.
-              final TableId rawTableId = TableId.of(stream.id().rawNamespace(), stream.id().rawName());
+              final TableId rawTableId = TableId.of(stream.getId().getRawNamespace(), stream.getId().getRawName());
               LOGGER.info("Deleting Raw table {}", rawTableId);
               if (!bigquery.delete(rawTableId)) {
                 LOGGER.info("Raw table {} not found, continuing with creation", rawTableId);
