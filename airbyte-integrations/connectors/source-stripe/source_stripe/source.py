@@ -339,11 +339,11 @@ class SourceStripe(ConcurrentSourceAdapter):
                 path="charges",
                 expand_items=[
                     "data.refunds",
-                    "balance_transaction",
-                    "customer",
-                    "invoice",
-                    "payment_intent",
-                    "failure_balance_transaction"
+                    "data.balance_transaction",
+                    "data.customer",
+                    "data.invoice",
+                    "data.payment_intent",
+                    "data.failure_balance_transaction"
                 ],
                 event_types=[
                     "charge.captured",
