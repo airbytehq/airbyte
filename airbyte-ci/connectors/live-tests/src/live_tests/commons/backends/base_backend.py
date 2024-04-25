@@ -12,5 +12,4 @@ class BaseBackend(ABC):
     """
 
     @abstractmethod
-    def write(self, airbyte_messages: Iterable[AirbyteMessage]) -> None:
-        ...
+    def write(self, airbyte_messages: Iterable[AirbyteMessage]) -> None: ...

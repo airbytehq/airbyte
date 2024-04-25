@@ -10,7 +10,13 @@ import rich
 from connection_retriever import ConnectionObject, retrieve_objects  # type: ignore
 from connection_retriever.errors import NotPermittedError  # type: ignore
 
-from .models import AirbyteCatalog, Command, ConfiguredAirbyteCatalog, ConnectionObjects, SecretDict
+from .models import (
+    AirbyteCatalog,
+    Command,
+    ConfiguredAirbyteCatalog,
+    ConnectionObjects,
+    SecretDict,
+)
 
 LOGGER = logging.getLogger(__name__)
 console = rich.get_console()
@@ -44,7 +50,13 @@ def parse_configured_catalog(
     else:
         catalog = ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
     if selected_streams:
-        return ConfiguredAirbyteCatalog(streams=[stream for stream in catalog.streams if stream.stream.name in selected_streams])
+        return ConfiguredAirbyteCatalog(
+            streams=[
+                stream
+                for stream in catalog.streams
+                if stream.stream.name in selected_streams
+            ]
+        )
     return catalog
 
 
@@ -65,7 +77,9 @@ def get_state_from_path(state_path: Path) -> Optional[Dict]:
     return parse_state(state_path.read_text())
 
 
-def get_configured_catalog_from_path(path: Path, selected_streams: Optional[Set[str]] = None) -> Optional[ConfiguredAirbyteCatalog]:
+def get_configured_catalog_from_path(
+    path: Path, selected_streams: Optional[Set[str]] = None
+) -> Optional[ConfiguredAirbyteCatalog]:
     return parse_configured_catalog(path.read_text(), selected_streams)
 
 
@@ -117,13 +131,25 @@ def get_connection_objects(
         ConnectionObjects: The connection objects values.
     """
     if connection_id is None and not auto_select_connection:
-        raise ValueError("A connection id or auto_select_connection must be provided to retrieve the connection objects.")
+        raise ValueError(
+            "A connection id or auto_select_connection must be provided to retrieve the connection objects."
+        )
     if auto_select_connection and not connector_image:
-        raise ValueError("A connector image must be provided when using auto_select_connection.")
+        raise ValueError(
+            "A connector image must be provided when using auto_select_connection."
+        )
 
-    custom_config = get_connector_config_from_path(custom_config_path) if custom_config_path else None
+    custom_config = (
+        get_connector_config_from_path(custom_config_path)
+        if custom_config_path
+        else None
+    )
     custom_configured_catalog = (
-        get_configured_catalog_from_path(custom_configured_catalog_path, selected_streams) if custom_configured_catalog_path else None
+        get_configured_catalog_from_path(
+            custom_configured_catalog_path, selected_streams
+        )
+        if custom_configured_catalog_path
+        else None
     )
     custom_state = get_state_from_path(custom_state_path) if custom_state_path else None
 
@@ -142,7 +168,9 @@ def get_connection_objects(
         )
     else:
         if not retrieval_reason:
-            raise ValueError("A retrieval reason is required to access the connection objects when passing a connection id.")
+            raise ValueError(
+                "A retrieval reason is required to access the connection objects when passing a connection id."
+            )
         LOGGER.info("Retrieving connection objects from the database...")
         if auto_select_connection:
             is_ci = os.getenv("CI", False)
@@ -160,17 +188,27 @@ def get_connection_objects(
                 connection_id=connection_id,
                 with_streams=selected_streams,
             )
-        retrieved_source_config = parse_config(retrieved_objects.get(ConnectionObject.SOURCE_CONFIG))
-        rerieved_destination_config = parse_config(retrieved_objects.get(ConnectionObject.DESTINATION_CONFIG))
-        retrieved_catalog = parse_catalog(retrieved_objects.get(ConnectionObject.CATALOG))
+        retrieved_source_config = parse_config(
+            retrieved_objects.get(ConnectionObject.SOURCE_CONFIG)
+        )
+        rerieved_destination_config = parse_config(
+            retrieved_objects.get(ConnectionObject.DESTINATION_CONFIG)
+        )
+        retrieved_catalog = parse_catalog(
+            retrieved_objects.get(ConnectionObject.CATALOG)
+        )
         retrieved_configured_catalog = parse_configured_catalog(
             retrieved_objects.get(ConnectionObject.CONFIGURED_CATALOG), selected_streams
         )
         retrieved_state = parse_state(retrieved_objects.get(ConnectionObject.STATE))
 
-        retrieved_source_docker_image = retrieved_objects.get(ConnectionObject.SOURCE_DOCKER_IMAGE)
+        retrieved_source_docker_image = retrieved_objects.get(
+            ConnectionObject.SOURCE_DOCKER_IMAGE
+        )
         if retrieved_source_docker_image is None:
-            raise ValueError(f"A docker image was not found for connection ID {connection_id}.")
+            raise ValueError(
+                f"A docker image was not found for connection ID {connection_id}."
+            )
         elif retrieved_source_docker_image.split(":")[0] != connector_image:
             raise NotPermittedError(
                 f"The provided docker image ({connector_image}) does not match the image for connection ID {connection_id}."
@@ -178,9 +216,13 @@ def get_connection_objects(
 
         connection_object = ConnectionObjects(
             source_config=custom_config if custom_config else retrieved_source_config,
-            destination_config=custom_config if custom_config else rerieved_destination_config,
+            destination_config=custom_config
+            if custom_config
+            else rerieved_destination_config,
             catalog=retrieved_catalog,
-            configured_catalog=custom_configured_catalog if custom_configured_catalog else retrieved_configured_catalog,
+            configured_catalog=custom_configured_catalog
+            if custom_configured_catalog
+            else retrieved_configured_catalog,
             state=custom_state if custom_state else retrieved_state,
             workspace_id=retrieved_objects.get(ConnectionObject.WORKSPACE_ID),
             source_id=retrieved_objects.get(ConnectionObject.SOURCE_ID),
@@ -189,9 +231,15 @@ def get_connection_objects(
             connection_id=connection_id,
         )
     if fail_if_missing_objects:
-        if not connection_object.source_config and ConnectionObject.SOURCE_CONFIG in requested_objects:
+        if (
+            not connection_object.source_config
+            and ConnectionObject.SOURCE_CONFIG in requested_objects
+        ):
             raise ValueError("A source config is required to run the command.")
-        if not connection_object.catalog and ConnectionObject.CONFIGURED_CATALOG in requested_objects:
+        if (
+            not connection_object.catalog
+            and ConnectionObject.CONFIGURED_CATALOG in requested_objects
+        ):
             raise ValueError("A catalog is required to run the command.")
         if not connection_object.state and ConnectionObject.STATE in requested_objects:
             raise ValueError("A state is required to run the command.")

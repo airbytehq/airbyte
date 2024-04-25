@@ -16,9 +16,13 @@ class SortQueryParams:
             # Get query parameters as dictionary
             query_params = parse_qs(parsed_url.query)
             # Sort query parameters alphabetically
-            sorted_params = {key: query_params[key] for key in sorted(query_params.keys())}
+            sorted_params = {
+                key: query_params[key] for key in sorted(query_params.keys())
+            }
             # Reconstruct the URL with sorted query parameters
-            sorted_url = parsed_url._replace(query=urlencode(sorted_params, doseq=True)).geturl()
+            sorted_url = parsed_url._replace(
+                query=urlencode(sorted_params, doseq=True)
+            ).geturl()
 
             # Update the request URL
             flow.request.url = sorted_url

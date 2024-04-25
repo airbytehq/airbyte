@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import asyncclick as click
+
 from live_tests.debug.cli import debug_cmd
 
 
