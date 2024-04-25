@@ -29,13 +29,13 @@ data:
   license: MIT
   name: Qdrant
   releaseDate: 2023-09-22
-  releaseStage: alpha
+  releaseStage: generally_available
   documentationUrl: https://docs.airbyte.com/integrations/destinations/qdrant
   tags:
     - language:python
     - cdk:python
   ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
+    sl: 300
+    ql: 300
+  supportLevel: certified
 metadataSpecVersion: "1.0"

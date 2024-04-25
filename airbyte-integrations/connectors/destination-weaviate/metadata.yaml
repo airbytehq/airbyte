@@ -1,7 +1,7 @@
 data:
   ab_internal:
     ql: 300
-    sl: 200
+    sl: 300
   allowedHosts:
     hosts:
       - ${indexing.host}
@@ -25,7 +25,7 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: alpha
+  releaseStage: generally_available
   releases:
     breakingChanges:
       0.2.0:

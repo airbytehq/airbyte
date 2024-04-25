@@ -29,13 +29,13 @@ data:
   license: MIT
   name: Milvus
   releaseDate: 2023-08-15
-  releaseStage: alpha
+  releaseStage: generally_available
   documentationUrl: https://docs.airbyte.com/integrations/destinations/milvus
   tags:
     - language:python
     - cdk:python
   ab_internal:
-    sl: 200
+    sl: 300
     ql: 300
   supportLevel: certified
 metadataSpecVersion: "1.0"

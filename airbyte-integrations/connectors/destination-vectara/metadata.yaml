@@ -24,8 +24,8 @@ data:
       enabled: false # TODO: enable once the CLI is working
       packageName: airbyte-destination-vectara
   releaseDate: 2023-12-16
-  releaseStage: alpha
-  supportLevel: community
+  releaseStage: generally_available
+  supportLevel: certified
   documentationUrl: https://docs.airbyte.com/integrations/destinations/vectara
   tags:
     - language:python

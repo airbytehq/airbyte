@@ -15,7 +15,7 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: alpha
+  releaseStage: generally_available
   releases:
     breakingChanges:
       0.3.0:
@@ -36,7 +36,7 @@ data:
     - language:python
     - cdk:python
   ab_internal:
-    sl: 100
+    sl: 300
     ql: 100
-  supportLevel: community
+  supportLevel: certified
 metadataSpecVersion: "1.0"

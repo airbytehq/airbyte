@@ -1,7 +1,7 @@
 data:
   ab_internal:
     ql: 300
-    sl: 200
+    sl: 300
   allowedHosts:
     hosts:
       - "*.${indexing.pinecone_environment}.pinecone.io"
@@ -30,7 +30,7 @@ data:
     oss:
       enabled: true
   releaseDate: 2023-08-15
-  releaseStage: beta
+  releaseStage: generally_available
   resourceRequirements:
     jobSpecific:
       - jobType: sync

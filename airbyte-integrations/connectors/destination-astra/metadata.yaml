@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    ql: 300
+    sl: 300
   allowedHosts:
     hosts:
       - "*.apps.astra.datastax.com"
@@ -22,8 +25,8 @@ data:
   license: MIT
   name: Astra DB
   releaseDate: 2024-01-10
-  releaseStage: alpha
-  supportLevel: community
+  releaseStage: generally_available
+  supportLevel: certified
   documentationUrl: https://docs.airbyte.com/integrations/destinations/astra
   tags:
     - language:python
