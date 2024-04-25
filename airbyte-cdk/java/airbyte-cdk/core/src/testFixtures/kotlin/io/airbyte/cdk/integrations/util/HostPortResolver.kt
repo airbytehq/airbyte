@@ -8,31 +8,28 @@ import org.testcontainers.containers.GenericContainer
 
 object HostPortResolver {
     @JvmStatic
-    fun resolveHost(container: GenericContainer<*>?): String? {
+    fun resolveHost(container: GenericContainer<*>): String {
         return getIpAddress(container)
     }
 
     @JvmStatic
-    fun resolvePort(container: GenericContainer<*>?): Int {
-        return container!!.exposedPorts.stream().findFirst().get()
+    fun resolvePort(container: GenericContainer<*>): Int {
+        return container.exposedPorts.stream().findFirst().get()
     }
 
-    fun resolveIpAddress(container: GenericContainer<*>?): String? {
+    fun resolveIpAddress(container: GenericContainer<*>): String {
         return getIpAddress(container)
     }
 
-    private fun getIpAddress(container: GenericContainer<*>?): String? {
+    private fun getIpAddress(container: GenericContainer<*>): String {
+        // Weird double bang here. If I remove the Object.requireNotNull, there's a type error...
         return Objects.requireNonNull(
-            container!!
-                .containerInfo
-                .networkSettings
-                .networks
-                .entries
+            container.containerInfo.networkSettings.networks.entries
                 .stream()
                 .findFirst()
                 .get()
                 .value
                 .ipAddress
-        )
+        )!!
     }
 }

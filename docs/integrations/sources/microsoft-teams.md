@@ -161,6 +161,7 @@ Token acquiring implemented by [instantiate](https://docs.microsoft.com/en-us/az
 
 | Version | Date       | Pull Request                                             | Subject                        |
 |:------- |:---------- | :------------------------------------------------------- | :----------------------------- |
+| 1.1.0   | 2024-03-24 | [36223](https://github.com/airbytehq/airbyte/pull/36223) | Migration to low code          |
 | 1.0.0   | 2024-01-04 | [33959](https://github.com/airbytehq/airbyte/pull/33959) | Schema updates                 |
 | 0.2.5   | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429)   | Update titles and descriptions |
 | 0.2.4   | 2021-12-07 | [7807](https://github.com/airbytehq/airbyte/pull/7807)   | Implement OAuth support        |

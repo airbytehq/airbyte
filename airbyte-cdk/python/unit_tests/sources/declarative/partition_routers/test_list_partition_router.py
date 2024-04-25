@@ -95,10 +95,10 @@ def test_request_option(request_option, expected_req_params, expected_headers, e
     )
     stream_slice = {cursor_field: "customer"}
 
-    assert expected_req_params == partition_router.get_request_params(stream_slice=stream_slice)
-    assert expected_headers == partition_router.get_request_headers(stream_slice=stream_slice)
-    assert expected_body_json == partition_router.get_request_body_json(stream_slice=stream_slice)
-    assert expected_body_data == partition_router.get_request_body_data(stream_slice=stream_slice)
+    assert partition_router.get_request_params(stream_slice=stream_slice) == expected_req_params
+    assert partition_router.get_request_headers(stream_slice=stream_slice) == expected_headers
+    assert partition_router.get_request_body_json(stream_slice=stream_slice) == expected_body_json
+    assert partition_router.get_request_body_data(stream_slice=stream_slice) == expected_body_data
 
 
 @pytest.mark.parametrize(
@@ -139,7 +139,7 @@ def test_request_options_interpolation(field_name_interpolation: str, expected_r
     )
     stream_slice = {cursor_field: "customer"}
 
-    assert expected_request_params == partition_router.get_request_params(stream_slice=stream_slice)
+    assert partition_router.get_request_params(stream_slice=stream_slice) == expected_request_params
 
 
 def test_request_option_before_updating_cursor():

@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfigFactory;
 import io.airbyte.cdk.integrations.destination.s3.StorageProvider;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,7 +56,7 @@ public class S3DestinationStrictEncryptTest {
   @Test
   public void checksCustomEndpointIsHttpsOnly() {
     final S3Destination destinationWithHttpsOnlyEndpoint = new S3DestinationStrictEncrypt(factoryConfig);
-    final AirbyteConnectionStatus status = destinationWithHttpsOnlyEndpoint.check(null);
+    final AirbyteConnectionStatus status = destinationWithHttpsOnlyEndpoint.check(Jsons.emptyObject());
     assertEquals(Status.SUCCEEDED, status.getStatus(), "custom endpoint did not contain `s3-accesspoint`");
   }
 
@@ -79,7 +80,7 @@ public class S3DestinationStrictEncryptTest {
       }
 
     });
-    final AirbyteConnectionStatus status = destinationWithStandardUnsecuredEndpoint.check(null);
+    final AirbyteConnectionStatus status = destinationWithStandardUnsecuredEndpoint.check(Jsons.emptyObject());
     assertEquals(Status.FAILED, status.getStatus());
   }
 
