@@ -50,17 +50,9 @@ class SerializedBufferingStrategy
     ): Optional<BufferFlushType> {
         var flushed: Optional<BufferFlushType> = Optional.empty()
 
-        val buffer =
-            getOrCreateBuffer(stream)
-                ?: throw RuntimeException(
-                    String.format(
-                        "Failed to create/get buffer for stream %s.%s",
-                        stream.namespace,
-                        stream.name
-                    )
-                )
+        val buffer = getOrCreateBuffer(stream)
 
-        val actualMessageSizeInBytes = buffer.accept(message.record)
+        @Suppress("DEPRECATION") val actualMessageSizeInBytes = buffer.accept(message.record)
         totalBufferSizeInBytes += actualMessageSizeInBytes
         // Flushes buffer when either the buffer was completely filled or only a single stream was
         // filled
@@ -97,7 +89,7 @@ class SerializedBufferingStrategy
      * computed buffer
      */
     private fun getOrCreateBuffer(stream: AirbyteStreamNameNamespacePair): SerializableBuffer {
-        return allBuffers.computeIfAbsent(stream) { k: AirbyteStreamNameNamespacePair? ->
+        return allBuffers.computeIfAbsent(stream) { _: AirbyteStreamNameNamespacePair? ->
             LOGGER.info(
                 "Starting a new buffer for stream {} (current state: {} in {} buffers)",
                 stream.name,
