@@ -104,9 +104,7 @@ object RelationalDbQueryUtils {
     fun prettyPrintConfiguredAirbyteStreamList(streamList: List<ConfiguredAirbyteStream>): String {
         return streamList
             .stream()
-            .map { s: ConfiguredAirbyteStream ->
-                "%s.%s".formatted(s.stream.namespace, s.stream.name)
-            }
+            .map { s: ConfiguredAirbyteStream -> "${s.stream.namespace}.${s.stream.name}" }
             .collect(Collectors.joining(", "))
     }
 
