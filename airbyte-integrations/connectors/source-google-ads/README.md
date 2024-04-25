@@ -30,7 +30,7 @@ See `sample_files/sample_config.json` for a sample config file.
 poetry run source-google-ads spec
 poetry run source-google-ads check --config secrets/config.json
 poetry run source-google-ads discover --config secrets/config.json
-poetry run source-google-ads read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run source-google-ads read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Running unit tests
