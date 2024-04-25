@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-vectara"
-version = "0.2.2"
+version = "0.2.3"
 description = "Airbyte destination implementation for Vectara"
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -19,10 +19,10 @@ include = "destination_vectara"
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 # Note: Maintainers can bump this to the latest via `poetry add airbyte-cdk@latest`
-airbyte-cdk = "0.74.0"
+airbyte-cdk = "0.81.6"
 
 [tool.poetry.group.dev.dependencies]
-pytest = ">=6.2,<7.0"
+pytest = "^7.2"
 ruff = "^0.3.2"
 mypy = "^1.9.0"
 
