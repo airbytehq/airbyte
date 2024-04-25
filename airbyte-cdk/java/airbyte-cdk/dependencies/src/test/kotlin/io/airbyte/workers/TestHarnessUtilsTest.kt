@@ -28,9 +28,9 @@ internal class TestHarnessUtilsTest {
 
         private val SHUTDOWN_TIME_DURATION: Duration = Duration.of(100, ChronoUnit.MILLIS)
 
-        private var process: Process? = null
-        private var heartbeatMonitor: HeartbeatMonitor? = null
-        private lateinit var forceShutdown: BiConsumer<Process?, Duration?>
+        private var process: Process = mock()
+        private var heartbeatMonitor: HeartbeatMonitor = mock()
+        private var forceShutdown: BiConsumer<Process, Duration> = mock()
 
         @BeforeEach
         fun setup() {
@@ -54,7 +54,7 @@ internal class TestHarnessUtilsTest {
         @Test
         @Throws(InterruptedException::class)
         fun testStartsWait() {
-            Mockito.`when`(process!!.isAlive).thenReturn(true)
+            Mockito.`when`(process.isAlive).thenReturn(true)
             val recordedBeats = AtomicInteger(0)
             Mockito.doAnswer { ignored: InvocationOnMock? ->
                     recordedBeats.incrementAndGet()
@@ -75,8 +75,8 @@ internal class TestHarnessUtilsTest {
 
         @Test
         fun testGracefulShutdown() {
-            Mockito.`when`(heartbeatMonitor!!.isBeating).thenReturn(false)
-            Mockito.`when`(process!!.isAlive).thenReturn(false)
+            Mockito.`when`(heartbeatMonitor.isBeating).thenReturn(false)
+            Mockito.`when`(process.isAlive).thenReturn(false)
 
             runShutdown()
 
@@ -85,8 +85,8 @@ internal class TestHarnessUtilsTest {
 
         @Test
         fun testForcedShutdown() {
-            Mockito.`when`(heartbeatMonitor!!.isBeating).thenReturn(false)
-            Mockito.`when`(process!!.isAlive).thenReturn(true)
+            Mockito.`when`(heartbeatMonitor.isBeating).thenReturn(false)
+            Mockito.`when`(process.isAlive).thenReturn(true)
 
             runShutdown()
 
@@ -95,8 +95,8 @@ internal class TestHarnessUtilsTest {
 
         @Test
         fun testProcessDies() {
-            Mockito.`when`(heartbeatMonitor!!.isBeating).thenReturn(true)
-            Mockito.`when`(process!!.isAlive).thenReturn(false)
+            Mockito.`when`(heartbeatMonitor.isBeating).thenReturn(true)
+            Mockito.`when`(process.isAlive).thenReturn(false)
             runShutdown()
 
             Mockito.verifyNoInteractions(forceShutdown)
@@ -149,14 +149,14 @@ internal class TestHarnessUtilsTest {
          * - amount of time to wait if a process needs to be destroyed forcibly.
          */
         fun gentleCloseWithHeartbeat(
-            process: Process?,
-            heartbeatMonitor: HeartbeatMonitor?,
+            process: Process,
+            heartbeatMonitor: HeartbeatMonitor,
             gracefulShutdownDuration: Duration,
             checkHeartbeatDuration: Duration,
-            forcedShutdownDuration: Duration?,
-            forceShutdown: BiConsumer<Process?, Duration?>?
+            forcedShutdownDuration: Duration,
+            forceShutdown: BiConsumer<Process, Duration>
         ) {
-            while (process!!.isAlive && heartbeatMonitor!!.isBeating) {
+            while (process.isAlive && heartbeatMonitor.isBeating) {
                 try {
                     process.waitFor(checkHeartbeatDuration.toMillis(), TimeUnit.MILLISECONDS)
                 } catch (e: InterruptedException) {
@@ -176,7 +176,7 @@ internal class TestHarnessUtilsTest {
 
             // if we were unable to exist gracefully, force shutdown...
             if (process.isAlive) {
-                forceShutdown!!.accept(process, forcedShutdownDuration)
+                forceShutdown.accept(process, forcedShutdownDuration)
             }
         }
     }

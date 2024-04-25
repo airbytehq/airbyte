@@ -38,6 +38,7 @@ open class FeatureFlagsWrapper(private val wrapped: FeatureFlags) : FeatureFlags
 
     companion object {
         /** Overrides the [FeatureFlags.deploymentMode] method in the feature flags. */
+        @JvmStatic
         fun overridingDeploymentMode(wrapped: FeatureFlags, deploymentMode: String?): FeatureFlags {
             return object : FeatureFlagsWrapper(wrapped) {
                 override fun deploymentMode(): String? {

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) {{currentYear}} Airbyte, Inc., all rights reserved.
 #
 
 

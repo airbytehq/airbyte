@@ -13,10 +13,11 @@ object RecordWaitTimeUtil {
     private val LOGGER: Logger = LoggerFactory.getLogger(RecordWaitTimeUtil::class.java)
 
     val MIN_FIRST_RECORD_WAIT_TIME: Duration = Duration.ofMinutes(2)
-    val MAX_FIRST_RECORD_WAIT_TIME: Duration = Duration.ofMinutes(40)
+    val MAX_FIRST_RECORD_WAIT_TIME: Duration = Duration.ofMinutes(60)
     val DEFAULT_FIRST_RECORD_WAIT_TIME: Duration = Duration.ofMinutes(5)
     val DEFAULT_SUBSEQUENT_RECORD_WAIT_TIME: Duration = Duration.ofMinutes(1)
 
+    @JvmStatic
     fun checkFirstRecordWaitTime(config: JsonNode) {
         // we need to skip the check because in tests, we set initial_waiting_seconds
         // to 5 seconds for performance reasons, which is shorter than the minimum
@@ -41,6 +42,7 @@ object RecordWaitTimeUtil {
         }
     }
 
+    @JvmStatic
     fun getFirstRecordWaitTime(config: JsonNode): Duration {
         val isTest = config.has("is_test") && config["is_test"].asBoolean()
         var firstRecordWaitTime = DEFAULT_FIRST_RECORD_WAIT_TIME
@@ -67,6 +69,7 @@ object RecordWaitTimeUtil {
         return firstRecordWaitTime
     }
 
+    @JvmStatic
     fun getSubsequentRecordWaitTime(config: JsonNode): Duration {
         var subsequentRecordWaitTime = DEFAULT_SUBSEQUENT_RECORD_WAIT_TIME
         val isTest = config.has("is_test") && config["is_test"].asBoolean()

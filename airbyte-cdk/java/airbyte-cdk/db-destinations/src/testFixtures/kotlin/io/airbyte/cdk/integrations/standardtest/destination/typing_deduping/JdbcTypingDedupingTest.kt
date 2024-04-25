@@ -36,7 +36,7 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
 
     protected abstract fun getDataSource(config: JsonNode?): DataSource?
 
-    protected val sourceOperations: JdbcCompatibleSourceOperations<*>
+    protected open val sourceOperations: JdbcCompatibleSourceOperations<*>
         /**
          * Subclasses may need to return a custom source operations if the default one does not
          * handle vendor-specific types correctly. For example, you most likely need to override
@@ -44,7 +44,7 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
          */
         get() = JdbcUtils.defaultSourceOperations
 
-    protected val rawSchema: String
+    protected open val rawSchema: String
         /**
          * Subclasses using a config with a nonstandard raw table schema should override this
          * method.
@@ -76,19 +76,13 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
     }
 
     @Throws(Exception::class)
-    override fun dumpRawTableRecords(
-        streamNamespace: String?,
-        streamName: String?
-    ): List<JsonNode> {
+    override fun dumpRawTableRecords(streamNamespace: String?, streamName: String): List<JsonNode> {
         var streamNamespace = streamNamespace
         if (streamNamespace == null) {
             streamNamespace = getDefaultSchema(config!!)
         }
         val tableName =
-            concatenateRawTableName(
-                streamNamespace,
-                Names.toAlphanumericAndUnderscore(streamName!!)
-            )
+            concatenateRawTableName(streamNamespace, Names.toAlphanumericAndUnderscore(streamName))
         val schema = rawSchema
         return database!!.queryJsons(DSL.selectFrom(DSL.name(schema, tableName)).sql)
     }
@@ -109,14 +103,14 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
     }
 
     @Throws(Exception::class)
-    override fun teardownStreamAndNamespace(streamNamespace: String?, streamName: String?) {
+    override fun teardownStreamAndNamespace(streamNamespace: String?, streamName: String) {
         var streamNamespace = streamNamespace
         if (streamNamespace == null) {
             streamNamespace = getDefaultSchema(config!!)
         }
         database!!.execute(
             DSL.dropTableIfExists(
-                    DSL.name(rawSchema, concatenateRawTableName(streamNamespace, streamName!!))
+                    DSL.name(rawSchema, concatenateRawTableName(streamNamespace, streamName))
                 )
                 .sql
         )
