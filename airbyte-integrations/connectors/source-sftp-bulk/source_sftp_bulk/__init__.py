@@ -3,6 +3,6 @@
 #
 
 
-from .source import SourceFtp
+from .source import SourceSFTPBulk
 
-__all__ = ["SourceFtp"]
+__all__ = ["SourceSFTPBulk"]

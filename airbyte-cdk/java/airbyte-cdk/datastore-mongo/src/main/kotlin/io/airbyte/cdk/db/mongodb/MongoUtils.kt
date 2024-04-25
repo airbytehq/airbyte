@@ -365,6 +365,7 @@ object MongoUtils {
                 )
             )
         return if (output.cursor().hasNext()) {
+            @Suppress("unchecked_cast")
             output.cursor().next()["allkeys"] as List<String>?
         } else {
             emptyList()

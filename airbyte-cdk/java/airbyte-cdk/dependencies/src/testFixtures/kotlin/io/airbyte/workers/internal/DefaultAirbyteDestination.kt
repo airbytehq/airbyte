@@ -112,9 +112,7 @@ constructor(
         messageIterator =
             streamFactory
                 .create(IOs.newBufferedReader(destinationProcess!!.inputStream))
-                .filter { message: AirbyteMessage? ->
-                    acceptedMessageTypes.contains(message!!.type)
-                }
+                .filter { message: AirbyteMessage -> acceptedMessageTypes.contains(message.type) }
                 .iterator()
     }
 

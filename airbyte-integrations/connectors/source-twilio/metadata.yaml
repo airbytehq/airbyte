@@ -19,6 +19,7 @@ data:
   githubIssueLabel: source-twilio
   icon: twilio.svg
   license: MIT
+  maxSecondsBetweenMessages: 5400
   name: Twilio
   remoteRegistries:
     pypi:
