@@ -127,7 +127,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
 
     endpoint = "adAnalytics"
     # For Analytics streams, the primary_key is the entity of the pivot [Campaign URN, Creative URN, etc.] + `end_date`
-    primary_key = ["pivotValues", "end_date"]
+    primary_key = ["string_of_pivot_values", "end_date"]
     cursor_field = "end_date"
     records_limit = 15000
     FIELDS_CHUNK_SIZE = 18
@@ -213,7 +213,18 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         (See Restrictions: https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?view=li-lms-2023-09&tabs=http#restrictions)
         """
         parsed_response = response.json()
-        if len(parsed_response.get("elements")) < self.records_limit:
+        is_elements_less_than_limit = len(parsed_response.get("elements")) < self.records_limit
+
+        # Note: The API might return fewer records than requested within the limits during pagination.
+        # This behavior is documented at: https://github.com/airbytehq/airbyte/issues/34164
+        paging_params = parsed_response.get("paging", {})
+        is_end_of_records = (
+            paging_params["total"] - paging_params["start"] <= self.records_limit
+            if all(param in paging_params for param in ("total", "start"))
+            else True
+        )
+
+        if is_elements_less_than_limit and is_end_of_records:
             return None
         raise Exception(
             f"Limit {self.records_limit} elements exceeded. "

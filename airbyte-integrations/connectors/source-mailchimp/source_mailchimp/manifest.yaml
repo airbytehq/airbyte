@@ -331,12 +331,14 @@ definitions:
           field_path: ["{{ parameters.get('data_field') }}"]
     incremental_sync:
       type: DatetimeBasedCursor
-      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
       cursor_field: "{{ parameters['cursor_field'] }}"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config.get('start_date', '1970-01-01T00:00:00Z') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        datetime: "{{ config.get('start_date', '1970-01-01T00:00:00.000Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         lookback_window: PT1S
       start_time_option:
         inject_into: request_parameter
