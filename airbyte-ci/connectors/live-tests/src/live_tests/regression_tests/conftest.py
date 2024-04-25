@@ -7,7 +7,7 @@ import textwrap
 import time
 import webbrowser
 from pathlib import Path
-from typing import TYPE_CHECKING, AsyncGenerator, AsyncIterable, Callable, Dict, Generator, Iterable, List, Optional
+from typing import TYPE_CHECKING, AsyncGenerator, AsyncIterable, Callable, Dict, Generator, Iterable, List, Optional, Set
 
 import dagger
 import pytest
@@ -56,26 +56,30 @@ def pytest_addoption(parser: Parser) -> None:
     )
     parser.addoption(
         "--control-version",
-        default="latest",
-        help="The control version used for regression testing. Defaults to latest",
+        help="The control version used for regression testing.",
     )
     parser.addoption(
         "--target-version",
         default="dev",
-        help="The target version used for regression testing. Defaults to latest",
+        help="The target version used for regression testing. Defaults to dev.",
     )
     parser.addoption("--config-path")
     parser.addoption("--catalog-path")
     parser.addoption("--state-path")
     parser.addoption("--connection-id")
+    parser.addoption(
+        "--auto-select-connection",
+        default=True,
+        help="Automatically select the connection to run the tests on.",
+    )
     parser.addoption("--pr-url", help="The URL of the PR you are testing")
+    parser.addoption("--stream", help="The stream to run the tests on. (Can be used multiple times)", action="append")
 
 
 def pytest_configure(config: Config) -> None:
     user_email = get_user_email()
     prompt_for_confirmation(user_email)
     track_usage(user_email, vars(config.option))
-
     config.stash[stash_keys.AIRBYTE_API_KEY] = get_airbyte_api_key()
     config.stash[stash_keys.USER] = user_email
     start_timestamp = int(time.time())
@@ -91,18 +95,16 @@ def pytest_configure(config: Config) -> None:
     dagger_log_path.touch()
     config.stash[stash_keys.DAGGER_LOG_PATH] = dagger_log_path
     config.stash[stash_keys.PR_URL] = get_option_or_fail(config, "--pr-url")
-    config.stash[stash_keys.CONNECTION_ID] = get_option_or_fail(config, "--connection-id")
-
+    config.stash[stash_keys.AUTO_SELECT_CONNECTION] = config.getoption("--auto-select-connection")
     config.stash[stash_keys.CONNECTOR_IMAGE] = get_option_or_fail(config, "--connector-image")
-    config.stash[stash_keys.CONTROL_VERSION] = get_option_or_fail(config, "--control-version")
     config.stash[stash_keys.TARGET_VERSION] = get_option_or_fail(config, "--target-version")
-    if config.stash[stash_keys.CONTROL_VERSION] == config.stash[stash_keys.TARGET_VERSION]:
-        pytest.exit(f"Control and target versions are the same: {control_version}. Please provide different versions.")
     custom_source_config_path = config.getoption("--config-path")
     custom_configured_catalog_path = config.getoption("--catalog-path")
     custom_state_path = config.getoption("--state-path")
+    config.stash[stash_keys.SELECTED_STREAMS] = set(config.getoption("--stream") or [])
+
     config.stash[stash_keys.SHOULD_READ_WITH_STATE] = prompt_for_read_with_or_without_state()
-    retrieval_reason = f"Running regression tests on connection {config.stash[stash_keys.CONNECTION_ID]} for connector {config.stash[stash_keys.CONNECTOR_IMAGE]} on the control ({config.stash[stash_keys.CONTROL_VERSION]}) and target versions ({config.stash[stash_keys.TARGET_VERSION]})."
+    retrieval_reason = f"Running regression tests on connection for connector {config.stash[stash_keys.CONNECTOR_IMAGE]} on target versions ({config.stash[stash_keys.TARGET_VERSION]})."
     try:
         config.stash[stash_keys.CONNECTION_OBJECTS] = get_connection_objects(
             {
@@ -115,18 +117,30 @@ def pytest_configure(config: Config) -> None:
                 ConnectionObject.SOURCE_ID,
                 ConnectionObject.DESTINATION_ID,
             },
-            config.stash[stash_keys.CONNECTION_ID],
+            config.getoption("--connection-id"),
             Path(custom_source_config_path) if custom_source_config_path else None,
             Path(custom_configured_catalog_path) if custom_configured_catalog_path else None,
             Path(custom_state_path) if custom_state_path else None,
             retrieval_reason,
             fail_if_missing_objects=False,
             connector_image=config.stash[stash_keys.CONNECTOR_IMAGE],
+            auto_select_connection=config.stash[stash_keys.AUTO_SELECT_CONNECTION],
+            selected_streams=config.stash[stash_keys.SELECTED_STREAMS],
         )
         config.stash[stash_keys.IS_PERMITTED_BOOL] = True
     except (ConnectionNotFoundError, NotPermittedError) as exc:
         clean_up_artifacts(MAIN_OUTPUT_DIRECTORY, LOGGER)
         pytest.exit(str(exc))
+
+    config.stash[stash_keys.CONNECTION_ID] = config.stash[stash_keys.CONNECTION_OBJECTS].connection_id  # type: ignore
+
+    if source_docker_image := config.stash[stash_keys.CONNECTION_OBJECTS].source_docker_image:
+        config.stash[stash_keys.CONTROL_VERSION] = source_docker_image.split(":")[-1]
+    else:
+        config.stash[stash_keys.CONTROL_VERSION] = "latest"
+
+    if config.stash[stash_keys.CONTROL_VERSION] == config.stash[stash_keys.TARGET_VERSION]:
+        pytest.exit(f"Control and target versions are the same: {control_version}. Please provide different versions.")
     if config.stash[stash_keys.CONNECTION_OBJECTS].workspace_id and config.stash[stash_keys.CONNECTION_ID]:
         config.stash[stash_keys.CONNECTION_URL] = build_connection_url(
             config.stash[stash_keys.CONNECTION_OBJECTS].workspace_id,
@@ -304,9 +318,12 @@ def actor_id(connection_objects: ConnectionObjects, control_connector: Connector
 
 
 @pytest.fixture(scope="session")
-def configured_catalog(
-    connection_objects: ConnectionObjects,
-) -> ConfiguredAirbyteCatalog:
+def selected_streams(request: SubRequest) -> Set[str]:
+    return request.config.stash[stash_keys.SELECTED_STREAMS]
+
+
+@pytest.fixture(scope="session")
+def configured_catalog(connection_objects: ConnectionObjects, selected_streams: Optional[Set[str]]) -> ConfiguredAirbyteCatalog:
     if not connection_objects.configured_catalog:
         pytest.skip("Catalog is not provided. The catalog fixture can't be used.")
     assert connection_objects.configured_catalog is not None
