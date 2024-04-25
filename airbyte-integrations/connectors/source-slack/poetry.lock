@@ -861,12 +861,10 @@ files = [
 ]
 
 [package.dependencies]
-requests = ">=2.3,<3"
-six = "*"
+requests = ">=2.22,<3"
 
 [package.extras]
 fixture = ["fixtures"]
-test = ["fixtures", "mock", "purl", "pytest", "requests-futures", "sphinx", "testtools"]
 
 [[package]]
 name = "setuptools"
@@ -1044,4 +1042,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,<3.12"
-content-hash = "59138844bec5f4f46b8a260d963d206e9881f8580ecdbeb4329d266ec0071a75"
+content-hash = "5e650cf9df3c0b0c6139af4fd197f6b8525520a9d592abdd5548fe4a8bfaf353"
