@@ -8,7 +8,6 @@ from typing import Any, Optional
 
 from segment import analytics  # type: ignore
 
-
 ENABLE_TRACKING = os.getenv("REGRESSION_TEST_DISABLE_TRACKING") is None
 DEBUG_SEGMENT = os.getenv("DEBUG_SEGMENT") is not None
 EVENT_NAME = "regression_test_start"

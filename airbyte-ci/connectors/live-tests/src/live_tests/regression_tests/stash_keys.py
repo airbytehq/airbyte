@@ -8,7 +8,6 @@ import pytest
 from live_tests.commons.models import ConnectionObjects
 from live_tests.regression_tests.report import Report
 
-
 AIRBYTE_API_KEY = pytest.StashKey[str]()
 AUTO_SELECT_CONNECTION = pytest.StashKey[bool]()
 CONNECTION_ID = pytest.StashKey[str]()
