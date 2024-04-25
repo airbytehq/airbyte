@@ -224,6 +224,7 @@ def prepare_container_for_poe_tasks(
                     pipeline_context_params["ci_github_access_token"],
                 ]
             )
+            .with_exec(["poetry", "lock", "--no-update"])
         )
 
     # Install the poetry package

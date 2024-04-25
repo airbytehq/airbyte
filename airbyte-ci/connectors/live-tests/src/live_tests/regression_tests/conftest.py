@@ -87,8 +87,8 @@ def pytest_addoption(parser: Parser) -> None:
 
 def pytest_configure(config: Config) -> None:
     user_email = get_user_email()
-    config.stash[stash_keys.RUN_IN_AIRBYTE_CI] = os.getenv("RUN_IN_AIRBYTE_CI", False)
-    config.stash[stash_keys.IS_PRODUCTION_CI] = os.getenv("CI", False)
+    config.stash[stash_keys.RUN_IN_AIRBYTE_CI] = bool(os.getenv("RUN_IN_AIRBYTE_CI", False))
+    config.stash[stash_keys.IS_PRODUCTION_CI] = bool(os.getenv("CI", False))
     prompt_for_confirmation(user_email)
     track_usage(
         "production-ci"
@@ -122,7 +122,7 @@ def pytest_configure(config: Config) -> None:
     config.stash[stash_keys.SELECTED_STREAMS] = set(config.getoption("--stream") or [])
 
     if config.stash[stash_keys.RUN_IN_AIRBYTE_CI]:
-        config.stash[stash_keys.SHOULD_READ_WITH_STATE] = get_option_or_fail(config, "--should-read-with-state")
+        config.stash[stash_keys.SHOULD_READ_WITH_STATE] = bool(get_option_or_fail(config, "--should-read-with-state"))
     elif _should_read_with_state := config.getoption("--should-read-with-state"):
         config.stash[stash_keys.SHOULD_READ_WITH_STATE] = _should_read_with_state
     else:
@@ -297,11 +297,6 @@ def prompt_for_read_with_or_without_state() -> bool:
 @pytest.fixture(scope="session")
 def anyio_backend() -> str:
     return "asyncio"
-
-
-@pytest.fixture(scope="session")
-def session_start_timestamp(request: SubRequest) -> int:
-    return request.config.stash[stash_keys.SESSION_START_TIMESTAMP]
 
 
 @pytest.fixture(scope="session")

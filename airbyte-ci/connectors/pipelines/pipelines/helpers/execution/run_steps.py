@@ -101,7 +101,7 @@ class RunStepOptions:
         return []
 
     @staticmethod
-    def get_item_or_default(options: Dict[str, str], key: str, default: Optional[str]) -> Optional[str]:
+    def get_item_or_default(options: Dict[str, List[Any]], key: str, default: Any) -> Any:  # noqa: ANN401
         try:
             item = dpath.util.get(options, key, separator="/")
         except KeyError:
