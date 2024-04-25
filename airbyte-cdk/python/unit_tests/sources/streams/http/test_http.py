@@ -123,7 +123,7 @@ def test_next_page_token_is_input_to_other_methods(mocker):
 
     expected = [{"data": 1}, {"data": 2}, {"data": 3}, {"data": 4}, {"data": 5}, {"data": 6}]
 
-    assert expected == records
+    assert records == expected
 
 
 class StubBadUrlHttpStream(StubBasicReadHttpStream):

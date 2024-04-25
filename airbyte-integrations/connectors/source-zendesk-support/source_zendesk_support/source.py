@@ -142,6 +142,9 @@ class SourceZendeskSupport(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         args = self.convert_config2stream_args(config)
+
+        tickets = Tickets(**args)
+
         streams = [
             Articles(**args),
             ArticleComments(**args),
@@ -164,10 +167,10 @@ class SourceZendeskSupport(AbstractSource):
             TicketAudits(**args),
             TicketComments(**args),
             TicketFields(**args),
-            TicketMetrics(**args),
+            TicketMetrics(parent=tickets, **args),
             TicketMetricEvents(**args),
             TicketSkips(**args),
-            Tickets(**args),
+            tickets,
             Topics(**args),
             Users(**args),
             Brands(**args),

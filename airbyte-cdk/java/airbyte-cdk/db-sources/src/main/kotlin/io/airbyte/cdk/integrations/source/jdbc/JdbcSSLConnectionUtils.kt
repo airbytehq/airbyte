@@ -71,6 +71,7 @@ class JdbcSSLConnectionUtils {
          * @return map containing relevant parsed values including location of keystore or an empty
          * map
          */
+        @JvmStatic
         fun parseSSLConfig(config: JsonNode): Map<String, String> {
             LOGGER.debug("source config: {}", config)
 
@@ -143,6 +144,7 @@ class JdbcSSLConnectionUtils {
             return additionalParameters
         }
 
+        @JvmStatic
         fun prepareCACertificateKeyStore(config: JsonNode): Pair<URI, String>? {
             // if config available
             // if has CA cert - make keystore
@@ -266,6 +268,7 @@ class JdbcSSLConnectionUtils {
             return clientCertKeyStorePair
         }
 
+        @JvmStatic
         fun fileFromCertPem(certPem: String?): Path {
             try {
                 val path = Files.createTempFile(null, ".crt")
