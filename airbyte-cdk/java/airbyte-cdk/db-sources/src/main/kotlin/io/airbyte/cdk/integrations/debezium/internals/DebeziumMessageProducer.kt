@@ -38,7 +38,7 @@ class DebeziumMessageProducer<T>(
      * generating an unneeded usage of networking and processing.
      */
     private val initialOffset: HashMap<String, String>
-    private val previousCheckpointOffset: HashMap<String?, String?>
+    private val previousCheckpointOffset: HashMap<String, String>
     private val offsetManager: AirbyteFileOffsetBackingStore?
     private val targetPosition: CdcTargetPosition<T>
     private val schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage>
@@ -55,7 +55,7 @@ class DebeziumMessageProducer<T>(
             throw RuntimeException("Offset manager cannot be null")
         }
         this.schemaHistoryManager = schemaHistoryManager
-        this.previousCheckpointOffset = offsetManager.read() as HashMap<String?, String?>
+        this.previousCheckpointOffset = offsetManager.read() as HashMap<String, String>
         this.initialOffset = HashMap(this.previousCheckpointOffset)
     }
 
@@ -93,15 +93,13 @@ class DebeziumMessageProducer<T>(
             }
         }
 
-        if (checkpointOffsetToSend.size == 1 && !message!!.isSnapshotEvent) {
+        if (checkpointOffsetToSend.size == 1 && !message.isSnapshotEvent) {
             if (targetPosition.isEventAheadOffset(checkpointOffsetToSend, message)) {
                 shouldEmitStateMessage = true
-            } else {
-                LOGGER.info("Encountered records with the same event offset.")
             }
         }
 
-        return eventConverter.toAirbyteMessage(message!!)
+        return eventConverter.toAirbyteMessage(message)
     }
 
     override fun createFinalStateMessage(stream: ConfiguredAirbyteStream?): AirbyteStateMessage {

@@ -21,8 +21,8 @@ class PgLsn private constructor(private val lsn: Long) : Comparable<PgLsn> {
         return longToLsn(lsn)
     }
 
-    override fun compareTo(o: PgLsn): Int {
-        return java.lang.Long.compare(lsn, o.asLong())
+    override fun compareTo(other: PgLsn): Int {
+        return java.lang.Long.compare(lsn, other.asLong())
     }
 
     override fun toString(): String {
@@ -35,6 +35,7 @@ class PgLsn private constructor(private val lsn: Long) : Comparable<PgLsn> {
             return PgLsn(lsn)
         }
 
+        @JvmStatic
         fun fromPgString(lsn: String): PgLsn {
             return PgLsn(lsnToLong(lsn))
         }
