@@ -1,6 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 import requests
@@ -59,9 +59,6 @@ def test_union_lists_record_extractor(json_response, field_path, expected_output
     response_mock = MagicMock(spec=requests.Response)
     response_mock.json = MagicMock(return_value=json_response)
 
-    # Decode mock: simulate the decoder used in the actual extractor
-    extractor.decoder.decode = MagicMock(return_value=json_response)
-
     # Evaluate mock: simulate the evaluation of the interpolated string (or direct field path)
     extractor.field_path.eval = MagicMock(return_value=field_path)
 
@@ -94,19 +91,12 @@ def test_url_pagination_strategy(current_page, last_records, expected_next_token
     response_mock.headers = {"Content-Type": "application/json"}
     response_mock.url = f"https://api.example.com/data?page={current_page}"
     response_mock.links = {"next": {"url": f"https://api.example.com/data?page={current_page + 1}"}}
-
-    # Assuming JSONDecoder just returns the JSON body
-    strategy.decoder.decode = MagicMock(return_value={"data": last_records})
+    response_mock.json = MagicMock(return_value={"data": last_records})
 
     # Execute the next_page_token to get the next page's start position
     next_token = strategy.next_page_token(response=response_mock, last_records=last_records)
 
     assert next_token == expected_next_token, f"Expected next page token to be {expected_next_token}, but got {next_token}"
-
-
-# import pytest
-# from unittest.mock import MagicMock, patch
-# from your_module import SubstreamPartitionRouterWithContext, StreamSlice, SyncMode, AirbyteMessage, Type, Record
 
 
 @pytest.mark.parametrize(
@@ -146,9 +136,7 @@ def test_stream_slices(records, expected_slices):
     parent_stream.stream_slices.return_value = [{}]
     parent_stream.read_records.return_value = records
 
-    # Patching 'dpath.util.get' to simulate retrieving nested values
-    with patch("dpath.util.get", side_effect=lambda obj, path: obj.get(path, None)):
-        slices = list(router.stream_slices())
+    slices = list(router.stream_slices())
 
     # Preparing the output for assertion
     output = [{"partition": slice.partition, "parent_record": getattr(slice, "parent_record", None)} for slice in slices]
