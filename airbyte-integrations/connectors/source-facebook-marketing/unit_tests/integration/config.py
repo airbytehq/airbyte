@@ -51,5 +51,17 @@ class ConfigBuilder:
         self._config["end_date"] = end_date.strftime(DATE_TIME_FORMAT)
         return self
 
+    def with_ad_statuses(self, statuses: List[str]) -> ConfigBuilder:
+        self._config["ad_statuses"] = statuses
+        return self
+
+    def with_campaign_statuses(self, statuses: List[str]) -> ConfigBuilder:
+        self._config["campaign_statuses"] = statuses
+        return self
+
+    def with_ad_set_statuses(self, statuses: List[str]) -> ConfigBuilder:
+        self._config["adset_statuses"] = statuses
+        return self
+
     def build(self) -> MutableMapping[str, Any]:
         return self._config

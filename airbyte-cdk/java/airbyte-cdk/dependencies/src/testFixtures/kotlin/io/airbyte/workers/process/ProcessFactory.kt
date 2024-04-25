@@ -52,7 +52,7 @@ interface ProcessFactory {
         portMapping: Map<Int?, Int?>?,
         additionalEnvironmentVariables: Map<String, String>,
         vararg args: String?
-    ): Process?
+    ): Process
 
     companion object {
         /**
