@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mysql.initialsync;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.InitialLoadStreams;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.PrimaryKeyInfo;
@@ -30,7 +31,7 @@ import java.util.Set;
 
 public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateManager {
 
-  protected final CdcState cdcState;
+  protected StateManager stateManager;
 
   // Only one global state is emitted, which is fanned out into many entries in the DB by platform. As
   // a result, we need to keep track of streams that
@@ -42,9 +43,9 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
 
   public MySqlInitialLoadGlobalStateManager(final InitialLoadStreams initialLoadStreams,
                                             final Map<AirbyteStreamNameNamespacePair, PrimaryKeyInfo> pairToPrimaryKeyInfo,
-                                            final CdcState cdcState,
+                                            final StateManager stateManager,
                                             final ConfiguredAirbyteCatalog catalog) {
-    this.cdcState = cdcState;
+    this.stateManager = stateManager;
     this.pairToPrimaryKeyLoadStatus = MySqlInitialLoadStateManager.initPairToPrimaryKeyLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
     this.pairToPrimaryKeyInfo = pairToPrimaryKeyInfo;
     initStreams(initialLoadStreams, catalog);
@@ -68,6 +69,15 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
     });
   }
 
+  private AirbyteGlobalState generateGlobalState(final List<AirbyteStreamState> streamStates) {
+    final CdcState cdcState = stateManager.getCdcStateManager().getCdcState();
+
+    final AirbyteGlobalState globalState = new AirbyteGlobalState();
+    globalState.setSharedState(Jsons.jsonNode(cdcState));
+    globalState.setStreamStates(streamStates);
+    return globalState;
+  }
+
   @Override
   public AirbyteStateMessage generateStateMessageAtCheckpoint(final ConfiguredAirbyteStream airbyteStream) {
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
@@ -86,13 +96,10 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
       var pkStatus = getPrimaryKeyLoadStatus(pair);
       streamStates.add(getAirbyteStreamState(pair, (Jsons.jsonNode(pkStatus))));
     }
-    final AirbyteGlobalState globalState = new AirbyteGlobalState();
-    globalState.setSharedState(Jsons.jsonNode(cdcState));
-    globalState.setStreamStates(streamStates);
 
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
-        .withGlobal(globalState);
+        .withGlobal(generateGlobalState(streamStates));
   }
 
   @Override
@@ -119,13 +126,9 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
       streamStates.add(getAirbyteStreamState(stream, (Jsons.jsonNode(pkStatus))));
     });
 
-    final AirbyteGlobalState globalState = new AirbyteGlobalState();
-    globalState.setSharedState(Jsons.jsonNode(cdcState));
-    globalState.setStreamStates(streamStates);
-
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
-        .withGlobal(globalState);
+        .withGlobal(generateGlobalState(streamStates));
   }
 
   @Override
@@ -136,10 +139,6 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
   @Override
   public PrimaryKeyInfo getPrimaryKeyInfo(final AirbyteStreamNameNamespacePair pair) {
     return pairToPrimaryKeyInfo.get(pair);
-  }
-
-  public CdcState getCdcState() {
-    return cdcState;
   }
 
   private AirbyteStreamState getAirbyteStreamState(final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {

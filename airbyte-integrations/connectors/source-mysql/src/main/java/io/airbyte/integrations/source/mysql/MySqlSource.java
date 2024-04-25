@@ -17,6 +17,7 @@ import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadU
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.getMySqlFullRefreshInitialLoadHandler;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.getMySqlInitialLoadGlobalStateManager;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.initPairToPrimaryKeyInfoMap;
+import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.isSavedOffsetStillPresentOnServer;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.streamsForInitialPrimaryKeyLoad;
 import static java.util.stream.Collectors.toList;
 
@@ -193,6 +194,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   private MySqlInitialLoadStateManager initialLoadStateManager = null;
+  private boolean isSavedOffsetStillPresentOnServer = false;
 
   @Override
   protected void initializeForStateManager(final JdbcDatabase database,
@@ -205,7 +207,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     var sourceConfig = database.getSourceConfig();
 
     if (isCdc(sourceConfig)) {
-      initialLoadStateManager = getMySqlInitialLoadGlobalStateManager(database, catalog, stateManager, tableNameToTable, getQuoteString());
+      isSavedOffsetStillPresentOnServer = isSavedOffsetStillPresentOnServer(database, catalog, stateManager);
+      initialLoadStateManager = getMySqlInitialLoadGlobalStateManager(database, catalog, stateManager, tableNameToTable, getQuoteString(), isSavedOffsetStillPresentOnServer);
     } else {
       final MySqlCursorBasedStateManager cursorBasedStateManager = new MySqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
       final InitialLoadStreams initialLoadStreams = streamsForInitialPrimaryKeyLoad(cursorBasedStateManager, catalog);
@@ -224,7 +227,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     var sourceConfig = database.getSourceConfig();
 
     if (isCdc(sourceConfig)) {
-      return getMySqlFullRefreshInitialLoadHandler(database, catalog, initialLoadStateManager, stateManager, stream, Instant.now(), getQuoteString())
+      return getMySqlFullRefreshInitialLoadHandler(database, catalog, (MySqlInitialLoadGlobalStateManager) initialLoadStateManager, stateManager, stream, Instant.now(), getQuoteString(), isSavedOffsetStillPresentOnServer)
           .get();
     } else {
       return new MySqlInitialLoadHandler(sourceConfig, database, new MySqlSourceOperations(), getQuoteString(), initialLoadStateManager,
@@ -458,7 +461,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       LOGGER.info("Using PK + CDC");
       return MySqlInitialReadUtil.getCdcReadIterators(database, catalog, tableNameToTable, stateManager,
           (MySqlInitialLoadGlobalStateManager) initialLoadStateManager, emittedAt,
-          getQuoteString());
+          getQuoteString(), isSavedOffsetStillPresentOnServer);
     } else {
       if (isAnyStreamIncrementalSyncMode(catalog)) {
         LOGGER.info("Syncing via Primary Key");

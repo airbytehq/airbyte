@@ -73,12 +73,12 @@ public class MySqlInitialReadUtil {
 
   public static Optional<MySqlInitialLoadHandler> getMySqlFullRefreshInitialLoadHandler(final JdbcDatabase database,
                                                                                         final ConfiguredAirbyteCatalog catalog,
-                                                                                        final MySqlInitialLoadStateManager initialLoadStateManager,
+                                                                                        final  MySqlInitialLoadGlobalStateManager initialLoadStateManager,
                                                                                         final StateManager stateManager,
                                                                                         final ConfiguredAirbyteStream fullRefreshStream,
                                                                                         final Instant emittedAt,
-                                                                                        final String quoteString) {
-    final boolean savedOffsetStillPresentOnServer = isSavedOffsetStillPresentOnServer(database, catalog, stateManager);
+                                                                                        final String quoteString,
+      final boolean savedOffsetStillPresentOnServer) {
     final InitialLoadStreams initialLoadStreams =
         cdcStreamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
 
@@ -180,15 +180,14 @@ public class MySqlInitialReadUtil {
                                                                                          final ConfiguredAirbyteCatalog catalog,
                                                                                          final StateManager stateManager,
                                                                                          final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
-                                                                                         final String quoteString) {
-    final boolean savedOffsetStillPresentOnServer = isSavedOffsetStillPresentOnServer(database, catalog, stateManager);
+                                                                                         final String quoteString,
+      final boolean savedOffsetStillPresentOnServer ) {
     final InitialLoadStreams initialLoadStreams =
         cdcStreamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
-    final CdcState stateToBeUsed = getCdcState(database, catalog, stateManager, savedOffsetStillPresentOnServer);
 
     return new MySqlInitialLoadGlobalStateManager(initialLoadStreams,
         initPairToPrimaryKeyInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
-        stateToBeUsed, catalog);
+        stateManager, catalog);
   }
 
   /*
@@ -205,19 +204,18 @@ public class MySqlInitialReadUtil {
                                                                                 final StateManager stateManager,
                                                                                 final MySqlInitialLoadGlobalStateManager initialLoadGlobalStateManager,
                                                                                 final Instant emittedAt,
-                                                                                final String quoteString) {
+                                                                                final String quoteString,
+      final boolean savedOffsetStillPresentOnServer) {
     final JsonNode sourceConfig = database.getSourceConfig();
     final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
-    final Duration subsequentRecordWaitTime = RecordWaitTimeUtil.getSubsequentRecordWaitTime(sourceConfig);
     LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
     // Determine the streams that need to be loaded via primary key sync.
     final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>();
-    final boolean savedOffsetStillPresentOnServer = isSavedOffsetStillPresentOnServer(database, catalog, stateManager);
     final InitialLoadStreams initialLoadStreams =
         cdcStreamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
 
     final MySqlCdcConnectorMetadataInjector metadataInjector = MySqlCdcConnectorMetadataInjector.getInstance(emittedAt);
-    final CdcState stateToBeUsed = initialLoadGlobalStateManager.getCdcState();
+    final CdcState stateToBeUsed = stateManager.getCdcStateManager().getCdcState();
 
     // If there are streams to sync via primary key load, build the relevant iterators.
     if (!initialLoadStreams.streamsForInitialLoad().isEmpty()) {
