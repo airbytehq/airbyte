@@ -27,13 +27,9 @@ object GcsUtils {
         useDestinationsV2Columns: Boolean
     ): Schema? {
         LOGGER.info("Default schema.")
-        val stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(name!!)
-        val stdNamespace = AvroConstants.NAME_TRANSFORMER.getNamespace(namespace!!)
-        var builder = SchemaBuilder.record(stdName)
-
-        if (stdNamespace != null) {
-            builder = builder.namespace(stdNamespace)
-        }
+        val stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(name)
+        val stdNamespace = AvroConstants.NAME_TRANSFORMER.getNamespace(namespace)
+        var builder = SchemaBuilder.record(stdName).namespace(stdNamespace)
         if (useDestinationsV2Columns) {
             builder.namespace("airbyte")
         }

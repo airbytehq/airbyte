@@ -5,8 +5,8 @@ package io.airbyte.cdk.integrations.destination.s3.parquet
 
 import com.amazonaws.services.s3.AmazonS3
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig
-import io.airbyte.cdk.integrations.destination.s3.S3Format
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroRecordFactory
 import io.airbyte.cdk.integrations.destination.s3.credential.S3AccessKeyCredentialConfig
 import io.airbyte.cdk.integrations.destination.s3.template.S3FilenameTemplateParameterObject.Companion.builder
@@ -42,12 +42,12 @@ class S3ParquetWriter(
     private val parquetWriter: ParquetWriter<GenericData.Record>
     private val avroRecordFactory: AvroRecordFactory
     val schema: Schema?
-    val outputFilename: String =
-        BaseS3Writer.Companion.determineOutputFilename(
+    private val outputFilename: String =
+        determineOutputFilename(
             builder()
-                .s3Format(S3Format.PARQUET)
+                .s3Format(FileUploadFormat.PARQUET)
                 .timestamp(uploadTimestamp)
-                .fileExtension(S3Format.PARQUET.fileExtension)
+                .fileExtension(FileUploadFormat.PARQUET.fileExtension)
                 .fileNamePattern(config.fileNamePattern)
                 .build()
         )
@@ -62,7 +62,7 @@ class S3ParquetWriter(
         LOGGER.info("Full S3 path for stream '{}': {}", stream.name, fileLocation)
 
         val path = Path(URI(fileLocation))
-        val formatConfig = config.formatConfig as S3ParquetFormatConfig
+        val formatConfig = config.formatConfig as UploadParquetFormatConfig
         val hadoopConfig = getHadoopConfig(config)
         hadoopConfig.setBoolean(AvroWriteSupport.WRITE_OLD_LIST_STRUCTURE, false)
         this.parquetWriter =
@@ -74,7 +74,7 @@ class S3ParquetWriter(
                 ) // yes, this should be here despite the fact we pass this config above in path
                 .withSchema(schema)
                 .withCompressionCodec(formatConfig.compressionCodec)
-                .withRowGroupSize(formatConfig.blockSize)
+                .withRowGroupSize(formatConfig.blockSize.toLong())
                 .withMaxPaddingSize(formatConfig.maxPaddingSize)
                 .withPageSize(formatConfig.pageSize)
                 .withDictionaryPageSize(formatConfig.dictionaryPageSize)
@@ -103,8 +103,8 @@ class S3ParquetWriter(
         parquetWriter.close()
     }
 
-    override val fileFormat: S3Format?
-        get() = S3Format.PARQUET
+    override val fileFormat: FileUploadFormat
+        get() = FileUploadFormat.PARQUET
 
     @Throws(IOException::class)
     override fun write(formattedData: JsonNode) {

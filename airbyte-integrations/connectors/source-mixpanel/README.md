@@ -30,7 +30,7 @@ See `sample_files/sample_config.json` for a sample config file.
 poetry run source-mixpanel spec
 poetry run source-mixpanel check --config secrets/config.json
 poetry run source-mixpanel discover --config secrets/config.json
-poetry run source-mixpanel read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run source-mixpanel read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Running unit tests

@@ -13,8 +13,8 @@ import org.mockito.invocation.InvocationOnMock
 import org.mockito.kotlin.mock
 
 internal class LazyAutoCloseableIteratorTest {
-    private lateinit var internalIterator: AutoCloseableIterator<String>
-    private lateinit var iteratorSupplier: Supplier<AutoCloseableIterator<String>>
+    private var internalIterator: AutoCloseableIterator<String> = mock()
+    private var iteratorSupplier: Supplier<AutoCloseableIterator<String>> = mock()
 
     @BeforeEach
     fun setup() {
