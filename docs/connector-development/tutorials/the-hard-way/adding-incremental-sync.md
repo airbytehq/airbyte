@@ -323,7 +323,7 @@ That's all you need to do to add incremental functionality to the stock ticker S
 You can deploy the new version of your connector simply by running:
 
 ```bash
-./gradlew clean :airbyte-integrations:connectors:source-stock-ticker-api:build
+airbyte-ci connectors --name source-stock-ticker-api build
 ```
 
 Bonus points: go to Airbyte UI and reconfigure the connection to use incremental sync.

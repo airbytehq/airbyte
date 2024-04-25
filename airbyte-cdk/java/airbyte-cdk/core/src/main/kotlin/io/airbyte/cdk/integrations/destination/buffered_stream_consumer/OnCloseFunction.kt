@@ -15,5 +15,5 @@ import io.airbyte.protocol.models.v0.StreamDescriptor
  * The map of StreamSyncSummaries MUST be non-null, but MAY be empty. Streams not present in the map
  * will be treated as equivalent to [StreamSyncSummary.DEFAULT].
  */
-interface OnCloseFunction :
+fun interface OnCloseFunction :
     CheckedBiConsumer<Boolean, Map<StreamDescriptor, StreamSyncSummary>, Exception>

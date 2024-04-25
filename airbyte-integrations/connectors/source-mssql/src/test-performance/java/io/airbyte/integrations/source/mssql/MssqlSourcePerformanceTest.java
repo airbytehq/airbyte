@@ -27,13 +27,13 @@ public class MssqlSourcePerformanceTest extends AbstractSourcePerformanceTest {
   protected void setupDatabase(final String dbName) {
     final JsonNode plainConfig = Jsons.deserialize(IOs.readFile(Path.of(PERFORMANCE_SECRET_CREDS)));
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
+    setConfig(Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, plainConfig.get(JdbcUtils.HOST_KEY))
         .put(JdbcUtils.PORT_KEY, plainConfig.get(JdbcUtils.PORT_KEY))
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.USERNAME_KEY, plainConfig.get(JdbcUtils.USERNAME_KEY))
         .put(JdbcUtils.PASSWORD_KEY, plainConfig.get(JdbcUtils.PASSWORD_KEY))
-        .build());
+        .build()));
   }
 
   /**

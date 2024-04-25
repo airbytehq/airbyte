@@ -88,9 +88,6 @@ In the example above, the connector has three tags. Tags are used for two primar
 These are just examples of how tags can be used. As a free-form field, the tags list can be customized as required for each connector. This flexibility allows tags to be a powerful tool for managing and discovering connectors.
 
 ## The `icon` Field
-This denotes the name of the icon file for the connector. At this time the icon file is located in the `airbyte-platform` repository. So please ensure that the icon file is present in the `airbyte-platform` repository at [https://github.com/airbytehq/airbyte-platform/tree/main/airbyte-config/init/src/main/resources/icons](https://github.com/airbytehq/airbyte-platform/tree/main/airbyte-config/init/src/main/resources/icons) before adding the icon name to the `metadata.yaml` file.
-
-### Future Plans
 _⚠️ This property is in the process of being refactored to be a file in the connector folder_
 
 You may notice a `icon.svg` file in the connectors folder.

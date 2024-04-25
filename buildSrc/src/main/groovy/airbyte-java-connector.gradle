@@ -46,7 +46,7 @@ class AirbyteJavaConnectorExtension {
     ]
 
     void addCdkDependencies() {
-        def projectName = { ":airbyte-cdk:java:airbyte-cdk:${it}" }
+        def projectName = { ":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-${it}" }
         def jarName = { "io.airbyte.cdk:airbyte-cdk-${it}:${cdkVersionRequired}" }
         project.processIntegrationTestJavaResources {
             // The metadata.yaml file is required by DestinationAcceptanceTest.
@@ -55,17 +55,39 @@ class AirbyteJavaConnectorExtension {
                 duplicatesStrategy DuplicatesStrategy.EXCLUDE
             }
         }
+        if (!cdkVersionRequired.matches("^[0-9]+\\.[0-9]+\\.[0-9]+")) {
+            throw new IllegalArgumentException("cdkVersionRequired should be a well-formed 3-part version number")
+        }
+        final int minor = Integer.parseInt(cdkVersionRequired.split('\\.')[1])
+
         project.dependencies {
-            def dep = { useLocalCdk ? project.project(projectName(it)) : jarName(it) }
-            def testFixturesDep = { useLocalCdk ? testFixtures(project.project(projectName(it))) : "${jarName(it)}:test-fixtures" }
-            if (useLocalCdk || !cdkVersionRequired.matches("^0\\.[0-9]\\..*|^0\\.1[0-8]\\..*")) {
+            def dep = useLocalCdk
+                    ? { project.project(projectName(it)) }
+                    : { jarName(it) }
+            def testFixturesDep = (useLocalCdk || minor >= 29)
+                    ? { testFixtures(dep(it)) }
+                    : { "${jarName(it)}:test-fixtures" } // handle pre-v0.29 publications
+
+            if (useLocalCdk || minor >= 19) {
                 // v0.19+ module structure
+                compileOnly "org.projectlombok:lombok:1.18.30"
+                annotationProcessor "org.projectlombok:lombok:1.18.30"     // Lombok must be added BEFORE Micronaut
+                testCompileOnly "org.projectlombok:lombok:1.18.30"
+                testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
+                testFixturesCompileOnly "org.projectlombok:lombok:1.18.30"
+                testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
                 implementation dep("dependencies")
                 testImplementation dep("dependencies")
                 testFixturesImplementation dep("dependencies")
                 integrationTestJavaImplementation dep("dependencies")
                 integrationTestJavaImplementation testFixturesDep("dependencies")
             } else {
+                compileOnly "org.projectlombok:lombok:1.18.30"
+                annotationProcessor "org.projectlombok:lombok:1.18.30"     // Lombok must be added BEFORE Micronaut
+                testCompileOnly "org.projectlombok:lombok:1.18.30"
+                testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
+                testFixturesCompileOnly "org.projectlombok:lombok:1.18.30"
+                testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
                 // pre-v0.19 module structure
                 implementation(platform("com.fasterxml.jackson:jackson-bom:2.13.0"))
                 implementation(platform("org.glassfish.jersey:jersey-bom:2.31"))
@@ -132,6 +154,9 @@ class AirbyteJavaConnectorPlugin implements Plugin<Project> {
                 java {
                     srcDir 'src/test-integration/java'
                 }
+                kotlin {
+                    srcDir 'src/test-integration/kotlin'
+                }
                 resources {
                     srcDir 'src/test-integration/resources'
                 }
@@ -139,6 +164,9 @@ class AirbyteJavaConnectorPlugin implements Plugin<Project> {
             performanceTestJava {
                 java {
                     srcDir 'src/test-performance/java'
+                }
+                kotlin {
+                    srcDir 'src/test-performance/kotlin'
                 }
                 resources {
                     srcDir 'src/test-performance/resources'
@@ -236,6 +264,7 @@ class AirbyteJavaConnectorPlugin implements Plugin<Project> {
             performanceTestJavaImplementation project
             performanceTestJavaImplementation testFixtures(project)
         }
+
 
         project.extensions.create('airbyteJavaConnector', AirbyteJavaConnectorExtension, project)
     }
