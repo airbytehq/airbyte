@@ -74,7 +74,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/looks"
-      parameters:
+      $parameters:
         path: looks
     roles:
       $ref: "#/definitions/looker_base_stream"
@@ -83,7 +83,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/roles"
-      parameters:
+      $parameters:
         path: roles
     users:
       $ref: "#/definitions/looker_base_stream"
@@ -92,7 +92,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/users"
-      parameters:
+      $parameters:
         path: users
     groups:
       $ref: "#/definitions/looker_base_stream"
@@ -101,7 +101,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/groups"
-      parameters:
+      $parameters:
         path: groups
     folders:
       $ref: "#/definitions/looker_base_stream"
@@ -110,7 +110,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/folders"
-      parameters:
+      $parameters:
         path: folders
     projects:
       $ref: "#/definitions/looker_base_stream"
@@ -119,7 +119,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/projects"
-      parameters:
+      $parameters:
         path: projects
     versions:
       $ref: "#/definitions/looker_base_stream"
@@ -129,7 +129,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/versions"
-      parameters:
+      $parameters:
         path: versions
     boards:
       $ref: "#/definitions/looker_base_stream"
@@ -138,7 +138,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/boards"
-      parameters:
+      $parameters:
         path: boards
     run_looks:
       $ref: "#/definitions/looker_base_stream"
@@ -158,7 +158,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/run_looks"
-      parameters:
+      $parameters:
         path: looks/{{ stream_partition['id'] }}/run/json
     dashboards:
       $ref: "#/definitions/dashboard_base_stream"
@@ -169,7 +169,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/dashboards"
-      parameters:
+      $parameters:
         path: dashboards
     datagroups:
       $ref: "#/definitions/looker_base_stream"
@@ -178,7 +178,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/datagroups"
-      parameters:
+      $parameters:
         path: datagroups
     model_sets:
       $ref: "#/definitions/looker_base_stream"
@@ -187,7 +187,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/model_sets"
-      parameters:
+      $parameters:
         path: model_sets
     workspaces:
       $ref: "#/definitions/looker_base_stream"
@@ -196,7 +196,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/workspaces"
-      parameters:
+      $parameters:
         path: workspaces
     connections:
       $ref: "#/definitions/looker_base_stream"
@@ -206,7 +206,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/connections"
-      parameters:
+      $parameters:
         path: connections
     permissions:
       $ref: "#/definitions/looker_base_stream"
@@ -216,7 +216,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/permissions"
-      parameters:
+      $parameters:
         path: permissions
     role_groups:
       $ref: "#/definitions/looker_base_stream"
@@ -235,7 +235,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/role_groups"
-      parameters:
+      $parameters:
         path: /roles/{{ stream_partition['id'] }}/groups
     git_branches:
       $ref: "#/definitions/looker_base_stream"
@@ -255,7 +255,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/git_branches"
-      parameters:
+      $parameters:
         path: /projects/{{ stream_partition['id'] }}/git_branches
     integrations:
       $ref: "#/definitions/looker_base_stream"
@@ -264,7 +264,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/integrations"
-      parameters:
+      $parameters:
         path: integrations
     search_looks:
       type: DeclarativeStream
@@ -275,7 +275,7 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /looks/search
           http_method: GET
-          request_parameters:
+          request_$parameters:
             id: "{{ config['run_look_ids']|join(',') }}"
             limit: "10000"
             fields: id,title,model(id)
@@ -294,7 +294,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/lookml_models"
-      parameters:
+      $parameters:
         path: lookml_models
     project_files:
       $ref: "#/definitions/looker_base_stream"
@@ -313,7 +313,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/project_files"
-      parameters:
+      $parameters:
         path: /projects/{{ stream_partition['id'] }}/files
     query_history:
       type: DeclarativeStream
@@ -366,7 +366,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/user_sessions"
-      parameters:
+      $parameters:
         path: /users/{{ stream_partition['id'] }}/sessions
     board_items:
       $ref: "#/definitions/looker_base_stream"
@@ -375,7 +375,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/board_items"
-      parameters:
+      $parameters:
         path: board_items
     legacy_features:
       $ref: "#/definitions/looker_base_stream"
@@ -384,7 +384,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/legacy_features"
-      parameters:
+      $parameters:
         path: legacy_features
     permission_sets:
       $ref: "#/definitions/looker_base_stream"
@@ -393,7 +393,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/permission_sets"
-      parameters:
+      $parameters:
         path: permission_sets
     scheduled_plans:
       $ref: "#/definitions/looker_base_stream"
@@ -402,7 +402,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/scheduled_plans"
-      parameters:
+      $parameters:
         path: scheduled_plans
     user_attributes:
       $ref: "#/definitions/looker_base_stream"
@@ -411,7 +411,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/user_attributes"
-      parameters:
+      $parameters:
         path: user_attributes
     content_metadata:
       $ref: "#/definitions/content_metadata_base_stream"
@@ -451,7 +451,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/content_metadata"
-      parameters:
+      $parameters:
         path: /content_metadata/{{ stream_partition['content_metadata_id'] }}
     folder_ancestors:
       $ref: "#/definitions/looker_base_stream"
@@ -470,7 +470,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/folder_ancestors"
-      parameters:
+      $parameters:
         path: /folders/{{ stream_partition['id'] }}/ancestors
     integration_hubs:
       $ref: "#/definitions/looker_base_stream"
@@ -479,7 +479,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/integration_hubs"
-      parameters:
+      $parameters:
         path: integration_hubs
     color_collections:
       $ref: "#/definitions/looker_base_stream"
@@ -488,7 +488,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/color_collections"
-      parameters:
+      $parameters:
         path: color_collections
     dashboard_filters:
       $ref: "#/definitions/looker_base_stream"
@@ -507,7 +507,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/dashboard_filters"
-      parameters:
+      $parameters:
         path: /dashboards/{{ stream_partition['id'] }}/dashboard_filters
     dashboard_layouts:
       $ref: "#/definitions/looker_base_stream"
@@ -526,7 +526,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/dashboard_layouts"
-      parameters:
+      $parameters:
         path: /dashboards/{{ stream_partition['id'] }}/dashboard_layouts
     board_sections:
       $ref: "#/definitions/looker_base_stream"
@@ -535,7 +535,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/board_sections"
-      parameters:
+      $parameters:
         path: board_sections
     dashboard_elements:
       $ref: "#/definitions/looker_base_stream"
@@ -554,7 +554,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/dashboard_elements"
-      parameters:
+      $parameters:
         path: /dashboards/{{ stream_partition['id'] }}/dashboard_elements
     user_login_lockouts:
       $ref: "#/definitions/looker_base_stream"
@@ -564,7 +564,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/user_login_lockouts"
-      parameters:
+      $parameters:
         path: user_login_lockouts
     content_metadata_access:
       $ref: "#/definitions/content_metadata_base_stream"
@@ -573,7 +573,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/content_metadata_access"
-      parameters:
+      $parameters:
         path: content_metadata_access
     primary_homepage_sections:
       $ref: "#/definitions/looker_base_stream"
@@ -582,7 +582,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/primary_homepage_sections"
-      parameters:
+      $parameters:
         path: primary_homepage_sections
     dashboard_layout_components:
       $ref: "#/definitions/looker_base_stream"
@@ -601,7 +601,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/dashboard_layout_components"
-      parameters:
+      $parameters:
         path: /dashboard_layouts/{{ stream_partition['id'] }}/dashboard_layout_components
     user_attribute_group_values:
       $ref: "#/definitions/looker_base_stream"
@@ -620,7 +620,7 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/user_attribute_group_values"
-      parameters:
+      $parameters:
         path: /user_attributes/{{ stream_partition['id'] }}/group_values
   base_requester:
     type: HttpRequester
