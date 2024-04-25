@@ -346,7 +346,6 @@ class TestRealErrors:
             assert error.failure_type == FailureType.config_error
             assert friendly_msg in error.message
 
-    # @pytest.mark.parametrize("name, friendly_msg, config_error_response", [CONFIG_ERRORS[-1]])
     @pytest.mark.parametrize("name, friendly_msg, config_error_response", CONFIG_ERRORS)
     def test_config_error_during_actual_nodes_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during actual nodes read"""
@@ -421,6 +420,37 @@ class TestRealErrors:
             assert isinstance(error, AirbyteTracedException)
             assert error.failure_type == FailureType.config_error
             assert friendly_msg in error.message
+
+    def test_retry_for_cannot_include_error(self, requests_mock):
+        """Error raised randomly for insights stream. Oncall: https://github.com/airbytehq/oncall/issues/4868 """
+
+        api = API(access_token=some_config["access_token"], page_size=100)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=["account_id", "account_currency"],
+            insights_lookback_window=28,
+        )
+        requests_mock.register_uri("GET", f"{act_url}", [ad_account_response])
+        response = {
+            "status_code": 400,
+            "json": {
+                "error": {
+                    "message": "(#100) Cannot include video_avg_time_watched_actions, video_continuous_2_sec_watched_actions in summary param because they weren't there while creating the report run.",
+                    "type": "OAuthException",
+                    "code": 100
+                }
+            },
+        }
+        call_insights = requests_mock.register_uri("GET", f"{act_url}insights", [response])
+
+        try:
+            slice = list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={}))[0]
+            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice, stream_state={}))
+        except Exception:
+            assert call_insights.call_count == 5
 
     @pytest.mark.parametrize(
         "failure_response",

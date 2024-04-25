@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implements StagingOperations {
 
@@ -37,6 +39,8 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   private final S3DestinationConfig s3Config;
   private final ObjectMapper objectMapper;
   private final byte[] keyEncryptingKey;
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftS3StagingSqlOperations.class);
 
   public RedshiftS3StagingSqlOperations(final NamingConventionTransformer nameTransformer,
                                         final AmazonS3 s3Client,
