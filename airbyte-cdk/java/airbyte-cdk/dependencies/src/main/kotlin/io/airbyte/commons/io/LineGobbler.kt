@@ -27,7 +27,7 @@ internal constructor(
     private val caller: String = GENERIC,
     private val containerLogMdcBuilder: MdcScope.Builder = MdcScope.Companion.DEFAULT_BUILDER
 ) : VoidCallable {
-    private val `is`: BufferedReader? = IOs.newBufferedReader(`is`)
+    private val `is`: BufferedReader = IOs.newBufferedReader(`is`)
 
     internal constructor(
         `is`: InputStream,
@@ -40,9 +40,9 @@ internal constructor(
     override fun voidCall() {
         MDC.setContextMap(mdc)
         try {
-            var line = `is`!!.readLine()
+            var line = `is`.readLine()
             while (line != null) {
-                containerLogMdcBuilder.build().use { mdcScope -> consumer.accept(line) }
+                containerLogMdcBuilder.build().use { consumer.accept(line) }
                 line = `is`.readLine()
             }
         } catch (i: IOException) {

@@ -182,7 +182,7 @@ Note that legacy normalization will be deprecated for ClickHouse, DuckDB, MSSQL,
 
 If you upgrade to Destinations V2 and start encountering issues, as an Open Source user you can optionally roll back. If you are running an outdated Airbyte Platform version (prior to `v0.50.24`), this may occur more frequently by accidentally upgrading to Destinations V2. However:
 
-- Rolling back will require resetting each of your upgraded connections.
+- Rolling back will require clearing each of your upgraded connections.
 - If you are hoping to receive support from the Airbyte team, you will need to re-upgrade to Destinations V2 by the upgrade deadline.
 
 To roll back, follow these steps:
@@ -190,9 +190,9 @@ To roll back, follow these steps:
 1. In the Airbyte UI, go to the 'Settings page, then to 'Destinations'.
 2. Manually type in the previous destination version you were running, or one of the versions listed in the table above.
 3. Enter this older version to roll back to the previous connector version.
-4. Reset all connections which synced at least once to a previously upgraded destination. To be safe, you may reset all connections sending data to a previously upgraded destination.
+4. Clear all connections which synced at least once to a previously upgraded destination. To be safe, you may clear all connections sending data to a previously upgraded destination.
 
-If you are an Airbyte Cloud customer, and encounter errors while upgrading from a V1 to a V2 destination, please reach out to support. We do not always recommend doing a full reset, depending on the type of error.
+If you are an Airbyte Cloud customer, and encounter errors while upgrading from a V1 to a V2 destination, please reach out to support. We do not always recommend doing a full clear of your entire connection, depending on the type of error.
 
 ## Destinations V2 Implementation Differences
 
