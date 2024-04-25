@@ -8,7 +8,7 @@ from unittest.mock import patch
 import pytest
 import requests
 from source_shopify.source import ConnectionCheckTest, SourceShopify
-from source_shopify.streams.streams import BalanceTransactions, DiscountCodes, FulfillmentOrders, PriceRules, Customers
+from source_shopify.streams.streams import BalanceTransactions, Customers, DiscountCodes, FulfillmentOrders, PriceRules
 
 
 def test_get_next_page_token(requests_mock, auth_config):

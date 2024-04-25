@@ -23,6 +23,7 @@ class ShopifyRetryableErrors:
             104: f"Stream `{stream}`. Shopify connection was reset. Request will be retried.",
         }
 
+
 class ShopifyNonRetryableErrors:
     """Holds the errors clasification and messaging scenarios."""
 
