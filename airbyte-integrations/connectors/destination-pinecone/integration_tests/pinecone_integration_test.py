@@ -5,7 +5,7 @@
 import json
 import logging
 
-import pinecone
+from pinecone import PineconeGRPC
 from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
 from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
 from airbyte_cdk.models import DestinationSyncMode, Status
@@ -16,8 +16,8 @@ from langchain.vectorstores import Pinecone
 
 class PineconeIntegrationTest(BaseIntegrationTest):
     def _init_pinecone(self):
-        pinecone.init(api_key=self.config["indexing"]["pinecone_key"], environment=self.config["indexing"]["pinecone_environment"])
-        self.pinecone_index = pinecone.Index(self.config["indexing"]["index"])
+        self.pc = PineconeGRPC(api_key=self.config["indexing"]["pinecone_key"])
+        self.pinecone_index = self.pc.Index(self.config["indexing"]["index"])
 
     def setUp(self):
         with open("secrets/config.json", "r") as f:
@@ -43,7 +43,7 @@ class PineconeIntegrationTest(BaseIntegrationTest):
                     "mode": "pinecone",
                     "pinecone_key": "mykey",
                     "index": "testdata",
-                    "pinecone_environment": "asia-southeast1-gcp-free",
+                    "pinecone_environment": "us-west1-gcp",
                 },
             },
         )
