@@ -249,6 +249,7 @@ async def connectors(
                 ctx.obj["diffed_branch"],
                 ctx.obj["is_local"],
                 ctx.obj["ci_context"],
+                ctx.obj["git_repo_url"],
             )
         )
 
