@@ -46,7 +46,8 @@ The Wrike connector should not run into Wrike API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.2.1   | 2024-04-16 | [37344](https://github.com/airbytehq/airbyte/pull/37344)  | Updating last_records references to last_record |
+| 0.2.2 | 2024-04-25 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 0.2.1 | 2024-04-16 | [37344](https://github.com/airbytehq/airbyte/pull/37344) | Updating last_records references to last_record |
 | 0.2.0   | 2023-10-10 | [31058](https://github.com/airbytehq/airbyte/pull/31058) | Migrate to low code.
 | 0.1.0   | 2022-08-16 | [15638](https://github.com/airbytehq/airbyte/pull/15638) | Initial version/release of the connector.
 

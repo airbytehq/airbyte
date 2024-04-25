@@ -73,11 +73,12 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 
 | Version | Date       | Pull Request                                              | Subject                                                                      |
 |:--------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------|
-| 0.4.1   | 2024-04-16 | [37344](https://github.com/airbytehq/airbyte/pull/37344)  | Updating last_records references to last_record |
-| 0.4.0   | 2023-12-04 | [30999](https://github.com/airbytehq/airbyte/pull/30999)  | Add `monitors` and `service_level_objectives` Streams |
-| 0.3.0   | 2023-08-27 | [29885](https://github.com/airbytehq/airbyte/pull/29885)  | Migrate to low code                                                          |
-| 0.2.2   | 2023-07-10 | [28089](https://github.com/airbytehq/airbyte/pull/28089)  | Additional stream and query details in response                              |
-| 0.2.1   | 2023-06-28 | [26534](https://github.com/airbytehq/airbyte/pull/26534)  | Support multiple query streams and pulling data from different datadog sites |
-| 0.2.0   | 2023-06-28 | [27784](https://github.com/airbytehq/airbyte/pull/27784)  | Add necessary fields to schemas                                              |
-| 0.1.1   | 2023-04-27 | [25562](https://github.com/airbytehq/airbyte/pull/25562)  | Update testing dependencies                                                  |
-| 0.1.0   | 2022-10-18 | [18150](https://github.com/airbytehq/airbyte/pull/18150)  | New Source: Datadog                                                          |
+| 0.4.2 | 2024-04-25 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 0.4.1 | 2024-04-16 | [37344](https://github.com/airbytehq/airbyte/pull/37344) | Updating last_records references to last_record |
+| 0.4.0 | 2023-12-04 | [30999](https://github.com/airbytehq/airbyte/pull/30999) | Add `monitors` and `service_level_objectives` Streams |
+| 0.3.0 | 2023-08-27 | [29885](https://github.com/airbytehq/airbyte/pull/29885) | Migrate to low code |
+| 0.2.2 | 2023-07-10 | [28089](https://github.com/airbytehq/airbyte/pull/28089) | Additional stream and query details in response |
+| 0.2.1 | 2023-06-28 | [26534](https://github.com/airbytehq/airbyte/pull/26534) | Support multiple query streams and pulling data from different datadog sites |
+| 0.2.0 | 2023-06-28 | [27784](https://github.com/airbytehq/airbyte/pull/27784) | Add necessary fields to schemas |
+| 0.1.1 | 2023-04-27 | [25562](https://github.com/airbytehq/airbyte/pull/25562) | Update testing dependencies |
+| 0.1.0 | 2022-10-18 | [18150](https://github.com/airbytehq/airbyte/pull/18150) | New Source: Datadog |

@@ -41,10 +41,11 @@ This Source is capable of syncing the following Streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------- |
-| 0.2.1   | 2024-04-16 | [37344](https://github.com/airbytehq/airbyte/pull/37344)  | Updating last_records references to last_record |
-|  0.2.0  | 2023-08-02 | [28950](https://github.com/airbytehq/airbyte/pull/28950) | Migrate to Low-Code CDK                                            |
-|  0.1.3  | 2022-08-01 | [15066](https://github.com/airbytehq/airbyte/pull/15066) | Update primary key to `idString`                                   |
-|  0.1.2  | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628)   | Update fields in source-connectors specifications                  |
-|  0.1.1  | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                    |
+| 0.2.2 | 2024-04-25 | [0](https://github.com/airbytehq/airbyte/pull/0) | Manage dependencies with Poetry. |
+| 0.2.1 | 2024-04-16 | [37344](https://github.com/airbytehq/airbyte/pull/37344) | Updating last_records references to last_record |
+| 0.2.0 | 2023-08-02 | [28950](https://github.com/airbytehq/airbyte/pull/28950) | Migrate to Low-Code CDK |
+| 0.1.3 | 2022-08-01 | [15066](https://github.com/airbytehq/airbyte/pull/15066) | Update primary key to `idString` |
+| 0.1.2 | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628) | Update fields in source-connectors specifications |
+| 0.1.1 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
 |  0.1.0  | 2021-08-16 | [3787](https://github.com/airbytehq/airbyte/pull/5418)   | Add Native Shortio Source Connector                                |
 

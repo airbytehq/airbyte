@@ -4,10 +4,7 @@ FROM python:3.9.11-alpine3.15 as base
 FROM base as builder
 WORKDIR /airbyte/integration_code
 
-# upgrade pip to the latest version
-RUN apk --no-cache upgrade \
-    && pip install --upgrade pip \
-    && apk --no-cache add tzdata build-base
+
 
 
 COPY setup.py ./
