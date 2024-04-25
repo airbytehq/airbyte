@@ -27,6 +27,7 @@ dependencies {
     implementation ('org.apache.hadoop:hadoop-common:3.3.3') {
         exclude group: 'org.slf4j', module: 'slf4j-log4j12'
         exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+        exclude group: 'org.apache.zookeeper', module: 'zookeeper'
     }
     implementation ('org.apache.hadoop:hadoop-aws:3.3.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
     implementation ('org.apache.hadoop:hadoop-mapreduce-client-core:3.3.3') {
