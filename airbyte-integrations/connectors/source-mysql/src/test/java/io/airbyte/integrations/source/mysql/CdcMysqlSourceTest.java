@@ -353,7 +353,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
   @Override
   protected void assertExpectedStateMessages(final List<? extends AirbyteStateMessage> stateMessages) {
     assertEquals(7, stateMessages.size());
-    assertStateTypes(stateMessages, 4);
+    assertStateTypes(stateMessages, 4, supportResumableFullRefresh());
   }
 
   @Override
@@ -407,16 +407,25 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
   }
 
   private void assertStateTypes(final List<? extends AirbyteStateMessage> stateMessages, final int indexTillWhichExpectPkState) {
+    assertStateTypes(stateMessages, indexTillWhichExpectPkState, false);
+  }
+
+  private void assertStateTypes(final List<? extends AirbyteStateMessage> stateMessages,
+                                final int indexTillWhichExpectPkState,
+                                boolean expectSharedStateChange) {
     JsonNode sharedState = null;
+    System.out.println("state messages: " + stateMessages);
+
     for (int i = 0; i < stateMessages.size(); i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);
       assertEquals(AirbyteStateType.GLOBAL, stateMessage.getType());
       final AirbyteGlobalState global = stateMessage.getGlobal();
       assertNotNull(global.getSharedState());
-      System.out.println("debug: global: " + global);
       if (Objects.isNull(sharedState)) {
         sharedState = global.getSharedState();
-      } else {
+      } else if (expectSharedStateChange && i == indexTillWhichExpectPkState) {
+        sharedState = global.getSharedState();
+      } else if (i != stateMessages.size() - 1) {
         assertEquals(sharedState, global.getSharedState());
       }
       assertEquals(1, global.getStreamStates().size());
@@ -556,6 +565,37 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     assertStateTypes(stateMessages2, 0);
   }
 
+  // Remove all timestamp related fields in shared state. We want to make sure other information will
+  // not change.
+  private void pruneSharedStateTimestamp(final JsonNode rootNode) throws Exception {
+    ObjectMapper mapper = new ObjectMapper();
+
+    // Navigate to the specific node
+    JsonNode historyNode = rootNode.path("state").path("mysql_db_history");
+    if (historyNode.isMissingNode()) {
+      return; // Node not found, nothing to do
+    }
+    String historyJson = historyNode.asText();
+    JsonNode historyJsonNode = mapper.readTree(historyJson);
+
+    ObjectNode objectNode = (ObjectNode) historyJsonNode;
+    objectNode.remove("ts_ms");
+
+    if (objectNode.has("position") && objectNode.get("position").has("ts_sec")) {
+      ((ObjectNode) objectNode.get("position")).remove("ts_sec");
+    }
+
+    JsonNode offsetNode = rootNode.path("state").path("mysql_cdc_offset");
+    JsonNode offsetJsonNode = mapper.readTree(offsetNode.asText());
+    if (offsetJsonNode.has("ts_sec")) {
+      ((ObjectNode) offsetJsonNode).remove("ts_sec");
+    }
+
+    // Replace the original string with the modified one
+    ((ObjectNode) rootNode.path("state")).put("mysql_db_history", mapper.writeValueAsString(historyJsonNode));
+    ((ObjectNode) rootNode.path("state")).put("mysql_cdc_offset", mapper.writeValueAsString(offsetJsonNode));
+  }
+
   @Test
   public void testTwoStreamSync() throws Exception {
     // Add another stream models_2 and read that one as well.
@@ -610,9 +650,14 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
       final AirbyteGlobalState global = stateMessage.getGlobal();
       assertNotNull(global.getSharedState());
       if (Objects.isNull(sharedState)) {
-        sharedState = global.getSharedState();
+        ObjectMapper mapper = new ObjectMapper();
+        sharedState = mapper.valueToTree(global.getSharedState());
+        pruneSharedStateTimestamp(sharedState);
       } else {
-        assertEquals(sharedState, global.getSharedState());
+        ObjectMapper mapper = new ObjectMapper();
+        var newSharedState = mapper.valueToTree(global.getSharedState());
+        pruneSharedStateTimestamp(newSharedState);
+        assertEquals(sharedState, newSharedState);
       }
 
       if (Objects.isNull(firstStreamInState)) {

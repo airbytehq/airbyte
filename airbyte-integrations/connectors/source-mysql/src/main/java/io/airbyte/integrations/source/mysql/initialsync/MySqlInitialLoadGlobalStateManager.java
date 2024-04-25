@@ -41,13 +41,23 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
   // No special handling for resumable full refresh streams. We will report the cursor as it is.
   private Set<AirbyteStreamNameNamespacePair> resumableFullRefreshStreams;
 
+  private final boolean savedOffsetStillPresentOnServer;
+  private final ConfiguredAirbyteCatalog catalog;
+  private final CdcState defaultCdcState;
+
   public MySqlInitialLoadGlobalStateManager(final InitialLoadStreams initialLoadStreams,
                                             final Map<AirbyteStreamNameNamespacePair, PrimaryKeyInfo> pairToPrimaryKeyInfo,
                                             final StateManager stateManager,
-                                            final ConfiguredAirbyteCatalog catalog) {
+                                            final ConfiguredAirbyteCatalog catalog,
+
+                                            final boolean savedOffsetStillPresentOnServer,
+                                            final CdcState defaultCdcState) {
     this.stateManager = stateManager;
     this.pairToPrimaryKeyLoadStatus = MySqlInitialLoadStateManager.initPairToPrimaryKeyLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
     this.pairToPrimaryKeyInfo = pairToPrimaryKeyInfo;
+    this.catalog = catalog;
+    this.savedOffsetStillPresentOnServer = savedOffsetStillPresentOnServer;
+    this.defaultCdcState = defaultCdcState;
     initStreams(initialLoadStreams, catalog);
   }
 
@@ -70,7 +80,12 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
   }
 
   private AirbyteGlobalState generateGlobalState(final List<AirbyteStreamState> streamStates) {
-    final CdcState cdcState = stateManager.getCdcStateManager().getCdcState();
+    CdcState cdcState = stateManager.getCdcStateManager().getCdcState();
+
+    if (!savedOffsetStillPresentOnServer || cdcState == null
+        || cdcState.getState() == null) {
+      cdcState = defaultCdcState;
+    }
 
     final AirbyteGlobalState globalState = new AirbyteGlobalState();
     globalState.setSharedState(Jsons.jsonNode(cdcState));

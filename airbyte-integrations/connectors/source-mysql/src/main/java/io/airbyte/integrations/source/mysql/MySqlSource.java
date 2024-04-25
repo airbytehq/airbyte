@@ -208,7 +208,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
     if (isCdc(sourceConfig)) {
       isSavedOffsetStillPresentOnServer = isSavedOffsetStillPresentOnServer(database, catalog, stateManager);
-      initialLoadStateManager = getMySqlInitialLoadGlobalStateManager(database, catalog, stateManager, tableNameToTable, getQuoteString(), isSavedOffsetStillPresentOnServer);
+      initialLoadStateManager = getMySqlInitialLoadGlobalStateManager(database, catalog, stateManager, tableNameToTable, getQuoteString(),
+          isSavedOffsetStillPresentOnServer);
     } else {
       final MySqlCursorBasedStateManager cursorBasedStateManager = new MySqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
       final InitialLoadStreams initialLoadStreams = streamsForInitialPrimaryKeyLoad(cursorBasedStateManager, catalog);
@@ -227,8 +228,9 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     var sourceConfig = database.getSourceConfig();
 
     if (isCdc(sourceConfig)) {
-      return getMySqlFullRefreshInitialLoadHandler(database, catalog, (MySqlInitialLoadGlobalStateManager) initialLoadStateManager, stateManager, stream, Instant.now(), getQuoteString(), isSavedOffsetStillPresentOnServer)
-          .get();
+      return getMySqlFullRefreshInitialLoadHandler(database, catalog, (MySqlInitialLoadGlobalStateManager) initialLoadStateManager, stateManager,
+          stream, Instant.now(), getQuoteString(), isSavedOffsetStillPresentOnServer)
+              .get();
     } else {
       return new MySqlInitialLoadHandler(sourceConfig, database, new MySqlSourceOperations(), getQuoteString(), initialLoadStateManager,
           namespacePair -> Jsons.emptyObject(),
