@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.11"
+version = "0.1.14"
 name = "source-zenloop"
 description = "Source implementation for Zenloop."
 authors = [ "Alexander Batoulis <alexander.batoulis@hometogo.com>",]
@@ -17,13 +17,13 @@ include = "source_zenloop"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-zenloop = "source_zenloop.run:run"
 
 [tool.poetry.group.dev.dependencies]
-requests-mock = "^1.9.3"
-responses = "^0.13.3"
-pytest = "^6.1"
 pytest-mock = "^3.6.1"
+requests-mock = "^1.9.3"
+pytest = "^6.1"
+responses = "^0.13.3"

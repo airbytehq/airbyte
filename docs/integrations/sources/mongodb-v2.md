@@ -221,7 +221,8 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
-| 1.3.6   | 2024-04-24 | [37525](https://github.com/airbytehq/airbyte/pull/37525) | Do not send estimate trace if we do not have data.                                                           |
+| 1.3.7   | 2024-04-24 | [37557](https://github.com/airbytehq/airbyte/pull/37557) | Change bug in resume token validity check.                                                                |
+| 1.3.6   | 2024-04-24 | [37525](https://github.com/airbytehq/airbyte/pull/37525) | Internal refactor.                                                           |
 | 1.3.5   | 2024-04-22 | [37348](https://github.com/airbytehq/airbyte/pull/37348) | Do not send estimate trace if we do not have data.                                                           |
 | 1.3.4   | 2024-04-16 | [37348](https://github.com/airbytehq/airbyte/pull/37348) | Populate null values in airbyte record messages.                                                          |
 | 1.3.3   | 2024-04-05 | [36872](https://github.com/airbytehq/airbyte/pull/36872) | Update to connector's metadat definition.                                                                 |
