@@ -676,7 +676,6 @@ definitions:
                 - "null"
                 - object
               properties:
-                description: Logic properties for each condition.
                 type:
                   description: Type of logic
                   type:
