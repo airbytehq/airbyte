@@ -167,6 +167,32 @@
     "TimeStamp": {
       "description": "Timestamp of the account",
       "type": ["null", "string"]
+    },
+    "TaxCertificate": {
+      "type": ["null", "object"],
+      "properties": {
+        "TaxCertificateBlobContainerName": {
+          "type": ["null", "string"]
+        },
+        "Status": {
+          "type": ["null", "string"],
+          "enum": ["Invalid", "Pending", "Valid"]
+        },
+        "TaxCertificates": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "key": {
+                "type": ["null", "string"]
+              },
+              "value": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
