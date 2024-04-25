@@ -32,8 +32,7 @@ definitions:
     url_base: https://app.asana.com/api/1.0/
     http_method: GET
     authenticator:
-      $ref: "#/definitions/selective_authenticator" # Uncomment for development with low code
-      # $ref: "#/definitions/oauth_authenticator"         # Uncomment for developing with connector builder
+      $ref: "#/definitions/selective_authenticator"
     error_handler:
       type: DefaultErrorHandler
       response_filters:
@@ -72,7 +71,7 @@ definitions:
       inject_into: request_parameter
     pagination_strategy:
       type: OffsetIncrement
-      page_size: 50
+      page_size: 100
 
   retriever:
     type: SimpleRetriever
@@ -96,6 +95,11 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/projects_schema"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        use_cache: true
     $parameters:
       path: "/projects"
 
@@ -117,6 +121,9 @@ definitions:
       path: "/projects/{{ stream_slice['project_id'] }}/sections"
     retriever:
       $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        use_cache: true
       paginator:
         $ref: "#/definitions/paginator_base"
       partition_router:
@@ -156,6 +163,9 @@ definitions:
       path: "/projects/{{ stream_slice['project_id'] }}/tasks"
     retriever:
       $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        use_cache: true
       partition_router:
         $ref: "#/definitions/projects_partition_router"
 
@@ -177,6 +187,9 @@ definitions:
       path: "/tasks/{{ stream_slice['task_gid'] }}/stories"
     retriever:
       $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        use_cache: true
       partition_router:
         $ref: "#/definitions/tasks_partition_router"
 
@@ -210,6 +223,11 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/workspaces_schema"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        use_cache: true
     $parameters:
       path: "/workspaces"
 
@@ -303,6 +321,7 @@ definitions:
         $ref: "#/definitions/paginator_base"
       requester:
         $ref: "#/definitions/requester"
+        use_cache: true
         request_parameters:
           parent: "{{ stream_slice.task_gid if stream_slice.task_gid else stream_slice.project_id }}"
       partition_router:
@@ -1391,6 +1410,10 @@ definitions:
     additionalProperties: true
     type: object
     properties:
+      "type":
+        type:
+          - "null"
+          - string
       gid:
         type:
           - "null"
@@ -1435,6 +1458,10 @@ definitions:
     additionalProperties: true
     type: object
     properties:
+      "type":
+        type:
+          - "null"
+          - string
       gid:
         type:
           - "null"
@@ -2121,6 +2148,10 @@ definitions:
     additionalProperties: true
     type: object
     properties:
+      "type":
+        type:
+          - "null"
+          - string
       gid:
         type:
           - "null"
@@ -2302,6 +2333,10 @@ definitions:
     additionalProperties: true
     type: object
     properties:
+      "type":
+        type:
+          - "null"
+          - string
       user:
         type:
           - "null"
