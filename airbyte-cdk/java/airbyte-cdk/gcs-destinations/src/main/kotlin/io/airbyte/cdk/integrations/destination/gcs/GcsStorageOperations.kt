@@ -15,10 +15,10 @@ class GcsStorageOperations(
     nameTransformer: NamingConventionTransformer,
     s3Client: AmazonS3,
     s3Config: S3DestinationConfig
-) : S3StorageOperations(nameTransformer!!, s3Client!!, s3Config!!) {
+) : S3StorageOperations(nameTransformer, s3Client, s3Config) {
     /** GCS only supports the legacy AmazonS3#doesBucketExist method. */
     override fun doesBucketExist(bucket: String?): Boolean {
-        return s3Client.doesBucketExist(bucket)
+        @Suppress("deprecation") return s3Client.doesBucketExist(bucket)
     }
 
     /**

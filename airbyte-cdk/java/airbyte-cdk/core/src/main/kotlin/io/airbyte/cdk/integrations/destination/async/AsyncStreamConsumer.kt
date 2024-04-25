@@ -4,18 +4,15 @@
 
 package io.airbyte.cdk.integrations.destination.async
 
-import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions
 import com.google.common.base.Strings
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferEnqueue
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
-import io.airbyte.cdk.integrations.destination.async.deser.DeserializationUtil
-import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer
-import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
+import io.airbyte.cdk.integrations.destination.async.deser.AirbyteMessageDeserializer
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.async.state.FlushFailure
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction
@@ -23,6 +20,7 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -32,8 +30,8 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
 import java.util.stream.Collectors
 import kotlin.jvm.optionals.getOrNull
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * Async version of the
@@ -43,26 +41,23 @@ import org.slf4j.LoggerFactory
  * memory limit governed by [GlobalMemoryManager]. Record writing is decoupled via [FlushWorkers].
  * See the other linked class for more detail.
  */
-class AsyncStreamConsumer
-@VisibleForTesting
-constructor(
+class AsyncStreamConsumer(
     outputRecordCollector: Consumer<AirbyteMessage>,
     private val onStart: OnStartFunction,
     private val onClose: OnCloseFunction,
-    flusher: DestinationFlushFunction,
+    onFlush: DestinationFlushFunction,
     private val catalog: ConfiguredAirbyteCatalog,
     private val bufferManager: BufferManager,
-    private val flushFailure: FlushFailure,
     private val defaultNamespace: Optional<String>,
-    workerPool: ExecutorService,
-    private val dataTransformer: StreamAwareDataTransformer,
-    private val deserializationUtil: DeserializationUtil,
+    private val flushFailure: FlushFailure = FlushFailure(),
+    workerPool: ExecutorService = Executors.newFixedThreadPool(5),
+    private val airbyteMessageDeserializer: AirbyteMessageDeserializer,
 ) : SerializedAirbyteMessageConsumer {
     private val bufferEnqueue: BufferEnqueue = bufferManager.bufferEnqueue
     private val flushWorkers: FlushWorkers =
         FlushWorkers(
             bufferManager.bufferDequeue,
-            flusher,
+            onFlush,
             outputRecordCollector,
             flushFailure,
             bufferManager.stateManager,
@@ -80,81 +75,7 @@ constructor(
     private var hasClosed = false
     private var hasFailed = false
 
-    // This is to account for the references when deserialization to a PartialAirbyteMessage. The
-    // calculation is as follows:
-    // PartialAirbyteMessage (4) + Max( PartialRecordMessage(4), PartialStateMessage(6)) with
-    // PartialStateMessage being larger with more nested objects within it. Using 8 bytes as we
-    // assumed
-    // a 64 bit JVM.
-    private val PARTIAL_DESERIALIZE_REF_BYTES: Int = 10 * 8
-
-    constructor(
-        outputRecordCollector: Consumer<AirbyteMessage>,
-        onStart: OnStartFunction,
-        onClose: OnCloseFunction,
-        flusher: DestinationFlushFunction,
-        catalog: ConfiguredAirbyteCatalog,
-        bufferManager: BufferManager,
-        defaultNamespace: Optional<String>,
-    ) : this(
-        outputRecordCollector,
-        onStart,
-        onClose,
-        flusher,
-        catalog,
-        bufferManager,
-        FlushFailure(),
-        defaultNamespace,
-    )
-
-    constructor(
-        outputRecordCollector: Consumer<AirbyteMessage>,
-        onStart: OnStartFunction,
-        onClose: OnCloseFunction,
-        flusher: DestinationFlushFunction,
-        catalog: ConfiguredAirbyteCatalog,
-        bufferManager: BufferManager,
-        defaultNamespace: Optional<String>,
-        dataTransformer: StreamAwareDataTransformer,
-    ) : this(
-        outputRecordCollector,
-        onStart,
-        onClose,
-        flusher,
-        catalog,
-        bufferManager,
-        FlushFailure(),
-        defaultNamespace,
-        Executors.newFixedThreadPool(5),
-        dataTransformer,
-        DeserializationUtil(),
-    )
-
-    constructor(
-        outputRecordCollector: Consumer<AirbyteMessage>,
-        onStart: OnStartFunction,
-        onClose: OnCloseFunction,
-        flusher: DestinationFlushFunction,
-        catalog: ConfiguredAirbyteCatalog,
-        bufferManager: BufferManager,
-        defaultNamespace: Optional<String>,
-        workerPool: ExecutorService,
-    ) : this(
-        outputRecordCollector,
-        onStart,
-        onClose,
-        flusher,
-        catalog,
-        bufferManager,
-        FlushFailure(),
-        defaultNamespace,
-        workerPool,
-        IdentityDataTransformer(),
-        DeserializationUtil(),
-    )
-
-    @VisibleForTesting
-    constructor(
+    internal constructor(
         outputRecordCollector: Consumer<AirbyteMessage>,
         onStart: OnStartFunction,
         onClose: OnCloseFunction,
@@ -170,11 +91,10 @@ constructor(
         flusher,
         catalog,
         bufferManager,
-        flushFailure,
         defaultNamespace,
+        flushFailure,
         Executors.newFixedThreadPool(5),
-        IdentityDataTransformer(),
-        DeserializationUtil(),
+        AirbyteMessageDeserializer(),
     )
 
     @Throws(Exception::class)
@@ -184,13 +104,13 @@ constructor(
 
         flushWorkers.start()
 
-        LOGGER.info("{} started.", AsyncStreamConsumer::class.java)
+        logger.info { "${AsyncStreamConsumer::class.java} started." }
         onStart.call()
     }
 
     @Throws(Exception::class)
     override fun accept(
-        messageString: String,
+        message: String,
         sizeInBytes: Int,
     ) {
         Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started")
@@ -200,21 +120,22 @@ constructor(
          * to try to use a thread pool to partially deserialize to get record type and stream name, we can
          * do it without touching buffer manager.
          */
-        val message =
-            deserializationUtil.deserializeAirbyteMessage(
-                messageString,
-                dataTransformer,
+        val partialAirbyteMessage =
+            airbyteMessageDeserializer.deserializeAirbyteMessage(
+                message,
             )
-        if (AirbyteMessage.Type.RECORD == message.type) {
-            if (Strings.isNullOrEmpty(message.record?.namespace)) {
-                message.record?.namespace = defaultNamespace.getOrNull()
+        if (AirbyteMessage.Type.RECORD == partialAirbyteMessage.type) {
+            if (Strings.isNullOrEmpty(partialAirbyteMessage.record?.namespace)) {
+                partialAirbyteMessage.record?.namespace = defaultNamespace.getOrNull()
             }
-            validateRecord(message)
+            validateRecord(partialAirbyteMessage)
 
-            message.record?.streamDescriptor?.let { getRecordCounter(it).incrementAndGet() }
+            partialAirbyteMessage.record?.streamDescriptor?.let {
+                getRecordCounter(it).incrementAndGet()
+            }
         }
         bufferEnqueue.addRecord(
-            message,
+            partialAirbyteMessage,
             sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES,
             defaultNamespace,
         )
@@ -250,7 +171,7 @@ constructor(
 
         // as this throws an exception, we need to be after all other close functions.
         propagateFlushWorkerExceptionIfPresent()
-        LOGGER.info("{} closed", AsyncStreamConsumer::class.java)
+        logger.info { "${AsyncStreamConsumer::class.java} closed" }
     }
 
     private fun getRecordCounter(streamDescriptor: StreamDescriptor): AtomicLong {
@@ -281,18 +202,20 @@ constructor(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(AsyncStreamConsumer::class.java)
+        // This is to account for the references when deserialization to a PartialAirbyteMessage.
+        // The calculation is as follows: PartialAirbyteMessage (4) + Max( PartialRecordMessage(4),
+        // PartialStateMessage(6)) with PartialStateMessage being larger with more nested objects
+        // within it. Using 8 bytes as we assumed a 64 bit JVM.
+        private const val PARTIAL_DESERIALIZE_REF_BYTES: Int = 10 * 8
 
         private fun throwUnrecognizedStream(
             catalog: ConfiguredAirbyteCatalog?,
             message: PartialAirbyteMessage,
         ) {
             throw IllegalArgumentException(
-                String.format(
-                    "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-                    Jsons.serialize(catalog),
-                    Jsons.serialize(message),
-                ),
+                "Message contained record from a stream that was not in the catalog. " +
+                    "\ncatalog: ${Jsons.serialize(catalog)}, " +
+                    "\nmessage: ${Jsons.serialize(message)}",
             )
         }
     }

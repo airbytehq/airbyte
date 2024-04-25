@@ -65,7 +65,7 @@ class DockerProcessFactory(
         internalToExternalPorts: Map<Int?, Int?>?,
         additionalEnvironmentVariables: Map<String, String>,
         vararg args: String?
-    ): Process? {
+    ): Process {
         try {
             if (!checkImageExists(imageName)) {
                 throw TestHarnessException("Could not find image: $imageName")
