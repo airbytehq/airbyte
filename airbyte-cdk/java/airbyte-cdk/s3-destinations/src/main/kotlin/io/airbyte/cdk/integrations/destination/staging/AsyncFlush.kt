@@ -43,7 +43,7 @@ internal class AsyncFlush(
 ) : DestinationFlushFunction {
 
     @Throws(Exception::class)
-    override fun flush(decs: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
+    override fun flush(streamDescriptor: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
         val writer: CsvSerializedBuffer
         try {
             writer =
@@ -76,16 +76,16 @@ internal class AsyncFlush(
 
         writer.flush()
         logger.info {
-            "Flushing CSV buffer for stream ${decs.name} (${FileUtils.byteCountToDisplaySize(writer.byteCount)}) to staging"
+            "Flushing CSV buffer for stream ${streamDescriptor.name} (${FileUtils.byteCountToDisplaySize(writer.byteCount)}) to staging"
         }
-        require(streamDescToWriteConfig.containsKey(decs)) {
+        require(streamDescToWriteConfig.containsKey(streamDescriptor)) {
             String.format(
                 "Message contained record from a stream that was not in the catalog. \ncatalog: %s",
                 Jsons.serialize(catalog)
             )
         }
 
-        val writeConfig: WriteConfig = streamDescToWriteConfig.getValue(decs)
+        val writeConfig: WriteConfig = streamDescToWriteConfig.getValue(streamDescriptor)
         val schemaName: String = writeConfig.outputSchemaName
         val stageName = stagingOperations!!.getStageName(schemaName, writeConfig.outputTableName)
         val stagingPath =

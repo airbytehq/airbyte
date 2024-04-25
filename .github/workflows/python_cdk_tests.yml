@@ -1,4 +1,3 @@
-# THIS WORKFLOW SHOULD BE REPLACED BY A CLEANER ONE ONCE THE PYTHON CDK TESTS CAN BE RUN WITH POETRY
 name: Python CDK Tests
 
 concurrency:
@@ -41,6 +40,18 @@ jobs:
     name: Python CDK Tests
     timeout-minutes: 30
     steps:
+      # The run-python-cdk-check job will be triggered if a fork made changes to Python CDK.
+      # We don't want forks to make changes to Python CDK.
+      # So we fail the job if the PR is from a fork, it will make the required CI check fail.
+      - name: Check if PR is from a fork
+        id: check-if-pr-is-from-fork
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          if [ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]; then
+            echo "PR is from a fork. Exiting workflow..."
+            exit 78
+          fi
       - name: Checkout Airbyte
         uses: actions/checkout@v3
       - name: Install Poetry
