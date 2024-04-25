@@ -14,9 +14,7 @@ from typing import Any, Optional
 import _collections_abc
 import dagger
 import requests
-
-# type: ignore
-from airbyte_protocol.models import AirbyteCatalog  # type: ignore; type: ignore
+from airbyte_protocol.models import AirbyteCatalog  # type: ignore
 from airbyte_protocol.models import AirbyteMessage  # type: ignore
 from airbyte_protocol.models import ConfiguredAirbyteCatalog  # type: ignore
 from airbyte_protocol.models import Type as AirbyteMessageType

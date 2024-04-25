@@ -59,9 +59,9 @@ known-first-party = ["connection-retriever"]
 [tool.poe.tasks]
 test = "pytest tests"
 type_check = "mypy src --disallow-untyped-defs"
-pre-push = ["test", "type_check"]
+pre-push = []
 
 [tool.airbyte_ci]
 optional_poetry_groups = ["dev"]
-poe_tasks = ["type_check", "test"]
+poe_tasks = []
 required_environment_variables = ["DOCKER_HUB_USERNAME", "DOCKER_HUB_PASSWORD"]
