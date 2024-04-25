@@ -55,6 +55,19 @@ definitions:
     requester:
       $ref: "#/definitions/requester"
 
+  incremental_sync_base:
+    type: DatetimeBasedCursor
+    cursor_field: UpdatedDateUTC
+    datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+
   base_stream:
     type: DeclarativeStream
     retriever:
@@ -71,10 +84,16 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/paginator_base"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
     $parameters:
       primary_key: "BankTransactionID"
       path: "/BankTransactions"
       extractor_path: "BankTransactions"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
 
   contacts_stream:
     $ref: "#/definitions/base_stream"
@@ -87,10 +106,16 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/paginator_base"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
     $parameters:
       primary_key: "ContactID"
       path: "/Contacts"
       extractor_path: "Contacts"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
 
   credit_notes_stream:
     $ref: "#/definitions/base_stream"
@@ -103,10 +128,16 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/paginator_base"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
     $parameters:
       primary_key: "CreditNoteID"
       path: "/CreditNotes"
       extractor_path: "CreditNotes"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
 
   invoices_stream:
     $ref: "#/definitions/base_stream"
@@ -119,10 +150,16 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/paginator_base"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
     $parameters:
       primary_key: "InvoiceID"
       path: "/Invoices"
       extractor_path: "Invoices"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
 
   manual_journals_stream:
     $ref: "#/definitions/base_stream"
@@ -135,10 +172,16 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/paginator_base"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
     $parameters:
       primary_key: "ManualJournalID"
       path: "/ManualJournals"
       extractor_path: "ManualJournals"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
 
   overpayments_stream:
     $ref: "#/definitions/base_stream"
@@ -151,10 +194,16 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/paginator_base"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
     $parameters:
       primary_key: "OverpaymentID"
       path: "/Overpayments"
       extractor_path: "Overpayments"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
 
   prepayments_stream:
     $ref: "#/definitions/base_stream"
@@ -167,10 +216,16 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/paginator_base"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
     $parameters:
       primary_key: "PrepaymentID"
       path: "/Prepayments"
       extractor_path: "Prepayments"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
 
   purchase_orders_stream:
     $ref: "#/definitions/base_stream"
@@ -183,10 +238,16 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/paginator_base"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
     $parameters:
       primary_key: "PurchaseOrderID"
       path: "/PurchaseOrders"
       extractor_path: "PurchaseOrders"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
 
   accounts_stream:
     $ref: "#/definitions/base_stream"
@@ -195,10 +256,18 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/accounts_schema"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
     $parameters:
       primary_key: "AccountID"
       path: "/Accounts"
       extractor_path: "Accounts"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
 
   bank_transfers_stream:
     $ref: "#/definitions/base_stream"
@@ -211,10 +280,26 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/paginator_base"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record['CreatedDateUTC'] >= stream_interval['start_time'] }}"
     $parameters:
       primary_key: "BankTransferID"
       path: "/BankTransfers"
       extractor_path: "BankTransfers"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: CreatedDateUTC
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
 
   employees_stream:
     $ref: "#/definitions/base_stream"
@@ -227,10 +312,16 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/paginator_base"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
     $parameters:
       primary_key: "EmployeeID"
       path: "/Employees"
       extractor_path: "Employees"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
 
   items_stream:
     $ref: "#/definitions/base_stream"
@@ -239,10 +330,18 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/items_schema"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
     $parameters:
       primary_key: "ItemID"
       path: "/Items"
       extractor_path: "Items"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
 
   payments_stream:
     $ref: "#/definitions/base_stream"
@@ -255,10 +354,16 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/paginator_base"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
     $parameters:
       primary_key: "PaymentID"
       path: "/Payments"
       extractor_path: "Payments"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
 
   users_stream:
     $ref: "#/definitions/base_stream"
@@ -267,10 +372,18 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/users_schema"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record['UpdatedDateUTC'] >= stream_interval['start_time'] }}"
     $parameters:
       primary_key: "UserID"
       path: "/Users"
       extractor_path: "Users"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
 
   branding_themes_stream:
     $ref: "#/definitions/base_stream"
