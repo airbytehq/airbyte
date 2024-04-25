@@ -79,13 +79,13 @@ interface Destination : Integration {
          * message, processing is halted. Otherwise, the invalid message is logged and execution
          * continues.
          *
-         * @param inputString JSON representation of an [AirbyteMessage].
+         * @param message JSON representation of an [AirbyteMessage].
          * @throws Exception if an invalid state message is provided or the consumer is unable to
          * accept the provided message.
          */
         @Throws(Exception::class)
-        override fun accept(inputString: String, sizeInBytes: Int) {
-            consumeMessage(consumer, inputString)
+        override fun accept(message: String, sizeInBytes: Int) {
+            consumeMessage(consumer, message)
         }
 
         @Throws(Exception::class)
