@@ -73,54 +73,10 @@ jobs:
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors --modified test"
           is_fork: "true"
-
-  # format:
-  #   # IMPORTANT: This name must match the require check name on the branch protection settings
-  #   name: "Check for formatting errors"
-  #   if: github.event.pull_request.head.repo.fork == true
-  #   # Deployment of jobs on the community-ci environment requires manual approval
-  #   # This is something we set up in the GitHub environment settings:
-  #   # https://github.com/airbytehq/airbyte/settings/environments/2091483613/edit
-  #   # This is a safety measure to make sure the code running on our infrastructure has been reviewed before running on it
-  #   environment: community-ci
-  #   runs-on: community-tooling-test-small
-  #   timeout-minutes: 30
-  #   env:
-  #     MAIN_BRANCH_NAME: "master"
-
-  #   steps:
-  #     # This checkouts a fork which can contain untrusted code
-  #     # It's deemed safe as the community-ci environment requires manual reviewer approval to run
-  #     - name: Checkout fork
-  #       uses: actions/checkout@v4
-  #       with:
-  #         repository: ${{ github.event.pull_request.head.repo.full_name }}
-  #         ref: ${{ github.event.pull_request.head.sha }}
-  #         fetch-depth: 1
-
-  #     # This will sync the .github folder of the main repo with the fork
-  #     # This allows us to use up to date actions from the main repo
-  #     - name: Pull .github folder from main repository
-  #       id: pull_github_folder
-  #       run: |
-  #         git remote add main https://github.com/airbytehq/airbyte.git
-  #         git fetch main ${MAIN_BRANCH_NAME}
-  #         git checkout main/${MAIN_BRANCH_NAME} -- .github
-
-  #     - name: Run airbyte-ci format check all
-  #       # This path refers to the fork .github folder.
-  #       # We make sure its content is in sync with the main repo .github folder by pulling it in the previous step
-  #       uses: ./.github/actions/run-airbyte-ci
-  #       with:
-  #         context: "pull_request"
-  #         dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
-  #         docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-  #         docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-  #         gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-  #         sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-  #         github_token: ${{ github.token }}
-  #         git_repo_url: ${{ github.event.pull_request.head.repo.clone_url }}
-  #         git_branch: ${{ github.head_ref }}
-  #         git_revision: ${{ github.event.pull_request.head.sha }}
-  #         is_fork: "true"
-  #         subcommand: "format check all"
+      - name: Upload pipeline reports
+        id: upload-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-reports
+          path: /home/runner/work/airbyte/airbyte/airbyte-ci/connectors/pipelines/pipeline_reports/airbyte-ci/connectors/test/pull_request/**/output.html
+          retention-days: 7
