@@ -26,5 +26,4 @@ class SalesforceJobResponseBuilder:
 
     def build(self) -> HttpResponse:
         return HttpResponse(json.dumps(self._response), self._status_code)
-    sponse(json.dumps(self._response), self._status_code)
     
