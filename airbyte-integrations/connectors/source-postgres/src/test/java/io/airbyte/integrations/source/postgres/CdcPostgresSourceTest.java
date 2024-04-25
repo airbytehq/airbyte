@@ -101,6 +101,9 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   }
 
   @Override
+  protected boolean supportResumableFullRefresh() {return true;}
+
+  @Override
   protected JsonNode config() {
     return testdb.testConfigBuilder()
         .withSchemas(modelsSchema(), modelsSchema() + "_random")
@@ -457,7 +460,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
 
   @Override
   protected void assertExpectedStateMessagesFromIncrementalSync(final List<? extends AirbyteStateMessage> stateMessages) {
-    assertEquals(1, stateMessages.size());
+    assertEquals(1, stateMessages.size(), "actual state message: " + stateMessages);
     assertNotNull(stateMessages.get(0).getData());
   }
 

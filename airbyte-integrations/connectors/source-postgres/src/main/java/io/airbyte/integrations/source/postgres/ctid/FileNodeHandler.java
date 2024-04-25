@@ -30,6 +30,8 @@ public class FileNodeHandler {
   }
 
   public Long getFileNode(final AirbyteStreamNameNamespacePair namespacePair) {
+    System.out.println("filen ode handler: " + fileNodes + "  ; requesting pair: " + namespacePair);
+
     return fileNodes.get(namespacePair);
   }
 
