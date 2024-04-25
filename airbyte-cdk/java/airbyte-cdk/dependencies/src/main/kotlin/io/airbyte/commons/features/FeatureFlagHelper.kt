@@ -41,7 +41,7 @@ object FeatureFlagHelper {
                 try {
                     workspaceIds.add(UUID.fromString(id))
                 } catch (e: IllegalArgumentException) {
-                    log.warn("Malformed workspace id for {}: {}", context, id)
+                    log.warn { "Malformed workspace id for $context: $id" }
                 }
             }
         }

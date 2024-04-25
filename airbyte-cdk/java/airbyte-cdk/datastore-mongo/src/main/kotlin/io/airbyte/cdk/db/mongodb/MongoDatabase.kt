@@ -25,10 +25,10 @@ import org.bson.conversions.Bson
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class MongoDatabase(connectionString: String?, databaseName: String?) :
+class MongoDatabase(connectionString: String, databaseName: String) :
     AbstractDatabase(), AutoCloseable {
-    private var connectionString: ConnectionString? = null
-    var database: com.mongodb.client.MongoDatabase? = null
+    private val connectionString: ConnectionString
+    private val database: com.mongodb.client.MongoDatabase
     private val mongoClient: MongoClient
 
     init {
@@ -47,59 +47,56 @@ class MongoDatabase(connectionString: String?, databaseName: String?) :
 
     @Throws(Exception::class)
     override fun close() {
-        mongoClient!!.close()
+        mongoClient.close()
     }
 
     val databaseNames: MongoIterable<String>
-        get() = mongoClient!!.listDatabaseNames()
+        get() = mongoClient.listDatabaseNames()
 
     val collectionNames: Set<String?>
         get() {
-            val collectionNames = database!!.listCollectionNames() ?: return Collections.emptySet()
-            return MoreIterators.toSet(database!!.listCollectionNames().iterator())
+            val collectionNames = database.listCollectionNames() ?: return Collections.emptySet()
+            return MoreIterators.toSet(collectionNames.iterator())
                 .stream()
                 .filter { c: String -> !c.startsWith(MONGO_RESERVED_COLLECTION_PREFIX) }
                 .collect(Collectors.toSet())
         }
 
     fun getCollection(collectionName: String): MongoCollection<Document> {
-        return database!!.getCollection(collectionName).withReadConcern(ReadConcern.MAJORITY)
+        return database.getCollection(collectionName).withReadConcern(ReadConcern.MAJORITY)
     }
 
     fun getOrCreateNewCollection(collectionName: String): MongoCollection<Document> {
-        val collectionNames = MoreIterators.toSet(database!!.listCollectionNames().iterator())
+        val collectionNames = MoreIterators.toSet(database.listCollectionNames().iterator())
         if (!collectionNames.contains(collectionName)) {
-            database!!.createCollection(collectionName)
+            database.createCollection(collectionName)
         }
-        return database!!.getCollection(collectionName)
+        return database.getCollection(collectionName)
     }
 
     @VisibleForTesting
     fun createCollection(name: String): MongoCollection<Document> {
-        database!!.createCollection(name)
-        return database!!.getCollection(name)
+        database.createCollection(name)
+        return database.getCollection(name)
     }
 
     @get:VisibleForTesting
     val name: String
-        get() = database!!.name
+        get() = database.name
 
     fun read(
-        collectionName: String?,
+        collectionName: String,
         columnNames: List<String>,
-        filter: Optional<Bson?>
+        filter: Optional<Bson>
     ): Stream<JsonNode> {
         try {
-            val collection = database!!.getCollection(collectionName)
+            val collection = database.getCollection(collectionName)
             val cursor =
                 collection.find(filter.orElse(BsonDocument())).batchSize(BATCH_SIZE).cursor()
 
-            return getStream(
-                    cursor,
-                    CheckedFunction { document: Document ->
-                        MongoUtils.toJsonNode(document, columnNames)
-                    }
-                )
+            return getStream(cursor) { document: Document ->
+                    MongoUtils.toJsonNode(document, columnNames)
+                }
                 .onClose {
                     try {
                         cursor.close()

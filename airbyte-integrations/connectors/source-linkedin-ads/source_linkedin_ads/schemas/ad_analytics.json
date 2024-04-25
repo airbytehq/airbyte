@@ -107,14 +107,14 @@
     "otherEngagements": {
       "type": ["null", "number"]
     },
-    "pivotValue": {
-      "type": ["null", "string"]
-    },
     "pivotValues": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
+    },
+    "string_of_pivot_values": {
+      "type": ["null", "string"]
     },
     "postClickJobApplications": {
       "type": ["null", "number"]
@@ -299,6 +299,9 @@
     },
     "viralVideoViews": {
       "type": ["null", "number"]
+    },
+    "pivot": {
+      "type": ["null", "string"]
     }
   }
 }

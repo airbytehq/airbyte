@@ -3,6 +3,13 @@
  */
 package io.airbyte.cdk.integrations.base
 
+import java.util.*
+import org.apache.commons.lang3.StringUtils
+
+fun upperQuoted(column: String): String {
+    return StringUtils.wrap(column.uppercase(Locale.getDefault()), "\"")
+}
+
 object JavaBaseConstants {
     const val ARGS_CONFIG_KEY: String = "config"
     const val ARGS_CATALOG_KEY: String = "catalog"
@@ -33,7 +40,7 @@ object JavaBaseConstants {
             COLUMN_NAME_AB_RAW_ID,
             COLUMN_NAME_AB_EXTRACTED_AT,
             COLUMN_NAME_AB_LOADED_AT,
-            COLUMN_NAME_DATA
+            COLUMN_NAME_DATA,
         )
     @JvmField
     val V2_RAW_TABLE_COLUMN_NAMES: List<String> =
@@ -42,7 +49,7 @@ object JavaBaseConstants {
             COLUMN_NAME_AB_EXTRACTED_AT,
             COLUMN_NAME_AB_LOADED_AT,
             COLUMN_NAME_DATA,
-            COLUMN_NAME_AB_META
+            COLUMN_NAME_AB_META,
         )
     @JvmField
     val V2_FINAL_TABLE_METADATA_COLUMNS: List<String> =
