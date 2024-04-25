@@ -31,7 +31,7 @@ class BigqueryAuth:
                                                 scopes=SCOPES, \
                                                 private_key_id=credentials_json["private_key_id"], client_id=credentials_json["client_id"])
         h = httplib2.Http()
-        h = credentials.authorize(h)
+        credentials.authorize(h)
         token = credentials.get_access_token()
         access_token = str(token.access_token)
         auth = TokenAuthenticator(token=access_token)
