@@ -517,6 +517,13 @@ class TicketSubstream(HttpSubStream, IncrementalZendeskSupportStream):
         for record in parent_records:
             yield {"ticket_id": record["id"]}
 
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 404:
+            #  not found in case of deleted ticket
+            setattr(self, "raise_on_http_errors", False)
+            return False
+        return super().should_retry(response)
+
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
     """
@@ -604,13 +611,15 @@ class TicketMetrics(TicketSubstream):
         except requests.exceptions.JSONDecodeError:
             data = {}
 
-        if not self.cursor_field:
-            yield data
-        else:
-            cursor_date = (stream_state or {}).get(self.cursor_field)
-            updated = data[self.cursor_field]
-            if not cursor_date or updated >= cursor_date:
+        # no data in case of http errors
+        if data:
+            if not self.cursor_field:
                 yield data
+            else:
+                cursor_date = (stream_state or {}).get(self.cursor_field)
+                updated = data[self.cursor_field]
+                if not cursor_date or updated >= cursor_date:
+                    yield data
 
 
 class TicketSkips(CursorPaginationZendeskSupportStream):
