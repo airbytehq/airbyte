@@ -9,6 +9,7 @@ from unittest import TestCase
 import freezegun
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_protocol.models import SyncMode
+from salesforce_job_response_builder import SalesforceJobResponseBuilder
 from config_builder import ConfigBuilder
 from integration.utils import create_base_url, given_authentication, given_stream, read
 from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
@@ -69,7 +70,7 @@ class BulkStreamTest(TestCase):
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}"),
-            HttpResponse(json.dumps({"state": "JobComplete"})),
+            SalesforceJobResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}/results"),
@@ -118,7 +119,7 @@ class BulkStreamTest(TestCase):
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{job_id}"),
-            HttpResponse(json.dumps({"state": "JobComplete"})),
+            SalesforceJobResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{job_id}/results"),

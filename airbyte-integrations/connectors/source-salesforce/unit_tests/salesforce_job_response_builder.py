@@ -1,0 +1,28 @@
+from airbyte_cdk.test.mock_http.response_builder import HttpResponseBuilder, find_template
+from airbyte_cdk.test.mock_http import HttpResponse
+import json
+
+
+class SalesforceJobResponseBuilder:
+    def __init__(self):
+        self._response = find_template("job_response", __file__)
+        self._status_code = 200
+
+    def with_id(self, id: str) -> "HttpResponseBuilder":
+        self._response["id"] = id
+        return self
+
+    def with_state(self, state: str) -> "HttpResponseBuilder":
+        self._response["state"] = state
+        return self
+
+    def with_status_code(self, status_code: int) -> "HttpResponseBuilder":
+        self._status_code = status_code
+        return self
+    
+    def get_response(self) -> any:
+        return self._response
+
+    def build(self) -> HttpResponse:
+        return HttpResponse(json.dumps(self._response), self._status_code)
+    
