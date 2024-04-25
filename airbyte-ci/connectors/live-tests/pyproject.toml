@@ -57,11 +57,9 @@ select = ["I", "F"]
 known-first-party = ["connection-retriever"]
 
 [tool.poe.tasks]
-format = "ruff format src"
 test = "pytest tests"
-lint = "ruff check src"
 type_check = "mypy src --disallow-untyped-defs"
-pre-push = ["format", "lint", "test", "type_check"]
+pre-push = ["test", "type_check"]
 
 [tool.airbyte_ci]
 optional_poetry_groups = ["dev"]
