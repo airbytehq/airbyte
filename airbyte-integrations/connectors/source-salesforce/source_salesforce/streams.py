@@ -11,13 +11,16 @@ import urllib.parse
 import uuid
 from abc import ABC
 from contextlib import closing
+from datetime import timedelta
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
+import backoff
 import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import IsoMillisConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
@@ -31,7 +34,7 @@ from requests.models import PreparedRequest
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .availability_strategy import SalesforceAvailabilityStrategy
 from .exceptions import SalesforceException, TmpFileIOError
-from .rate_limiting import default_backoff_handler
+from .rate_limiting import TRANSIENT_EXCEPTIONS, default_backoff_handler
 
 # https://stackoverflow.com/a/54517228
 CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
@@ -39,10 +42,11 @@ csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 
 DEFAULT_ENCODING = "utf-8"
 LOOKBACK_SECONDS = 600  # based on https://trailhead.salesforce.com/trailblazer-community/feed/0D54V00007T48TASAZ
+_JOB_TRANSIENT_ERRORS_MAX_RETRY = 1
 
 
 class SalesforceStream(HttpStream, ABC):
-    state_converter = IsoMillisConcurrentStreamStateConverter()
+    state_converter = IsoMillisConcurrentStreamStateConverter(is_sequential_state=False)
     page_size = 2000
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     encoding = DEFAULT_ENCODING
@@ -140,7 +144,7 @@ class PropertyChunk:
 
 
 class RestSalesforceStream(SalesforceStream):
-    state_converter = IsoMillisConcurrentStreamStateConverter()
+    state_converter = IsoMillisConcurrentStreamStateConverter(is_sequential_state=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -294,6 +298,7 @@ class RestSalesforceStream(SalesforceStream):
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 
+    @default_backoff_handler(max_tries=5, backoff_method=backoff.constant, backoff_params={"interval": 5})
     def _fetch_next_page_for_chunk(
         self,
         stream_slice: Mapping[str, Any] = None,
@@ -317,7 +322,7 @@ class RestSalesforceStream(SalesforceStream):
 
 
 class BatchedSubStream(HttpSubStream):
-    state_converter = IsoMillisConcurrentStreamStateConverter()
+    state_converter = IsoMillisConcurrentStreamStateConverter(is_sequential_state=False)
     SLICE_BATCH_SIZE = 200
 
     def stream_slices(
@@ -351,8 +356,15 @@ class BulkSalesforceStream(SalesforceStream):
 
     transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
 
-    @default_backoff_handler(max_tries=5, factor=15)
+    @default_backoff_handler(max_tries=5, backoff_method=backoff.expo, backoff_params={"factor": 15})
     def _send_http_request(self, method: str, url: str, json: dict = None, headers: dict = None, stream: bool = False):
+        """
+        This method should be used when you don't have to read data from the HTTP body. Else, you will have to retry when you actually read
+        the response buffer (which is either by calling `json` or `iter_content`)
+        """
+        return self._non_retryable_send_http_request(method, url, json, headers, stream)
+
+    def _non_retryable_send_http_request(self, method: str, url: str, json: dict = None, headers: dict = None, stream: bool = False):
         headers = self.authenticator.get_auth_header() if not headers else headers | self.authenticator.get_auth_header()
         response = self._session.request(method, url=url, headers=headers, json=json, stream=stream)
         if response.status_code not in [200, 204]:
@@ -360,15 +372,22 @@ class BulkSalesforceStream(SalesforceStream):
         response.raise_for_status()
         return response
 
+    @default_backoff_handler(max_tries=5, backoff_method=backoff.expo, backoff_params={"factor": 15})
+    def _create_stream_job(self, query: str, url: str) -> Optional[str]:
+        json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
+        response = self._non_retryable_send_http_request("POST", url, json=json)
+        job_id: str = response.json()["id"]
+        return job_id
+
     def create_stream_job(self, query: str, url: str) -> Optional[str]:
         """
         docs: https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/create_job.html
+
+        Note that we want to retry during connection issues as well. Those can occur when calling `.json()`. Even in the case of a
+        connection error during a HTTPError, we will retry as else, we won't be able to take the right action.
         """
-        json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
         try:
-            response = self._send_http_request("POST", url, json=json)
-            job_id: str = response.json()["id"]
-            return job_id
+            return self._create_stream_job(query, url)
         except exceptions.HTTPError as error:
             if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
                 # A part of streams can't be used by BULK API. Every API version can have a custom list of
@@ -383,9 +402,7 @@ class BulkSalesforceStream(SalesforceStream):
                 #        updated query: "Select Name, (Select Subject,ActivityType from ActivityHistories) from Contact"
                 #    The second variant forces customisation for every case (ActivityHistory, ActivityHistories etc).
                 #    And the main problem is these subqueries doesn't support CSV response format.
-                error_data = error.response.json()[0]
-                error_code = error_data.get("errorCode")
-                error_message = error_data.get("message", "")
+                error_code, error_message = self._extract_error_code_and_message(error.response)
                 if error_message == "Selecting compound data not supported in Bulk Query" or (
                     error_code == "INVALIDENTITY" and "is not supported by the Bulk API" in error_message
                 ):
@@ -401,7 +418,7 @@ class BulkSalesforceStream(SalesforceStream):
                 elif error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
                     self.logger.error(
                         f"Cannot receive data for stream '{self.name}' ,"
-                        f"sobject options: {self.sobject_options}, Error message: '{error_data.get('message')}'"
+                        f"sobject options: {self.sobject_options}, Error message: '{error_message}'"
                     )
                 elif error.response.status_code == codes.BAD_REQUEST and error_message.endswith("does not support query"):
                     self.logger.error(
@@ -437,9 +454,7 @@ class BulkSalesforceStream(SalesforceStream):
             try:
                 job_info = self._send_http_request("GET", url=url).json()
             except exceptions.HTTPError as error:
-                error_data = error.response.json()[0]
-                error_code = error_data.get("errorCode")
-                error_message = error_data.get("message", "")
+                error_code, error_message = self._extract_error_code_and_message(error.response)
                 if (
                     "We can't complete the action because enabled transaction security policies took too long to complete." in error_message
                     and error_code == "TXN_SECURITY_METERING_ERROR"
@@ -472,6 +487,19 @@ class BulkSalesforceStream(SalesforceStream):
 
         self.logger.warning(f"Not wait the {self.name} data for {self.DEFAULT_WAIT_TIMEOUT_SECONDS} seconds, data: {job_info}!!")
         return job_status
+
+    def _extract_error_code_and_message(self, response: requests.Response) -> tuple[Optional[str], str]:
+        try:
+            error_data = response.json()[0]
+            return error_data.get("errorCode"), error_data.get("message", "")
+        except exceptions.JSONDecodeError:
+            self.logger.warning(f"The response for `{response.request.url}` is not a JSON but was `{response.content}`")
+        except IndexError:
+            self.logger.warning(
+                f"The response for `{response.request.url}` was expected to be a list with at least one element but was `{response.content}`"
+            )
+
+        return None, ""
 
     def execute_job(self, query: str, url: str) -> Tuple[Optional[str], Optional[str]]:
         job_status = "Failed"
@@ -520,6 +548,7 @@ class BulkSalesforceStream(SalesforceStream):
 
         return self.encoding
 
+    @default_backoff_handler(max_tries=5, backoff_method=backoff.constant, backoff_params={"interval": 5})
     def download_data(self, url: str, chunk_size: int = 1024) -> tuple[str, str, dict]:
         """
         Retrieves binary data result from successfully `executed_job`, using chunks, to avoid local memory limitations.
@@ -529,7 +558,7 @@ class BulkSalesforceStream(SalesforceStream):
         """
         # set filepath for binary data from response
         tmp_file = str(uuid.uuid4())
-        with closing(self._send_http_request("GET", url, headers={"Accept-Encoding": "gzip"}, stream=True)) as response, open(
+        with closing(self._non_retryable_send_http_request("GET", url, headers={"Accept-Encoding": "gzip"}, stream=True)) as response, open(
             tmp_file, "wb"
         ) as data_file:
             response_headers = response.headers
@@ -615,6 +644,7 @@ class BulkSalesforceStream(SalesforceStream):
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
+        call_count: int = 0,
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         next_page_token = None
@@ -643,7 +673,17 @@ class BulkSalesforceStream(SalesforceStream):
         while True:
             req = PreparedRequest()
             req.prepare_url(f"{job_full_url}/results", {"locator": salesforce_bulk_api_locator})
-            tmp_file, response_encoding, response_headers = self.download_data(url=req.url)
+            try:
+                tmp_file, response_encoding, response_headers = self.download_data(url=req.url)
+            except TRANSIENT_EXCEPTIONS as exception:
+                if call_count >= _JOB_TRANSIENT_ERRORS_MAX_RETRY:
+                    self.logger.error(f"Downloading data failed even after {call_count} retries. Stopping retry and raising exception")
+                    raise exception
+                self.logger.warning(f"Downloading data failed after {call_count} retries. Retrying the whole job...")
+                call_count += 1
+                yield from self.read_records(sync_mode, cursor_field, stream_slice, stream_state, call_count=call_count)
+                return
+
             for record in self.read_with_chunks(tmp_file, response_encoding):
                 yield record
 
@@ -667,7 +707,10 @@ class BulkSalesforceStream(SalesforceStream):
             stream_kwargs.update({"replication_key": self.replication_key, "start_date": self.start_date})
             new_cls = IncrementalRestSalesforceStream
 
-        return new_cls(**stream_kwargs)
+        standard_instance = new_cls(**stream_kwargs)
+        if hasattr(standard_instance, "set_cursor"):
+            standard_instance.set_cursor(self._stream_slicer_cursor)
+        return standard_instance
 
 
 class BulkSalesforceSubStream(BatchedSubStream, BulkSalesforceStream):
@@ -694,24 +737,22 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         super().__init__(**kwargs)
         self.replication_key = replication_key
         self._stream_slice_step = stream_slice_step
+        self._stream_slicer_cursor = None
+
+    def set_cursor(self, cursor: Cursor) -> None:
+        self._stream_slicer_cursor = cursor
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        now = pendulum.now(tz="UTC")
-        assert LOOKBACK_SECONDS is not None and LOOKBACK_SECONDS >= 0
+        if not self._stream_slicer_cursor:
+            raise ValueError("Cursor should be set at this point")
 
-        initial_date = self.get_start_date_from_state(stream_state) - pendulum.Duration(seconds=LOOKBACK_SECONDS)
-        slice_start = initial_date
-        while slice_start < now:
-            slice_end = slice_start + self.stream_slice_step
-            self._slice = {
+        for slice_start, slice_end in self._stream_slicer_cursor.generate_slices():
+            yield {
                 "start_date": slice_start.isoformat(timespec="milliseconds"),
-                "end_date": min(slice_end, now).isoformat(timespec="milliseconds"),
+                "end_date": slice_end.isoformat(timespec="milliseconds"),
             }
-            yield self._slice
-
-            slice_start += self.stream_slice_step
 
     @property
     def stream_slice_step(self) -> pendulum.Duration:
@@ -791,7 +832,7 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
 
 
 class Describe(Stream):
-    state_converter = IsoMillisConcurrentStreamStateConverter()
+    state_converter = IsoMillisConcurrentStreamStateConverter(is_sequential_state=False)
     """
     Stream of sObjects' (Salesforce Objects) describe:
     https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_describe.htm
