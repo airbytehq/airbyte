@@ -24,11 +24,8 @@ on:
       memorylimit:
         description: "Memory CPU limit"
         required: false
-
-      # TODO: Replace 'gitref' and 'repo' inputs with 'pr'.
-      # See example in `.github/workflows/format-fix-command.yml`.
       pr:
-        description: "PR Number (ignored)"
+        description: "PR Number (Unused)"
         type: number
         required: false
 
