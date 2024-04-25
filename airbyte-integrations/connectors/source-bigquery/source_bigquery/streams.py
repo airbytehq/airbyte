@@ -8,13 +8,13 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_protocol.models import SyncMode
-from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
-from airbyte_cdk.logger import AirbyteLogger
 
 """
 This file provides a stubbed example of how to use the Airbyte CDK to develop both a source connector which supports full refresh or and an
@@ -28,11 +28,11 @@ The approach here is not authoritative, and devs are free to use their own judge
 There are additional required TODOs in the files within the integration_tests folder and the spec.yaml file.
 """
 URL_BASE: str = "https://bigquery.googleapis.com"
-    
+
 
 class BigqueryStream(HttpStream, ABC):
-    """
-    """ 
+    """ """
+
     url_base = URL_BASE
     primary_key = "id"
     raise_on_http_errors = True
@@ -69,8 +69,8 @@ class BigqueryStream(HttpStream, ABC):
 
 
 class BigqueryDatasets(BigqueryStream):
-    """
-    """
+    """ """
+
     name = "datasets"
 
     def __init__(self, project_id: list, **kwargs):
@@ -82,10 +82,10 @@ class BigqueryDatasets(BigqueryStream):
         Documentation: https://cloud.google.com/bigquery/docs/reference/rest#rest-resource:-v2.datasets
         """
         return f"/bigquery/v2/projects/{self.project_id}/datasets"
-    
+
     def get_json_schema(self) -> Mapping[str, Any]:
         return {}
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         Override this method to define how a response is parsed.
@@ -124,7 +124,7 @@ class BigqueryTable(BigqueryTables):
                        https://cloud.google.com/bigquery/docs/reference/rest/v2/tables/get
         """
         return f"{super().path()}/{self.table_id}"
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
 
@@ -145,7 +145,7 @@ class BigqueryTableData(BigqueryTable):
         Documentation: https://cloud.google.com/bigquery/docs/reference/rest#rest-resource:-v2.tabledata
         """
         return f"{super().path()}/data"
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         :return an iterable containing each record in the response
@@ -153,7 +153,7 @@ class BigqueryTableData(BigqueryTable):
         records = response.json().get("rows")
         for record in records:
             yield record
-    
+
 
 # Basic incremental stream
 class IncrementalBigqueryDatasets(BigqueryDatasets, ABC):

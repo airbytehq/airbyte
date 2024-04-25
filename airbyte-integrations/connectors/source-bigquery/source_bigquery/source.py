@@ -8,18 +8,19 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
-from requests import codes, exceptions  # type: ignore[import]
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from airbyte_protocol.models import SyncMode
-from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
+from airbyte_protocol.models import SyncMode
+from requests import codes, exceptions  # type: ignore[import]
 
 from .auth import BigqueryAuth
-from .streams import BigqueryDatasets, BigqueryTables, BigqueryStream
+from .streams import BigqueryDatasets, BigqueryStream, BigqueryTables
+
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
 
@@ -58,19 +59,21 @@ class SourceBigquery(AbstractSource):
         try:
             self._auth = BigqueryAuth(config)
             # try reading first table from each dataset, to check the connectivity,
-            for dataset in BigqueryDatasets(project_id=config["project_id"], authenticator=self._auth).read_records(sync_mode=SyncMode.full_refresh):
+            for dataset in BigqueryDatasets(project_id=config["project_id"], authenticator=self._auth).read_records(
+                sync_mode=SyncMode.full_refresh
+            ):
                 dataset_id = dataset.get("datasetReference")["datasetId"]
-                next(BigqueryTables(dataset_id=dataset_id, project_id=config["project_id"], authenticator=self._auth).read_records(sync_mode=SyncMode.full_refresh))
+                next(
+                    BigqueryTables(dataset_id=dataset_id, project_id=config["project_id"], authenticator=self._auth).read_records(
+                        sync_mode=SyncMode.full_refresh
+                    )
+                )
         except exceptions.HTTPError as error:
             error_msg = f"An error occurred: {error.response.text}"
             try:
                 error_data = error.response.json()[0]
             except (KeyError, requests.exceptions.JSONDecodeError) as e:
-                raise AirbyteTracedException(
-                    internal_message=str(e),
-                    failure_type=FailureType.system_error,
-                    message=error_msg
-                )
+                raise AirbyteTracedException(internal_message=str(e), failure_type=FailureType.system_error, message=error_msg)
             else:
                 error_code = error_data.get("errorCode")
                 if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":

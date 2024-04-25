@@ -1,6 +1,6 @@
 documentationUrl: https://docs.airbyte.com/integrations/sources/bigquery
 supportsIncremental: true
-supported_sync_modes": 
+supported_sync_modes:
   - overwrite
   - append
   - append_dedup
@@ -55,6 +55,6 @@ connectionSpecification:
             description: A string that must be a valid where clause in the relevant warehouse (not nullable).
             type: string
         required:
-        - name
-        - parent_stream
-        - where_clause
+          - name
+          - parent_stream
+          - where_clause
