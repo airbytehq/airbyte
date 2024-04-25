@@ -5,9 +5,20 @@ on:
     inputs:
       pr:
         description: "Pull request number. Used to pull the proper branch ref, including on forks."
+        type: number
         required: false
       comment-id:
         description: "Optional. The comment-id of the slash command. Used to update the comment with the status."
+        required: false
+
+      # These must be declared, but they are unused and ignored.
+      # TODO: Get 'repo' and 'gitref' from the PR on other workflows, so we can remove these.
+      repo:
+        description: "Repo (Ignored)"
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "Ref (Ignored)"
         required: false
 
 run-name: "Fix formatting on PR #${{ github.event.inputs.pr }}"
@@ -21,19 +32,6 @@ jobs:
     name: "Run airbyte-ci format fix all"
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-        with:
-          # Important that this is set so that CI checks are triggered again
-          # Without this we would be forever waiting on required checks to pass
-          token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
-          fetch-depth: 1
-
-      - name: Checkout PR (${{ github.event.inputs.pr }})
-        uses: dawidd6/action-checkout-pr@v1
-        with:
-          pr: ${{ github.event.inputs.pr }}
-
       - name: Get job variables
         id: job-vars
         env:
@@ -41,9 +39,24 @@ jobs:
         shell: bash
         run: |
           PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.inputs.pr }})
-          echo "::set-output name=repo::$(echo "$PR_JSON" | jq -r .head.repo.full_name)"
-          echo "::set-output name=branch::$(echo "$PR_JSON" | jq -r .head.ref)"
+          echo "repo=$(echo "$PR_JSON" | jq -r .head.repo.full_name)" >> $GITHUB_OUTPUT
+          echo "branch=$(echo "$PR_JSON" | jq -r .head.ref)" >> $GITHUB_OUTPUT
           echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ steps.job-vars.outputs.repo }}
+          ref: ${{ steps.job-vars.outputs.branch }}
+          fetch-depth: 1
+          # Important that token is a PAT so that CI checks are triggered again.
+          # Without this we would be forever waiting on required checks to pass.
+          token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+
+      # - name: Checkout PR (${{ github.event.inputs.pr }})
+      #   uses: dawidd6/action-checkout-pr@v1
+      #   with:
+      #     pr: ${{ github.event.inputs.pr }}
 
       - name: Append comment with job run link
         # If not comment-id is provided, this will create a new
@@ -82,6 +95,7 @@ jobs:
         # Don't commit if we're on master
         if: github.ref != 'refs/heads/master'
         with:
+          repository: ${{ steps.job-vars.outputs.repo }}
           commit_message: "chore: format code"
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
