@@ -93,6 +93,7 @@ jobs:
         # Don't commit if we're on master
         if: github.ref != 'refs/heads/master'
         with:
+          repository: ${{ steps.job-vars.outputs.repo }}
           commit_message: "chore: format code"
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
