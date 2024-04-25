@@ -4,7 +4,6 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Notion Source Spec",
     "type": "object",
-    "required": ["credentials"],
     "properties": {
       "start_date": {
         "title": "Start Date",

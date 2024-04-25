@@ -8,7 +8,6 @@ import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.DISABL
 import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_MODE;
 import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_SSL;
 import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
-import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.obtainConnectionOptions;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -24,6 +23,7 @@ import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransf
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
+import io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
@@ -50,6 +50,8 @@ public class PostgresDestination extends AbstractJdbcDestination<PostgresState> 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDestination.class);
 
   public static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
+
+  private static final String DROP_CASCADE_OPTION = "drop_cascade";
 
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new PostgresDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
@@ -92,7 +94,7 @@ public class PostgresDestination extends AbstractJdbcDestination<PostgresState> 
         if (DISABLE.equals(config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText())) {
           additionalParameters.put("sslmode", DISABLE);
         } else {
-          additionalParameters.putAll(obtainConnectionOptions(config.get(PARAM_SSL_MODE)));
+          additionalParameters.putAll(PostgresSslConnectionUtils.obtainConnectionOptions(config.get(PARAM_SSL_MODE)));
         }
       } else {
         additionalParameters.put(JdbcUtils.SSL_KEY, "true");
@@ -132,8 +134,10 @@ public class PostgresDestination extends AbstractJdbcDestination<PostgresState> 
   }
 
   @Override
-  protected JdbcSqlGenerator getSqlGenerator() {
-    return new PostgresSqlGenerator(new PostgresSQLNameTransformer());
+  protected JdbcSqlGenerator getSqlGenerator(final JsonNode config) {
+    final JsonNode dropCascadeNode = config.get(DROP_CASCADE_OPTION);
+    final boolean dropCascade = dropCascadeNode != null && dropCascadeNode.asBoolean();
+    return new PostgresSqlGenerator(new PostgresSQLNameTransformer(), dropCascade);
   }
 
   @Override

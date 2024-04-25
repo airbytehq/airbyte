@@ -295,10 +295,10 @@ def test_request_option(
     )
     stream_slice = {"first_stream_id": "1234", "second_stream_id": "4567"}
 
-    assert expected_req_params == partition_router.get_request_params(stream_slice=stream_slice)
-    assert expected_headers == partition_router.get_request_headers(stream_slice=stream_slice)
-    assert expected_body_json == partition_router.get_request_body_json(stream_slice=stream_slice)
-    assert expected_body_data == partition_router.get_request_body_data(stream_slice=stream_slice)
+    assert partition_router.get_request_params(stream_slice=stream_slice) == expected_req_params
+    assert partition_router.get_request_headers(stream_slice=stream_slice) == expected_headers
+    assert partition_router.get_request_body_json(stream_slice=stream_slice) == expected_body_json
+    assert partition_router.get_request_body_data(stream_slice=stream_slice) == expected_body_data
 
 
 @pytest.mark.parametrize(
@@ -353,7 +353,7 @@ def test_request_params_interpolation_for_parent_stream(
     )
     stream_slice = {"first_stream_id": "1234", "second_stream_id": "4567"}
 
-    assert expected_request_params == partition_router.get_request_params(stream_slice=stream_slice)
+    assert partition_router.get_request_params(stream_slice=stream_slice) == expected_request_params
 
 
 def test_given_record_is_airbyte_message_when_stream_slices_then_use_record_data():
