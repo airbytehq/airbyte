@@ -11,13 +11,13 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
-  dockerImageTag: 2.0.4
+  dockerImageTag: 2.0.6
   dockerRepository: airbyte/source-shopify
   documentationUrl: https://docs.airbyte.com/integrations/sources/shopify
   githubIssueLabel: source-shopify
   icon: shopify.svg
   license: ELv2
-  maxSecondsBetweenMessages: 7200
+  maxSecondsBetweenMessages: 21600
   name: Shopify
   remoteRegistries:
     pypi:

@@ -1,4 +1,4 @@
-# A list of URLs that should be redirected to new pathes
+# A list of URLs that should be redirected to new paths
 - from: /upgrading-airbyte
   to: /operator-guides/upgrading-airbyte
 - from: /catalog

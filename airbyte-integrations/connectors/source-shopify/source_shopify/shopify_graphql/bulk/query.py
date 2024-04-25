@@ -25,6 +25,7 @@ class ShopifyBulkTemplates:
                             id
                             status
                             errorCode
+                            createdAt
                             objectCount
                             fileSize
                             url
@@ -32,6 +33,24 @@ class ShopifyBulkTemplates:
                         }
                     }
                 }"""
+        ).substitute(job_id=bulk_job_id)
+
+    @staticmethod
+    def cancel(bulk_job_id: str) -> str:
+        return Template(
+            """mutation {
+                bulkOperationCancel(id: "$job_id") {
+                    bulkOperation {
+                        id
+                        status
+                        createdAt
+                    }
+                    userErrors {
+                        field
+                        message
+                    }
+                }
+            }"""
         ).substitute(job_id=bulk_job_id)
 
     @staticmethod
@@ -46,6 +65,7 @@ class ShopifyBulkTemplates:
                     bulkOperation {
                         id
                         status
+                        createdAt
                     }
                     userErrors {
                         field

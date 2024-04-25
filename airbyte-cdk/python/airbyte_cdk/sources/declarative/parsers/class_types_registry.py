@@ -5,6 +5,7 @@
 from typing import Mapping
 
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
+from airbyte_cdk.sources.declarative.auth.jwt import JwtAuthenticator
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
@@ -80,6 +81,7 @@ CLASS_TYPES_REGISTRY: Mapping[str, type] = {
     "InterpolatedRequestOptionsProvider": InterpolatedRequestOptionsProvider,
     "InterpolatedString": InterpolatedString,
     "JsonFileSchemaLoader": JsonFileSchemaLoader,
+    "JwtAuthenticator": JwtAuthenticator,
     "ListPartitionRouter": ListPartitionRouter,
     "MinMaxDatetime": MinMaxDatetime,
     "NoAuth": NoAuth,

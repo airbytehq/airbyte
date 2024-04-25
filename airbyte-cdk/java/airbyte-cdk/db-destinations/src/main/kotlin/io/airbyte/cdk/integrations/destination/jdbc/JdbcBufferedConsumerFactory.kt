@@ -15,7 +15,7 @@ import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
-import io.airbyte.cdk.integrations.destination.async.deser.DeserializationUtil
+import io.airbyte.cdk.integrations.destination.async.deser.AirbyteMessageDeserializer
 import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
@@ -52,7 +52,8 @@ import org.slf4j.LoggerFactory
 object JdbcBufferedConsumerFactory {
     private val LOGGER: Logger = LoggerFactory.getLogger(JdbcBufferedConsumerFactory::class.java)
 
-    @JvmOverloads
+    const val DEFAULT_OPTIMAL_BATCH_SIZE_FOR_FLUSH = 25 * 1024 * 1024L
+
     fun createAsync(
         outputRecordCollector: Consumer<AirbyteMessage>,
         database: JdbcDatabase,
@@ -62,7 +63,8 @@ object JdbcBufferedConsumerFactory {
         catalog: ConfiguredAirbyteCatalog,
         defaultNamespace: String?,
         typerDeduper: TyperDeduper,
-        dataTransformer: StreamAwareDataTransformer = IdentityDataTransformer()
+        dataTransformer: StreamAwareDataTransformer = IdentityDataTransformer(),
+        optimalBatchSizeBytes: Long = DEFAULT_OPTIMAL_BATCH_SIZE_FOR_FLUSH,
     ): SerializedAirbyteMessageConsumer {
         val writeConfigs =
             createWriteConfigs(namingResolver, config, catalog, sqlOperations.isSchemaRequired)
@@ -71,15 +73,15 @@ object JdbcBufferedConsumerFactory {
             onStartFunction(database, sqlOperations, writeConfigs, typerDeduper),
             onCloseFunction(typerDeduper),
             JdbcInsertFlushFunction(
-                recordWriterFunction(database, sqlOperations, writeConfigs, catalog)
+                recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
+                optimalBatchSizeBytes
             ),
             catalog,
             BufferManager((Runtime.getRuntime().maxMemory() * 0.2).toLong()),
-            FlushFailure(),
             Optional.ofNullable(defaultNamespace),
+            FlushFailure(),
             Executors.newFixedThreadPool(2),
-            dataTransformer,
-            DeserializationUtil()
+            AirbyteMessageDeserializer(dataTransformer)
         )
     }
 
@@ -127,10 +129,10 @@ object JdbcBufferedConsumerFactory {
                 val finalSchema = Optional.ofNullable(abStream.namespace).orElse(defaultSchemaName)
                 val rawName = concatenateRawTableName(finalSchema, streamName)
                 tableName = namingResolver.convertStreamName(rawName)
-                tmpTableName = namingResolver.getTmpTableName(rawName)
+                tmpTableName = @Suppress("deprecation") namingResolver.getTmpTableName(rawName)
             } else {
-                tableName = namingResolver.getRawTableName(streamName)
-                tmpTableName = namingResolver.getTmpTableName(streamName)
+                tableName = @Suppress("deprecation") namingResolver.getRawTableName(streamName)
+                tmpTableName = @Suppress("deprecation") namingResolver.getTmpTableName(streamName)
             }
             val syncMode = stream.destinationSyncMode
 
@@ -267,7 +269,7 @@ object JdbcBufferedConsumerFactory {
     /** Tear down functionality */
     private fun onCloseFunction(typerDeduper: TyperDeduper): OnCloseFunction {
         return OnCloseFunction {
-            hasFailed: Boolean,
+            _: Boolean,
             streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary> ->
             try {
                 typerDeduper.typeAndDedupe(streamSyncSummaries)

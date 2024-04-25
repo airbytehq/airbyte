@@ -111,7 +111,7 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
 
   @Override
   protected SqlGenerator getSqlGenerator() {
-    return new SnowflakeSqlGenerator();
+    return new SnowflakeSqlGenerator(0);
   }
 
   @Override
