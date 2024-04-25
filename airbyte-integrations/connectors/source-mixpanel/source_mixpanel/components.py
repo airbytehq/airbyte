@@ -22,7 +22,7 @@ from .streams.engage import EngageSchema
 
 
 class MixpanelHttpRequester(HttpRequester):
-    reqs_per_hour_limit = 60
+    reqs_per_hour_limit = 0
     is_first_request = True
 
     def get_request_headers(
