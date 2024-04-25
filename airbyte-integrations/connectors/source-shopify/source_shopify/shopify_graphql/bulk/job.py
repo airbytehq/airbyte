@@ -54,6 +54,8 @@ class ShopifyBulkManager:
     # to maximize the performance for multi-connection syncs and control the bulk job size within +- 1 hours (3600 sec),
     # Ideally the source will balance on it's own rate, based on the time taken to return the data for the slice.
     job_max_elapsed_time_sec: Final[float] = 1800.0
+    # retry max limit
+    _job_retry_on_error_max_limit: Final[int] = 6
     # 0.1 ~= P2H, default value, lower boundary for slice size
     job_size_min: Final[float] = 0.1
     # P365D, upper boundary for slice size
@@ -83,6 +85,14 @@ class ShopifyBulkManager:
     log_job_state_msg_count: int = field(init=False, default=0)
     # one time retryable error counter
     _one_time_error_retried: bool = field(init=False, default=False)
+    # retry counter
+    _job_retry_on_error_count: int = field(init=False, default=0)
+
+    # the set of retryable errors
+    _retryable_errors: Final[set] = (
+        ShopifyBulkExceptions.BulkJobBadResponse,
+        ShopifyBulkExceptions.BulkJobUnknownError,
+    )
 
     @property
     def tools(self) -> BulkTools:
@@ -302,6 +312,18 @@ class ShopifyBulkManager:
     def on_job_with_errors(self, errors: List[Mapping[str, Any]]) -> AirbyteTracedException:
         raise ShopifyBulkExceptions.BulkJobUnknownError(f"Could not validate the status of the BULK Job `{self.job_id}`. Errors: {errors}.")
 
+    def on_retryable_error(self, response: requests.Response, exception: Exception) -> Optional[requests.Response]:
+        if self._job_retry_on_error_count == self._job_retry_on_error_max_limit:
+            self.on_job_with_errors(self.job_check_for_errors(response))
+        else:
+            # increment the attempt
+            self._job_retry_on_error_count += 1
+            # retry the request
+            self.logger.info(
+                f"Stream: `{self.stream_name}`, retrying bad request, attempt: {self._job_retry_on_error_count}. Error: {repr(exception)}."
+            )
+            return self.job_retry_request(response.request)
+
     def job_check_for_errors(self, response: requests.Response) -> Union[AirbyteTracedException, Iterable[Mapping[str, Any]]]:
         try:
             return response.json().get("errors") or response.json().get("data", {}).get("bulkOperationRunQuery", {}).get("userErrors", [])
@@ -310,23 +332,14 @@ class ShopifyBulkManager:
                 f"Couldn't check the `response` for `errors`, status: {response.status_code}, response: `{response.text}`. Trace: {repr(e)}."
             )
 
-    def job_one_time_retry_error(self, response: requests.Response, exception: Exception) -> Optional[requests.Response]:
-        if not self._one_time_error_retried:
-            request = response.request
-            self.logger.info(f"Stream: `{self.stream_name}`, retrying `Bad Request`: {request.body}. Error: {repr(exception)}.")
-            self._one_time_error_retried = True
-            return self.job_retry_request(request)
-        else:
-            self.on_job_with_errors(self.job_check_for_errors(response))
-
     def job_track_running(self) -> Union[AirbyteTracedException, requests.Response]:
         # format Job state check args
         status_args = self.job_get_request_args(ShopifyBulkTemplates.status)
-        # re-use of `self._session(*, **)` to make BULK Job status checks
-        with self.session as track_running_job:
-            response = track_running_job.request(**status_args)
         # errors check
         try:
+            # re-use of `self._session(*, **)` to make BULK Job status checks
+            with self.session as track_running_job:
+                response = track_running_job.request(**status_args)
             errors = self.job_check_for_errors(response)
             if not errors:
                 self.job_update_state(response)
@@ -335,11 +348,8 @@ class ShopifyBulkManager:
             else:
                 # execute ERRORS scenario
                 self.on_job_with_errors(errors)
-        except (
-            ShopifyBulkExceptions.BulkJobBadResponse,
-            ShopifyBulkExceptions.BulkJobUnknownError,
-        ) as error:
-            return self.job_one_time_retry_error(response, error)
+        except self._retryable_errors as error:
+            return self.on_retryable_error(response, error)
 
     def job_check_state(self) -> Optional[str]:
         response: Optional[requests.Response] = None
@@ -421,11 +431,8 @@ class ShopifyBulkManager:
                 return response if not errors else None
             else:
                 return self.job_retry_on_concurrency(request)
-        except (ShopifyBulkExceptions.BulkJobBadResponse, ShopifyBulkExceptions.BulkJobUnknownError) as err:
-            # sometimes we face with `HTTP-500 Internal Server Error`
-            # we should retry such at least once
-            self.logger.info(f"Stream: `{self.stream_name}`, retrying Bad Request: {request.body}, error: {repr(err)}.")
-            return self.job_retry_request(request)
+        except self._retryable_errors as error:
+            return self.on_retryable_error(response, error)
 
     @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
     def job_check(self, created_job_response: requests.Response) -> Optional[str]:
@@ -443,7 +450,8 @@ class ShopifyBulkManager:
             ShopifyBulkExceptions.BulkJobFailed,
             ShopifyBulkExceptions.BulkJobTimout,
             ShopifyBulkExceptions.BulkJobAccessDenied,
-            # this one is one-time retriable
+            # this one is retriable,mbut stil needs to be raised,
+            # if the max attempts value is reached.
             ShopifyBulkExceptions.BulkJobUnknownError,
         ) as bulk_job_error:
             raise bulk_job_error

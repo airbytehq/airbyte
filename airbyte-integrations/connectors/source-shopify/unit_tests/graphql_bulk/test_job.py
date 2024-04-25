@@ -167,30 +167,40 @@ def test_job_check(mocker, request, requests_mock, job_response, auth_config, er
             ShopifyBulkExceptions.BulkJobUnknownError, 
             "Could not validate the status of the BULK Job",
         ),
+        (
+            "bulk_successful_response_with_errors", 
+            ShopifyBulkExceptions.BulkJobBadResponse, 
+            "Couldn't check the `response` for `errors`",
+        ),
     ],
     ids=[
-        "success with errors (edge)",
+        "BulkJobUnknownError",
+        "BulkJobBadResponse",
     ],
 )
-def test_one_time_retry_job_check(mocker, request, requests_mock, job_response, auth_config, error_type, expected) -> None:
+def test_job_retry_on_job_check(mocker, request, requests_mock, job_response, auth_config, error_type, expected) -> None:
     stream = MetafieldOrders(auth_config)
     # modify the sleep time for the test
     stream.job_manager.concurrent_max_retry = 1
     stream.job_manager.concurrent_interval_sec = 1
     stream.job_manager.job_check_interval_sec = 1
+    # patch the retries number for the test
+    stream.job_manager._job_retry_on_error_max_limit = 2
     # get job_id from FIXTURE
     job_id = request.getfixturevalue(job_response).get("data", {}).get("node", {}).get("id")
     # patching the method to get the right ID checks
     if job_id:
         mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkManager.job_get_id", value=job_id)
+        mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkManager.job_check_for_errors", side_effect=error_type(expected))
     # mocking the response for STATUS CHECKS
     requests_mock.post(stream.job_manager.base_url, json=request.getfixturevalue(job_response))
     test_job_status_response = requests.post(stream.job_manager.base_url)
     with pytest.raises(error_type) as error:
         stream.job_manager.job_check(test_job_status_response)
     # The retried request should FAIL here, because we stil want to see the Exception raised
-    # We expect the call count to be 4 due to the status checks, the non-retried request would take 2 calls.
-    assert expected in repr(error.value) and requests_mock.call_count == 4
+    # We expect the call count to be 5 due to the status checks and max retries = 2, 
+    # the non-retried request would take 2 calls.
+    assert expected in repr(error.value) and requests_mock.call_count == 5
 
 
 @pytest.mark.parametrize(
