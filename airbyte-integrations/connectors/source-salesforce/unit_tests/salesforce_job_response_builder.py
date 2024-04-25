@@ -1,6 +1,7 @@
-from airbyte_cdk.test.mock_http.response_builder import HttpResponseBuilder, find_template
-from airbyte_cdk.test.mock_http import HttpResponse
 import json
+
+from airbyte_cdk.test.mock_http import HttpResponse
+from airbyte_cdk.test.mock_http.response_builder import HttpResponseBuilder, find_template
 
 
 class SalesforceJobResponseBuilder:
@@ -25,4 +26,5 @@ class SalesforceJobResponseBuilder:
 
     def build(self) -> HttpResponse:
         return HttpResponse(json.dumps(self._response), self._status_code)
+    sponse(json.dumps(self._response), self._status_code)
     

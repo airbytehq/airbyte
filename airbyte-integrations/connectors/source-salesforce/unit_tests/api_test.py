@@ -32,6 +32,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils import AirbyteTracedException
 from conftest import encoding_symbols_parameters, generate_stream
 from requests.exceptions import ChunkedEncodingError, HTTPError
+from salesforce_job_response_builder import SalesforceJobResponseBuilder
 from source_salesforce.api import Salesforce
 from source_salesforce.exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING
 from source_salesforce.source import SourceSalesforce
@@ -43,7 +44,6 @@ from source_salesforce.streams import (
     IncrementalRestSalesforceStream,
     RestSalesforceStream,
 )
-from salesforce_job_response_builder import SalesforceJobResponseBuilder
 
 _A_CHUNKED_RESPONSE = [b"first chunk", b"second chunk"]
 _A_JSON_RESPONSE = {"id": "any id"}
