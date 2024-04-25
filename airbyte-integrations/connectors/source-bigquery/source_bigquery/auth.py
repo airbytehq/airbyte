@@ -5,18 +5,13 @@
 from typing import Any, Mapping, Union
 
 import json
-import requests
 import httplib2
 from google.auth.crypt import RSASigner
-from oauth2client import GOOGLE_TOKEN_URI
-from oauth2client.service_account import ServiceAccountCredentials, _JWTAccessCredentials
-from airbyte_cdk.models import FailureType
+from oauth2client.service_account import ServiceAccountCredentials
 from airbyte_cdk.sources.streams.http.requests_native_auth import (
-    BasicHttpAuthenticator,
     Oauth2Authenticator,
     TokenAuthenticator,
 )
-from airbyte_cdk.utils import AirbyteTracedException
 
 
 SCOPES = ['https://www.googleapis.com/auth/bigquery', 'https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/cloud-platform.read-only']
@@ -32,8 +27,6 @@ class BigqueryAuth:
         h = httplib2.Http()
         credentials.authorize(h)
         token = credentials.get_access_token()
-        access_token = str(token.access_token)
-        auth = TokenAuthenticator(token=access_token)
         
-        return auth
+        return TokenAuthenticator(token=str(token.access_token))
     
