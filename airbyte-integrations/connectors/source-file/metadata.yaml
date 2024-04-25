@@ -16,6 +16,7 @@ data:
   githubIssueLabel: source-file
   icon: file.svg
   license: MIT
+  maxSecondsBetweenMessages: 5400
   name: File (CSV, JSON, Excel, Feather, Parquet)
   remoteRegistries:
     pypi:
