@@ -3,51 +3,52 @@
   "type": "object",
   "properties": {
     "description": {
+      "description": "The description of the dashboard.",
       "type": "string"
     },
     "id": {
-      "type": "string",
-      "description": "The ID of the dashboard."
+      "description": "The ID of the dashboard.",
+      "type": "string"
     },
     "isFavourite": {
-      "type": "boolean",
-      "description": "Whether the dashboard is selected as a favorite by the user."
+      "description": "Indicates whether the dashboard is marked as a favorite by the user.",
+      "type": "boolean"
     },
     "name": {
-      "type": "string",
-      "description": "The name of the dashboard."
+      "description": "The name of the dashboard.",
+      "type": "string"
     },
     "owner": {
-      "description": "The owner of the dashboard.",
+      "description": "Details of the owner of the dashboard.",
       "type": "object",
       "properties": {
         "key": {
-          "type": "string",
-          "description": "This property is deprecated in favor of `accountId` because of privacy changes. See the [migration guide](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.  \nThe key of the user."
+          "description": "Deprecated. Use `accountId` for privacy reasons.",
+          "type": "string"
         },
         "self": {
-          "type": "string",
-          "description": "The URL of the user."
+          "description": "The URL of the dashboard owner details.",
+          "type": "string"
         },
         "name": {
-          "type": "string",
-          "description": "This property is deprecated in favor of `accountId` because of privacy changes. See the [migration guide](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.  \nThe username of the user."
+          "description": "Deprecated. Use `accountId` for privacy reasons.",
+          "type": "string"
         },
         "displayName": {
-          "type": "string",
-          "description": "The display name of the user. Depending on the user\u2019s privacy setting, this may return an alternative value."
+          "description": "The display name of the dashboard owner. Privacy settings may affect the display value.",
+          "type": "string"
         },
         "active": {
-          "type": "boolean",
-          "description": "Whether the user is active."
+          "description": "Indicates whether the owner is an active user.",
+          "type": "boolean"
         },
         "accountId": {
+          "description": "The account ID of the dashboard owner.",
           "maxLength": 128,
-          "type": "string",
-          "description": "The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*."
+          "type": "string"
         },
         "avatarUrls": {
-          "description": "The avatars of the user.",
+          "description": "The avatars of the dashboard owner.",
           "type": "object",
           "properties": {
             "16x16": {
@@ -71,26 +72,26 @@
       }
     },
     "popularity": {
-      "type": "integer",
-      "description": "The number of users who have this dashboard as a favorite."
+      "description": "The number of users who have marked this dashboard as a favorite.",
+      "type": "integer"
     },
     "rank": {
-      "type": "integer",
-      "description": "The rank of this dashboard."
+      "description": "The rank of the dashboard.",
+      "type": "integer"
     },
     "self": {
-      "type": "string",
-      "description": "The URL of these dashboard details."
+      "description": "The URL of the dashboard details.",
+      "type": "string"
     },
     "sharePermissions": {
+      "description": "Details of any share permissions for the dashboard.",
       "type": "array",
-      "description": "The details of any share permissions for the dashboard.",
       "items": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
-            "description": "The unique identifier of the share permission."
+            "description": "The unique identifier of the share permission.",
+            "type": "integer"
           },
           "type": {
             "type": "string",
@@ -106,7 +107,7 @@
             ]
           },
           "project": {
-            "description": "The project that the filter is shared with. This is similar to the project object returned by [Get project](#api-rest-api-3-project-projectIdOrKey-get) but it contains a subset of the properties, which are: `self`, `id`, `key`, `assigneeType`, `name`, `roles`, `avatarUrls`, `projectType`, `simplified`.  \nFor a request, specify the `id` for the project.",
+            "description": "The project that the filter is shared with.",
             "type": "object",
             "properties": {
               "expand": {
@@ -2068,7 +2069,7 @@
             }
           },
           "group": {
-            "description": "The group that the filter is shared with. For a request, specify the `name` property for the group.",
+            "description": "The group that the filter is shared with.",
             "type": "object",
             "properties": {
               "name": {
@@ -2085,44 +2086,55 @@
       }
     },
     "view": {
-      "type": "string",
-      "description": "The URL of the dashboard."
+      "description": "The URL of the dashboard.",
+      "type": "string"
     },
     "editpermission": {
+      "description": "List of items representing the specific edit permissions assigned for the dashboard.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "group": {
+            "description": "The group associated with the edit permission.",
             "type": ["null", "object"]
           },
           "id": {
+            "description": "The ID of the edit permission.",
             "type": ["null", "integer"]
           },
           "project": {
+            "description": "The project associated with the edit permission.",
             "type": ["null", "object"]
           },
           "role": {
+            "description": "The role associated with the edit permission.",
             "type": ["null", "object"]
           },
           "type": {
+            "description": "The type of edit permission.",
             "type": ["null", "string"]
           },
           "user": {
+            "description": "The user associated with the edit permission.",
             "type": ["null", "object"]
           }
         }
       }
     },
     "isWritable": {
+      "description": "Indicates whether the dashboard is writable.",
       "type": ["null", "boolean"]
     },
     "systemDashboard": {
+      "description": "Information about the system dashboard.",
       "type": ["null", "boolean"]
     },
     "editPermissions": {
+      "description": "Details about the users/groups who have edit permissions for the dashboard.",
       "type": ["null", "array"],
       "items": {
+        "description": "List of edit permissions for the dashboard.",
         "type": ["null", "object"]
       }
     }
