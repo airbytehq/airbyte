@@ -337,18 +337,18 @@ definitions:
             filters: >-
               {"query.model": "-EMPTY", "history.runtime": "NOT NULL",
               "user.is_looker": "No",}
-            # client_id: "AiRbYtE2{{ timestamp(stream_state[''history_created_time'']) }}0"
+            # client_id: "AiRbYtE2{{ timestamp(stream_state[''history.created_time'']) }}0"
             # filter_expression: >-
-            #   ${{history.created_time}} > {date_time({{ format_datetime(stream_state[''history_created_time''], '%Y') }}, {{ format_datetime(stream_state[''history_created_time''], '%m') }},
-            #   {{ format_datetime(stream_state[''history_created_time''], '%d') }}, {{ format_datetime(stream_state[''history_created_time''], '%H') }}, {{ format_datetime(stream_state[''history_created_time''], '%M') }}, {{ format_datetime(stream_state[''history_created_time''], '%S') }})}
+            #   ${{history.created_time}} > {date_time({{ format_datetime(stream_state[''history.created_time''], '%Y') }}, {{ format_datetime(stream_state[''history.created_time''], '%m') }},
+            #   {{ format_datetime(stream_state[''history.created_time''], '%d') }}, {{ format_datetime(stream_state[''history.created_time''], '%H') }}, {{ format_datetime(stream_state[''history.created_time''], '%M') }}, {{ format_datetime(stream_state[''history.created_time''], '%S') }})}
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
       primary_key:
-        - query_id
-        - history_created_time
+        - query.id
+        - history.created_time
     user_sessions:
       $ref: "#/definitions/looker_base_stream"
       name: user_sessions

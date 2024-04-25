@@ -2,39 +2,39 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "query_id": {
+    "query.id": {
       "type": ["null", "integer"]
     },
-    "history_created_date": {
+    "history.created_date": {
       "type": ["null", "string"],
       "format": "date"
     },
-    "history_created_time": {
+    "history.created_time": {
       "type": "string",
       "format": "date-time"
     },
-    "query_model": {
+    "query.model": {
       "type": ["null", "string"]
     },
-    "query_view": {
+    "query.view": {
       "type": ["null", "string"]
     },
-    "space_id": {
+    "space.id": {
       "type": ["null", "integer"]
     },
-    "look_id": {
+    "look.id": {
       "type": ["null", "integer"]
     },
-    "dashboard_id": {
+    "dashboard.id": {
       "type": ["null", "integer"]
     },
-    "user_id": {
+    "user.id": {
       "type": ["null", "integer"]
     },
-    "history_query_run_count": {
+    "history.query_run_count": {
       "type": ["null", "integer"]
     },
-    "history_total_runtime": {
+    "history.total_runtime": {
       "multipleOf": 1e-20,
       "type": ["null", "number"]
     }
