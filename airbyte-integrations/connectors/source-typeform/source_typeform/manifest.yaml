@@ -124,7 +124,7 @@ definitions:
           inject_into: request_parameter
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ last_records[-1]['token'] }}"
+          cursor_value: "{{ last_record['token'] }}"
           stop_condition: "{{ not last_records }}"
           page_size: 1000
       partition_router:
