@@ -261,7 +261,7 @@ definitions:
   macros_stream:
     $ref: "#/definitions/base_incremental_stream"
     retriever:
-      $ref: "#/definitions/base_stream/retriever"
+      $ref: "#/definitions/semi_incremental_stream/retriever"
       requester:
         $ref: "#/definitions/retriever/requester"
         request_parameters:
@@ -386,7 +386,7 @@ definitions:
   ticket_audits_stream:
     $ref: "#/definitions/semi_incremental_stream"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "#/definitions/semi_incremental_stream/retriever"
       requester:
         $ref: "#/definitions/retriever/requester"
         request_parameters:
