@@ -62,3 +62,5 @@ test = "pytest tests"
 lint = "ruff check src"
 type_check = "mypy src --disallow-untyped-defs"
 pre-push = ["format", "lint", "test", "type_check"]
+
+[tool.airbyte_ci]
