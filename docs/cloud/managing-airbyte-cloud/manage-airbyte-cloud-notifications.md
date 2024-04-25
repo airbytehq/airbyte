@@ -50,7 +50,7 @@ Airbyte can send notifications to any generic webhook service. This is helpful w
 Open each section to see an example of the payload returned for the notification type. 
 
 :::info
-Airbyte passes the `data` payload along with text blocks that are intended for Slack usage.
+Airbyte passes both the `data` payload along with text blocks that are intended for Slack usage.
 :::
 
 <details>
