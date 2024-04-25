@@ -14,7 +14,7 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
-        backward_compatibility_tests_config: # Wrong format: uuid given in version 0.1.0, rag_ratings has an array of object instead of string
+        backward_compatibility_tests_config: # Wrong format: uuid given in version 0.1.0, rag_ratings has schema changes
           disable_for_version: "0.1.0"
   basic_read:
     tests:
@@ -22,11 +22,11 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams:
           - name: organization_identity_providers
-            bypass_reason: Stream cannot be seeded with sandbox credentails
+            bypass_reason: Stream cannot be seeded with sandbox credentials
           - name: organization_roles
-            bypass_reason: Stream cannot be seeded with sandbox credentails
+            bypass_reason: Stream cannot be seeded with sandbox credentials
           - name: projects_vacancies
-            bypass_reason: Stream cannot be seeded with sandbox credentails
+            bypass_reason: Stream cannot be seeded with sandbox credentials
   incremental:
     bypass_reason: "This connector does not implement incremental sync"
   full_refresh:

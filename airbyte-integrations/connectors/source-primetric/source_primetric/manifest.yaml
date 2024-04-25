@@ -236,7 +236,7 @@ definitions:
       type: DeclarativeStream
       name: organization_rag_scopes
       primary_key:
-        - text
+        - uuid
       retriever:
         type: SimpleRetriever
         requester:
@@ -1134,6 +1134,10 @@ schemas:
   OrganizationRagScopes:
     type: object
     properties:
+      uuid:
+        type: string
+      order:
+        type: integer
       text:
         type: string
       rag_type:
@@ -1374,18 +1378,20 @@ schemas:
       rag_ratings:
         type: array
         items:
-          rag_scope_uuid:
-            type:
-              - "null"
-              - string
-          text:
-            type:
-              - "null"
-              - string
-          value:
-            type:
-              - "null"
-              - number
+          type: object
+          properties:
+            rag_scope_uuid:
+              type:
+                - "null"
+                - string
+            text:
+              type:
+                - "null"
+                - string
+            value:
+              type:
+                - "null"
+                - number
 
   Skills:
     type: object
