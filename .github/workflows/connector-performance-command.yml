@@ -37,7 +37,6 @@ on:
         required: false
         type: string
         default: "true"
-
   workflow_dispatch:
     inputs:
       connector:

@@ -41,7 +41,7 @@ on:
         description: "Optional comment-id of the slash command. Ignore if not applicable."
         required: false
       pr:
-        description: "PR Number (ignored)"
+        description: "PR Number (Unused)"
         type: number
         required: false
 
