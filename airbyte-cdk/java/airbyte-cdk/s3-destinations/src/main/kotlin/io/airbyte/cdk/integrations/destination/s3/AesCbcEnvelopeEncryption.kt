@@ -23,15 +23,15 @@ data class AesCbcEnvelopeEncryption(
         USER_PROVIDED
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o == null || javaClass != o.javaClass) {
+        if (other == null || javaClass != other.javaClass) {
             return false
         }
 
-        val that = o as AesCbcEnvelopeEncryption
+        val that = other as AesCbcEnvelopeEncryption
 
         if (!key.contentEquals(that.key)) {
             return false

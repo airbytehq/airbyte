@@ -24,7 +24,7 @@ open class AdvancedTestDataComparator : TestDataComparator {
         }
     }
 
-    protected fun resolveIdentifier(identifier: String?): List<String?> {
+    protected open fun resolveIdentifier(identifier: String?): List<String?> {
         return java.util.List.of(identifier)
     }
 
@@ -136,7 +136,7 @@ open class AdvancedTestDataComparator : TestDataComparator {
         }
     }
 
-    protected fun compareBooleanValues(
+    protected open fun compareBooleanValues(
         firstBooleanValue: String,
         secondBooleanValue: String
     ): Boolean {
@@ -174,7 +174,7 @@ open class AdvancedTestDataComparator : TestDataComparator {
             .withZoneSameInstant(ZoneOffset.UTC)
     }
 
-    protected fun compareDateTimeWithTzValues(
+    protected open fun compareDateTimeWithTzValues(
         airbyteMessageValue: String,
         destinationValue: String
     ): Boolean {

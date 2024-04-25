@@ -7,14 +7,13 @@ import com.google.common.annotations.VisibleForTesting
 import com.google.common.collect.Iterables
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag.isDestinationV2
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.commons.functional.CheckedConsumer
 import java.sql.Connection
 import java.sql.SQLException
 import java.sql.Timestamp
 import java.time.Instant
 import java.util.*
-import java.util.function.Consumer
 import java.util.function.Supplier
 
 object SqlOperationsUtils {
@@ -29,6 +28,7 @@ object SqlOperationsUtils {
      * @param records records to write
      * @throws SQLException exception
      */
+    @JvmStatic
     @Throws(SQLException::class)
     fun insertRawRecordsInSingleQuery(
         insertQueryComponent: String?,
@@ -110,9 +110,7 @@ object SqlOperationsUtils {
                 // default
                 for (partition in Iterables.partition(records, 10000)) {
                     val sql = StringBuilder(insertQueryComponent)
-                    partition.forEach(
-                        Consumer { r: PartialAirbyteMessage? -> sql.append(recordQueryComponent) }
-                    )
+                    partition.forEach { _ -> sql.append(recordQueryComponent) }
                     val s = sql.toString()
                     val s1 = s.substring(0, s.length - 2) + (if (sem) ";" else "")
 

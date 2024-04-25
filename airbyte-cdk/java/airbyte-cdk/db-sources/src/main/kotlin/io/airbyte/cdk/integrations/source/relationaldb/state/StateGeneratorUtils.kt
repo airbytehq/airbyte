@@ -197,10 +197,11 @@ object StateGeneratorUtils {
      * @param airbyteStateMessage A [AirbyteStateType.LEGACY] state message.
      * @return A [AirbyteStateType.GLOBAL] state message.
      */
+    @JvmStatic
     fun convertLegacyStateToGlobalState(
         airbyteStateMessage: AirbyteStateMessage
     ): AirbyteStateMessage {
-        val dbState = Jsons.`object`(airbyteStateMessage.data, DbState::class.java)
+        val dbState = Jsons.`object`(airbyteStateMessage.data, DbState::class.java)!!
         val globalState =
             AirbyteGlobalState()
                 .withSharedState(Jsons.jsonNode(dbState.cdcState))
@@ -233,7 +234,7 @@ object StateGeneratorUtils {
     fun convertLegacyStateToStreamState(
         airbyteStateMessage: AirbyteStateMessage
     ): List<AirbyteStateMessage> {
-        return Jsons.`object`(airbyteStateMessage.data, DbState::class.java)
+        return Jsons.`object`(airbyteStateMessage.data, DbState::class.java)!!
             .streams
             .stream()
             .map { s: DbStreamState ->
@@ -255,7 +256,7 @@ object StateGeneratorUtils {
     fun convertStateMessage(
         state: io.airbyte.protocol.models.AirbyteStateMessage
     ): AirbyteStateMessage {
-        return Jsons.`object`(Jsons.jsonNode(state), AirbyteStateMessage::class.java)
+        return Jsons.`object`(Jsons.jsonNode(state), AirbyteStateMessage::class.java)!!
     }
 
     /**
@@ -265,6 +266,7 @@ object StateGeneratorUtils {
      * @Param supportedStateType the [AirbyteStateType] supported by this connector.
      * @return The deserialized object representation of the state.
      */
+    @JvmStatic
     fun deserializeInitialState(
         initialStateJson: JsonNode?,
         supportedStateType: AirbyteStateMessage.AirbyteStateType

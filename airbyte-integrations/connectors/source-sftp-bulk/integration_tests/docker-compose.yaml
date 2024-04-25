@@ -1,0 +1,9 @@
+version: "3"
+services:
+  atmoz-sftp:
+    image: atmoz/sftp
+    volumes:
+      - ./files:/home/foo/files
+    ports:
+      - "2222:22"
+    command: foo:pass:1001
