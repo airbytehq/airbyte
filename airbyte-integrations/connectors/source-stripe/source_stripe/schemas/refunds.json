@@ -36,9 +36,7 @@
     "metadata": {
       "description": "Any additional data or information associated with the refund.",
       "type": ["null", "object"],
-      "properties": {
-        "description": "Additional information about the refund."
-      }
+      "properties": {}
     },
     "payment_intent": {
       "description": "ID of the payment intent associated with the refund.",
