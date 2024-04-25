@@ -183,8 +183,8 @@ async def test_check_path_in_workdir(dagger_client):
         .with_workdir(str(connector.code_directory))
     )
     assert await utils.check_path_in_workdir(container, "metadata.yaml")
-    assert await utils.check_path_in_workdir(container, "setup.py")
-    assert await utils.check_path_in_workdir(container, "requirements.txt")
+    assert await utils.check_path_in_workdir(container, "pyproject.toml")
+    assert await utils.check_path_in_workdir(container, "poetry.lock")
     assert await utils.check_path_in_workdir(container, "not_existing_file") is False
 
 

@@ -124,7 +124,7 @@
     "react-dom": "^18.2.0",
     "react-markdown": "^8.0.7",
     "react-router": "5.3.3",
-    "sanitize-html": "^2.11.0",
+    "sanitize-html": "^2.12.1",
     "sockjs": "0.3.24",
     "trim": "0.0.3",
     "unist-builder": "^4.0.0",

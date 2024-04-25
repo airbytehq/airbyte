@@ -108,12 +108,12 @@ internal class PostgresUtilsTest {
     }
 
     companion object {
-        lateinit var PSQL_DB: PostgreSQLContainer<Nothing>
+        var PSQL_DB: PostgreSQLContainer<Nothing> =
+            PostgreSQLContainer<Nothing>("postgres:13-alpine")
 
         @JvmStatic
         @BeforeAll
         fun init(): Unit {
-            PSQL_DB = PostgreSQLContainer<Nothing>("postgres:13-alpine")
             PSQL_DB.start()
         }
     }

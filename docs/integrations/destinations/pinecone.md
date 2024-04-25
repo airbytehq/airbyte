@@ -74,13 +74,14 @@ OpenAI and Fake embeddings produce vectors with 1536 dimensions, and the Cohere 
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.0.23 | 2023-03-22 | [35911](https://github.com/airbytehq/airbyte/pull/35911) | Bump versions to latest, resolves test failures. |
-| 0.0.22 | 2023-12-11 | [33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens |
-| 0.0.21 | 2023-12-01 | [32697](https://github.com/airbytehq/airbyte/pull/32697) | Allow omitting raw text |
-| 0.0.20 | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
+| 0.0.24 | 2023-04-15 | [#37333](https://github.com/airbytehq/airbyte/pull/37333) | Update CDK & pytest version to fix security vulnerabilities. |
+| 0.0.23 | 2023-03-22 | [#35911](https://github.com/airbytehq/airbyte/pull/35911) | Bump versions to latest, resolves test failures. |
+| 0.0.22 | 2023-12-11 | [#33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens |
+| 0.0.21 | 2023-12-01 | [#32697](https://github.com/airbytehq/airbyte/pull/32697) | Allow omitting raw text |
+| 0.0.20 | 2023-11-13 | [#32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
 | 0.0.19   | 2023-10-20 | [#31329](https://github.com/airbytehq/airbyte/pull/31373) | Improve error messages |
 | 0.0.18   | 2023-10-20 | [#31329](https://github.com/airbytehq/airbyte/pull/31373) | Add support for namespaces and fix index cleaning when namespace is defined |
-| 0.0.17 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.0.17 | 2023-10-19 | [#31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.0.16   | 2023-10-15 | [#31329](https://github.com/airbytehq/airbyte/pull/31329) | Add OpenAI-compatible embedder option |
 | 0.0.15   | 2023-10-04 | [#31075](https://github.com/airbytehq/airbyte/pull/31075) | Fix OpenAI embedder batch size |
 | 0.0.14   | 2023-09-29 | [#30820](https://github.com/airbytehq/airbyte/pull/30820)     | Update CDK |

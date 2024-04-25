@@ -1,0 +1,15 @@
+{
+  "data": [
+    {
+      "name": "Teams Poll",
+      "id": "1",
+      "href": "https://api.surveymonkey.com/v3/collectors/1"
+    }
+  ],
+  "per_page": 50,
+  "page": 1,
+  "total": 1,
+  "links": {
+    "self": "https://api.surveymonkey.com/v3/surveys/307785415/collectors?page=1&per_page=50"
+  }
+}

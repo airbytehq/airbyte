@@ -8,7 +8,6 @@ import io.airbyte.api.client.model.generated.SourceDiscoverSchemaWriteRequestBod
 import io.airbyte.commons.io.LineGobbler
 import io.airbyte.commons.json.Jsons
 import io.airbyte.configoss.ConnectorJobOutput
-import io.airbyte.configoss.FailureReason
 import io.airbyte.configoss.StandardDiscoverCatalogInput
 import io.airbyte.protocol.models.AirbyteCatalog
 import io.airbyte.protocol.models.AirbyteMessage
@@ -34,7 +33,7 @@ constructor(
     private val connectorConfigUpdater: ConnectorConfigUpdater,
     private val streamFactory: AirbyteStreamFactory = DefaultAirbyteStreamFactory()
 ) : DiscoverCatalogTestHarness {
-    @Volatile private var process: Process? = null
+    @Volatile private lateinit var process: Process
 
     @Throws(TestHarnessException::class)
     override fun run(
@@ -54,21 +53,21 @@ constructor(
                 ConnectorJobOutput()
                     .withOutputType(ConnectorJobOutput.OutputType.DISCOVER_CATALOG_ID)
 
-            LineGobbler.gobble(process!!.errorStream, { msg: String? -> LOGGER.error(msg) })
+            LineGobbler.gobble(process.errorStream, { msg: String? -> LOGGER.error(msg) })
 
             val messagesByType = TestHarnessUtils.getMessagesByType(process, streamFactory, 30)
 
             val catalog =
                 messagesByType
-                    .getOrDefault(AirbyteMessage.Type.CATALOG, ArrayList())!!
+                    .getOrDefault(AirbyteMessage.Type.CATALOG, ArrayList())
                     .stream()
-                    .map { obj: AirbyteMessage? -> obj!!.catalog }
+                    .map { obj: AirbyteMessage -> obj.catalog }
                     .findFirst()
 
             val optionalConfigMsg =
                 TestHarnessUtils.getMostRecentConfigControlMessage(messagesByType)
             if (
-                optionalConfigMsg!!.isPresent &&
+                optionalConfigMsg.isPresent &&
                     TestHarnessUtils.getDidControlMessageChangeConfig(
                         inputConfig,
                         optionalConfigMsg.get()
@@ -86,11 +85,9 @@ constructor(
                     ConnectorJobOutput.OutputType.DISCOVER_CATALOG_ID,
                     messagesByType
                 )
-            failureReason!!.ifPresent { failureReason: FailureReason? ->
-                jobOutput.failureReason = failureReason
-            }
+            failureReason.ifPresent { jobOutput.failureReason = it }
 
-            val exitCode = process!!.exitValue()
+            val exitCode = process.exitValue()
             if (exitCode != 0) {
                 LOGGER.warn("Discover job subprocess finished with exit codee {}", exitCode)
             }
