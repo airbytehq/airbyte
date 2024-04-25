@@ -41,6 +41,13 @@ on:
         description: "Optional comment-id of the slash command. Ignore if not applicable."
         required: false
 
+      # TODO: Replace 'gitref' and 'repo' inputs with 'pr'.
+      # See example in `.github/workflows/format-fix-command.yml`.
+      pr:
+        description: "PR Number (ignored)"
+        type: number
+        required: false
+
 concurrency:
   group: publish-java-cdk
   cancel-in-progress: false

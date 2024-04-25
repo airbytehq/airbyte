@@ -5,9 +5,20 @@ on:
     inputs:
       pr:
         description: "Pull request number. Used to pull the proper branch ref, including on forks."
+        type: number
         required: false
       comment-id:
         description: "Optional. The comment-id of the slash command. Used to update the comment with the status."
+        required: false
+
+      # These must be declared, but they are unused and ignored.
+      # TODO: Get 'repo' and 'gitref' from the PR on other workflows, so we can remove these.
+      repo:
+        description: "Repo (Ignored)"
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "Ref (Ignored)"
         required: false
 
 run-name: "Fix formatting on PR #${{ github.event.inputs.pr }}"

@@ -37,6 +37,14 @@ on:
         required: false
         type: string
         default: "true"
+
+      # TODO: Replace 'gitref' and 'repo' inputs with 'pr'.
+      # See example in `.github/workflows/format-fix-command.yml`.
+      pr:
+        description: "PR Number (ignored)"
+        type: number
+        required: false
+
   workflow_dispatch:
     inputs:
       connector:
