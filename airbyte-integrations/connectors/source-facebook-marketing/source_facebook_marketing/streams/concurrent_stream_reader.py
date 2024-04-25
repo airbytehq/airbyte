@@ -7,10 +7,10 @@ from dataclasses import dataclass
 from functools import total_ordering
 from typing import Callable, ClassVar, Dict, List, Mapping, Any
 
-from airbyte_protocol.models import SyncMode
 from airbyte_cdk.models import ConfiguredAirbyteStream
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
+from airbyte_cdk.models import Type as MessageType
 
 
 class StopException(Exception):
@@ -57,6 +57,7 @@ class MessageSlice(Message):
 @dataclass(eq=False)
 class MessageData(Message):
     record: Dict
+    type: str = MessageType.RECORD
 
 
 class ConcurrentStreamReader:
@@ -67,10 +68,8 @@ class ConcurrentStreamReader:
                  logger: logging.Logger,
                  slice_logger: SliceLogger,
                  stream_state: typing.MutableMapping[str, typing.Any],
-                 state_manager,
                  configured_stream: ConfiguredAirbyteStream):
         self.stream_instance = stream_instance
-        self.state_manager = state_manager
         self.max_workers = max_workers
         self.logger = logger
         self.slice_logger = slice_logger
@@ -81,8 +80,6 @@ class ConcurrentStreamReader:
         self.to_workers: queue.Queue[Message] = queue.Queue(maxsize=self.max_workers * 100)
         self.to_consumer: queue.Queue[Message] = queue.Queue()
         self.to_iterator: queue.Queue[Message] = queue.PriorityQueue()
-
-        self.has_slices = False
 
         self.threads: List[threading.Thread] = []
         self.threads.append(threading.Thread(target=self._safe_thread, args=(self.consumer,), daemon=True))
@@ -187,11 +184,4 @@ class ConcurrentStreamReader:
                 break
             if isinstance(message, MessageFail):
                 raise message.exception
-            self.stream_state = self.stream_instance.get_updated_state(self.stream_state, message.record)
-            if self.configured_stream.sync_mode == SyncMode.incremental:
-                checkpoint_interval = self.stream_instance.state_checkpoint_interval
-                if checkpoint_interval and message.number % checkpoint_interval == 0:
-                    airbyte_state_message = self.stream_instance._checkpoint_state(self.stream_state, self.state_manager)
-                    yield airbyte_state_message
-            self.has_slices = True
             yield message.record

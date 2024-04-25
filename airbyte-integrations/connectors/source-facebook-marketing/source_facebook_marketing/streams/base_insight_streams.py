@@ -128,27 +128,28 @@ class AdsInsights(FBMarketingIncrementalStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
-        job = stream_slice["insight_job"]
+        manager = stream_slice["insight_job_manager"]
         account_id = stream_slice["account_id"]
 
-        try:
-            for obj in job.get_result():
-                data = obj.export_all_data()
-                if self._response_data_is_valid(data):
-                    self._add_account_id(data, account_id)
-                    yield data
-        except FacebookBadObjectError as e:
-            raise AirbyteTracedException(
-                message=f"API error occurs on Facebook side during job: {job}, wrong (empty) response received with errors: {e} "
-                f"Please try again later",
-                failure_type=FailureType.system_error,
-            ) from e
-        except FacebookRequestError as exc:
-            raise traced_exception(exc)
+        for job in manager.completed_jobs():
+            try:
+                for obj in job.get_result():
+                    data = obj.export_all_data()
+                    if self._response_data_is_valid(data):
+                        self._add_account_id(data, account_id)
+                        yield data
+            except FacebookBadObjectError as e:
+                raise AirbyteTracedException(
+                    message=f"API error occurs on Facebook side during job: {job}, wrong (empty) response received with errors: {e} "
+                    f"Please try again later",
+                    failure_type=FailureType.system_error,
+                ) from e
+            except FacebookRequestError as exc:
+                raise traced_exception(exc)
 
-        self._completed_slices[account_id].add(job.interval.start)
-        if job.interval.start == self._next_cursor_values[account_id]:
-            self._advance_cursor(account_id)
+            self._completed_slices[account_id].add(job.interval.start)
+            if job.interval.start == self._next_cursor_values[account_id]:
+                self._advance_cursor(account_id)
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -286,8 +287,7 @@ class AdsInsights(FBMarketingIncrementalStream):
                     jobs=self._generate_async_jobs(params=self.request_params(), account_id=account_id),
                     account_id=account_id,
                 )
-                for job in manager.completed_jobs():
-                    yield {"insight_job": job, "account_id": account_id}
+                yield {"insight_job_manager": manager, "account_id": account_id}
             except FacebookRequestError as exc:
                 raise traced_exception(exc)
 

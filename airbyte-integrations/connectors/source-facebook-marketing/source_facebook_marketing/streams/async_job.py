@@ -184,6 +184,9 @@ class ParentAsyncJob(AsyncJob):
 
     def __str__(self) -> str:
         """String representation of the job wrapper."""
+        if not self._jobs:
+            return f"ParentAsyncJob(No more jobs)"
+
         return f"ParentAsyncJob({self._jobs[0]} ... {len(self._jobs) - 1} jobs more)"
 
 
