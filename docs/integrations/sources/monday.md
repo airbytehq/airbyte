@@ -74,6 +74,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version | Date       | Pull Request                                              | Subject                                                                 |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------|
+| 2.1.2   | 2024-04-24 | [36652](https://github.com/airbytehq/airbyte/pull/36652)  | Schema descriptions and CDK 0.80.0                                      |
 | 2.1.1   | 2024-04-05 | [36717](https://github.com/airbytehq/airbyte/pull/36717)  | Add handling of complexityBudgetExhausted error.                        |
 | 2.1.0   | 2024-04-03 | [36746](https://github.com/airbytehq/airbyte/pull/36746)  | Pin airbyte-cdk version to `^0`                                         |
 | 2.0.4   | 2024-02-28 | [35696](https://github.com/airbytehq/airbyte/pull/35696)  | Fix extraction for `null` value in stream `Activity logs`               |
