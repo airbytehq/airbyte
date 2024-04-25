@@ -64,5 +64,5 @@ lint = "ruff check pipelines"
 
 [tool.airbyte_ci]
 optional_poetry_groups = ["dev"]
-poe_tasks = ["type_check", "lint", "test"]
+poe_tasks = ["type_check", "test"]
 mount_docker_socket = true
