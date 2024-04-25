@@ -14,6 +14,15 @@ from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
 
 
+class ShopifyConnectionErrors:
+    """Holds the errors classification and messaging scenarios."""
+
+    def __new__(self, stream: str) -> dict[int, str]:
+        return {
+            54: f"Stream `{stream}`. Shopify connection was reset. Job will be retried.",
+            104: f"Stream `{stream}`. Shopify connection was reset. Job will be retried.",
+        }
+
 class ShopifyNonRetryableErrors:
     """Holds the errors clasification and messaging scenarios."""
 
