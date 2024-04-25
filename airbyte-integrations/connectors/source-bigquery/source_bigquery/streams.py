@@ -71,17 +71,11 @@ class BigqueryStream(HttpStream, ABC):
 class BigqueryDatasets(BigqueryStream):
     """
     """
-    url_base = URL_BASE
     name = "datasets"
-    primary_key = "id"
-    raise_on_http_errors = True
 
     def __init__(self, project_id: list, **kwargs):
-        self.stream_path = self.path()
-        self.stream_name = self.name
-        self.stream_schema = self.get_json_schema()
-        super().__init__(self.stream_path, self.stream_name, self.stream_schema, **kwargs)
         self.project_id = project_id
+        super().__init__(self.path(), self.name, self.get_json_schema(), **kwargs)
 
     def path(self, **kwargs) -> str:
         """
@@ -130,6 +124,14 @@ class BigqueryTable(BigqueryTables):
                        https://cloud.google.com/bigquery/docs/reference/rest/v2/tables/get
         """
         return f"{super().path()}/{self.table_id}"
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+
+        :return an iterable containing each record in the response
+        """
+        record = response.json()
+        yield record
 
 
 class BigqueryTableData(BigqueryTable):
@@ -143,6 +145,14 @@ class BigqueryTableData(BigqueryTable):
         Documentation: https://cloud.google.com/bigquery/docs/reference/rest#rest-resource:-v2.tabledata
         """
         return f"{super().path()}/data"
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        records = response.json().get("rows")
+        for record in records:
+            yield record
     
 
 # Basic incremental stream
