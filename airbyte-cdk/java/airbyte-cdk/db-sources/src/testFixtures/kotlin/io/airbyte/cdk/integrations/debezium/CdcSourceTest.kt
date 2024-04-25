@@ -1032,14 +1032,12 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 .toList()
                 .get(0)
 
-        // Pk should be pointing to the last element from MODEL_RECORDS table.
-        Assertions.assertEquals("16", streamStateToBeTested.get("pk_val").asText())
-        Assertions.assertEquals("id", streamStateToBeTested.get("pk_name").asText())
-        Assertions.assertEquals("primary_key", streamStateToBeTested.get("state_type").asText())
+        validateStreamStateInResumableFullRefresh(streamStateToBeTested);
 
         Assertions.assertEquals((MODEL_RECORDS.size), recordsFromFirstBatch.size)
         assertExpectedRecords(HashSet(MODEL_RECORDS), recordsFromFirstBatch)
     }
+    protected open fun validateStreamStateInResumableFullRefresh(streamStateToBeTested: JsonNode) {}
 
     @Test
     @Throws(Exception::class)

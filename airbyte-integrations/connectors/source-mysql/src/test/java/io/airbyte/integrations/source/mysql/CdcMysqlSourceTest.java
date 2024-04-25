@@ -406,6 +406,14 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
     assertEquals(2, stateMessages.size());
   }
 
+  @Override
+  protected void validateStreamStateInResumableFullRefresh(final JsonNode streamStateToBeTested) {
+    // Pk should be pointing to the last element from MODEL_RECORDS table.
+    assertEquals("16", streamStateToBeTested.get("pk_val").asText());
+    assertEquals("id", streamStateToBeTested.get("pk_name").asText());
+    assertEquals("primary_key", streamStateToBeTested.get("state_type").asText());
+  }
+
   private void assertStateTypes(final List<? extends AirbyteStateMessage> stateMessages, final int indexTillWhichExpectPkState) {
     assertStateTypes(stateMessages, indexTillWhichExpectPkState, false);
   }
