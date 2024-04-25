@@ -86,7 +86,7 @@ class S3JsonlWriter(
         uploadManager.abort()
     }
 
-    override val fileFormat: FileUploadFormat?
+    override val fileFormat: FileUploadFormat
         get() = FileUploadFormat.JSONL
 
     @Throws(IOException::class)

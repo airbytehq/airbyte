@@ -68,11 +68,11 @@ class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer imple
     // Set up our raw tables
     uploaderMap.forEach((streamId, uploader) -> {
       final StreamConfig stream = catalog.getStream(streamId);
-      if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+      if (stream.getDestinationSyncMode() == DestinationSyncMode.OVERWRITE) {
         // For streams in overwrite mode, truncate the raw table.
         // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in
         // 1s1t mode.
-        final TableId rawTableId = TableId.of(stream.id().rawNamespace(), stream.id().rawName());
+        final TableId rawTableId = TableId.of(stream.getId().getRawNamespace(), stream.getId().getRawName());
         bigquery.delete(rawTableId);
         BigQueryUtils.createPartitionedTableIfNotExists(bigquery, rawTableId, DefaultBigQueryRecordFormatter.SCHEMA_V2);
       } else {

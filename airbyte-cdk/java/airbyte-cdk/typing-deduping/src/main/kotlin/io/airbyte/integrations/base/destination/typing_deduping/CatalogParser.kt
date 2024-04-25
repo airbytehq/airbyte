@@ -103,9 +103,11 @@ constructor(
 
     @VisibleForTesting
     fun toStreamConfig(stream: ConfiguredAirbyteStream): StreamConfig {
-        val schema: AirbyteType = AirbyteType.Companion.fromJsonSchema(stream.stream.jsonSchema)
         val airbyteColumns =
-            when (schema) {
+            when (
+                val schema: AirbyteType =
+                    AirbyteType.Companion.fromJsonSchema(stream.stream.jsonSchema)
+            ) {
                 is Struct -> schema.properties
                 is Union -> schema.asColumns()
                 else -> throw IllegalArgumentException("Top-level schema must be an object")
