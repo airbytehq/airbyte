@@ -366,13 +366,14 @@ def test_expand_stream_slices_job_size(
     # check the next slice
     assert stream.job_manager.job_size == adjusted_slice_size
 
+
 @pytest.mark.parametrize(
     "job_response, error_type, expected",
     [
         (
-            "bulk_job_created_response",
-            ConnectionError,
-            "retrying Bad Request",
+                "bulk_job_created_response",
+                ConnectionError,
+                "ConnectionError(104, 'Connection was relet by peer')",
         ),
     ],
     ids=[
@@ -393,16 +394,17 @@ def test_job_healthcheck_with_connection_errors(mocker, request, requests_mock, 
     # Patch the method to get the right ID checks
     if job_id:
         mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkManager.job_get_id", value=job_id)
-        mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkManager.job_check_for_errors", side_effect=error_type)
+        # we patch the method to raise the exception, to skip the complex patching of the whole logic
+        mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkManager.job_check_for_errors", side_effect=error_type(expected))
 
     # Mock the response for STATUS CHECKS
     requests_mock.post(stream.job_manager.base_url, json=request.getfixturevalue(job_response))
+    # register - call 1
     test_job_status_response = requests.post(stream.job_manager.base_url)
+    with pytest.raises(error_type) as error:
+        # register call 2, call 3 - retried with message
+        stream.job_manager.job_check(test_job_status_response)
 
-    response = stream.job_manager.job_healthcheck(test_job_status_response)
-
-    # The response should be not None, because the error is retried
-    assert response
     # The retried request should FAIL here, because we still want to see the Exception raised
-    # We expect the call count to be 4 due to the status checks, the non-retried request would take 2 calls. TODO: Confirm the 2 with Baz.
-    assert requests_mock.call_count == 2
+    # We expect the call count to be 3 due to the status checks, the non-retried request would take 3 calls.
+    assert expected in repr(error.value) and requests_mock.call_count == 3

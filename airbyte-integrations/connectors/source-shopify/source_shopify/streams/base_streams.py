@@ -18,7 +18,7 @@ from source_shopify.shopify_graphql.bulk.job import ShopifyBulkManager
 from source_shopify.shopify_graphql.bulk.query import ShopifyBulkQuery, ShopifyBulkTemplates
 from source_shopify.shopify_graphql.bulk.record import ShopifyBulkRecord
 from source_shopify.transform import DataTypeEnforcer
-from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache, ShopifyConnectionErrors
+from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache, ShopifyRetryableErrors
 from source_shopify.utils import ShopifyNonRetryableErrors
 from source_shopify.utils import ShopifyRateLimiter as limiter
 
@@ -110,7 +110,7 @@ class ShopifyStream(HttpStream, ABC):
 
     def should_retry(self, response: requests.Response) -> bool:
         known_errors = ShopifyNonRetryableErrors(self.name)
-        connection_errors = ShopifyConnectionErrors(self.name)
+        connection_errors = ShopifyRetryableErrors(self.name)
         status = response.status_code
         if status in known_errors.keys():
             setattr(self, "raise_on_http_errors", False)
