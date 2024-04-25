@@ -21,14 +21,9 @@ from airbyte_cdk.utils import AirbyteTracedException
 
 SCOPES = ['https://www.googleapis.com/auth/bigquery', 'https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/cloud-platform.read-only']
 
-class BigqueryOAuth(Oauth2Authenticator):
-    """
-    """
-    pass
-
 
 class BigqueryAuth:
-    def __new__(cls, config: dict) -> Union[ServiceAccountCredentials, BigqueryOAuth, Oauth2Authenticator, TokenAuthenticator]:       
+    def __new__(cls, config: dict) -> Union[ServiceAccountCredentials, Oauth2Authenticator, TokenAuthenticator]:       
         credentials_json = config["credentials_json"]
         credentials_json = json.loads(config["credentials_json"], strict=False)
 
