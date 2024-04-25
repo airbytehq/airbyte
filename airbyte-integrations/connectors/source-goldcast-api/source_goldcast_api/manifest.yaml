@@ -116,7 +116,26 @@ definitions:
               partition_field: event
               stream:
                 $ref: '#/definitions/events_stream'
+      selector:
+        extractor:
+          field_path: ["broadcast"]
       path: "/event/{{ stream_partition.event }}/agenda/"
+
+  session_attendance_stream:
+    $ref: "#/definitions/base_stream"
+    name: session_attendance
+    description: "Session attendance stream. Information on who attendend what session of an event."
+    primary_key: "id"
+    $parameters:
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: session
+              stream:
+                $ref: '#/definitions/event_agenda_stream'
+      path: "/event/get_session_attendance/?session={{ stream_partition.session }}"
       
 
 streams:
@@ -128,6 +147,7 @@ streams:
   - "#/definitions/webinars_stream"
   - "#/definitions/event_members_stream"
   - "#/definitions/event_agenda_stream"
+  - "#/definitions/session_attendance_stream"
 
 check:
   type: CheckStream
@@ -140,6 +160,7 @@ check:
     - "webinars"
     - "event_members"
     - "event_agenda"
+    - "session_attendance"
 
 spec: 
   documentation_url: https://customapi.goldcast.io/swagger-ui/#/
