@@ -323,18 +323,13 @@ definitions:
         $ref: "#/definitions/requester"
         use_cache: true
         request_parameters:
-          parent: "{{ stream_slice.task_gid if stream_slice.task_gid else stream_slice.project_id }}"
+          parent: "{{ stream_slice.parent_gid }}"
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
             - stream: "#/definitions/tasks_stream"
               parent_key: "gid"
-              partition_field: "task_gid"
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - stream: "#/definitions/projects_stream"
-              parent_key: "gid"
-              partition_field: "project_id"
+              partition_field: "parent_gid"
 
   attachments_compact_partition_router:
     type: SubstreamPartitionRouter
@@ -2466,6 +2461,7 @@ streams:
   - "#/definitions/attachments_stream"
   - "#/definitions/portfolios_compact_stream"
   - "#/definitions/portfolios_stream"
+  - "#/definitions/portfolios_memberships_stream"
   - "#/definitions/custom_fields_stream"
   - "#/definitions/organization_exports_stream"
   - "#/definitions/events_stream"
