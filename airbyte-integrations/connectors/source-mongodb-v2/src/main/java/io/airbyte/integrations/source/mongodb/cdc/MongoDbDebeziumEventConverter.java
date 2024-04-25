@@ -42,13 +42,7 @@ public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
     final JsonNode debeziumEventKey = event.eventKeyAsJson();
     final JsonNode debeziumEvent = event.eventValueAsJson();
     final JsonNode before = debeziumEvent.get(DebeziumEventConverter.BEFORE_EVENT);
-    if (before != null) {
-      LOGGER.info("BEFORE: {}", before.asText());
-    }
     final JsonNode after = debeziumEvent.get(DebeziumEventConverter.AFTER_EVENT);
-    if (after != null) {
-      LOGGER.info("AFTER: {}", after.asText());
-    }
     final JsonNode source = debeziumEvent.get(DebeziumEventConverter.SOURCE_EVENT);
     final String operation = debeziumEvent.get(DebeziumEventConverter.OPERATION_FIELD).asText();
     LOGGER.info("OPERATION: {}", operation);
