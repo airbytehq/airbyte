@@ -91,10 +91,10 @@ public class RedshiftSuperLimitationTransformer implements StreamAwareDataTransf
     final String namespace =
         (streamDescriptor.getNamespace() != null && !streamDescriptor.getNamespace().isEmpty()) ? streamDescriptor.getNamespace() : defaultNamespace;
     final StreamConfig streamConfig = parsedCatalog.getStream(namespace, streamDescriptor.getName());
-    final Optional<String> cursorField = streamConfig.cursor().map(ColumnId::originalName);
+    final Optional<String> cursorField = streamConfig.getCursor().map(ColumnId::getOriginalName);
     // convert List<ColumnId> to Set<ColumnId> for faster lookup
-    final Set<String> primaryKeys = streamConfig.primaryKey().stream().map(ColumnId::originalName).collect(Collectors.toSet());
-    final DestinationSyncMode syncMode = streamConfig.destinationSyncMode();
+    final Set<String> primaryKeys = streamConfig.getPrimaryKey().stream().map(ColumnId::getOriginalName).collect(Collectors.toSet());
+    final DestinationSyncMode syncMode = streamConfig.getDestinationSyncMode();
     final TransformationInfo transformationInfo = transformNodes(jsonNode, DEFAULT_PREDICATE_VARCHAR_GREATER_THAN_64K);
     final int originalBytes = transformationInfo.originalBytes;
     final int transformedBytes = transformationInfo.originalBytes - transformationInfo.removedBytes;

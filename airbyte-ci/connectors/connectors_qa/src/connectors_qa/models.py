@@ -63,6 +63,7 @@ class CheckResult:
 class Check(ABC):
 
     requires_metadata: bool = True
+    runs_on_released_connectors: bool = True
 
     @property
     @abstractmethod
@@ -135,6 +136,11 @@ class Check(ABC):
         raise NotImplementedError("Subclasses must implement category property/attribute")
 
     def run(self, connector: Connector) -> CheckResult:
+        if not self.runs_on_released_connectors and connector.is_released:
+            return self.skip(
+                connector,
+                "Check does not apply to released connectors",
+            )
         if not connector.metadata and self.requires_metadata:
             return self.fail(
                 connector,

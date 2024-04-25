@@ -4,6 +4,7 @@
 
 
 import json
+import pathlib
 from typing import Any, Mapping
 
 import pytest
@@ -15,18 +16,25 @@ from source_facebook_marketing.source import SourceFacebookMarketing
 # BASE ARGS
 CMD = "check"
 SOURCE: Source = SourceFacebookMarketing()
+_EXCLUDE_DELETE_CONFIGS_PATH = "test_migrations/include_deleted_to_status_filters/include_deleted_false"
+_INCLUDE_DELETE_CONFIGS_PATH = "test_migrations/include_deleted_to_status_filters/include_deleted_true"
+_ACCOUNT_ID_TO_ARRAY_CONFIGS_PATH = "test_migrations/account_id_to_array"
 
 
-# HELPERS
 def load_config(config_path: str) -> Mapping[str, Any]:
     with open(config_path, "r") as config:
         return json.load(config)
 
 
+def _config_path(path_from_unit_test_folder: str) -> str:
+    return str(pathlib.Path(__file__).parent / path_from_unit_test_folder)
+
+
 class TestMigrateAccountIdToArray:
-    TEST_CONFIG_PATH = "unit_tests/test_migrations/account_id_to_array/test_old_config.json"
-    NEW_TEST_CONFIG_PATH = "unit_tests/test_migrations/account_id_to_array/test_new_config.json"
-    UPGRADED_TEST_CONFIG_PATH = "unit_tests/test_migrations/account_id_to_array/test_upgraded_config.json"
+    TEST_CONFIG_PATH = _config_path(f"{_ACCOUNT_ID_TO_ARRAY_CONFIGS_PATH}/test_old_config.json")
+    NEW_TEST_CONFIG_PATH = _config_path(f"{_ACCOUNT_ID_TO_ARRAY_CONFIGS_PATH}/test_new_config.json")
+    UPGRADED_TEST_CONFIG_PATH = _config_path(f"{_ACCOUNT_ID_TO_ARRAY_CONFIGS_PATH}/test_upgraded_config.json")
+    NEW_CONFIG_WITHOUT_ACCOUNT_ID = _config_path(f"{_ACCOUNT_ID_TO_ARRAY_CONFIGS_PATH}/test_new_config_without_account_id.json")
 
     @staticmethod
     def revert_migration(config_path: str = TEST_CONFIG_PATH) -> None:
@@ -86,14 +94,22 @@ class TestMigrateAccountIdToArray:
         migration_instance = MigrateAccountIdToArray()
         assert not migration_instance.should_migrate(new_config)
 
+    def test_should_not_migrate_config_without_account_id(self):
+        # OC Issue: https://github.com/airbytehq/oncall/issues/4131
+        # Newly created sources will not have the deprecated `account_id` field, and we should not attempt to migrate
+        # because it is already in the new `account_ids` format
+        new_config = load_config(self.NEW_CONFIG_WITHOUT_ACCOUNT_ID)
+        migration_instance = MigrateAccountIdToArray()
+        assert not migration_instance.should_migrate(new_config)
+
 
 class TestMigrateIncludeDeletedToStatusFilters:
-    OLD_TEST1_CONFIG_PATH = "unit_tests/test_migrations/include_deleted_to_status_filters/include_deleted_false/test_old_config.json"
-    NEW_TEST1_CONFIG_PATH = "unit_tests/test_migrations/include_deleted_to_status_filters/include_deleted_false/test_new_config.json"
-    OLD_TEST2_CONFIG_PATH = "unit_tests/test_migrations/include_deleted_to_status_filters/include_deleted_true/test_old_config.json"
-    NEW_TEST2_CONFIG_PATH = "unit_tests/test_migrations/include_deleted_to_status_filters/include_deleted_true/test_new_config.json"
+    OLD_TEST1_CONFIG_PATH = _config_path(f"{_EXCLUDE_DELETE_CONFIGS_PATH}/test_old_config.json")
+    NEW_TEST1_CONFIG_PATH = _config_path(f"{_EXCLUDE_DELETE_CONFIGS_PATH}/test_new_config.json")
+    OLD_TEST2_CONFIG_PATH = _config_path(f"{_INCLUDE_DELETE_CONFIGS_PATH}/test_old_config.json")
+    NEW_TEST2_CONFIG_PATH = _config_path(f"{_INCLUDE_DELETE_CONFIGS_PATH}/test_new_config.json")
 
-    UPGRADED_TEST_CONFIG_PATH = "unit_tests/test_migrations/account_id_to_array/test_upgraded_config.json"
+    UPGRADED_TEST_CONFIG_PATH = _config_path("test_migrations/account_id_to_array/test_upgraded_config.json")
 
     filter_properties = ["ad_statuses", "adset_statuses", "campaign_statuses"]
 

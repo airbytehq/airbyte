@@ -23,12 +23,13 @@ constructor(
     private val integrationLauncher: IntegrationLauncher,
     private val streamFactory: AirbyteStreamFactory = DefaultAirbyteStreamFactory()
 ) : GetSpecTestHarness {
-    private var process: Process? = null
+    private lateinit var process: Process
 
     @Throws(TestHarnessException::class)
     override fun run(config: JobGetSpecConfig, jobRoot: Path): ConnectorJobOutput {
         try {
-            process = integrationLauncher.spec(jobRoot)
+            val process = integrationLauncher.spec(jobRoot)
+            this.process = process
 
             val jobOutput = ConnectorJobOutput().withOutputType(ConnectorJobOutput.OutputType.SPEC)
             LineGobbler.gobble(process!!.errorStream, { msg: String? -> LOGGER.error(msg) })
@@ -39,7 +40,7 @@ constructor(
                 messagesByType
                     .getOrDefault(AirbyteMessage.Type.SPEC, ArrayList())!!
                     .stream()
-                    .map { obj: AirbyteMessage? -> obj!!.spec }
+                    .map { obj: AirbyteMessage -> obj.spec }
                     .findFirst()
 
             val failureReason =

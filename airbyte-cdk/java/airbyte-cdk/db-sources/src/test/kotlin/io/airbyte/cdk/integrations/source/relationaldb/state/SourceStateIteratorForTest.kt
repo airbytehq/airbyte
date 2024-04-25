@@ -9,7 +9,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 
 class SourceStateIteratorForTest<T>(
     messageIterator: Iterator<T>,
-    stream: ConfiguredAirbyteStream,
+    stream: ConfiguredAirbyteStream?,
     sourceStateMessageProducer: SourceStateMessageProducer<T>,
     stateEmitFrequency: StateEmitFrequency
 ) :
