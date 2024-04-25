@@ -1,17 +1,19 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
 import datetime
 import json
 import logging
 import uuid
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 import anyio
 import asyncer
 import dagger
+
 from live_tests.commons import errors
 from live_tests.commons.models import Command, ExecutionInputs, ExecutionResult
 from live_tests.commons.proxy import Proxy
@@ -39,7 +41,7 @@ class ConnectorRunner:
         self.actor_id = execution_inputs.actor_id
         self.environment_variables = execution_inputs.environment_variables if execution_inputs.environment_variables else {}
 
-        self.full_command: List[str] = self._get_full_command(execution_inputs.command)
+        self.full_command: list[str] = self._get_full_command(execution_inputs.command)
         self.completion_event = anyio.Event()
         self.http_proxy = http_proxy
         self.logger = logging.getLogger(f"{self.connector_under_test.name}-{self.connector_under_test.version}")
@@ -57,7 +59,7 @@ class ConnectorRunner:
     def stderr_file_path(self) -> Path:
         return (self.output_dir / "stderr.log").resolve()
 
-    def _get_full_command(self, command: Command) -> List[str]:
+    def _get_full_command(self, command: Command) -> list[str]:
         if command is Command.SPEC:
             return ["spec"]
         elif command is Command.CHECK:
@@ -184,7 +186,7 @@ class ConnectorRunner:
     def format_duration(time_delta: datetime.timedelta) -> str:
         total_seconds = time_delta.total_seconds()
         if total_seconds < 60:
-            return "{:.2f}s".format(total_seconds)
+            return f"{total_seconds:.2f}s"
         minutes = int(total_seconds // 60)
         seconds = int(total_seconds % 60)
-        return "{:02d}mn{:02d}s".format(minutes, seconds)
+        return f"{minutes:02d}mn{seconds:02d}s"

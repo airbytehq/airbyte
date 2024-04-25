@@ -6,14 +6,17 @@ import os
 import textwrap
 import time
 import webbrowser
+from collections.abc import AsyncGenerator, AsyncIterable, Callable, Generator, Iterable
 from pathlib import Path
-from typing import TYPE_CHECKING, AsyncGenerator, AsyncIterable, Callable, Dict, Generator, Iterable, List, Optional, Set
+from typing import TYPE_CHECKING, Optional
 
 import dagger
 import pytest
-from airbyte_protocol.models import ConfiguredAirbyteCatalog  # type: ignore
 from connection_retriever.audit_logging import get_user_email  # type: ignore
 from connection_retriever.retrieval import ConnectionNotFoundError, NotPermittedError  # type: ignore
+from rich.prompt import Confirm, Prompt
+
+from airbyte_protocol.models import ConfiguredAirbyteCatalog  # type: ignore
 from live_tests.commons.connection_objects_retrieval import ConnectionObject, get_connection_objects
 from live_tests.commons.connector_runner import ConnectorRunner, Proxy
 from live_tests.commons.models import (
@@ -30,9 +33,9 @@ from live_tests.commons.secret_access import get_airbyte_api_key
 from live_tests.commons.segment_tracking import track_usage
 from live_tests.commons.utils import build_connection_url, clean_up_artifacts
 from live_tests.regression_tests import stash_keys
-from rich.prompt import Confirm, Prompt
 
 from .report import Report, ReportState
+
 
 if TYPE_CHECKING:
     from _pytest.config import Config
@@ -189,7 +192,7 @@ def get_artifacts_directory(config: pytest.Config) -> Path:
     return MAIN_OUTPUT_DIRECTORY / f"session_{run_id}"
 
 
-def pytest_collection_modifyitems(config: pytest.Config, items: List[pytest.Item]) -> None:
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     for item in items:
         if config.stash[stash_keys.SHOULD_READ_WITH_STATE] and "without_state" in item.keywords:
             item.add_marker(pytest.mark.skip(reason="Test is marked with without_state marker"))
@@ -235,13 +238,7 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo) -> Gener
     outcome = yield
     report = outcome.get_result()
     # This is to add skipped or failed tests due to upstream fixture failures on setup
-    if report.outcome in ["failed", "skipped"]:
-        item.config.stash[stash_keys.REPORT].add_test_result(
-            report,
-            item.function.__doc__,  # type: ignore
-        )
-
-    elif report.when == "call":
+    if report.outcome in ["failed", "skipped"] or report.when == "call":
         item.config.stash[stash_keys.REPORT].add_test_result(
             report,
             item.function.__doc__,  # type: ignore
@@ -348,12 +345,12 @@ def actor_id(connection_objects: ConnectionObjects, control_connector: Connector
 
 
 @pytest.fixture(scope="session")
-def selected_streams(request: SubRequest) -> Set[str]:
+def selected_streams(request: SubRequest) -> set[str]:
     return request.config.stash[stash_keys.SELECTED_STREAMS]
 
 
 @pytest.fixture(scope="session")
-def configured_catalog(connection_objects: ConnectionObjects, selected_streams: Optional[Set[str]]) -> ConfiguredAirbyteCatalog:
+def configured_catalog(connection_objects: ConnectionObjects, selected_streams: Optional[set[str]]) -> ConfiguredAirbyteCatalog:
     if not connection_objects.configured_catalog:
         pytest.skip("Catalog is not provided. The catalog fixture can't be used.")
     assert connection_objects.configured_catalog is not None
@@ -363,8 +360,8 @@ def configured_catalog(connection_objects: ConnectionObjects, selected_streams: 
 @pytest.fixture(scope="session", autouse=True)
 def primary_keys_per_stream(
     configured_catalog: ConfiguredAirbyteCatalog,
-) -> Dict[str, Optional[List[str]]]:
-    return {stream.stream.name: stream.primary_key[0] if getattr(stream, "primary_key") else None for stream in configured_catalog.streams}
+) -> dict[str, Optional[list[str]]]:
+    return {stream.stream.name: stream.primary_key[0] if stream.primary_key else None for stream in configured_catalog.streams}
 
 
 @pytest.fixture(scope="session")
@@ -375,7 +372,7 @@ def configured_streams(
 
 
 @pytest.fixture(scope="session")
-def state(connection_objects: ConnectionObjects) -> Optional[Dict]:
+def state(connection_objects: ConnectionObjects) -> Optional[dict]:
     return connection_objects.state
 
 

@@ -1,19 +1,22 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Dict, Iterable, TextIO, Tuple
+from typing import Any, TextIO
+
+from cachetools import LRUCache, cached
 
 from airbyte_protocol.models import AirbyteMessage  # type: ignore
 from airbyte_protocol.models import Type as AirbyteMessageType
-from cachetools import LRUCache, cached
 from live_tests.commons.backends.base_backend import BaseBackend
 from live_tests.commons.utils import sanitize_stream_name
 
 
 class FileDescriptorLRUCache(LRUCache):
-    def popitem(self) -> Tuple[Any, Any]:
+    def popitem(self) -> tuple[Any, Any]:
         filepath, fd = LRUCache.popitem(self)
         fd.close()  # type: ignore  # Close the file descriptor when it's evicted from the cache
         return filepath, fd
@@ -34,8 +37,8 @@ class FileBackend(BaseBackend):
         self._output_directory = output_directory
         self.record_per_stream_directory = self._output_directory / "records_per_stream"
         self.record_per_stream_directory.mkdir(exist_ok=True, parents=True)
-        self.record_per_stream_paths: Dict[str, Path] = {}
-        self.record_per_stream_paths_data_only: Dict[str, Path] = {}
+        self.record_per_stream_paths: dict[str, Path] = {}
+        self.record_per_stream_paths_data_only: dict[str, Path] = {}
 
     @property
     def jsonl_specs_path(self) -> Path:
@@ -101,14 +104,14 @@ class FileBackend(BaseBackend):
                 if not isinstance(_message, AirbyteMessage):
                     continue
                 filepaths, messages = self._get_filepaths_and_messages(_message)
-                for filepath, message in zip(filepaths, messages):
+                for filepath, message in zip(filepaths, messages, strict=False):
                     _open_file(self._output_directory / filepath).write(f"{message}\n")
             logging.info("Finished writing airbyte messages to disk")
         finally:
             for f in self.CACHE.values():
                 f.close()
 
-    def _get_filepaths_and_messages(self, message: AirbyteMessage) -> Tuple[Tuple[str, ...], Tuple[str, ...]]:
+    def _get_filepaths_and_messages(self, message: AirbyteMessage) -> tuple[tuple[str, ...], tuple[str, ...]]:
         if message.type == AirbyteMessageType.CATALOG:
             return (self.RELATIVE_CATALOGS_PATH,), (message.catalog.json(),)
 
@@ -121,7 +124,7 @@ class FileBackend(BaseBackend):
             stream_file_path_data_only = self.record_per_stream_directory / f"{sanitize_stream_name(stream_name)}_data_only.jsonl"
             self.record_per_stream_paths[stream_name] = stream_file_path
             self.record_per_stream_paths_data_only[stream_name] = stream_file_path_data_only
-            return (self.RELATIVE_RECORDS_PATH, str(stream_file_path), str(stream_file_path_data_only),), (
+            return (self.RELATIVE_RECORDS_PATH, str(stream_file_path), str(stream_file_path_data_only)), (
                 message.json(sort_keys=True),
                 message.json(sort_keys=True),
                 json.dumps(message.record.data, sort_keys=True),

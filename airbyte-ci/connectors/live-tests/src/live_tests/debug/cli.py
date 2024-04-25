@@ -1,20 +1,23 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 import logging
 import textwrap
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 import asyncclick as click
 import dagger
+from rich.prompt import Prompt
+
 from live_tests.commons.connection_objects_retrieval import COMMAND_TO_REQUIRED_OBJECT_TYPES, get_connection_objects
 from live_tests.commons.connector_runner import ConnectorRunner
 from live_tests.commons.models import ActorType, Command, ConnectionObjects, ConnectorUnderTest, ExecutionInputs, TargetOrControl
 from live_tests.commons.utils import clean_up_artifacts
 from live_tests.debug import DAGGER_CONFIG
-from rich.prompt import Prompt
 
 from .consts import MAIN_OUTPUT_DIRECTORY
+
 
 LOGGER = logging.getLogger("debug_command")
 
@@ -65,7 +68,7 @@ async def debug_cmd(
     config_path: Optional[Path],
     catalog_path: Optional[Path],
     state_path: Optional[Path],
-    connector_images: List[str],
+    connector_images: list[str],
 ) -> None:
     if connection_id:
         retrieval_reason = click.prompt("👮‍♂️ Please provide a reason for accessing the connection objects. This will be logged")

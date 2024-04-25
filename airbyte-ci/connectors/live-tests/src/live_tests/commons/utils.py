@@ -1,11 +1,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 import logging
 import os
 import re
 import shutil
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 import dagger
 import docker  # type: ignore
@@ -113,7 +114,7 @@ async def get_connector_container(dagger_client: dagger.Client, image_name_with_
     return await get_container_from_dockerhub_image(dagger_client, image_name_with_tag)
 
 
-def sh_dash_c(lines: List[str]) -> List[str]:
+def sh_dash_c(lines: list[str]) -> list[str]:
     """Wrap sequence of commands in shell for safe usage of dagger Container's with_exec method."""
     return ["sh", "-c", " && ".join(["set -o xtrace"] + lines)]
 
@@ -124,7 +125,7 @@ def clean_up_artifacts(directory: Path, logger: logging.Logger) -> None:
         logger.info(f"🧹 Test artifacts cleaned up from {directory}")
 
 
-def get_http_flows_from_mitm_dump(mitm_dump_path: Path) -> List[http.HTTPFlow]:
+def get_http_flows_from_mitm_dump(mitm_dump_path: Path) -> list[http.HTTPFlow]:
     """Get http flows from a mitmproxy dump file.
 
     Args:
