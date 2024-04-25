@@ -116,7 +116,9 @@ public class MongoDbCdcInitializer {
     }
 
     final boolean savedOffsetIsValid =
-        optSavedOffset.filter(savedOffset -> mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset, mongoClient)).isPresent();
+        optSavedOffset
+            .filter(savedOffset -> mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset, mongoClient, databaseName, incrementalOnlyStreamsCatalog))
+            .isPresent();
 
     if (!savedOffsetIsValid) {
       AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcCursorInvalidMessage());

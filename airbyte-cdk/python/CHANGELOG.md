@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.85.0
+Connector builder: read input state if it exists
+
+## 0.84.0
+Remove  package which was deprecated 2021 or earlier
+
+## 0.83.1
+Concurrent CDK: if exception is AirbyteTracedException, raise this and not StreamThreadException
+
+## 0.83.0
+Low-code: Add JwtAuthenticator
+
 ## 0.82.0
 Connector builder: emit state messages
 
