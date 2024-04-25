@@ -29,7 +29,6 @@ class BigqueryOAuth(Oauth2Authenticator):
 
 class BigqueryAuth:
     def __new__(cls, config: dict) -> Union[ServiceAccountCredentials, BigqueryOAuth, Oauth2Authenticator, TokenAuthenticator]:       
-        # for new oauth configs
         credentials_json = config["credentials_json"]
         credentials_json = json.loads(config["credentials_json"], strict=False)
 
