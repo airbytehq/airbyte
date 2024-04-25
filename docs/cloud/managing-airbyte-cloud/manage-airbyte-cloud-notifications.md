@@ -140,30 +140,39 @@ Airbyte passes the `data` payload along with text blocks that are intended for S
 ```
 
 </details>
+
 <details>
   <summary>Automated Connection Updates</summary>
-  Not yet available
+
+  Webhook does not contain payload and only works for Slack notifications
 </details>
+
 <details>
   <summary>Connection Updates Requiring Action</summary>
-  Not yet available
+  
+  Webhook does not contain payload and only works for Slack notifications
 </details>
 
 <details>
   <summary>Warning - Repeated Failures</summary>
-  Not yet available
+  
+  Webhook does not contain payload and only works for Slack notifications
 </details>
+
 <details>
   <summary>Sync Disabled - Repeated Failures</summary>
-  Not yet available
+  
+  Webhook does not contain payload and only works for Slack notifications
 </details>
 <details>
   <summary>Warning - Upgrade Required</summary>
-  Not yet available
+  
+  Webhook does not contain payload and only works for Slack notifications
 </details>
 <details>
   <summary>Sync Disabled - Upgrade Required</summary>
-  Not yet available
+  
+  Webhook does not contain payload and only works for Slack notifications
 </details>
 
 ### Configuring Slack Notifications
