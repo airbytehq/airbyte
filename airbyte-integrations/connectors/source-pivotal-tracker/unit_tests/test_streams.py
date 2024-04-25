@@ -3,6 +3,7 @@
 #
 
 from typing import Any, Mapping
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from source_pivotal_tracker.source import SourcePivotalTracker
