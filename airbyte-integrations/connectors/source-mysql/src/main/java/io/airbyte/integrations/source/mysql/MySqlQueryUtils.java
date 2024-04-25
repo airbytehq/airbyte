@@ -212,6 +212,7 @@ public class MySqlQueryUtils {
     // Construct the table estimate query.
     final String tableEstimateQuery =
         String.format(TABLE_ESTIMATE_QUERY, TABLE_SIZE_BYTES_COL, AVG_ROW_LENGTH, namespace, name);
+    LOGGER.info("Querying for table size estimate: {}", tableEstimateQuery);
     final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(tableEstimateQuery),
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
     Preconditions.checkState(jsonNodes.size() == 1);

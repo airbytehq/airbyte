@@ -252,14 +252,14 @@ class CursorManagerTest {
             { obj: DbStreamState? -> obj!!.cursor },
             { obj: DbStreamState? -> obj!!.cursorField },
             CURSOR_RECORD_COUNT_FUNCTION,
-            { s: DbStreamState? -> nameNamespacePair },
+            { nameNamespacePair },
             false
         )
     }
 
     companion object {
         private val CURSOR_RECORD_COUNT_FUNCTION = Function { stream: DbStreamState ->
-            if (stream!!.cursorRecordCount != null) {
+            if (stream.cursorRecordCount != null) {
                 return@Function stream.cursorRecordCount
             } else {
                 return@Function 0L
