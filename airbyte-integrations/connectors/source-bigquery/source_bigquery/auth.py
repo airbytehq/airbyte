@@ -18,7 +18,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import (
 )
 from airbyte_cdk.utils import AirbyteTracedException
 
-# class BigqueryServiceAccountCredentials(ServiceAccountCredentials):
+
 SCOPES = ['https://www.googleapis.com/auth/bigquery', 'https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/cloud-platform.read-only']
 
 class BigqueryOAuth(Oauth2Authenticator):
@@ -38,8 +38,7 @@ class BigqueryAuth:
                                                 private_key_id=credentials_json["private_key_id"], client_id=credentials_json["client_id"])
         h = httplib2.Http()
         h = credentials.authorize(h)
-        sc = credentials.create_scoped(scopes=SCOPES)
-        token = sc.get_access_token()
+        token = credentials.get_access_token()
         access_token = str(token.access_token)
         auth = TokenAuthenticator(token=access_token)
         
