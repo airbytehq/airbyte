@@ -14,18 +14,8 @@ package io.airbyte.integrations.base.destination.typing_deduping
  * Useful if a destination warehouse handles columns ignoring case, but preserves case in the table
  * schema.
  */
-class ColumnId(name: String, originalName: String, canonicalName: String) {
+data class ColumnId(val name: String, val originalName: String, val canonicalName: String) {
     fun name(quote: String): String {
         return quote + name + quote
-    }
-
-    val name: String
-    val originalName: String
-    val canonicalName: String
-
-    init {
-        this.name = name
-        this.originalName = originalName
-        this.canonicalName = canonicalName
     }
 }

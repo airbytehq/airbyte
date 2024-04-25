@@ -44,7 +44,7 @@ class SnowflakeSqlOperationsTest {
           "%s" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
           "%s" TIMESTAMP WITH TIME ZONE DEFAULT NULL,
           "%s" VARIANT
-        ) data_retention_time_in_days = 0;""",
+        ) data_retention_time_in_days = 1;""",
         SCHEMA_NAME,
         TABLE_NAME,
         JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,

@@ -117,6 +117,8 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------| :--------- | :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------|
+| 1.3.2 | 2024-04-19 | [36650](https://github.com/airbytehq/airbyte/pull/36650) | Updating to 0.80.0 CDK |
+| 1.3.1 | 2024-04-12 | [36650](https://github.com/airbytehq/airbyte/pull/36650) | schema descriptions |
 | `1.3.0`  | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                  |
 | `1.2.6`  | 2024-02-09 | [35078](https://github.com/airbytehq/airbyte/pull/35078) | Manage dependencies with Poetry.                                                                 |
 | `1.2.5`  | 2024-01-15 | [34246](https://github.com/airbytehq/airbyte/pull/34246) | prepare for airbyte-lib                                                                          |

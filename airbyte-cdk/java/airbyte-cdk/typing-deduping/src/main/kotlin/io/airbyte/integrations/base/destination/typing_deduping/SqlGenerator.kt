@@ -65,7 +65,7 @@ interface SqlGenerator {
      */
     fun updateTable(
         stream: StreamConfig,
-        finalSuffix: String?,
+        finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
         useExpensiveSaferCasting: Boolean
     ): Sql
@@ -76,7 +76,7 @@ interface SqlGenerator {
      * This method may assume that the stream is an OVERWRITE stream, and that the final suffix is
      * non-empty. Callers are responsible for verifying those are true.
      */
-    fun overwriteFinalTable(stream: StreamId, finalSuffix: String?): Sql
+    fun overwriteFinalTable(stream: StreamId, finalSuffix: String): Sql
 
     /**
      * Creates a sql query which will create a v2 raw table from the v1 raw table, then performs a
