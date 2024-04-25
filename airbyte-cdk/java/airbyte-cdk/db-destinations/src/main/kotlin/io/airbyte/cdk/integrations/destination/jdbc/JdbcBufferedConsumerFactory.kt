@@ -15,7 +15,7 @@ import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
-import io.airbyte.cdk.integrations.destination.async.deser.DeserializationUtil
+import io.airbyte.cdk.integrations.destination.async.deser.AirbyteMessageDeserializer
 import io.airbyte.cdk.integrations.destination.async.deser.IdentityDataTransformer
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
@@ -78,11 +78,10 @@ object JdbcBufferedConsumerFactory {
             ),
             catalog,
             BufferManager((Runtime.getRuntime().maxMemory() * 0.2).toLong()),
-            FlushFailure(),
             Optional.ofNullable(defaultNamespace),
+            FlushFailure(),
             Executors.newFixedThreadPool(2),
-            dataTransformer,
-            DeserializationUtil()
+            AirbyteMessageDeserializer(dataTransformer)
         )
     }
 
@@ -130,10 +129,10 @@ object JdbcBufferedConsumerFactory {
                 val finalSchema = Optional.ofNullable(abStream.namespace).orElse(defaultSchemaName)
                 val rawName = concatenateRawTableName(finalSchema, streamName)
                 tableName = namingResolver.convertStreamName(rawName)
-                tmpTableName = namingResolver.getTmpTableName(rawName)
+                tmpTableName = @Suppress("deprecation") namingResolver.getTmpTableName(rawName)
             } else {
-                tableName = namingResolver.getRawTableName(streamName)
-                tmpTableName = namingResolver.getTmpTableName(streamName)
+                tableName = @Suppress("deprecation") namingResolver.getRawTableName(streamName)
+                tmpTableName = @Suppress("deprecation") namingResolver.getTmpTableName(streamName)
             }
             val syncMode = stream.destinationSyncMode
 
@@ -270,7 +269,7 @@ object JdbcBufferedConsumerFactory {
     /** Tear down functionality */
     private fun onCloseFunction(typerDeduper: TyperDeduper): OnCloseFunction {
         return OnCloseFunction {
-            hasFailed: Boolean,
+            _: Boolean,
             streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary> ->
             try {
                 typerDeduper.typeAndDedupe(streamSyncSummaries)

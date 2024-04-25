@@ -54,6 +54,7 @@ class AirbyteFileOffsetBackingStore(
     }
 
     fun persist(cdcState: JsonNode?) {
+        @Suppress("unchecked_cast")
         val mapAsString: Map<String, String> =
             if (cdcState != null)
                 Jsons.`object`(cdcState, MutableMap::class.java) as Map<String, String>
@@ -130,7 +131,7 @@ class AirbyteFileOffsetBackingStore(
 
         if (obj !is HashMap<*, *>)
             throw ConnectException("Expected HashMap but found " + obj.javaClass)
-        val raw = obj as Map<ByteArray?, ByteArray?>
+        @Suppress("unchecked_cast") val raw = obj as Map<ByteArray?, ByteArray?>
         val data: MutableMap<ByteBuffer?, ByteBuffer?> = HashMap()
         for ((key1, value1) in raw) {
             val key = if ((key1 != null)) ByteBuffer.wrap(key1) else null

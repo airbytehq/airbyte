@@ -59,8 +59,8 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   private static final String AB_META_CHANGES_CHANGE_KEY = "change";
   private static final String AB_META_CHANGES_REASON_KEY = "reason";
 
-  public PostgresSqlGenerator(final NamingConventionTransformer namingTransformer) {
-    super(namingTransformer);
+  public PostgresSqlGenerator(final NamingConventionTransformer namingTransformer, final boolean cascadeDrop) {
+    super(namingTransformer, cascadeDrop);
   }
 
   @Override
