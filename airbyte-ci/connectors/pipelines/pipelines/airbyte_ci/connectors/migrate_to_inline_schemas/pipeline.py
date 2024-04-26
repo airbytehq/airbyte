@@ -79,6 +79,10 @@ class CheckIsInlineCandidate(Step):
                 stderr="The connector does not have a schemas directory.",
             )
 
+        # TODO: does this help or not?
+        # if _has_subdirectory(schemas_dir):
+        #     return StepResult(step=self, status=StepStatus.SKIPPED, stderr="This has subdirectories. It's probably complicated.")
+
         return StepResult(
             step=self,
             status=StepStatus.SUCCESS,
@@ -132,12 +136,6 @@ class InlineSchemas(Step):
         manifest_path = connector.manifest_path
         python_path = connector.python_source_dir_path
         logger = self.logger
-        # airbyte_root_path = self.context.r
-
-        # TODO: does this matter?
-        # if _has_subdirectory(schemas_path):
-        #    logger.info(f"    Multiple schemas directories found.")
-        #    return
 
         json_streams = _parse_json_streams(python_path)
         if len(json_streams) == 0:
@@ -203,6 +201,16 @@ class JsonStream:
 class JsonLoaderNode:
     ref: str
     file_path: str
+
+
+def _has_subdirectory(directory: Path) -> bool:
+    # Iterate through all items in the directory
+    for entry in directory.iterdir():
+        # Check if this entry is a directory
+        if entry.is_dir():
+            return True
+
+    return False
 
 
 def _get_stream_name(yaml_stream: dict) -> str | None:
