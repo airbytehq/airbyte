@@ -3,28 +3,26 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "2.5.0"
-name = "source-zendesk-support"
-description = "Source implementation for Zendesk Support."
+version = "0.1.3"
+name = "source-newsdata"
+description = "Source implementation for Newsdata."
 authors = [ "Airbyte <contact@airbyte.io>",]
-license = "ELv2"
+license = "MIT"
 readme = "README.md"
-documentation = "https://docs.airbyte.com/integrations/sources/zendesk-support"
+documentation = "https://docs.airbyte.com/integrations/sources/newsdata"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
 [[tool.poetry.packages]]
-include = "source_zendesk_support"
+include = "source_newsdata"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^0"
-pytz = "==2024.1"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
-source-zendesk-support = "source_zendesk_support.run:run"
+source-newsdata = "source_newsdata.run:run"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.1"
-pytest-mock = "^3.6"
-requests-mock = "==1.9.3"
-freezegun = "^1.4.0"
+pytest-mock = "^3.6.1"
+requests-mock = "^1.9.3"

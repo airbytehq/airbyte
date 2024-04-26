@@ -70,6 +70,7 @@ class GcsDestinationConfig(
     companion object {
         private const val GCS_ENDPOINT = "https://storage.googleapis.com"
 
+        @JvmStatic
         fun getGcsDestinationConfig(config: JsonNode): GcsDestinationConfig {
             return GcsDestinationConfig(
                 config["gcs_bucket_name"].asText(),

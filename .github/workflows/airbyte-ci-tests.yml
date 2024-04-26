@@ -99,7 +99,7 @@ jobs:
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           git_branch: ${{ github.head_ref }}
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
-          github_token: ${{ github.token }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           subcommand: "test --modified"
 
@@ -116,6 +116,6 @@ jobs:
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           git_branch: ${{ steps.extract_branch.outputs.branch }}
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
-          github_token: ${{ github.token }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           subcommand: "test ${{ inputs.airbyte_ci_subcommand}}"
