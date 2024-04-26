@@ -431,6 +431,7 @@ internal constructor(
                     .filter(ORPHANED_THREAD_FILTER)
                     .collect(Collectors.toList())
             if (runningThreads.isNotEmpty()) {
+                LOGGER.debug("Running threads: {}", runningThreads);
                 LOGGER.warn(
                     """
                   The main thread is exiting while children non-daemon threads from a connector are still active.

@@ -184,7 +184,7 @@ public class MssqlInitialReadUtil {
       final CdcState stateToBeUsed = getCdcState(database, catalog, stateManager, savedOffsetStillPresentOnServer);
 
       return new MssqlInitialLoadGlobalStateManager(initialLoadStreams, initPairToOrderedColumnInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
-              stateToBeUsed, catalog);
+              stateManager, catalog);
     }
     public static List<AutoCloseableIterator<AirbyteMessage>> getCdcReadIterators(final JdbcDatabase database,
                                                                                   final ConfiguredAirbyteCatalog catalog,

@@ -56,7 +56,6 @@ public class MssqlInitialLoadStreamStateManager extends MssqlInitialLoadStateMan
     } else {
       finalState = incrementalState;
     }
-    LOGGER.debug("finalState: {}", finalState);
     return new AirbyteStateMessage()
             .withType(AirbyteStateType.STREAM)
             .withStream(getAirbyteStreamState(pair, finalState));

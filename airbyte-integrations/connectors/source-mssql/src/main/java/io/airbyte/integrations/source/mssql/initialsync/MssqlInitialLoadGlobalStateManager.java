@@ -9,22 +9,24 @@ import com.google.common.base.Preconditions;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.cdk.integrations.source.relationaldb.models.OrderedColumnLoadStatus;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.InitialLoadStreams;
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.OrderedColumnInfo;
 import io.airbyte.protocol.models.v0.*;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateManager {
-
+  private static final Logger LOGGER = LoggerFactory.getLogger(MssqlInitialLoadGlobalStateManager.class);
   private final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo;
-  protected final CdcState cdcState;
-
+  private StateManager stateManager;
   // Only one global state is emitted, which is fanned out into many entries in the DB by platform. As
   // a result, we need to keep track of streams that have completed the snapshot.
   private Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot;
@@ -34,12 +36,20 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
 
   public MssqlInitialLoadGlobalStateManager(final InitialLoadStreams initialLoadStreams,
                                             final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo,
-                                            final CdcState cdcState,
+                                            final StateManager stateManager,
                                             final ConfiguredAirbyteCatalog catalog) {
-    this.cdcState = cdcState;
     this.pairToOrderedColLoadStatus = MssqlInitialLoadStateManager.initPairToOrderedColumnLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
     this.pairToOrderedColInfo = pairToOrderedColInfo;
+    this.stateManager = stateManager;
     initStreams(initialLoadStreams, catalog);
+  }
+
+  private AirbyteGlobalState generateGlobalState(final List<AirbyteStreamState> streamStates) {
+    final CdcState cdcState = stateManager.getCdcStateManager().getCdcState();
+    final AirbyteGlobalState globalState = new AirbyteGlobalState();
+    globalState.setSharedState(Jsons.jsonNode(cdcState));
+    globalState.setStreamStates(streamStates);
+    return globalState;
   }
 
   private void initStreams(final InitialLoadStreams initialLoadStreams,
@@ -79,13 +89,10 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
       streamStates.add(getAirbyteStreamState(pair, Jsons.jsonNode(ocStatus)));
     }
 
-    final AirbyteGlobalState globalState = new AirbyteGlobalState();
-    globalState.setSharedState(Jsons.jsonNode(cdcState));
-    globalState.setStreamStates(streamStates);
 
     return new AirbyteStateMessage()
             .withType(AirbyteStateType.GLOBAL)
-            .withGlobal(globalState);
+            .withGlobal(generateGlobalState(streamStates));
   }
 
   private AirbyteStreamState getAirbyteStreamState(final AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
@@ -116,13 +123,9 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
       streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(ocStatus)));
     });
 
-    final AirbyteGlobalState globalState = new AirbyteGlobalState();
-    globalState.setSharedState(Jsons.jsonNode(cdcState));
-    globalState.setStreamStates(streamStates);
-
     return new AirbyteStateMessage()
             .withType(AirbyteStateType.GLOBAL)
-            .withGlobal(globalState);
+            .withGlobal(generateGlobalState(streamStates));
   }
 
   @Override
