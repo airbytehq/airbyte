@@ -1,4 +1,7 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from enum import Enum
+
 
 class ResponseAction(Enum):
 

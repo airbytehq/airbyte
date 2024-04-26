@@ -4,28 +4,30 @@
 
 import logging
 import urllib
-from typing import Any, Mapping, Optional, Union, Tuple
+from typing import Any, Mapping, Optional, Tuple, Union
+
 import requests
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
+from .error_handler.default_retry_strategy import DefaultRetryStrategy
+from .error_handler.error_handler import ErrorHandler
+from .error_handler.http_status_error_handler import HttpStatusErrorHandler
+from .error_handler.response_action import ResponseAction
+from .error_handler.retry_strategy import RetryStrategy
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
-from .error_handler.http_status_error_handler import HttpStatusErrorHandler
-from .error_handler.error_handler import ErrorHandler
-from .error_handler.default_retry_strategy import DefaultRetryStrategy
-from .error_handler.retry_strategy import RetryStrategy
-from .error_handler.response_action import ResponseAction
 
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
-class HttpClient:
 
+class HttpClient:
     def __init__(
-            self,
-            session: requests.Session,
-            logger: logging.Logger = logging.getLogger("airbyte"),
-            http_error_handler: Optional[ErrorHandler] = HttpStatusErrorHandler(),
-            retry_strategy: Optional[RetryStrategy] = DefaultRetryStrategy()
-        ):
+        self,
+        session: requests.Session,
+        logger: logging.Logger = logging.getLogger("airbyte"),
+        http_error_handler: Optional[ErrorHandler] = HttpStatusErrorHandler(),
+        retry_strategy: Optional[RetryStrategy] = DefaultRetryStrategy(),
+    ):
         self._session = session
         self._logger = logger
         self._http_error_handler = http_error_handler
@@ -47,15 +49,15 @@ class HttpClient:
         return {k: v for k, v in params.items() if k not in duplicate_keys_with_same_value}
 
     def _create_prepared_request(
-            self,
-            http_method: str,
-            url: str,
-            dedupe_query_params: bool,
-            headers: Optional[Mapping[str, str]] = None,
-            params: Optional[Mapping[str, str]] = None,
-            json: Optional[Mapping[str, Any]] = None,
-            data: Optional[Union[str, Mapping[str, Any]]] = None,
-        ):
+        self,
+        http_method: str,
+        url: str,
+        dedupe_query_params: bool,
+        headers: Optional[Mapping[str, str]] = None,
+        params: Optional[Mapping[str, str]] = None,
+        json: Optional[Mapping[str, Any]] = None,
+        data: Optional[Union[str, Mapping[str, Any]]] = None,
+    ):
         # creates and returns a prepared request
 
         # Public method from HttpStream --> should it be re-implemented here? No guarantee that it's not overridden in existing connectors
@@ -77,11 +79,7 @@ class HttpClient:
 
         return prepared_request
 
-    def _send_with_retry(
-            self,
-            request: requests.PreparedRequest,
-            request_kwargs: Optional[Mapping[str, Any]] = None
-    ) -> requests.Response:
+    def _send_with_retry(self, request: requests.PreparedRequest, request_kwargs: Optional[Mapping[str, Any]] = None) -> requests.Response:
         """
         Backoff package has max_tries parameter that means total number of
         tries before giving up, so if this number is 0 no calls expected to be done.
@@ -93,25 +91,23 @@ class HttpClient:
             max_tries = max(0, self._retry_strategy.max_retries) + 1
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=self._retry_strategy.max_time)(self._send)
-        backoff_handler = default_backoff_handler(max_tries=max_tries, max_time=self._retry_strategy.max_time, factor=self._retry_strategy.retry_factor)
+        backoff_handler = default_backoff_handler(
+            max_tries=max_tries, max_time=self._retry_strategy.max_time, factor=self._retry_strategy.retry_factor
+        )
         # backoff handlers wrap _send, so it will always return a response
         response = backoff_handler(user_backoff_handler)(request, request_kwargs)
 
         return response
 
+    def _send(self, request: requests.PreparedRequest, request_kwargs: Optional[Mapping[str, Any]] = None) -> requests.Response:
 
-    def _send(
-            self,
-            request: requests.PreparedRequest,
-            request_kwargs: Optional[Mapping[str, Any]] = None
-        ) -> requests.Response:
-
-
+        # TODO: Verify preferred logging
         self._logger.debug(
-            "Making outbound API request",
-            extra={"headers": request.headers, "url": request.url, "request_body": request.body}
+            "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
 
+        # TODO: Enable retrying when no response is returned
+        # TODO: Verify response.json()/csv doesn't raise an exception or leave to connector implementation?
         try:
             response: requests.Response = self._session.send(request, **request_kwargs)
         except requests.RequestException as e:
@@ -124,12 +120,16 @@ class HttpClient:
                 "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
             )
 
+        # TODO: Handle valid response or Exception
         response_action, failure_type, error_message = self._http_error_handler.interpret_response(response)
 
+        # TODO: Handle valid response or Exception
+        # TODO: Determine if additional failure scenarios should be included
         if response_action:
             if response_action == ResponseAction.FAIL:
                 error_message = (
-                    error_message or f"Request to {response.request.url} failed with status code {response.status_code} and error message {self.parse_response_error_message(response)}"
+                    error_message
+                    or f"Request to {response.request.url} failed with status code {response.status_code} and error message {self.parse_response_error_message(response)}"
                 )
                 raise AirbyteTracedException(
                     internal_message=error_message,
@@ -138,10 +138,9 @@ class HttpClient:
                 )
 
             if response_action == ResponseAction.IGNORE:
-                self._logger.info(
-                    f"Ignoring response with status code {response.status_code} for request to {response.request.url}"
-                )
+                self._logger.info(f"Ignoring response with status code {response.status_code} for request to {response.request.url}")
 
+        # TODO: Handle valid response or Exception
         if self._retry_strategy.should_retry(response, response_action):
             custom_backoff_time = self._retry_strategy.backoff_time(response)
             error_message = self._retry_strategy.error_message(response)
@@ -199,33 +198,24 @@ class HttpClient:
             return None
 
     def send_request(
-            self,
-            http_method: str,
-            url: str,
-            headers: Optional[Mapping[str, str]] = None,
-            params: Optional[Mapping[str, str]] = None,
-            json: Optional[Mapping[str, Any]] = None,
-            data: Optional[Union[str, Mapping[str, Any]]] = None,
-            dedupe_query_params: bool = False,
-            request_kwargs: Optional[Mapping[str, Any]] = None,
-        ) -> Tuple[requests.PreparedRequest, requests.Response]:
+        self,
+        http_method: str,
+        url: str,
+        headers: Optional[Mapping[str, str]] = None,
+        params: Optional[Mapping[str, str]] = None,
+        json: Optional[Mapping[str, Any]] = None,
+        data: Optional[Union[str, Mapping[str, Any]]] = None,
+        dedupe_query_params: bool = False,
+        request_kwargs: Optional[Mapping[str, Any]] = None,
+    ) -> Tuple[requests.PreparedRequest, requests.Response]:
         """
         Prepares and sends request and return request and response objects.
         """
 
         request: requests.PreparedRequest = self._create_prepared_request(
-            http_method=http_method,
-            url=url,
-            dedupe_query_params=dedupe_query_params,
-            headers=headers,
-            params=params,
-            json=json,
-            data=data
+            http_method=http_method, url=url, dedupe_query_params=dedupe_query_params, headers=headers, params=params, json=json, data=data
         )
 
-        response: requests.Response = self._send_with_retry(
-            request=request,
-            request_kwargs=request_kwargs
-        )
+        response: requests.Response = self._send_with_retry(request=request, request_kwargs=request_kwargs)
 
         return request, response

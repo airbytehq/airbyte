@@ -1,19 +1,28 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from typing import Any, Mapping, Optional, Union
+
 from airbyte_cdk.models import FailureType
+
 from .response_action import ResponseAction
+
 
 class ErrorMapping:
 
     DEFAULT_ERROR_MAPPING: Mapping[Union[int, str], Mapping[str, Any]] = {
-        400: { "action": ResponseAction.FAIL, "failure_type": FailureType.config_error, "error_message": "Placeholder error message for 400 -- TBD" },
-        401: { "action": ResponseAction.FAIL, "failure_type": FailureType.config_error },
-        403: { "action": ResponseAction.FAIL, "failure_type": FailureType.config_error },
-        404: { "action": ResponseAction.FAIL, "failure_type": FailureType.system_error },
-        408: { "action": ResponseAction.FAIL, "failure_type": FailureType.transient_error },
-        429: { "action": ResponseAction.FAIL, "failure_type": FailureType.transient_error },
-        500: { "action": ResponseAction.RETRY, "failure_type": FailureType.transient_error },
-        502: { "action": ResponseAction.RETRY, "failure_type": FailureType.transient_error },
-        503: { "action": ResponseAction.RETRY, "failure_type": FailureType.transient_error },
+        400: {
+            "action": ResponseAction.FAIL,
+            "failure_type": FailureType.config_error,
+            "error_message": "Placeholder error message for 400 -- TBD",
+        },
+        401: {"action": ResponseAction.FAIL, "failure_type": FailureType.config_error},
+        403: {"action": ResponseAction.FAIL, "failure_type": FailureType.config_error},
+        404: {"action": ResponseAction.FAIL, "failure_type": FailureType.system_error},
+        408: {"action": ResponseAction.FAIL, "failure_type": FailureType.transient_error},
+        429: {"action": ResponseAction.FAIL, "failure_type": FailureType.transient_error},
+        500: {"action": ResponseAction.RETRY, "failure_type": FailureType.transient_error},
+        502: {"action": ResponseAction.RETRY, "failure_type": FailureType.transient_error},
+        503: {"action": ResponseAction.RETRY, "failure_type": FailureType.transient_error},
     }
 
     def __init__(self, error_mapping: Optional[Mapping[Union[int, str], Mapping[str, Any]]] = None) -> None:

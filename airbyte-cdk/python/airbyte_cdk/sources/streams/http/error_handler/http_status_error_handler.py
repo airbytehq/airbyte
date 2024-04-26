@@ -1,18 +1,19 @@
-import requests
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from typing import Any, Mapping, Optional, Tuple, Union
+
+import requests
 from airbyte_cdk.models import FailureType
 
 from .error_handler import ErrorHandler
 from .error_mapping import ErrorMapping
 from .response_action import ResponseAction
 
-class HttpStatusErrorHandler(ErrorHandler):
 
+class HttpStatusErrorHandler(ErrorHandler):
     def __init__(
-            self,
-            error_mapping: Optional[Mapping[Union[int, str], Mapping[str, Any]]] = None,
-            extend_default_mapping: bool = True
-        ) -> None:
+        self, error_mapping: Optional[Mapping[Union[int, str], Mapping[str, Any]]] = None, extend_default_mapping: bool = True
+    ) -> None:
         """
         Initialize the HttpStatusErrorHandler.
 
@@ -23,8 +24,9 @@ class HttpStatusErrorHandler(ErrorHandler):
         if extend_default_mapping:
             self._error_mapping.update_error_mapping(error_mapping)
 
-
-    def interpret_response(self, response: Optional[requests.Response], exception: Optional[Exception]) -> Optional[Tuple[ResponseAction, FailureType, str]]:
+    def interpret_response(
+        self, response: Optional[requests.Response], exception: Optional[Exception]
+    ) -> Optional[Tuple[ResponseAction, FailureType, str]]:
         """
         Interpret the response or exception and return the corresponding response action, failure type, and error message.
 

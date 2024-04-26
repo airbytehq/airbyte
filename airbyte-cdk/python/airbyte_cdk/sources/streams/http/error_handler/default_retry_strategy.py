@@ -1,21 +1,24 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
+
+from typing import Callable, Optional
 
 import requests
-from typing import Optional, Callable
+
 from .response_action import ResponseAction
 
 
 class DefaultRetryStrategy:
-
     def __init__(
-            self,
-            max_retries: int = 3,
-            max_time: Optional[int] = 600,
-            retry_factor: float = 5,
-            raise_on_http_errors: bool = True,
-            should_retry: Callable[[requests.Response], bool] = None,
-            backoff_time: Callable[[requests.Response], Optional[float]] = None,
-            error_message: Callable[[requests.Response], str] = None
-        ):
+        self,
+        max_retries: int = 3,
+        max_time: Optional[int] = 600,
+        retry_factor: float = 5,
+        raise_on_http_errors: bool = True,
+        should_retry: Callable[[requests.Response], bool] = None,
+        backoff_time: Callable[[requests.Response], Optional[float]] = None,
+        error_message: Callable[[requests.Response], str] = None,
+    ):
 
         self.max_retries = max_retries
         self.max_time = max_time
@@ -35,7 +38,6 @@ class DefaultRetryStrategy:
             return response.status_code == 429 or 500 <= response.status_code < 600
 
         return False
-
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """

@@ -2,13 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import requests
 from abc import ABC, abstractmethod
 from typing import Optional
+
+import requests
+
 from .response_action import ResponseAction
 
-class RetryStrategy(ABC):
 
+class RetryStrategy(ABC):
     @property
     @abstractmethod
     def max_retries(self) -> int:

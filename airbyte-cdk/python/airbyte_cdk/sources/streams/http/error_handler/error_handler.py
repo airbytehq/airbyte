@@ -1,9 +1,14 @@
-import requests
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Tuple, Optional
-from .response_action import ResponseAction
+from typing import Optional, Tuple
+
+import requests
 from airbyte_cdk.models import FailureType
+
+from .response_action import ResponseAction
+
 
 @dataclass
 class ErrorHandler(ABC):
@@ -12,7 +17,9 @@ class ErrorHandler(ABC):
     """
 
     @abstractmethod
-    def interpret_response(self, response: Optional[requests.Response], exception: Optional[Exception]) -> Optional[Tuple[ResponseAction, FailureType, str]]:
+    def interpret_response(
+        self, response: Optional[requests.Response], exception: Optional[Exception]
+    ) -> Optional[Tuple[ResponseAction, FailureType, str]]:
         """
         Interpret the response or exception and return the corresponding response action, failure type, and error message.
 
