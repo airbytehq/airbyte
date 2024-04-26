@@ -5,10 +5,11 @@ from __future__ import annotations
 import datetime
 import json
 from collections import defaultdict
+from collections.abc import Iterable, MutableMapping
 from copy import deepcopy
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, MutableMapping, Optional, Set, Tuple
+from typing import TYPE_CHECKING, Any, Optional
 
 import requests
 import yaml
@@ -42,12 +43,12 @@ class Report:
         self.secret_properties = self.get_secret_properties()
         self.created_at = datetime.datetime.utcnow()
         self.updated_at = self.created_at
-        self.control_execution_results_per_command: Dict[Command, ExecutionResult] = {}
-        self.target_execution_results_per_command: Dict[Command, ExecutionResult] = {}
-        self.test_results: List[Dict[str, Any]] = []
+        self.control_execution_results_per_command: dict[Command, ExecutionResult] = {}
+        self.target_execution_results_per_command: dict[Command, ExecutionResult] = {}
+        self.test_results: list[dict[str, Any]] = []
         self.update(ReportState.INITIALIZING)
 
-    def get_secret_properties(self) -> List:
+    def get_secret_properties(self) -> list:
         response = requests.get(self.SPEC_SECRET_MASK_URL)
         response.raise_for_status()
         return yaml.safe_load(response.text)["properties"]
@@ -66,7 +67,7 @@ class Report:
         self.update()
 
     def add_test_result(self, test_report: pytest.TestReport, test_documentation: Optional[str] = None) -> None:
-        cut_properties: List[Tuple[str, str]] = []
+        cut_properties: list[tuple[str, str]] = []
         for property_name, property_value in test_report.user_properties:
             if len(str(property_value).splitlines()) > MAX_LINES_IN_REPORT:
                 cut_property_name = f"{property_name} (truncated)"
@@ -141,7 +142,7 @@ class Report:
         return to_scrub
 
     ### REPORT CONTENT HELPERS ###
-    def get_stream_coverage_metrics(self) -> Dict[str, str]:
+    def get_stream_coverage_metrics(self) -> dict[str, str]:
         configured_catalog_stream_count = (
             len(self.connection_objects.configured_catalog.streams) if self.connection_objects.configured_catalog else 0
         )
@@ -154,12 +155,13 @@ class Report:
 
     def get_record_count_per_stream(
         self,
-    ) -> Dict[Command, Dict[str, Dict[str, int] | int]]:
-        record_count_per_command_and_stream: Dict[Command, Dict[str, Dict[str, int] | int]] = {}
+    ) -> dict[Command, dict[str, dict[str, int] | int]]:
+        record_count_per_command_and_stream: dict[Command, dict[str, dict[str, int] | int]] = {}
 
         for control_result, target_result in zip(
             self.control_execution_results_per_command.values(),
             self.target_execution_results_per_command.values(),
+            strict=False,
         ):
             per_stream_count = defaultdict(lambda: {"control": 0, "target": 0})  # type: ignore
             for result, source in [
@@ -176,8 +178,8 @@ class Report:
 
         return record_count_per_command_and_stream
 
-    def get_untested_streams(self) -> List[str]:
-        streams_with_data: Set[str] = set()
+    def get_untested_streams(self) -> list[str]:
+        streams_with_data: set[str] = set()
         for stream_count in self.get_record_count_per_stream().values():
             streams_with_data.update(stream_count.keys())
 
@@ -185,7 +187,7 @@ class Report:
 
         return [stream.name for stream in catalog_streams if stream.name not in streams_with_data]
 
-    def get_selected_streams(self) -> Dict[str, Dict[str, SyncMode | bool]]:
+    def get_selected_streams(self) -> dict[str, dict[str, SyncMode | bool]]:
         untested_streams = self.get_untested_streams()
         return (
             {
@@ -202,16 +204,16 @@ class Report:
             else {}
         )
 
-    def get_sync_mode_coverage(self) -> Dict[SyncMode, int]:
-        count_per_sync_mode: Dict[SyncMode, int] = defaultdict(int)
+    def get_sync_mode_coverage(self) -> dict[SyncMode, int]:
+        count_per_sync_mode: dict[SyncMode, int] = defaultdict(int)
         for s in self.get_selected_streams().values():
             count_per_sync_mode[s["sync_mode"]] += 1
         return count_per_sync_mode
 
     def get_message_count_per_type(
         self,
-    ) -> Tuple[List[Command], Dict[Type, Dict[Command, Dict[str, int]]]]:
-        message_count_per_type_and_command: Dict[Type, Dict[Command, Dict[str, int]]] = {}
+    ) -> tuple[list[Command], dict[Type, dict[Command, dict[str, int]]]]:
+        message_count_per_type_and_command: dict[Type, dict[Command, dict[str, int]]] = {}
         all_message_types = set()
         all_commands = set()
         # Gather all message types from both control and target execution reports
@@ -251,12 +253,13 @@ class Report:
 
     def get_http_metrics_per_command(
         self,
-    ) -> Dict[Command, Dict[str, Dict[str, int | str] | int]]:
-        metrics_per_command: Dict[Command, Dict[str, Dict[str, int | str] | int]] = {}
+    ) -> dict[Command, dict[str, dict[str, int | str] | int]]:
+        metrics_per_command: dict[Command, dict[str, dict[str, int | str] | int]] = {}
 
         for control_result, target_result in zip(
             self.control_execution_results_per_command.values(),
             self.target_execution_results_per_command.values(),
+            strict=False,
         ):
             control_flow_count = len(control_result.http_flows)
             control_all_urls = [f.request.url for f in control_result.http_flows]
@@ -292,7 +295,7 @@ class Report:
 
     def get_requested_urls_per_command(
         self,
-    ) -> Dict[Command, List[Tuple[int, str, str]]]:
+    ) -> dict[Command, list[tuple[int, str, str]]]:
         requested_urls_per_command = {}
         all_commands = sorted(
             list(set(self.control_execution_results_per_command.keys()).union(set(self.target_execution_results_per_command.keys()))),
