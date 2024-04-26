@@ -26,8 +26,6 @@ from requests.auth import AuthBase
 from .auth.core import HttpAuthenticator, NoAuth
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
-from .http_client import HttpClient
-from .error_handler.default_retry_strategy import DefaultRetryStrategy
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
@@ -53,21 +51,6 @@ class HttpStream(Stream, ABC):
             self._session.auth = authenticator
         elif authenticator:
             self._authenticator = authenticator
-
-        retry_strategy = DefaultRetryStrategy(
-            max_retries=self.max_retries,
-            max_time=self.max_time,
-            retry_factor=self.retry_factor,
-            raise_on_http_errors=self.raise_on_http_errors,
-            should_retry=self.should_retry,
-            backoff_time=self.backoff_time,
-            error_message=self.error_message
-        )
-
-        self._http_request_sender = HttpClient(
-            session=self._session,
-            retry_strategy=retry_strategy
-        )
 
     @property
     def cache_filename(self) -> str:
@@ -529,19 +512,16 @@ class HttpStream(Stream, ABC):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-
-        url = self._join_url(self.url_base, self.path(stream_state=stream_state,stream_slice=stream_slice, next_page_token=next_page_token))
-        request, response = self._http_request_sender.send_request(
-            http_method=self.http_method,
-            url=url,
+        request = self._create_prepared_request(
+            path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
             params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            request_kwargs=request_kwargs
         )
+        request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
+        response = self._send_request(request, request_kwargs)
         return request, response
 
 
