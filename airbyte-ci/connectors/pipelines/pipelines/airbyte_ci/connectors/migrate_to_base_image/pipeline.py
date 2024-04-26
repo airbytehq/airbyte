@@ -332,7 +332,6 @@ async def run_connector_migration_to_base_image_pipeline(
             )
             bump_version_in_metadata_result = await bump_version_in_metadata.run()
             steps_results.append(bump_version_in_metadata_result)
-            updated_repo_directory = bump_version_in_metadata_result.output
 
             latest_repo_dir_state = bump_version_in_metadata_result.output
             # ADD CHANGELOG ENTRY only if the PR number is provided.
@@ -353,7 +352,6 @@ async def run_connector_migration_to_base_image_pipeline(
                 context,
                 latest_repo_dir_state,
             )
-
             add_build_instructions_to_doc_results = await add_build_instructions_to_doc.run()
             steps_results.append(add_build_instructions_to_doc_results)
             latest_repo_dir_state = add_build_instructions_to_doc_results.output
