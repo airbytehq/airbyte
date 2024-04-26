@@ -804,6 +804,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         )
         Assertions.assertNotNull(stateMessageEmittedAfterFirstSyncCompletion.data)
 
+        System.out.println("actual records: " + recordsFromFirstBatch)
+
         Assertions.assertEquals((MODEL_RECORDS.size), recordsFromFirstBatch.size)
         assertExpectedRecords(HashSet(MODEL_RECORDS), recordsFromFirstBatch)
 

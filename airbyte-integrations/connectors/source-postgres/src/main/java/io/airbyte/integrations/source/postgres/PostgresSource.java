@@ -32,6 +32,7 @@ import static io.airbyte.integrations.source.postgres.PostgresUtils.prettyPrintC
 import static io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidInitializer.cdcCtidIteratorsCombined;
 import static io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidInitializer.getCdcState;
 import static io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidInitializer.getCtidInitialLoadGlobalStateManager;
+import static io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidInitializer.getSavedOffsetAfterReplicationSlotLSN;
 import static io.airbyte.integrations.source.postgres.ctid.CtidUtils.createInitialLoader;
 import static io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils.categoriseStreams;
 import static io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils.reclassifyCategorisedCtidStreams;
@@ -480,7 +481,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     if (isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
       LOGGER.info("Using ctid + CDC");
       return cdcCtidIteratorsCombined(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString(),
-          getReplicationSlot(database, sourceConfig).get(0), (CtidGlobalStateManager) ctidStateManager);
+          (CtidGlobalStateManager) ctidStateManager, savedOffsetAfterReplicationSlotLSN);
     }
 
     if (isAnyStreamIncrementalSyncMode(catalog) && PostgresUtils.isXmin(sourceConfig)) {
@@ -740,6 +741,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   private CtidStateManager ctidStateManager = null;
+  private boolean savedOffsetAfterReplicationSlotLSN = false;
 
   @Override
   protected void initializeForStateManager(final JdbcDatabase database,
@@ -752,7 +754,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     var sourceConfig = database.getSourceConfig();
 
     if (isCdc(sourceConfig)) {
-      ctidStateManager = getCtidInitialLoadGlobalStateManager(database, catalog, stateManager, getQuoteString(), getReplicationSlot(database, sourceConfig).get(0));
+      savedOffsetAfterReplicationSlotLSN = getSavedOffsetAfterReplicationSlotLSN(database, catalog, stateManager, getReplicationSlot(database, sourceConfig).get(0));
+      ctidStateManager = getCtidInitialLoadGlobalStateManager(database, catalog, stateManager, getQuoteString(), savedOffsetAfterReplicationSlotLSN);
     } else {
       final FileNodeHandler fileNodeHandler =
           PostgresQueryUtils.fileNodeForStreams(database,

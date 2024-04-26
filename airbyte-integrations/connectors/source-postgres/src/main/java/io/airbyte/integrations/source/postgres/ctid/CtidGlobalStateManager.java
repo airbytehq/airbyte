@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.postgres.ctid;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidUtils.CtidStreams;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
@@ -33,16 +34,22 @@ public class CtidGlobalStateManager extends CtidStateManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CtidGlobalStateManager.class);
 
-  private final CdcState cdcState;
+  private final StateManager stateManager;
   private Set<AirbyteStreamNameNamespacePair> resumableFullRefreshStreams;
   private Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot;
+  private  final boolean savedOffsetAfterReplicationSlotLSN;
+  private final CdcState defaultCdcState;
 
   public CtidGlobalStateManager(final CtidStreams ctidStreams,
                                 final FileNodeHandler fileNodeHandler,
-                                final CdcState cdcState,
-                                final ConfiguredAirbyteCatalog catalog) {
+                                final StateManager stateManager,
+                                final ConfiguredAirbyteCatalog catalog,
+      final boolean savedOffsetAfterReplicationSlotLSN,
+      final CdcState defaultCdcState) {
     super(filterOutExpiredFileNodes(ctidStreams.pairToCtidStatus(), fileNodeHandler));
-    this.cdcState = cdcState;
+    this.stateManager = stateManager;
+    this.savedOffsetAfterReplicationSlotLSN = savedOffsetAfterReplicationSlotLSN;
+    this.defaultCdcState = defaultCdcState;
     initStream(ctidStreams, catalog);
   }
 
@@ -80,8 +87,6 @@ public class CtidGlobalStateManager extends CtidStateManager {
     return filteredMap;
   }
 
-  public CdcState getCdcState() { return cdcState; }
-
   @Override
   public AirbyteStateMessage createCtidStateMessage(final AirbyteStreamNameNamespacePair pair, final CtidStatus ctidStatus) {
     pairToCtidStatus.put(pair, ctidStatus);
@@ -101,14 +106,30 @@ public class CtidGlobalStateManager extends CtidStateManager {
     if (!resumableFullRefreshStreams.contains(pair)) {
       streamStates.add(getAirbyteStreamState(pair, (Jsons.jsonNode(ctidStatus))));
     }
-    final AirbyteGlobalState globalState = new AirbyteGlobalState();
-    globalState.setSharedState(Jsons.jsonNode(cdcState));
-    globalState.setStreamStates(streamStates);
+
 
 
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
-        .withGlobal(globalState);
+        .withGlobal(generateGlobalState(streamStates));
+  }
+
+  public AirbyteGlobalState generateGlobalState(final List<AirbyteStreamState> streamStates) {
+    final CdcState stateToBeUsed = getCdcState();
+    final AirbyteGlobalState globalState = new AirbyteGlobalState();
+    globalState.setSharedState(Jsons.jsonNode(stateToBeUsed));
+    globalState.setStreamStates(streamStates);
+    return globalState;
+
+  }
+
+  public CdcState getCdcState() {
+    final CdcState stateManagerCdcState = stateManager.getCdcStateManager().getCdcState();
+
+    return !savedOffsetAfterReplicationSlotLSN || stateManagerCdcState == null
+        || stateManagerCdcState.getState() == null ? defaultCdcState
+        : stateManagerCdcState;
+
   }
 
 
@@ -129,13 +150,9 @@ public class CtidGlobalStateManager extends CtidStateManager {
       streamStates.add(getAirbyteStreamState(pair, Jsons.jsonNode(ctidStatusForFullRefreshStream)));
     });
 
-    final AirbyteGlobalState globalState = new AirbyteGlobalState();
-    globalState.setSharedState(Jsons.jsonNode(cdcState));
-    globalState.setStreamStates(streamStates);
-
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
-        .withGlobal(globalState);
+        .withGlobal(generateGlobalState(streamStates));
   }
 
   private AirbyteStreamState getAirbyteStreamState(final AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
