@@ -102,15 +102,22 @@ class RestoreOriginalState(Step):
     def __init__(self, context: ConnectorContext) -> None:
         super().__init__(context)
         self.manifest_path = context.connector.manifest_path
-        self.original_manifest = self.manifest_path.read_text()
+        self.original_manifest = None
+        if self.manifest_path.is_file():
+            self.original_manifest = self.manifest_path.read_text()
 
-        self.backup_schema_path = Path(tempfile.mkdtemp())
         self.schemas_path = context.connector.python_source_dir_path / SCHEMAS_DIR_NAME
-        copy_directory(self.schemas_path, self.backup_schema_path)
+        self.backup_schema_path = None
+        if self.schemas_path.is_dir():
+            self.backup_schema_path = Path(tempfile.mkdtemp())
+            copy_directory(self.schemas_path, self.backup_schema_path)
 
     async def _run(self) -> StepResult:  # type: ignore
-        self.manifest_path.write_text(self.original_manifest)
-        copy_directory(self.backup_schema_path, self.schemas_path)
+        if self.original_manifest:
+            self.manifest_path.write_text(self.original_manifest)
+
+        if self.backup_schema_path:
+            copy_directory(self.backup_schema_path, self.schemas_path)
 
         return StepResult(
             step=self,
@@ -118,7 +125,8 @@ class RestoreOriginalState(Step):
         )
 
     async def _cleanup(self) -> None:
-        shutil.rmtree(self.backup_schema_path)
+        if self.backup_schema_path:
+            shutil.rmtree(self.backup_schema_path)
 
 
 class InlineSchemas(Step):
