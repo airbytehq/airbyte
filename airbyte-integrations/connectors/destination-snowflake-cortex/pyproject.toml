@@ -22,7 +22,7 @@ airbyte-cdk = {version = "^0.73.0", extras = ["vector-db-based"]}
 airbyte = "^0.8.0"
 
 [tool.poetry.group.dev.dependencies]
-pytest = ">=6.2,<7.0"
+pytest = "^7.2"
 ruff = "^0.3.2"
 mypy = "^1.9.0"
 
