@@ -3,20 +3,25 @@
   "type": ["null", "object"],
   "properties": {
     "name": {
+      "description": "The name associated with the post insights data.",
       "type": ["null", "string"]
     },
     "period": {
+      "description": "The period for which the post insights data is relevant.",
       "type": ["null", "string"]
     },
     "values": {
+      "description": "The values associated with the post insights data.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "value": {
+            "description": "The value associated with the post insights data.",
             "type": ["null", "object", "string", "integer"]
           },
           "end_time": {
+            "description": "The end time of the data period.",
             "type": ["null", "string"],
             "format": "date-time"
           }
@@ -24,12 +29,15 @@
       }
     },
     "title": {
+      "description": "The title of the post insights data.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "The description of the post insights data.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier for the post insights data.",
       "type": ["null", "string"]
     }
   }

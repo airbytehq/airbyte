@@ -3,20 +3,25 @@
   "type": ["null", "object"],
   "properties": {
     "name": {
+      "description": "The name of the page.",
       "type": ["null", "string"]
     },
     "period": {
+      "description": "The time period covered by the insights data.",
       "type": ["null", "string"]
     },
     "values": {
+      "description": "The values associated with the insights data.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "value": {
+            "description": "The actual value of the insights data.",
             "type": ["null", "object", "integer"]
           },
           "end_time": {
+            "description": "The end time of the insights data.",
             "type": ["null", "string"],
             "format": "date-time"
           }
@@ -24,12 +29,11 @@
       }
     },
     "title": {
-      "type": ["null", "string"]
-    },
-    "description": {
+      "description": "The title of the insights data.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier of the page.",
       "type": ["null", "string"]
     }
   }
