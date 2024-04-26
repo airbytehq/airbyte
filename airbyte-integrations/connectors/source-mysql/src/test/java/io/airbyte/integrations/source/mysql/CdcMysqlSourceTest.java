@@ -422,7 +422,6 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
                                 final int indexTillWhichExpectPkState,
                                 boolean expectSharedStateChange) {
     JsonNode sharedState = null;
-    System.out.println("state messages: " + stateMessages);
 
     for (int i = 0; i < stateMessages.size(); i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);

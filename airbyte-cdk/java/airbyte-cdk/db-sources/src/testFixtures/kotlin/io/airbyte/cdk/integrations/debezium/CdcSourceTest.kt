@@ -663,7 +663,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 Streams.concat(MODEL_RECORDS_2.stream(), MODEL_RECORDS.stream())
                     .collect(Collectors.toSet()),
                 recordMessages1,
-                setOf(MODELS_STREAM_NAME, MODELS_STREAM_NAME_2),
+                setOf(MODELS_STREAM_NAME),
                 names,
                 modelsSchema(),
             )
@@ -671,23 +671,9 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             // Platform will clean out the state for full stream after a successful job.
             // In the test we simulate this process by removing the state for the full stream.
             val state = Jsons.jsonNode(listOf(stateMessages1[stateMessages1.size - 1]))
-            // Access the first element of the JSON array
             val streamStates = state.get(0).get("global").get("stream_states") as ArrayNode
             // Remove state for full refresh stream.
-            streamStates.let {
-                val iterator = it.iterator()
-                while (iterator.hasNext()) {
-                    println("going through stream states. ")
-                    val node = iterator.next()
-                    val name = node.get("stream_descriptor").get("name").asText()
-                    println("going through stream states. name is  " + name)
-
-                    if (name == MODELS_STREAM_NAME_2) {
-                        iterator.remove() // Remove the node if it matches the specific name
-                        println("removed!")
-                    }
-                }
-            }
+            removeStreamState(MODELS_STREAM_NAME_2, streamStates)
             val read2 = source().read(config()!!, configuredCatalog, state)
             val actualRecords2 = AutoCloseableIterators.toListAndClose(read2)
 
@@ -699,10 +685,42 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 Streams.concat(MODEL_RECORDS_2.stream(), Stream.of(puntoRecord))
                     .collect(Collectors.toSet()),
                 recordMessages2,
-                setOf(MODELS_STREAM_NAME, MODELS_STREAM_NAME_2),
+                setOf(MODELS_STREAM_NAME),
                 names,
                 modelsSchema(),
             )
+
+            // Doing one more sync, make sure full refresh does not interfere with shared state.
+            // For incremental stream, nothing has been added since read2, thus no record expected.
+            // For full refresh stream, everything will be expected (6 records).
+            val state3 = Jsons.jsonNode(listOf(stateMessages2[stateMessages2.size - 1]))
+            val streamStates3 = state3.get(0).get("global").get("stream_states") as ArrayNode
+            // Remove state for full refresh stream.
+            removeStreamState(MODELS_STREAM_NAME_2, streamStates3)
+            val read3 = source().read(config()!!, configuredCatalog, state3)
+            val actualRecords3 = AutoCloseableIterators.toListAndClose(read3)
+            val recordMessages3 = extractRecordMessages(actualRecords3)
+            assertExpectedRecords(
+                Streams.concat(MODEL_RECORDS_2.stream()).collect(Collectors.toSet()),
+                recordMessages3,
+                setOf(MODELS_STREAM_NAME),
+                names,
+                modelsSchema(),
+            )
+        }
+    }
+
+    protected fun removeStreamState(streamName: String, streamStates: ArrayNode) {
+        streamStates.let {
+            val iterator = it.iterator()
+            while (iterator.hasNext()) {
+                val node = iterator.next()
+                val name = node.get("stream_descriptor").get("name").asText()
+
+                if (name == streamName) {
+                    iterator.remove() // Remove the node if it matches the specific name
+                }
+            }
         }
     }
 
@@ -1032,10 +1050,10 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 .toList()
                 .get(0)
 
-        validateStreamStateInResumableFullRefresh(streamStateToBeTested);
+        validateStreamStateInResumableFullRefresh(streamStateToBeTested)
 
         Assertions.assertEquals((MODEL_RECORDS.size), recordsFromFirstBatch.size)
-        assertExpectedRecords(HashSet(MODEL_RECORDS), recordsFromFirstBatch)
+        assertExpectedRecords(HashSet(MODEL_RECORDS), recordsFromFirstBatch, HashSet())
     }
     protected open fun validateStreamStateInResumableFullRefresh(streamStateToBeTested: JsonNode) {}
 

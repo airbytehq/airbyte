@@ -65,7 +65,6 @@ public class MySqlInitialLoadStreamStateManager extends MySqlInitialLoadStateMan
 
   @Override
   public PrimaryKeyInfo getPrimaryKeyInfo(final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair) {
-    LOGGER.info("pair to pk info map: " + pairToPrimaryKeyInfo);
     return pairToPrimaryKeyInfo.get(pair);
   }
 

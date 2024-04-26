@@ -403,16 +403,12 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         if ((source() as AbstractJdbcSource<*>).supportResumableFullRefresh(catalog.streams[0])) {
             val stateMessages = extractStateMessage(actualMessages)
-            // verify the final message is expected
-            val finalStateMessage = stateMessages[stateMessages.size - 1]
-            assertEquals(
-                finalStateMessage.stream.streamState.get("state_type").textValue(),
-                "primary_key"
-            )
-            assertEquals(finalStateMessage.stream.streamState.get("pk_name").textValue(), "id")
-            assertEquals(finalStateMessage.stream.streamState.get("pk_val").textValue(), "3")
+            validateFullRefreshStateMessageReadSuccess(stateMessages)
         }
     }
+    protected open fun validateFullRefreshStateMessageReadSuccess(
+        stateMessages: List<AirbyteStateMessage>
+    ) {}
 
     @Test
     @Throws(Exception::class)
