@@ -11,7 +11,7 @@ from types import TracebackType
 from typing import TYPE_CHECKING
 
 import yaml  # type: ignore
-from anyio import Path
+from pathlib import Path
 from asyncer import asyncify
 from dagger import Directory, Platform, Secret
 from github import PullRequest
@@ -22,7 +22,7 @@ from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from pipelines.helpers.execution.run_steps import RunStepOptions
 from pipelines.helpers.github import update_commit_status_check
 from pipelines.helpers.slack import send_message_to_webhook
-from pipelines.helpers.utils import METADATA_FILE_NAME
+from pipelines.helpers.utils import METADATA_FILE_NAME, MANIFEST_FILE_NAME
 from pipelines.models.contexts.pipeline_context import PipelineContext
 
 if TYPE_CHECKING:
@@ -185,6 +185,14 @@ class ConnectorContext(PipelineContext):
     @property
     def host_image_export_dir_path(self) -> str:
         return "." if self.is_ci else "/tmp"
+
+    @property
+    def python_source_dir_path(self) -> Path:
+        return self.connector.code_directory / self.connector.technical_name.replace("-", "_")
+
+    @property
+    def manifest_path(self) -> Path:
+        return self.python_source_dir_path / MANIFEST_FILE_NAME
 
     @property
     def metadata_path(self) -> Path:
