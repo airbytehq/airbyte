@@ -69,10 +69,9 @@
     "pull_requests": {
       "description": "List of all pull requests associated with the workflow run.",
       "type": "array",
+      "items": {
         "type": ["null", "object"],
-        "properties": {
-          "description": "Additional details about the pull requests associated with the workflow run."
-        },
+        "properties": {},
         "additionalProperties": true
       }
     },
