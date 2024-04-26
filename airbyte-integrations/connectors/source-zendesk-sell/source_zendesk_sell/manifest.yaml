@@ -366,24 +366,21 @@ definitions:
               - "null"
               - object
             additionalProperties: true
-            properties:
-              description: Primary physical address of the contact.
+            properties: {}
           billing_address:
             description: The billing address of the contact.
             type:
               - "null"
               - object
             additionalProperties: true
-            properties:
-              description: Billing address for the contact.
+            properties: {}
           shipping_address:
             description: The shipping address of the contact.
             type:
               - "null"
               - object
             additionalProperties: true
-            properties:
-              description: Shipping address for the contact.
+            properties: {}
           tags:
             description: Tags associated with the contact for categorization.
             type:
@@ -394,6 +391,8 @@ definitions:
             type:
               - "null"
               - object
+            additionalProperties: true
+            properties: {}
           created_at:
             description: Date and time when the contact was created.
             type:
