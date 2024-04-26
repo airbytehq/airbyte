@@ -13,9 +13,10 @@ import io.airbyte.workers.exception.TestHarnessException
 import io.airbyte.workers.internal.AirbyteStreamFactory
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory
 import io.airbyte.workers.process.IntegrationLauncher
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class DefaultGetSpecTestHarness
 @JvmOverloads
@@ -78,7 +79,5 @@ constructor(
         TestHarnessUtils.cancelProcess(process)
     }
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(DefaultGetSpecTestHarness::class.java)
-    }
+    companion object {}
 }

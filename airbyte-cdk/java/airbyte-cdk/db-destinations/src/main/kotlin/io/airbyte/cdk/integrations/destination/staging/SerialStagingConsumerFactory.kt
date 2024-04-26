@@ -18,13 +18,13 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 import java.util.UUID
 import java.util.function.Consumer
 import java.util.function.Function
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * Uses both Factory and Consumer design pattern to create a single point of creation for consuming
  * [AirbyteMessage] for processing
@@ -84,8 +84,6 @@ open class SerialStagingConsumerFactory {
     }
 
     companion object {
-        private val LOGGER: Logger =
-            LoggerFactory.getLogger(SerialStagingConsumerFactory::class.java)
 
         // using a random string here as a placeholder for the moment.
         // This would avoid mixing data in the staging area between different syncs (especially if
@@ -166,7 +164,7 @@ open class SerialStagingConsumerFactory {
                         syncMode,
                         SYNC_DATETIME
                     )
-                LOGGER.info("Write config: {}", writeConfig)
+                LOGGER.info { "Write config: $writeConfig" }
                 writeConfig
             }
         }

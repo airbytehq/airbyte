@@ -29,13 +29,13 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId.Companion.concatenateRawTableName
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
 import io.airbyte.protocol.models.v0.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.function.Consumer
 import java.util.function.Function
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * Strategy:
  *
@@ -51,7 +51,6 @@ import org.slf4j.LoggerFactory
  * to the database (regardless of how few are left)
  */
 object JdbcBufferedConsumerFactory {
-    private val LOGGER: Logger = LoggerFactory.getLogger(JdbcBufferedConsumerFactory::class.java)
 
     const val DEFAULT_OPTIMAL_BATCH_SIZE_FOR_FLUSH = 25 * 1024 * 1024L
 
@@ -113,7 +112,6 @@ object JdbcBufferedConsumerFactory {
                 .map { toWriteConfig(namingResolver, config, schemaRequired).apply(it) }
                 .toList()
         } else {
-            // we should switch this to kotlin-style list processing, but meh for now
             parsedCatalog.streams
                 .map { parsedStreamToWriteConfig(namingResolver).apply(it) }
                 .toList()
@@ -161,7 +159,7 @@ object JdbcBufferedConsumerFactory {
                     tableName,
                     syncMode
                 )
-            LOGGER.info("Write config: {}", writeConfig)
+            LOGGER.info { "Write config: $writeConfig" }
             writeConfig
         }
     }
@@ -232,20 +230,16 @@ object JdbcBufferedConsumerFactory {
     ): OnStartFunction {
         return OnStartFunction {
             typerDeduper.prepareSchemasAndRunMigrations()
-            LOGGER.info(
-                "Preparing raw tables in destination started for {} streams",
-                writeConfigs.size
-            )
+            LOGGER.info {
+                "Preparing raw tables in destination started for ${writeConfigs.size} streams"
+            }
             val queryList: MutableList<String> = ArrayList()
             for (writeConfig in writeConfigs) {
                 val schemaName = writeConfig.outputSchemaName
                 val dstTableName = writeConfig.outputTableName
-                LOGGER.info(
-                    "Preparing raw table in destination started for stream {}. schema: {}, table name: {}",
-                    writeConfig.streamName,
-                    schemaName,
-                    dstTableName
-                )
+                LOGGER.info {
+                    "Preparing raw table in destination started for stream ${writeConfig.streamName}. schema: $schemaName, table name: $dstTableName"
+                }
                 sqlOperations.createSchemaIfNotExists(database, schemaName)
                 sqlOperations.createTableIfNotExists(database, schemaName, dstTableName)
                 when (writeConfig.syncMode) {
@@ -262,7 +256,7 @@ object JdbcBufferedConsumerFactory {
                 }
             }
             sqlOperations.executeTransaction(database, queryList)
-            LOGGER.info("Preparing raw tables in destination completed.")
+            LOGGER.info { "Preparing raw tables in destination completed." }
             typerDeduper.prepareFinalTables()
         }
     }

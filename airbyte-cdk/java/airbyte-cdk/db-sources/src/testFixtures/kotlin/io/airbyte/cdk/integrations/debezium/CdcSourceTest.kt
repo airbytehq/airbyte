@@ -14,14 +14,15 @@ import io.airbyte.commons.util.AutoCloseableIterators
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.function.Consumer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     @JvmField protected var testdb: T = createTestDatabase()
@@ -1340,7 +1341,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     ) {}
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(CdcSourceTest::class.java)
 
         const val MODELS_STREAM_NAME: String = "models"
         const val MODELS_STREAM_NAME_2: String = "models_2"

@@ -10,6 +10,7 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.sql.SQLException
 import java.util.function.Consumer
@@ -17,8 +18,8 @@ import org.apache.commons.lang3.StringUtils
 import org.jooq.DSLContext
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 /**
  * This abstract class contains common helpers and boilerplate for comprehensively testing that all
@@ -383,10 +384,5 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
         return messages
             .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.STATE }
             .map { obj: AirbyteMessage -> obj.state }
-    }
-
-    companion object {
-        private val LOGGER: Logger =
-            LoggerFactory.getLogger(AbstractSourceDatabaseTypeTest::class.java)
     }
 }

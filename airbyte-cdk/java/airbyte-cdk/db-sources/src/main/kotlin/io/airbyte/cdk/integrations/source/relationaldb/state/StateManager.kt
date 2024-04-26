@@ -8,10 +8,10 @@ import io.airbyte.cdk.integrations.source.relationaldb.CdcStateManager
 import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * Defines a manager that manages connector state. Connector state is used to keep track of the data
  * synced by the connector.
@@ -161,16 +161,9 @@ interface StateManager {
         if (cursorRecordCount > 0L) {
             cursorInfo.get().setCursorRecordCount(cursorRecordCount)
         }
-        LOGGER.debug(
-            "Updating cursor value for {} to {} (count {})...",
-            pair,
-            cursor,
-            cursorRecordCount
-        )
+        LOGGER.debug { "Updating cursor value for $pair to $cursor (count $cursorRecordCount)..." }
         return emit(Optional.ofNullable(pair))
     }
 
-    companion object {
-        val LOGGER: Logger = LoggerFactory.getLogger(StateManager::class.java)
-    }
+    companion object {}
 }

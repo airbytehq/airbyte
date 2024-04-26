@@ -19,13 +19,14 @@ import io.airbyte.commons.string.Strings
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigDecimal
 import java.sql.Connection
 import java.util.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 /**
  * Runs a "large" amount of data through a JdbcSource to ensure that it streams / chunks records.
@@ -224,7 +225,6 @@ abstract class JdbcStressTest {
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(JdbcStressTest::class.java)
 
         // this will get rounded down to the nearest 1000th.
         private const val TOTAL_RECORDS = 10000000L

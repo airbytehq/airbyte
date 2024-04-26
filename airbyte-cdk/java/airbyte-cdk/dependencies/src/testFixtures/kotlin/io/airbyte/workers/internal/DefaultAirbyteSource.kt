@@ -18,6 +18,7 @@ import io.airbyte.protocol.models.AirbyteMessage
 import io.airbyte.workers.TestHarnessUtils
 import io.airbyte.workers.WorkerConstants
 import io.airbyte.workers.process.IntegrationLauncher
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.time.Duration
 import java.time.temporal.ChronoUnit
@@ -28,8 +29,8 @@ import kotlin.collections.Iterator
 import kotlin.collections.Set
 import kotlin.collections.contains
 import kotlin.collections.setOf
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class DefaultAirbyteSource
 @VisibleForTesting
@@ -200,7 +201,6 @@ internal constructor(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(DefaultAirbyteSource::class.java)
 
         private val HEARTBEAT_FRESH_DURATION: Duration = Duration.of(5, ChronoUnit.MINUTES)
         private val GRACEFUL_SHUTDOWN_DURATION: Duration = Duration.of(1, ChronoUnit.MINUTES)

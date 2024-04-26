@@ -47,12 +47,7 @@ object TyperDeduperUtil {
                 Map<StreamId, CompletionStage<Migration.MigrationResult<DestinationState>>> =
                 currentStates.associate {
                     it.streamConfig.id to
-                        runMigrationsAsync(
-                            executorService,
-                            destinationHandler,
-                            migration,
-                            it,
-                        )
+                        runMigrationsAsync(executorService, destinationHandler, migration, it)
                 }
             val migrationResultFutures =
                 CompletableFutures.allOf(futures.values.toList()).toCompletableFuture().join()

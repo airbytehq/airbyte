@@ -4,10 +4,10 @@
 package io.airbyte.commons.lang
 
 import com.google.common.annotations.VisibleForTesting
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.stream.Stream
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val log = KotlinLogging.logger {}
 /**
  * Registers a shutdown hook that calls the close method of the provided objects. If an object does
  * not support either the [AutoCloseable] or [Closeable] interface, it will be ignored.
@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory
  * application framework is introduced to the project that can provide object lifecycle management.
  */
 object CloseableShutdownHook {
-    private val log: Logger = LoggerFactory.getLogger(CloseableShutdownHook::class.java)
 
     /**
      * Registers a runtime shutdown hook with the application for each provided closeable object.
@@ -49,7 +48,7 @@ object CloseableShutdownHook {
         try {
             autoCloseable.close()
         } catch (e: Exception) {
-            log.error("Unable to close object {}.", autoCloseable.javaClass.name, e)
+            log.error(e) { "Unable to close object ${autoCloseable.javaClass.name}." }
         }
     }
 }
