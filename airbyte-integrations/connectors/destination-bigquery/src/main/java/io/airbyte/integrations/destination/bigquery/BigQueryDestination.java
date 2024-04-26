@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 
 import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -78,7 +77,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import org.apache.arrow.util.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -307,8 +305,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   /**
-   * Check for any streams running in dedup mode, with at least one primary key column whose type
-   * will resolve to JSON.
+   * Check for any streams running in dedup mode, with at least one primary key column whose type will
+   * resolve to JSON.
    */
   @VisibleForTesting
   static void throwIfAnyUnsupportedPrimaryKeys(boolean disableTypingDeduping, ParsedCatalog parsedCatalog) {
@@ -335,12 +333,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
     if (!problematicStreams.isEmpty()) {
       final String streamMessages = problematicStreams.entrySet().stream().map((entry) -> {
-          final StreamId streamId = entry.getKey();
-          final String humanReadableStreamId = streamId.originalNamespace() + "." + streamId.originalName();
-          final String columns = String.join(", ", entry.getValue());
-          return humanReadableStreamId + ": " + columns;
-        }).sorted()
-      .collect(joining("\n"));
+        final StreamId streamId = entry.getKey();
+        final String humanReadableStreamId = streamId.originalNamespace() + "." + streamId.originalName();
+        final String columns = String.join(", ", entry.getValue());
+        return humanReadableStreamId + ": " + columns;
+      }).sorted()
+          .collect(joining("\n"));
       throw new ConfigErrorException("JSON-typed columns are not currently supported in primary keys.\n" + streamMessages);
     }
   }
