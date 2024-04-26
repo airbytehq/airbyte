@@ -33,6 +33,8 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     CHECK_UPDATE_CANDIDATE = "check_update_candidate"
     UPDATE_POETRY = "upgrade_poetry"
     CONNECTOR_REGRESSION_TESTS = "connector_regression_tests"
+    INLINE_CANDIDATE = "migration_to_inline_schemas.candidate"
+    INLINE_MIGRATION = "migration_to_inline_schemas.migration"
 
     def __str__(self) -> str:
         return self.value
