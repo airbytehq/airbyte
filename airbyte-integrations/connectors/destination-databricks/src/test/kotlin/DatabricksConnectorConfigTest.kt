@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import io.airbyte.commons.jackson.MoreMappers
@@ -10,7 +14,7 @@ class DatabricksConnectorConfigTest {
     // Write a test for DatabricksConnectorConfig deserialization
     @Test
     fun testDeserialization() {
-        val jsonString = MoreResources.readResource("basic-config.json");
+        val jsonString = MoreResources.readResource("basic-config.json")
         val objectMapper = MoreMappers.initMapper()
         objectMapper.registerModule(kotlinModule())
         val jsonNode = objectMapper.readValue(jsonString, JsonNode::class.java)

@@ -23,4 +23,5 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  supportsDbt: true
 metadataSpecVersion: "1.0"

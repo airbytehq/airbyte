@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.databricks
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -10,13 +14,14 @@ import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
 import io.airbyte.cdk.integrations.destination.async.deser.AirbyteMessageDeserializer
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
+import io.airbyte.cdk.integrations.util.addDefaultNamespaceToStreams
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser
-import io.airbyte.integrations.destination.databricks.model.DatabricksConnectorConfig
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksDestinationHandler
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksSqlGenerator
-import io.airbyte.integrations.destination.databricks.jdbc.DatabrickStorageOperations
+import io.airbyte.integrations.destination.databricks.jdbc.DatabricksStorageOperations
+import io.airbyte.integrations.destination.databricks.model.DatabricksConnectorConfig
 import io.airbyte.integrations.destination.databricks.staging.DatabricksFlushFunction
-import io.airbyte.integrations.destination.databricks.staging.DatabricksStagingOperations
 import io.airbyte.integrations.destination.databricks.sync.DatabricksStreamOperations
 import io.airbyte.integrations.destination.databricks.sync.DatabricksSyncOperations
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
@@ -27,13 +32,16 @@ import java.util.*
 import java.util.function.Consumer
 
 private val logger = KotlinLogging.logger {}
+
 class DatabricksDestination : BaseConnector(), Destination {
     override fun getConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
         outputRecordCollector: Consumer<AirbyteMessage>
     ): AirbyteMessageConsumer? {
-        throw UnsupportedOperationException("GetConsumer is not supported, use getSerializedMessageConsumer")
+        throw UnsupportedOperationException(
+            "GetConsumer is not supported, use getSerializedMessageConsumer"
+        )
     }
 
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
@@ -46,28 +54,64 @@ class DatabricksDestination : BaseConnector(), Destination {
         outputRecordCollector: Consumer<AirbyteMessage>
     ): SerializedAirbyteMessageConsumer {
 
+        // TODO: Deserialization should be taken care by connector runner framework later
         val connectorConfig = DatabricksConnectorConfig.deserialize(config)
-        val sqlGenerator = DatabricksSqlGenerator(DatabricksNamingTransformer())
+        // TODO: This abomination continues to stay, this call should be implicit in ParsedCatalog
+        // with defaultNamespace injected
+        addDefaultNamespaceToStreams(catalog, connectorConfig.schema)
+
+        val sqlGenerator =
+            DatabricksSqlGenerator(DatabricksNamingTransformer(), connectorConfig.database)
         val catalogParser = CatalogParser(sqlGenerator)
         val parsedCatalog = catalogParser.parseCatalog(catalog)
-        val workspaceClient = ConnectorClientsFactory.createWorkspaceClient(connectorConfig.hostname, connectorConfig.apiAuthentication)
+        val workspaceClient =
+            ConnectorClientsFactory.createWorkspaceClient(
+                connectorConfig.hostname,
+                connectorConfig.apiAuthentication
+            )
         val datasource = ConnectorClientsFactory.createDataSource(connectorConfig)
         val jdbcDatabase = DefaultJdbcDatabase(datasource)
-        val destinationHandler = DatabricksDestinationHandler(connectorConfig.database, jdbcDatabase, connectorConfig.rawSchemaOverride)
-        val sqlOperations = DatabrickStorageOperations(sqlGenerator, destinationHandler)
-        val stagingOperations = DatabricksStagingOperations(workspaceClient)
-        val streamOperations = DatabricksStreamOperations(sqlOperations, stagingOperations)
-        val syncOperations = DatabricksSyncOperations(parsedCatalog, destinationHandler, streamOperations)
+        val destinationHandler =
+            DatabricksDestinationHandler(
+                connectorConfig.database,
+                jdbcDatabase,
+                connectorConfig.rawSchemaOverride
+            )
+
+        // Minimum surface area for AsyncConsumer's lifecycle functions to call.
+        val storageOperations =
+            DatabricksStorageOperations(
+                sqlGenerator,
+                destinationHandler,
+                workspaceClient,
+                connectorConfig.database
+            )
+        val streamOperations = DatabricksStreamOperations(storageOperations, FileUploadFormat.CSV)
+        val syncOperations =
+            DatabricksSyncOperations(
+                parsedCatalog,
+                destinationHandler,
+                streamOperations,
+                connectorConfig.schema
+            )
+
+        // Initialize streams on connector instantiation. Fail fast even before buffers are created
+        // if something goes wrong here.
+        // Rather than trying to safeguard if succeeded in AutoCloseable's onClose
+        syncOperations.initializeStreams()
 
         return AsyncStreamConsumer(
             outputRecordCollector = outputRecordCollector,
-            onStart = {syncOperations.initializeStreams()},
-            onClose = {_, streamSyncSummaries -> syncOperations.closeStreams(streamSyncSummaries)},
-            onFlush = DatabricksFlushFunction(128*1024*1024L),
+            onStart = {},
+            onClose = { _, streamSyncSummaries ->
+                syncOperations.finalizeStreams(streamSyncSummaries)
+            },
+            onFlush = DatabricksFlushFunction(128 * 1024 * 1024L, syncOperations),
             catalog = catalog,
-            bufferManager = BufferManager(
-                (Runtime.getRuntime().maxMemory() * BufferManager.MEMORY_LIMIT_RATIO).toLong(),
-            ),
+            bufferManager =
+                BufferManager(
+                    (Runtime.getRuntime().maxMemory() * BufferManager.MEMORY_LIMIT_RATIO).toLong(),
+                ),
             defaultNamespace = Optional.of(connectorConfig.schema),
             airbyteMessageDeserializer = AirbyteMessageDeserializer(),
         )

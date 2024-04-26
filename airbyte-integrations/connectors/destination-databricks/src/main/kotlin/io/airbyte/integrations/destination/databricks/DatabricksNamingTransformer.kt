@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.databricks
 
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
@@ -23,7 +27,7 @@ class DatabricksNamingTransformer : NamingConventionTransformer {
     }
 
     override fun convertStreamName(input: String): String {
-        return Names.toAlphanumericAndUnderscore(input)
+        return applyDefaultCase(Names.toAlphanumericAndUnderscore(input))
     }
 
     override fun applyDefaultCase(input: String): String {

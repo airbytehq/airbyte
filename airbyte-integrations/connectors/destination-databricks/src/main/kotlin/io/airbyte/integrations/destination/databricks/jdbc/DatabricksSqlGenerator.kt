@@ -1,15 +1,45 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.databricks.jdbc
 
+import io.airbyte.cdk.integrations.base.JavaBaseConstants as constants
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType
+import io.airbyte.integrations.base.destination.typing_deduping.Array
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
+import io.airbyte.integrations.base.destination.typing_deduping.Struct
+import io.airbyte.integrations.base.destination.typing_deduping.Union
+import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
+import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.*
+import io.airbyte.protocol.models.v0.DestinationSyncMode
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 import java.util.*
 
-class DatabricksSqlGenerator(val namingTransformer: NamingConventionTransformer) : SqlGenerator {
+class DatabricksSqlGenerator(
+    private val namingTransformer: NamingConventionTransformer,
+    private val unityCatalogName: String,
+) : SqlGenerator {
+
+    private val log = KotlinLogging.logger {}
+    private val cdcDeletedColumn = buildColumnId(CDC_DELETED_COLUMN_NAME)
+
+    companion object {
+        const val QUOTE = "`"
+        const val CDC_DELETED_COLUMN_NAME = "_ab_cdc_deleted_at"
+        private const val AB_RAW_ID = constants.COLUMN_NAME_AB_RAW_ID
+        private const val AB_EXTRACTED_AT = constants.COLUMN_NAME_AB_EXTRACTED_AT
+        private const val AB_LOADED_AT = constants.COLUMN_NAME_AB_LOADED_AT
+        private const val AB_DATA = constants.COLUMN_NAME_DATA
+        private const val AB_META = constants.COLUMN_NAME_AB_META
+    }
     override fun buildStreamId(
         namespace: String,
         name: String,
@@ -21,20 +51,95 @@ class DatabricksSqlGenerator(val namingTransformer: NamingConventionTransformer)
             namingTransformer.getNamespace(rawNamespaceOverride),
             namingTransformer.getIdentifier(StreamId.concatenateRawTableName(namespace, name)),
             namespace,
-            name
+            name,
         )
     }
 
     override fun buildColumnId(name: String, suffix: String?): ColumnId {
-        TODO("Not yet implemented")
+        val nameWithSuffix = name + suffix
+        return ColumnId(
+            namingTransformer.getIdentifier(nameWithSuffix),
+            name,
+            namingTransformer.getIdentifier(nameWithSuffix),
+        )
     }
 
+    // Only Functions needed from SqlOperations for reuse across code + tests
+    fun createRawTable(streamId: StreamId): Sql {
+        return Sql.of(
+            """
+                CREATE TABLE IF NOT EXISTS $unityCatalogName.${streamId.rawNamespace}.${streamId.rawName} (
+                    $AB_RAW_ID STRING,
+                    $AB_EXTRACTED_AT TIMESTAMP,
+                    $AB_LOADED_AT TIMESTAMP,
+                    $AB_DATA STRING,
+                    $AB_META STRING
+                )
+            """.trimIndent(),
+        )
+    }
+
+    fun truncateRawTable(streamId: StreamId): Sql {
+        return Sql.of(
+            "TRUNCATE TABLE $unityCatalogName.${streamId.rawNamespace}.${streamId.rawName}"
+        )
+    }
+
+    // End of - Only Functions needed from SqlOperations for reuse across code + tests
+
     override fun createTable(stream: StreamConfig, suffix: String, force: Boolean): Sql {
-        TODO("Not yet implemented")
+        val columnNameTypeMapping =
+            stream.columns!!
+                .asSequence()
+                .map { it -> "${it.key.name(QUOTE)} ${toDialectType(it.value)}" }
+                .toList()
+                .joinToString(", \n")
+        val finalTableIdentifier = stream.id.finalName + namingTransformer.applyDefaultCase(suffix)
+        return Sql.of(
+            """
+            CREATE ${if (force) "OR REPLACE" else ""} TABLE $unityCatalogName.`${stream.id.finalNamespace}`.`$finalTableIdentifier`(
+                $AB_RAW_ID STRING,
+                $AB_EXTRACTED_AT TIMESTAMP,
+                $AB_META STRING,
+                $columnNameTypeMapping
+            )
+        """.trimIndent(),
+        )
+    }
+
+    private fun toDialectType(type: AirbyteType): String {
+        return when (type) {
+            is AirbyteProtocolType -> toDialectType(type)
+
+            // Databricks has only STRING for semi structured data, else we need to map
+            // each subTypes inside the Struct and Array
+            is Struct,
+            is Array,
+            is UnsupportedOneOf -> "STRING"
+            is Union -> toDialectType(type.chooseType())
+            else -> {
+                throw IllegalArgumentException("Unsupported AirbyteType $type")
+            }
+        }
+    }
+
+    private fun toDialectType(type: AirbyteProtocolType): String {
+        return when (type) {
+            AirbyteProtocolType.STRING,
+            AirbyteProtocolType.TIME_WITHOUT_TIMEZONE,
+            AirbyteProtocolType.TIME_WITH_TIMEZONE,
+            AirbyteProtocolType.UNKNOWN -> "STRING"
+            AirbyteProtocolType.DATE -> "DATE"
+            AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE -> "TIMESTAMP_NTZ"
+            AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE -> "TIMESTAMP"
+            AirbyteProtocolType.NUMBER -> "DECIMAL(38, 10)"
+            AirbyteProtocolType.INTEGER -> "BIGINT"
+            AirbyteProtocolType.BOOLEAN -> "BOOLEAN"
+        }
     }
 
     override fun createSchema(schema: String?): Sql {
-        TODO("Not yet implemented")
+        return Sql.of("CREATE SCHEMA IF NOT EXISTS $unityCatalogName.`$schema`")
     }
 
     override fun updateTable(
@@ -43,11 +148,248 @@ class DatabricksSqlGenerator(val namingTransformer: NamingConventionTransformer)
         minRawTimestamp: Optional<Instant>,
         useExpensiveSaferCasting: Boolean
     ): Sql {
-        TODO("Not yet implemented")
+        if (stream.destinationSyncMode == DestinationSyncMode.APPEND_DEDUP) {
+            return upsertNewRecords(stream, finalSuffix, minRawTimestamp, useExpensiveSaferCasting)
+        }
+        return insertNewRecordsNoDedupe(
+            stream,
+            finalSuffix,
+            minRawTimestamp,
+            useExpensiveSaferCasting
+        )
+    }
+
+    private fun upsertNewRecords(
+        stream: StreamConfig,
+        finalSuffix: String,
+        minRawTimestamp: Optional<Instant>,
+        safeCast: Boolean
+    ): Sql {
+        val finalColumnNames = stream.columns!!.keys.map { it.name(QUOTE) }.joinToString(", \n")
+
+        val pkEqualityMatch =
+            stream.primaryKey!!
+                .map { it.name(QUOTE) }
+                .joinToString(
+                    separator = " AND \n",
+                    transform = {
+                        """
+                    | (target_table.$it=deduped_records.$it OR (target_table.$it IS NULL AND deduped_records.$it IS NULL))
+                """.trimMargin()
+                    }
+                )
+
+        val cursorCompareCondition =
+            stream.cursor!!
+                .map { it.name(QUOTE) }
+                .map {
+                    """
+                | (target_table.$it < deduped_records.$it
+                | OR (target_table.$it = deduped_records.$it AND target_table.$AB_EXTRACTED_AT < deduped_records.$AB_EXTRACTED_AT)
+                | OR (target_table.$it IS NULL AND deduped_records.$it IS NULL AND target_table.$AB_EXTRACTED_AT < deduped_records.$AB_EXTRACTED_AT)
+                | OR (target_table.$it IS NULL AND deduped_records.$it IS NOT NULL))
+            """.trimMargin()
+                }
+                .orElse("target_table.$AB_EXTRACTED_AT < deduped_records.$AB_EXTRACTED_AT")
+
+        val whenMatchedCdcDeleteCondition =
+            if (stream.columns!!.containsKey(cdcDeletedColumn))
+                "WHEN MATCHED AND deduped_records.$CDC_DELETED_COLUMN_NAME IS NOT NULL AND $cursorCompareCondition THEN DELETE"
+            else ""
+        val whenNotMatchedCdcSkipCondition =
+            if (stream.columns!!.containsKey(cdcDeletedColumn))
+                "AND deduped_records.$CDC_DELETED_COLUMN_NAME IS NULL"
+            else ""
+
+        val upsertSql =
+            """
+            |MERGE INTO $unityCatalogName.${stream.id.finalTableId(QUOTE, finalSuffix)} as target_table
+            |USING (
+            |${selectTypedRecordsFromRawTable(stream, minRawTimestamp, finalColumnNames, safeCast, true).replaceIndent("   ")}
+            |) deduped_records
+            |ON 
+            |${pkEqualityMatch.replaceIndent("   ")}
+            |$whenMatchedCdcDeleteCondition
+            |WHEN MATCHED AND $cursorCompareCondition THEN UPDATE SET *
+            |WHEN NOT MATCHED $whenNotMatchedCdcSkipCondition THEN INSERT * 
+        """.trimMargin()
+        return Sql.of(upsertSql)
+    }
+
+    private fun insertNewRecordsNoDedupe(
+        stream: StreamConfig,
+        finalSuffix: String,
+        minRawTimestamp: Optional<Instant>,
+        safeCast: Boolean
+    ): Sql {
+
+        val finalColumnNames = stream.columns!!.keys.map { it.name(QUOTE) }.joinToString(", \n")
+        val insertSql =
+            """INSERT INTO $unityCatalogName.${stream.id.finalTableId(QUOTE, finalSuffix)}
+                           |(
+                           |${finalColumnNames.replaceIndent("    ")},
+                           |    $AB_RAW_ID,
+                           |    $AB_EXTRACTED_AT,
+                           |    $AB_META
+                           |)
+                           |${selectTypedRecordsFromRawTable(stream, minRawTimestamp, finalColumnNames, safeCast, false)}""".trimMargin()
+
+        return Sql.of(insertSql)
+    }
+
+    private fun cast(columnName: String, columnType: AirbyteType, safeCast: Boolean): String {
+        if (!safeCast) {
+            return "`$AB_DATA`:${columnName}::${toDialectType(columnType)}"
+        }
+        return "`try_cast($AB_DATA`:${columnName} AS ${toDialectType(columnType)})"
+    }
+
+    private fun selectTypedRecordsFromRawTable(
+        stream: StreamConfig,
+        minRawTimestamp: Optional<Instant>,
+        finalColumnNames: String,
+        safeCast: Boolean,
+        dedupe: Boolean
+    ): String {
+
+        // JsonPath queried projection columns from raw Table.
+        val projectionColumns =
+            stream.columns!!
+                .entries
+                .joinToString(
+                    separator = ", \n",
+                    transform = { cast(it.key.name(QUOTE), it.value, safeCast) },
+                )
+
+        // Condition to avoid resurrecting phantom data from out of order deletes/updates
+        val excludeCdcDeletedCondition =
+            if (
+                dedupe &&
+                    stream.columns!!.containsKey(
+                        cdcDeletedColumn,
+                    )
+            )
+                " OR ($AB_LOADED_AT IS NOT NULL AND `$AB_DATA`:`$CDC_DELETED_COLUMN_NAME` IS NOT NULL)"
+            else ""
+
+        val extractedAtCondition =
+            minRawTimestamp.map { " AND `$AB_EXTRACTED_AT` > '$it'" }.orElse("")
+
+        // Selection clause for raw table extraction
+        val rawTableSelectionCondition =
+            """
+            ($AB_LOADED_AT is NULL$excludeCdcDeletedCondition)$extractedAtCondition
+        """.trimIndent()
+
+        // Airbyte meta - casting errors struct
+        val typeCastErrors =
+            stream.columns!!
+                .entries
+                .joinToString(
+                    separator = ", \n",
+                    transform = {
+                        """
+                    |CASE
+                    |   WHEN `$AB_DATA`:${it.key.name(QUOTE)} IS NOT NULL
+                    |   AND ${cast(it.key.name(QUOTE), it.value, false)} IS NULL THEN named_struct(
+                    |       'field',
+                    |       '${it.key.name}',
+                    |       'change',
+                    |       '${Change.NULLED.value()}',
+                    |       'reason',
+                    |       '${Reason.DESTINATION_TYPECAST_ERROR}'
+                    |   )
+                    |   ELSE NULL
+                    |END
+                    """.trimMargin()
+                    },
+                )
+        val airbyteMetaField =
+            """
+            |named_struct(
+            |   "changes",
+            |   array_compact(
+            |       array(
+            |${typeCastErrors.replaceIndent("           ")}
+            |       )
+            |   )
+            |)
+            """.trimMargin()
+
+        val selectFromRawTable =
+            """SELECT
+                                    |${projectionColumns.replaceIndent("   ")},
+                                    |   $AB_RAW_ID,
+                                    |   $AB_EXTRACTED_AT,
+                                    |   $airbyteMetaField as $AB_META
+                                    |FROM
+                                    |   $unityCatalogName.${stream.id.rawTableId(QUOTE)}
+                                    |WHERE
+                                    |   $rawTableSelectionCondition""".trimMargin()
+
+        val selectCTENoDedupe =
+            """WITH intermediate_data as (
+                              |${selectFromRawTable.replaceIndent("     ")}
+                              |)
+                              |SELECT 
+                              |${finalColumnNames.replaceIndent("     ")},
+                              |     $AB_RAW_ID,
+                              |     $AB_EXTRACTED_AT,
+                              |     to_json($AB_META) as $AB_META
+                              |FROM
+                              |     intermediate_data""".trimMargin()
+        if (!dedupe) {
+            return selectCTENoDedupe
+        }
+
+        val cursorOrderBy = stream.cursor!!.map { "${it.name(QUOTE)} DESC NULLS LAST," }.orElse("")
+        val commaSeperatedPks = stream.primaryKey!!.joinToString { it.name(QUOTE) }
+
+        val selectCTEDedupe =
+            """
+            |WITH intermediate_data as (
+            |${selectFromRawTable.replaceIndent("       ")}
+            |), new_records AS (
+            |   SELECT
+            |${finalColumnNames.replaceIndent("       ")},
+            |       $AB_RAW_ID,
+            |       $AB_EXTRACTED_AT,
+            |       to_json($AB_META) as $AB_META
+            |   FROM
+            |       intermediate_data
+            |), numbered_rows AS (
+            |   SELECT *, row_number() OVER (
+            |       PARTITION BY $commaSeperatedPks ORDER BY $cursorOrderBy `$AB_EXTRACTED_AT` DESC
+            |   ) as row_number
+            |   FROM
+            |       new_records
+            |)
+            |SELECT
+            |${finalColumnNames.replaceIndent("   ")},
+            |   $AB_RAW_ID,
+            |   $AB_EXTRACTED_AT,
+            |   $AB_META
+            |FROM
+            |   numbered_rows
+            |WHERE
+            |   row_number=1
+        """.trimMargin()
+
+        return selectCTEDedupe
     }
 
     override fun overwriteFinalTable(stream: StreamId, finalSuffix: String): Sql {
-        TODO("Not yet implemented")
+        // CREATE OR REPLACE atomically swaps temp to actual table.
+        // DROP the temp table later
+        return Sql.concat(
+            Sql.of(
+                """
+                CREATE OR REPLACE TABLE $unityCatalogName.${stream.finalTableId(QUOTE)}
+                AS SELECT * FROM $unityCatalogName.${stream.finalTableId(QUOTE, finalSuffix)}
+            """.trimIndent(),
+            ),
+            Sql.of("DROP TABLE $unityCatalogName.${stream.finalTableId(QUOTE, finalSuffix)}"),
+        )
     }
 
     override fun migrateFromV1toV2(
@@ -55,10 +397,17 @@ class DatabricksSqlGenerator(val namingTransformer: NamingConventionTransformer)
         namespace: String?,
         tableName: String?
     ): Sql {
-        throw UnsupportedOperationException("This method is not allowed in Databricks and should not be called")
+        throw UnsupportedOperationException(
+            "This method is not allowed in Databricks and should not be called"
+        )
     }
 
     override fun clearLoadedAt(streamId: StreamId): Sql {
-        TODO("Not yet implemented")
+        return Sql.of(
+            """
+            UPDATE $unityCatalogName.${streamId.rawTableId(QUOTE)}
+            SET $AB_LOADED_AT = NULL
+        """.trimIndent(),
+        )
     }
 }

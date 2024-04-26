@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.databricks.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -31,19 +35,17 @@ data class DatabricksConnectorConfig(
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "auth_type")
 sealed interface ApiAuthentication {
     @JsonTypeName("PERSONAL_ACCESS_TOKEN")
-    data class PersonalAccessToken(val token: String): ApiAuthentication
+    data class PersonalAccessToken(val token: String) : ApiAuthentication
 
-    @JsonTypeName("OAUTH_TOKEN")
-    data class OAuthToken(val token: String): ApiAuthentication
-
+    @JsonTypeName("OAUTH_TOKEN") data class OAuthToken(val token: String) : ApiAuthentication
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "auth_type")
 sealed interface JdbcAuthentication {
 
     @JsonTypeName("BASIC")
-    data class BasicAuthentication(val username: String, val password : String): JdbcAuthentication
+    data class BasicAuthentication(val username: String, val password: String) : JdbcAuthentication
 
     @JsonTypeName("OAUTH")
-    data class OIDCAuthentication(val oauthToken: String): JdbcAuthentication
+    data class OIDCAuthentication(val oauthToken: String) : JdbcAuthentication
 }

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.databricks
 
 import com.databricks.client.jdbc.Driver
@@ -16,10 +20,11 @@ object ConnectorClientsFactory {
     ): WorkspaceClient {
         return when (apiAuthentication) {
             is ApiAuthentication.PersonalAccessToken -> {
-                val config = DatabricksConfig()
-                    .setAuthType("pat")
-                    .setHost("https://$hostName")
-                    .setToken(apiAuthentication.token)
+                val config =
+                    DatabricksConfig()
+                        .setAuthType("pat")
+                        .setHost("https://$hostName")
+                        .setToken(apiAuthentication.token)
                 WorkspaceClient(config)
             }
             is ApiAuthentication.OAuthToken -> TODO("Not yet supported")
