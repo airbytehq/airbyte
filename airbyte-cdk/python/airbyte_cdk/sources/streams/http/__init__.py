@@ -5,6 +5,6 @@
 # Initialize Streams Package
 from .exceptions import UserDefinedBackoffException
 from .http import HttpStream, HttpSubStream
-from .http_request_sender import HttpRequestSender
+from .http_client import HttpClient
 
-__all__ = ["HttpStream", "HttpSubStream", "UserDefinedBackoffException", "HttpRequestSender"]
+__all__ = ["HttpStream", "HttpSubStream", "UserDefinedBackoffException", "HttpClient"]
