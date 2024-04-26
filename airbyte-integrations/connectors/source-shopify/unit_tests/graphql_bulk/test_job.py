@@ -185,7 +185,7 @@ def test_job_retry_on_job_check(mocker, request, requests_mock, job_response, au
     stream.job_manager.concurrent_interval_sec = 1
     stream.job_manager.job_check_interval_sec = 1
     # patch the retries number for the test
-    stream.job_manager._job_retry_on_error_max_limit = 2
+    stream.job_manager._job_max_retries = 2
     # get job_id from FIXTURE
     job_id = request.getfixturevalue(job_response).get("data", {}).get("node", {}).get("id")
     # patching the method to get the right ID checks
@@ -200,6 +200,7 @@ def test_job_retry_on_job_check(mocker, request, requests_mock, job_response, au
     # The retried request should FAIL here, because we stil want to see the Exception raised
     # We expect the call count to be 5 due to the status checks and max retries = 2, 
     # the non-retried request would take 2 calls.
+    
     assert expected in repr(error.value) and requests_mock.call_count == 5
 
 

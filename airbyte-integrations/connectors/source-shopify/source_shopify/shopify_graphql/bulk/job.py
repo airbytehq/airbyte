@@ -55,7 +55,7 @@ class ShopifyBulkManager:
     # Ideally the source will balance on it's own rate, based on the time taken to return the data for the slice.
     job_max_elapsed_time_sec: Final[float] = 1800.0
     # retry max limit
-    _job_retry_on_error_max_limit: Final[int] = 6
+    _job_max_retries: Final[int] = 6
     # 0.1 ~= P2H, default value, lower boundary for slice size
     job_size_min: Final[float] = 0.1
     # P365D, upper boundary for slice size
@@ -86,9 +86,8 @@ class ShopifyBulkManager:
     # one time retryable error counter
     _one_time_error_retried: bool = field(init=False, default=False)
     # retry counter
-    _job_retry_on_error_count: int = field(init=False, default=0)
+    _job_retry_count: int = field(init=False, default=0)
 
-    # the set of retryable errors
     _retryable_errors: Final[set] = (
         ShopifyBulkExceptions.BulkJobBadResponse,
         ShopifyBulkExceptions.BulkJobUnknownError,
@@ -197,6 +196,8 @@ class ShopifyBulkManager:
         self.job_self_canceled = False
         # set the running job message counter to default
         self.log_job_state_msg_count = 0
+        # set the retry counter to default
+        self._job_retry_count = 0
         # set one time retry flag to default
         self._one_time_error_retried = False
 
@@ -313,14 +314,12 @@ class ShopifyBulkManager:
         raise ShopifyBulkExceptions.BulkJobUnknownError(f"Could not validate the status of the BULK Job `{self.job_id}`. Errors: {errors}.")
 
     def on_retryable_error(self, response: requests.Response, exception: Exception) -> Optional[requests.Response]:
-        if self._job_retry_on_error_count == self._job_retry_on_error_max_limit:
+        if self._job_retry_count == self._job_max_retries:
             self.on_job_with_errors(self.job_check_for_errors(response))
         else:
-            # increment the attempt
-            self._job_retry_on_error_count += 1
-            # retry the request
+            self._job_retry_count += 1
             self.logger.info(
-                f"Stream: `{self.stream_name}`, retrying bad request, attempt: {self._job_retry_on_error_count}. Error: {repr(exception)}."
+                f"Stream: `{self.stream_name}`, retrying bad request, attempt: {self._job_retry_count}. Error: {repr(exception)}."
             )
             return self.job_retry_request(response.request)
 
@@ -450,7 +449,7 @@ class ShopifyBulkManager:
             ShopifyBulkExceptions.BulkJobFailed,
             ShopifyBulkExceptions.BulkJobTimout,
             ShopifyBulkExceptions.BulkJobAccessDenied,
-            # this one is retriable,mbut stil needs to be raised,
+            # this one is retryable, but stil needs to be raised,
             # if the max attempts value is reached.
             ShopifyBulkExceptions.BulkJobUnknownError,
         ) as bulk_job_error:
