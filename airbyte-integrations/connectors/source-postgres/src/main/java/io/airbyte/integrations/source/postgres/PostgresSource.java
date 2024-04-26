@@ -27,6 +27,7 @@ import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.filterS
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.getCursorBasedSyncStatusForStreams;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.streamsUnderVacuum;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.isCdc;
+import static io.airbyte.integrations.source.postgres.PostgresUtils.isXmin;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.prettyPrintConfiguredAirbyteStreamList;
 import static io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidInitializer.cdcCtidIteratorsCombined;
 import static io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidInitializer.getCtidInitialLoadGlobalStateManager;
@@ -298,7 +299,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           .collect(toList());
 
       catalog.setStreams(streams);
-    } else if (PostgresUtils.isXmin(config)) {
+    } else if (isXmin(config)) {
       // Xmin replication has a source-defined cursor (the xmin column). This is done to prevent the user
       // from being able to pick their own cursor.
       final List<AirbyteStream> streams = catalog.getStreams().stream()
@@ -482,7 +483,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           (CtidGlobalStateManager) ctidStateManager, savedOffsetAfterReplicationSlotLSN);
     }
 
-    if (isAnyStreamIncrementalSyncMode(catalog) && PostgresUtils.isXmin(sourceConfig)) {
+    if (isAnyStreamIncrementalSyncMode(catalog) && isXmin(sourceConfig)) {
       // Log and save the xmin status
       final XminStatus xminStatus;
       try {
@@ -577,20 +578,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, CursorBasedStatus> cursorBasedStatusMap =
           getCursorBasedSyncStatusForStreams(database, finalListOfStreamsToBeSyncedViaCtid, postgresCursorBasedStateManager, getQuoteString());
 
-      ctidStateManager.setStreamStateIteratorFields(namespacePair -> Jsons.jsonNode(cursorBasedStatusMap.get(namespacePair)), fileNodeHandler);
-      final PostgresCtidHandler cursorBasedCtidHandler =
-          createInitialLoader(database, finalListOfStreamsToBeSyncedViaCtid, fileNodeHandler, getQuoteString(), ctidStateManager, Optional.empty());
-
-      final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes =
-          PostgresQueryUtils.getTableBlockSizeForStreams(
-              database,
-              finalListOfStreamsToBeSyncedViaCtid,
-              getQuoteString());
-
-      final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Integer> tablesMaxTuple =
-          CtidUtils.isTidRangeScanCapableDBServer(database) ? null
-              : PostgresQueryUtils.getTableMaxTupleForStreams(database, finalListOfStreamsToBeSyncedViaCtid, getQuoteString());
-
       if (finalListOfStreamsToBeSyncedViaCtid.isEmpty()) {
         LOGGER.info("No Streams will be synced via ctid.");
       } else {
@@ -604,6 +591,10 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       } else {
         LOGGER.info("No streams to be synced via cursor");
       }
+
+      ctidStateManager.setStreamStateIteratorFields(namespacePair -> Jsons.jsonNode(cursorBasedStatusMap.get(namespacePair)), fileNodeHandler);
+      final PostgresCtidHandler cursorBasedCtidHandler =
+          createInitialLoader(database, finalListOfStreamsToBeSyncedViaCtid, fileNodeHandler, getQuoteString(), ctidStateManager, Optional.empty());
 
       final List<AutoCloseableIterator<AirbyteMessage>> initialSyncCtidIterators = new ArrayList<>(
           cursorBasedCtidHandler.getInitialSyncCtidIterator(new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid),
@@ -756,18 +747,78 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           getSavedOffsetAfterReplicationSlotLSN(database, catalog, stateManager, getReplicationSlot(database, sourceConfig).get(0));
       ctidStateManager = getCtidInitialLoadGlobalStateManager(database, catalog, stateManager, getQuoteString(), savedOffsetAfterReplicationSlotLSN);
     } else {
-      final FileNodeHandler fileNodeHandler =
-          PostgresQueryUtils.fileNodeForStreams(database,
-              catalog.getStreams(),
-              getQuoteString());
+      if (isXmin(sourceConfig)) {
+        final XminStatus xminStatus;
+        try {
+          xminStatus = PostgresQueryUtils.getXminStatus(database);
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
+        }
+        LOGGER.info(String.format("Xmin Status : {Number of wraparounds: %s, Xmin Transaction Value: %s, Xmin Raw Value: %s",
+            xminStatus.getNumWraparound(), xminStatus.getXminXidValue(), xminStatus.getXminRawValue()));
+        final StreamsCategorised<XminStreams> streamsCategorised = categoriseStreams(stateManager, catalog, xminStatus);
+        final ResultWithFailed<List<AirbyteStreamNameNamespacePair>> streamsUnderVacuum = streamsUnderVacuum(database,
+            streamsCategorised.ctidStreams().streamsForCtidSync(),
+            getQuoteString());
 
-      ctidStateManager =
-          new CtidPerStreamStateManager(stateManager.getRawStateMessages(), fileNodeHandler);
+        // Streams we failed to query for Vacuum - such as in the case of an unsupported postgres server
+        // are reclassified as xmin since we cannot guarantee that ctid will be possible.
+        reclassifyCategorisedCtidStreams(streamsCategorised, streamsUnderVacuum.failed());
+
+        List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
+            filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), streamsCategorised.ctidStreams());
+        final FileNodeHandler fileNodeHandler =
+            PostgresQueryUtils.fileNodeForStreams(database,
+                finalListOfStreamsToBeSyncedViaCtid,
+                getQuoteString());
+        if (!fileNodeHandler.getFailedToQuery().isEmpty()) {
+          reclassifyCategorisedCtidStreams(streamsCategorised, fileNodeHandler.getFailedToQuery());
+        }
+        ctidStateManager = new CtidPerStreamStateManager(streamsCategorised.ctidStreams().statesFromCtidSync(), fileNodeHandler);
+      } else {
+        final PostgresCursorBasedStateManager postgresCursorBasedStateManager =
+            new PostgresCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
+        final StreamsCategorised<CursorBasedStreams> streamsCategorised = categoriseStreams(postgresCursorBasedStateManager, catalog);
+        final ResultWithFailed<List<AirbyteStreamNameNamespacePair>> streamsUnderVacuum = streamsUnderVacuum(database,
+            streamsCategorised.ctidStreams().streamsForCtidSync(),
+            getQuoteString());
+
+        // Streams we failed to query for Vacuum - such as in the case of an unsupported postgres server
+        // are reclassified as standard since we cannot guarantee that ctid will be possible.
+        reclassifyCategorisedCtidStreams(streamsCategorised, streamsUnderVacuum.failed());
+
+        List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
+            filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), streamsCategorised.ctidStreams());
+        final FileNodeHandler fileNodeHandler =
+            PostgresQueryUtils.fileNodeForStreams(database,
+                finalListOfStreamsToBeSyncedViaCtid,
+                getQuoteString());
+
+        // Streams we failed to query for fileNode - such as in the case of Views are reclassified as
+        // standard
+        if (!fileNodeHandler.getFailedToQuery().isEmpty()) {
+          reclassifyCategorisedCtidStreams(streamsCategorised, fileNodeHandler.getFailedToQuery());
+        }
+        ctidStateManager =
+            new CtidPerStreamStateManager(streamsCategorised.ctidStreams().statesFromCtidSync(), fileNodeHandler);
+      }
     }
   }
 
   @Override
-  public boolean supportResumableFullRefresh(final ConfiguredAirbyteStream airbyteStream) {
+  public boolean supportResumableFullRefresh(final JdbcDatabase database, final ConfiguredAirbyteStream airbyteStream) {
+    final FileNodeHandler fileNodeHandler =
+        PostgresQueryUtils.fileNodeForStreams(database,
+            List.of(airbyteStream),
+            getQuoteString());
+
+    // We do not support RFR on views.
+    if (!fileNodeHandler.getFailedToQuery().isEmpty()) {
+      if (fileNodeHandler.getFailedToQuery().contains(new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace()))) {
+        return false;
+      }
+    }
+
     return true;
   }
 

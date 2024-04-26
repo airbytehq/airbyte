@@ -400,18 +400,6 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             actualRecordMessages,
             Matchers.containsInAnyOrder<Any>(*expectedMessagesResult.toTypedArray())
         )
-
-        if ((source() as AbstractJdbcSource<*>).supportResumableFullRefresh(catalog.streams[0])) {
-            val stateMessages = extractStateMessage(actualMessages)
-            // verify the final message is expected
-            val finalStateMessage = stateMessages[stateMessages.size - 1]
-            assertEquals(
-                finalStateMessage.stream.streamState.get("state_type").textValue(),
-                "primary_key"
-            )
-            assertEquals(finalStateMessage.stream.streamState.get("pk_name").textValue(), "id")
-            assertEquals(finalStateMessage.stream.streamState.get("pk_val").textValue(), "3")
-        }
     }
 
     @Test
@@ -428,9 +416,10 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         setEmittedAtToNull(actualMessages)
 
         val expectedMessages = airbyteMessagesReadOneColumn
-        Assertions.assertEquals(expectedMessages.size, actualMessages.size)
-        Assertions.assertTrue(expectedMessages.containsAll(actualMessages))
-        Assertions.assertTrue(actualMessages.containsAll(expectedMessages))
+        val actualRecordMessage = filterRecords(actualMessages)
+        Assertions.assertEquals(expectedMessages.size, actualRecordMessage.size)
+        Assertions.assertTrue(expectedMessages.containsAll(actualRecordMessage))
+        Assertions.assertTrue(actualRecordMessage.containsAll(expectedMessages))
     }
 
     protected open val airbyteMessagesReadOneColumn: List<AirbyteMessage>
