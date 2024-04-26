@@ -19,6 +19,7 @@ data:
   githubIssueLabel: source-amazon-ads
   icon: amazonads.svg
   license: MIT
+  maxSecondsBetweenMessages: 5400
   name: Amazon Ads
   remoteRegistries:
     pypi:

@@ -24,11 +24,11 @@ open class AdvancedTestDataComparator : TestDataComparator {
         }
     }
 
-    protected fun resolveIdentifier(identifier: String?): List<String?> {
+    protected open fun resolveIdentifier(identifier: String?): List<String?> {
         return java.util.List.of(identifier)
     }
 
-    protected fun compareObjects(expectedObject: JsonNode, actualObject: JsonNode) {
+    protected open fun compareObjects(expectedObject: JsonNode, actualObject: JsonNode) {
         if (!areBothEmpty(expectedObject, actualObject)) {
             LOGGER.info("Expected Object : {}", expectedObject)
             LOGGER.info("Actual Object   : {}", actualObject)
@@ -136,7 +136,7 @@ open class AdvancedTestDataComparator : TestDataComparator {
         }
     }
 
-    protected fun compareBooleanValues(
+    protected open fun compareBooleanValues(
         firstBooleanValue: String,
         secondBooleanValue: String
     ): Boolean {
@@ -174,7 +174,7 @@ open class AdvancedTestDataComparator : TestDataComparator {
             .withZoneSameInstant(ZoneOffset.UTC)
     }
 
-    protected fun compareDateTimeWithTzValues(
+    protected open fun compareDateTimeWithTzValues(
         airbyteMessageValue: String,
         destinationValue: String
     ): Boolean {

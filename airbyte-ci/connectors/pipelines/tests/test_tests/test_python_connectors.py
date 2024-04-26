@@ -8,7 +8,7 @@ import pytest
 from connector_ops.utils import Connector, ConnectorLanguage
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.airbyte_ci.connectors.test.steps.python_connectors import AirbyteLibValidation, UnitTests
+from pipelines.airbyte_ci.connectors.test.steps.python_connectors import PyAirbyteValidation, UnitTests
 from pipelines.models.steps import StepResult, StepStatus
 
 pytestmark = [
@@ -109,7 +109,7 @@ class TestUnitTests:
         ]
 
 
-class TestAirbyteLibValidationTests:
+class TestPyAirbyteValidationTests:
     @pytest.fixture
     def compatible_connector(self):
         return Connector("source-faker")
@@ -121,7 +121,7 @@ class TestAirbyteLibValidationTests:
     @pytest.fixture
     def context_for_valid_connector(self, compatible_connector, dagger_client, current_platform):
         context = ConnectorContext(
-            pipeline_name="test airbyte-lib validation",
+            pipeline_name="test pyairbyte validation",
             connector=compatible_connector,
             git_branch="test",
             git_revision="test",
@@ -136,7 +136,7 @@ class TestAirbyteLibValidationTests:
     @pytest.fixture
     def context_for_invalid_connector(self, incompatible_connector, dagger_client, current_platform):
         context = ConnectorContext(
-            pipeline_name="test airbyte-lib validation",
+            pipeline_name="test pyairbyte validation",
             connector=incompatible_connector,
             git_branch="test",
             git_revision="test",
@@ -149,7 +149,7 @@ class TestAirbyteLibValidationTests:
         return context
 
     async def test__run_validation_success(self, mocker, context_for_valid_connector: ConnectorContext):
-        result = await AirbyteLibValidation(context_for_valid_connector)._run(mocker.MagicMock())
+        result = await PyAirbyteValidation(context_for_valid_connector)._run(mocker.MagicMock())
         assert isinstance(result, StepResult)
         assert result.status == StepStatus.SUCCESS
         assert "Creating source and validating spec is returned successfully..." in result.stdout
@@ -159,7 +159,7 @@ class TestAirbyteLibValidationTests:
         mocker,
         context_for_invalid_connector: ConnectorContext,
     ):
-        result = await AirbyteLibValidation(context_for_invalid_connector)._run(mocker.MagicMock())
+        result = await PyAirbyteValidation(context_for_invalid_connector)._run(mocker.MagicMock())
         assert isinstance(result, StepResult)
         assert result.status == StepStatus.SKIPPED
 
@@ -172,7 +172,7 @@ class TestAirbyteLibValidationTests:
         metadata["remoteRegistries"] = {"pypi": {"enabled": True, "packageName": "airbyte-source-postgres"}}
         metadata_mock = mocker.PropertyMock(return_value=metadata)
         with patch.object(Connector, "metadata", metadata_mock):
-            result = await AirbyteLibValidation(context_for_invalid_connector)._run(mocker.MagicMock())
+            result = await PyAirbyteValidation(context_for_invalid_connector)._run(mocker.MagicMock())
             assert isinstance(result, StepResult)
             assert result.status == StepStatus.FAILURE
             assert "is not installable" in result.stderr
