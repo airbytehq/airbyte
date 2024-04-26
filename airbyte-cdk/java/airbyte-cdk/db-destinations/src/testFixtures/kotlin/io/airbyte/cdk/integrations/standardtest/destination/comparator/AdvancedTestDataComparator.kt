@@ -28,7 +28,7 @@ open class AdvancedTestDataComparator : TestDataComparator {
         return java.util.List.of(identifier)
     }
 
-    protected fun compareObjects(expectedObject: JsonNode, actualObject: JsonNode) {
+    protected open fun compareObjects(expectedObject: JsonNode, actualObject: JsonNode) {
         if (!areBothEmpty(expectedObject, actualObject)) {
             LOGGER.info("Expected Object : {}", expectedObject)
             LOGGER.info("Actual Object   : {}", actualObject)

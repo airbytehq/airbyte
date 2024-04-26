@@ -1469,7 +1469,7 @@ abstract class DestinationAcceptanceTest {
     }
 
     /** Whether the destination should be tested against different namespaces. */
-    protected fun supportNamespaceTest(): Boolean {
+    protected open fun supportNamespaceTest(): Boolean {
         return false
     }
 
@@ -1485,7 +1485,7 @@ abstract class DestinationAcceptanceTest {
      * normalized namespace when testCaseId = "S3A-1". Find the testCaseId in
      * "namespace_test_cases.json".
      */
-    protected fun assertNamespaceNormalization(
+    protected open fun assertNamespaceNormalization(
         testCaseId: String?,
         expectedNormalizedNamespace: String?,
         actualNormalizedNamespace: String?
