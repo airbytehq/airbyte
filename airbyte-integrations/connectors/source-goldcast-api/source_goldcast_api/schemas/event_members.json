@@ -135,17 +135,7 @@
         "workspace_count": { "type": ["null", "integer"] },
         "workspaces": { "type": "array", "items": { "type": "string" } },
         "is_content_lab_standalone": { "type": "boolean" }
-      },
-      "required": [
-        "id",
-        "is_registered",
-        "is_admin",
-        "first_name",
-        "last_name",
-        "company",
-        "allow_admin_panel_notifications",
-        "email"
-      ]
+      }
     },
     "track": { "type": ["null", "string"] },
     "organization_user": {
@@ -176,17 +166,7 @@
         "allow_admin_panel_notifications": { "type": "boolean" },
         "organization": { "type": "string" },
         "user": { "type": "string" }
-      },
-      "required": [
-        "id",
-        "created_at",
-        "updated_at",
-        "first_name",
-        "last_name",
-        "company",
-        "organization",
-        "user"
-      ]
+      }
     },
     "blocked_by": { "type": ["null", "string"] },
     "status_updated_by": { "type": ["null", "string"] }

@@ -34,22 +34,7 @@
         "transcode_finish_time": { "type": "string", "format": "date-time" },
         "path": { "type": "string" },
         "organization": { "type": "string" }
-      },
-      "required": [
-        "id",
-        "urls",
-        "created_at",
-        "updated_at",
-        "name",
-        "uploaded",
-        "duration",
-        "asset_type",
-        "creation_type",
-        "transcode_status",
-        "transcoder_type",
-        "path",
-        "organization"
-      ]
+      }å
     },
     "surveys": { "type": "array", "items": {} },
     "expected_end_time": { "type": "string", "format": "date-time" },
@@ -63,8 +48,7 @@
         "enabled": { "type": "boolean" },
         "title": { "type": "string" },
         "url": { "type": ["null", "string"] }
-      },
-      "required": ["enabled", "title"]
+      }
     },
     "video_qna_requests": { "type": "array", "items": {} },
     "deleted": { "type": ["null", "string"] },
@@ -92,15 +76,7 @@
         "mix_resourceId": { "type": "string" },
         "individual_directory": { "type": "string" },
         "individual_resourceId": { "type": "string" }
-      },
-      "required": [
-        "mix_sid",
-        "mix_directory",
-        "individual_sid",
-        "mix_resourceId",
-        "individual_directory",
-        "individual_resourceId"
-      ]
+      }
     },
     "start_time": { "type": "string", "format": "date-time" },
     "end_time": { "type": "string", "format": "date-time" },
