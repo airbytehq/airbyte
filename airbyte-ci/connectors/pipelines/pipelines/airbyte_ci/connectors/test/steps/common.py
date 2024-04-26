@@ -411,53 +411,66 @@ class RegressionTests(Step):
             f"_build_regression_test_container(): gsm credentials={os.getenv('GCP_GSM_CREDENTIALS') is not None}")
 
         container = with_python_base(self.context)
-
         container = (
-            (
-                container.with_exec(["apt-get", "update"])
-                .with_exec(["apt-get", "install", "-y", "git", "openssh-client", "curl", "docker.io"])
-                .with_exec(["bash", "-c", "curl https://sdk.cloud.google.com | bash"])
-                .with_env_variable("PATH", "/root/google-cloud-sdk/bin:$PATH", expand=True)
-                # .with_mounted_file("/root/.ssh/id_rsa", self.dagger_client.host().file(str(Path("~/.ssh/id_rsa").expanduser())))  # TODO
-                # .with_mounted_file(
-                #     "/root/.ssh/known_hosts", self.dagger_client.host().file(str(Path("~/.ssh/known_hosts").expanduser()))  # TODO
-                # )
-                # .with_mounted_file(
-                #     "/root/.config/gcloud/application_default_credentials.json",
-                #     self.dagger_client.host().file(str(Path("~/.config/gcloud/application_default_credentials.json").expanduser())),  # TODO
-                # )
-                .with_mounted_directory("/app", self.context.live_tests_dir)
-                .with_workdir("/app")
-                .with_exec(["pip", "install", "poetry"])
-                .with_exec(
-                    [
-                        "sed",
-                        "-i",
-                        "-E",
-                        r"s,git@github\.com:airbytehq/airbyte-platform-internal,https://github.com/airbytehq/airbyte-platform-internal.git,",
-                        "pyproject.toml",
-                    ]
-                )
-                .with_exec(
-                    ["poetry", "source", "add", "--priority=supplemental", "airbyte-platform-internal-source",
-                     "https://github.com/airbytehq/airbyte-platform-internal.git"]
-                ).with_exec(
-                    ["poetry", "config", "http-basic.airbyte-platform-internal-source", "octavia-squidington-iii",
-                     self.context.ci_github_access_token]
-                ).with_exec(
-                    ["pip", "install", f"git+https://octavia-squidington-iii:{self.context.ci_github_access_token}@github.com/airbytehq/airbyte-platform-internal#subdirectory=tools/connection-retriever"]
-                )
-                .with_exec(["poetry", "lock", "--no-update"])
-                .with_exec(["poetry", "install"])
-            )
+            container.with_exec(["apt-get", "update"])
+            .with_exec(["apt-get", "install", "-y", "git", "openssh-client", "curl", "docker.io"])
+            .with_exec(["bash", "-c", "curl https://sdk.cloud.google.com | bash"])
+            .with_env_variable("PATH", "/root/google-cloud-sdk/bin:$PATH", expand=True)
+            .with_mounted_directory("/app", self.context.live_tests_dir)
+            .with_workdir("/app")
             .with_unix_socket("/var/run/docker.sock", self.dagger_client.host().unix_socket("/var/run/docker.sock"))
             .with_env_variable("RUN_IN_AIRBYTE_CI", "1")
-            .with_new_file("/tmp/credentials.json", contents=os.getenv("GCP_GSM_CREDENTIALS"))
-            .with_env_variable("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/credentials.json")
-            .with_exec(
-                ["bash", "-c", "cat pyproject.toml"]
-            )
             .with_new_file("/tmp/container_id.txt", contents=str(target_container_id))
+            .with_exec(["pip", "install", "poetry"])
         )
-        main_logger.info(f"_built_regression_test_container()")
+
+        if self.context.is_ci:
+            container = (
+                (
+                    container
+                    .with_exec(
+                        [
+                            "sed",
+                            "-i",
+                            "-E",
+                            r"s,git@github\.com:airbytehq/airbyte-platform-internal,https://github.com/airbytehq/airbyte-platform-internal.git,",
+                            "pyproject.toml",
+                        ]
+                    )
+                    .with_exec(
+                        ["poetry", "source", "add", "--priority=supplemental", "airbyte-platform-internal-source",
+                         "https://github.com/airbytehq/airbyte-platform-internal.git"]
+                    ).with_exec(
+                        ["poetry", "config", "http-basic.airbyte-platform-internal-source", "octavia-squidington-iii",
+                         self.context.ci_github_access_token]
+                    ).with_exec(
+                        ["pip", "install", f"git+https://octavia-squidington-iii:{self.context.ci_github_access_token}@github.com/airbytehq/airbyte-platform-internal#subdirectory=tools/connection-retriever"]
+                    )
+                    .with_exec(["poetry", "lock", "--no-update"])
+                    .with_exec(["poetry", "install"])
+                )
+                .with_new_file("/tmp/credentials.json", contents=os.getenv("GCP_GSM_CREDENTIALS"))
+                .with_env_variable("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/credentials.json")
+            )
+
+        else:
+            container = (
+                container
+                .with_mounted_file("/root/.ssh/id_rsa", self.dagger_client.host().file(str(Path("~/.ssh/id_rsa").expanduser())))
+                .with_mounted_file(
+                    "/root/.ssh/known_hosts", self.dagger_client.host().file(str(Path("~/.ssh/known_hosts").expanduser()))  # TODO
+                )
+                .with_mounted_file(
+                    "/root/.config/gcloud/application_default_credentials.json",
+                    self.dagger_client.host().file(str(Path("~/.config/gcloud/application_default_credentials.json").expanduser())),  # TODO
+                )
+            )
+            main_logger.info(f"_built_regression_test_container()")
+
+        container = (
+            container
+            .with_exec(["poetry", "lock", "--no-update"])
+            .with_exec(["poetry", "install"])
+        )
+
         return container
