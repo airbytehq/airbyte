@@ -1,32 +1,35 @@
-
-
-# _create_prepared_request
-# _send_request(all parameters)
-# request_kwargs
-# _send(request)
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
 import logging
 import urllib
 from typing import Any, Mapping, Optional, Union, Tuple
 import requests
-
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
-from .http_error_handler import HttpErrorHandler
+from .error_handler.http_status_error_handler import HttpStatusErrorHandler
+from .error_handler.error_handler import ErrorHandler
+from .error_handler.default_retry_strategy import DefaultRetryStrategy
+from .error_handler.retry_strategy import RetryStrategy
+from .error_handler.response_action import ResponseAction
 
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
-class HttpRequestSender():
+class HttpClient:
 
     def __init__(
             self,
             session: requests.Session,
-            logger: logging.Logger,
-            http_error_handler: Optional[HttpErrorHandler] = None
+            logger: logging.Logger = logging.getLogger("airbyte"),
+            http_error_handler: Optional[ErrorHandler] = HttpStatusErrorHandler(),
+            retry_strategy: Optional[RetryStrategy] = DefaultRetryStrategy()
         ):
         self._session = session
         self._logger = logger
-        self._http_error_handler = http_error_handler or HttpErrorHandler(logger)
+        self._http_error_handler = http_error_handler
+        self._retry_strategy = retry_strategy
 
     def _dedupe_query_params(self, url: str, params: Mapping[str, str]) -> Mapping[str, str]:
         """
@@ -76,9 +79,6 @@ class HttpRequestSender():
 
     def _send_with_retry(
             self,
-            retry_factor: float,
-            max_retries: Optional[int],
-            max_time: Optional[int],
             request: requests.PreparedRequest,
             request_kwargs: Optional[Mapping[str, Any]] = None
     ) -> requests.Response:
@@ -89,11 +89,11 @@ class HttpRequestSender():
         least one attempt and some retry attempts, to comply this logic we add
         1 to expected retries attempts.
         """
-        if max_retries is not None:
-            max_tries = max(0, max_retries) + 1
+        if self._retry_strategy.max_retries is not None:
+            max_tries = max(0, self._retry_strategy.max_retries) + 1
 
-        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
-        backoff_handler = default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=retry_factor)
+        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=self._retry_strategy.max_time)(self._send)
+        backoff_handler = default_backoff_handler(max_tries=max_tries, max_time=self._retry_strategy.max_time, factor=self._retry_strategy.retry_factor)
         # backoff handlers wrap _send, so it will always return a response
         response = backoff_handler(user_backoff_handler)(request, request_kwargs)
 
@@ -105,14 +105,17 @@ class HttpRequestSender():
             request: requests.PreparedRequest,
             request_kwargs: Optional[Mapping[str, Any]] = None
         ) -> requests.Response:
-        # sends prepared request, returns response, invokes error handling on response
+
 
         self._logger.debug(
             "Making outbound API request",
             extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
 
-        response: requests.Response = self._session.send(request, **request_kwargs)
+        try:
+            response: requests.Response = self._session.send(request, **request_kwargs)
+        except requests.RequestException as e:
+            self._logger.error(f"Failed to return response: {e}")
 
         # Evaluation of response.text can be heavy, for example, if streaming a large response
         # Do it only in debug mode
@@ -121,20 +124,34 @@ class HttpRequestSender():
                 "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
             )
 
-        response = self._http_error_handler.validate_response(response)
+        response_action, failure_type, error_message = self._http_error_handler.interpret_response(response)
 
-        # !!! moves public methods from HttpStream to HttpErrorHandler --> when wired in to HttpStream, connectors will require changes => should section be wrapped in a method in HttpErrorHandler?
+        if response_action:
+            if response_action == ResponseAction.FAIL:
+                error_message = (
+                    error_message or f"Request to {response.request.url} failed with status code {response.status_code} and error message {self.parse_response_error_message(response)}"
+                )
+                raise AirbyteTracedException(
+                    internal_message=error_message,
+                    message=error_message,
+                    failure_type=failure_type,
+                )
 
-        if self._http_error_handler.should_retry(response):
-            custom_backoff_time = self._http_error_handler.backoff_time(response)
-            error_message = self._http_error_handler.error_message(response)
+            if response_action == ResponseAction.IGNORE:
+                self._logger.info(
+                    f"Ignoring response with status code {response.status_code} for request to {response.request.url}"
+                )
+
+        if self._retry_strategy.should_retry(response, response_action):
+            custom_backoff_time = self._retry_strategy.backoff_time(response)
+            error_message = self._retry_strategy.error_message(response)
             if custom_backoff_time:
                 raise UserDefinedBackoffException(
                     backoff=custom_backoff_time, request=request, response=response, error_message=error_message
                 )
             else:
                 raise DefaultBackoffException(request=request, response=response, error_message=error_message)
-        elif self._http_error_handler.raise_on_http_errors:
+        elif self._retry_strategy.raise_on_http_errors:
             # Raise any HTTP exceptions that happened in case there were unexpected ones
             try:
                 response.raise_for_status()
@@ -144,17 +161,51 @@ class HttpRequestSender():
 
         return response
 
+    @classmethod
+    def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:
+        """
+        Parses the raw response object from a failed request into a user-friendly error message.
+        By default, this method tries to grab the error message from JSON responses by following common API patterns. Override to parse differently.
+
+        :param response:
+        :return: A user-friendly message that indicates the cause of the error
+        """
+        # default logic to grab error from common fields
+        def _try_get_error(value: Any) -> Any:
+            if isinstance(value, str):
+                return value
+            elif isinstance(value, list):
+                error_list = [_try_get_error(v) for v in value]
+                return ", ".join(v for v in error_list if v is not None)
+            elif isinstance(value, dict):
+                new_value = (
+                    value.get("message")
+                    or value.get("messages")
+                    or value.get("error")
+                    or value.get("errors")
+                    or value.get("failures")
+                    or value.get("failure")
+                    or value.get("details")
+                    or value.get("detail")
+                )
+                return _try_get_error(new_value)
+            return None
+
+        try:
+            body = response.json()
+            error = _try_get_error(body)
+            return str(error) if error else None
+        except requests.exceptions.JSONDecodeError:
+            return None
+
     def send_request(
             self,
             http_method: str,
             url: str,
-            retry_factor: float,
             headers: Optional[Mapping[str, str]] = None,
             params: Optional[Mapping[str, str]] = None,
             json: Optional[Mapping[str, Any]] = None,
             data: Optional[Union[str, Mapping[str, Any]]] = None,
-            max_retries: Optional[int] = None,
-            max_time: Optional[int] = None,
             dedupe_query_params: bool = False,
             request_kwargs: Optional[Mapping[str, Any]] = None,
         ) -> Tuple[requests.PreparedRequest, requests.Response]:
@@ -173,9 +224,6 @@ class HttpRequestSender():
         )
 
         response: requests.Response = self._send_with_retry(
-            retry_factor=retry_factor,
-            max_retries=max_retries,
-            max_time=max_time,
             request=request,
             request_kwargs=request_kwargs
         )
