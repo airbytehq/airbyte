@@ -7,12 +7,11 @@ import re
 import pendulum
 import pytest
 import responses
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from conftest import find_stream
 from source_jira.source import SourceJira
-from source_jira.streams import Issues
-from source_jira.utils import read_full_refresh
+from source_jira.streams import IssueFields, Issues, PullRequests
+from source_jira.utils import read_full_refresh, read_incremental
 
 
 @responses.activate
@@ -141,6 +140,22 @@ def test_issues_fields_stream(config, mock_fields_response):
     
     assert len(records) == 5
     assert len(responses.calls) == 1
+
+
+@responses.activate
+def test_python_issues_fields_ids_by_name(config, mock_fields_response):
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
+    stream = IssueFields(**args)
+
+    expected_ids_by_name = {
+        'Status Category Changed': ['statuscategorychangedate'],
+        'Issue Type': ['issuetype'],
+        'Parent': ['parent'],
+        'Issue Type2': ['issuetype2'],
+        'Issue Type3': ['issuetype3']
+    }
+    assert expected_ids_by_name == stream.field_ids_by_name()
 
 
 @responses.activate
@@ -591,7 +606,7 @@ def test_avatars_stream_should_retry(config, caplog):
 
 
 @responses.activate
-def test_issues_stream(config, mock_projects_responses_additional_project, mock_issues_responses_with_date_filter, caplog):
+def test_declarative_issues_stream(config, mock_projects_responses_additional_project, mock_issues_responses_with_date_filter, caplog):
     stream = find_stream("issues", {**config, "projects": config["projects"] + ["Project3"]})
     records = list(read_full_refresh(stream))
     assert len(records) == 1
@@ -603,6 +618,60 @@ def test_issues_stream(config, mock_projects_responses_additional_project, mock_
     assert len(responses.calls) == 3
     # error_message = "Stream `issues`. An error occurred, details: [\"The value '3' does not exist for the field 'project'.\"]. Skipping for now. The user doesn't have permission to the project. Please grant the user to the project."
     assert "Ignoring response for failed request with error message None" in caplog.messages
+
+
+@responses.activate
+def test_python_issues_stream(config, mock_projects_responses_additional_project, mock_issues_responses_with_date_filter, caplog):
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"] + ["Project3"]}
+    stream = Issues(**args)
+    records = list(read_incremental(stream, {"updated": "2021-01-01T00:00:00Z"}))
+    assert len(records) == 1
+
+    # check if only None values was filtered out from 'fields' field
+    assert "empty_field" not in records[0]["fields"]
+    assert "non_empty_field" in records[0]["fields"]
+
+    assert len(responses.calls) == 3
+    error_message = "Stream `issues`. An error occurred, details: [\"The value '3' does not exist for the field 'project'.\"]. Skipping for now. The user doesn't have permission to the project. Please grant the user to the project."
+    assert error_message in caplog.messages
+
+
+def test_python_issues_stream_updated_state(config):
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
+    stream = Issues(**args)
+
+    updated_state = stream.get_updated_state(
+        current_stream_state={"updated": "2021-01-01T00:00:00Z"},
+        latest_record={"updated": "2021-01-02T00:00:00Z"}
+    )
+    assert updated_state == {"updated": "2021-01-02T00:00:00Z"}
+
+
+@pytest.mark.parametrize(
+    "dev_field, has_pull_request",
+    (
+        ("PullRequestOverallDetails{openCount=1, mergedCount=1, declinedCount=1}", True),
+        ("PullRequestOverallDetails{openCount=0, mergedCount=0, declinedCount=0}", False),
+        ("pullrequest={dataType=pullrequest, state=thestate, stateCount=1}", True),
+        ("pullrequest={dataType=pullrequest, state=thestate, stateCount=0}", False),
+        ("{}", False),
+    )
+)
+def test_python_pull_requests_stream_has_pull_request(config, dev_field, has_pull_request):
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
+    issues_stream = Issues(**args)
+    issue_fields_stream = IssueFields(**args)
+    incremental_args = {
+        **args,
+        "start_date": config["start_date"],
+        "lookback_window_minutes": 0,
+    }
+    pull_requests_stream = PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args)
+
+    assert has_pull_request == pull_requests_stream.has_pull_requests(dev_field)
 
 
 @pytest.mark.parametrize(
@@ -626,7 +695,7 @@ def test_issues_stream_jql_compare_date(config, start_date, lookback_window, str
 
 
 @responses.activate
-def test_issue_comments_stream(config, mock_projects_responses, mock_issues_responses_with_date_filter, issue_comments_response):
+def test_python_issue_comments_stream(config, mock_projects_responses, mock_issues_responses_with_date_filter, issue_comments_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/comment?maxResults=50",
