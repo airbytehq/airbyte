@@ -3,131 +3,132 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer",
       "description": "The ID of the audit record.",
+      "type": "integer",
       "readOnly": true
     },
     "summary": {
-      "type": "string",
       "description": "The summary of the audit record.",
+      "type": "string",
       "readOnly": true
     },
     "remoteAddress": {
-      "type": "string",
       "description": "The URL of the computer where the creation of the audit record was initiated.",
+      "type": "string",
       "readOnly": true
     },
     "authorKey": {
-      "type": "string",
       "description": "Deprecated, use `authorAccountId` instead. The key of the user who created the audit record.",
+      "type": "string",
       "readOnly": true
     },
     "created": {
-      "type": "string",
       "description": "The date and time on which the audit record was created.",
+      "type": "string",
       "format": "date-time",
       "readOnly": true
     },
     "category": {
-      "type": "string",
       "description": "The category of the audit record. For a list of these categories, see the help article [Auditing in Jira applications](https://confluence.atlassian.com/x/noXKM).",
+      "type": "string",
       "readOnly": true
     },
     "eventSource": {
-      "type": "string",
       "description": "The event the audit record originated from.",
+      "type": "string",
       "readOnly": true
     },
     "description": {
-      "type": "string",
       "description": "The description of the audit record.",
+      "type": "string",
       "readOnly": true
     },
     "objectItem": {
+      "description": "Represents an object within a Jira audit record.",
       "type": "object",
       "properties": {
         "id": {
-          "type": "string",
           "description": "The ID of the associated record.",
+          "type": "string",
           "readOnly": true
         },
         "name": {
-          "type": "string",
           "description": "The name of the associated record.",
+          "type": "string",
           "readOnly": true
         },
         "typeName": {
-          "type": "string",
           "description": "The type of the associated record.",
+          "type": "string",
           "readOnly": true
         },
         "parentId": {
-          "type": "string",
           "description": "The ID of the associated parent record.",
+          "type": "string",
           "readOnly": true
         },
         "parentName": {
-          "type": "string",
           "description": "The name of the associated parent record.",
+          "type": "string",
           "readOnly": true
         }
       }
     },
     "changedValues": {
-      "type": "array",
       "description": "The list of values changed in the record event.",
+      "type": "array",
       "readOnly": true,
       "items": {
         "type": "object",
         "properties": {
           "fieldName": {
-            "type": "string",
             "description": "The name of the field changed.",
+            "type": "string",
             "readOnly": true
           },
           "changedFrom": {
-            "type": "string",
             "description": "The value of the field before the change.",
+            "type": "string",
             "readOnly": true
           },
           "changedTo": {
-            "type": "string",
             "description": "The value of the field after the change.",
+            "type": "string",
             "readOnly": true
           }
         }
       }
     },
     "associatedItems": {
-      "type": "array",
       "description": "The list of items associated with the changed record.",
+      "type": "array",
       "readOnly": true,
       "items": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
             "description": "The ID of the associated record.",
+            "type": "string",
             "readOnly": true
           },
           "name": {
-            "type": "string",
             "description": "The name of the associated record.",
+            "type": "string",
             "readOnly": true
           },
           "typeName": {
-            "type": "string",
             "description": "The type of the associated record.",
+            "type": "string",
             "readOnly": true
           },
           "parentId": {
-            "type": "string",
             "description": "The ID of the associated parent record.",
+            "type": "string",
             "readOnly": true
           },
           "parentName": {
-            "type": "string",
             "description": "The name of the associated parent record.",
+            "type": "string",
             "readOnly": true
           }
         }

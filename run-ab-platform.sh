@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=0.57.2
+VERSION=0.58.0
 # Run away from anything even a little scary
 set -o nounset # -u exit if a variable is not set
 set -o errexit # -f exit for any command failure"
@@ -106,7 +106,7 @@ EOL
 }
 
 # TelemetryDockerUp checks if the webapp container is in a running state.  If it is it will send a successful event.
-# if after 10 minutes it hasn't succeeded, a failed event will be sent (or if the user terminates early, a failed event would
+# if after 20 minutes it hasn't succeeded, a failed event will be sent (or if the user terminates early, a failed event would
 # also be sent).
 #
 # Note this only checks if the webapp container is running, that doesn't actually mean the entire stack is up.
@@ -117,8 +117,8 @@ TelemetryDockerUp()
     return
   fi
 
-  # for up to 600 seconds (10 minutes), check to see if the server services is in a running state
-  end=$((SECONDS+600))
+  # for up to 1200 seconds (20 minutes), check to see if the server services is in a running state
+  end=$((SECONDS+1200))
   while [ $SECONDS -lt $end ]; do
     webappState=$(docker compose ps --all --format "{{.Service}}:{{.State}}" 2>/dev/null | grep server | cut -d ":" -f2 | xargs)
     if [ "$webappState" = "running" ]; then
@@ -128,7 +128,7 @@ TelemetryDockerUp()
     sleep 1
   done
 
-  TelemetrySend "failed" "install" "webapp was not running within 600 seconds"
+  TelemetrySend "failed" "install" "webapp was not running within 1200 seconds"
 }
 
 readonly telemetryKey="kpYsVGLgxEqD5OuSZAQ9zWmdgBlyiaej"
