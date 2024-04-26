@@ -408,7 +408,7 @@ class RegressionTests(Step):
     async def _build_regression_test_container(self, target_container_id: str) -> Container:
         """Create a container to run regression tests."""
         main_logger.info(
-            f"_build_regression_test_container(): gsm credentials={os.getenv('GCP_GSM_CREDENTIALS') is not None}")
+            f"_build_regression_test_container(): tester credentials={os.getenv('GCP_INTEGRATION_TESTER_CREDENTIALS') is not None}")
 
         container = with_python_base(self.context)
         container = (
@@ -449,7 +449,7 @@ class RegressionTests(Step):
                     .with_exec(["poetry", "lock", "--no-update"])
                     .with_exec(["poetry", "install"])
                 )
-                .with_new_file("/tmp/credentials.json", contents=os.getenv("GCP_GSM_CREDENTIALS"))
+                .with_new_file("/tmp/credentials.json", contents=os.getenv("GCP_INTEGRATION_TESTER_CREDENTIALS"))
                 .with_env_variable("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/credentials.json")
             )
 
