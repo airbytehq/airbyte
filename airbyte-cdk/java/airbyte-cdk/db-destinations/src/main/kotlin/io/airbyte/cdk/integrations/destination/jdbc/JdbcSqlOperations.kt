@@ -21,7 +21,7 @@ import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 
 abstract class JdbcSqlOperations : SqlOperations {
-    protected val schemaSet: MutableSet<String?> = HashSet()
+    val schemaSet: MutableSet<String?> = HashSet()
 
     protected constructor()
 

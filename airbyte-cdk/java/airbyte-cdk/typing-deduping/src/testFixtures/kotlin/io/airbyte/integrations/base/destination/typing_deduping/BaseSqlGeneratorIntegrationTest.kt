@@ -84,7 +84,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      * Subclasses should override this method if they need to make changes to the stream ID. For
      * example, you could upcase the final table name here.
      */
-    open protected fun buildStreamId(
+    protected open fun buildStreamId(
         namespace: String,
         finalTableName: String,
         rawTableName: String
@@ -149,11 +149,11 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      */
     @Throws(Exception::class) protected abstract fun teardownNamespace(namespace: String)
 
-    protected val rawMetadataColumnNames: Map<String, String>
+    protected open val rawMetadataColumnNames: Map<String, String>
         /** Identical to [BaseTypingDedupingTest.getRawMetadataColumnNames]. */
         get() = HashMap()
 
-    open protected val finalMetadataColumnNames: Map<String, String>
+    protected open val finalMetadataColumnNames: Map<String, String>
         /** Identical to [BaseTypingDedupingTest.getFinalMetadataColumnNames]. */
         get() = HashMap()
 
@@ -1680,7 +1680,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     }
 
     @Throws(Exception::class)
-    open protected fun dumpV1RawTableRecords(streamId: StreamId): List<JsonNode> {
+    protected open fun dumpV1RawTableRecords(streamId: StreamId): List<JsonNode> {
         return dumpRawTableRecords(streamId)
     }
 
