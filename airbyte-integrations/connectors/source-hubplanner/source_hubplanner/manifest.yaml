@@ -983,7 +983,7 @@ definitions:
               - string
           links:
             description: Links related to the resources.
-            properties:
+            properties: {}
             type:
               - "null"
               - object

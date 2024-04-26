@@ -123,9 +123,7 @@
         "metadata": {
           "description": "Additional information specific to the plan of the subscription item.",
           "type": ["null", "object"],
-          "properties": {
-            "description": "Custom metadata associated with the plan."
-          }
+          "properties": {}
         },
         "updated": {
           "description": "Timestamp indicating when the plan was last updated.",

@@ -118,9 +118,7 @@
         "metadata": {
           "description": "Custom metadata associated with the plan.",
           "type": ["null", "object"],
-          "properties": {
-            "description": "Additional metadata associated with the plan"
-          }
+          "properties": {}
         },
         "updated": {
           "description": "The last update timestamp of the plan",

@@ -1718,7 +1718,7 @@ definitions:
                     - "null"
                     - object
                   additionalProperties: true
-                  properties:
+                  properties: {}
               url:
                 description: The URL of the source
                 type:

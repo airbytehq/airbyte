@@ -381,8 +381,7 @@ definitions:
               - "null"
               - object
             additionalProperties: true
-            properties:
-              description: Shipping address for the contact.
+            properties: {}
           tags:
             description: Tags associated with the contact for categorization.
             type:

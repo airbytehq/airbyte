@@ -605,9 +605,7 @@
     "meta_data": {
       "description": "Additional metadata associated with subscription",
       "type": ["object", "null"],
-      "properties": {
-        "description": "Additional metadata associated with the subscription."
-      }
+      "properties": {}
     },
     "addons": {
       "description": "Represents any additional features or services added to the subscription",
