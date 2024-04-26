@@ -13,7 +13,7 @@ RUN echo "Etc/UTC" > /etc/timezone
 RUN apk --no-cache add bash
 
 # copy payload code only
-COPY source_tiktok_marketing ./source_tiktok_marketing
+COPY source_snapchat_marketing ./source_snapchat_marketing
 COPY main.py ./main.py
 COPY poetry.lock ./poetry.lock
 COPY pyproject.toml ./pyproject.toml
@@ -27,4 +27,4 @@ ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
 LABEL io.airbyte.version=3.7.0
-LABEL io.airbyte.name=airbyte/source-tiktok-marketing
+LABEL io.airbyte.name=airbyte/source-snapchat-marketing
