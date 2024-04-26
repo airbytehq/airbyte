@@ -9,52 +9,41 @@ import urllib3
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from destination_snowflake_cortex.config import SnowflakeCortexIndexingModel
 from destination_snowflake_cortex.indexer import SnowflakeCortexIndexer
+from airbyte_cdk.models import (
+    AirbyteRecordMessage,
+    ConfiguredAirbyteCatalog,
+)
 
-def create_snowflake_cortex_indexer():
-    config = SnowflakeCortexIndexingModel(mode="pinecone", pinecone_environment="myenv", pinecone_key="mykey", index="myindex")
-    indexer = SnowflakeCortexIndexer(config, 3)
-    return indexer
+@pytest.fixture(scope="module")
+def mock_processor():
+    with patch("airbyte._processors.sql.snowflake.SnowflakeSqlProcessor") as mock:
+        yield mock
+
+def _create_snowflake_cortex_indexer(mock_processor):
+    config = SnowflakeCortexIndexingModel(account="account", username="username", password="password", database="database", warehouse="warehouse", role="role")
+    indexer = SnowflakeCortexIndexer(config, 3, Mock(ConfiguredAirbyteCatalog))
+    # TODO: figure why mockprocessor is not getting mocked
+    return indexer 
+    
 
 
-def snowflake_cortex_indexer_test():
+def _test_get_airbyte_messsages_from_chunks(mock_processor):
+    indexer = _create_snowflake_cortex_indexer(mock_processor)
+    indexer._get_airbyte_messsages_from_chunks(
+        [
+            Mock(page_content="test", 
+                 metadata={"_ab_stream": "abc"}, 
+                 embedding=[1, 2, 3], 
+                 record=AirbyteRecordMessage(namespace=None, stream='mystream', data={'str_col': 'Dogs are number 0', 'int_col': 0}, emitted_at=0)),
+            Mock(page_content="test2", 
+                 metadata={"_ab_stream": "abc"}, 
+                 embedding=[4, 5, 6], 
+                 record=AirbyteRecordMessage(namespace=None, stream='mystream', data={'str_col': 'Dogs are number 0', 'int_col': 0}, emitted_at=0))
+        ],
+    )
     pass 
 
-
-
-def generate_catalog():
-    return ConfiguredAirbyteCatalog.parse_obj(
-        {
-            "streams": [
-                {
-                    "stream": {
-                        "name": "example_stream",
-                        "json_schema": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": {}},
-                        "supported_sync_modes": ["full_refresh", "incremental"],
-                        "source_defined_cursor": False,
-                        "default_cursor_field": ["column_name"],
-                        "namespace": "ns1",
-                    },
-                    "primary_key": [["id"]],
-                    "sync_mode": "incremental",
-                    "destination_sync_mode": "append_dedup",
-                },
-                {
-                    "stream": {
-                        "name": "example_stream2",
-                        "json_schema": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": {}},
-                        "supported_sync_modes": ["full_refresh", "incremental"],
-                        "source_defined_cursor": False,
-                        "default_cursor_field": ["column_name"],
-                        "namespace": "ns2",
-                    },
-                    "primary_key": [["id"]],
-                    "sync_mode": "full_refresh",
-                    "destination_sync_mode": "overwrite",
-                },
-            ]
-        }
-    )
-
+    
 
 
 

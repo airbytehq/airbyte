@@ -21,9 +21,9 @@ class DestinationSnowflakeCortex(Destination):
     indexer: Indexer
     embedder: Embedder
 
-    def _init_indexer(self, config: ConfigModel):
+    def _init_indexer(self, config: ConfigModel, configured_catalog: ConfiguredAirbyteCatalog):
         self.embedder = create_from_config(config.embedding, config.processing)
-        self.indexer = SnowflakeCortexIndexer(config.indexing, self.embedder.embedding_dimensions)
+        self.indexer = SnowflakeCortexIndexer(config.indexing, self.embedder.embedding_dimensions, configured_catalog)
         
 
     def write(self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]

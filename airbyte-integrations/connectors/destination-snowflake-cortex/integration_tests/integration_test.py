@@ -22,7 +22,6 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         self._init_snowflake_cortex()
 
     def tearDown(self):
-        # make sure pinecone is initialized correctly before cleaning up
         self._init_snowflake_cortex()
         #self.snowflake_index(delete_all=True)
 
