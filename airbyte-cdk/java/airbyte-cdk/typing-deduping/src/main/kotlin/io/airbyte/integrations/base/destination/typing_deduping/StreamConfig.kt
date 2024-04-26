@@ -15,4 +15,4 @@ data class StreamConfig(
     val primaryKey: List<ColumnId>?,
     val cursor: Optional<ColumnId>?,
     val columns: LinkedHashMap<ColumnId, AirbyteType>?
-) {}
+)

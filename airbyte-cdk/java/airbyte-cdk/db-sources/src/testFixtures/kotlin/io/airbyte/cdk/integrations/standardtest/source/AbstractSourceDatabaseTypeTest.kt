@@ -28,8 +28,8 @@ import org.slf4j.LoggerFactory
  * type system.
  */
 abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
-    protected val testDataHolders: MutableList<TestDataHolder> = ArrayList()
-    protected var database: Database? = null
+    @JvmField protected val testDataHolders: MutableList<TestDataHolder> = ArrayList()
+    @JvmField protected var database: Database? = null
 
     protected val idColumnName: String
         /**
@@ -132,7 +132,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
      */
     @Test
     @Throws(Exception::class)
-    fun testDataContent() {
+    open fun testDataContent() {
         // Class used to make easier the error reporting
         class MissedRecords( // Stream that is missing any value
             var streamName:
@@ -256,7 +256,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
      * scripts failed.
      */
     @Throws(Exception::class)
-    protected fun createTables() {
+    protected open fun createTables() {
         for (test in testDataHolders) {
             database!!.query<Any?> { ctx: DSLContext? ->
                 ctx!!.fetch(test.createSqlQuery)
@@ -267,7 +267,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
     }
 
     @Throws(Exception::class)
-    protected fun populateTables() {
+    protected open fun populateTables() {
         for (test in testDataHolders) {
             database!!.query<Any?> { ctx: DSLContext? ->
                 test.insertSqlQueries.forEach(Consumer { sql: String? -> ctx!!.fetch(sql) })

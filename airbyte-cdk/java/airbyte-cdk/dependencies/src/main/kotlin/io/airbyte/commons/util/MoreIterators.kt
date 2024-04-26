@@ -53,6 +53,7 @@ object MoreIterators {
         return set
     }
 
+    @JvmStatic
     fun <T> singletonIteratorFromSupplier(supplier: Supplier<T>): Iterator<T> {
         return object : AbstractIterator<T>() {
             private var hasSupplied = false

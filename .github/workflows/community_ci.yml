@@ -1,129 +1,83 @@
-name: Community CI Spike
+name: Community CI
 
 concurrency:
   # This is the name of the concurrency group. It is used to prevent concurrent runs of the same workflow.
   #
   # - github.head_ref is only defined on PR runs, it makes sure that the concurrency group is unique for pull requests
   #  ensuring that only one run per pull request is active at a time.
-  #
-  # - github.run_id is defined on all runs, it makes sure that the concurrency group is unique for workflow dispatches.
-  # This allows us to run multiple workflow dispatches in parallel.
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
 
 on:
-  workflow_dispatch:
-    inputs:
-      test-connectors-options:
-        description: "Options to pass to the 'airbyte-ci connectors test' command"
-        default: "--modified"
+  # The pull request target event is triggered on PR open and synchronize events.
+  # The executed workflow code is the one from the target branch.
+  # It guarantees that the workflow logic is not altered by the PR.
   pull_request_target:
+    types: [opened, synchronize]
+    # We only accept PRs touching connectors
+    paths:
+      - "airbyte-integrations/connectors/**"
+    branches:
+      - "master"
+
 jobs:
-  determine_runner_environment:
-    runs-on: ubuntu-latest
-    name: Determine runner and environment
+  connectors_test:
+    name: Run connectors tests on fork
+    if: github.event.pull_request.head.repo.fork == true
+    # Deployment of jobs on the community-ci environment requires manual approval
+    # This is something we set up in the GitHub environment settings:
+    # https://github.com/airbytehq/airbyte/settings/environments/2091483613/edit
+    # This is a safety measure to make sure the code running on our infrastructure has been reviewed before running on it
+    environment: community-ci
+    runs-on: community-connector-test-large
+    timeout-minutes: 180 # 3 hours
+    permissions:
+      statuses: write
+    env:
+      MAIN_BRANCH_NAME: "master"
+
     steps:
-      # Checkout is required here to:
-      # - fetch the local actions stored in .github/actions
-      # - install airbyte-ci in dev mode if the PR modified airbyte-ci
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
+      # This checkouts a fork which can contain untrusted code
+      # It's deemed safe as the community-ci environment requires manual reviewer approval to run
+      - name: Checkout fork
+        uses: actions/checkout@v4
         with:
-          # This checkouts the fork
-          # /!\ untrusted code
-          # It's deemed safe as the following step is not executing code from forks
-          ref: ${{ github.head_ref }}
-          # Ensures that the git token is not persisted
-          # It helps prevent access to token from code executed in the workflow
-          persist-credentials: false
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 1
 
-      # Disabling this step for safety during the spike
-      # - name: Get CI runner
-      #   id: get_ci_runner
-      #   uses: ./.github/actions/airbyte-ci-requirements
-      #   with:
-      #     runner_type: "test"
-      #     runner_size: "large"
-      #     airbyte_ci_command: "connectors test"
-      #     is_fork: ${{ github.event.pull_request.head.repo.fork }}
-
-      # We set the environment to community-ci if the PR is from a fork
-      # The community-ci environment requires manual reviewer approval to run
-      # This is a safety measure to prevent untrusted code from running on our infrastructure
-      # The internal-ci environment is reserved for internal PRs (non-forked PRs)
-      - name: Determine environment
-        id: determine_environment
-        if: github.event_name == 'pull_request_target'
-        shell: bash
+      # This will sync the .github folder of the main repo with the fork
+      # This allows us to use up to date actions from the main repo
+      - name: Pull .github folder from main repository
+        id: pull_github_folder
         run: |
-          if [ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]; then
-            echo "environment=community-ci" >> $GITHUB_OUTPUT
-          else
-            echo "environment=internal-ci" >> $GITHUB_OUTPUT
-          fi
-    outputs:
-      environment: ${{ steps.get_ci_runner.outputs.environment }}
-      runner_name: ci-runner-connector-test-large-dagger-0-9-6
-      #runner_name: ${{ steps.get_ci_runner.outputs.runner_name }}
+          git remote add main https://github.com/airbytehq/airbyte.git
+          git fetch main ${MAIN_BRANCH_NAME}
+          git checkout main/${MAIN_BRANCH_NAME} -- .github
 
-  connectors_ci:
-    name: Connectors CI
-    needs: determine_runner_environment
-    environment: ${{ needs.determine_runner_environment.outputs.environment }}
-    runs-on: ${{ needs.determine_runner_environment.outputs.runner_name }}
-    timeout-minutes: 1440 # 24 hours
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-        with:
-          # This can checkouts forks
-          # /!\ untrusted code
-          # It's deemed safe as the community-ci environment requires manual reviewer approval to run
-          ref: ${{ github.head_ref }}
-          fetch-depth: 1
-      - name: Extract branch name [WORKFLOW DISPATCH]
-        shell: bash
-        if: github.event_name == 'workflow_dispatch'
-        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
-        id: extract_branch
-      - name: Fetch last commit id from remote branch [PULL REQUESTS]
-        if: github.event_name == 'pull_request_target'
-        id: fetch_last_commit_id_pr
-        run: echo "commit_id=$(git ls-remote --heads origin ${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
-      - name: Fetch last commit id from remote branch [WORKFLOW DISPATCH]
-        if: github.event_name == 'workflow_dispatch'
-        id: fetch_last_commit_id_wd
-        run: echo "commit_id=$(git rev-parse origin/${{ steps.extract_branch.outputs.branch }})" >> $GITHUB_OUTPUT
-      - name: Test connectors [WORKFLOW DISPATCH]
-        if: github.event_name == 'workflow_dispatch'
-        uses: ./.github/actions/run-airbyte-ci
-        with:
-          context: "manual"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          git_branch: ${{ steps.extract_branch.outputs.branch }}
-          git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
-          github_token: ${{ env.PAT }}
-          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors ${{ github.event.inputs.test-connectors-options }} test"
-      - name: Test connectors [PULL REQUESTS]
-        if: github.event_name == 'pull_request_target'
+      - name: Run airbyte-ci connectors test
+        # This path refers to the fork .github folder.
+        # We make sure its content is in sync with the main repo .github folder by pulling it in the previous step
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "pull_request"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          git_repo_url: ${{ github.event.pull_request.head.repo.clone_url }}
           git_branch: ${{ github.head_ref }}
-          git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
-          github_token: ${{ env.PAT }}
+          git_revision: ${{ github.event.pull_request.head.sha }}
+          github_token: ${{ github.token }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors --modified test"
-          is_fork: ${{ github.event.pull_request.head.repo.fork }}
+          is_fork: "true"
+      - name: Upload pipeline reports
+        id: upload-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-reports
+          path: /home/runner/work/airbyte/airbyte/airbyte-ci/connectors/pipelines/pipeline_reports/airbyte-ci/connectors/test/pull_request/**/output.html
+          retention-days: 7
