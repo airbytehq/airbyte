@@ -5,12 +5,16 @@
 import uuid
 from typing import Optional
 
-from pinecone import PineconeGRPC
+from pinecone.grpc import PineconeGRPC
+from pinecone import PineconeException
 import urllib3
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import create_chunks, create_stream_identifier, format_exception
 from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalog, DestinationSyncMode
+from airbyte_cdk.models import AirbyteConnectionStatus, Status
+
+
 from destination_pinecone.config import PineconeIndexingModel
 
 # large enough to speed up processing, small enough to not hit pinecone request limits
@@ -29,7 +33,11 @@ class PineconeIndexer(Indexer):
 
     def __init__(self, config: PineconeIndexingModel, embedding_dimensions: int):
         super().__init__(config)
-        self.pc = PineconeGRPC(api_key=config.pinecone_key, threaded=True)
+        try:
+            self.pc = PineconeGRPC(api_key=config.pinecone_key, threaded=True)
+        except PineconeException as e:
+            return AirbyteConnectionStatus(status=Status.FAILED, message=str(e))
+        
         self.pinecone_index = self.pc.Index(config.index)
         self.embedding_dimensions = embedding_dimensions
     
@@ -46,8 +54,9 @@ class PineconeIndexer(Indexer):
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
         index_description = self.pc.describe_index(self.config.index)
         self._pod_type = self.determine_spec_type(self.config.index)
-        stream_identifier = create_stream_identifier(stream.stream)
+        
         for stream in catalog.streams:
+            stream_identifier = create_stream_identifier(stream.stream)
             if stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 self.delete_vectors(
                     filter={METADATA_STREAM_FIELD: stream_identifier}, namespace=stream.stream.namespace, prefix=stream_identifier
@@ -106,21 +115,22 @@ class PineconeIndexer(Indexer):
 
         return result
 
-    def index(self, document_chunks, namespace, stream):
+    def index(self, document_chunks, namespace, streamName):
         pinecone_docs = []
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]
             metadata = self._truncate_metadata(chunk.metadata)
             if chunk.page_content is not None:
-                metadata["text"] = chunk.page_content
-            prefix = create_stream_identifier(stream.stream)    
+                metadata["text"] = chunk.page_content            
+            prefix = streamName    
             pinecone_docs.append((prefix + "#" + str(uuid.uuid4()), chunk.embedding, metadata))
         serial_batches = create_chunks(pinecone_docs, batch_size=PINECONE_BATCH_SIZE * PARALLELISM_LIMIT)
         for batch in serial_batches:
-            async_results = [
-                self.pinecone_index.upsert(vectors=ids_vectors_chunk, async_req=True, show_progress=False, namespace=namespace)
-                for ids_vectors_chunk in create_chunks(batch, batch_size=PINECONE_BATCH_SIZE)
-            ]
+            print(self.pinecone_index)
+            async_results = []
+            for ids_vectors_chunk in create_chunks(batch, batch_size=PINECONE_BATCH_SIZE):            
+                async_result = self.pinecone_index.upsert(vectors=ids_vectors_chunk, async_req=True, show_progress=False)
+                async_results.append(async_result)
             # Wait for and retrieve responses (this raises in case of error)
             [async_result.result() for async_result in async_results]
 
@@ -139,8 +149,10 @@ class PineconeIndexer(Indexer):
 
     def check(self) -> Optional[str]:
         try:
-            indexes = self.pc.list_indexes()
-            if self.config.index not in indexes:
+            list = self.pc.list_indexes()
+            index_names = [index['name'] for index in list.indexes]
+
+            if self.config.index not in index_names:
                 return f"Index {self.config.index} does not exist in environment {self.config.pinecone_environment}."
 
             description = self.pc.describe_index(self.config.index)
