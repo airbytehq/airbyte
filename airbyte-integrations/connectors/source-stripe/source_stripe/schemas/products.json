@@ -56,9 +56,7 @@
     "metadata": {
       "description": "Additional information or custom data related to the product.",
       "type": ["null", "object"],
-      "properties": {
-        "description": "Custom key-value pairs associated with the product."
-      }
+      "properties": {}
     },
     "name": {
       "description": "Name of the product.",
