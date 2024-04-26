@@ -14,6 +14,7 @@ from source_microsoft_sharepoint.stream_reader import SourceMicrosoftSharePointS
 
 
 class SourceMicrosoftSharePoint(FileBasedSource):
+    _concurrency_level = 1
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: Optional[TState]):
         super().__init__(
             stream_reader=SourceMicrosoftSharePointStreamReader(),
