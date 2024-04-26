@@ -106,6 +106,8 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 
 | Version | Date       | Pull Request                                             | Subject                |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------- |
+| 0.3.5   | 2024-04-23 | [#37515](https://github.com/airbytehq/airbyte/pull/37515) | Add resource requirements declaration to `metatadat.yml`.  |
+| :------ | :--------- | :------------------------------------------------------- | :--------------------- |
 | 0.3.4   | 2024-04-16 | [#36715](https://github.com/airbytehq/airbyte/pull/36715) | Improve ingestion performance using pyarrow inmem view for writing to DuckDB.  |
 | 0.3.3   | 2024-04-07 | [#36884](https://github.com/airbytehq/airbyte/pull/36884) | Fix stale dependency versions in lock file, add CLI for internal testing.  |
 | 0.3.2   | 2024-03-20 | [#32635](https://github.com/airbytehq/airbyte/pull/32635) | Instrument custom_user_agent to identify Airbyte-Motherduck connector usage.  |
