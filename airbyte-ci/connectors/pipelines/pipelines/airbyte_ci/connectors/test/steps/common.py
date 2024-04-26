@@ -6,6 +6,7 @@
 
 import datetime
 import os
+import time
 from abc import ABC, abstractmethod
 from functools import cached_property
 from pathlib import Path
@@ -16,11 +17,13 @@ import semver
 import yaml  # type: ignore
 from dagger import Container, Directory
 from pipelines import hacks
+from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
 from pipelines.consts import INTERNAL_TOOL_PATHS, CIContext
 from pipelines.dagger.actions import secrets
-from pipelines.helpers.utils import METADATA_FILE_NAME
+from pipelines.dagger.containers.python import with_python_base
+from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
 from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, StepStatus
 
 
@@ -301,3 +304,128 @@ class AcceptanceTests(Step):
             )
 
         return cat_container.with_unix_socket("/var/run/docker.sock", self.context.dagger_client.host().unix_socket("/var/run/docker.sock"))
+
+
+class RegressionTests(Step):
+    """A step to run regression tests for a connector."""
+
+    context: ConnectorContext
+    title = "Regression tests"
+    skipped_exit_code = 5
+    accept_extra_params = True
+    regression_tests_artifacts_dir = Path("/tmp/regression_tests_artifacts")
+    working_directory = "/app"
+
+    @property
+    def default_params(self) -> STEP_PARAMS:
+        """Default pytest options.
+
+        Returns:
+            dict: The default pytest options.
+        """
+        return super().default_params | {
+            "-ra": [],  # Show extra test summary info in the report for all but the passed tests
+            "--disable-warnings": [],  # Disable warnings in the pytest report
+            "--durations": ["3"],  # Show the 3 slowest tests in the report
+        }
+
+    def regression_tests_command(self) -> List[str]:
+        return [
+            "poetry",
+            "run",
+            "pytest",
+            "src/live_tests/regression_tests",
+            "--connector-image",
+            self.connector_image,
+            "--connection-id",
+            self.connection_id or "",
+            "--control-version",
+            self.control_version or "",
+            "--target-version",
+            self.target_version or "",
+            "--pr-url",
+            self.pr_url or "",
+            "--run-id",
+            self.run_id or "",
+            "--should-read-with-state",
+            str(self.should_read_with_state),
+        ]
+
+    def __init__(self, context: ConnectorContext) -> None:
+        """Create a step to run regression tests for a connector.
+
+        Args:
+            context (ConnectorContext): The current test context, providing a connector object, a dagger client and a repository directory.
+        """
+        super().__init__(context)
+        self.connector_image = context.docker_image.split(":")[0]
+        options = self.context.run_step_options.step_params.get(CONNECTOR_TEST_STEP_ID.CONNECTOR_REGRESSION_TESTS, {})
+
+        self.connection_id = self.context.run_step_options.get_item_or_default(options, "connection-id", None)
+        self.pr_url = self.context.run_step_options.get_item_or_default(options, "pr-url", None)
+
+        if not self.connection_id and self.pr_url:
+            raise ValueError("`connection-id` and `pr-url` are required to run regression tests.")
+
+        self.control_version = self.context.run_step_options.get_item_or_default(options, "control-version", "latest")
+        self.target_version = self.context.run_step_options.get_item_or_default(options, "target-version", "dev")
+        self.should_read_with_state = self.context.run_step_options.get_item_or_default(options, "should-read-with-state", True)
+        self.run_id = os.getenv("GITHUB_RUN_ID") or str(int(time.time()))
+
+    async def _run(self, connector_under_test_container: Container) -> StepResult:
+        """Run the regression test suite.
+
+        Args:
+            connector_under_test (Container): The container holding the target connector test image.
+
+        Returns:
+            StepResult: Failure or success of the regression tests with stdout and stderr.
+        """
+        container = await self._build_regression_test_container(await connector_under_test_container.id())
+        container = container.with_(hacks.never_fail_exec(self.regression_tests_command()))
+        regression_tests_artifacts_dir = str(self.regression_tests_artifacts_dir)
+        path_to_report = f"{regression_tests_artifacts_dir}/session_{self.run_id}/report.html"
+        await container.file(path_to_report).export(path_to_report)
+        exit_code, stdout, stderr = await get_exec_result(container)
+
+        with open(path_to_report, "r") as fp:
+            regression_test_report = fp.read()
+
+        return StepResult(
+            step=self,
+            status=self.get_step_status_from_exit_code(exit_code),
+            stderr=stderr,
+            stdout=stdout,
+            output=container,
+            report=regression_test_report,
+        )
+
+    async def _build_regression_test_container(self, target_container_id: str) -> Container:
+        """Create a container to run regression tests."""
+        container = with_python_base(self.context)
+
+        container = (
+            (
+                container.with_exec(["apt-get", "update"])
+                .with_exec(["apt-get", "install", "-y", "git", "openssh-client", "curl", "docker.io"])
+                .with_exec(["bash", "-c", "curl https://sdk.cloud.google.com | bash"])
+                .with_env_variable("PATH", "/root/google-cloud-sdk/bin:$PATH", expand=True)
+                .with_mounted_file("/root/.ssh/id_rsa", self.dagger_client.host().file(str(Path("~/.ssh/id_rsa").expanduser())))  # TODO
+                .with_mounted_file(
+                    "/root/.ssh/known_hosts", self.dagger_client.host().file(str(Path("~/.ssh/known_hosts").expanduser()))  # TODO
+                )
+                .with_mounted_file(
+                    "/root/.config/gcloud/application_default_credentials.json",
+                    self.dagger_client.host().file(str(Path("~/.config/gcloud/application_default_credentials.json").expanduser())),  # TODO
+                )
+                .with_mounted_directory("/app", self.context.live_tests_dir)
+                .with_workdir("/app")
+                .with_exec(["pip", "install", "poetry"])
+                .with_exec(["poetry", "lock", "--no-update"])
+                .with_exec(["poetry", "install"])
+            )
+            .with_unix_socket("/var/run/docker.sock", self.dagger_client.host().unix_socket("/var/run/docker.sock"))
+            .with_env_variable("RUN_IN_AIRBYTE_CI", "1")
+            .with_new_file("/tmp/container_id.txt", contents=str(target_container_id))
+        )
+        return container

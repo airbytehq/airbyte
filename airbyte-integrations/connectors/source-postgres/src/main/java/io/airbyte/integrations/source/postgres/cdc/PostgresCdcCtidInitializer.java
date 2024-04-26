@@ -183,7 +183,7 @@ public class PostgresCdcCtidInitializer {
       // receive that is after the target LSN.
       PostgresUtils.advanceLsn(database);
       final AirbyteDebeziumHandler<Long> handler = new AirbyteDebeziumHandler<>(sourceConfig,
-          targetPosition, false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize, false);
+          targetPosition, false, firstRecordWaitTime, queueSize, false);
       final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
       final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
           PostgresCdcProperties.getDebeziumDefaultProperties(database), sourceConfig, catalog);

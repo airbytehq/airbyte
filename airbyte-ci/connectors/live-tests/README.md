@@ -10,10 +10,8 @@ This project contains utilities for running connector tests against live data.
 
 ## Install
 ```bash
-# From tools/connectors/live-tests
-pipx install .
-# To install in editable mode for development
-pipx install . --force --editable
+# From airbyte-ci/connectors/live-tests
+poetry install
 ```
 
 ## Commands
@@ -21,7 +19,7 @@ pipx install . --force --editable
 ### `debug`
 
 ```
-Usage: live-tests debug [OPTIONS] {check|discover|read|read-with-state|spec}
+Usage: poetry run live-tests debug [OPTIONS] {check|discover|read|read-with-state|spec}
 
   Run a specific command on one or multiple connectors and persists the
   outputs to local storage.
@@ -57,7 +55,7 @@ It will write artifacts to an output directory:
 Let's run `debug` to check the output of `read` on two different versions of the same connector:
 
 ```bash
-live-tests debug read \
+poetry run live-tests debug read \
 --connection-id=d3bd39cd-6fec-4691-a661-d52c466d8554
 --connector-image=airbyte/source-pokeapi:dev \
 --connector-image=airbyte/source-pokeapi:latest \
@@ -94,7 +92,7 @@ live_tests_debug_reports
 You can also run the `debug` command on a live connection by passing the `--connection-id` option:
 
 ```bash
-live-tests debug read \
+poetry run live-tests debug read \
 --connector-image=airbyte/source-pokeapi:dev \
 --connector-image=airbyte/source-pokeapi:latest \
 --connection-id=<CONNECTION-ID>
@@ -119,7 +117,8 @@ You can run the existing test suites with the following command:
 #### With local connection objects (`config.json`, `catalog.json`, `state.json`)
 ```bash
 poetry run pytest src/live_tests/regression_tests \ 
---connector-image=airbyte/source-faker \
+ --connector-image=airbyte/source-faker \
+ --connection-id=<CONNECTION-ID> \
  --config-path=<path-to-config-path> \
  --catalog-path=<path-to-catalog-path> \
  --target-version=dev \
@@ -237,6 +236,12 @@ We use a containerized `mitmproxy` to capture the HTTP traffic between the conne
 The traffic recorded on the control connector is passed to the target connector proxy to cache the responses for requests with the same URL. This is useful to avoid hitting the source API multiple times when running the same command on different versions of the connector.
 
 ## Changelog
+
+### 0.16.0
+Enable running with airbyte-ci.
+
+### 0.15.0
+Automatic retrieval of connection objects for regression tests. The connection id is not required anymore.
 
 ### 0.14.2
 Fix KeyError when target & control streams differ.
