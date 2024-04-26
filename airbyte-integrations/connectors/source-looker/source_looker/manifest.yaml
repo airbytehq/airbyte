@@ -6,45 +6,6 @@ check:
   type: CheckStream
   stream_names:
     - color_collections
-    # - connections
-    # # - content_metadata
-    # - content_metadata_access
-    # - dashboards
-    # # - dashboard_elements
-    # # - dashboard_filters
-    # # - dashboard_layout_components
-    # # - dashboard_layouts
-    # - datagroups
-    # - folders
-    # # - folder_ancestors
-    # # - git_branches
-    # - groups
-    # - board_items
-    # - board_sections
-    # - boards
-    # - integration_hubs
-    # - integrations
-    # - legacy_features
-    # - lookml_models
-    # - looks
-    # - model_sets
-    # - permission_sets
-    # - permissions
-    # - primary_homepage_sections
-    # - projects
-    # # - project_files
-    # # - query_history
-    # - roles
-    # # - role_groups
-    # # - run_looks
-    # - scheduled_plans
-    # - user_attributes
-    # # - user_attribute_group_values
-    # - user_login_lockouts
-    # # - user_sessions
-    # - users
-    # - versions
-    # - workspaces
 
 definitions:
   looker_base_stream:
@@ -630,23 +591,43 @@ definitions:
       class_name: source_looker.components.LookerAuthenticator
 
 streams:
-  - $ref: "#/definitions/streams/color_collections"
-  - $ref: "#/definitions/streams/connections"
+  - $ref: "#/definitions/streams/query_history"
+  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/user_attributes"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/versions"
+  - $ref: "#/definitions/streams/workspaces"
+  # -----------------------------------------------------------
+  # # existing empty streams
+  # -----------------------------------------------------------
+  - $ref: "#/definitions/streams/scheduled_plans"
+  - $ref: "#/definitions/streams/user_attribute_group_values"
+  - $ref: "#/definitions/streams/user_login_lockouts"
+  - $ref: "#/definitions/streams/user_sessions"
+  # # new empty streams
   - $ref: "#/definitions/streams/content_metadata"
   - $ref: "#/definitions/streams/content_metadata_access"
-  - $ref: "#/definitions/streams/dashboards"
   - $ref: "#/definitions/streams/dashboard_elements"
   - $ref: "#/definitions/streams/dashboard_filters"
   - $ref: "#/definitions/streams/dashboard_layout_components"
   - $ref: "#/definitions/streams/dashboard_layouts"
-  - $ref: "#/definitions/streams/datagroups"
-  - $ref: "#/definitions/streams/folders"
   - $ref: "#/definitions/streams/folder_ancestors"
   - $ref: "#/definitions/streams/git_branches"
-  - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/project_files"
+  - $ref: "#/definitions/streams/role_groups"
+  - $ref: "#/definitions/streams/run_looks"
+  # -----------------------------------------------------------
+  # # records are read but test says empty streams
+  # -----------------------------------------------------------
   - $ref: "#/definitions/streams/board_items"
   - $ref: "#/definitions/streams/board_sections"
   - $ref: "#/definitions/streams/boards"
+  - $ref: "#/definitions/streams/color_collections"
+  - $ref: "#/definitions/streams/connections"
+  - $ref: "#/definitions/streams/dashboards"
+  - $ref: "#/definitions/streams/datagroups"
+  - $ref: "#/definitions/streams/folders"
+  - $ref: "#/definitions/streams/groups"
   - $ref: "#/definitions/streams/integration_hubs"
   - $ref: "#/definitions/streams/integrations"
   - $ref: "#/definitions/streams/legacy_features"
@@ -657,19 +638,6 @@ streams:
   - $ref: "#/definitions/streams/permissions"
   - $ref: "#/definitions/streams/primary_homepage_sections"
   - $ref: "#/definitions/streams/projects"
-  - $ref: "#/definitions/streams/project_files"
-  - $ref: "#/definitions/streams/query_history"
-  - $ref: "#/definitions/streams/roles"
-  - $ref: "#/definitions/streams/role_groups"
-  - $ref: "#/definitions/streams/run_looks"
-  - $ref: "#/definitions/streams/scheduled_plans"
-  - $ref: "#/definitions/streams/user_attributes"
-  - $ref: "#/definitions/streams/user_attribute_group_values"
-  - $ref: "#/definitions/streams/user_login_lockouts"
-  - $ref: "#/definitions/streams/user_sessions"
-  - $ref: "#/definitions/streams/users"
-  - $ref: "#/definitions/streams/versions"
-  - $ref: "#/definitions/streams/workspaces"
 
 spec:
   type: Spec
