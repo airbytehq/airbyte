@@ -648,7 +648,8 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                |
-| ------- | ---------------------------------------------------------- |----------------------------------------------------------------------------------------------------------------------------|
+|---------| ---------------------------------------------------------- |----------------------------------------------------------------------------------------------------------------------------|
+| 4.10.1   | [#37622](https://github.com/airbytehq/airbyte/pull/37622)  | Temporarily disable regression tests in CI                                                    |
 | 4.10.0   | [#37616](https://github.com/airbytehq/airbyte/pull/37616)  | Improve modified files comparison when the target branch is from a fork.                                                                       |
 | 4.9.0   | [#37440](https://github.com/airbytehq/airbyte/pull/37440)  | Run regression tests with `airbyte-ci connectors test`                                                                       |
 | 4.8.0   | [#37404](https://github.com/airbytehq/airbyte/pull/37404)  | Accept a `git-repo-url` option on the `airbyte-ci` root command to checkout forked repo.                                                                                                     |
