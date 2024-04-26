@@ -19,9 +19,9 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineCo
 from pipelines.airbyte_ci.connectors.helpers.command import run_connector_steps
 from pipelines.airbyte_ci.connectors.helpers.format import format_prettier
 from pipelines.airbyte_ci.connectors.helpers.yaml import read_yaml, write_yaml
-from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
+from pipelines.airbyte_ci.connectors.reports import Report
 from pipelines.consts import LOCAL_BUILD_PLATFORM
-from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
+from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 
@@ -295,7 +295,7 @@ def _load_reference(data: dict, ref: str) -> dict | None:
                 return None
             yaml_stream = yaml_stream[i]
             continue
-        if not p in yaml_stream:
+        if p not in yaml_stream:
             return None
         yaml_stream = yaml_stream[p]
     return yaml_stream

@@ -4,7 +4,7 @@ import asyncclick as click
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
-from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
+from pipelines.helpers.execution.run_steps import STEP_TREE, run_steps
 from pipelines.models.steps import Step, StepStatus
 
 if TYPE_CHECKING:

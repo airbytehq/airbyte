@@ -1,7 +1,7 @@
 import copy
 import io
 from pathlib import Path
-from typing import Any, List
+from typing import List
 
 from ruamel.yaml import YAML
 
