@@ -39,6 +39,8 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
   private final boolean isEnforceSchema;
   private final MongoCollection<Document> collection;
   private final Bson fields;
+  // Represents the number of rows to get with each query.
+  private final int chunkSize;
 
   private Optional<MongoDbStreamState> currentState;
   private MongoCursor<Document> currentIterator;
@@ -48,11 +50,13 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
   MongoDbInitialLoadRecordIterator(final MongoCollection<Document> collection,
                                    final Bson fields,
                                    final Optional<MongoDbStreamState> existingState,
-                                   final boolean isEnforceSchema) {
+                                   final boolean isEnforceSchema,
+                                   final int chunkSize) {
     this.collection = collection;
     this.fields = fields;
     this.currentState = existingState;
     this.isEnforceSchema = isEnforceSchema;
+    this.chunkSize = chunkSize;
     this.currentIterator = buildNewQueryIterator();
   }
 
@@ -60,7 +64,8 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
   protected Document computeNext() {
     if (shouldBuildNextQuery()) {
       try {
-        LOGGER.info("Finishing subquery number : {}", numSubqueries);
+        LOGGER.info("Finishing subquery number : {}, processing at id : {}", numSubqueries,
+            currentState.get() == null ? "starting null" : currentState.get().id());
         currentIterator.close();
         currentIterator = buildNewQueryIterator();
         numSubqueries++;
@@ -98,11 +103,13 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
     return isEnforceSchema ? collection.find()
         .filter(filter)
         .projection(fields)
+        .limit(chunkSize)
         .sort(Sorts.ascending(MongoConstants.ID_FIELD))
         .allowDiskUse(true)
         .cursor()
         : collection.find()
             .filter(filter)
+            .limit(chunkSize)
             .sort(Sorts.ascending(MongoConstants.ID_FIELD))
             .allowDiskUse(true)
             .cursor();
