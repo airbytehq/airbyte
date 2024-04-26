@@ -13,8 +13,15 @@ from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
     cls=DaggerPipelineCommand,
     short_help="Where possible (have a metadata.yaml), move stream schemas to inline schemas.",
 )
+@click.option(
+    "--report",
+    is_flag=True,
+    type=bool,
+    default=False,
+    help="Auto open report browser.",
+)
 @click.pass_context
-async def migrate_to_inline_schemas(ctx: click.Context) -> bool:
+async def migrate_to_inline_schemas(ctx: click.Context, report: bool) -> bool:
     return await run_connector_pipeline(
-        ctx, "Migrate to inline schemas", run_connector_migrate_to_inline_schemas_pipeline, enable_report_auto_open=False
+        ctx, "Migrate to inline schemas", run_connector_migrate_to_inline_schemas_pipeline, enable_report_auto_open=report
     )
