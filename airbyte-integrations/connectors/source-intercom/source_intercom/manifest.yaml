@@ -1718,8 +1718,7 @@ definitions:
                     - "null"
                     - object
                   additionalProperties: true
-                  properties:
-                    description: Attachments in the source
+                  properties: {}
               url:
                 description: The URL of the source
                 type:
