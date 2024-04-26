@@ -152,6 +152,7 @@ class AirbyteExceptionHandler : Thread.UncaughtExceptionHandler {
             }
         }
 
+        @JvmStatic
         fun addAllStringsInConfigForDeinterpolation(node: JsonNode) {
             if (node.isTextual) {
                 addStringForDeinterpolation(node.asText())
