@@ -40,7 +40,7 @@ This connector attempts to back off gracefully when it hits Directory API's rate
 1. Click `OAuth2.0 authorization` then `Authenticate your Google Directory account`.
 2. You're done.
 
-## Getting Started \(Airbyte Open-Source\)
+## Getting Started \(Airbyte Open Source\)
 
 Google APIs use the OAuth 2.0 protocol for authentication and authorization. This connector supports [Web server application](https://developers.google.com/identity/protocols/oauth2#webserver) and [Service accounts](https://developers.google.com/identity/protocols/oauth2#serviceaccount) scenarios. Therefore, there are 2 options of setting up authorization for this source:
 

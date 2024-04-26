@@ -36,8 +36,9 @@ In addition, to understand how to configure the dataset path and query parameter
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject                                           |
-| :------ | :--------- | :----------------------------------------------------- | :------------------------------------------------ |
-| 0.1.2   | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628) | Update fields in source-connectors specifications |
-| 0.1.1   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies                   |
-| 0.1.0   | 2021-07-20 | [4228](https://github.com/airbytehq/airbyte/pull/4228) | Initial release                                   |
+| Version | Date       | Pull Request                                             | Subject                                           |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.1.3   | 2024-01-03 | [33890](https://github.com/airbytehq/airbyte/pull/33890) | Allow additional properties in connector spec     |
+| 0.1.2   | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628)   | Update fields in source-connectors specifications |
+| 0.1.1   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                   |
+| 0.1.0   | 2021-07-20 | [4228](https://github.com/airbytehq/airbyte/pull/4228)   | Initial release                                   |

@@ -55,6 +55,10 @@ class BaseZendeskSupportStream(HttpStream, ABC):
         self._subdomain = subdomain
         self._ignore_pagination = ignore_pagination
 
+    @property
+    def max_retries(self) -> Union[int, None]:
+        return 10
+
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         """
         The rate limit is 700 requests per minute
@@ -252,7 +256,7 @@ class IncrementalZendeskSupportStream(FullRefreshZendeskSupportStream):
         new_value = str((latest_record or {}).get(self.cursor_field, ""))
         return {self.cursor_field: max(new_value, old_value)}
 
-    def check_stream_state(self, stream_state: Mapping[str, Any] = None) -> int:
+    def get_stream_state_value(self, stream_state: Mapping[str, Any] = None) -> int:
         """
         Returns the state value, if exists. Otherwise, returns user defined `Start Date`.
         """
@@ -277,7 +281,7 @@ class CursorPaginationZendeskSupportStream(IncrementalZendeskSupportStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {
-            "start_time": self.check_stream_state(stream_state),
+            "start_time": self.get_stream_state_value(stream_state),
             "page[size]": self.page_size,
         }
         if next_page_token:
@@ -302,7 +306,7 @@ class TimeBasedPaginationZendeskSupportStream(IncrementalZendeskSupportStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         next_page_token = next_page_token or {}
-        parsed_state = self.check_stream_state(stream_state)
+        parsed_state = self.get_stream_state_value(stream_state)
         if self.cursor_field:
             params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
         else:
@@ -315,15 +319,19 @@ class SourceZendeskIncrementalExportStream(IncrementalZendeskSupportStream):
     https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based
 
     @ param response_list_name: the main nested entity to look at inside of response, default = response_list_name
-    @ param sideload_param : parameter variable to include various information to response
         more info: https://developer.zendesk.com/documentation/ticketing/using-the-zendesk-api/side_loading/#supported-endpoints
     """
 
-    response_list_name: str = None
-    sideload_param: str = None
+    @property
+    def response_list_name() -> str:
+        raise NotImplementedError("The `response_list_name` must be implemented")
+
+    @property
+    def next_page_field() -> str:
+        raise NotImplementedError("The `next_page_field` varies depending on stream and must be set individually")
 
     @staticmethod
-    def check_start_time_param(requested_start_time: int, value: int = 1) -> int:
+    def validate_start_time(requested_start_time: int, value: int = 1) -> int:
         """
         Requesting tickets in the future is not allowed, hits 400 - bad request.
         We get current UNIX timestamp minus `value` from now(), default = 1 (minute).
@@ -343,7 +351,9 @@ class SourceZendeskIncrementalExportStream(IncrementalZendeskSupportStream):
         if self._ignore_pagination:
             return None
         response_json = response.json()
-        return None if response_json.get(END_OF_STREAM_KEY, True) else {"cursor": response_json.get("after_cursor")}
+        if END_OF_STREAM_KEY in response_json and response_json[END_OF_STREAM_KEY]:
+            return None
+        return dict(parse_qsl(urlparse(response_json.get(self.next_page_field, "")).query))
 
     def request_params(
         self,
@@ -351,16 +361,14 @@ class SourceZendeskIncrementalExportStream(IncrementalZendeskSupportStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        next_page_token = next_page_token or {}
-        parsed_state = self.check_stream_state(stream_state)
-        params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
-        # check "start_time" is not in the future
-        params["start_time"] = self.check_start_time_param(params["start_time"])
-        if self.sideload_param:
-            params["include"] = self.sideload_param
+        """
+        Request params are based on parsed query params of next page url.
+        `start_time` will be included as the initial request parameter and will never be changed unless it is itself a next page token.
+        """
         if next_page_token:
-            params.update(next_page_token)
-        return params
+            return next_page_token
+        start_time = self.get_stream_state_value(stream_state)
+        return {"start_time": self.validate_start_time(start_time)}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         for record in response.json().get(self.response_list_name, []):
@@ -375,29 +383,24 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
     @ param response_target_entity: nested property inside of `response_list_name`, default = "child_events"
     @ param list_entities_from_event : the list of nested child_events entities to include from parent record
     @ param event_type : specific event_type to check ["Audit", "Change", "Comment", etc]
+    @ param sideload_param : parameter variable to include various information to response
     """
 
     cursor_field = "created_at"
+    event_type: str = None
+    list_entities_from_event: List[str] = None
     response_list_name: str = "ticket_events"
     response_target_entity: str = "child_events"
-    list_entities_from_event: List[str] = None
-    event_type: str = None
+    sideload_param: str = None
+    next_page_field: str = "next_page"
 
-    def path(
-        self,
-        *,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> str:
-        return f"incremental/{self.response_list_name}.json"
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Returns next_page_token based on `end_of_stream` parameter inside of response
-        """
-        response_json = response.json()
-        return None if response_json.get(END_OF_STREAM_KEY, True) else {"start_time": response_json.get("end_time")}
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        if self.sideload_param:
+            params["include"] = self.sideload_param
+        return params
 
     @property
     def update_event_from_record(self) -> bool:
@@ -435,6 +438,7 @@ class Users(SourceZendeskIncrementalExportStream):
     """Users stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export"""
 
     response_list_name: str = "users"
+    next_page_field: str = "after_url"
 
     def path(self, **kwargs) -> str:
         return "incremental/users/cursor.json"
@@ -444,6 +448,7 @@ class Organizations(SourceZendeskIncrementalExportStream):
     """Organizations stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/"""
 
     response_list_name: str = "organizations"
+    next_page_field: str = "next_page"
 
 
 class Posts(CursorPaginationZendeskSupportStream):
@@ -464,41 +469,28 @@ class Tickets(SourceZendeskIncrementalExportStream):
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     cursor_field = "generated_timestamp"
+    next_page_field = "after_url"
 
     def path(self, **kwargs) -> str:
         return "incremental/tickets/cursor.json"
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        parsed_state = self.check_stream_state(stream_state)
-        params = {"start_time": self.check_start_time_param(parsed_state)}
-        if self.sideload_param:
-            params["include"] = self.sideload_param
-        if next_page_token:
-            params.update(next_page_token)
-        return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         old_value = (current_stream_state or {}).get(self.cursor_field, pendulum.parse(self._start_date).int_timestamp)
         new_value = (latest_record or {}).get(self.cursor_field, pendulum.parse(self._start_date).int_timestamp)
         return {self.cursor_field: max(new_value, old_value)}
 
-    def check_stream_state(self, stream_state: Mapping[str, Any] = None) -> int:
+    def get_stream_state_value(self, stream_state: Mapping[str, Any] = None) -> int:
         """
         Returns the state value, if exists. Otherwise, returns user defined `Start Date`.
         """
         return stream_state.get(self.cursor_field) if stream_state else pendulum.parse(self._start_date).int_timestamp
 
-    def check_start_time_param(self, requested_start_time: int, value: int = 1) -> int:
+    def validate_start_time(self, requested_start_time: int, value: int = 1) -> int:
         """
         The stream returns 400 Bad Request StartTimeTooRecent when requesting tasks 1 second before now.
         Figured out during experiments that the most recent time needed for request to be successful is 3 seconds before now.
         """
-        return super().check_start_time_param(requested_start_time, value=3)
+        return super().validate_start_time(requested_start_time, value=3)
 
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
@@ -590,7 +582,7 @@ class TicketMetricEvents(CursorPaginationZendeskSupportStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {
-            "start_time": self.check_stream_state(stream_state),
+            "start_time": self.get_stream_state_value(stream_state),
             "page[size]": self.page_size,
         }
         if next_page_token:  # need keep start_time for this stream
@@ -606,7 +598,7 @@ class TicketAudits(IncrementalZendeskSupportStream):
     """TicketAudits stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/"""
 
     # can request a maximum of 1,000 results
-    page_size = 1000
+    page_size = 200
     # ticket audits doesn't have the 'updated_by' field
     cursor_field = "created_at"
 
@@ -633,6 +625,23 @@ class TicketAudits(IncrementalZendeskSupportStream):
             return None
         response_json = response.json()
         return {"cursor": response.json().get("before_cursor")} if response_json.get("before_cursor") else None
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        try:
+            yield from super().read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == requests.codes.GATEWAY_TIMEOUT:
+                self.logger.error(f"Skipping stream `{self.name}`. Timed out waiting for response: {e.response.text}...")
+            else:
+                raise e
 
 
 class Tags(FullRefreshZendeskSupportStream):
@@ -834,6 +843,7 @@ class Articles(SourceZendeskIncrementalExportStream):
     """Articles Stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/articles/#list-articles"""
 
     response_list_name: str = "articles"
+    next_page_field: str = "next_page"
 
     def path(self, **kwargs) -> str:
         return "help_center/incremental/articles"

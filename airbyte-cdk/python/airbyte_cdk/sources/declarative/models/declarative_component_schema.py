@@ -152,6 +152,20 @@ class CustomRecordExtractor(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class CustomRecordFilter(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal['CustomRecordFilter']
+    class_name: str = Field(
+        ...,
+        description='Fully-qualified name of the class that will be implementing the custom record filter strategy. The format is `source_<name>.<package>.<class_name>`.',
+        examples=['source_railz.components.MyCustomCustomRecordFilter'],
+        title='Class Name',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class CustomRequester(BaseModel):
     class Config:
         extra = Extra.allow
@@ -194,6 +208,34 @@ class CustomPartitionRouter(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class CustomSchemaLoader(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal['CustomSchemaLoader']
+    class_name: str = Field(
+        ...,
+        description='Fully-qualified name of the class that will be implementing the custom schema loader. The format is `source_<name>.<package>.<class_name>`.',
+        examples=['source_railz.components.MyCustomSchemaLoader'],
+        title='Class Name',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
+class CustomStateMigration(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal['CustomStateMigration']
+    class_name: str = Field(
+        ...,
+        description='Fully-qualified name of the class that will be implementing the custom state migration. The format is `source_<name>.<package>.<class_name>`.',
+        examples=['source_railz.components.MyCustomStateMigration'],
+        title='Class Name',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class CustomTransformation(BaseModel):
     class Config:
         extra = Extra.allow
@@ -206,6 +248,13 @@ class CustomTransformation(BaseModel):
         title='Class Name',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
+class LegacyToPerPartitionStateMigration(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Optional[Literal['LegacyToPerPartitionStateMigration']] = None
 
 
 class RefreshTokenUpdater(BaseModel):
@@ -232,6 +281,24 @@ class RefreshTokenUpdater(BaseModel):
         description='Config path to the expiry date. Make sure actually exists in the config.',
         examples=[['credentials', 'token_expiry_date']],
         title='Config Path To Expiry Date',
+    )
+    refresh_token_error_status_codes: Optional[List[int]] = Field(
+        [],
+        description='Status Codes to Identify refresh token error in response (Refresh Token Error Key and Refresh Token Error Values should be also specified). Responses with one of the error status code and containing an error value will be flagged as a config error',
+        examples=[[400, 500]],
+        title='Refresh Token Error Status Codes',
+    )
+    refresh_token_error_key: Optional[str] = Field(
+        '',
+        description='Key to Identify refresh token error in response (Refresh Token Error Status Codes and Refresh Token Error Values should be also specified).',
+        examples=['error'],
+        title='Refresh Token Error Key',
+    )
+    refresh_token_error_values: Optional[List[str]] = Field(
+        [],
+        description='List of values to check for exception during token refresh process. Used to check if the error found in the response matches the key from the Refresh Token Error Key field (e.g. response={"error": "invalid_grant"}). Only responses with one of the error status code and containing an error value will be flagged as a config error',
+        examples=[['invalid_grant', 'invalid_permissions']],
+        title='Refresh Token Error Values',
     )
 
 
@@ -340,7 +407,7 @@ class SessionTokenRequestBearerAuthenticator(BaseModel):
     type: Literal['Bearer']
 
 
-class HttpMethodEnum(Enum):
+class HttpMethod(Enum):
     GET = 'GET'
     POST = 'POST'
 
@@ -530,10 +597,10 @@ class OffsetIncrement(BaseModel):
 
 class PageIncrement(BaseModel):
     type: Literal['PageIncrement']
-    page_size: Optional[int] = Field(
+    page_size: Optional[Union[int, str]] = Field(
         None,
         description='The number of records to include in each pages.',
-        examples=[100, '100'],
+        examples=[100, '100', "{{ config['page_size'] }}"],
         title='Page Size',
     )
     start_from_page: Optional[int] = Field(
@@ -572,8 +639,23 @@ class RecordFilter(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class SchemaNormalization(Enum):
+    None_ = 'None'
+    Default = 'Default'
+
+
 class RemoveFields(BaseModel):
     type: Literal['RemoveFields']
+    condition: Optional[str] = Field(
+        '',
+        description='The predicate to filter a property by a property value. Property will be removed if it is empty OR expression is evaluated to True.,',
+        examples=[
+            "{{ property|string == '' }}",
+            '{{ property is integer }}',
+            '{{ property|length > 5 }}',
+            "{{ property == 'some_string_to_match' }}",
+        ],
+    )
     field_pointers: List[List[str]] = Field(
         ...,
         description='Array of paths defining the field to remove. Each item is an array whose field describe the path of a field to remove.',
@@ -798,7 +880,7 @@ class CursorPagination(BaseModel):
         description='Value of the cursor defining the next page to fetch.',
         examples=[
             '{{ headers.link.next.cursor }}',
-            "{{ last_records[-1]['key'] }}",
+            "{{ last_record['key'] }}",
             "{{ response['nextPage'] }}",
         ],
         title='Cursor Value',
@@ -1014,11 +1096,12 @@ class ListPartitionRouter(BaseModel):
 class RecordSelector(BaseModel):
     type: Literal['RecordSelector']
     extractor: Union[CustomRecordExtractor, DpathExtractor]
-    record_filter: Optional[RecordFilter] = Field(
+    record_filter: Optional[Union[CustomRecordFilter, RecordFilter]] = Field(
         None,
         description='Responsible for filtering records to be emitted by the Source.',
         title='Record Filter',
     )
+    schema_normalization: Optional[SchemaNormalization] = SchemaNormalization.None_
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
@@ -1069,6 +1152,45 @@ class DeclarativeSource(BaseModel):
     )
 
 
+class SelectiveAuthenticator(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal['SelectiveAuthenticator']
+    authenticator_selection_path: List[str] = Field(
+        ...,
+        description='Path of the field in config with selected authenticator name',
+        examples=[['auth'], ['auth', 'type']],
+        title='Authenticator Selection Path',
+    )
+    authenticators: Dict[
+        str,
+        Union[
+            ApiKeyAuthenticator,
+            BasicHttpAuthenticator,
+            BearerAuthenticator,
+            CustomAuthenticator,
+            OAuthAuthenticator,
+            NoAuth,
+            SessionTokenAuthenticator,
+            LegacySessionTokenAuthenticator,
+        ],
+    ] = Field(
+        ...,
+        description='Authenticators to select from.',
+        examples=[
+            {
+                'authenticators': {
+                    'token': '#/definitions/ApiKeyAuthenticator',
+                    'oauth': '#/definitions/OAuthAuthenticator',
+                }
+            }
+        ],
+        title='Authenticators',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class DeclarativeStream(BaseModel):
     class Config:
         extra = Extra.allow
@@ -1092,7 +1214,9 @@ class DeclarativeStream(BaseModel):
     primary_key: Optional[PrimaryKey] = Field(
         '', description='The primary key of the stream.', title='Primary Key'
     )
-    schema_loader: Optional[Union[InlineSchemaLoader, JsonFileSchemaLoader]] = Field(
+    schema_loader: Optional[
+        Union[InlineSchemaLoader, JsonFileSchemaLoader, CustomSchemaLoader]
+    ] = Field(
         None,
         description='Component used to retrieve the schema for the current stream.',
         title='Schema Loader',
@@ -1103,6 +1227,13 @@ class DeclarativeStream(BaseModel):
         None,
         description='A list of transformations to be applied to each output record.',
         title='Transformations',
+    )
+    state_migrations: Optional[
+        List[Union[LegacyToPerPartitionStateMigration, CustomStateMigration]]
+    ] = Field(
+        [],
+        description='Array of state migrations to be applied on the input state',
+        title='State Migrations',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
@@ -1179,6 +1310,7 @@ class HttpRequester(BaseModel):
             NoAuth,
             SessionTokenAuthenticator,
             LegacySessionTokenAuthenticator,
+            SelectiveAuthenticator,
         ]
     ] = Field(
         None,
@@ -1192,8 +1324,8 @@ class HttpRequester(BaseModel):
         description='Error handler component that defines how to handle errors.',
         title='Error Handler',
     )
-    http_method: Optional[Union[str, HttpMethodEnum]] = Field(
-        'GET',
+    http_method: Optional[HttpMethod] = Field(
+        HttpMethod.GET,
         description='The HTTP method used to fetch data from the source (can be GET or POST).',
         examples=['GET', 'POST'],
         title='HTTP Method',
@@ -1234,6 +1366,11 @@ class HttpRequester(BaseModel):
             {'sort_by[asc]': 'updated_at'},
         ],
         title='Query Parameters',
+    )
+    use_cache: Optional[bool] = Field(
+        False,
+        description='Enables stream requests caching. This field is automatically set by the CDK.',
+        title='Use Cache',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
@@ -1277,6 +1414,10 @@ class SimpleRetriever(BaseModel):
         None,
         description="Paginator component that describes how to navigate through the API's pages.",
     )
+    ignore_stream_slicer_parameters_on_paginated_requests: Optional[bool] = Field(
+        False,
+        description='If true, the partition router and incremental request options will be ignored when paginating requests. Request options set directly on the requester will not be ignored.',
+    )
     partition_router: Optional[
         Union[
             CustomPartitionRouter,
@@ -1308,6 +1449,7 @@ class SubstreamPartitionRouter(BaseModel):
 
 CompositeErrorHandler.update_forward_refs()
 DeclarativeSource.update_forward_refs()
+SelectiveAuthenticator.update_forward_refs()
 DeclarativeStream.update_forward_refs()
 SessionTokenAuthenticator.update_forward_refs()
 SimpleRetriever.update_forward_refs()

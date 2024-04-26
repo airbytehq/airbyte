@@ -50,6 +50,7 @@ extend-ignore = [
   "E231",  # Bad trailing comma (conflicts with Black)
   "E501",  # line too long (conflicts with Black)
   "W503",  # line break before binary operator (conflicts with Black)
+  "F811", # TODO: ella fix after pflake8 version update
 ]
 
 [tool.isort]
@@ -61,7 +62,11 @@ multi_line_output = 3
 include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
-skip_glob = ["**/connector_builder/generated/**"]
+skip_glob = [
+  "**/connector_builder/generated/**",
+  # TODO: Remove this after we move to Ruff. Ruff is mono-repo-aware and
+  # correctly handles first-party imports in subdirectories.
+]
 
 
 [tool.mypy]
@@ -96,5 +101,3 @@ error_summary = true
 [tool.pytest.ini_options]
 minversion = "6.2.5"
 addopts ="-r a --capture=no -vv --color=yes"
-
-

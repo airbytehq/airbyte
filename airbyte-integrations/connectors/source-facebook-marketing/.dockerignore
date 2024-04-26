@@ -1,4 +1,6 @@
 *
 !source_facebook_marketing
-!setup.py
+!README.md
 !main.py
+!poetry.lock
+!pyproject.toml

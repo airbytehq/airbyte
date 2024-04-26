@@ -90,6 +90,9 @@
           "items": {
             "type": "object",
             "properties": {
+              "groupId": {
+                "type": ["null", "string"]
+              },
               "name": {
                 "type": "string",
                 "description": "The name of group."

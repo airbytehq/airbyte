@@ -216,6 +216,12 @@
         },
         "group_id": {
           "type": ["null", "integer"]
+        },
+        "human_readable_end_date": {
+          "type": ["null", "string"]
+        },
+        "human_readable_timestamp": {
+          "type": ["null", "string"]
         }
       }
     },

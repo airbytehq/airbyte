@@ -4,37 +4,22 @@
     "id": {
       "type": ["null", "string"]
     },
-    "campaign_id": {
-      "type": ["null", "string"]
-    },
-    "name": {
-      "type": ["null", "string"]
-    },
-    "type": {
-      "type": ["null", "string"]
-    },
     "updated_at": {
       "type": ["null", "string"]
     },
     "created_at": {
       "type": ["null", "string"]
     },
-    "deleted": {
+    "name": {
       "type": ["null", "string"]
     },
     "status": {
       "type": ["null", "string"]
     },
-    "delivery_status": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
-    },
-    "start_time": {
+    "campaign_id": {
       "type": ["null", "string"]
     },
-    "end_time": {
+    "type": {
       "type": ["null", "string"]
     },
     "targeting": {
@@ -50,6 +35,76 @@
             "properties": {
               "country_code": {
                 "type": ["null", "string"]
+              },
+              "operation": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "locations": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "circles": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "latitude": {
+                      "type": ["null", "number"]
+                    },
+                    "longitude": {
+                      "type": ["null", "number"]
+                    },
+                    "name": {
+                      "type": ["null", "string"]
+                    },
+                    "radius": {
+                      "type": ["null", "number"]
+                    },
+                    "unit": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              },
+              "operation": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "auto_expansion_options": {
+          "type": ["null", "object"],
+          "properties": {
+            "interest_expansion_option": {
+              "type": ["null", "object"],
+              "properties": {
+                "enabled": {
+                  "type": ["null", "boolean"]
+                }
+              }
+            }
+          }
+        },
+        "enable_targeting_expansion": {
+          "type": ["null", "boolean"]
+        },
+        "interests": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "category_id": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              },
+              "operation": {
+                "type": ["null", "string"]
               }
             }
           }
@@ -62,43 +117,13 @@
         }
       }
     },
-    "bid_micro": {
-      "type": ["null", "integer"]
-    },
-    "billing_event": {
-      "type": ["null", "string"]
-    },
-    "daily_budget_micro": {
-      "type": ["null", "integer"]
-    },
-    "lifetime_budget_micro": {
-      "type": ["null", "integer"]
-    },
-    "optimization_goal": {
-      "type": ["null", "string"]
-    },
-    "conversion_window": {
+    "targeting_reach_status": {
       "type": ["null", "string"]
     },
     "placement": {
       "type": ["null", "string"]
     },
-    "placement_v2": {
-      "type": ["null", "string"]
-    },
-    "story_ad_creative_type": {
-      "type": ["null", "string"]
-    },
-    "bid_strategy": {
-      "type": ["null", "string"]
-    },
-    "roas_value_micro": {
-      "type": ["null", "string"]
-    },
-    "creation_state": {
-      "type": ["null", "string"]
-    },
-    "targeting_reach_status": {
+    "billing_event": {
       "type": ["null", "string"]
     },
     "auto_bid": {
@@ -107,8 +132,23 @@
     "target_bid": {
       "type": ["null", "boolean"]
     },
+    "bid_strategy": {
+      "type": ["null", "string"]
+    },
+    "daily_budget_micro": {
+      "type": ["null", "integer"]
+    },
+    "start_time": {
+      "type": ["null", "string"]
+    },
+    "optimization_goal": {
+      "type": ["null", "string"]
+    },
     "delivery_constraint": {
       "type": ["null", "string"]
+    },
+    "delivery_properties_version": {
+      "type": ["null", "integer"]
     },
     "pacing_type": {
       "type": ["null", "string"]
@@ -119,13 +159,45 @@
     "forced_view_setting": {
       "type": ["null", "string"]
     },
+    "creation_state": {
+      "type": ["null", "string"]
+    },
+    "delivery_status": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "event_sources": {
+      "type": ["null", "object"],
+      "properties": {
+        "PLACE": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
     "skadnetwork_properties": {
       "type": ["null", "object"],
       "properties": {
+        "ecid_enrollment_status": {
+          "type": ["null", "string"]
+        },
+        "enable_skoverlay": {
+          "type": ["null", "boolean"]
+        },
         "status": {
           "type": ["null", "string"]
         }
       }
+    },
+    "lifetime_budget_micro": {
+      "type": ["null", "integer"]
+    },
+    "end_time": {
+      "type": ["null", "string"]
     }
   }
 }

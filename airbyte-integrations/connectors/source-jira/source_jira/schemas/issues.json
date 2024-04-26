@@ -509,6 +509,9 @@
                 "items": {
                   "type": ["null", "object"],
                   "properties": {
+                    "fieldId": {
+                      "type": ["null", "string"]
+                    },
                     "field": {
                       "type": ["null", "string"]
                     },
@@ -525,6 +528,12 @@
                       "type": ["null", "string"]
                     },
                     "toString": {
+                      "type": ["null", "string"]
+                    },
+                    "tmpFromAccountId": {
+                      "type": ["null", "string"]
+                    },
+                    "tmpToAccountId": {
                       "type": ["null", "string"]
                     }
                   }
@@ -550,12 +559,681 @@
         "created": {
           "type": ["string", "null"],
           "format": "date-time",
-          "description": "This field is not shown in schema / swagger, but exists in records and we use it as cursor fiekd. Updated may be absent. Added to solve the #4341"
+          "description": "This field is not shown in schema / swagger, but exists in records and we use it as cursor field. Updated may be absent. Added to solve the #4341"
         },
         "updated": {
           "type": ["string", "null"],
           "format": "date-time",
-          "description": "This field is not shown in schema / swagger, but exists in records and we use it as cursor fiekd. Updated may be absent. Added to solve the #4341"
+          "description": "This field is not shown in schema / swagger, but exists in records and we use it as cursor field. Updated may be absent. Added to solve the #4341"
+        },
+        "aggregateprogress": {
+          "type": ["null", "object"],
+          "properties": {
+            "percent": {
+              "type": ["null", "integer"]
+            },
+            "progress": {
+              "type": ["null", "integer"]
+            },
+            "total": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "assignee": {
+          "type": ["null", "object"],
+          "properties": {
+            "accountId": {
+              "type": ["null", "string"]
+            },
+            "accountType": {
+              "type": ["null", "string"]
+            },
+            "active": {
+              "type": ["null", "boolean"]
+            },
+            "avatarUrls": {
+              "type": ["null", "object"],
+              "properties": {
+                "16x16": {
+                  "type": ["null", "string"]
+                },
+                "24x24": {
+                  "type": ["null", "string"]
+                },
+                "32x32": {
+                  "type": ["null", "string"]
+                },
+                "48x48": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "displayName": {
+              "type": ["null", "string"]
+            },
+            "emailAddress": {
+              "type": ["null", "string"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            },
+            "timeZone": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "aggregatetimeestimate": {
+          "type": ["null", "integer"]
+        },
+        "aggregatetimeoriginalestimate": {
+          "type": ["null", "integer"]
+        },
+        "aggregatetimespent": {
+          "type": ["null", "integer"]
+        },
+        "attachment": {
+          "type": ["null", "array"]
+        },
+        "comment": {
+          "type": ["null", "object"],
+          "properties": {
+            "comments": {
+              "type": ["null", "array"]
+            },
+            "maxResults": {
+              "type": ["null", "integer"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            },
+            "startAt": {
+              "type": ["null", "integer"]
+            },
+            "total": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "components": {
+          "type": ["null", "array"]
+        },
+        "creator": {
+          "type": ["null", "object"],
+          "properties": {
+            "accountId": {
+              "type": ["null", "string"]
+            },
+            "accountType": {
+              "type": ["null", "string"]
+            },
+            "active": {
+              "type": ["null", "boolean"]
+            },
+            "avatarUrls": {
+              "type": ["null", "object"],
+              "properties": {
+                "16x16": {
+                  "type": ["null", "string"]
+                },
+                "24x24": {
+                  "type": ["null", "string"]
+                },
+                "32x32": {
+                  "type": ["null", "string"]
+                },
+                "48x48": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "displayName": {
+              "type": ["null", "string"]
+            },
+            "emailAddress": {
+              "type": ["null", "string"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            },
+            "timeZone": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "description": {
+          "type": ["null", "object"],
+          "properties": {
+            "content": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "content": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "text": {
+                          "type": ["null", "string"]
+                        },
+                        "type": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  },
+                  "type": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            },
+            "type": {
+              "type": ["null", "string"]
+            },
+            "version": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "fixVersions": {
+          "type": ["null", "array"]
+        },
+        "issuelinks": {
+          "type": ["null", "array"]
+        },
+        "issuerestriction": {
+          "type": ["null", "object"],
+          "properties": {
+            "issuerestrictions": {
+              "type": ["null", "object"]
+            },
+            "shouldDisplay": {
+              "type": ["null", "boolean"]
+            }
+          }
+        },
+        "issuetype": {
+          "type": ["null", "object"],
+          "properties": {
+            "avatarId": {
+              "type": ["null", "integer"]
+            },
+            "description": {
+              "type": ["null", "string"]
+            },
+            "entityId": {
+              "type": ["null", "string"]
+            },
+            "hierarchyLevel": {
+              "type": ["null", "integer"]
+            },
+            "iconUrl": {
+              "type": ["null", "string"]
+            },
+            "id": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            },
+            "subtask": {
+              "type": ["null", "boolean"]
+            }
+          }
+        },
+        "labels": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "lastViewed": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "priority": {
+          "type": ["null", "object"],
+          "properties": {
+            "iconUrl": {
+              "type": ["null", "string"]
+            },
+            "id": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "progress": {
+          "type": ["null", "object"],
+          "properties": {
+            "percent": {
+              "type": ["null", "integer"]
+            },
+            "progress": {
+              "type": ["null", "integer"]
+            },
+            "total": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "project": {
+          "type": ["null", "object"],
+          "properties": {
+            "avatarUrls": {
+              "type": ["null", "object"],
+              "properties": {
+                "16x16": {
+                  "type": ["null", "string"]
+                },
+                "24x24": {
+                  "type": ["null", "string"]
+                },
+                "32x32": {
+                  "type": ["null", "string"]
+                },
+                "48x48": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "id": {
+              "type": ["null", "string"]
+            },
+            "key": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "projectCategory": {
+              "type": ["null", "object"],
+              "properties": {
+                "description": {
+                  "type": ["null", "string"]
+                },
+                "id": {
+                  "type": ["null", "string"]
+                },
+                "name": {
+                  "type": ["null", "string"]
+                },
+                "self": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "projectTypeKey": {
+              "type": ["null", "string"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            },
+            "simplified": {
+              "type": ["null", "boolean"]
+            }
+          }
+        },
+        "reporter": {
+          "type": ["null", "object"],
+          "properties": {
+            "accountId": {
+              "type": ["null", "string"]
+            },
+            "accountType": {
+              "type": ["null", "string"]
+            },
+            "active": {
+              "type": ["null", "boolean"]
+            },
+            "avatarUrls": {
+              "type": ["null", "object"],
+              "properties": {
+                "16x16": {
+                  "type": ["null", "string"]
+                },
+                "24x24": {
+                  "type": ["null", "string"]
+                },
+                "32x32": {
+                  "type": ["null", "string"]
+                },
+                "48x48": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "displayName": {
+              "type": ["null", "string"]
+            },
+            "emailAddress": {
+              "type": ["null", "string"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            },
+            "timeZone": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "resolution": {
+          "type": ["null", "object"],
+          "properties": {
+            "description": {
+              "type": ["null", "string"]
+            },
+            "id": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "resolutiondate": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "status": {
+          "type": ["null", "object"],
+          "properties": {
+            "description": {
+              "type": ["null", "string"]
+            },
+            "iconUrl": {
+              "type": ["null", "string"]
+            },
+            "id": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            },
+            "statusCategory": {
+              "type": ["null", "object"],
+              "properties": {
+                "self": {
+                  "type": ["null", "string"]
+                },
+                "id": {
+                  "type": ["null", "integer"]
+                },
+                "key": {
+                  "type": ["null", "string"]
+                },
+                "colorName": {
+                  "type": ["null", "string"]
+                },
+                "name": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "statuscategorychangedate": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "subtasks": {
+          "type": ["null", "array"]
+        },
+        "summary": {
+          "type": ["null", "string"]
+        },
+        "timeestimate": {
+          "type": ["null", "integer"]
+        },
+        "timeoriginalestimate": {
+          "type": ["null", "integer"]
+        },
+        "timespent": {
+          "type": ["null", "integer"]
+        },
+        "timetracking": {
+          "type": ["null", "object"],
+          "properties": {
+            "remainingEstimate": {
+              "type": ["null", "string"]
+            },
+            "remainingEstimateSeconds": {
+              "type": ["null", "integer"]
+            },
+            "timeSpent": {
+              "type": ["null", "string"]
+            },
+            "timeSpentSeconds": {
+              "type": ["null", "integer"]
+            },
+            "originalEstimate": {
+              "type": ["null", "string"]
+            },
+            "originalEstimateSeconds": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "versions": {
+          "type": ["null", "array"]
+        },
+        "votes": {
+          "type": ["null", "object"],
+          "properties": {
+            "hasVoted": {
+              "type": ["null", "boolean"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            },
+            "votes": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "watches": {
+          "type": ["null", "object"],
+          "properties": {
+            "isWatching": {
+              "type": ["null", "boolean"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            },
+            "watchCount": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "worklog": {
+          "type": ["null", "object"],
+          "properties": {
+            "maxResults": {
+              "type": ["null", "integer"]
+            },
+            "startAt": {
+              "type": ["null", "integer"]
+            },
+            "total": {
+              "type": ["null", "integer"]
+            },
+            "worklogs": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "author": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "accountId": {
+                        "type": ["null", "string"]
+                      },
+                      "accountType": {
+                        "type": ["null", "string"]
+                      },
+                      "active": {
+                        "type": ["null", "boolean"]
+                      },
+                      "avatarUrls": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "16x16": {
+                            "type": ["null", "string"]
+                          },
+                          "24x24": {
+                            "type": ["null", "string"]
+                          },
+                          "32x32": {
+                            "type": ["null", "string"]
+                          },
+                          "48x48": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      },
+                      "displayName": {
+                        "type": ["null", "string"]
+                      },
+                      "emailAddress": {
+                        "type": ["null", "string"]
+                      },
+                      "self": {
+                        "type": ["null", "string"]
+                      },
+                      "timeZone": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  },
+                  "comment": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "version": {
+                        "type": ["null", "integer"]
+                      },
+                      "type": {
+                        "type": ["null", "string"]
+                      },
+                      "content": {
+                        "type": ["null", "array"],
+                        "items": {
+                          "type": ["null", "object"],
+                          "properties": {
+                            "type": {
+                              "type": ["null", "string"]
+                            },
+                            "content": {
+                              "type": "array",
+                              "items": {
+                                "type": ["null", "object"],
+                                "properties": {
+                                  "type": {
+                                    "type": ["null", "string"]
+                                  },
+                                  "text": {
+                                    "type": ["null", "string"]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "created": {
+                    "type": ["null", "string"],
+                    "format": "date-time"
+                  },
+                  "started": {
+                    "type": ["null", "string"],
+                    "format": "date-time"
+                  },
+                  "updated": {
+                    "type": ["null", "string"],
+                    "format": "date-time"
+                  },
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "issueId": {
+                    "type": ["null", "string"]
+                  },
+                  "self": {
+                    "type": ["null", "string"]
+                  },
+                  "timeSpent": {
+                    "type": ["null", "string"]
+                  },
+                  "timeSpentSeconds": {
+                    "type": ["null", "integer"]
+                  },
+                  "updateAuthor": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "accountId": {
+                        "type": ["null", "string"]
+                      },
+                      "accountType": {
+                        "type": ["null", "string"]
+                      },
+                      "active": {
+                        "type": ["null", "boolean"]
+                      },
+                      "avatarUrls": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "16x16": {
+                            "type": ["null", "string"]
+                          },
+                          "24x24": {
+                            "type": ["null", "string"]
+                          },
+                          "32x32": {
+                            "type": ["null", "string"]
+                          },
+                          "48x48": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      },
+                      "displayName": {
+                        "type": ["null", "string"]
+                      },
+                      "emailAddress": {
+                        "type": ["null", "string"]
+                      },
+                      "self": {
+                        "type": ["null", "string"]
+                      },
+                      "timeZone": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "workratio": {
+          "type": ["null", "integer"]
         }
       },
       "additionalProperties": true

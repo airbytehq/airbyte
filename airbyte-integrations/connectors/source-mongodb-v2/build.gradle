@@ -1,16 +1,12 @@
 plugins {
-    id 'application'
     id 'airbyte-java-connector'
-    alias(libs.plugins.kotlin.jvm)
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.4.10'
-    features = ['db-sources']
+    cdkVersionRequired = '0.30.4'
+    features = ['db-sources', 'datastore-mongo']
     useLocalCdk = false
 }
-
-airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.source.mongodb.MongoDbSource'
@@ -35,34 +31,32 @@ sourceSets {
     }
 }
 
+java {
+    compileJava {
+        options.compilerArgs += "-Xlint:-try,-rawtypes"
+    }
+}
+
 dependencies {
-    implementation libs.mongo.driver.sync
+    implementation 'io.debezium:debezium-embedded:2.4.0.Final'
+    implementation 'io.debezium:debezium-connector-mongodb:2.4.0.Final'
 
-    testImplementation libs.testcontainers.mongodb
-
-    integrationTestJavaImplementation libs.apache.commons.lang
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')
-
-    dataGeneratorImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
+    testImplementation 'org.testcontainers:mongodb:1.19.0'
 
     dataGeneratorImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')
-    dataGeneratorImplementation libs.mongo.driver.sync
-    dataGeneratorImplementation libs.kotlin.logging
-    dataGeneratorImplementation libs.kotlinx.cli
-    dataGeneratorImplementation (libs.java.faker) {
-        exclude module: 'snakeyaml'
-    }
-    dataGeneratorImplementation libs.jackson.databind
-    dataGeneratorImplementation libs.bundles.slf4j
-    dataGeneratorImplementation libs.slf4j.simple
-    dataGeneratorImplementation libs.kotlinx.cli.jvm
-    dataGeneratorImplementation 'org.yaml:snakeyaml:2.2'
+    dataGeneratorImplementation platform('com.fasterxml.jackson:jackson-bom:2.15.2')
+    dataGeneratorImplementation 'com.fasterxml.jackson.core:jackson-databind'
+    dataGeneratorImplementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
-    debeziumTestImplementation libs.bundles.debezium.bundle
-    debeziumTestImplementation libs.bundles.slf4j
-    debeziumTestImplementation libs.slf4j.simple
-    debeziumTestImplementation libs.kotlinx.cli.jvm
-    debeziumTestImplementation libs.spotbugs.annotations
+    dataGeneratorImplementation ('com.github.javafaker:javafaker:1.0.2') { exclude module: 'snakeyaml' }
+    dataGeneratorImplementation 'io.github.oshai:kotlin-logging-jvm:5.1.0'
+    dataGeneratorImplementation 'org.jetbrains.kotlinx:kotlinx-cli-jvm:0.3.5'
+    dataGeneratorImplementation 'org.mongodb:mongodb-driver-sync:4.10.2'
+
+    debeziumTestImplementation 'io.debezium:debezium-embedded:2.4.0.Final'
+    debeziumTestImplementation 'io.debezium:debezium-connector-mongodb:2.4.0.Final'
+    debeziumTestImplementation 'org.jetbrains.kotlinx:kotlinx-cli-jvm:0.3.5'
+    debeziumTestImplementation 'com.github.spotbugs:spotbugs-annotations:4.7.3'
 }
 
 /*

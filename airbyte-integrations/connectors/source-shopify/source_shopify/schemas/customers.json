@@ -214,6 +214,9 @@
     "sms_marketing_consent": {
       "type": ["null", "object"],
       "properties": {
+        "consent_collected_from": {
+          "type": ["null", "string"]
+        },
         "consent_updated_at": {
           "type": ["null", "string"],
           "format": "date-time"

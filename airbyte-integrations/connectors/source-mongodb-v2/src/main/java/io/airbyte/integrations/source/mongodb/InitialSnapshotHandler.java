@@ -6,28 +6,22 @@ package io.airbyte.integrations.source.mongodb;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Accumulators;
-import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Projections;
-import com.mongodb.client.model.Sorts;
+import com.mongodb.client.model.*;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcConnectorMetadataInjector;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStreamState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.SyncMode;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.bson.BsonDocument;
-import org.bson.Document;
+import org.bson.*;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -49,16 +43,11 @@ public class InitialSnapshotHandler {
                                                                   final List<ConfiguredAirbyteStream> streams,
                                                                   final MongoDbStateManager stateManager,
                                                                   final MongoDatabase database,
-                                                                  final MongoDbCdcConnectorMetadataInjector cdcConnectorMetadataInjector,
-                                                                  final Instant emittedAt,
-                                                                  final int checkpointInterval) {
+                                                                  final MongoDbSourceConfig config) {
+    final boolean isEnforceSchema = config.getEnforceSchema();
+    final var checkpointInterval = config.getCheckpointInterval();
     return streams
         .stream()
-        .peek(airbyteStream -> {
-          if (!airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL))
-            LOGGER.warn("Stream {} configured with unsupported sync mode: {}", airbyteStream.getStream().getName(), airbyteStream.getSyncMode());
-        })
-        .filter(airbyteStream -> airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL))
         .map(airbyteStream -> {
           final var collectionName = airbyteStream.getStream().getName();
           final var collection = database.getCollection(collectionName);
@@ -85,21 +74,35 @@ public class InitialSnapshotHandler {
           // "where _id > [last saved state] order by _id ASC".
           // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
           final Bson filter = existingState
-              // TODO add type support here when we add support for _id fields that are not ObjectId types
-              .map(state -> Filters.gt(MongoConstants.ID_FIELD, new ObjectId(state.id())))
+              // Full refresh streams that finished set their id to null
+              // This tells us to start over
+              .filter(state -> state.id() != null)
+              .map(state -> Filters.gt(MongoConstants.ID_FIELD,
+                  switch (state.idType()) {
+            case STRING -> new BsonString(state.id());
+            case OBJECT_ID -> new BsonObjectId(new ObjectId(state.id()));
+            case INT -> new BsonInt32(Integer.parseInt(state.id()));
+            case LONG -> new BsonInt64(Long.parseLong(state.id()));
+          }))
               // if nothing was found, return a new BsonDocument
               .orElseGet(BsonDocument::new);
 
-          final var cursor = collection.find()
+          // When schema is enforced we query for the selected fields
+          // Otherwise we retreive the entire set of fields
+          final var cursor = isEnforceSchema ? collection.find()
               .filter(filter)
               .projection(fields)
               .sort(Sorts.ascending(MongoConstants.ID_FIELD))
               .allowDiskUse(true)
-              .cursor();
-
+              .cursor()
+              : collection.find()
+                  .filter(filter)
+                  .sort(Sorts.ascending(MongoConstants.ID_FIELD))
+                  .allowDiskUse(true)
+                  .cursor();
           final var stateIterator =
-              new MongoDbStateIterator(cursor, stateManager, Optional.ofNullable(cdcConnectorMetadataInjector),
-                  airbyteStream, emittedAt, checkpointInterval, MongoConstants.CHECKPOINT_DURATION);
+              new SourceStateIterator<>(cursor, airbyteStream, stateManager, new StateEmitFrequency(checkpointInterval,
+                  MongoConstants.CHECKPOINT_DURATION));
           return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
         })
         .toList();

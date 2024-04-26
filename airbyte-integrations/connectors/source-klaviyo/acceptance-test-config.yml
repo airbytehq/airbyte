@@ -4,11 +4,6 @@ acceptance_tests:
       - config_path: secrets/config.json
         expect_records:
           path: integration_tests/expected_records.jsonl
-          extra_records: true
-        ignored_fields:
-          email_templates:
-            - name: "attributes/html"
-              bypass_reason: unstable data
   connection:
     tests:
       - config_path: secrets/config.json

@@ -7,6 +7,10 @@ data:
   githubIssueLabel: source-newsdata
   license: MIT
   name: Newsdata
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-newsdata
   registries:
     cloud:
       enabled: false
@@ -15,8 +19,8 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/newsdata
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100

@@ -1,10 +1,18 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": "integer"
     },
     "customer_number": {
+      "type": ["string", "null"]
+    },
+    "credit_limit": {
+      "type": ["string", "null"]
+    },
+    "payment_net_term": {
       "type": ["string", "null"]
     },
     "last_name": {
@@ -38,7 +46,13 @@
       "type": ["integer", "null"]
     },
     "is_no_tax_customer": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
+    },
+    "is_inactive": {
+      "type": ["boolean", "null"]
+    },
+    "lock_default_address": {
+      "type": ["boolean", "null"]
     },
     "comments": {
       "type": ["string", "null"]

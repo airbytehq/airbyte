@@ -1,88 +1,36 @@
-
 java {
+    // TODO: rewrite code to avoid javac wornings in the first place
     compileJava {
-        options.compilerArgs += "-Xlint:-deprecation"
+        options.compilerArgs += "-Xlint:-deprecation,-removal,-this-escape"
+    }
+    compileTestFixturesJava {
+        options.compilerArgs += "-Xlint:-try,-this-escape"
     }
 }
 
+compileKotlin.compilerOptions.allWarningsAsErrors = false
+compileTestFixturesKotlin.compilerOptions.allWarningsAsErrors = false
+compileTestKotlin.compilerOptions.allWarningsAsErrors = false
+
 dependencies {
-    // Depends on core CDK classes (OK 👍)
-    implementation project(':airbyte-cdk:java:airbyte-cdk:core')
+    api 'org.apache.commons:commons-csv:1.10.0'
 
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
-    testImplementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
-    testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping')
 
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-api')
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli')
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:init-oss')
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
+    implementation 'io.aesy:datasize:1.0.0'
 
-    testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
+    testFixturesCompileOnly libs.lombok
+    testFixturesAnnotationProcessor libs.lombok
+    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies'))
+    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
+    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping')
+    testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping'))
 
+    testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping')
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
 
-    testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
-    testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
-    testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:init-oss')
-
-
-    implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
-
-    testFixturesImplementation "org.hamcrest:hamcrest-all:1.3"
-
-    implementation libs.bundles.junit
-    // implementation libs.junit.jupiter.api
-    implementation libs.junit.jupiter.params
-    implementation 'org.junit.platform:junit-platform-launcher:1.7.0'
-    implementation libs.jooq
-    testImplementation libs.junit.jupiter.engine
-    implementation 'net.sourceforge.argparse4j:argparse4j:0.8.1'
-    implementation "io.aesy:datasize:1.0.0"
-    implementation libs.apache.commons
-    implementation libs.apache.commons.lang
-    testImplementation 'commons-lang:commons-lang:2.6'
-    implementation 'commons-cli:commons-cli:1.4'
-    implementation 'org.apache.commons:commons-csv:1.4'
-
-    implementation libs.google.cloud.storage
-
-    // Optional dependencies
-    // TODO: Change these to 'compileOnly' or 'testCompileOnly'
-    implementation 'com.azure:azure-storage-blob:12.12.0'
-    implementation('com.google.cloud:google-cloud-bigquery:1.133.1')
-    implementation 'org.mongodb:mongodb-driver-sync:4.3.0'
-    implementation libs.postgresql
-    implementation ('org.apache.parquet:parquet-avro:1.12.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
-
-    // testImplementation libs.junit.jupiter.api
-    implementation libs.hikaricp
-    implementation libs.bundles.debezium.bundle
-
-    implementation libs.bundles.datadog
-    // implementation 'com.datadoghq:dd-trace-api'
-    implementation 'org.apache.sshd:sshd-mina:2.8.0'
-
-    implementation libs.testcontainers
-    implementation libs.testcontainers.mysql
-    implementation libs.testcontainers.jdbc
-    implementation libs.testcontainers.postgresql
-    testImplementation libs.testcontainers.jdbc
-    testImplementation libs.testcontainers.mysql
-    testImplementation libs.testcontainers.postgresql
-    implementation 'org.codehaus.plexus:plexus-utils:3.4.2'
-
-    implementation 'org.bouncycastle:bcprov-jdk15on:1.66'
-
-    // Lombok
-    implementation 'org.projectlombok:lombok:1.18.20'
-    annotationProcessor 'org.projectlombok:lombok:1.18.20'
-    testFixturesImplementation 'org.projectlombok:lombok:1.18.20'
-    testFixturesAnnotationProcessor 'org.projectlombok:lombok:1.18.20' 
-
-    implementation ('org.apache.hadoop:hadoop-common:3.3.3') {exclude group: 'org.slf4j', module: 'slf4j-log4j12' exclude group: 'org.slf4j', module: 'slf4j-reload4j'}
-    implementation ('org.apache.hadoop:hadoop-mapreduce-client-core:3.3.3') {exclude group: 'org.slf4j', module: 'slf4j-log4j12' exclude group: 'org.slf4j', module: 'slf4j-reload4j'}
-
-    testImplementation libs.junit.jupiter.system.stubs
 }

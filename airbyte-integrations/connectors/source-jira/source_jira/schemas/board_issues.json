@@ -47,6 +47,10 @@
             "type": "object"
           }
         },
+        "created": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
         "updated": {
           "type": ["null", "string"],
           "format": "date-time"

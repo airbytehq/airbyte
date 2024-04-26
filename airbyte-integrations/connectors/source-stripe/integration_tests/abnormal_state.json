@@ -163,14 +163,14 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "expires_at": 10000000000 },
+      "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "checkout_sessions" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "checkout_session_expires_at": 10000000000 },
+      "stream_state": { "checkout_session_updated": 10000000000 },
       "stream_descriptor": { "name": "checkout_sessions_line_items" }
     }
   },

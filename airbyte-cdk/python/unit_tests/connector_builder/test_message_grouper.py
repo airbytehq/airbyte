@@ -21,6 +21,9 @@ from airbyte_cdk.models import (
 from airbyte_cdk.models import Type as MessageType
 from unit_tests.connector_builder.utils import create_configured_catalog
 
+_NO_PK = [[]]
+_NO_CURSOR_FIELD = []
+
 MAX_PAGES_PER_SLICE = 4
 MAX_SLICES = 3
 
@@ -96,15 +99,14 @@ def test_get_grouped_messages(mock_entrypoint_read: Mock) -> None:
     response = {"status_code": 200, "headers": {"field": "value"}, "body": {"content": '{"name": "field"}'}}
     expected_schema = {
         "$schema": "http://json-schema.org/schema#",
-        "properties": {"name": {"type": "string"}, "date": {"type": "string"}},
+        "properties": {"name": {"type": ["string", "null"]}, "date": {"type": ["string", "null"]}},
         "type": "object",
     }
     expected_datetime_fields = {"date": "%Y-%m-%d"}
     expected_pages = [
         StreamReadPages(
             request=HttpRequest(
-                url="https://demonslayers.com/api/v1/hashiras",
-                parameters={"era": ["taisho"]},
+                url="https://demonslayers.com/api/v1/hashiras?era=taisho",
                 headers={"Content-Type": "application/json"},
                 body='{"custom": "field"}',
                 http_method="GET",
@@ -114,8 +116,7 @@ def test_get_grouped_messages(mock_entrypoint_read: Mock) -> None:
         ),
         StreamReadPages(
             request=HttpRequest(
-                url="https://demonslayers.com/api/v1/hashiras",
-                parameters={"era": ["taisho"]},
+                url="https://demonslayers.com/api/v1/hashiras?era=taisho",
                 headers={"Content-Type": "application/json"},
                 body='{"custom": "field"}',
                 http_method="GET",
@@ -163,8 +164,7 @@ def test_get_grouped_messages_with_logs(mock_entrypoint_read: Mock) -> None:
     expected_pages = [
         StreamReadPages(
             request=HttpRequest(
-                url="https://demonslayers.com/api/v1/hashiras",
-                parameters={"era": ["taisho"]},
+                url="https://demonslayers.com/api/v1/hashiras?era=taisho",
                 headers={"Content-Type": "application/json"},
                 body='{"custom": "field"}',
                 http_method="GET",
@@ -174,8 +174,7 @@ def test_get_grouped_messages_with_logs(mock_entrypoint_read: Mock) -> None:
         ),
         StreamReadPages(
             request=HttpRequest(
-                url="https://demonslayers.com/api/v1/hashiras",
-                parameters={"era": ["taisho"]},
+                url="https://demonslayers.com/api/v1/hashiras?era=taisho",
                 headers={"Content-Type": "application/json"},
                 body='{"custom": "field"}',
                 http_method="GET",
@@ -218,14 +217,14 @@ def test_get_grouped_messages_with_logs(mock_entrypoint_read: Mock) -> None:
 
 
 @pytest.mark.parametrize(
-    "request_record_limit, max_record_limit",
+    "request_record_limit, max_record_limit, should_fail",
     [
-        pytest.param(1, 3, id="test_create_request_with_record_limit"),
-        pytest.param(3, 1, id="test_create_request_record_limit_exceeds_max"),
+        pytest.param(1, 3, False, id="test_create_request_with_record_limit"),
+        pytest.param(3, 1, True, id="test_create_request_record_limit_exceeds_max"),
     ],
 )
 @patch("airbyte_cdk.connector_builder.message_grouper.AirbyteEntrypoint.read")
-def test_get_grouped_messages_record_limit(mock_entrypoint_read: Mock, request_record_limit: int, max_record_limit: int) -> None:
+def test_get_grouped_messages_record_limit(mock_entrypoint_read: Mock, request_record_limit: int, max_record_limit: int, should_fail: bool) -> None:
     url = "https://demonslayers.com/api/v1/hashiras?era=taisho"
     request = {
         "headers": {"Content-Type": "application/json"},
@@ -249,16 +248,23 @@ def test_get_grouped_messages_record_limit(mock_entrypoint_read: Mock, request_r
     record_limit = min(request_record_limit, max_record_limit)
 
     api = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES, max_record_limit=max_record_limit)
-    actual_response: StreamRead = api.get_message_groups(
-        mock_source, config=CONFIG, configured_catalog=create_configured_catalog("hashiras"), record_limit=request_record_limit
-    )
-    single_slice = actual_response.slices[0]
-    total_records = 0
-    for i, actual_page in enumerate(single_slice.pages):
-        total_records += len(actual_page.records)
-    assert total_records == min([record_limit, n_records])
+    # this is the call we expect to raise an exception
+    if should_fail:
+        with pytest.raises(ValueError):
+            api.get_message_groups(
+                mock_source, config=CONFIG, configured_catalog=create_configured_catalog("hashiras"), record_limit=request_record_limit
+            )
+    else:
+        actual_response: StreamRead = api.get_message_groups(
+            mock_source, config=CONFIG, configured_catalog=create_configured_catalog("hashiras"), record_limit=request_record_limit
+        )
+        single_slice = actual_response.slices[0]
+        total_records = 0
+        for i, actual_page in enumerate(single_slice.pages):
+            total_records += len(actual_page.records)
+        assert total_records == min([record_limit, n_records])
 
-    assert (total_records >= max_record_limit) == actual_response.test_read_limit_reached
+        assert (total_records >= max_record_limit) == actual_response.test_read_limit_reached
 
 
 @pytest.mark.parametrize(
@@ -341,8 +347,7 @@ def test_get_grouped_messages_no_records(mock_entrypoint_read: Mock) -> None:
     expected_pages = [
         StreamReadPages(
             request=HttpRequest(
-                url="https://demonslayers.com/api/v1/hashiras",
-                parameters={"era": ["taisho"]},
+                url="https://demonslayers.com/api/v1/hashiras?era=taisho",
                 headers={"Content-Type": "application/json"},
                 body='{"custom": "field"}',
                 http_method="GET",
@@ -352,8 +357,7 @@ def test_get_grouped_messages_no_records(mock_entrypoint_read: Mock) -> None:
         ),
         StreamReadPages(
             request=HttpRequest(
-                url="https://demonslayers.com/api/v1/hashiras",
-                parameters={"era": ["taisho"]},
+                url="https://demonslayers.com/api/v1/hashiras?era=taisho",
                 headers={"Content-Type": "application/json"},
                 body='{"custom": "field"}',
                 http_method="GET",
@@ -530,6 +534,7 @@ def test_get_grouped_messages_given_maximum_number_of_pages_then_test_read_limit
 def test_read_stream_returns_error_if_stream_does_not_exist() -> None:
     mock_source = MagicMock()
     mock_source.read.side_effect = ValueError("error")
+    mock_source.streams.return_value = [make_mock_stream()]
 
     full_config: Mapping[str, Any] = {**CONFIG, **{"__injected_declarative_manifest": MANIFEST}}
 
@@ -538,7 +543,7 @@ def test_read_stream_returns_error_if_stream_does_not_exist() -> None:
         source=mock_source, config=full_config, configured_catalog=create_configured_catalog("not_in_manifest")
     )
 
-    assert 1 == len(actual_response.logs)
+    assert len(actual_response.logs) == 1
     assert "Traceback" in actual_response.logs[0].message
     assert "ERROR" in actual_response.logs[0].level
 
@@ -629,10 +634,56 @@ def test_given_no_slices_then_return_empty_slices(mock_entrypoint_read: Mock) ->
     assert len(stream_read.slices) == 0
 
 
+@patch("airbyte_cdk.connector_builder.message_grouper.AirbyteEntrypoint.read")
+def test_given_pk_then_ensure_pk_is_pass_to_schema_inferrence(mock_entrypoint_read: Mock) -> None:
+    mock_source = make_mock_source(mock_entrypoint_read, iter([
+        request_response_log_message({"request": 1}, {"response": 2}, "http://any_url.com"),
+        record_message("hashiras", {"id": "Shinobu Kocho", "date": "2023-03-03"}),
+        record_message("hashiras", {"id": "Muichiro Tokito", "date": "2023-03-04"}),
+    ]))
+    mock_source.streams.return_value = [Mock()]
+    mock_source.streams.return_value[0].primary_key = [["id"]]
+    mock_source.streams.return_value[0].cursor_field = _NO_CURSOR_FIELD
+    connector_builder_handler = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
+
+    stream_read: StreamRead = connector_builder_handler.get_message_groups(
+        source=mock_source, config=CONFIG, configured_catalog=create_configured_catalog("hashiras")
+    )
+
+    assert stream_read.inferred_schema["required"] == ["id"]
+
+
+@patch("airbyte_cdk.connector_builder.message_grouper.AirbyteEntrypoint.read")
+def test_given_cursor_field_then_ensure_cursor_field_is_pass_to_schema_inferrence(mock_entrypoint_read: Mock) -> None:
+    mock_source = make_mock_source(mock_entrypoint_read, iter([
+        request_response_log_message({"request": 1}, {"response": 2}, "http://any_url.com"),
+        record_message("hashiras", {"id": "Shinobu Kocho", "date": "2023-03-03"}),
+        record_message("hashiras", {"id": "Muichiro Tokito", "date": "2023-03-04"}),
+    ]))
+    mock_source.streams.return_value = [Mock()]
+    mock_source.streams.return_value[0].primary_key = _NO_PK
+    mock_source.streams.return_value[0].cursor_field = ["date"]
+    connector_builder_handler = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
+
+    stream_read: StreamRead = connector_builder_handler.get_message_groups(
+        source=mock_source, config=CONFIG, configured_catalog=create_configured_catalog("hashiras")
+    )
+
+    assert stream_read.inferred_schema["required"] == ["date"]
+
+
 def make_mock_source(mock_entrypoint_read: Mock, return_value: Iterator[AirbyteMessage]) -> MagicMock:
     mock_source = MagicMock()
     mock_entrypoint_read.return_value = return_value
+    mock_source.streams.return_value = [make_mock_stream()]
     return mock_source
+
+
+def make_mock_stream():
+    mock_stream = MagicMock()
+    mock_stream.primary_key = []
+    mock_stream.cursor_field = []
+    return mock_stream
 
 
 def request_log_message(request: Mapping[str, Any]) -> AirbyteMessage:

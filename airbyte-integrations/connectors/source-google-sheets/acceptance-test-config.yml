@@ -6,6 +6,10 @@ acceptance_tests:
       - config_path: secrets/service_config.json
         expect_records:
           path: integration_tests/expected_records.txt
+        validate_state_messages: False
+        file_types:
+          skip_test: true
+          bypass_reason: "The source only supports Google Sheets"
   connection:
     tests:
       - config_path: secrets/config.json

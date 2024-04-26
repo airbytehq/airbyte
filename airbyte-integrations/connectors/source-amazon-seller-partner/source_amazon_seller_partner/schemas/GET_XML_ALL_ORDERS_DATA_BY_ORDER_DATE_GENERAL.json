@@ -4,11 +4,11 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "LastUpdatedDate": { "type": ["null", "string"] },
+    "LastUpdatedDate": { "type": ["null", "string"], "format": "date-time" },
     "SalesChannel": { "type": ["null", "string"] },
     "OrderStatus": { "type": ["null", "string"] },
     "AmazonOrderID": { "type": ["null", "string"] },
-    "PurchaseDate": { "type": ["null", "string"] },
+    "PurchaseDate": { "type": ["null", "string"], "format": "date-time" },
     "OrderItem": {
       "type": ["array"],
       "items": { "type": ["null", "object"] },
@@ -57,6 +57,7 @@
       }
     },
     "IsBusinessOrder": { "type": ["null", "string"] },
-    "MerchantOrderID": { "type": ["null", "string"] }
+    "MerchantOrderID": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

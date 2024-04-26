@@ -22,6 +22,15 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "summary": {
+      "type": ["null", "string"]
+    },
+    "discount_type": {
+      "type": ["null", "string"]
+    },
+    "admin_graphql_api_id": {
+      "type": ["null", "string"]
+    },
     "shop_url": {
       "type": ["null", "string"]
     }

@@ -1,0 +1,1 @@
+Found changelog section table in the documentation file at line but there is not blank line before it.

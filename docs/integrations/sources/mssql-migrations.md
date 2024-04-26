@@ -1,5 +1,9 @@
 # Microsoft SQL Server (MSSQL) Migration Guide
 
+## Upgrading to 4.0.0
+Source MSSQL provides incremental sync that can read unlimited sized tables and can resume if the initial read has failed.
+Upgrading from previous versions will be seamless and does not require any intervention.
+
 ## Upgrading to 3.0.0
 This change remapped date, datetime, datetime2, datetimeoffset, smalldatetime, and time data type to their correct Airbyte types. Customers whose streams have columns with the affected datatype must refresh their schema and reset their data. See chart below for the mapping change.
 

@@ -108,6 +108,7 @@
 * [carlonuccio](https://github.com/carlonuccio)
 * [catpineapple](https://github.com/catpineapple)
 * [cgardens](https://github.com/cgardens)
+* [chadthman](https://github.com/chadthman)
 * [chandrasekharan98](https://github.com/chandrasekharan98)
 * [ChristoGrab](https://github.com/ChristoGrab)
 * [ChristopheDuong](https://github.com/ChristopheDuong)

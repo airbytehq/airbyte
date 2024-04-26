@@ -106,7 +106,7 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 ## Data type map
 
 | Integration Type | Airbyte Type | Notes                                                                           |
-|:-----------------|:-------------|:--------------------------------------------------------------------------------|
+| :--------------- | :----------- | :------------------------------------------------------------------------------ |
 | `array`          | `array`      | primitive arrays are converted into arrays of the types described in this table |
 | `int`, `long`    | `number`     |                                                                                 |
 | `object`         | `object`     |                                                                                 |
@@ -116,8 +116,13 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 ## Changelog
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
-|:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
-| 1.2.2 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+|:---------| :--------- | :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------|
+| `1.3.0`  | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                  |
+| `1.2.6`  | 2024-02-09 | [35078](https://github.com/airbytehq/airbyte/pull/35078) | Manage dependencies with Poetry.                                                                 |
+| `1.2.5`  | 2024-01-15 | [34246](https://github.com/airbytehq/airbyte/pull/34246) | prepare for airbyte-lib                                                                          |
+| `1.2.4`  | 2024-01-08 | [33999](https://github.com/airbytehq/airbyte/pull/33999) | Fix for `Export daily quota exceeded`                                                            |
+| `1.2.3`  | 2023-08-02 | [28999](https://github.com/airbytehq/airbyte/pull/28999) | Fix for ` _csv.Error: line contains NUL`                                                         |
+| `1.2.2`  | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                  |
 | `1.2.1`  | 2023-09-18 | [30533](https://github.com/airbytehq/airbyte/pull/30533) | Fix `json_schema` for stream `Leads`                                                             |
 | `1.2.0`  | 2023-06-26 | [27726](https://github.com/airbytehq/airbyte/pull/27726) | License Update: Elv2                                                                             |
 | `1.1.0`  | 2023-04-18 | [23956](https://github.com/airbytehq/airbyte/pull/23956) | Add `Segmentations` Stream                                                                       |

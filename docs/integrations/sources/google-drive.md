@@ -183,8 +183,8 @@ Or any other reason! The schema must be provided as valid JSON as a map of `{"co
 
 For example:
 
-- {"id": "integer", "location": "string", "longitude": "number", "latitude": "number"}
-- {"username": "string", "friends": "array", "information": "object"}
+- `{"id": "integer", "location": "string", "longitude": "number", "latitude": "number"}`
+- `{"username": "string", "friends": "array", "information": "object"}`
 
 ## File Format Settings
 
@@ -237,7 +237,7 @@ There are currently no options for JSONL parsing.
 The Document file type format is currently an experimental feature and not subject to SLAs. Use at your own risk.
 :::
 
-The Document file type format is a special format that allows you to extract text from Markdown, PDF, Word, Powerpoint and Google documents. If selected, the connector will extract text from the documents and output it as a single field named `content`. The `document_key` field will hold a unique identifier for the processed file which can be used as a primary key. The content of the document will contain markdown formatting converted from the original file format. Each file matching the defined glob pattern needs to either be a markdown (`md`), PDF (`pdf`) or Docx (`docx`) file.
+The Document file type format is a special format that allows you to extract text from Markdown, TXT, PDF, Word, Powerpoint and Google documents. If selected, the connector will extract text from the documents and output it as a single field named `content`. The `document_key` field will hold a unique identifier for the processed file which can be used as a primary key. The content of the document will contain markdown formatting converted from the original file format. Each file matching the defined glob pattern needs to either be a markdown (`md`), PDF (`pdf`) or Docx (`docx`) file.
 
 One record will be emitted for each document. Keep in mind that large files can emit large records that might not fit into every destination as each destination has different limitations for string fields.
 
@@ -245,8 +245,15 @@ Before parsing each document, the connector exports Google Document files to Doc
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                           |
-|---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
-| 0.0.2   | 2023-11-02 | [31458](https://github.com/airbytehq/airbyte/pull/31458)   | Allow syncs on shared drives                                           |
-| 0.0.1   | 2023-11-02 | [31458](https://github.com/airbytehq/airbyte/pull/31458)   | Initial Google Drive source                                           |
-
+| Version | Date       | Pull Request                                             | Subject                                                                                      |
+|---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.0.10  | 2024-03-28 | [36581](https://github.com/airbytehq/airbyte/pull/36581) | Manage dependencies with Poetry                                                              |
+| 0.0.9   | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936) | Bump CDK version to avoid missing SyncMode errors                                            |
+| 0.0.8   | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681) | Unpin CDK version to make compatible with the Concurrent CDK                                 |
+| 0.0.7   | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661) | Pin CDK version until upgrade for compatibility with the Concurrent CDK                      |
+| 0.0.6   | 2023-12-16 | [33414](https://github.com/airbytehq/airbyte/pull/33414) | Prepare for airbyte-lib                                                                      |
+| 0.0.5   | 2023-12-14 | [33411](https://github.com/airbytehq/airbyte/pull/33411) | Bump CDK version to auto-set primary key for document file streams and support raw txt files |
+| 0.0.4   | 2023-12-06 | [33187](https://github.com/airbytehq/airbyte/pull/33187) | Bump CDK version to hide source-defined primary key                                          |
+| 0.0.3   | 2023-11-16 | [31458](https://github.com/airbytehq/airbyte/pull/31458) | Improve folder id input and update document file type parser                                 |
+| 0.0.2   | 2023-11-02 | [31458](https://github.com/airbytehq/airbyte/pull/31458) | Allow syncs on shared drives                                                                 |
+| 0.0.1   | 2023-11-02 | [31458](https://github.com/airbytehq/airbyte/pull/31458) | Initial Google Drive source                                                                  |

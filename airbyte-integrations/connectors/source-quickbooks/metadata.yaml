@@ -5,17 +5,23 @@ data:
       - quickbooks.api.intuit.com
       - oauth.platform.intuit.com
   connectorSubtype: api
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
   connectorType: source
   definitionId: cf9c4355-b171-4477-8f2d-6c5cc5fc8b7e
-  dockerImageTag: 3.0.0
+  dockerImageTag: 3.0.3
   dockerRepository: airbyte/source-quickbooks
   githubIssueLabel: source-quickbooks
   icon: quickbooks.svg
   license: MIT
   name: QuickBooks
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-quickbooks
   registries:
     cloud:
-      enabled: true
+      enabled: false
     oss:
       enabled: true
   releaseStage: alpha
@@ -26,7 +32,7 @@ data:
         upgradeDeadline: 2023-10-04
   documentationUrl: https://docs.airbyte.com/integrations/sources/quickbooks
   tags:
-    - language:low-code
+    - cdk:low-code
     - language:python
   ab_internal:
     sl: 100

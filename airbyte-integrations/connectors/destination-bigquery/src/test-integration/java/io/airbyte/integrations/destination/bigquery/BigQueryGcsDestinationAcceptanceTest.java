@@ -8,8 +8,8 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.cdk.integrations.base.DestinationConfig;
+import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import java.nio.file.Path;
 import java.util.HashSet;
 import org.junit.jupiter.api.Disabled;

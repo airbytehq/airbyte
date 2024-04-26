@@ -10,12 +10,16 @@ from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from facebook_business import FacebookAdsApi, FacebookSession
 from source_facebook_marketing.api import API
-from source_facebook_marketing.streams import AdAccounts, AdCreatives, AdsInsights
+from source_facebook_marketing.streams import AdAccount, AdCreatives, AdsInsights
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
 account_id = "unknown_account"
-some_config = {"start_date": "2021-01-23T00:00:00Z", "account_ids": f"{account_id}", "access_token": "unknown_token"}
+some_config = {
+    "start_date": "2021-01-23T00:00:00Z",
+    "account_ids": [account_id],
+    "access_token": "unknown_token",
+}
 base_url = f"{FacebookSession.GRAPH}/{FB_API_VERSION}/"
 act_url = f"{base_url}act_{account_id}/"
 
@@ -26,8 +30,18 @@ ad_account_response = {
     }
 }
 ad_creative_data = [
-    {"id": "111111", "name": "ad creative 1", "updated_time": "2023-03-21T22:33:56-0700"},
-    {"id": "222222", "name": "ad creative 2", "updated_time": "2023-03-22T22:33:56-0700"},
+    {
+        "account_id": account_id,
+        "id": "111111",
+        "name": "ad creative 1",
+        "updated_time": "2023-03-21T22:33:56-0700",
+    },
+    {
+        "account_id": account_id,
+        "id": "222222",
+        "name": "ad creative 2",
+        "updated_time": "2023-03-22T22:33:56-0700",
+    },
 ]
 ad_creative_response = {
     "json": {
@@ -245,7 +259,13 @@ class TestRealErrors:
             (
                 "error_500_unknown",
                 {
-                    "json": {"error": {"code": 1, "message": "An unknown error occurred", "error_subcode": 99}},
+                    "json": {
+                        "error": {
+                            "code": 1,
+                            "message": "An unknown error occurred",
+                            "error_subcode": 99,
+                        }
+                    },
                     "status_code": 500,
                 },
             ),
@@ -282,52 +302,71 @@ class TestRealErrors:
             ),
         ],
     )
-    def test_retryable_error(self, requests_mock, name, retryable_error_response):
+    def test_retryable_error(self, some_config, requests_mock, name, retryable_error_response):
         """Error once, check that we retry and not fail"""
         requests_mock.reset_mock()
         requests_mock.register_uri("GET", f"{act_url}", [retryable_error_response, ad_account_response])
-        requests_mock.register_uri("GET", f"{act_url}adcreatives", [retryable_error_response, ad_creative_response])
+        requests_mock.register_uri(
+            "GET",
+            f"{act_url}adcreatives",
+            [retryable_error_response, ad_creative_response],
+        )
 
-        accounts = some_config["account_ids"].split(",")
-        api = API(account_ids=accounts, access_token=some_config["access_token"], page_size=100)
-        stream = AdCreatives(api=api, include_deleted=False)
-        ad_creative_records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+        api = API(access_token=some_config["access_token"], page_size=100)
+        stream = AdCreatives(api=api, account_ids=some_config["account_ids"])
+        ad_creative_records = list(
+            stream.read_records(
+                sync_mode=SyncMode.full_refresh,
+                stream_state={},
+                stream_slice={"account_id": account_id},
+            )
+        )
 
         assert ad_creative_records == ad_creative_data
-
-        # requests_mock.register_uri("GET", f"{self.act_url}advideos", [error_400_service_temporarily_unavailable, ad_creative_response])
-        # stream = Videos(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
 
     @pytest.mark.parametrize("name, friendly_msg, config_error_response", CONFIG_ERRORS)
     def test_config_error_during_account_info_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during account info read"""
 
-        accounts = some_config["account_ids"].split(",")
-        api = API(account_ids=accounts, access_token=some_config["access_token"], page_size=100)
-        stream = AdCreatives(api=api, include_deleted=False)
+        api = API(access_token=some_config["access_token"], page_size=100)
+        stream = AdCreatives(api=api, account_ids=some_config["account_ids"])
 
-        requests_mock.register_uri("GET", f"{act_url}adcreatives", [config_error_response])
+        requests_mock.register_uri("GET", f"{act_url}", [config_error_response, ad_account_response])
         try:
-            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+            list(
+                stream.read_records(
+                    sync_mode=SyncMode.full_refresh,
+                    stream_state={},
+                    stream_slice={"account_id": account_id},
+                )
+            )
             assert False
         except Exception as error:
             assert isinstance(error, AirbyteTracedException)
             assert error.failure_type == FailureType.config_error
             assert friendly_msg in error.message
 
-    # @pytest.mark.parametrize("name, friendly_msg, config_error_response", [CONFIG_ERRORS[-1]])
     @pytest.mark.parametrize("name, friendly_msg, config_error_response", CONFIG_ERRORS)
     def test_config_error_during_actual_nodes_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during actual nodes read"""
 
-        accounts = some_config["account_ids"].split(",")
-        api = API(account_ids=accounts, access_token=some_config["access_token"], page_size=100)
-        stream = AdCreatives(api=api, include_deleted=False)
+        api = API(access_token=some_config["access_token"], page_size=100)
+        stream = AdCreatives(api=api, account_ids=some_config["account_ids"])
 
         requests_mock.register_uri("GET", f"{act_url}", [ad_account_response])
-        requests_mock.register_uri("GET", f"{act_url}adcreatives", [config_error_response, ad_creative_response])
+        requests_mock.register_uri(
+            "GET",
+            f"{act_url}adcreatives",
+            [config_error_response, ad_creative_response],
+        )
         try:
-            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+            list(
+                stream.read_records(
+                    sync_mode=SyncMode.full_refresh,
+                    stream_state={},
+                    stream_slice={"account_id": account_id},
+                )
+            )
             assert False
         except Exception as error:
             assert isinstance(error, AirbyteTracedException)
@@ -338,16 +377,16 @@ class TestRealErrors:
     def test_config_error_insights_account_info_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during actual nodes read"""
 
-        accounts = some_config["account_ids"].split(",")
-        api = API(account_ids=accounts, access_token=some_config["access_token"], page_size=100)
+        api = API(access_token=some_config["access_token"], page_size=100)
         stream = AdsInsights(
             api=api,
+            account_ids=some_config["account_ids"],
             start_date=datetime(2010, 1, 1),
             end_date=datetime(2011, 1, 1),
             fields=["account_id", "account_currency"],
             insights_lookback_window=28,
         )
-        requests_mock.register_uri("GET", f"{act_url}insights", [config_error_response])
+        requests_mock.register_uri("GET", f"{act_url}", [config_error_response, ad_account_response])
         try:
             slice = list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={}))[0]
             list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice, stream_state={}))
@@ -361,10 +400,10 @@ class TestRealErrors:
     def test_config_error_insights_during_actual_nodes_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during actual nodes read"""
 
-        accounts = some_config["account_ids"].split(",")
-        api = API(account_ids=accounts, access_token=some_config["access_token"], page_size=100)
+        api = API(access_token=some_config["access_token"], page_size=100)
         stream = AdsInsights(
             api=api,
+            account_ids=some_config["account_ids"],
             start_date=datetime(2010, 1, 1),
             end_date=datetime(2011, 1, 1),
             fields=["account_id", "account_currency"],
@@ -381,6 +420,37 @@ class TestRealErrors:
             assert isinstance(error, AirbyteTracedException)
             assert error.failure_type == FailureType.config_error
             assert friendly_msg in error.message
+
+    def test_retry_for_cannot_include_error(self, requests_mock):
+        """Error raised randomly for insights stream. Oncall: https://github.com/airbytehq/oncall/issues/4868 """
+
+        api = API(access_token=some_config["access_token"], page_size=100)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=["account_id", "account_currency"],
+            insights_lookback_window=28,
+        )
+        requests_mock.register_uri("GET", f"{act_url}", [ad_account_response])
+        response = {
+            "status_code": 400,
+            "json": {
+                "error": {
+                    "message": "(#100) Cannot include video_avg_time_watched_actions, video_continuous_2_sec_watched_actions in summary param because they weren't there while creating the report run.",
+                    "type": "OAuthException",
+                    "code": 100
+                }
+            },
+        }
+        call_insights = requests_mock.register_uri("GET", f"{act_url}insights", [response])
+
+        try:
+            slice = list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={}))[0]
+            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice, stream_state={}))
+        except Exception:
+            assert call_insights.call_count == 5
 
     @pytest.mark.parametrize(
         "failure_response",
@@ -405,7 +475,6 @@ class TestRealErrors:
             },
         ),
     )
-    @pytest.mark.skip("Test does not work as expected, facebook SDK does not properly raise exception on 403 response")
     def test_adaccount_list_objects_retry(self, requests_mock, failure_response):
         """
         Sometimes we get an error: "Requires business_management permission to manage the object" when account has all the required permissions:
@@ -417,18 +486,27 @@ class TestRealErrors:
             ]
         As a workaround for this case we can retry the API call excluding `owner` from `?fields=` GET query param.
         """
-        accounts = some_config["account_ids"].split(",")
-        api = API(account_ids=accounts, access_token=some_config["access_token"], page_size=100)
-        stream = AdAccounts(api=api)
+        api = API(access_token=some_config["access_token"], page_size=100)
+        stream = AdAccount(
+            api=api,
+            account_ids=some_config["account_ids"],
+        )
 
-        business_user = {"account_id": account_id, "business": {"id": "1", "name": "TEST"}}
+        business_user = {
+            "account_id": account_id,
+            "business": {"id": "1", "name": "TEST"},
+        }
         requests_mock.register_uri("GET", f"{base_url}me/business_users", status_code=200, json=business_user)
 
-        assigned_users = {"account_id": account_id, "tasks": ["TASK"]}
-        requests_mock.register_uri("GET", f"{act_url}assigned_users", status_code=200, json=assigned_users)
+        assigend_users = {"account_id": account_id, "tasks": ["TASK"]}
+        requests_mock.register_uri("GET", f"{act_url}assigned_users", status_code=200, json=assigend_users)
 
         success_response = {"status_code": 200, "json": {"account_id": account_id}}
         requests_mock.register_uri("GET", f"{act_url}", [failure_response, success_response])
 
-        record_gen = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=None, stream_state={})
+        record_gen = stream.read_records(
+            sync_mode=SyncMode.full_refresh,
+            stream_slice={"account_id": account_id},
+            stream_state={},
+        )
         assert list(record_gen) == [{"account_id": "unknown_account", "id": "act_unknown_account"}]

@@ -12,29 +12,50 @@ Cloud storage may incur egress costs. Egress refers to data that is transferred 
 
 * Create a storage account with the permissions [details](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) 
 
+
+:::warning
+To use Oauth 2.0 Authentication method, Access Control (IAM) should be setup.
+It is recommended
+to use role [Storage Blob Data Reader](https://learn.microsoft.com/en-gb/azure/storage/blobs/assign-azure-role-data-access?tabs=portal)
+
+<details>
+<summary>
+Follow this steps to setup IAM role:
+</summary>
+
+1. Go to Azure portal, select the Storage (or Container) you'd like to sync from and get to Access Control(IAM) -> Role Assignment ![Access Control (IAM)](../../.gitbook/assets/source/azure-blob-storage/access_control_iam.png)
+2. Click on `Add` and select `Add role assignment` from the dropdown list ![Add role assignment](../../.gitbook/assets/source/azure-blob-storage/add_role.png)
+3. Search by role name `Storage Blob Data Reader` in search box, Select role from the list and click `Next` ![Search Role](../../.gitbook/assets/source/azure-blob-storage/search_role.png)
+4. Select `User, Group, or service principal`, click on `members` and select member(s) so they appear in table and click `Next` ![Add Members](../../.gitbook/assets/source/azure-blob-storage/add_members.png)
+5. (Optional) Add Conditions to restrict the role assignments a user can create.
+6. Click `Review + Assign`
+</details>
+:::
+
 ### Step 2: Set up the Azure Blob Storage connector in Airbyte
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to your Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Azure Blob Storage** from the list of available sources.
 4. Enter the name of your Azure **Account**.
-5. Enter the *Azure Blob Storage account key* which grants access to your account.
-6. Enter the name of the **Container** containing your files to replicate.
-7. Add a stream
+5. Click **Authenticate your Azure Blob Storage account**.
+6. Log in and authorize the Azure Blob Storage account.
+7. Enter the name of the **Container** containing your files to replicate.
+8. Add a stream
    1. Write the **File Type**
    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format.  For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
    3. Give a **Name** to the stream
    4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
-8. Optionally, enter the endpoint to use for the data replication.
-9. Optionally, enter the desired start date from which to begin replicating data.
+9. (Optional) Enter the endpoint to use for the data replication.
+10. (Optional) Enter the desired start date from which to begin replicating data.
 
 ## Supported sync modes
 
 The Azure Blob Storage source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature                                        | Supported? |
-| :--------------------------------------------- |:-----------|
+|:-----------------------------------------------|:-----------|
 | Full Refresh Sync                              | Yes        |
 | Incremental Sync                               | Yes        |
 | Replicate Incremental Deletes                  | No         |
@@ -45,7 +66,7 @@ The Azure Blob Storage source connector supports the following [sync modes](http
 ## File Compressions
 
 | Compression | Supported? |
-| :---------- | :--------- |
+|:------------|:-----------|
 | Gzip        | Yes        |
 | Zip         | No         |
 | Bzip2       | Yes        |
@@ -126,8 +147,8 @@ Or any other reason! The schema must be provided as valid JSON as a map of `{"co
 
 For example:
 
-- {"id": "integer", "location": "string", "longitude": "number", "latitude": "number"}
-- {"username": "string", "friends": "array", "information": "object"}
+- `{"id": "integer", "location": "string", "longitude": "number", "latitude": "number"}`
+- `{"username": "string", "friends": "array", "information": "object"}`
 
 ## File Format Settings
 
@@ -182,7 +203,7 @@ There are currently no options for JSONL parsing.
 The Document File Type Format is currently an experimental feature and not subject to SLAs. Use at your own risk.
 :::
 
-The Document File Type Format is a special format that allows you to extract text from Markdown, PDF, Word and Powerpoint documents. If selected, the connector will extract text from the documents and output it as a single field named `content`. The `document_key` field will hold a unique identifier for the processed file which can be used as a primary key. The content of the document will contain markdown formatting converted from the original file format. Each file matching the defined glob pattern needs to either be a markdown (`md`), PDF (`pdf`), Word (`docx`) or Powerpoint (`.pptx`) file.
+The Document File Type Format is a special format that allows you to extract text from Markdown, TXT, PDF, Word and Powerpoint documents. If selected, the connector will extract text from the documents and output it as a single field named `content`. The `document_key` field will hold a unique identifier for the processed file which can be used as a primary key. The content of the document will contain markdown formatting converted from the original file format. Each file matching the defined glob pattern needs to either be a markdown (`md`), PDF (`pdf`), Word (`docx`) or Powerpoint (`.pptx`) file.
 
 One record will be emitted for each document. Keep in mind that large files can emit large records that might not fit into every destination as each destination has different limitations for string fields.
 
@@ -191,10 +212,20 @@ To perform the text extraction from PDF and Docx files, the connector uses the [
 
 ## Changelog
 
-| Version | Date       | Pull Request                                    | Subject                                                                 |
-|:--------|:-----------|:------------------------------------------------|:------------------------------------------------------------------------|
-| 0.2.3 | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
-| 0.2.2 | 2023-10-30 | [31904](https://github.com/airbytehq/airbyte/pull/31904) | Update CDK to support document file types |
-| 0.2.1 | 2023-10-18 | [31543](https://github.com/airbytehq/airbyte/pull/31543) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.2.0   | 2023-10-10 | https://github.com/airbytehq/airbyte/pull/31336 | Migrate to File-based CDK. Add support of CSV, Parquet and Avro files   |
-| 0.1.0   | 2023-02-17 | https://github.com/airbytehq/airbyte/pull/23222 | Initial release with full-refresh and incremental sync with JSONL files |
+| Version | Date       | Pull Request                                             | Subject                                                                                      |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.4.0   | 2024-04-05 | [36825](https://github.com/airbytehq/airbyte/pull/36825) | Add oauth 2.0 support                                                                        |
+| 0.3.6   | 2024-04-03 | [36542](https://github.com/airbytehq/airbyte/pull/36542) | Use Latest CDK; add integration tests                                                        |
+| 0.3.5   | 2024-03-26 | [36487](https://github.com/airbytehq/airbyte/pull/36487) | Manage dependencies with Poetry.                                                             |
+| 0.3.4   | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936) | Bump CDK version to avoid missing SyncMode errors                                            |
+| 0.3.3   | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681) | Unpin CDK version to make compatible with the Concurrent CDK                                 |
+| 0.3.2   | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661) | Pin CDK version until upgrade for compatibility with the Concurrent CDK                      |
+| 0.3.1   | 2024-01-10 | [34084](https://github.com/airbytehq/airbyte/pull/34084) | Fix bug for running check with document file format                                          |
+| 0.3.0   | 2023-12-14 | [33411](https://github.com/airbytehq/airbyte/pull/33411) | Bump CDK version to auto-set primary key for document file streams and support raw txt files |
+| 0.2.5   | 2023-12-06 | [33187](https://github.com/airbytehq/airbyte/pull/33187) | Bump CDK version to hide source-defined primary key                                          |
+| 0.2.4   | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Improve document file type parser                                                            |
+| 0.2.3   | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema                                                                          |
+| 0.2.2   | 2023-10-30 | [31904](https://github.com/airbytehq/airbyte/pull/31904) | Update CDK to support document file types                                                    |
+| 0.2.1   | 2023-10-18 | [31543](https://github.com/airbytehq/airbyte/pull/31543) | Base image migration: remove Dockerfile and use the python-connector-base image              |
+| 0.2.0   | 2023-10-10 | https://github.com/airbytehq/airbyte/pull/31336          | Migrate to File-based CDK. Add support of CSV, Parquet and Avro files                        |
+| 0.1.0   | 2023-02-17 | https://github.com/airbytehq/airbyte/pull/23222          | Initial release with full-refresh and incremental sync with JSONL files                      |

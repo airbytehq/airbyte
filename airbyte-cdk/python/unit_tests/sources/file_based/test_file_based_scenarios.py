@@ -8,7 +8,6 @@ import pytest
 from _pytest.capture import CaptureFixture
 from airbyte_cdk.sources.abstract_source import AbstractSource
 from freezegun import freeze_time
-from pytest import LogCaptureFixture
 from unit_tests.sources.file_based.scenarios.avro_scenarios import (
     avro_all_types_scenario,
     avro_file_with_double_as_number_scenario,
@@ -27,7 +26,31 @@ from unit_tests.sources.file_based.scenarios.check_scenarios import (
     success_multi_stream_scenario,
     success_user_provided_schema_scenario,
 )
+from unit_tests.sources.file_based.scenarios.concurrent_incremental_scenarios import (
+    multi_csv_different_timestamps_scenario_concurrent,
+    multi_csv_include_missing_files_within_history_range_concurrent_cursor_is_newer,
+    multi_csv_include_missing_files_within_history_range_concurrent_cursor_is_older,
+    multi_csv_per_timestamp_scenario_concurrent,
+    multi_csv_remove_old_files_if_history_is_full_scenario_concurrent_cursor_is_newer,
+    multi_csv_remove_old_files_if_history_is_full_scenario_concurrent_cursor_is_older,
+    multi_csv_same_timestamp_more_files_than_history_size_scenario_concurrent_cursor_is_newer,
+    multi_csv_same_timestamp_more_files_than_history_size_scenario_concurrent_cursor_is_older,
+    multi_csv_same_timestamp_scenario_concurrent,
+    multi_csv_skip_file_if_already_in_history_concurrent,
+    multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_different_timestamps_scenario_concurrent_cursor_is_newer,
+    multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_different_timestamps_scenario_concurrent_cursor_is_older,
+    multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_timestamps_scenario_concurrent_cursor_is_newer,
+    multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_timestamps_scenario_concurrent_cursor_is_older,
+    multi_csv_sync_recent_files_if_history_is_incomplete_scenario_concurrent_cursor_is_newer,
+    multi_csv_sync_recent_files_if_history_is_incomplete_scenario_concurrent_cursor_is_older,
+    single_csv_file_is_skipped_if_same_modified_at_as_in_history_concurrent,
+    single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history_concurrent,
+    single_csv_input_state_is_earlier_scenario_concurrent,
+    single_csv_input_state_is_later_scenario_concurrent,
+    single_csv_no_input_state_scenario_concurrent,
+)
 from unit_tests.sources.file_based.scenarios.csv_scenarios import (
+    csv_analytics_scenario,
     csv_autogenerate_column_names_scenario,
     csv_custom_bool_values_scenario,
     csv_custom_delimiter_in_double_quotes_scenario,
@@ -39,6 +62,7 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     csv_multi_stream_scenario,
     csv_newline_in_values_not_quoted_scenario,
     csv_newline_in_values_quoted_value_scenario,
+    csv_no_records_scenario,
     csv_single_stream_scenario,
     csv_skip_after_header_scenario,
     csv_skip_before_and_after_header_scenario,
@@ -49,10 +73,10 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     csv_strings_can_be_null_not_quoted_scenario,
     earlier_csv_scenario,
     empty_schema_inference_scenario,
+    invalid_csv_multi_scenario,
     invalid_csv_scenario,
     multi_csv_scenario,
     multi_csv_stream_n_file_exceeds_limit_for_inference,
-    multi_format_analytics_scenario,
     multi_stream_custom_format,
     schemaless_csv_multi_stream_scenario,
     schemaless_csv_scenario,
@@ -100,7 +124,10 @@ from unit_tests.sources.file_based.scenarios.parquet_scenarios import (
 )
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 from unit_tests.sources.file_based.scenarios.unstructured_scenarios import (
+    corrupted_file_scenario,
+    no_file_extension_unstructured_scenario,
     simple_markdown_scenario,
+    simple_txt_scenario,
     simple_unstructured_scenario,
     unstructured_invalid_file_type_discover_scenario_no_skip,
     unstructured_invalid_file_type_discover_scenario_skip,
@@ -126,10 +153,17 @@ from unit_tests.sources.file_based.scenarios.validation_policy_scenarios import 
 )
 from unit_tests.sources.file_based.test_scenarios import verify_check, verify_discover, verify_read, verify_spec
 
-discover_scenarios = [
+discover_failure_scenarios = [
+    earlier_csv_scenario,
+    empty_schema_inference_scenario,
+]
+
+discover_success_scenarios = [
+    csv_no_records_scenario,
     csv_multi_stream_scenario,
     csv_single_stream_scenario,
     invalid_csv_scenario,
+    invalid_csv_multi_scenario,
     single_csv_scenario,
     multi_csv_scenario,
     multi_csv_stream_n_file_exceeds_limit_for_inference,
@@ -149,9 +183,7 @@ discover_scenarios = [
     single_csv_file_is_skipped_if_same_modified_at_as_in_history,
     single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history,
     csv_custom_format_scenario,
-    earlier_csv_scenario,
     multi_stream_custom_format,
-    empty_schema_inference_scenario,
     single_parquet_scenario,
     multi_parquet_scenario,
     parquet_various_types_scenario,
@@ -203,18 +235,44 @@ discover_scenarios = [
     parquet_with_invalid_config_scenario,
     single_partitioned_parquet_scenario,
     simple_markdown_scenario,
+    simple_txt_scenario,
     simple_unstructured_scenario,
+    corrupted_file_scenario,
+    no_file_extension_unstructured_scenario,
     unstructured_invalid_file_type_discover_scenario_no_skip,
     unstructured_invalid_file_type_discover_scenario_skip,
     unstructured_invalid_file_type_read_scenario,
+    multi_csv_different_timestamps_scenario_concurrent,
+    multi_csv_include_missing_files_within_history_range_concurrent_cursor_is_newer,
+    multi_csv_include_missing_files_within_history_range_concurrent_cursor_is_older,
+    multi_csv_per_timestamp_scenario_concurrent,
+    multi_csv_remove_old_files_if_history_is_full_scenario_concurrent_cursor_is_newer,
+    multi_csv_remove_old_files_if_history_is_full_scenario_concurrent_cursor_is_older,
+    multi_csv_same_timestamp_more_files_than_history_size_scenario_concurrent_cursor_is_newer,
+    multi_csv_same_timestamp_more_files_than_history_size_scenario_concurrent_cursor_is_older,
+    multi_csv_same_timestamp_scenario_concurrent,
+    multi_csv_skip_file_if_already_in_history_concurrent,
+    multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_different_timestamps_scenario_concurrent_cursor_is_newer,
+    multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_different_timestamps_scenario_concurrent_cursor_is_older,
+    multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_timestamps_scenario_concurrent_cursor_is_newer,
+    multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_timestamps_scenario_concurrent_cursor_is_older,
+    multi_csv_sync_recent_files_if_history_is_incomplete_scenario_concurrent_cursor_is_newer,
+    multi_csv_sync_recent_files_if_history_is_incomplete_scenario_concurrent_cursor_is_older,
+    single_csv_file_is_skipped_if_same_modified_at_as_in_history_concurrent,
+    single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history_concurrent,
+    single_csv_input_state_is_earlier_scenario_concurrent,
+    single_csv_input_state_is_later_scenario_concurrent,
+    single_csv_no_input_state_scenario_concurrent,
 ]
 
-read_scenarios = discover_scenarios + [
+discover_scenarios = discover_failure_scenarios + discover_success_scenarios
+
+read_scenarios = discover_success_scenarios + [
     emit_record_scenario_multi_stream,
     emit_record_scenario_single_stream,
     skip_record_scenario_multi_stream,
     skip_record_scenario_single_stream,
-    multi_format_analytics_scenario,
+    csv_analytics_scenario,
     wait_for_rediscovery_scenario_multi_stream,
     wait_for_rediscovery_scenario_single_stream,
 ]
@@ -248,10 +306,8 @@ def test_file_based_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, s
 
 @pytest.mark.parametrize("scenario", read_scenarios, ids=[s.name for s in read_scenarios])
 @freeze_time("2023-06-09T00:00:00Z")
-def test_file_based_read(
-    capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario[AbstractSource]
-) -> None:
-    verify_read(capsys, caplog, tmp_path, scenario)
+def test_file_based_read(scenario: TestScenario[AbstractSource]) -> None:
+    verify_read(scenario)
 
 
 @pytest.mark.parametrize("scenario", spec_scenarios, ids=[c.name for c in spec_scenarios])

@@ -81,10 +81,12 @@ class DestinationDuckdb(Destination):
 
         # Get and register auth token if applicable
         motherduck_api_key = str(config.get(CONFIG_MOTHERDUCK_API_KEY, ""))
+        duckdb_config = {}
         if motherduck_api_key:
-            os.environ["motherduck_token"] = motherduck_api_key
+            duckdb_config["motherduck_token"] = motherduck_api_key
+            duckdb_config["custom_user_agent"] = "airbyte"
 
-        con = duckdb.connect(database=path, read_only=False)
+        con = duckdb.connect(database=path, read_only=False, config=duckdb_config)
 
         con.execute(f"CREATE SCHEMA IF NOT EXISTS {schema_name}")
 
@@ -175,10 +177,12 @@ class DestinationDuckdb(Destination):
                 logger.info(f"Using DuckDB file at {path}")
                 os.makedirs(os.path.dirname(path), exist_ok=True)
 
+            duckdb_config = {}
             if CONFIG_MOTHERDUCK_API_KEY in config:
-                os.environ["motherduck_token"] = str(config[CONFIG_MOTHERDUCK_API_KEY])
+                duckdb_config["motherduck_token"] = str(config[CONFIG_MOTHERDUCK_API_KEY])
+                duckdb_config["custom_user_agent"] = "airbyte"
 
-            con = duckdb.connect(database=path, read_only=False)
+            con = duckdb.connect(database=path, read_only=False, config=duckdb_config)
             con.execute("SELECT 1;")
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)

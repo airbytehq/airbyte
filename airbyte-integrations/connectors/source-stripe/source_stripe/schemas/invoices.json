@@ -499,10 +499,7 @@
       "type": ["null", "integer"]
     },
     "default_tax_rates": {
-      "type": ["null", "array"],
-      "items": {
-        "$ref": "tax_rates.json"
-      }
+      "$ref": "tax_rates.json"
     },
     "total_excluding_tax": {
       "type": ["null", "integer"]
@@ -529,6 +526,14 @@
           "type": ["null", "string"]
         },
         "payment_method_type": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "issuer": {
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
           "type": ["null", "string"]
         }
       }

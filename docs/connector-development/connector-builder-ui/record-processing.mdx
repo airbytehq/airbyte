@@ -321,7 +321,7 @@ Besides bringing the records in the right shape, it's important to communicate s
 
 ### Primary key
 
-The "Primary key" field specifies how to uniquely identify a record. This is important for downstream de-duplication of records (e.g. by the [incremental sync - Append + Deduped sync mode](/understanding-airbyte/connections/incremental-append-deduped)).
+The "Primary key" field specifies how to uniquely identify a record. This is important for downstream de-duplication of records (e.g. by the [incremental sync - Append + Deduped sync mode](/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)).
 
 In a lot of cases, like for the EmailOctopus example from above, there is a dedicated id field that can be used for this purpose. It's important that the value of the id field is guaranteed to only occur once for a single record.
 

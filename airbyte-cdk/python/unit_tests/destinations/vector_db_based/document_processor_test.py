@@ -23,13 +23,22 @@ def initialize_processor(config=ProcessingConfigModel(chunk_size=48, chunk_overl
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
-                stream=AirbyteStream(name="stream1", json_schema={}, namespace="namespace1", supported_sync_modes=[SyncMode.full_refresh]),
+                stream=AirbyteStream(
+                    name="stream1",
+                    json_schema={},
+                    namespace="namespace1",
+                    supported_sync_modes=[SyncMode.full_refresh],
+                ),
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.overwrite,
                 primary_key=[["id"]],
             ),
             ConfiguredAirbyteStream(
-                stream=AirbyteStream(name="stream2", json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                stream=AirbyteStream(
+                    name="stream2",
+                    json_schema={},
+                    supported_sync_modes=[SyncMode.full_refresh],
+                ),
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.overwrite,
             ),
@@ -53,8 +62,14 @@ def initialize_processor(config=ProcessingConfigModel(chunk_size=48, chunk_overl
         ),
         (["id"], {"_ab_stream": "namespace1_stream1", "id": 1}),
         (["id", "non_existing"], {"_ab_stream": "namespace1_stream1", "id": 1}),
-        (["id", "complex.test"], {"_ab_stream": "namespace1_stream1", "id": 1, "complex.test": "abc"}),
-        (["id", "arr.*.test"], {"_ab_stream": "namespace1_stream1", "id": 1, "arr.*.test": ["abc", "def"]}),
+        (
+            ["id", "complex.test"],
+            {"_ab_stream": "namespace1_stream1", "id": 1, "complex.test": "abc"},
+        ),
+        (
+            ["id", "arr.*.test"],
+            {"_ab_stream": "namespace1_stream1", "id": 1, "arr.*.test": ["abc", "def"]},
+        ),
     ],
 )
 def test_process_single_chunk_with_metadata(metadata_fields, expected_metadata):
@@ -82,7 +97,7 @@ def test_process_single_chunk_with_metadata(metadata_fields, expected_metadata):
     assert id_to_delete is None
 
 
-def test_process_single_chunk_limit4ed_metadata():
+def test_process_single_chunk_limited_metadata():
     processor = initialize_processor()
 
     record = AirbyteRecordMessage(
@@ -112,7 +127,11 @@ def test_process_single_chunk_without_namespace():
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
-                stream=AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                stream=AirbyteStream(
+                    name="stream1",
+                    json_schema={},
+                    supported_sync_modes=[SyncMode.full_refresh],
+                ),
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.overwrite,
             ),
@@ -155,7 +174,12 @@ def test_complex_text_fields():
         emitted_at=1234,
     )
 
-    processor.text_fields = ["nested.texts.*.text", "text", "other_nested.non_text", "non.*.existing"]
+    processor.text_fields = [
+        "nested.texts.*.text",
+        "text",
+        "other_nested.non_text",
+        "non.*.existing",
+    ]
     processor.metadata_fields = ["non_text", "non_text_2", "id"]
 
     chunks, _ = processor.process(record)
@@ -169,7 +193,12 @@ text: This is the regular text
 other_nested.non_text: \na: xyz
 b: abc"""
     )
-    assert chunks[0].metadata == {"id": 1, "non_text": "a", "non_text_2": 1, "_ab_stream": "namespace1_stream1"}
+    assert chunks[0].metadata == {
+        "id": 1,
+        "non_text": "a",
+        "non_text_2": 1,
+        "_ab_stream": "namespace1_stream1",
+    }
 
 
 def test_no_text_fields():
@@ -228,7 +257,11 @@ def test_process_multiple_chunks_with_relevant_fields():
             10,
             0,
             None,
-            ["text: By default, splits are done", "on multi newlines,", "then single newlines, then spaces"],
+            [
+                "text: By default, splits are done",
+                "on multi newlines,",
+                "then single newlines, then spaces",
+            ],
         ),
         (
             "Overlap splitting",
@@ -240,6 +273,18 @@ def test_process_multiple_chunks_with_relevant_fields():
                 "text: One two three four five six",
                 "four five six seven eight nine ten",
                 "eight nine ten eleven twelve thirteen",
+            ],
+        ),
+        (
+            "Special tokens",
+            "Special tokens like <|endoftext|> are treated like regular text",
+            15,
+            0,
+            None,
+            [
+                "text: Special tokens like",
+                "<|endoftext|> are treated like regular",
+                "text",
             ],
         ),
         (
@@ -346,7 +391,11 @@ def test_process_multiple_chunks_with_relevant_fields():
 def test_text_splitters(label, text, chunk_size, chunk_overlap, splitter_config, expected_chunks):
     processor = initialize_processor(
         ProcessingConfigModel(
-            chunk_size=chunk_size, chunk_overlap=chunk_overlap, text_fields=["text"], metadata_fields=None, text_splitter=splitter_config
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            text_fields=["text"],
+            metadata_fields=None,
+            text_splitter=splitter_config,
         )
     )
 
@@ -378,16 +427,42 @@ def test_text_splitters(label, text, chunk_size, chunk_overlap, splitter_config,
 @pytest.mark.parametrize(
     "label, split_config, has_error_message",
     [
-        ("Invalid separator", SeparatorSplitterConfigModel(mode="separator", separators=['"xxx']), True),
-        ("Missing quotes", SeparatorSplitterConfigModel(mode="separator", separators=["xxx"]), True),
-        ("Non-string separator", SeparatorSplitterConfigModel(mode="separator", separators=["123"]), True),
-        ("Object separator", SeparatorSplitterConfigModel(mode="separator", separators=["{}"]), True),
-        ("Proper separator", SeparatorSplitterConfigModel(mode="separator", separators=['"xxx"', '"\\n\\n"']), False),
+        (
+            "Invalid separator",
+            SeparatorSplitterConfigModel(mode="separator", separators=['"xxx']),
+            True,
+        ),
+        (
+            "Missing quotes",
+            SeparatorSplitterConfigModel(mode="separator", separators=["xxx"]),
+            True,
+        ),
+        (
+            "Non-string separator",
+            SeparatorSplitterConfigModel(mode="separator", separators=["123"]),
+            True,
+        ),
+        (
+            "Object separator",
+            SeparatorSplitterConfigModel(mode="separator", separators=["{}"]),
+            True,
+        ),
+        (
+            "Proper separator",
+            SeparatorSplitterConfigModel(mode="separator", separators=['"xxx"', '"\\n\\n"']),
+            False,
+        ),
     ],
 )
 def test_text_splitter_check(label, split_config, has_error_message):
     error = DocumentProcessor.check_config(
-        ProcessingConfigModel(chunk_size=48, chunk_overlap=0, text_fields=None, metadata_fields=None, text_splitter=split_config)
+        ProcessingConfigModel(
+            chunk_size=48,
+            chunk_overlap=0,
+            text_fields=None,
+            metadata_fields=None,
+            text_splitter=split_config,
+        )
     )
     if has_error_message:
         assert error is not None
@@ -400,12 +475,22 @@ def test_text_splitter_check(label, split_config, has_error_message):
     [
         (None, {"abc": "def", "xyz": 123}, {"abc": "def", "xyz": 123}),
         ([], {"abc": "def", "xyz": 123}, {"abc": "def", "xyz": 123}),
-        ([FieldNameMappingConfigModel(from_field="abc", to_field="AAA")], {"abc": "def", "xyz": 123}, {"AAA": "def", "xyz": 123}),
-        ([FieldNameMappingConfigModel(from_field="non_existing", to_field="AAA")], {"abc": "def", "xyz": 123}, {"abc": "def", "xyz": 123}),
+        (
+            [FieldNameMappingConfigModel(from_field="abc", to_field="AAA")],
+            {"abc": "def", "xyz": 123},
+            {"AAA": "def", "xyz": 123},
+        ),
+        (
+            [FieldNameMappingConfigModel(from_field="non_existing", to_field="AAA")],
+            {"abc": "def", "xyz": 123},
+            {"abc": "def", "xyz": 123},
+        ),
     ],
 )
 def test_rename_metadata_fields(
-    mappings: Optional[List[FieldNameMappingConfigModel]], fields: Mapping[str, Any], expected_chunk_metadata: Mapping[str, Any]
+    mappings: Optional[List[FieldNameMappingConfigModel]],
+    fields: Mapping[str, Any],
+    expected_chunk_metadata: Mapping[str, Any],
 ):
     processor = initialize_processor()
 
@@ -422,21 +507,43 @@ def test_rename_metadata_fields(
     chunks, id_to_delete = processor.process(record)
 
     assert len(chunks) == 1
-    assert chunks[0].metadata == {**expected_chunk_metadata, "_ab_stream": "namespace1_stream1", "text": "abc"}
+    assert chunks[0].metadata == {
+        **expected_chunk_metadata,
+        "_ab_stream": "namespace1_stream1",
+        "text": "abc",
+    }
 
 
 @pytest.mark.parametrize(
     "primary_key_value, stringified_primary_key, primary_key",
     [
         ({"id": 99}, "namespace1_stream1_99", [["id"]]),
-        ({"id": 99, "name": "John Doe"}, "namespace1_stream1_99_John Doe", [["id"], ["name"]]),
-        ({"id": 99, "name": "John Doe", "age": 25}, "namespace1_stream1_99_John Doe_25", [["id"], ["name"], ["age"]]),
-        ({"nested": {"id": "abc"}, "name": "John Doe"}, "namespace1_stream1_abc_John Doe", [["nested", "id"], ["name"]]),
-        ({"nested": {"id": "abc"}}, "namespace1_stream1_abc___not_found__", [["nested", "id"], ["name"]]),
+        (
+            {"id": 99, "name": "John Doe"},
+            "namespace1_stream1_99_John Doe",
+            [["id"], ["name"]],
+        ),
+        (
+            {"id": 99, "name": "John Doe", "age": 25},
+            "namespace1_stream1_99_John Doe_25",
+            [["id"], ["name"], ["age"]],
+        ),
+        (
+            {"nested": {"id": "abc"}, "name": "John Doe"},
+            "namespace1_stream1_abc_John Doe",
+            [["nested", "id"], ["name"]],
+        ),
+        (
+            {"nested": {"id": "abc"}},
+            "namespace1_stream1_abc___not_found__",
+            [["nested", "id"], ["name"]],
+        ),
     ],
 )
 def test_process_multiple_chunks_with_dedupe_mode(
-    primary_key_value: Mapping[str, Any], stringified_primary_key: str, primary_key: List[List[str]]
+    primary_key_value: Mapping[str, Any],
+    stringified_primary_key: str,
+    primary_key: List[List[str]],
 ):
     processor = initialize_processor()
 
@@ -462,3 +569,90 @@ def test_process_multiple_chunks_with_dedupe_mode(
     for chunk in chunks:
         assert chunk.metadata["_ab_record_id"] == stringified_primary_key
     assert id_to_delete == stringified_primary_key
+
+
+@pytest.mark.parametrize(
+    "record, sync_mode, has_chunks, raises, expected_id_to_delete",
+    [
+        pytest.param(
+            AirbyteRecordMessage(
+                stream="stream1",
+                namespace="namespace1",
+                data={"text": "This is the text", "id": "1"},
+                emitted_at=1234,
+            ),
+            DestinationSyncMode.append_dedup,
+            True,
+            False,
+            "namespace1_stream1_1",
+            id="update",
+        ),
+        pytest.param(
+            AirbyteRecordMessage(
+                stream="stream1",
+                namespace="namespace1",
+                data={"text": "This is the text", "id": "1"},
+                emitted_at=1234,
+            ),
+            DestinationSyncMode.append,
+            True,
+            False,
+            None,
+            id="append",
+        ),
+        pytest.param(
+            AirbyteRecordMessage(
+                stream="stream1",
+                namespace="namespace1",
+                data={"text": "This is the text", "id": "1", "_ab_cdc_deleted_at": 1234},
+                emitted_at=1234,
+            ),
+            DestinationSyncMode.append_dedup,
+            False,
+            False,
+            "namespace1_stream1_1",
+            id="cdc_delete",
+        ),
+        pytest.param(
+            AirbyteRecordMessage(
+                stream="stream1",
+                namespace="namespace1",
+                data={"id": "1", "_ab_cdc_deleted_at": 1234},
+                emitted_at=1234,
+            ),
+            DestinationSyncMode.append_dedup,
+            False,
+            False,
+            "namespace1_stream1_1",
+            id="cdc_delete_without_text",
+        ),
+        pytest.param(
+            AirbyteRecordMessage(
+                stream="stream1",
+                namespace="namespace1",
+                data={"id": "1"},
+                emitted_at=1234,
+            ),
+            DestinationSyncMode.append_dedup,
+            False,
+            True,
+            "namespace1_stream1_1",
+            id="update_without_text",
+        ),
+    ],
+)
+def test_process_cdc_records(record, sync_mode, has_chunks, raises, expected_id_to_delete):
+    processor = initialize_processor()
+
+    processor.text_fields = ["text"]
+
+    processor.streams["namespace1_stream1"].destination_sync_mode = sync_mode
+
+    if raises:
+        with pytest.raises(AirbyteTracedException):
+            processor.process(record)
+    else:
+        chunks, id_to_delete = processor.process(record)
+        if has_chunks:
+            assert len(chunks) > 0
+        assert id_to_delete == expected_id_to_delete

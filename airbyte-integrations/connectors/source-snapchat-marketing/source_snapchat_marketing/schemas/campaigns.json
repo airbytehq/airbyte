@@ -4,34 +4,19 @@
     "id": {
       "type": ["null", "string"]
     },
-    "name": {
-      "type": ["null", "string"]
-    },
-    "ad_account_id": {
-      "type": ["null", "string"]
-    },
     "updated_at": {
       "type": ["null", "string"]
     },
     "created_at": {
       "type": ["null", "string"]
     },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "ad_account_id": {
+      "type": ["null", "string"]
+    },
     "status": {
-      "type": ["null", "string"]
-    },
-    "delivery_status": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
-    },
-    "end_time": {
-      "type": ["null", "string"]
-    },
-    "start_time": {
-      "type": ["null", "string"]
-    },
-    "daily_budget_micro": {
       "type": ["null", "string"]
     },
     "lifetime_spend_cap_micro": {
@@ -43,8 +28,23 @@
     "objective": {
       "type": ["null", "string"]
     },
+    "start_time": {
+      "type": ["null", "string"]
+    },
+    "end_time": {
+      "type": ["null", "string"]
+    },
+    "daily_budget_micro": {
+      "type": ["null", "string"]
+    },
     "buy_model": {
       "type": ["null", "string"]
+    },
+    "delivery_status": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "creation_state": {
       "type": ["null", "string"]

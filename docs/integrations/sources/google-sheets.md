@@ -97,8 +97,18 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
   - To authenticate your Google account via OAuth, select **Authenticate via Google (OAuth)** from the dropdown and enter your Google application's client ID, client secret, and refresh token.
 <!-- /env:oss -->
 6. For **Spreadsheet Link**, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**.
-7. (Optional) You may enable the option to **Convert Column Names to SQL-Compliant Format**. Enabling this option will allow the connector to convert column names to a standardized, SQL-friendly format. For example, a column name of `Café Earnings 2022` will be converted to `cafe_earnings_2022`. We recommend enabling this option if your target destination is SQL-based (ie Postgres, MySQL). Set to false by default.
-8. Click **Set up source** and wait for the tests to complete.
+7. For **Batch Size**, enter an integer which represents batch size when processing a Google Sheet. Default value is 200.
+Batch size is an integer representing row batch size for each sent request to Google Sheets API.
+Row batch size means how many rows are processed from the google sheet, for example default value 200
+would process rows 1-201, then 201-401 and so on.
+Based on [Google Sheets API limits documentation](https://developers.google.com/sheets/api/limits),
+it is possible to send up to 300 requests per minute, but each individual request has to be processed under 180 seconds,
+otherwise the request returns a timeout error. In regards to this information, consider network speed and
+number of columns of the google sheet when deciding a batch_size value.
+Default value should cover most of the cases, but if a google sheet has over 100,000 records or more,
+consider increasing batch_size value.
+8. (Optional) You may enable the option to **Convert Column Names to SQL-Compliant Format**. Enabling this option will allow the connector to convert column names to a standardized, SQL-friendly format. For example, a column name of `Café Earnings 2022` will be converted to `cafe_earnings_2022`. We recommend enabling this option if your target destination is SQL-based (ie Postgres, MySQL). Set to false by default.
+9. Click **Set up source** and wait for the tests to complete.
 
 <HideInUI>
 
@@ -118,7 +128,7 @@ The Google Sheets source connector supports the following sync modes:
 ## Data type map
 
 | Integration Type | Airbyte Type | Notes |
-|:-----------------|:-------------|:------|
+| :--------------- | :----------- | :---- |
 | any type         | `string`     |       |
 
 ## Limitations & Troubleshooting
@@ -142,7 +152,7 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 ### Troubleshooting
 
 * If your sheet is completely empty (no header rows) or deleted, Airbyte will not delete the table in the destination. If this happens, the sync logs will contain a message saying the sheet has been skipped when syncing the full spreadsheet.
-* Connector setup will fail if the speadsheet is not a Google Sheets file. If the file was saved or imported as another file type the setup could fail.
+* Connector setup will fail if the spreadsheet is not a Google Sheets file. If the file was saved or imported as another file type the setup could fail.
 * Check out common troubleshooting issues for the Google Sheets source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
@@ -151,7 +161,16 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
 |---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
-| 0.3.11 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.5.1   | 2024-04-11 | [35404](https://github.com/airbytehq/airbyte/pull/35404) | Add `row_batch_size` parameter more granular control read records |
+| 0.5.0   | 2024-03-26 | [36515](https://github.com/airbytehq/airbyte/pull/36515) | Resolve poetry dependency conflict, add record counts to state messages           |
+| 0.4.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                   |
+| 0.3.17  | 2024-02-29 | [35722](https://github.com/airbytehq/airbyte/pull/35722) | Add logic to emit stream statuses                                                 |
+| 0.3.16  | 2024-02-12 | [35136](https://github.com/airbytehq/airbyte/pull/35136) | Fix license in `pyproject.toml`.                                                  |
+| 0.3.15  | 2024-02-07 | [34944](https://github.com/airbytehq/airbyte/pull/34944) | Manage dependencies with Poetry.                                                  |
+| 0.3.14  | 2024-01-23 | [34437](https://github.com/airbytehq/airbyte/pull/34437) | Fix header cells filtering                                                        |
+| 0.3.13  | 2024-01-19 | [34376](https://github.com/airbytehq/airbyte/pull/34376) | Fix names conversion                                                              |
+| 0.3.12  | 2023-12-14 | [33414](https://github.com/airbytehq/airbyte/pull/33414) | Prepare for airbyte-lib                                                           |
+| 0.3.11  | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image   |
 | 0.3.10  | 2023-09-27 | [30487](https://github.com/airbytehq/airbyte/pull/30487) | Fix bug causing rows to be skipped when batch size increased due to rate limits.  |
 | 0.3.9   | 2023-09-25 | [30749](https://github.com/airbytehq/airbyte/pull/30749) | Performance testing - include socat binary in docker image                        |
 | 0.3.8   | 2023-09-25 | [30747](https://github.com/airbytehq/airbyte/pull/30747) | Performance testing - include socat binary in docker image                        |

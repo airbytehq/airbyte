@@ -13,21 +13,24 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 4.4.2
   basic_read:
     tests:
       - config_path: "secrets/config.json"
+        fail_on_extra_columns: false # CATs are failing since https://github.com/airbytehq/airbyte/commit/dccb2fa7165f031fa1233d695897b07f9aacb39c, API Source team to fix this
         timeout_seconds: 3600
         empty_streams:
           - name: "application_fees"
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "application_fees_refunds"
-            bypass_reason: "this stream can't be seeded in our sandbox account"
+            bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "authorizations"
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "bank_accounts"
-            bypass_reason: "this stream can't be seeded in our sandbox account"
+            bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "cards"
-            bypass_reason: "this stream can't be seeded in our sandbox account"
+            bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "early_fraud_warnings"
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "external_account_bank_accounts"
@@ -35,56 +38,17 @@ acceptance_tests:
           - name: "external_account_cards"
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "payment_methods"
-            bypass_reason: "this stream can't be seeded in our sandbox account"
+            bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "persons"
-            bypass_reason: "this stream can't be seeded in our sandbox account"
+            bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "reviews"
-            bypass_reason: "this stream can't be seeded in our sandbox account"
+            bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "transactions"
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "events"
             bypass_reason: "Data expires every 30 days."
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
-          exact_order: no
-          extra_records: yes
-        ignored_fields:
-          invoices:
-            - name: invoice_pdf
-              bypass_reason: "URL changes upon each request for privacy/security"
-            - name: hosted_invoice_url
-              bypass_reason: "URL changes upon each request for privacy/security"
-            - name: lines/data/*/margins
-              bypass_reason: "API randomly returns this field"
-          charges:
-            - name: receipt_url
-              bypass_reason: "URL changes upon each request for privacy/security"
-            - name: receipt_number
-              bypass_reason: "Fast changing data"
-            - name: payment_method_details
-              bypass_reason: "Randomly added network_token field to the record"
-            - name: source/wallet
-              bypass_reason: "Randomly added network_token field to the record"
-          payment_intents:
-            - name: receipt_url
-              bypass_reason: "URL changes upon each request for privacy/security"
-            - name: charges/data/*/receipt_url
-              bypass_reason: "URL changes upon each request for privacy/security"
-            - name: charges/data/*/payment_method_details
-              bypass_reason: "Randomly added network_token field to the record"
-          credit_notes:
-            - name: pdf
-              bypass_reason: "URL changes upon each request for privacy/security"
-          files:
-            - name: links/data
-              bypass_reason: "Order of links/data elements changes on every request"
-          usage_records:
-            - name: id
-              bypass_reason: "id field is randomly generated"
-          invoice_line_items:
-            - name: margins
-              bypass_reason: "API randomly returns this field"
   incremental:
     tests:
       - config_path: "secrets/config.json"
