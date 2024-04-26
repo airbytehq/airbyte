@@ -4,9 +4,7 @@
     "metadata": {
       "description": "Additional information attached to the subscription item.",
       "type": ["null", "object"],
-      "properties": {
-        "description": "Custom metadata associated with the subscription item."
-      }
+      "properties": {}
     },
     "canceled_at": {
       "description": "Timestamp indicating when the subscription was canceled.",

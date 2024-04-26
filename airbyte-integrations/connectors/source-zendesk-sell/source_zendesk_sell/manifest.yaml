@@ -375,7 +375,6 @@ definitions:
               - object
             additionalProperties: true
             properties:
-              description: Billing address for the contact.
           shipping_address:
             description: The shipping address of the contact.
             type:

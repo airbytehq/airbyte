@@ -194,9 +194,7 @@
     "meta_data": {
       "description": "Additional metadata associated with the plan",
       "type": ["object", "null"],
-      "properties": {
-        "description": "Additional metadata associated with the plan"
-      }
+      "properties": {}
     },
     "show_description_in_invoices": {
       "description": "Whether to show the description in invoices",

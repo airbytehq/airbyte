@@ -70,11 +70,8 @@
       "description": "List of all pull requests associated with the workflow run.",
       "type": "array",
       "items": {
-        "description": "Details of an individual pull request.",
         "type": ["null", "object"],
-        "properties": {
-          "description": "Additional details about the pull requests associated with the workflow run."
-        },
+        "properties": {},
         "additionalProperties": true
       }
     },

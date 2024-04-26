@@ -166,9 +166,7 @@
     "metadata": {
       "description": "Additional metadata associated with subscription",
       "type": ["object", "null"],
-      "properties": {
-        "description": "Additional metadata associated with the subscription."
-      }
+      "properties": {}
     },
     "deleted": {
       "description": "Indicates if the subscription has been deleted.",

@@ -162,9 +162,7 @@
       "description": "Custom fields associated with the person",
       "type": ["null", "object"],
       "additionalProperties": true,
-      "properties": {
-        "description": "Individual custom field"
-      }
+      "properties": {}
     },
     "tags": {
       "description": "Tags associated with the person",

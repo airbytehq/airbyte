@@ -661,7 +661,6 @@
       "description": "The details of the total shipping price for the order.",
       "type": ["null", "object"],
       "properties": {
-        "description": "Total shipping price set for the order",
         "shop_money": {
           "type": ["null", "object"],
           "properties": {

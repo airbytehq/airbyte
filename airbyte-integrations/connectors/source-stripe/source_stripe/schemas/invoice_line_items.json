@@ -20,9 +20,7 @@
     "metadata": {
       "description": "Additional information or custom data related to the invoice line items.",
       "type": ["null", "object"],
-      "properties": {
-        "description": "Additional information related to the invoice line item."
-      }
+      "properties": {}
     },
     "description": {
       "description": "A brief description of the invoice line item.",

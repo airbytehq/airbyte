@@ -8,9 +8,7 @@
     "metadata": {
       "description": "Custom metadata associated with the invoice item.",
       "type": ["null", "object"],
-      "properties": {
-        "description": "Additional metadata associated with the item"
-      }
+      "properties": {}
     },
     "plan": {
       "description": "Information about the subscription plan associated with the invoice item.",

@@ -3,7 +3,6 @@
   "type": ["null", "object"],
   "additionalProperties": true,
   "properties": {
-    "description": "The description of the channel.",
     "id": {
       "type": ["null", "string"]
     },

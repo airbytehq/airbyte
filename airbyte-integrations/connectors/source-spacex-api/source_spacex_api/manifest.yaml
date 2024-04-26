@@ -32,7 +32,6 @@ streams:
           capsules:
             description: Information about capsules used in the launch.
             items:
-              description: List of capsules related to this launch
               type:
                 - "null"
                 - string
@@ -40,9 +39,7 @@ streams:
           cores:
             description: Information about the rocket cores involved in the launch.
             items:
-              description: Details about a specific rocket core used in the launch.
               properties:
-                description: Information about the booster cores used in the launch.
                 core:
                   description: Core information of the rocket used in the launch
                   type:
@@ -81,7 +78,6 @@ streams:
           crew:
             description: Information about the crew involved in the launch.
             items:
-              description: List of crew members for this launch
               type:
                 - "null"
                 - string
@@ -139,7 +135,6 @@ streams:
               ships:
                 description: List of ships associated with the fairings.
                 items:
-                  description: List of ships involved in fairings recovery
                   type:
                     - "null"
                     - string
@@ -175,7 +170,6 @@ streams:
                   original:
                     description: Original Flickr link related to the launch.
                     items:
-                      description: List of original resolution images from Flickr
                       type:
                         - "null"
                         - string
@@ -239,7 +233,6 @@ streams:
           payloads:
             description: Information about payloads carried in the launch.
             items:
-              description: List of payloads carried on this launch
               type:
                 - "null"
                 - string
@@ -308,7 +301,6 @@ streams:
               Information about the launches the capsule has been a part
               of
             items:
-              description: Details of a specific launch
               type:
                 - "null"
                 - string
@@ -513,7 +505,6 @@ streams:
           launches:
             description: List of launches the crew member has participated in.
             items:
-              description: Details of a launch the crew member has participated in.
               type:
                 - "null"
                 - string
@@ -590,7 +581,6 @@ streams:
           launches:
             description: List of launch IDs associated with this core.
             items:
-              description: Launch ID that this core was a part of.
               type:
                 - "null"
                 - string
@@ -684,7 +674,6 @@ streams:
           flickr_images:
             description: An array of Flickr image URLs related to the spacecraft.
             items:
-              description: Array of URLs to flickr images showcasing the dragon spacecraft.
               type:
                 - "null"
                 - string
@@ -1434,7 +1423,6 @@ streams:
           flickr_images:
             description: Links to images of the rocket on Flickr.
             items:
-              description: URLs of individual images.
               type:
                 - "null"
                 - string
@@ -1484,7 +1472,6 @@ streams:
           payload_weights:
             description: Details about the rocket's payload weights.
             items:
-              description: Information about each payload weight carried by the rocket.
               properties:
                 id:
                   description: The identifier of the payload weight.
@@ -1804,7 +1791,6 @@ streams:
           launches:
             description: Data regarding the launch history and details for the ship.
             items:
-              description: List of launch IDs associated with the ship
               type:
                 - "null"
                 - string
@@ -1852,7 +1838,6 @@ streams:
           roles:
             description: Roles and responsibilities of the ship within SpaceX operations.
             items:
-              description: List of roles or responsibilities associated with the ship
               type:
                 - "null"
                 - string

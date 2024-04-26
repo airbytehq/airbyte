@@ -517,9 +517,7 @@
     "meta_data": {
       "description": "Additional metadata associated with the customer.",
       "type": ["object", "null"],
-      "properties": {
-        "description": "Additional metadata associated with the customer."
-      }
+      "properties": {}
     },
     "custom_fields": {
       "description": "Custom fields associated with the customer.",

@@ -866,7 +866,6 @@ definitions:
               - "null"
               - object
             properties:
-              description: Properties for tags
           filters:
             description: Filters applied for targeting the notification
             type:

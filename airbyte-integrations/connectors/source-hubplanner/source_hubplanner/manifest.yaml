@@ -770,7 +770,6 @@ definitions:
           customFields:
             description: Custom fields associated with the project
             items:
-              description: Individual custom field items
               properties:
                 _id:
                   description: Identifier for the custom field
@@ -985,7 +984,6 @@ definitions:
           links:
             description: Links related to the resources.
             properties:
-              description: Links associated with the resource
             type:
               - "null"
               - object
