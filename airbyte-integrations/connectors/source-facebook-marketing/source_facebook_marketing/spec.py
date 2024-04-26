@@ -41,12 +41,12 @@ class OAuthCredentials(BaseModel):
     )
     client_secret: str = Field(
         title="Client Secret",
-        description="Client Secret for the Google Drive API",
+        description="Client Secret for the Facebook Marketing API",
         airbyte_secret=True,
     )
     refresh_token: str = Field(
         title="Refresh Token",
-        description="Refresh Token for the Google Drive API",
+        description="Refresh Token for the Facebook Marketing API",
         airbyte_secret=True,
     )
 
@@ -59,7 +59,10 @@ class ServiceAccountCredentials(BaseModel):
     auth_type: Literal["Service"] = Field("Service", const=True)
     service_account_info: str = Field(
         title="Service Account Information",
-        description='The JSON key of the service account to use for authorization.',
+        description="The value of the generated access token. "
+                    'From your App’s Dashboard, click on "Marketing API" then "Tools". '
+                    'Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on "Get token". '
+                    'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information.',
         airbyte_secret=True,
     )
 
