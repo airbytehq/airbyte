@@ -38,12 +38,12 @@ class CheckIsPythonUpdateable(Step):
 
     context: ConnectorContext
 
-    title = "Check if the connector is a candidate for updating."
+    title = "Check if the connector is a candidate for updating."  # type: ignore
 
     def __init__(self, context: PipelineContext) -> None:
         super().__init__(context)
 
-    async def _run(self) -> StepResult:
+    async def _run(self) -> StepResult:  # type: ignore
         connector_dir_entries = await (await self.context.get_connector_dir()).entries()
         if self.context.connector.language not in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
             return StepResult(
@@ -82,15 +82,15 @@ class UpdatePoetry(Step):
     dev: bool
     specified_versions: dict[str, str]
 
-    title = "Update versions of libraries in poetry."
+    title = "Update versions of libraries in poetry."  # type: ignore
 
     def __init__(self, context: PipelineContext, dev: bool, specific_dependencies: List[str]) -> None:
         super().__init__(context)
         self.dev = dev
         self.specified_versions = parse_specific_dependencies(specific_dependencies)
 
-    async def _run(self) -> StepResult:
-        base_image_name = self.context.connector.metadata["connectorBuildOptions"]["baseImage"]
+    async def _run(self) -> StepResult:  # type: ignore
+        base_image_name = self.context.connector.metadata["connectorBuildOptions"]["baseImage"]  # type: ignore
         base_container = self.dagger_client.container(platform=LOCAL_BUILD_PLATFORM).from_(base_image_name)
         connector_container = await with_python_connector_installed(
             self.context,
@@ -158,7 +158,7 @@ class UpdatePoetry(Step):
 class RestoreOriginalState(Step):
     context: ConnectorContext
 
-    title = "Restore original state"
+    title = "Restore original state"  # type: ignore
 
     def __init__(self, context: ConnectorContext) -> None:
         super().__init__(context)
@@ -169,7 +169,7 @@ class RestoreOriginalState(Step):
         if self.poetry_lock_path.exists():
             self.original_poetry_lock = self.poetry_lock_path.read_text()
 
-    async def _run(self) -> StepResult:
+    async def _run(self) -> StepResult:  # type: ignore
         if self.original_pyproject:
             self.pyproject_path.write_text(self.original_pyproject)
             self.logger.info(f"Restored {POETRY_TOML_FILE} for {self.context.connector.technical_name}")
@@ -193,9 +193,9 @@ class RegressionTest(Step):
 
     context: ConnectorContext
 
-    title = "Run regression test"
+    title = "Run regression test"  # type: ignore
 
-    async def _run(self, new_connector_container: dagger.Container) -> StepResult:
+    async def _run(self, new_connector_container: dagger.Container) -> StepResult:  # type: ignore
         try:
             await new_connector_container.with_exec(["spec"])
             await new_connector_container.with_mounted_file(
@@ -363,4 +363,4 @@ async def run_connector_up_to_date_pipeline(
             report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
             context.report = report
 
-    return report
+    return report  # type: ignore

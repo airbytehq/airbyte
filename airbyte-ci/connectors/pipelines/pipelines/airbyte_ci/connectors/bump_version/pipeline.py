@@ -18,7 +18,9 @@ if TYPE_CHECKING:
     from anyio import Semaphore
 
 
-def get_bumped_version(version: str, bump_type: str) -> str:
+def get_bumped_version(version: str | None, bump_type: str) -> str:
+    if version is None:
+        raise Exception("Version is not set")
     current_version = semver.VersionInfo.parse(version)
     if bump_type == "patch":
         new_version = current_version.bump_patch()
