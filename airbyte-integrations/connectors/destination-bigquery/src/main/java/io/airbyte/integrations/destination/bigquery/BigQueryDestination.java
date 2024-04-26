@@ -317,25 +317,25 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
 
     final Map<StreamId, List<String>> problematicStreams = new HashMap<>();
-    for (StreamConfig streamConfig : parsedCatalog.streams()) {
+    for (StreamConfig streamConfig : parsedCatalog.getStreams()) {
       // PKs only matter in dedup mode. In theory, in non-dedup mode, we shouldn't even receive a PK
       // but we might as well be defensive here.
-      if (streamConfig.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-        final List<String> jsonPks = streamConfig.primaryKey().stream()
+      if (streamConfig.getDestinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+        final List<String> jsonPks = streamConfig.getPrimaryKey().stream()
             .filter(pkColumn -> {
-              AirbyteType type = streamConfig.columns().get(pkColumn);
+              AirbyteType type = streamConfig.getColumns().get(pkColumn);
               return type instanceof Array || type instanceof Struct || type == AirbyteProtocolType.UNKNOWN;
-            }).map(ColumnId::originalName)
+            }).map(ColumnId::getOriginalName)
             .toList();
         if (!jsonPks.isEmpty()) {
-          problematicStreams.put(streamConfig.id(), jsonPks);
+          problematicStreams.put(streamConfig.getId(), jsonPks);
         }
       }
     }
     if (!problematicStreams.isEmpty()) {
       final String streamMessages = problematicStreams.entrySet().stream().map((entry) -> {
         final StreamId streamId = entry.getKey();
-        final String humanReadableStreamId = streamId.originalNamespace() + "." + streamId.originalName();
+        final String humanReadableStreamId = streamId.getOriginalNamespace() + "." + streamId.getOriginalName();
         final String columns = String.join(", ", entry.getValue());
         return humanReadableStreamId + ": " + columns;
       }).sorted()
