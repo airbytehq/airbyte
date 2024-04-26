@@ -472,8 +472,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         targetPosition,
         tableSnapshotPublisher::hasClosed,
         new DebeziumShutdownProcedure<>(queue, tableSnapshotPublisher::close, tableSnapshotPublisher::hasClosed),
-        firstRecordWaitTime,
-        subsequentRecordWaitTime);
+        firstRecordWaitTime);
 
     final var eventConverter = new RelationalDbDebeziumEventConverter(cdcMetadataInjector, emittedAt);
     return AutoCloseableIterators.concatWithEagerClose(
