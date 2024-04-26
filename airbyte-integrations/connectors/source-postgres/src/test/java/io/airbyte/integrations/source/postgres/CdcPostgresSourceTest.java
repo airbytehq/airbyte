@@ -101,7 +101,9 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   }
 
   @Override
-  protected boolean supportResumableFullRefresh() {return true;}
+  protected boolean supportResumableFullRefresh() {
+    return true;
+  }
 
   @Override
   protected JsonNode config() {

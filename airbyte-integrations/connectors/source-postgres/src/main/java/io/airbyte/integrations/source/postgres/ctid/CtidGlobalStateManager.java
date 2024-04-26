@@ -37,15 +37,15 @@ public class CtidGlobalStateManager extends CtidStateManager {
   private final StateManager stateManager;
   private Set<AirbyteStreamNameNamespacePair> resumableFullRefreshStreams;
   private Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot;
-  private  final boolean savedOffsetAfterReplicationSlotLSN;
+  private final boolean savedOffsetAfterReplicationSlotLSN;
   private final CdcState defaultCdcState;
 
   public CtidGlobalStateManager(final CtidStreams ctidStreams,
                                 final FileNodeHandler fileNodeHandler,
                                 final StateManager stateManager,
                                 final ConfiguredAirbyteCatalog catalog,
-      final boolean savedOffsetAfterReplicationSlotLSN,
-      final CdcState defaultCdcState) {
+                                final boolean savedOffsetAfterReplicationSlotLSN,
+                                final CdcState defaultCdcState) {
     super(filterOutExpiredFileNodes(ctidStreams.pairToCtidStatus(), fileNodeHandler));
     this.stateManager = stateManager;
     this.savedOffsetAfterReplicationSlotLSN = savedOffsetAfterReplicationSlotLSN;
@@ -54,7 +54,7 @@ public class CtidGlobalStateManager extends CtidStateManager {
   }
 
   private void initStream(final CtidStreams ctidStreams,
-                                                                                  final ConfiguredAirbyteCatalog catalog) {
+                          final ConfiguredAirbyteCatalog catalog) {
     this.streamsThatHaveCompletedSnapshot = new HashSet<>();
     this.resumableFullRefreshStreams = new HashSet<>();
     catalog.getStreams().forEach(configuredAirbyteStream -> {
@@ -107,8 +107,6 @@ public class CtidGlobalStateManager extends CtidStateManager {
       streamStates.add(getAirbyteStreamState(pair, (Jsons.jsonNode(ctidStatus))));
     }
 
-
-
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
         .withGlobal(generateGlobalState(streamStates));
@@ -128,10 +126,9 @@ public class CtidGlobalStateManager extends CtidStateManager {
 
     return !savedOffsetAfterReplicationSlotLSN || stateManagerCdcState == null
         || stateManagerCdcState.getState() == null ? defaultCdcState
-        : stateManagerCdcState;
+            : stateManagerCdcState;
 
   }
-
 
   @Override
   public AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun) {

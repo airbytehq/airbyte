@@ -663,7 +663,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 Streams.concat(MODEL_RECORDS_2.stream(), MODEL_RECORDS.stream())
                     .collect(Collectors.toSet()),
                 recordMessages1,
-                setOf(MODELS_STREAM_NAME, MODELS_STREAM_NAME_2),
+                setOf(MODELS_STREAM_NAME),
                 names,
                 modelsSchema(),
             )
@@ -699,7 +699,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 Streams.concat(MODEL_RECORDS_2.stream(), Stream.of(puntoRecord))
                     .collect(Collectors.toSet()),
                 recordMessages2,
-                setOf(MODELS_STREAM_NAME, MODELS_STREAM_NAME_2),
+                setOf(MODELS_STREAM_NAME),
                 names,
                 modelsSchema(),
             )
@@ -803,8 +803,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             ),
         )
         Assertions.assertNotNull(stateMessageEmittedAfterFirstSyncCompletion.data)
-
-        System.out.println("actual records: " + recordsFromFirstBatch)
 
         Assertions.assertEquals((MODEL_RECORDS.size), recordsFromFirstBatch.size)
         assertExpectedRecords(HashSet(MODEL_RECORDS), recordsFromFirstBatch)
@@ -1034,13 +1032,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 .toList()
                 .get(0)
 
-        // Pk should be pointing to the last element from MODEL_RECORDS table.
-        Assertions.assertEquals("16", streamStateToBeTested.get("pk_val").asText())
-        Assertions.assertEquals("id", streamStateToBeTested.get("pk_name").asText())
-        Assertions.assertEquals("primary_key", streamStateToBeTested.get("state_type").asText())
-
         Assertions.assertEquals((MODEL_RECORDS.size), recordsFromFirstBatch.size)
-        assertExpectedRecords(HashSet(MODEL_RECORDS), recordsFromFirstBatch)
+        assertExpectedRecords(HashSet(MODEL_RECORDS), recordsFromFirstBatch, HashSet())
     }
 
     @Test

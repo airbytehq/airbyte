@@ -10,6 +10,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils.TableBlockSize;
+import io.airbyte.integrations.source.postgres.cdc.PostgresCdcConnectorMetadataInjector;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -84,7 +85,8 @@ public class CtidUtils {
                                                         final List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid,
                                                         final FileNodeHandler fileNodeHandler,
                                                         final String quoteString,
-                                                        final CtidStateManager ctidStateManager) {
+                                                        final CtidStateManager ctidStateManager,
+                                                        Optional<PostgresCdcConnectorMetadataInjector> optionalMetadataInjector) {
     final JsonNode sourceConfig = database.getSourceConfig();
 
     final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes =
@@ -99,7 +101,7 @@ public class CtidUtils {
 
     return new PostgresCtidHandler(sourceConfig,
         database,
-        new CtidPostgresSourceOperations(Optional.empty()),
+        new CtidPostgresSourceOperations(optionalMetadataInjector),
         quoteString,
         fileNodeHandler,
         tableBlockSizes,

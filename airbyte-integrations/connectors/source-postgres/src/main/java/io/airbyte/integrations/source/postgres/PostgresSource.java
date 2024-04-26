@@ -27,10 +27,8 @@ import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.filterS
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.getCursorBasedSyncStatusForStreams;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.streamsUnderVacuum;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.isCdc;
-import static io.airbyte.integrations.source.postgres.PostgresUtils.isXmin;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.prettyPrintConfiguredAirbyteStreamList;
 import static io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidInitializer.cdcCtidIteratorsCombined;
-import static io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidInitializer.getCdcState;
 import static io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidInitializer.getCtidInitialLoadGlobalStateManager;
 import static io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidInitializer.getSavedOffsetAfterReplicationSlotLSN;
 import static io.airbyte.integrations.source.postgres.ctid.CtidUtils.createInitialLoader;
@@ -66,7 +64,6 @@ import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
-import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -119,6 +116,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -518,9 +516,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       }
 
       ctidStateManager.setStreamStateIteratorFields(namespacePair -> Jsons.jsonNode(xminStatus), fileNodeHandler);
-
       final PostgresCtidHandler ctidHandler =
-          createInitialLoader(database, finalListOfStreamsToBeSyncedViaCtid, fileNodeHandler, getQuoteString(), ctidStateManager);
+          createInitialLoader(database, finalListOfStreamsToBeSyncedViaCtid, fileNodeHandler, getQuoteString(), ctidStateManager,
+              Optional.empty());
 
       if (!streamsCategorised.ctidStreams().streamsForCtidSync().isEmpty()) {
         LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
@@ -581,7 +579,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
       ctidStateManager.setStreamStateIteratorFields(namespacePair -> Jsons.jsonNode(cursorBasedStatusMap.get(namespacePair)), fileNodeHandler);
       final PostgresCtidHandler cursorBasedCtidHandler =
-          createInitialLoader(database, finalListOfStreamsToBeSyncedViaCtid, fileNodeHandler, getQuoteString(), ctidStateManager);
+          createInitialLoader(database, finalListOfStreamsToBeSyncedViaCtid, fileNodeHandler, getQuoteString(), ctidStateManager, Optional.empty());
 
       final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes =
           PostgresQueryUtils.getTableBlockSizeForStreams(
@@ -745,16 +743,17 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   @Override
   protected void initializeForStateManager(final JdbcDatabase database,
-      final ConfiguredAirbyteCatalog catalog,
-      final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
-      final StateManager stateManager) {
+                                           final ConfiguredAirbyteCatalog catalog,
+                                           final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
+                                           final StateManager stateManager) {
     if (ctidStateManager != null) {
       return;
     }
     var sourceConfig = database.getSourceConfig();
 
     if (isCdc(sourceConfig)) {
-      savedOffsetAfterReplicationSlotLSN = getSavedOffsetAfterReplicationSlotLSN(database, catalog, stateManager, getReplicationSlot(database, sourceConfig).get(0));
+      savedOffsetAfterReplicationSlotLSN =
+          getSavedOffsetAfterReplicationSlotLSN(database, catalog, stateManager, getReplicationSlot(database, sourceConfig).get(0));
       ctidStateManager = getCtidInitialLoadGlobalStateManager(database, catalog, stateManager, getQuoteString(), savedOffsetAfterReplicationSlotLSN);
     } else {
       final FileNodeHandler fileNodeHandler =
@@ -774,9 +773,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   @Override
   public InitialLoadHandler<PostgresType> getInitialLoadHandler(final JdbcDatabase database,
-      final ConfiguredAirbyteStream stream,
-      final ConfiguredAirbyteCatalog catalog,
-      final StateManager stateManager) {
+                                                                final ConfiguredAirbyteStream stream,
+                                                                final ConfiguredAirbyteCatalog catalog,
+                                                                final StateManager stateManager) {
     final FileNodeHandler fileNodeHandler =
         PostgresQueryUtils.fileNodeForStreams(database,
             List.of(stream),
@@ -787,7 +786,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       ctidStateManager.setStreamStateIteratorFields(namespacePair -> Jsons.emptyObject(), fileNodeHandler);
     }
 
-    return createInitialLoader(database, List.of(stream), fileNodeHandler, getQuoteString(), ctidStateManager);
+    return createInitialLoader(database, List.of(stream), fileNodeHandler, getQuoteString(), ctidStateManager, Optional.empty());
   }
 
   protected String toSslJdbcParam(final SslMode sslMode) {
