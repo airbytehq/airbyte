@@ -649,6 +649,7 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                |
 |---------| ---------------------------------------------------------- |----------------------------------------------------------------------------------------------------------------------------|
+| 4.10.3   | [#37615](https://github.com/airbytehq/airbyte/pull/37615)      | Fix `KeyError` when running `migrate-to-poetry` |
 | 4.10.2   | [#37614](https://github.com/airbytehq/airbyte/pull/37614)      | Fix `UnboundLocalError: local variable 'add_changelog_entry_result' referenced before assignment` in `migrate_to_base_image` |
 | 4.10.1   | [#37622](https://github.com/airbytehq/airbyte/pull/37622)  | Temporarily disable regression tests in CI                                                    |
 | 4.10.0   | [#37616](https://github.com/airbytehq/airbyte/pull/37616)  | Improve modified files comparison when the target branch is from a fork.                                                                       |
