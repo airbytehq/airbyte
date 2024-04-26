@@ -148,6 +148,7 @@ At this point you can run `airbyte-ci` commands.
 - [`connectors upgrade_base_image` command](#connectors-upgrade_base_image)
 - [`connectors migrate_to_base_image` command](#connectors-migrate_to_base_image)
 - [`connectors migrate-to-poetry` command](#connectors-migrate-to-poetry)
+- [`connectors migrate_to_inline_schemas` command](#migrate_to_inline_schemas)
 - [`format` command subgroup](#format-subgroup)
   - [`format check` command](#format-check-command)
   - [`format fix` command](#format-fix-command)
@@ -554,6 +555,15 @@ Migrate connectors the poetry package manager.
 
 Migrate source-openweather to use the base image:
 `airbyte-ci connectors --name=source-openweather migrate-to-poetry`
+
+### <a id="connectors-migrate_to_inline_schemas"></a>`connectors migrate_to_inline_schemas` command
+
+Migrate .json schemas into manifest.yaml files, when present.
+
+#### Examples
+
+Migrate source-openweather to use the base image:
+`airbyte-ci connectors --name=source-openweather migrate_to_inline_schemas`
 
 ### <a id="format-subgroup"></a>`format` command subgroup
 
