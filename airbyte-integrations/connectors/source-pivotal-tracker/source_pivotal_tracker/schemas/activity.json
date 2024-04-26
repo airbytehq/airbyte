@@ -14,9 +14,7 @@
       "description": "Details of the project in which the activity occurred",
       "type": ["null", "object"],
       "additionalProperties": true,
-      "properties": {
-        "description": "Information about the project associated with the activity"
-      }
+      "properties": {}
     },
     "secondary_resources": {
       "description": "List of secondary resources involved in the activity",
