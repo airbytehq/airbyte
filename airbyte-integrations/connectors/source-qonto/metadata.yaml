@@ -11,6 +11,10 @@ data:
   icon: qonto.svg
   license: MIT
   name: Qonto My
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-qonto
   releaseDate: "2023-10-19"
   releaseStage: alpha
   supportLevel: community
