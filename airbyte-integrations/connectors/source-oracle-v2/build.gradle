@@ -1,0 +1,116 @@
+plugins {
+    id 'airbyte-java-connector'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.20.4'
+    features = ['db-sources']
+    useLocalCdk = true
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.oracle.OracleSource'
+    applicationDefaultJvmArgs = [
+            '-XX:+ExitOnOutOfMemoryError',
+            '-XX:MaxRAMPercentage=75.0',
+            '-Dmicronaut.environments=connector,source'
+    ]
+}
+
+sourceSets {
+
+    cdkMain {
+        kotlin {
+            srcDir 'src/cdk/main/kotlin'
+        }
+        resources {
+            srcDir 'src/cdk/main/resources'
+        }
+    }
+    cdkTestFixtures {
+        compileClasspath += sourceSets.cdkMain.output
+        runtimeClasspath += sourceSets.cdkMain.output
+        kotlin {
+            srcDir 'src/cdk/testFixtures/kotlin'
+        }
+        resources {
+            srcDir 'src/cdk/testFixtures/resources'
+        }
+    }
+    cdkTest {
+        compileClasspath += sourceSets.cdkMain.output
+        compileClasspath += sourceSets.cdkTestFixtures.output
+        runtimeClasspath += sourceSets.cdkMain.output
+        runtimeClasspath += sourceSets.cdkTestFixtures.output
+        kotlin {
+            srcDir 'src/cdk/test/kotlin'
+        }
+        resources {
+            srcDir 'src/cdk/test/resources'
+        }
+    }
+    main {
+        compileClasspath += sourceSets.cdkMain.output
+        runtimeClasspath += sourceSets.cdkMain.output
+    }
+    test {
+        compileClasspath += sourceSets.cdkMain.output
+        compileClasspath += sourceSets.cdkTestFixtures.output
+        runtimeClasspath += sourceSets.cdkMain.output
+        runtimeClasspath += sourceSets.cdkTestFixtures.output
+    }
+}
+
+configurations {
+    cdkTestFixturesApi.extendsFrom cdkMainApi
+    cdkTestFixturesImplementation.extendsFrom cdkMainImplementation
+    cdkTestImplementation.extendsFrom cdkMainImplementation
+    cdkTestApi.extendsFrom cdkTestFixturesApi
+    cdkTestImplementation.extendsFrom cdkTestFixturesImplementation
+    api.extendsFrom cdkMainApi
+    implementation.extendsFrom cdkMainImplementation
+    testImplementation.extendsFrom cdkMainImplementation
+    testImplementation.extendsFrom cdkTestImplementation
+    testImplementation.extendsFrom cdkTestFixturesImplementation
+}
+
+dependencies {
+
+    ksp "info.picocli:picocli-codegen:4.7.5"
+    ksp "io.micronaut:micronaut-inject-java:4.3.13"
+    ksp "io.micronaut:micronaut-inject-kotlin:4.3.13"
+
+    cdkMainImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    cdkMainImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
+
+    cdkMainImplementation 'com.kjetland:mbknor-jackson-jsonschema_2.13:1.0.39'
+    cdkMainImplementation 'com.networknt:json-schema-validator:1.4.0'
+    cdkMainImplementation 'org.apache.sshd:sshd-mina:2.12.1'
+    cdkMainImplementation 'org.bouncycastle:bcpkix-jdk15on:1.66'
+    cdkMainImplementation 'org.bouncycastle:bcprov-jdk15on:1.66'
+    cdkMainImplementation 'org.bouncycastle:bctls-jdk15on:1.66'
+
+    cdkMainApi 'com.fasterxml.jackson.module:jackson-module-kotlin'
+    cdkMainApi "info.picocli:picocli:4.7.5"
+    cdkMainApi "io.micronaut:micronaut-inject-java:4.3.13"
+    cdkMainApi "io.micronaut:micronaut-runtime:4.3.7"
+    cdkMainApi 'io.micronaut.picocli:micronaut-picocli:5.2.0'
+    cdkMainApi 'io.github.oshai:kotlin-logging-jvm:5.1.0'
+
+    cdkTestFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies'))
+    cdkTestFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
+
+    cdkTestFixturesApi 'com.h2database:h2:2.2.224'
+    cdkTestFixturesApi 'org.testcontainers:testcontainers:1.19.0'
+
+    cdkTestImplementation 'com.h2database:h2:2.2.224'
+    cdkTestImplementation 'io.github.deblockt:json-diff:1.0.1'
+    cdkTestImplementation 'io.micronaut.test:micronaut-test-core:4.2.1'
+    cdkTestImplementation 'io.micronaut.test:micronaut-test-junit5:4.2.1'
+
+    // https://mvnrepository.com/artifact/com.oracle.database.jdbc/ojdbc11
+    implementation 'com.oracle.database.jdbc:ojdbc11-production:23.3.0.23.09'
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.77'
+
+    testImplementation 'org.testcontainers:oracle-xe:1.19.4'
+}

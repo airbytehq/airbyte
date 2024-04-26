@@ -1,0 +1,108 @@
+[
+  {
+    "key": {
+      "catalog": "TESTDB",
+      "schema": "PUBLIC",
+      "name": "EVENTS",
+      "type": "BASE TABLE"
+    },
+    "value": {
+      "columns": [
+        {
+          "name": "ID",
+          "label": "ID",
+          "type": "BINARY",
+          "typeName": "UUID",
+          "klazz": "java.util.UUID",
+          "displaySize": 36,
+          "precision": 16,
+          "scale": 0,
+          "signed": false,
+          "caseSensitive": true,
+          "autoIncrement": false,
+          "currency": false,
+          "searchable": true,
+          "nullable": false
+        },
+        {
+          "name": "TS",
+          "label": "TS",
+          "type": "TIMESTAMP_WITH_TIMEZONE",
+          "typeName": "TIMESTAMP WITH TIME ZONE",
+          "klazz": "java.time.OffsetDateTime",
+          "displaySize": 32,
+          "precision": 32,
+          "scale": 6,
+          "signed": false,
+          "caseSensitive": true,
+          "autoIncrement": false,
+          "currency": false,
+          "searchable": true,
+          "nullable": false
+        },
+        {
+          "name": "MSG",
+          "label": "MSG",
+          "type": "VARCHAR",
+          "typeName": "CHARACTER VARYING",
+          "klazz": "java.lang.String",
+          "displaySize": 60,
+          "precision": 60,
+          "scale": 0,
+          "signed": false,
+          "caseSensitive": true,
+          "autoIncrement": false,
+          "currency": false,
+          "searchable": true,
+          "nullable": true
+        }
+      ],
+      "primaryKeys": [["ID"]]
+    }
+  },
+  {
+    "key": {
+      "catalog": "TESTDB",
+      "schema": "PUBLIC",
+      "name": "KV",
+      "type": "BASE TABLE"
+    },
+    "value": {
+      "columns": [
+        {
+          "name": "K",
+          "label": "K",
+          "type": "INTEGER",
+          "typeName": "INTEGER",
+          "klazz": "java.lang.Integer",
+          "displaySize": 11,
+          "precision": 32,
+          "scale": 0,
+          "signed": true,
+          "caseSensitive": true,
+          "autoIncrement": false,
+          "currency": false,
+          "searchable": true,
+          "nullable": false
+        },
+        {
+          "name": "V",
+          "label": "V",
+          "type": "VARCHAR",
+          "typeName": "CHARACTER VARYING",
+          "klazz": "java.lang.String",
+          "displaySize": 60,
+          "precision": 60,
+          "scale": 0,
+          "signed": false,
+          "caseSensitive": true,
+          "autoIncrement": false,
+          "currency": false,
+          "searchable": true,
+          "nullable": true
+        }
+      ],
+      "primaryKeys": [["K"]]
+    }
+  }
+]
