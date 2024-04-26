@@ -12,7 +12,7 @@ def read_yaml(file_path: Path) -> dict:
     return yaml.load(file_path)
 
 
-def write_yaml(input: dict | List, file_path: Path):
+def write_yaml(input: dict | List, file_path: Path) -> None:
     data = copy.deepcopy(input)
     yaml = YAML()
     buffer = io.BytesIO()

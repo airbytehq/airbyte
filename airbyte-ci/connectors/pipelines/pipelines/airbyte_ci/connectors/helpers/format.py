@@ -6,7 +6,7 @@ from typing import List
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 
-async def format_prettier(context: ConnectorContext, files: List[Path]):
+async def format_prettier(context: ConnectorContext, files: List[Path]) -> None:
     if len(files) == 0:
         return
 
@@ -26,7 +26,7 @@ async def format_prettier(context: ConnectorContext, files: List[Path]):
         print("Error formatting files.")
 
 
-def verify_formatters():
+def verify_formatters() -> None:
     try:
         subprocess.run(["npx", "--version"], check=True)
     except subprocess.CalledProcessError:

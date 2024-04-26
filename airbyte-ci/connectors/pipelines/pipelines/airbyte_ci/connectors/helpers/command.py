@@ -46,7 +46,7 @@ async def run_connector_pipeline(
     connector_pipeline: Callable,
     enable_report_auto_open: bool,
     *args: Any,
-):
+) -> bool:
     connectors_contexts = get_connector_contexts(ctx, pipeline_description, enable_report_auto_open=enable_report_auto_open)
     await run_connectors_pipelines(
         connectors_contexts,

@@ -9,7 +9,6 @@ import os
 from typing import TYPE_CHECKING, Any, List
 import shutil
 import tempfile
-import os
 
 from pathlib import Path
 from connector_ops.utils import ConnectorLanguage  # type: ignore
@@ -261,9 +260,9 @@ def _update_inline_schema(schema_loader: dict, json_streams: dict[str, JsonStrea
     json_streams.pop(file_name)
 
 
-def _remove_reference(parent: Any, key: str | int | None, loader: JsonLoaderNode, path: List[str]) -> bool:
+def _remove_reference(parent: Any, key: str | int | None, loader: JsonLoaderNode, path: List[str]) -> bool:  # noqa: ANN401
     logger = main_logger
-    if key == None:
+    if key is None:
         data = parent
     else:
         data = parent[key]
@@ -309,7 +308,7 @@ def _load_reference(data: dict, ref: str) -> dict | None:
     return yaml_stream
 
 
-def _find_json_loaders(data: Any, path: List[str]) -> List[JsonLoaderNode]:
+def _find_json_loaders(data: Any, path: List[str]) -> List[JsonLoaderNode]:  # noqa: ANN401
     logger = main_logger
     loaders: List[JsonLoaderNode] = []
     if isinstance(data, dict):
