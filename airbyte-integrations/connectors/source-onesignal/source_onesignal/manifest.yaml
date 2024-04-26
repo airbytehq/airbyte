@@ -446,8 +446,7 @@ definitions:
             type:
               - "null"
               - object
-            properties:
-              description: Properties for spoken text content
+            properties: {}
           alexa_ssml:
             description: SSML content for Alexa notifications
             type:
@@ -573,8 +572,7 @@ definitions:
             type:
               - "null"
               - object
-            properties:
-              description: Properties for additional data
+            properties: {}
           delayed_option:
             description: Option for delayed delivery of the notification
             type:
@@ -743,8 +741,7 @@ definitions:
             type:
               - "null"
               - object
-            properties:
-              description: Properties for APNS alert content
+            properties: {}
           target_content_identifier:
             description: Identifier for target content related to the notification
             type:
@@ -865,7 +862,7 @@ definitions:
             type:
               - "null"
               - object
-            properties:
+            properties: {}
           filters:
             description: Filters applied for targeting the notification
             type:

@@ -166,9 +166,7 @@
     "discount": {
       "description": "Any discounts applied to the subscription item.",
       "type": ["null", "object"],
-      "properties": {
-        "description": "Discount applied to the subscription item."
-      }
+      "properties": {}
     },
     "application_fee_percent": {
       "description": "A fee percentage applied to the subscription that will be transferred to the platform owner.",
