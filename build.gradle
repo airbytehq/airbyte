@@ -8,6 +8,7 @@ plugins {
     id 'base'
     id 'com.github.spotbugs' version '6.0.7' apply false
     id 'org.jetbrains.kotlin.jvm' version '1.9.23' apply false
+    id 'com.google.devtools.ksp' version '1.9.23-1.0.19' apply false
 }
 
 allprojects {
@@ -16,6 +17,7 @@ allprojects {
     apply plugin: 'java-test-fixtures'
     apply plugin: 'com.github.spotbugs'
     apply plugin: 'org.jetbrains.kotlin.jvm'
+    apply plugin: 'com.google.devtools.ksp'
     apply plugin: 'idea'
 
 

@@ -8,6 +8,9 @@ application {
 }
 
 dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30' // Lombok must be added BEFORE Micronaut
+
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
 
     implementation 'io.fabric8:kubernetes-client:5.12.2'
