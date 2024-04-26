@@ -15,6 +15,7 @@ import java.util.stream.Collectors
 
 class Enums {
     companion object {
+        @Suppress("UNUSED_PARAMETER")
         inline fun <T1 : Enum<T1>, reified T2 : Enum<T2>> convertTo(ie: T1?, oe: Class<T2>): T2? {
             if (ie == null) {
                 return null
