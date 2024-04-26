@@ -889,7 +889,6 @@ definitions:
               title: Items
               type: object
               properties:
-                description: Description of the collection.
                 id:
                   $id: "#root/collections/items/id"
                   title: Id
