@@ -28,7 +28,7 @@ jobs:
     steps:
       - name: Checkout Airbyte
         if: github.event_name != 'pull_request'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - id: changes
         uses: dorny/paths-filter@v2
         with:
@@ -52,8 +52,20 @@ jobs:
     name: Gradle Check
     timeout-minutes: 30
     steps:
+      # The run-check job will be triggered if a fork made changes to gradle projects.
+      # We don't want forks to make changes to gradle projects.
+      # So we fail the job if the PR is from a fork, it will make the required CI check fail.
+      - name: Check if PR is from a fork
+        id: check-if-pr-is-from-fork
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          if [ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]; then
+            echo "PR is from a fork. Exiting workflow..."
+            exit 78
+          fi
       - name: Checkout Airbyte
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: actions/setup-java@v3
         with:
           distribution: "zulu"
@@ -110,7 +122,7 @@ jobs:
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Match GitHub User to Slack User
         id: match-github-to-slack-user
         uses: ./.github/actions/match-github-to-slack-user
