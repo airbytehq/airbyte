@@ -98,7 +98,10 @@ abstract class AbstractJdbcSource<Datatype>(
         this.sourceOperations = sourceOperations
     }
 
-    open fun supportResumableFullRefresh(database: JdbcDatabase, airbyteStream: ConfiguredAirbyteStream): Boolean {
+    open fun supportResumableFullRefresh(
+        database: JdbcDatabase,
+        airbyteStream: ConfiguredAirbyteStream
+    ): Boolean {
         return false
     }
 
@@ -123,7 +126,10 @@ abstract class AbstractJdbcSource<Datatype>(
         syncMode: SyncMode,
         cursorField: Optional<String>
     ): AutoCloseableIterator<AirbyteMessage> {
-        if (supportResumableFullRefresh(database, airbyteStream) && syncMode == SyncMode.FULL_REFRESH) {
+        if (
+            supportResumableFullRefresh(database, airbyteStream) &&
+                syncMode == SyncMode.FULL_REFRESH
+        ) {
             val initialLoadHandler =
                 getInitialLoadHandler(database, airbyteStream, catalog, stateManager)
                     ?: throw IllegalStateException(
