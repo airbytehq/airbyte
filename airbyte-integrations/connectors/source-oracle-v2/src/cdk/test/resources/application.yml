@@ -1,0 +1,7 @@
+micronaut:
+  application:
+    name: test-connector
+
+airbyte:
+  connector:
+    documentationUrl: "https://docs.airbyte.com"
