@@ -1,8 +1,14 @@
-from typing import Any, Callable, List
+from typing import TYPE_CHECKING, Any, Callable, List
 import asyncclick as click
 
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
+from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
+from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
+from pipelines.models.steps import Step, StepStatus
+
+if TYPE_CHECKING:
+    from anyio import Semaphore
 
 
 def get_connector_contexts(ctx: click.Context, pipeline_description: str, enable_report_auto_open: bool) -> List[ConnectorContext]:
@@ -53,3 +59,32 @@ async def run_connector_pipeline(
     )
 
     return True
+
+
+async def run_connector_steps(
+    context: ConnectorContext, semaphore: "Semaphore", steps_to_run: STEP_TREE, restore_original_state: Step | None = None
+) -> Report:
+    async with semaphore:
+        async with context:
+            try:
+                result_dict = await run_steps(
+                    runnables=steps_to_run,
+                    options=context.run_step_options,
+                )
+            except Exception as e:
+                if restore_original_state:
+                    await restore_original_state.run()
+                raise e
+            results = list(result_dict.values())
+            if restore_original_state:
+                if any(step_result.status is StepStatus.FAILURE for step_result in results):
+                    await restore_original_state.run()
+                else:
+                    # cleanup if available
+                    method = getattr(restore_original_state, "_cleanup")
+                    if callable(method):
+                        await method()
+
+            report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
+            context.report = report
+    return report  # type: ignore

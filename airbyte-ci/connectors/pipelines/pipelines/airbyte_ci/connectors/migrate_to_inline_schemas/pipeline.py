@@ -7,12 +7,16 @@ from dataclasses import dataclass
 import json
 import os
 from typing import TYPE_CHECKING, Any, List
+import shutil
+import tempfile
+import os
 
 from pathlib import Path
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
+from pipelines.airbyte_ci.connectors.helpers.command import run_connector_steps
 from pipelines.airbyte_ci.connectors.helpers.format import format_prettier
 from pipelines.airbyte_ci.connectors.helpers.yaml import read_yaml, write_yaml
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
@@ -79,6 +83,39 @@ class CheckIsInlineCandidate(Step):
             step=self,
             status=StepStatus.SUCCESS,
         )
+
+
+def copy_directory(src: Path, dest: Path) -> None:
+    if dest.exists():
+        shutil.rmtree(dest)
+    shutil.copytree(src, dest)
+
+
+class RestoreOriginalState(Step):
+    context: ConnectorContext
+
+    title = "Restore original state"  # type: ignore
+
+    def __init__(self, context: ConnectorContext) -> None:
+        super().__init__(context)
+        self.manifest_path = context.connector.manifest_path
+        self.original_manifest = self.manifest_path.read_text()
+
+        self.backup_schema_path = Path(tempfile.mkdtemp())
+        self.schemas_path = context.connector.python_source_dir_path / SCHEMAS_DIR_NAME
+        copy_directory(self.schemas_path, self.backup_schema_path)
+
+    async def _run(self) -> StepResult:  # type: ignore
+        self.manifest_path.write_text(self.original_manifest)
+        copy_directory(self.backup_schema_path, self.schemas_path)
+
+        return StepResult(
+            step=self,
+            status=StepStatus.SUCCESS,
+        )
+
+    async def _cleanup(self) -> None:
+        shutil.rmtree(self.backup_schema_path)
 
 
 class InlineSchemas(Step):
@@ -305,6 +342,8 @@ def _parse_json_streams(python_path: Path) -> dict[str, JsonStream]:
 
 
 async def run_connector_migrate_to_inline_schemas_pipeline(context: ConnectorContext, semaphore: "Semaphore") -> Report:
+    restore_original_state = RestoreOriginalState(context)
+
     context.targeted_platforms = [LOCAL_BUILD_PLATFORM]
 
     steps_to_run: STEP_TREE = []
@@ -321,17 +360,4 @@ async def run_connector_migrate_to_inline_schemas_pipeline(context: ConnectorCon
         ]
     )
 
-    async with semaphore:
-        async with context:
-            try:
-                result_dict = await run_steps(
-                    runnables=steps_to_run,
-                    options=context.run_step_options,
-                )
-            except Exception as e:
-                raise e
-            results = list(result_dict.values())
-            report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
-            context.report = report
-
-    return report  # type: ignore
+    return await run_connector_steps(context, semaphore, steps_to_run, restore_original_state=restore_original_state)
