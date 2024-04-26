@@ -187,14 +187,6 @@ class ConnectorContext(PipelineContext):
         return "." if self.is_ci else "/tmp"
 
     @property
-    def python_source_dir_path(self) -> Path:
-        return self.connector.code_directory / self.connector.technical_name.replace("-", "_")
-
-    @property
-    def manifest_path(self) -> Path:
-        return self.python_source_dir_path / MANIFEST_FILE_NAME
-
-    @property
     def metadata_path(self) -> Path:
         return self.connector.code_directory / METADATA_FILE_NAME
 

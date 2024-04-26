@@ -3,26 +3,28 @@
 #
 from __future__ import annotations
 
-import re
-from typing import TYPE_CHECKING, List
+from dataclasses import dataclass
+import json
+import os
+from typing import TYPE_CHECKING, Any, List
 
-import dagger
+from pathlib import Path
 from connector_ops.utils import ConnectorLanguage  # type: ignore
-from packaging.version import Version
-from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
-from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, BumpDockerImageTagInMetadata
+from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
+from pipelines.airbyte_ci.connectors.helpers.format import format_prettier
+from pipelines.airbyte_ci.connectors.helpers.yaml import read_yaml, write_yaml
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
 from pipelines.models.steps import Step, StepResult, StepStatus
 
+
 if TYPE_CHECKING:
     from anyio import Semaphore  # type: ignore
 
-POETRY_LOCK_FILE = "poetry.lock"
-POETRY_TOML_FILE = "pyproject.toml"
+SCHEMAS_DIR_NAME = "schemas"
 
 
 class CheckIsInlineCandidate(Step):
@@ -42,21 +44,36 @@ class CheckIsInlineCandidate(Step):
         super().__init__(context)
 
     async def _run(self) -> StepResult:  # type: ignore
-        connector_dir_entries = await (await self.context.get_connector_dir()).entries()
-        if self.context.connector.language not in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
+        connector = self.context.connector
+        manifest_path = connector.manifest_path
+        python_path = connector.python_source_dir_path
+        if connector.language not in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
             return StepResult(
                 step=self,
                 status=StepStatus.SKIPPED,
                 stderr="The connector is not a Python connector.",
             )
-        if self.context.connector.connector_type != "source":
+        if connector.connector_type != "source":
             return StepResult(
                 step=self,
                 status=StepStatus.SKIPPED,
                 stderr="The connector is not a source connector.",
             )
 
-        # TODO
+        if not manifest_path.is_file():
+            return StepResult(
+                step=self,
+                status=StepStatus.SKIPPED,
+                stderr="The connector does not have a manifest file.",
+            )
+
+        schemas_dir = python_path / SCHEMAS_DIR_NAME
+        if not schemas_dir.is_dir():
+            return StepResult(
+                step=self,
+                status=StepStatus.SKIPPED,
+                stderr="The connector does not have a schemas directory.",
+            )
 
         return StepResult(
             step=self,
@@ -73,9 +90,218 @@ class InlineSchemas(Step):
         super().__init__(context)
 
     async def _run(self) -> StepResult:  # type: ignore
-        self.logger.info("hey!")
+        connector = self.context.connector
+        connector_path = connector.code_directory
+        manifest_path = connector.manifest_path
+        python_path = connector.python_source_dir_path
+        logger = self.logger
+        # airbyte_root_path = self.context.r
+
+        # TODO: does this matter?
+        # if _has_subdirectory(schemas_path):
+        #    logger.info(f"    Multiple schemas directories found.")
+        #    return
+
+        json_streams = _parse_json_streams(python_path)
+        if len(json_streams) == 0:
+            return StepResult(step=self, status=StepStatus.SKIPPED, stderr="No JSON streams found.")
+
+        data = read_yaml(manifest_path)
+        if "streams" not in data:
+            return StepResult(step=self, status=StepStatus.SKIPPED, stderr="No manifest streams found.")
+
+        # find the explit ones and remove or udpate
+        json_loaders = _find_json_loaders(data, [])
+        for loader in json_loaders:
+            logger.info(f"     JSON loader ref: {loader.ref} -> {loader.file_path}")
+
+        _update_json_loaders(connector_path, data, json_streams, json_loaders)
+
+        # go through the declared streams and update the inline schemas
+        for stream in data["streams"]:
+            if isinstance(stream, str):
+                # see if reference
+                if stream.startswith("#"):
+                    yaml_stream = _load_reference(data, stream)
+                    if not yaml_stream:
+                        logger.info(f"    Stream reference not found: {stream}")
+                        continue
+                    if not _get_stream_name(yaml_stream):
+                        logger.info(f"    Stream reference name not found: {stream}")
+                        continue
+                else:
+                    logger.info(f"    Stream reference unknown: {stream}")
+                    continue
+            else:
+                yaml_stream = stream
+
+            stream_name = _get_stream_name(yaml_stream)
+            if not stream_name:
+                logger.info(f"    !! Stream name not found: {stream}")
+                continue
+            if yaml_stream.get("schema_loader") and yaml_stream["schema_loader"].get("type") == "InlineSchemaLoader":
+                continue
+
+            yaml_stream["schema_loader"] = {}
+            schema_loader = yaml_stream["schema_loader"]
+            _update_inline_schema(schema_loader, json_streams, stream_name)
+
+        write_yaml(data, manifest_path)
+        await format_prettier([manifest_path])
+
+        for json_stream in json_streams.values():
+            logger.info(f"     !! JSON schema not found: {json_stream.name}")
 
         return StepResult(step=self, status=StepStatus.SUCCESS)
+
+
+@dataclass
+class JsonStream:
+    name: str
+    schema: dict
+    file_path: Path
+
+
+@dataclass
+class JsonLoaderNode:
+    ref: str
+    file_path: str
+
+
+def _get_stream_name(yaml_stream: dict) -> str | None:
+    if "name" in yaml_stream:
+        return yaml_stream["name"]
+    if "$parameters" in yaml_stream and "name" in yaml_stream["$parameters"]:
+        return yaml_stream["$parameters"]["name"]
+    return None
+
+
+def _update_json_loaders(
+    connector_path: Path,
+    data: dict,
+    streams: dict[str, JsonStream],
+    loaders: List[JsonLoaderNode],
+) -> None:
+    logger = main_logger
+    for loader in loaders:
+        if "{{" in loader.file_path:
+            # remove templated paths and their references
+            (f"    Removing reference: {loader.ref}")
+            _remove_reference(data, None, loader, [])
+            continue
+        else:
+            # direct pointer to a file. update.
+            file_path = Path(os.path.abspath(os.path.join(connector_path, loader.file_path)))
+            if not file_path.is_file():
+                logger.info(f"    JsonFileSchemaLoader not found: {file_path}")
+                continue
+            schema_loader = _load_reference(data, loader.ref)
+            if not schema_loader:
+                logger.info(f"    JsonFileSchemaLoader reference not found: {loader.ref}")
+                continue
+            _update_inline_schema(schema_loader, streams, file_path.stem)
+
+
+def _update_inline_schema(schema_loader: dict, json_streams: dict[str, JsonStream], file_name: str) -> None:
+    logger = main_logger
+    if file_name not in json_streams:
+        logger.info(f"    Stream {file_name} not found in JSON schemas.")
+        return
+
+    json_stream = json_streams[file_name]
+    schema_loader["type"] = "InlineSchemaLoader"
+    schema_loader["schema"] = json_stream.schema
+
+    json_stream.file_path.unlink()
+    json_streams.pop(file_name)
+
+
+def _remove_reference(parent: Any, key: str | int | None, loader: JsonLoaderNode, path: List[str]) -> bool:
+    logger = main_logger
+    if key == None:
+        data = parent
+    else:
+        data = parent[key]
+
+    if isinstance(data, dict):
+        ref = f"#/{'/'.join(path)}"
+        if ref == loader.ref:
+            logger.info(f"        Removing reference: {ref}")
+            return True
+        elif "$ref" in data and data["$ref"] == loader.ref:
+            logger.info(f"        Found reference: {ref}")
+            return True
+        else:
+            todelete = []
+            for key, value in data.items():
+                if _remove_reference(data, key, loader, path + [str(key)]):
+                    todelete.append(key)
+            for key in todelete:
+                del data[key]
+    elif isinstance(data, list):
+        for i, value in enumerate(data):
+            ref = f"Array[{str(i)}]"
+            _remove_reference(data, i, loader, path + [ref])
+
+    return False
+
+
+def _load_reference(data: dict, ref: str) -> dict | None:
+    yaml_stream = data
+    path = ref.split("/")
+    for p in path:
+        if p == "#":
+            continue
+        if p.startswith("Array["):
+            i = int(p[6:-1])
+            if not isinstance(yaml_stream, list) or len(yaml_stream) <= i:
+                return None
+            yaml_stream = yaml_stream[i]
+            continue
+        if not p in yaml_stream:
+            return None
+        yaml_stream = yaml_stream[p]
+    return yaml_stream
+
+
+def _find_json_loaders(data: Any, path: List[str]) -> List[JsonLoaderNode]:
+    logger = main_logger
+    loaders: List[JsonLoaderNode] = []
+    if isinstance(data, dict):
+        if "type" in data and data["type"] == "JsonFileSchemaLoader":
+            ref = f"#/{'/'.join(path)}"
+            if "file_path" in data:
+                loaders.append(JsonLoaderNode(ref, data["file_path"]))
+            else:
+                logger.info(f"    !! JsonFileSchemaLoader missing file_path: {ref}")
+        else:
+            for key, value in data.items():
+                loaders += _find_json_loaders(value, path + [key])
+    elif isinstance(data, list):
+        for i, value in enumerate(data):
+            loaders += _find_json_loaders(value, path + [f"Array[{str(i)}]"])
+    return loaders
+
+
+def _parse_json_streams(python_path: Path) -> dict[str, JsonStream]:
+    streams: dict[str, JsonStream] = {}
+    schemas_path = python_path / SCHEMAS_DIR_NAME
+    if not schemas_path.is_dir():
+        return streams
+
+    for schema_file in schemas_path.iterdir():
+        if schema_file.is_file() and schema_file.suffix == ".json":
+            stream_name = schema_file.stem
+            with schema_file.open("r") as file:
+                # read json
+                schema = json.load(file)
+                streams[stream_name] = JsonStream(
+                    name=stream_name,
+                    schema=schema,
+                    file_path=schema_file,
+                )
+
+    return streams
 
 
 async def run_connector_migrate_to_inline_schemas_pipeline(context: ConnectorContext, semaphore: "Semaphore") -> Report:
