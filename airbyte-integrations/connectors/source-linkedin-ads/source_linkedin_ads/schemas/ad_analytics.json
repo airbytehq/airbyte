@@ -113,6 +113,9 @@
         "type": ["null", "string"]
       }
     },
+    "string_of_pivot_values": {
+      "type": ["null", "string"]
+    },
     "postClickJobApplications": {
       "type": ["null", "number"]
     },

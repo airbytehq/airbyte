@@ -3,8 +3,9 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Callable, Iterable
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Dict, Iterable, List, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 import pytest
 from airbyte_protocol.models import AirbyteMessage, Type  # type: ignore
@@ -42,11 +43,11 @@ def write_string_to_test_artifact(request: SubRequest, content: str, filename: s
 
 def get_and_write_diff(
     request: SubRequest,
-    control_data: Union[List, Dict],
-    target_data: Union[List, Dict],
+    control_data: Union[list, dict],
+    target_data: Union[list, dict],
     filepath: str,
     ignore_order: bool,
-    exclude_paths: Optional[List[str]],
+    exclude_paths: Optional[list[str]],
 ) -> str:
     logger = get_test_logger(request)
     diff = DeepDiff(
@@ -83,7 +84,7 @@ def get_and_write_diff(
     return ""
 
 
-def fail_test_on_failing_execution_results(record_property: Callable, execution_results: List[ExecutionResult]) -> None:
+def fail_test_on_failing_execution_results(record_property: Callable, execution_results: list[ExecutionResult]) -> None:
     error_messages = []
     for execution_result in execution_results:
         if not execution_result.success:
@@ -103,12 +104,12 @@ def fail_test_on_failing_execution_results(record_property: Callable, execution_
         pytest.fail("\n".join(error_messages))
 
 
-def tail_file(file_path: Path, n: int = MAX_LINES_IN_REPORT) -> List[str]:
-    with open(file_path, "r") as f:
+def tail_file(file_path: Path, n: int = MAX_LINES_IN_REPORT) -> list[str]:
+    with open(file_path) as f:
         # Move the cursor to the end of the file
         f.seek(0, 2)
         file_size = f.tell()
-        lines: List[str] = []
+        lines: list[str] = []
         read_size = min(4096, file_size)
         cursor = file_size - read_size
 
