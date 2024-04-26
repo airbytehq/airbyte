@@ -1,7 +1,7 @@
 *
 !Dockerfile
 !main.py
-!source_tiktok_marketing
+!source_snapchat_marketing
 !README.md
 !poetry.lock
 !pyproject.toml
