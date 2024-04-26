@@ -7,9 +7,12 @@ package io.airbyte.integrations.destination.databricks.typededupe
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
+import io.airbyte.cdk.db.jdbc.JdbcSourceOperations
+import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteRecordMessage
 import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
+import io.airbyte.commons.functional.CheckedFunction
 import io.airbyte.commons.json.Jsons
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest
@@ -26,14 +29,24 @@ import io.airbyte.integrations.destination.databricks.model.DatabricksConnectorC
 import io.airbyte.integrations.destination.databricks.sync.DatabricksStreamOperations
 import java.nio.file.Files
 import java.nio.file.Path
+import java.sql.Connection
+import java.sql.ResultSet
+import java.sql.SQLException
+import java.time.Duration
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import java.util.Map
+import java.util.concurrent.TimeUnit
+import java.util.stream.Collectors
 import java.util.stream.Stream
+import kotlin.collections.List
 import kotlin.streams.asSequence
+import org.apache.commons.text.StringSubstitutor
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.mockito.Mockito.*
 
 class DatabricksSqlGeneratorIntegrationTest :
@@ -56,7 +69,7 @@ class DatabricksSqlGeneratorIntegrationTest :
             DatabricksDestinationHandler(
                 connectorConfig.database,
                 jdbcDatabase,
-                connectorConfig.rawSchemaOverride
+                connectorConfig.rawSchemaOverride,
             )
     override val sqlGenerator: SqlGenerator
         get() = DatabricksSqlGenerator(DatabricksNamingTransformer(), connectorConfig.database)
@@ -96,9 +109,9 @@ class DatabricksSqlGeneratorIntegrationTest :
                         PartialAirbyteRecordMessage()
                             .withEmittedAt(
                                 ZonedDateTime.parse(
-                                        it.get("_airbyte_extracted_at").asText(),
-                                        DateTimeFormatter.ISO_ZONED_DATE_TIME
-                                    )
+                                    it.get("_airbyte_extracted_at").asText(),
+                                    DateTimeFormatter.ISO_ZONED_DATE_TIME,
+                                )
                                     .toInstant()
                                     .toEpochMilli(),
                             ),
@@ -127,6 +140,8 @@ class DatabricksSqlGeneratorIntegrationTest :
             }
                 ?: "NULL"
         }
+        val columnStr = columnNames.joinToString { "`$it`" }
+        val colNumberStr = IntRange(1, if(includeCdcDeletedAt) 19 else 18).joinToString { "`col$it`" }
         val values =
             records
                 .stream()
@@ -143,44 +158,10 @@ class DatabricksSqlGeneratorIntegrationTest :
         val insertRecordsSql =
             """
             | INSERT INTO ${connectorConfig.database}.${streamId.finalTableId(DatabricksSqlGenerator.QUOTE, suffix!!.lowercase())} (
-            |   _airbyte_raw_id,
-            |   _airbyte_extracted_at,
-            |   _airbyte_meta,
-            |   `id1`, 
-            |   `id2`, 
-            |   `updated_at`, 
-            |   `struct`, 
-            |   `array`, 
-            |   `string`, 
-            |   `number`, 
-            |   `integer`, 
-            |   `boolean`, 
-            |   `timestamp_with_timezone`, 
-            |   `timestamp_without_timezone`, 
-            |   `time_with_timezone`, 
-            |   `time_without_timezone`, 
-            |   `date`, 
-            |   `unknown`${if(includeCdcDeletedAt) ", `_ab_cdc_deleted_at`" else ""}
+            | $columnStr
             | )
             | SELECT
-            |   `col1`,
-            |   `col2`,
-            |   `col3`,
-            |   `col4`,
-            |   `col5`,
-            |   `col6`,
-            |   `col7`,
-            |   `col8`,
-            |   `col9`,
-            |   `col10`,
-            |   `col11`,
-            |   `col12`,
-            |   `col13`,
-            |   `col14`,
-            |   `col15`,
-            |   `col16`,
-            |   `col17`,
-            |   `col18`${if(includeCdcDeletedAt) ", `col19`" else ""}
+            | $colNumberStr
             | FROM 
             | VALUES
             |${values.replaceIndent("   ")}
@@ -194,19 +175,54 @@ class DatabricksSqlGeneratorIntegrationTest :
     }
 
     override fun dumpFinalTableRecords(streamId: StreamId, suffix: String?): List<JsonNode> {
-        TODO("Not yet implemented")
+        return jdbcDatabase.bufferedResultSetQuery<JsonNode>(
+            { connection: Connection ->
+                connection.createStatement().executeQuery(
+                    """
+                        SELECT *
+                        FROM ${connectorConfig.database}.${streamId.finalTableId(DatabricksSqlGenerator.QUOTE, suffix!!)} 
+                        ORDER BY ${JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT} ASC
+                    """.trimIndent()
+                )
+            },
+            { queryContext: ResultSet ->
+                JdbcSourceOperations().rowToJson(
+                    queryContext,
+                )
+            },
+        )
+    }
+
+    private fun dumpTable(columns: List<String>,
+                          database: JdbcDatabase,
+                          tableIdentifier: String): List<JsonNode> {
+        return database.bufferedResultSetQuery<JsonNode>(
+            { connection: Connection ->
+                connection.createStatement().executeQuery(
+                    """
+                        SELECT ${columns.joinToString(",")}
+                        FROM $tableIdentifier ORDER BY ${JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT} ASC
+                    """.trimIndent()
+                )
+            },
+            { queryContext: ResultSet ->
+                JdbcSourceOperations().rowToJson(
+                    queryContext,
+                )
+            },
+        )
     }
 
     override fun teardownNamespace(namespace: String?) {
-        // jdbcDatabase.execute("DROP SCHEMA IF EXISTS
-        // ${connectorConfig.database}.${namespace!!.lowercase(Locale.getDefault())} CASCADE")
-        println("Skipping teardown for now, re-enable $namespace")
+        jdbcDatabase.execute("DROP SCHEMA IF EXISTS ${connectorConfig.database}.${namespace!!.lowercase(Locale.getDefault())} CASCADE")
+//        println("Skipping teardown for now, re-enable $namespace")
     }
 
     @Disabled override fun testCreateTableIncremental() {}
 
     @Disabled("No V1 Table migration for databricks") override fun testV1V2migration() {}
 
+    @Timeout(value = 5, unit = TimeUnit.MINUTES)
     @Test
     fun randomTest() {
         //        createRawTable(incrementalDedupStream.id)
@@ -269,5 +285,6 @@ class DatabricksSqlGeneratorIntegrationTest :
                 "sqlgenerator/cdcupdate_inputrecords_final.jsonl",
             ),
         )
+        println(dumpFinalTableRecords(cdcIncrementalDedupStream.id, ""))
     }
 }

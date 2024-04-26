@@ -43,3 +43,31 @@ dependencies {
     implementation 'com.databricks:databricks-sdk-java:0.23.0'
 
 }
+
+integrationTestJava {
+    // This is needed to make the destination-snowflake tests succeed - https://github.com/snowflakedb/snowflake-jdbc/issues/589#issuecomment-983944767
+    jvmArgs = ["-Dio.netty.tryReflectionSetAccessible=true","--add-opens=java.base/java.nio=ALL-UNNAMED", "--add-opens=jdk.unsupported/sun.misc=ALL-UNNAMED", "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED", "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]
+}
+
+test {
+    jvmArgs = ["-Dio.netty.tryReflectionSetAccessible=true","--add-opens=java.base/java.nio=ALL-UNNAMED", "--add-opens=jdk.unsupported/sun.misc=ALL-UNNAMED", "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED", "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]
+}
+
+//test {
+//    jvmArgs("--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED \\\n" +
+//            "          --add-opens=java.base/sun.nio.ch=ALL-UNNAMED \\\n" +
+//            "          --add-opens=java.management/com.sun.jmx.mbeanserver=ALL-UNNAMED \\\n" +
+//            "          --add-opens=jdk.internal.jvmstat/sun.jvmstat.monitor=ALL-UNNAMED \\\n" +
+//            "          --add-opens=java.base/sun.reflect.generics.reflectiveObjects=ALL-UNNAMED \\\n" +
+//            "          --add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED \\\n" +
+//            "          --add-opens=java.base/java.io=ALL-UNNAMED \\\n" +
+//            "          --add-opens=java.base/java.nio=ALL-UNNAMED \\\n" +
+//            "          --add-opens=java.base/java.util=ALL-UNNAMED \\\n" +
+//            "          --add-opens=java.base/java.util.concurrent=ALL-UNNAMED \\\n" +
+//            "          --add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED \\\n" +
+//            "          --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED \\\n" +
+//            "          --add-opens=java.base/java.lang=ALL-UNNAMED \\\n" +
+//            "          --add-opens=java.base/java.lang.invoke=ALL-UNNAMED \\\n" +
+//            "          --add-opens=java.base/java.math=ALL-UNNAMED \\\n" +
+//            "          --add-opens=java.sql/java.sql=ALL-UNNAMED \\")
+//}

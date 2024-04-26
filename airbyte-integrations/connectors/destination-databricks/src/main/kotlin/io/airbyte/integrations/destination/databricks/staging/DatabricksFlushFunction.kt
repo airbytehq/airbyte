@@ -8,7 +8,6 @@ import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFu
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.integrations.destination.databricks.sync.DatabricksSyncOperations
 import io.airbyte.protocol.models.v0.StreamDescriptor
-import java.util.*
 import java.util.stream.Stream
 
 class DatabricksFlushFunction(
@@ -16,7 +15,7 @@ class DatabricksFlushFunction(
     private val syncOperations: DatabricksSyncOperations
 ) : DestinationFlushFunction {
 
-    override fun flush(decs: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
-        syncOperations.flushStream(decs, stream)
+    override fun flush(streamDescriptor: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
+        syncOperations.flushStream(streamDescriptor, stream)
     }
 }
