@@ -138,7 +138,7 @@ def test_issues_fields_stream(config, mock_fields_response):
     stream = find_stream("issue_fields", config)
     records = list(read_full_refresh(stream))
     
-    assert len(records) == 5
+    assert len(records) == 6
     assert len(responses.calls) == 1
 
 
@@ -149,11 +149,12 @@ def test_python_issues_fields_ids_by_name(config, mock_fields_response):
     stream = IssueFields(**args)
 
     expected_ids_by_name = {
-        'Status Category Changed': ['statuscategorychangedate'],
-        'Issue Type': ['issuetype'],
-        'Parent': ['parent'],
-        'Issue Type2': ['issuetype2'],
-        'Issue Type3': ['issuetype3']
+        "Development": ["PrIssueId"],
+        "Status Category Changed": ["statuscategorychangedate"],
+        "Issue Type": ["issuetype"],
+        "Parent": ["parent"],
+        "Issue Type2": ["issuetype2"],
+        "Issue Type3": ["issuetype3"]
     }
     assert expected_ids_by_name == stream.field_ids_by_name()
 
@@ -666,12 +667,37 @@ def test_python_pull_requests_stream_has_pull_request(config, dev_field, has_pul
     issue_fields_stream = IssueFields(**args)
     incremental_args = {
         **args,
-        "start_date": config["start_date"],
+        "start_date": pendulum.parse(config["start_date"]),
         "lookback_window_minutes": 0,
     }
     pull_requests_stream = PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args)
 
     assert has_pull_request == pull_requests_stream.has_pull_requests(dev_field)
+
+
+@responses.activate
+def test_python_pull_requests_stream_has_pull_request(config, mock_fields_response, mock_projects_responses_additional_project, mock_issues_responses_with_date_filter):
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
+    issues_stream = Issues(**args)
+    issue_fields_stream = IssueFields(**args)
+    incremental_args = {
+        **args,
+        "start_date": pendulum.parse(config["start_date"]),
+        "lookback_window_minutes": 0,
+    }
+    stream = PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args)
+
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/dev-status/1.0/issue/detail?maxResults=50&issueId=10627&applicationType=GitHub&dataType=branch",
+        json={"detail": [{"id": "1", "name": "Source Jira: pull request"}]},
+    )
+
+    records = list(read_incremental(stream, {"updated": "2021-01-01T00:00:00Z"}))
+
+    assert len(records) == 1
+    assert len(responses.calls) == 4
 
 
 @pytest.mark.parametrize(
