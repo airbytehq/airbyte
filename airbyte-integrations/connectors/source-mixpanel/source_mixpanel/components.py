@@ -70,7 +70,9 @@ class MixpanelHttpRequester(HttpRequester):
                 # we skip this block, if self.reqs_per_hour_limit = 0,
                 # in all other cases wait for X seconds to match API limitations
                 # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
-                self.logger.info(f"Sleep for {3600 / self.reqs_per_hour_limit} seconds to match API limitations after reading from {self.name}")
+                self.logger.info(
+                    f"Sleep for {3600 / self.reqs_per_hour_limit} seconds to match API limitations after reading from {self.name}"
+                )
                 time.sleep(3600 / self.reqs_per_hour_limit)
 
         return super().send_request(**kwargs)
@@ -106,7 +108,7 @@ class FunnelsHttpRequester(MixpanelHttpRequester):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().get_request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params['unit'] = 'day'
+        params["unit"] = "day"
         return params
 
 

@@ -128,6 +128,19 @@ definitions:
       $ref: "#/definitions/retriever"
       record_selector:
         $ref: "#/definitions/selector_empty_dpath"
+        record_filter:
+          condition: "{{ record['created'] >= stream_state.created if stream_state.created else true }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created
+      cursor_datetime_formats:
+        - "%Y-%m-%d %H:%M:%S"
+        - "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config["start_date"] }}'
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
   paginator:
     type: DefaultPaginator
@@ -157,6 +170,21 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/paginator"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record['$properties']['$last_seen'] >= stream_state.last_seen if stream_state.last_seen else true }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: last_seen
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S"
+        - "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config["start_date"] }}'
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     transformations:
       - class_name: "source_mixpanel.components.EngageTransformation"
     schema_loader:
