@@ -22,7 +22,12 @@ async def format_prettier(context: ConnectorContext, files: List[Path]):
     result = subprocess.run(command, capture_output=True, text=True)
     if result.returncode == 0:
         print("Files formatted successfully.")
-        print(result.stdout)
     else:
         print("Error formatting files.")
-        print(result.stderr)
+
+
+def verify_formatters():
+    try:
+        subprocess.run(["npx", "--version"], check=True)
+    except subprocess.CalledProcessError:
+        raise Exception("npx is required to format files. Please install Node.js and npm.")
