@@ -430,6 +430,15 @@ class RegressionTests(Step):
                 .with_workdir("/app")
                 .with_exec(["pip", "install", "poetry"])
                 .with_exec(
+                    [
+                        "sed",
+                        "-i",
+                        "-E",
+                        r"s,git@github\.com:airbytehq/airbyte-platform-internal,https://github.com/airbytehq/airbyte-platform-internal.git,",
+                        "pyproject.toml",
+                    ]
+                )
+                .with_exec(
                     ["poetry", "source", "add", "--priority=supplemental", "airbyte-platform-internal-source",
                      "https://github.com/airbytehq/airbyte-platform-internal.git"]
                 ).with_exec(
