@@ -94,7 +94,10 @@ def pytest_configure(config: Config) -> None:
     user_email = get_user_email()
     config.stash[stash_keys.RUN_IN_AIRBYTE_CI] = bool(os.getenv("RUN_IN_AIRBYTE_CI", False))
     config.stash[stash_keys.IS_PRODUCTION_CI] = bool(os.getenv("CI", False))
-    prompt_for_confirmation(user_email)
+
+    if not config.stash[stash_keys.RUN_IN_AIRBYTE_CI]:
+        prompt_for_confirmation(user_email)
+
     track_usage(
         "production-ci"
         if config.stash[stash_keys.IS_PRODUCTION_CI]
