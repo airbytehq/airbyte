@@ -3,28 +3,28 @@
   "type": "object",
   "properties": {
     "self": {
-      "type": "string",
       "description": "The URL of the status category.",
+      "type": "string",
       "readOnly": true
     },
     "id": {
-      "type": "integer",
       "description": "The ID of the status category.",
+      "type": "integer",
       "readOnly": true
     },
     "key": {
-      "type": "string",
       "description": "The key of the status category.",
+      "type": "string",
       "readOnly": true
     },
     "colorName": {
-      "type": "string",
       "description": "The name of the color used to represent the status category.",
+      "type": "string",
       "readOnly": true
     },
     "name": {
-      "type": "string",
       "description": "The name of the status category.",
+      "type": "string",
       "readOnly": true
     }
   },

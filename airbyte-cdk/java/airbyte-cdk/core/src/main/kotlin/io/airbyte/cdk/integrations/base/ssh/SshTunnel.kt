@@ -14,6 +14,7 @@ import io.airbyte.commons.string.Strings
 import java.io.*
 import java.net.InetSocketAddress
 import java.net.MalformedURLException
+import java.net.URI
 import java.net.URL
 import java.security.*
 import java.time.Duration
@@ -40,6 +41,43 @@ import org.slf4j.LoggerFactory
  */
 open class SshTunnel
 @JvmOverloads
+/**
+ *
+ * @param originalConfig
+ * - the full config that was passed to the source.
+ * @param hostKey
+ * - a list of keys that point to the database host name. should be pointing to where in the config
+ * remoteDatabaseHost is found.
+ * @param portKey
+ * - a list of keys that point to the database port. should be pointing to where in the config
+ * remoteDatabasePort is found.
+ * @param endPointKey
+ * - key that points to the endpoint URL (this is commonly used for REST-based services such as
+ * Elastic and MongoDB)
+ * @param remoteServiceUrl
+ * - URL of the remote endpoint (this is commonly used for REST-based * services such as Elastic and
+ * MongoDB)
+ * @param tunnelMethod
+ * - the type of ssh method that should be used (includes not using SSH at all).
+ * @param tunnelHost
+ * - host name of the machine to which we will establish an ssh connection (e.g. hostname of the
+ * bastion).
+ * @param tunnelPort
+ * - port of the machine to which we will establish an ssh connection. (e.g. port of the bastion).
+ * @param tunnelUser
+ * - user that is allowed to access the tunnelHost.
+ * @param sshKey
+ * - the ssh key that will be used to make the ssh connection. can be null if we are using
+ * tunnelUserPassword instead.
+ * @param tunnelUserPassword
+ * - the password for the tunnelUser. can be null if we are using sshKey instead.
+ * @param remoteServiceHost
+ * - the actual host name of the remote service (as it is known to the tunnel host).
+ * @param remoteServicePort
+ * - the actual port of the remote service (as it is known to the tunnel host).
+ * @param connectionOptions
+ * - optional connection options for ssh client.
+ */
 constructor(
     val originalConfig: JsonNode,
     private val hostKey: List<String>?,
@@ -84,44 +122,6 @@ constructor(
     private var sshclient: SshClient? = null
     private var tunnelSession: ClientSession? = null
 
-    /**
-     *
-     * @param config
-     * - the full config that was passed to the source.
-     * @param hostKey
-     * - a list of keys that point to the database host name. should be pointing to where in the
-     * config remoteDatabaseHost is found.
-     * @param portKey
-     * - a list of keys that point to the database port. should be pointing to where in the config
-     * remoteDatabasePort is found.
-     * @param endPointKey
-     * - key that points to the endpoint URL (this is commonly used for REST-based services such as
-     * Elastic and MongoDB)
-     * @param remoteServiceUrl
-     * - URL of the remote endpoint (this is commonly used for REST-based * services such as Elastic
-     * and MongoDB)
-     * @param tunnelMethod
-     * - the type of ssh method that should be used (includes not using SSH at all).
-     * @param tunnelHost
-     * - host name of the machine to which we will establish an ssh connection (e.g. hostname of the
-     * bastion).
-     * @param tunnelPort
-     * - port of the machine to which we will establish an ssh connection. (e.g. port of the
-     * bastion).
-     * @param tunnelUser
-     * - user that is allowed to access the tunnelHost.
-     * @param sshKey
-     * - the ssh key that will be used to make the ssh connection. can be null if we are using
-     * tunnelUserPassword instead.
-     * @param tunnelUserPassword
-     * - the password for the tunnelUser. can be null if we are using sshKey instead.
-     * @param remoteServiceHost
-     * - the actual host name of the remote service (as it is known to the tunnel host).
-     * @param remoteServicePort
-     * - the actual port of the remote service (as it is known to the tunnel host).
-     * @param connectionOptions
-     * - optional connection options for ssh client.
-     */
     init {
         Preconditions.checkNotNull(tunnelMethod)
         this.tunnelMethod = tunnelMethod
@@ -152,9 +152,9 @@ constructor(
                 (remoteServiceHost != null && remoteServicePort > 0) || remoteServiceUrl != null
             )
             if (remoteServiceUrl != null) {
-                var urlObject: URL? = null
+                val urlObject: URL
                 try {
-                    urlObject = URL(remoteServiceUrl)
+                    urlObject = URI(remoteServiceUrl).toURL()
                 } catch (e: MalformedURLException) {
                     AirbyteTraceMessageUtility.emitConfigErrorTrace(
                         e,
@@ -163,9 +163,9 @@ constructor(
                             remoteServiceUrl
                         )
                     )
+                    throw RuntimeException("Failed to parse URL of remote service")
                 }
-                Preconditions.checkNotNull(urlObject, "Failed to parse URL of remote service")
-                this.remoteServiceHost = urlObject!!.host
+                this.remoteServiceHost = urlObject.host
                 this.remoteServicePort = urlObject.port
                 this.remoteServiceProtocol = urlObject.protocol
                 this.remoteServicePath = urlObject.path
@@ -214,15 +214,19 @@ constructor(
                 }
                 if (endPointKey != null) {
                     val tunnelEndPointURL =
-                        URL(
-                            remoteServiceProtocol!!,
-                            SshdSocketAddress.LOCALHOST_ADDRESS.hostName,
-                            tunnelLocalPort,
-                            remoteServicePath!!
-                        )
+                        URI(
+                                remoteServiceProtocol,
+                                null,
+                                SshdSocketAddress.LOCALHOST_ADDRESS.hostName,
+                                tunnelLocalPort,
+                                remoteServicePath,
+                                null,
+                                null
+                            )
+                            .toURL()
                     Jsons.replaceNestedString(
                         clone,
-                        Arrays.asList(endPointKey),
+                        listOf(endPointKey),
                         tunnelEndPointURL.toString()
                     )
                 }
@@ -314,7 +318,7 @@ constructor(
     /** Starts an ssh session; wrap this in a try-finally and use closeTunnel() to close it. */
     open fun openTunnel(client: SshClient): ClientSession? {
         try {
-            client!!.start()
+            client.start()
             val session =
                 client
                     .connect(
@@ -368,16 +372,7 @@ constructor(
                 throw RuntimeException(e)
             }
         } catch (e: GeneralSecurityException) {
-            if (
-                e is SshException &&
-                    e.message!!
-                        .lowercase()
-                        .contains("failed to get operation result within specified timeout")
-            ) {
-                throw ConfigErrorException(SSH_TIMEOUT_DISPLAY_MESSAGE, e)
-            } else {
-                throw RuntimeException(e)
-            }
+            throw RuntimeException(e)
         }
     }
 
@@ -454,7 +449,7 @@ constructor(
 
         private fun getSshConnectionOptions(
             config: JsonNode?
-        ): @NotNull Optional<SshConnectionOptions>? {
+        ): @NotNull Optional<SshConnectionOptions> {
             // piggybacking on JsonNode config to make it configurable at connector level.
             val connectionOptionConfig = Jsons.getOptional(config, CONNECTION_OPTIONS_KEY)
             val connectionOptions: Optional<SshConnectionOptions>

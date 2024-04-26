@@ -93,22 +93,20 @@ constructor(
 
     @Throws(Exception::class)
     fun query(sql: String?, vararg params: QueryParameterValue): Stream<JsonNode> {
-        return query(sql, (if (params == null) emptyList() else Arrays.asList(*params).toList()))
+        return query(sql, listOf(*params))
     }
 
     @Throws(Exception::class)
     override fun unsafeQuery(sql: String?, vararg params: String?): Stream<JsonNode> {
         val parameterValueList =
-            if (params == null) emptyList()
-            else
-                Arrays.stream(params)
-                    .map { param: String? ->
-                        QueryParameterValue.newBuilder()
-                            .setValue(param)
-                            .setType(StandardSQLTypeName.STRING)
-                            .build()
-                    }
-                    .collect(Collectors.toList())
+            Arrays.stream(params)
+                .map { param: String? ->
+                    QueryParameterValue.newBuilder()
+                        .setValue(param)
+                        .setType(StandardSQLTypeName.STRING)
+                        .build()
+                }
+                .collect(Collectors.toList())
 
         return query(sql, parameterValueList)
     }
@@ -158,17 +156,17 @@ constructor(
      */
     fun getProjectTables(projectId: String?): List<Table> {
         val tableList: MutableList<Table> = ArrayList()
-        bigQuery!!
+        bigQuery
             .listDatasets(projectId)
             .iterateAll()
             .forEach(
                 Consumer { dataset: Dataset ->
-                    bigQuery!!
+                    bigQuery
                         .listTables(dataset.datasetId)
                         .iterateAll()
                         .forEach(
                             Consumer { table: Table ->
-                                tableList.add(bigQuery!!.getTable(table.tableId))
+                                tableList.add(bigQuery.getTable(table.tableId))
                             }
                         )
                 }
@@ -184,10 +182,10 @@ constructor(
      */
     fun getDatasetTables(datasetId: String?): List<Table> {
         val tableList: MutableList<Table> = ArrayList()
-        bigQuery!!
+        bigQuery
             .listTables(datasetId)
             .iterateAll()
-            .forEach(Consumer { table: Table -> tableList.add(bigQuery!!.getTable(table.tableId)) })
+            .forEach(Consumer { table: Table -> tableList.add(bigQuery.getTable(table.tableId)) })
         return tableList
     }
 
@@ -195,7 +193,7 @@ constructor(
         // allows deletion of a dataset that has contents
         val option = BigQuery.DatasetDeleteOption.deleteContents()
 
-        val success = bigQuery!!.delete(dataSetId, option)
+        val success = bigQuery.delete(dataSetId, option)
         if (success) {
             LOGGER.info("BQ Dataset $dataSetId deleted...")
         } else {
@@ -205,9 +203,7 @@ constructor(
 
     private fun executeQuery(queryJob: Job): ImmutablePair<Job?, String?> {
         val completedJob = waitForQuery(queryJob)
-        if (completedJob == null) {
-            throw RuntimeException("Job no longer exists")
-        } else if (completedJob.status.error != null) {
+        if (completedJob.status.error != null) {
             // You can also look at queryJob.getStatus().getExecutionErrors() for all
             // errors, not just the latest one.
             return ImmutablePair.of(null, (completedJob.status.error.toString()))

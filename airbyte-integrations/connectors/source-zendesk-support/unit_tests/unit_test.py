@@ -1155,6 +1155,32 @@ class TestTicketSubstream:
         records = list(stream.parse_response(mocked_response, stream_state=stream_state))
         assert records == [{"id": "test id", "updated_at": "2024-04-17T19:34:06Z"}]
 
+    def test_read_ticket_metrics_with_error(self, requests_mock):
+        stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
+        requests_mock.get(
+            f"https://sandbox.zendesk.com/api/v2/tickets/13/metrics",
+            json={"error": "RecordNotFound", "description": "Not found"}
+        )
+
+        records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"ticket_id": "13"}))
+
+        assert records == []
+
+    @pytest.mark.parametrize(
+        "status_code, should_retry",
+        (
+                (200, False),
+                (404, False),
+                (403, False),
+                (500, True),
+                (429, True),
+        )
+    )
+    def test_ticket_metrics_should_retry(self, status_code, should_retry):
+        stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
+        mocked_response = Mock(status_code=status_code)
+        assert stream.should_retry(mocked_response) == should_retry
+
 
 def test_read_ticket_audits_504_error(requests_mock, caplog):
     requests_mock.get("https://subdomain.zendesk.com/api/v2/ticket_audits", status_code=504, text="upstream request timeout")

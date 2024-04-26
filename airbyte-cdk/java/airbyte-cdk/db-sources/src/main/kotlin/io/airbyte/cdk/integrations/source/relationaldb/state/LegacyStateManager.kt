@@ -97,7 +97,8 @@ class LegacyStateManager(dbState: DbState, catalog: ConfiguredAirbyteCatalog) :
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(LegacyStateManager::class.java)
+        private val LOGGER: Logger =
+            @Suppress("deprecation") LoggerFactory.getLogger(LegacyStateManager::class.java)
 
         /** [Function] that extracts the cursor from the stream state. */
         private val CURSOR_FUNCTION = DbStreamState::getCursor
@@ -112,7 +113,7 @@ class LegacyStateManager(dbState: DbState, catalog: ConfiguredAirbyteCatalog) :
         /** [Function] that creates an [AirbyteStreamNameNamespacePair] from the stream state. */
         private val NAME_NAMESPACE_PAIR_FUNCTION =
             Function<DbStreamState, AirbyteStreamNameNamespacePair?> { s: DbStreamState ->
-                AirbyteStreamNameNamespacePair(s!!.streamName, s.streamNamespace)
+                AirbyteStreamNameNamespacePair(s.streamName, s.streamNamespace)
             }
     }
 }

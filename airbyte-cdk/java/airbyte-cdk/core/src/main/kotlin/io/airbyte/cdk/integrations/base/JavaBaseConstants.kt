@@ -35,8 +35,8 @@ object JavaBaseConstants {
     // Meta was introduced later, so to avoid triggering raw table soft-reset in v1->v2
     // use this column list.
     @JvmField
-    val V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META: Set<String> =
-        java.util.Set.of(
+    val V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META: List<String> =
+        java.util.List.of(
             COLUMN_NAME_AB_RAW_ID,
             COLUMN_NAME_AB_EXTRACTED_AT,
             COLUMN_NAME_AB_LOADED_AT,
@@ -56,4 +56,9 @@ object JavaBaseConstants {
         java.util.List.of(COLUMN_NAME_AB_RAW_ID, COLUMN_NAME_AB_EXTRACTED_AT, COLUMN_NAME_AB_META)
 
     const val DEFAULT_AIRBYTE_INTERNAL_NAMESPACE: String = "airbyte_internal"
+    enum class DestinationColumns(val rawColumns: List<String>) {
+        V2_WITH_META(JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES),
+        V2_WITHOUT_META(JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META),
+        LEGACY(JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS)
+    }
 }
