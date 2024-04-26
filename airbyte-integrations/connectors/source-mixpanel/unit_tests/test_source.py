@@ -187,7 +187,7 @@ def test_streams_string_date(requests_mock, config_raw):
             False,
             "Required parameter 'project_id' missing or malformed. Please provide a valid project ID.",
         ),
-        ({"credentials": {"api_secret": "secret"}, "region": "EU"}, True, None),
+        ({"credentials": {"api_secret": "secret"}, "region": "EU", "start_date": "2021-02-01T00:00:00Z"}, True, None),
         (
             {
                 "credentials": {"username": "user", "secret": "secret", "project_id": 2397709},

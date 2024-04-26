@@ -77,7 +77,7 @@ def cohorts_response():
                 "count": 150,
                 "is_visible": 1,
                 "description": "This cohort is visible, has an id = 1000, and currently has 150 users.",
-                "created": "2019-03-19 23:49:51",
+                "created": "2022-01-01 23:49:51",
                 "project_id": 1,
                 "id": 1000,
                 "name": "Cohort One",
@@ -86,7 +86,7 @@ def cohorts_response():
                 "count": 25,
                 "is_visible": 0,
                 "description": "This cohort isn't visible, has an id = 2000, and currently has 25 users.",
-                "created": "2019-04-02 23:22:01",
+                "created": "2023-01-01 23:22:01",
                 "project_id": 1,
                 "id": 2000,
                 "name": "Cohort Two",
@@ -103,15 +103,15 @@ def init_stream(name='', config=None):
 
 
 def test_cohorts_stream_incremental(requests_mock, cohorts_response, config_raw):
-
+    """Filter 1 old value, 1 new record should be returned"""
+    config_raw['start_date'] = '2022-01-01T00:00:00Z'
     requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "cohorts/list", cohorts_response)
 
     cohorts_stream = init_stream('cohorts', config=config_raw)
 
-    # records = read_incremental(cohorts_stream, stream_state={"created": "2019-04-02 23:22:01"}, cursor_field=["created"])
-    records = read_incremental(cohorts_stream, stream_state={}, cursor_field=["created"])
+    records = read_incremental(cohorts_stream, stream_state={"created": "2022-04-19 23:22:01"}, cursor_field=["created"])
 
-    assert len(list(records)) == 2
+    assert len(list(records)) == 1
 
 
 @pytest.fixture
@@ -128,7 +128,8 @@ def engage_response():
                 {
                     "$distinct_id": "9d35cd7f-3f06-4549-91bf-198ee58bb58a",
                     "$properties": {
-                        "$created": "2008-12-12T11:20:47",
+                        "$created": "2022-01-01T11:20:47",
+                        "$last_seen": "2022-01-01T11:20:47",
                         "$browser": "Chrome",
                         "$browser_version": "83.0.4103.116",
                         "$email": "clark@asw.com",
@@ -140,7 +141,8 @@ def engage_response():
                 {
                     "$distinct_id": "cd9d357f-3f06-4549-91bf-158bb598ee8a",
                     "$properties": {
-                        "$created": "2008-11-12T11:20:47",
+                        "$created": "2023-01-01T11:20:47",
+                        "$last_seen": "2023-01-01T11:20:47",
                         "$browser": "Firefox",
                         "$browser_version": "83.0.4103.116",
                         "$email": "bruce@asw.com",
@@ -155,6 +157,7 @@ def engage_response():
 
 
 def test_engage_stream_incremental(requests_mock, engage_response, config_raw):
+    """Filter 1 old value, 1 new record should be returned"""
     engage_properties = {
         "results": {
             "$browser": {
@@ -167,17 +170,18 @@ def test_engage_stream_incremental(requests_mock, engage_response, config_raw):
             }
         }
     }
+    config_raw['start_date'] = '2022-02-01T00:00:00Z'
 
     requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "engage/properties", json=engage_properties)
     requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "engage?", engage_response)
 
     stream = init_stream('engage', config=config_raw)
 
-    stream_state = {"created": "2008-12-12T11:20:47"}
-    records = list(read_incremental(stream, stream_state, cursor_field=["created"]))
+    stream_state = {"last_seen": "2022-02-01T11:20:47"}
+    records = list(read_incremental(stream, stream_state=stream_state, cursor_field=["last_seen"]))
 
-    assert len(records) == 2
-    # assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"created": "2008-12-12T11:20:47"}
+    assert len(records) == 1
+    assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"last_seen": "2023-01-01T11:20:47"}
 
 
 @pytest.fixture
