@@ -101,7 +101,12 @@ dependencies {
     cdkTestFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
 
     cdkTestFixturesApi 'com.h2database:h2:2.2.224'
+    cdkTestFixturesApi 'io.github.deblockt:json-diff:1.0.1'
     cdkTestFixturesApi 'org.testcontainers:testcontainers:1.19.0'
+
+    cdkTestFixturesApi platform("org.junit:junit-bom:5.10.2")
+    cdkTestFixturesApi "org.junit.jupiter:junit-jupiter-api:5.10.2"
+    cdkTestFixturesApi "org.junit.jupiter:junit-jupiter-params:5.10.2"
 
     cdkTestImplementation 'com.h2database:h2:2.2.224'
     cdkTestImplementation 'io.github.deblockt:json-diff:1.0.1'
