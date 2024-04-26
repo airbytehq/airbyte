@@ -191,10 +191,10 @@ def test_request_option(
     )
     stream_slice = {"owner_resource": "customer", "repository": "airbyte"}
 
-    assert expected_req_params == slicer.get_request_params(stream_slice=stream_slice)
-    assert expected_headers == slicer.get_request_headers(stream_slice=stream_slice)
-    assert expected_body_json == slicer.get_request_body_json(stream_slice=stream_slice)
-    assert expected_body_data == slicer.get_request_body_data(stream_slice=stream_slice)
+    assert slicer.get_request_params(stream_slice=stream_slice) == expected_req_params
+    assert slicer.get_request_headers(stream_slice=stream_slice) == expected_headers
+    assert slicer.get_request_body_json(stream_slice=stream_slice) == expected_body_json
+    assert slicer.get_request_body_data(stream_slice=stream_slice) == expected_body_data
 
 
 def test_request_option_before_updating_cursor():

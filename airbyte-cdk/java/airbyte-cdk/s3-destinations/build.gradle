@@ -1,19 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
-java {
-    // TODO: rewrite code to avoid javac wornings in the first place
-    compileJava {
-        options.compilerArgs += "-Xlint:-try,-deprecation,-this-escape"
-    }
-    compileTestJava {
-        options.compilerArgs += "-Xlint:-try"
-    }
-    compileTestFixturesJava {
-        options.compilerArgs += "-Xlint:-deprecation"
-    }
-}
-
 compileTestFixturesKotlin {
     compilerOptions {
         allWarningsAsErrors = false
@@ -21,12 +8,6 @@ compileTestFixturesKotlin {
 }
 
 compileTestKotlin {
-    compilerOptions {
-        allWarningsAsErrors = false
-    }
-}
-
-compileKotlin {
     compilerOptions {
         allWarningsAsErrors = false
     }

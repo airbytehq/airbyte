@@ -46,6 +46,8 @@ The OSS and Cloud variants have the same version number starting from version `0
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------| :------------------------------------------------------- |:----------------------------------------------------------|
+| 0.3.4   | 2024-04-16 | [37366](https://github.com/airbytehq/airbyte/pull/37366) | Fix NPE                                                   |
+| 0.3.3   | 2024-04-16 | [37366](https://github.com/airbytehq/airbyte/pull/37366) | Fix Log trace messages                                    |
 | 0.3.2   | 2024-02-14 | [36812](https://github.com/airbytehq/airbyte/pull/36812) | Log trace messages                                        |
 | 0.3.1   | 2024-02-14 | [35278](https://github.com/airbytehq/airbyte/pull/35278) | Adopt CDK 0.20.6                                          |
 | 0.3.0   | 2023-05-08 | [25776](https://github.com/airbytehq/airbyte/pull/25776) | Standardize spec and change property field to non-keyword |

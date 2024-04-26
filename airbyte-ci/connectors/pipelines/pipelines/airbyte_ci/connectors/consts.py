@@ -32,6 +32,7 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     DELETE_SETUP_PY = "delete_setup_py"
     CHECK_UPDATE_CANDIDATE = "check_update_candidate"
     UPDATE_POETRY = "upgrade_poetry"
+    CONNECTOR_REGRESSION_TESTS = "connector_regression_tests"
 
     def __str__(self) -> str:
         return self.value

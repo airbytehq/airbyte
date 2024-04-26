@@ -5,7 +5,6 @@ package io.airbyte.cdk.integrations.debezium.internals
 
 import io.debezium.config.Configuration
 import io.debezium.embedded.KafkaConnectUtil
-import java.lang.Boolean
 import java.util.*
 import kotlin.String
 import org.apache.kafka.connect.json.JsonConverter
@@ -91,6 +90,6 @@ interface DebeziumStateUtil {
 
         /** Configuration for offset state key/value converters. */
         val INTERNAL_CONVERTER_CONFIG: Map<String, String?> =
-            java.util.Map.of(JsonConverterConfig.SCHEMAS_ENABLE_CONFIG, Boolean.FALSE.toString())
+            java.util.Map.of(JsonConverterConfig.SCHEMAS_ENABLE_CONFIG, false.toString())
     }
 }
