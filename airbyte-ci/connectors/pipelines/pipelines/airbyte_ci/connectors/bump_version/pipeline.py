@@ -55,7 +55,7 @@ class AddChangelogEntry(Step):
 
     async def _run(self) -> StepResult:
         doc_path = self.context.connector.documentation_file_path
-        if not doc_path.exists():
+        if not doc_path or not doc_path.exists():
             return StepResult(
                 step=self,
                 status=StepStatus.SKIPPED,
