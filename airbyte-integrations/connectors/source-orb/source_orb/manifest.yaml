@@ -1,4 +1,5 @@
 version: 0.51.2
+
 type: DeclarativeSource
 
 check:

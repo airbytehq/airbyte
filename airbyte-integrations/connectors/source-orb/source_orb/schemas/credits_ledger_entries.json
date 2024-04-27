@@ -33,7 +33,7 @@
       "type": "string"
     },
     "credit_block_per_unit_cost_basis": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "description": {
       "type": ["null", "string"]
