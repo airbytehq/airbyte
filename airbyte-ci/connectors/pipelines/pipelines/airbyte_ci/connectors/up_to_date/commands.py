@@ -2,25 +2,43 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from typing import List
+
 import asyncclick as click
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
-from pipelines.airbyte_ci.connectors.upgrade_cdk.pipeline import run_connector_cdk_upgrade_pipeline
+from pipelines.airbyte_ci.connectors.up_to_date.pipeline import run_connector_up_to_date_pipeline
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
 
-@click.command(cls=DaggerPipelineCommand, short_help="Upgrade CDK version")
-@click.argument("target-cdk-version", type=str, default="latest")
+@click.command(
+    cls=DaggerPipelineCommand,
+    short_help="Get the selected Python connectors up to date.",
+)
+@click.option(
+    "--dev",
+    type=bool,
+    default=False,
+    is_flag=True,
+    help="Force update when there are only dev changes.",
+)
+@click.option(
+    "--dep",
+    type=str,
+    multiple=True,
+    default=[],
+    help="Give a specific set of `poetry add` dependencies to update. For example: --dep airbyte-cdk==0.80.0 --dep pytest@^6.2",
+)
+
+# TODO: flag to skip regression tests
+# TODO: flag to make PR
+# TODO: also update the manifest.yaml with the cdk version?
 @click.pass_context
-async def upgrade_cdk(
-    ctx: click.Context,
-    target_cdk_version: str,
-) -> bool:
-    """Upgrade CDK version"""
+async def up_to_date(ctx: click.Context, dev: bool, dep: List[str]) -> bool:
 
     connectors_contexts = [
         ConnectorContext(
-            pipeline_name=f"Upgrade CDK version of connector {connector.technical_name}",
+            pipeline_name=f"Update {connector.technical_name} to latest",
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],
@@ -35,7 +53,9 @@ async def upgrade_cdk(
             ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
             ci_git_user=ctx.obj["ci_git_user"],
             ci_github_access_token=ctx.obj["ci_github_access_token"],
-            enable_report_auto_open=False,
+            enable_report_auto_open=True,
+            docker_hub_username=ctx.obj.get("docker_hub_username"),
+            docker_hub_password=ctx.obj.get("docker_hub_password"),
             s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
             s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
         )
@@ -44,12 +64,13 @@ async def upgrade_cdk(
 
     await run_connectors_pipelines(
         connectors_contexts,
-        run_connector_cdk_upgrade_pipeline,
-        "Upgrade CDK version pipeline",
+        run_connector_up_to_date_pipeline,
+        "Get Python connector up to date",
         ctx.obj["concurrency"],
         ctx.obj["dagger_logs_path"],
         ctx.obj["execute_timeout"],
-        target_cdk_version,
+        dev,
+        dep,
     )
 
     return True
