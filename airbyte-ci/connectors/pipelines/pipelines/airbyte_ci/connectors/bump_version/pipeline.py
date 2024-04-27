@@ -137,6 +137,7 @@ class BumpDockerImageTagInMetadata(Step):
         )
 
 
+# TODO: this doesn't bump the pyproject.toml file (or setup.py?) which is also needed for the version bump
 async def run_connector_version_bump_pipeline(
     context: ConnectorContext,
     semaphore: "Semaphore",
