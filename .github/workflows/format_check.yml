@@ -12,10 +12,13 @@ jobs:
   format-check:
     # IMPORTANT: This name must match the require check name on the branch protection settings
     name: "Check for formatting errors"
+    # Do not run this job on forks
+    # Forked PRs are handled by the community_ci.yml workflow
+    if: github.event.pull_request.head.repo.fork != true
     runs-on: tooling-test-small
     steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
+      - name: Checkout Airbyte (with credentials)
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
@@ -87,3 +90,35 @@ jobs:
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}> \n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked: \n\"}},
             {\"type\":\"divider\"}]}
+
+  # TODO alafanechere: move it to community_ci.yml and make it use the run-airbyte-ci action
+  format-check-from-forks:
+    # Same-named job as above, in order to ensure 'required checks' pass either way.
+    # This should run all the same checks as above, except not requiring any credentials.
+    name: "Check for formatting errors"
+    if: >
+      github.event.pull_request.head.repo.fork == true
+    runs-on: ubuntu-latest
+    steps:
+      # We have no creds. Ignore docker caching and just run the CLI.
+      - name: Checkout code (Unprivileged)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          fetch-depth: 1
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Airbyte CI from binary
+        id: install-airbyte-ci-binary
+        shell: bash
+        run: |
+          curl -sSL "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci" --output airbyte-ci-bin
+          sudo mv airbyte-ci-bin /usr/local/bin/airbyte-ci
+          sudo chmod +x /usr/local/bin/airbyte-ci
+      - name: Run format checks
+        run: |
+          /usr/local/bin/airbyte-ci --disable-update-check format check all

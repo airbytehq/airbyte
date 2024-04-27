@@ -15,9 +15,9 @@ import io.airbyte.cdk.integrations.destination.gcs.credential.GcsCredentialType
 import io.airbyte.cdk.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConstants
-import io.airbyte.cdk.integrations.destination.s3.S3FormatConfig
-import io.airbyte.cdk.integrations.destination.s3.S3FormatConfigs.getS3FormatConfig
 import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations
+import io.airbyte.cdk.integrations.destination.s3.UploadFormatConfig
+import io.airbyte.cdk.integrations.destination.s3.UploadFormatConfigFactory.getUploadFormatConfig
 
 /**
  * Currently we always reuse the S3 client for GCS. So the GCS config extends from the S3 config.
@@ -28,16 +28,16 @@ class GcsDestinationConfig(
     bucketPath: String,
     bucketRegion: String?,
     val gcsCredentialConfig: GcsCredentialConfig,
-    formatConfig: S3FormatConfig
+    formatConfig: UploadFormatConfig
 ) :
     S3DestinationConfig(
         GCS_ENDPOINT,
-        bucketName!!,
-        bucketPath!!,
+        bucketName,
+        bucketPath,
         bucketRegion,
         S3DestinationConstants.DEFAULT_PATH_FORMAT,
         gcsCredentialConfig.s3CredentialConfig.orElseThrow(),
-        formatConfig!!,
+        formatConfig,
         null,
         null,
         false,
@@ -70,13 +70,14 @@ class GcsDestinationConfig(
     companion object {
         private const val GCS_ENDPOINT = "https://storage.googleapis.com"
 
+        @JvmStatic
         fun getGcsDestinationConfig(config: JsonNode): GcsDestinationConfig {
             return GcsDestinationConfig(
                 config["gcs_bucket_name"].asText(),
                 config["gcs_bucket_path"].asText(),
                 config["gcs_bucket_region"].asText(),
                 GcsCredentialConfigs.getCredentialConfig(config),
-                getS3FormatConfig(config)
+                getUploadFormatConfig(config)
             )
         }
     }

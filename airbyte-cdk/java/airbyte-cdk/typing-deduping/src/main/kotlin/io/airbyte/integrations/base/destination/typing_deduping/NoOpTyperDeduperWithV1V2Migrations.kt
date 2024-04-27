@@ -83,11 +83,11 @@ class NoOpTyperDeduperWithV1V2Migrations<DestinationState : MinimumDestinationSt
     }
 
     override fun prepareFinalTables() {
-        log.info("Skipping prepareFinalTables")
+        log.info { "Skipping prepareFinalTables" }
     }
 
     override fun typeAndDedupe(originalNamespace: String, originalName: String, mustRun: Boolean) {
-        log.info("Skipping TypeAndDedupe")
+        log.info { "Skipping TypeAndDedupe" }
     }
 
     override fun getRawTableInsertLock(originalNamespace: String, originalName: String): Lock {
@@ -95,15 +95,15 @@ class NoOpTyperDeduperWithV1V2Migrations<DestinationState : MinimumDestinationSt
     }
 
     override fun typeAndDedupe(streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>) {
-        log.info("Skipping TypeAndDedupe final")
+        log.info { "Skipping TypeAndDedupe final" }
     }
 
     override fun commitFinalTables() {
-        log.info("Skipping commitFinalTables final")
+        log.info { "Skipping commitFinalTables final" }
     }
 
     override fun cleanup() {
-        log.info("Cleaning Up type-and-dedupe thread pool")
+        log.info { "Cleaning Up type-and-dedupe thread pool" }
         executorService.shutdown()
     }
 }

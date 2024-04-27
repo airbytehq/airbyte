@@ -11,7 +11,8 @@ import urllib.parse
 import uuid
 from abc import ABC
 from contextlib import closing
-from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
+from datetime import timedelta
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
 import backoff
 import pandas as pd
@@ -19,6 +20,7 @@ import pendulum
 import requests  # type: ignore[import]
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import IsoMillisConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
@@ -44,7 +46,7 @@ _JOB_TRANSIENT_ERRORS_MAX_RETRY = 1
 
 
 class SalesforceStream(HttpStream, ABC):
-    state_converter = IsoMillisConcurrentStreamStateConverter()
+    state_converter = IsoMillisConcurrentStreamStateConverter(is_sequential_state=False)
     page_size = 2000
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     encoding = DEFAULT_ENCODING
@@ -142,7 +144,7 @@ class PropertyChunk:
 
 
 class RestSalesforceStream(SalesforceStream):
-    state_converter = IsoMillisConcurrentStreamStateConverter()
+    state_converter = IsoMillisConcurrentStreamStateConverter(is_sequential_state=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -320,7 +322,7 @@ class RestSalesforceStream(SalesforceStream):
 
 
 class BatchedSubStream(HttpSubStream):
-    state_converter = IsoMillisConcurrentStreamStateConverter()
+    state_converter = IsoMillisConcurrentStreamStateConverter(is_sequential_state=False)
     SLICE_BATCH_SIZE = 200
 
     def stream_slices(
@@ -705,7 +707,10 @@ class BulkSalesforceStream(SalesforceStream):
             stream_kwargs.update({"replication_key": self.replication_key, "start_date": self.start_date})
             new_cls = IncrementalRestSalesforceStream
 
-        return new_cls(**stream_kwargs)
+        standard_instance = new_cls(**stream_kwargs)
+        if hasattr(standard_instance, "set_cursor"):
+            standard_instance.set_cursor(self._stream_slicer_cursor)
+        return standard_instance
 
 
 class BulkSalesforceSubStream(BatchedSubStream, BulkSalesforceStream):
@@ -732,24 +737,22 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         super().__init__(**kwargs)
         self.replication_key = replication_key
         self._stream_slice_step = stream_slice_step
+        self._stream_slicer_cursor = None
+
+    def set_cursor(self, cursor: Cursor) -> None:
+        self._stream_slicer_cursor = cursor
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        now = pendulum.now(tz="UTC")
-        assert LOOKBACK_SECONDS is not None and LOOKBACK_SECONDS >= 0
+        if not self._stream_slicer_cursor:
+            raise ValueError("Cursor should be set at this point")
 
-        initial_date = self.get_start_date_from_state(stream_state) - pendulum.Duration(seconds=LOOKBACK_SECONDS)
-        slice_start = initial_date
-        while slice_start < now:
-            slice_end = slice_start + self.stream_slice_step
-            self._slice = {
+        for slice_start, slice_end in self._stream_slicer_cursor.generate_slices():
+            yield {
                 "start_date": slice_start.isoformat(timespec="milliseconds"),
-                "end_date": min(slice_end, now).isoformat(timespec="milliseconds"),
+                "end_date": slice_end.isoformat(timespec="milliseconds"),
             }
-            yield self._slice
-
-            slice_start += self.stream_slice_step
 
     @property
     def stream_slice_step(self) -> pendulum.Duration:
@@ -829,7 +832,7 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
 
 
 class Describe(Stream):
-    state_converter = IsoMillisConcurrentStreamStateConverter()
+    state_converter = IsoMillisConcurrentStreamStateConverter(is_sequential_state=False)
     """
     Stream of sObjects' (Salesforce Objects) describe:
     https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_describe.htm

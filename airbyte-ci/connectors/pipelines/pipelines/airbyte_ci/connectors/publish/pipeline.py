@@ -84,7 +84,7 @@ class ConnectorDependenciesMetadata(BaseModel):
     connector_repository: str
     connector_version: str
     connector_definition_id: str
-    dependencies: Dict[str, str]
+    dependencies: List[Dict[str, str]]
     generation_time: datetime = datetime.utcnow()
 
 
@@ -100,7 +100,9 @@ class UploadDependenciesToMetadataService(Step):
         ], "This step can only run for Python connectors."
         built_container = built_containers_per_platform[LOCAL_BUILD_PLATFORM]
         pip_freeze_output = await built_container.with_exec(["pip", "freeze"], skip_entrypoint=True).stdout()
-        dependencies = {line.split("==")[0]: line.split("==")[1] for line in pip_freeze_output.splitlines() if "==" in line}
+        dependencies = [
+            {"package_name": line.split("==")[0], "version": line.split("==")[1]} for line in pip_freeze_output.splitlines() if "==" in line
+        ]
         connector_technical_name = self.context.connector.technical_name
         connector_version = self.context.metadata["dockerImageTag"]
         dependencies_metadata = ConnectorDependenciesMetadata(
