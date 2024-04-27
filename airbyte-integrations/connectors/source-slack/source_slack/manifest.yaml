@@ -128,7 +128,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          types: "public_channel"
+          types: "{{ 'public_channel,private_channel' if config['include_private_channels'] == true else 'public_channel' }}"
       record_selector:
         $ref: "#/definitions/selector"
         record_filter:
