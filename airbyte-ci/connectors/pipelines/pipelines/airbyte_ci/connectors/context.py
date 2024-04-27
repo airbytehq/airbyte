@@ -11,6 +11,7 @@ from types import TracebackType
 from typing import TYPE_CHECKING
 
 import yaml  # type: ignore
+import asyncclick as click
 from pathlib import Path
 from asyncer import asyncify
 from dagger import Directory, Platform, Secret
@@ -43,6 +44,7 @@ class ConnectorContext(PipelineContext):
         git_branch: str,
         git_revision: str,
         report_output_prefix: str,
+        click_context: click.Context,
         use_remote_secrets: bool = True,
         ci_report_bucket: Optional[str] = None,
         ci_gcs_credentials: Optional[str] = None,
@@ -123,6 +125,7 @@ class ConnectorContext(PipelineContext):
             git_branch=git_branch,
             git_revision=git_revision,
             report_output_prefix=report_output_prefix,
+            click_context=click_context,
             gha_workflow_run_url=gha_workflow_run_url,
             dagger_logs_url=dagger_logs_url,
             pipeline_start_timestamp=pipeline_start_timestamp,

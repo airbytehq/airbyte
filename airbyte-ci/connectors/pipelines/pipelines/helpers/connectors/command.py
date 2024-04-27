@@ -15,6 +15,7 @@ def get_connector_contexts(ctx: click.Context, pipeline_description: str, enable
     connectors_contexts = [
         ConnectorContext(
             pipeline_name=f"{pipeline_description}: {connector.technical_name}",
+            click_context=ctx,
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],

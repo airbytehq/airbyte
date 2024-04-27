@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any, List, Set
 from pathlib import Path
 from github import Github, InputGitTreeElement, GithubException, UnknownObjectException
 from pipelines import main_logger
+from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, BumpDockerImageTagInMetadata, get_bumped_version
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.cli.ensure_repo_root import get_airbyte_repo_path_with_fallback
@@ -19,6 +20,8 @@ from pipelines.helpers.connectors.command import run_connector_steps
 from pipelines.airbyte_ci.connectors.reports import Report
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
+from pipelines.helpers.git import get_modified_files
+from pipelines.helpers.utils import transform_strs_to_paths
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 
@@ -26,6 +29,8 @@ if TYPE_CHECKING:
     from anyio import Semaphore  # type: ignore
 
 
+# TODO: need a way to roll up the original states of all the children.
+# For example, this one can run the changelog and the bump - it needs to delegate to those
 class RestoreOriginalState(Step):
     context: ConnectorContext
 
@@ -47,54 +52,71 @@ class RestoreOriginalState(Step):
         )
 
 
+PULL_REQUEST_OUTPUT_ID = "pull_request_number"
+
+
 class CreatePullRequest(Step):
     context: ConnectorContext
-    modified_files: Set[Path]
     message: str
     branch_id: str
     write: bool
     input_title: str | None
     input_body: str | None
+    changelog: bool
+    bump: str | None
 
     title = "Create a pull request of changed files."  # type: ignore
 
     def __init__(
         self,
         context: ConnectorContext,
-        all_modified_files: Set[Path],
         message: str,
         branch_id: str | None,
-        dry_run: bool,
         input_title: str | None,
         input_body: str | None,
+        dry_run: bool,
     ) -> None:
         super().__init__(context)
-        self.connector_files = filter_to_changes_in_connector(context, all_modified_files)
         self.message = message
         self.branch_id = branch_id or default_branch_details(message)  # makes branch like: {branch_id}/{connector_name}
-        self.write = not dry_run
         self.input_title = input_title
         self.input_body = input_body
+        self.write = not dry_run
 
     async def _run(self) -> StepResult:  # type: ignore
-        if len(self.connector_files) == 0:
+
+        connector_files = await get_connector_changes(self.context)
+        if len(connector_files) == 0:
             return StepResult(step=self, status=StepStatus.SKIPPED, stderr="No files modified in this connector.")
 
-        await create_github_pull_request(
+        pull_request_number = await create_github_pull_request(
             write=self.write,
             context=self.context,
-            file_paths=self.connector_files,
+            file_paths=connector_files,
             branch_id=self.branch_id,
             message=self.message,
             input_title=self.input_title,
             input_body=self.input_body,
         )
 
-        return StepResult(step=self, status=StepStatus.SUCCESS)
+        return StepResult(step=self, status=StepStatus.SUCCESS, output={PULL_REQUEST_OUTPUT_ID: pull_request_number})
 
 
-def filter_to_changes_in_connector(context: ConnectorContext, all_modified_files: Set[Path]) -> Set[Path]:
+async def get_connector_changes(context: ConnectorContext) -> Set[Path]:
     logger = main_logger
+    all_modified_files = set(
+        transform_strs_to_paths(
+            await get_modified_files(
+                context.click_context.obj["git_branch"],
+                context.click_context.obj["git_revision"],
+                context.click_context.obj["diffed_branch"],
+                context.click_context.obj["is_local"],
+                context.click_context.obj["ci_context"],
+                context.click_context.obj["git_repo_url"],
+            )
+        )
+    )
+
     directory = context.connector.code_directory
     logger.info(f"    Filtering to changes in {directory}")
     # get a list of files that are a child of this path
@@ -123,6 +145,7 @@ class ChangedFile:
     sha: str | None
 
 
+# outputs a pull request number
 async def create_github_pull_request(
     write: bool,
     context: ConnectorContext,
@@ -131,7 +154,7 @@ async def create_github_pull_request(
     message: str,
     input_title: str | None,
     input_body: str | None,
-) -> str:
+) -> int:
     if not context.ci_github_access_token:
         raise Exception("GitHub access token is required to create a pull request. Set the CI_GITHUB_ACCESS_TOKEN environment variable.")
 
@@ -238,7 +261,7 @@ async def create_github_pull_request(
             logger.info(f"        Pull request already exists: {pr.html_url}")
 
     if found_pr:
-        pull_request_html_url = found_pr.html_url
+        pull_request_number = found_pr.number
         if input_title and input_body:
             logger.info(f"          Updating title and body")
             if write:
@@ -254,7 +277,7 @@ async def create_github_pull_request(
     else:
         # Create a pull request if it's a new branch
         if not write:
-            pull_request_html_url = "https://github.com/airbytehq/airbyte/pulls/TODO"
+            pull_request_number = 0
         else:
             pull_request_title = input_title or f"{connector_full_name}: {message}"
             pull_request_body = input_body or ""
@@ -269,9 +292,9 @@ async def create_github_pull_request(
             label = repo.get_label("autopull")
             pull_request.add_to_labels(label)
             logger.info(f"        Created pull request: {pull_request.html_url}")
-            pull_request_html_url = pull_request.html_url
+            pull_request_number = pull_request.number
 
-    return pull_request_html_url
+    return pull_request_number
 
 
 async def run_connector_pull_request(
@@ -281,14 +304,36 @@ async def run_connector_pull_request(
     branch_id: str,
     title: str,
     body: str,
+    changelog: bool,
+    bump: str | None,
     dry_run: bool,
-    modified_files: Set[Path],
 ) -> Report:
     restore_original_state = RestoreOriginalState(context)
 
     context.targeted_platforms = [LOCAL_BUILD_PLATFORM]
 
+    connector_version: str | None = context.connector.version
+
     steps_to_run: STEP_TREE = []
+    pre_pull_ids: List[str] = []
+
+    if bump:
+        connector_version = get_bumped_version(connector_version, bump)
+        pre_pull_ids.append(CONNECTOR_TEST_STEP_ID.BUMP_METADATA_VERSION)
+        steps_to_run.append(
+            [
+                StepToRun(
+                    id=CONNECTOR_TEST_STEP_ID.BUMP_METADATA_VERSION,
+                    step=BumpDockerImageTagInMetadata(
+                        context,
+                        await context.get_repo_dir(include=[str(context.connector.code_directory)]),
+                        connector_version,
+                        export_metadata=True,
+                    ),
+                    depends_on=[],
+                )
+            ]
+        )
 
     steps_to_run.append(
         [
@@ -301,11 +346,53 @@ async def run_connector_pull_request(
                     input_title=title,
                     input_body=body,
                     dry_run=dry_run,
-                    all_modified_files=modified_files,
                 ),
-                depends_on=[],
+                depends_on=pre_pull_ids,
             )
         ]
     )
+
+    if changelog:
+        if not connector_version:
+            raise Exception("Connector version is required to add a changelog entry.")
+        if not context.connector.documentation_file_path:
+            raise Exception("Connector documentation file path is required to add a changelog entry.")
+        steps_to_run.append(
+            [
+                StepToRun(
+                    id=CONNECTOR_TEST_STEP_ID.ADD_CHANGELOG_ENTRY,
+                    step=AddChangelogEntry(
+                        context,
+                        await context.get_repo_dir(include=[str(context.connector.local_connector_documentation_directory)]),
+                        connector_version,
+                        message,
+                        "0",  # overridden in the step
+                        export_docs=True,
+                    ),
+                    depends_on=[CONNECTOR_TEST_STEP_ID.PULL_REQUEST_CREATE],
+                    args=lambda results: {
+                        "pull_request_number": results[CONNECTOR_TEST_STEP_ID.PULL_REQUEST_CREATE].output[PULL_REQUEST_OUTPUT_ID],
+                    },
+                )
+            ]
+        )
+
+        # make a pull request with the changelog entry
+        steps_to_run.append(
+            [
+                StepToRun(
+                    id=CONNECTOR_TEST_STEP_ID.PULL_REQUEST_CREATE,
+                    step=CreatePullRequest(
+                        context=context,
+                        message=message,
+                        branch_id=branch_id,
+                        input_title=title,
+                        input_body=body,
+                        dry_run=dry_run,
+                    ),
+                    depends_on=pre_pull_ids,
+                )
+            ]
+        )
 
     return await run_connector_steps(context, semaphore, steps_to_run, restore_original_state=restore_original_state)

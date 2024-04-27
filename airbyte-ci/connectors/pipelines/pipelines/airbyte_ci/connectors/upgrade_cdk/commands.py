@@ -21,6 +21,7 @@ async def upgrade_cdk(
     connectors_contexts = [
         ConnectorContext(
             pipeline_name=f"Upgrade CDK version of connector {connector.technical_name}",
+            click_context=ctx,
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],

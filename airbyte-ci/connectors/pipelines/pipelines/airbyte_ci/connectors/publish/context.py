@@ -22,6 +22,7 @@ class PublishConnectorContext(ConnectorContext):
 
     def __init__(
         self,
+        click_context: click.Context,
         connector: ConnectorWithModifiedFiles,
         pre_release: bool,
         spec_cache_gcs_credentials: str,

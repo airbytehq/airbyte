@@ -49,6 +49,21 @@ from pipelines.helpers.utils import transform_strs_to_paths
     required=False,
 )
 @click.option(
+    "--changelog",
+    help="Add message to the changelog for this version.",
+    type=bool,
+    is_flag=True,
+    required=False,
+    default=False,
+)
+@click.option(
+    "--bump",
+    help="Bump the metadata.yaml version. Can be `major`, `minor`, or `patch`.",
+    type=click.Choice(["patch", "minor", "major"]),
+    required=False,
+    default=None,
+)
+@click.option(
     "--dry-run",
     help="Don't actually make the pull requests. Just print the files that would be changed.",
     type=bool,
@@ -57,22 +72,13 @@ from pipelines.helpers.utils import transform_strs_to_paths
     default=False,
 )
 @click.pass_context
-async def pull_request(ctx: click.Context, message: str, branch_id: str, report: bool, title: str, body: str, dry_run: bool) -> bool:
+async def pull_request(
+    ctx: click.Context, message: str, branch_id: str, report: bool, title: str, body: str, changelog: bool, bump: str | None, dry_run: bool
+) -> bool:
     if not ctx.obj["ci_github_access_token"]:
         raise click.ClickException(
             "GitHub access token is required to create a pull request. Set the CI_GITHUB_ACCESS_TOKEN environment variable."
         )
-
-    full_path_modified_files = transform_strs_to_paths(
-        await get_modified_files(
-            ctx.obj["git_branch"],
-            ctx.obj["git_revision"],
-            ctx.obj["diffed_branch"],
-            ctx.obj["is_local"],
-            ctx.obj["ci_context"],
-            ctx.obj["git_repo_url"],
-        )
-    )
     return await run_connector_pipeline(
         ctx,
         "Create pull request",
@@ -82,6 +88,7 @@ async def pull_request(ctx: click.Context, message: str, branch_id: str, report:
         branch_id,
         title,
         body,
+        changelog,
+        bump,
         dry_run,
-        set(full_path_modified_files),
     )

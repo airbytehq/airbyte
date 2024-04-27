@@ -9,6 +9,7 @@ from typing import List
 
 import dagger
 import pytest
+import asyncclick as click
 import yaml
 from freezegun import freeze_time
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
@@ -43,6 +44,7 @@ class TestAcceptanceTests:
     def test_context_ci(self, current_platform, dagger_client):
         context = ConnectorContext(
             pipeline_name="test",
+            click_context=click.Context(command=click.Command(name="test")),
             connector=ConnectorWithModifiedFiles("source-faker", frozenset()),
             git_branch="test",
             git_revision="test",

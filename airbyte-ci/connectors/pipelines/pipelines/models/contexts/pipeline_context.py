@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import asyncclick as click
 import logging
 import os
 from datetime import datetime
@@ -68,6 +69,7 @@ class PipelineContext:
         git_branch: str,
         git_revision: str,
         report_output_prefix: str,
+        click_context: click.Context,
         gha_workflow_run_url: Optional[str] = None,
         dagger_logs_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
@@ -104,6 +106,7 @@ class PipelineContext:
         self.is_local = is_local
         self.git_branch = git_branch
         self.git_revision = git_revision
+        self.click_context = click_context
         self.report_output_prefix = report_output_prefix
         self.gha_workflow_run_url = gha_workflow_run_url
         self.dagger_logs_url = dagger_logs_url

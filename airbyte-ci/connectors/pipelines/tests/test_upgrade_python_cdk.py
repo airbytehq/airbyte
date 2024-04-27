@@ -9,6 +9,7 @@ from typing import List
 from unittest.mock import AsyncMock, MagicMock
 
 import anyio
+import asyncclick as click
 import pytest
 from connector_ops.utils import Connector, ConnectorLanguage
 from dagger import Directory
@@ -49,6 +50,7 @@ setup(
 def connector_context(sample_connector, dagger_client, current_platform):
     context = ConnectorContext(
         pipeline_name="test",
+        click_context=click.Context(command=click.Command(name="test")),
         connector=sample_connector,
         git_branch="test",
         git_revision="test",

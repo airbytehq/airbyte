@@ -53,7 +53,11 @@ class AddChangelogEntry(Step):
         self.pull_request_number = int(pull_request_number)
         self.export_docs = export_docs
 
-    async def _run(self) -> StepResult:
+    async def _run(self, pull_request_number: int | None = None) -> StepResult:
+        if pull_request_number is None:
+            # this allows passing it dyanmically from a result of another action (like creating a pull request)
+            pull_request_number = self.pull_request_number
+
         doc_path = self.context.connector.documentation_file_path
         if not doc_path or not doc_path.exists():
             return StepResult(
@@ -65,7 +69,7 @@ class AddChangelogEntry(Step):
         try:
             original_markdown = doc_path.read_text()
             changelog = Changelog(original_markdown)
-            changelog.add_entry(self.new_version, datetime.date.today(), self.pull_request_number, self.comment)
+            changelog.add_entry(self.new_version, datetime.date.today(), pull_request_number, self.comment)
             updated_doc = changelog.to_markdown()
         except Exception as e:
             return StepResult(

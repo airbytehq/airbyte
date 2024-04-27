@@ -109,6 +109,7 @@ async def publish(
         [
             PublishConnectorContext(
                 connector=connector,
+                click_context=ctx,
                 pre_release=pre_release,
                 spec_cache_gcs_credentials=spec_cache_gcs_credentials,
                 spec_cache_bucket_name=spec_cache_bucket_name,

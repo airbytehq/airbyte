@@ -4,6 +4,7 @@
 import datetime
 
 import pytest
+import asyncclick as click
 import requests
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.python import common
@@ -38,6 +39,7 @@ def python_connector_with_setup_not_latest_cdk(all_connectors):
 def context_with_setup(dagger_client, python_connector_with_setup_not_latest_cdk):
     context = ConnectorContext(
         pipeline_name="test python common",
+        click_context=click.Context(command=click.Command(name="test")),
         connector=python_connector_with_setup_not_latest_cdk,
         git_branch="test",
         git_revision="test",

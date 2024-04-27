@@ -22,6 +22,7 @@ async def migrate_to_poetry(
     connectors_contexts = [
         ConnectorContext(
             pipeline_name=f"Migrate {connector.technical_name} to Poetry",
+            click_context=ctx,
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],

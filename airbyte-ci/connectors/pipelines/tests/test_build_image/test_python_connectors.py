@@ -5,6 +5,7 @@
 from pathlib import Path
 
 import pytest
+import asyncclick as click
 from pipelines.airbyte_ci.connectors.build_image.steps import build_customization, python_connectors
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import BUILD_PLATFORMS
@@ -55,6 +56,7 @@ class TestBuildConnectorImage:
     ):
         context = ConnectorContext(
             pipeline_name="test build",
+            click_context=click.Context(command=click.Command(name="test")),
             connector=connector_with_base_image_no_build_customization,
             git_branch="test",
             git_revision="test",
@@ -72,6 +74,7 @@ class TestBuildConnectorImage:
     ):
         context = ConnectorContext(
             pipeline_name="test build",
+            click_context=click.Context(command=click.Command(name="test")),
             connector=connector_with_base_image_with_build_customization,
             git_branch="test",
             git_revision="test",
@@ -94,6 +97,7 @@ class TestBuildConnectorImage:
     def test_context_with_real_connector_without_base_image(self, connector_without_base_image, dagger_client, current_platform):
         context = ConnectorContext(
             pipeline_name="test build",
+            click_context=click.Context(command=click.Command(name="test")),
             connector=connector_without_base_image,
             git_branch="test",
             git_revision="test",

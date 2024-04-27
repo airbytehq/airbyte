@@ -39,6 +39,7 @@ async def up_to_date(ctx: click.Context, dev: bool, dep: List[str]) -> bool:
     connectors_contexts = [
         ConnectorContext(
             pipeline_name=f"Update {connector.technical_name} to latest",
+            click_context=ctx,
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],

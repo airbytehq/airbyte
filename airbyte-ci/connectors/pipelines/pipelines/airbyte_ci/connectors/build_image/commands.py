@@ -46,6 +46,7 @@ async def build(ctx: click.Context, use_host_gradle_dist_tar: bool, build_archit
     connectors_contexts = [
         ConnectorContext(
             pipeline_name=f"Build connector {connector.technical_name}",
+            click_context=ctx,
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],

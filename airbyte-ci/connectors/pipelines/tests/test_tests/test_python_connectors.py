@@ -5,6 +5,7 @@
 from unittest.mock import patch
 
 import pytest
+import asyncclick as click
 from connector_ops.utils import Connector, ConnectorLanguage
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
@@ -33,6 +34,7 @@ class TestUnitTests:
     def context_for_certified_connector_with_setup(self, mocker, certified_connector_with_setup, dagger_client, current_platform):
         context = ConnectorContext(
             pipeline_name="test unit tests",
+            click_context=click.Context(command=click.Command(name="test")),
             connector=certified_connector_with_setup,
             git_branch="test",
             git_revision="test",
@@ -54,6 +56,7 @@ class TestUnitTests:
     def context_for_connector_with_poetry(self, mocker, connector_with_poetry, dagger_client, current_platform):
         context = ConnectorContext(
             pipeline_name="test unit tests",
+            click_context=click.Context(command=click.Command(name="test")),
             connector=connector_with_poetry,
             git_branch="test",
             git_revision="test",
@@ -122,6 +125,7 @@ class TestPyAirbyteValidationTests:
     def context_for_valid_connector(self, compatible_connector, dagger_client, current_platform):
         context = ConnectorContext(
             pipeline_name="test pyairbyte validation",
+            click_context=click.Context(command=click.Command(name="test")),
             connector=compatible_connector,
             git_branch="test",
             git_revision="test",
@@ -137,6 +141,7 @@ class TestPyAirbyteValidationTests:
     def context_for_invalid_connector(self, incompatible_connector, dagger_client, current_platform):
         context = ConnectorContext(
             pipeline_name="test pyairbyte validation",
+            click_context=click.Context(command=click.Command(name="test")),
             connector=incompatible_connector,
             git_branch="test",
             git_revision="test",

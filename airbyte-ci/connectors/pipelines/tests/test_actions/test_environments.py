@@ -3,6 +3,7 @@
 #
 
 import pytest
+import asyncclick as click
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.python import common
 
@@ -15,6 +16,7 @@ pytestmark = [
 def connector_context(dagger_client):
     context = ConnectorContext(
         pipeline_name="test",
+        click_context=click.Context(command=click.Command(name="test")),
         connector="source-faker",
         git_branch="test",
         git_revision="test",
