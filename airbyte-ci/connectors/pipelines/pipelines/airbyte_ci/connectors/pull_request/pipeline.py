@@ -315,25 +315,6 @@ async def run_connector_pull_request(
     connector_version: str | None = context.connector.version
 
     steps_to_run: STEP_TREE = []
-    pre_pull_ids: List[str] = []
-
-    if bump:
-        connector_version = get_bumped_version(connector_version, bump)
-        pre_pull_ids.append(CONNECTOR_TEST_STEP_ID.BUMP_METADATA_VERSION)
-        steps_to_run.append(
-            [
-                StepToRun(
-                    id=CONNECTOR_TEST_STEP_ID.BUMP_METADATA_VERSION,
-                    step=BumpDockerImageTagInMetadata(
-                        context,
-                        await context.get_repo_dir(include=[str(context.connector.code_directory)]),
-                        connector_version,
-                        export_metadata=True,
-                    ),
-                    depends_on=[],
-                )
-            ]
-        )
 
     steps_to_run.append(
         [
@@ -347,16 +328,37 @@ async def run_connector_pull_request(
                     input_body=body,
                     dry_run=dry_run,
                 ),
-                depends_on=pre_pull_ids,
+                depends_on=[],
             )
         ]
     )
+
+    update_step_ids: List[str] = []
+    if bump:
+        # we are only bumping if there are changes, though
+        connector_version = get_bumped_version(connector_version, bump)
+        update_step_ids.append(CONNECTOR_TEST_STEP_ID.BUMP_METADATA_VERSION)
+        steps_to_run.append(
+            [
+                StepToRun(
+                    id=CONNECTOR_TEST_STEP_ID.BUMP_METADATA_VERSION,
+                    step=BumpDockerImageTagInMetadata(
+                        context,
+                        await context.get_repo_dir(include=[str(context.connector.code_directory)]),
+                        connector_version,
+                        export_metadata=True,
+                    ),
+                    depends_on=[CONNECTOR_TEST_STEP_ID.PULL_REQUEST_CREATE],
+                )
+            ]
+        )
 
     if changelog:
         if not connector_version:
             raise Exception("Connector version is required to add a changelog entry.")
         if not context.connector.documentation_file_path:
             raise Exception("Connector documentation file path is required to add a changelog entry.")
+        update_step_ids.append(CONNECTOR_TEST_STEP_ID.ADD_CHANGELOG_ENTRY)
         steps_to_run.append(
             [
                 StepToRun(
@@ -366,7 +368,7 @@ async def run_connector_pull_request(
                         await context.get_repo_dir(include=[str(context.connector.local_connector_documentation_directory)]),
                         connector_version,
                         message,
-                        "0",  # overridden in the step
+                        "0",  # overridden in the step via args
                         export_docs=True,
                     ),
                     depends_on=[CONNECTOR_TEST_STEP_ID.PULL_REQUEST_CREATE],
@@ -377,11 +379,12 @@ async def run_connector_pull_request(
             ]
         )
 
+    if update_step_ids:
         # make a pull request with the changelog entry
         steps_to_run.append(
             [
                 StepToRun(
-                    id=CONNECTOR_TEST_STEP_ID.PULL_REQUEST_CREATE,
+                    id=CONNECTOR_TEST_STEP_ID.PULL_REQUEST_UPDATE,
                     step=CreatePullRequest(
                         context=context,
                         message=message,
@@ -390,7 +393,7 @@ async def run_connector_pull_request(
                         input_body=body,
                         dry_run=dry_run,
                     ),
-                    depends_on=pre_pull_ids,
+                    depends_on=update_step_ids,
                 )
             ]
         )

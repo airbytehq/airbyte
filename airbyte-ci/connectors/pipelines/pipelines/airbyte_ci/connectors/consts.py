@@ -36,6 +36,7 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     INLINE_CANDIDATE = "migration_to_inline_schemas.candidate"
     INLINE_MIGRATION = "migration_to_inline_schemas.migration"
     PULL_REQUEST_CREATE = "pull_request.create"
+    PULL_REQUEST_UPDATE = "pull_request.update"
 
     def __str__(self) -> str:
         return self.value
