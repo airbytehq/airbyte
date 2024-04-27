@@ -1,68 +1,73 @@
-version: 0.73.0
+version: 0.83.0
+
 type: DeclarativeSource
+
 check:
   type: CheckStream
   stream_names:
     - AdjustReport
+
+definitions:
+  streams:
+    AdjustReport:
+      type: DeclarativeStream
+      name: AdjustReport
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: report
+          http_method: GET
+          request_parameters:
+            metrics: >-
+              {{ config['metrics'] + {{ config['additional_metrics'] }} |
+              join(',') }}
+            dimensions: '{{ config[''dimensions''] + ["day"] | join('','') }}'
+            date_period: '{{ stream_interval[''start_time'']:stream_interval[''end_time''] }}'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - rows
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: day
+        cursor_datetime_formats:
+          - '%Y-%m-%d'
+        datetime_format: '%Y-%m-%d'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''ingest_start''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') if config['until_today']
+            else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') + 1 }}
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        step: P1D
+        cursor_granularity: P1D
+      schema_loader:
+        type: CustomSchemaLoader
+        class: source_adjust.components.AdjustSchemaLoader
+  base_requester:
+    type: HttpRequester
+    url_base: https://dash.adjust.com/control-center/reports-service/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["api_token"] }}'
+
 streams:
-  - type: DeclarativeStream
-    name: AdjustReport
-    primary_key: []
-    schema_loader:
-      type: CustomSchemaLoader
-      class: source_adjust.components.AdjustSchemaLoader
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://dash.adjust.com/control-center/reports-service/
-        path: report
-        http_method: GET
-        request_parameters:
-          dimensions: '{{ config[''dimensions''] + ["day"] | join('','') }}'
-          metrics: >-
-            {{ config['metrics'] + {{ config['additional_metrics'] }} |
-            join(',') }}
-          date_period: '{{ stream_interval[''start_time'']:stream_interval[''end_time''] }}'
-        request_headers: {}
-        authenticator:
-          type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - rows
-      paginator:
-        type: NoPagination
-      partition_router: []
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: day
-      cursor_datetime_formats:
-        - '%Y-%m-%d'
-      datetime_format: '%Y-%m-%d'
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ config[''ingest_start''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: >-
-          {{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') if config['until_today']
-          else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') + 1 }}
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      step: P1D
-      cursor_granularity: P1D
+  - $ref: '#/definitions/streams/AdjustReport'
+
 spec:
   type: Spec
   documentationUrl: https://docs.airbyte.com/integrations/sources/adjust
   connection_specification:
+    type: object
     $schema: http://json-schema.org/draft-07/schema#
     description: Adjust reporting API connector.
-    type: object
     additionalProperties: true
     required:
       - api_token
