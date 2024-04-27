@@ -3,21 +3,19 @@
 #
 from __future__ import annotations
 
+import base64
 from dataclasses import dataclass
-import json
-import os
+import hashlib
+import re
 from typing import TYPE_CHECKING, Any, List, Set
-import shutil
-import tempfile
 
 from pathlib import Path
-from connector_ops.utils import ConnectorLanguage  # type: ignore
+from github import Github, InputGitTreeElement, GithubException, UnknownObjectException
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
-from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
+from pipelines.airbyte_ci.connectors.context import ConnectorContext
+from pipelines.cli.ensure_repo_root import get_airbyte_repo_path_with_fallback
 from pipelines.helpers.connectors.command import run_connector_steps
-from pipelines.helpers.connectors.format import format_prettier
-from pipelines.helpers.connectors.yaml import read_yaml, write_yaml
 from pipelines.airbyte_ci.connectors.reports import Report
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
@@ -51,31 +49,54 @@ class RestoreOriginalState(Step):
 
 class CreatePullRequest(Step):
     context: ConnectorContext
+    modified_files: Set[Path]
+    message: str
+    branch_id: str
+    write: bool
+    input_title: str | None
+    input_body: str | None
 
-    title = "Migrate connector to inline schemas."  # type: ignore
+    title = "Create a pull request of changed files."  # type: ignore
 
-    def __init__(self, context: ConnectorContext, all_modified_files: Set[Path]) -> None:
+    def __init__(
+        self,
+        context: ConnectorContext,
+        all_modified_files: Set[Path],
+        message: str,
+        branch_id: str | None,
+        dry_run: bool,
+        input_title: str | None,
+        input_body: str | None,
+    ) -> None:
         super().__init__(context)
         self.connector_files = filter_to_changes_in_connector(context, all_modified_files)
+        self.message = message
+        self.branch_id = branch_id or default_branch_details(message)  # makes branch like: {branch_id}/{connector_name}
+        self.write = not dry_run
+        self.input_title = input_title
+        self.input_body = input_body
 
     async def _run(self) -> StepResult:  # type: ignore
         if len(self.connector_files) == 0:
-            return StepResult(step=self, status=StepStatus.SKIPPED, stderr="Files modified in this connector.")
+            return StepResult(step=self, status=StepStatus.SKIPPED, stderr="No files modified in this connector.")
 
-        connector = self.context.connector
-        connector_path = connector.code_directory
-        manifest_path = connector.manifest_path
-        python_path = connector.python_source_dir_path
-        logger = self.logger
-
-        for file in self.connector_files:
-            logger.info(f"Modified file: {file}")
+        await create_github_pull_request(
+            write=self.write,
+            context=self.context,
+            file_paths=self.connector_files,
+            branch_id=self.branch_id,
+            message=self.message,
+            input_title=self.input_title,
+            input_body=self.input_body,
+        )
 
         return StepResult(step=self, status=StepStatus.SUCCESS)
 
 
 def filter_to_changes_in_connector(context: ConnectorContext, all_modified_files: Set[Path]) -> Set[Path]:
+    logger = main_logger
     directory = context.connector.code_directory
+    logger.info(f"    Filtering to changes in {directory}")
     # get a list of files that are a child of this path
     connector_files = set([file for file in all_modified_files if directory in file.parents])
     # get doc too
@@ -87,7 +108,182 @@ def filter_to_changes_in_connector(context: ConnectorContext, all_modified_files
     return connector_files
 
 
-async def run_connector_pull_request(context: ConnectorContext, semaphore: "Semaphore", modified_files: Set[Path]) -> Report:
+def default_branch_details(message: str):
+    transformed = re.sub(r"\W", "-", message.lower())
+    truncated = transformed[:20]
+    data_bytes = message.encode()
+    hash_object = hashlib.sha256(data_bytes)
+    desc = f"{truncated}-{hash_object.hexdigest()[:6]}"
+    return desc
+
+
+@dataclass
+class ChangedFile:
+    path: str
+    sha: str | None
+
+
+async def create_github_pull_request(
+    write: bool,
+    context: ConnectorContext,
+    file_paths: set[Path],
+    branch_id: str,
+    message: str,
+    input_title: str | None,
+    input_body: str | None,
+) -> str:
+    if not context.ci_github_access_token:
+        raise Exception("GitHub access token is required to create a pull request. Set the CI_GITHUB_ACCESS_TOKEN environment variable.")
+
+    g = Github(context.ci_github_access_token)
+    connector = context.connector
+    connector_full_name = connector.technical_name
+    logger = main_logger
+
+    if input_title:
+        input_title = f"{connector_full_name}: {input_title}"
+
+    REPO_NAME = "airbytehq/airbyte"
+    BASE_BRANCH = "master"
+    new_branch_name = f"{branch_id}/{connector_full_name}"
+    logger.info(f"    Creating pull request: {new_branch_name}")
+    logger.info(f"       branch: {new_branch_name}")
+
+    # Get the repository
+    repo = g.get_repo(REPO_NAME)
+
+    # TODO: I'm relatively sure there is a gap here when the branch already exists.
+    # The files being passed in are the ones that are different than master
+    # if a branch already exists that had added a file that was not in master (or was reerted to exactly master contents)
+    # _and_ the new code no longer has it (so it was commited and then removed again),
+    # it will not be removed from the tree becuse it as not in the original list.
+    #
+    # What we would have to do is one of the following:
+    #   1. Don't have this global list. Each of these connectors looks for the existing branch and uses the files that
+    #           are different than that branch to this list to see if they have since been modified or deleted.
+    #   2. Have this force push on top of the current master branch so that the history is not relevant.
+    # I generally lean towards the second option because it's more predictable and less error prone, but there
+    # would be less commits in in the PR which could be a feature in some cases.
+
+    # Read the content of each file and create blobs
+    changed_files: List[ChangedFile] = []
+    for sub_path in file_paths:  # these are relative to the repo root
+        logger.info(f"          {sub_path}")
+        if sub_path.exists():
+            with open(sub_path, "rb") as file:
+                logger.info(f"          Reading file: {sub_path}")
+                content = base64.b64encode(file.read()).decode("utf-8")  # Encode file content to base64
+                blob = repo.create_git_blob(content, "base64")
+                changed_file = ChangedFile(path=str(sub_path), sha=blob.sha)
+        else:
+            # it's deleted
+            logger.info(f"          Deleted file: {sub_path}")
+            changed_file = ChangedFile(path=str(sub_path), sha=None)
+        changed_files.append(changed_file)
+
+    existing_ref = None
+    try:
+        existing_ref = repo.get_git_ref(f"heads/{new_branch_name}")
+        logger.info(f"          Existing git ref {new_branch_name}")
+    except GithubException:
+        pass
+
+    if existing_ref:
+        base_sha = existing_ref.object.sha
+    else:
+        base_sha = repo.get_branch(BASE_BRANCH).commit.sha
+        if write:
+            repo.create_git_ref(f"refs/heads/{new_branch_name}", base_sha)
+
+    # remove from the tree if we are deleting something that's not there
+    parent_commit = repo.get_git_commit(base_sha)
+    parent_tree = repo.get_git_tree(base_sha)
+
+    # Filter and update tree elements
+    tree_elements: List[InputGitTreeElement] = []
+    for changed_file in changed_files:
+        if changed_file.sha is None:
+            # make sure it's actually in the current tree
+            try:
+                # Attempt to get the file from the specified commit
+                repo.get_contents(changed_file.path, ref=base_sha)
+                # logger.info(f"File {changed_file.path} exists in commit {base_sha}")
+            except UnknownObjectException:
+                # don't need to add it to the tree
+                logger.info(f"        {changed_file.path} not in parent: {base_sha}")
+                continue
+
+        # Update or new file addition or needed deletion
+        tree_elements.append(
+            InputGitTreeElement(
+                path=changed_file.path,
+                mode="100644",
+                type="blob",
+                sha=changed_file.sha,
+            )
+        )
+
+    # Create a new commit pointing to that tree
+    if write:
+        tree = repo.create_git_tree(tree_elements, base_tree=parent_tree)
+        commit = repo.create_git_commit(message, tree, [parent_commit])
+        repo.get_git_ref(f"heads/{new_branch_name}").edit(sha=commit.sha)
+
+    # Check if there's an existing pull request
+    found_pr = None
+    open_pulls = repo.get_pulls(state="open", base="master")
+    for pr in open_pulls:
+        if pr.head.ref == new_branch_name:
+            found_pr = pr
+            logger.info(f"        Pull request already exists: {pr.html_url}")
+
+    if found_pr:
+        pull_request_html_url = found_pr.html_url
+        if input_title and input_body:
+            logger.info(f"          Updating title and body")
+            if write:
+                found_pr.edit(title=input_title, body=input_body)
+        elif input_title:
+            logger.info(f"          Updating title")
+            if write:
+                found_pr.edit(title=input_title)
+        elif input_body:
+            logger.info(f"          Updating body")
+            if write:
+                found_pr.edit(body=input_body)
+    else:
+        # Create a pull request if it's a new branch
+        if not write:
+            pull_request_html_url = "https://github.com/airbytehq/airbyte/pulls/TODO"
+        else:
+            pull_request_title = input_title or f"{connector_full_name}: {message}"
+            pull_request_body = input_body or ""
+            pull_request = repo.create_pull(
+                title=pull_request_title,
+                body=pull_request_body,
+                base=BASE_BRANCH,
+                head=new_branch_name,
+            )
+
+            # TODO: could pass in additional labels
+            label = repo.get_label("autopull")
+            pull_request.add_to_labels(label)
+            logger.info(f"        Created pull request: {pull_request.html_url}")
+            pull_request_html_url = pull_request.html_url
+
+    return pull_request_html_url
+
+
+async def run_connector_pull_request(
+    context: ConnectorContext,
+    semaphore: "Semaphore",
+    message: str,
+    branch_id: str,
+    title: str,
+    body: str,
+    dry_run: bool,
+    modified_files: Set[Path],
+) -> Report:
     restore_original_state = RestoreOriginalState(context)
 
     context.targeted_platforms = [LOCAL_BUILD_PLATFORM]
@@ -98,7 +294,15 @@ async def run_connector_pull_request(context: ConnectorContext, semaphore: "Sema
         [
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.PULL_REQUEST_CREATE,
-                step=CreatePullRequest(context, modified_files),
+                step=CreatePullRequest(
+                    context=context,
+                    message=message,
+                    branch_id=branch_id,
+                    input_title=title,
+                    input_body=body,
+                    dry_run=dry_run,
+                    all_modified_files=modified_files,
+                ),
                 depends_on=[],
             )
         ]

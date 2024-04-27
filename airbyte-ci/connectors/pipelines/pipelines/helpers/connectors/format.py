@@ -4,13 +4,14 @@ import subprocess
 from typing import List
 
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
+from pipelines.cli.ensure_repo_root import get_airbyte_repo_path_with_fallback
 
 
-async def format_prettier(context: ConnectorContext, files: List[Path]) -> None:
+async def format_prettier(files: List[Path]) -> None:
     if len(files) == 0:
         return
 
-    repo_root_path = Path(os.path.abspath(os.path.join(context.connector.metadata_file_path, "../../../..")))
+    repo_root_path = get_airbyte_repo_path_with_fallback()
     config_path = repo_root_path / ".prettierrc"
     if not config_path.exists():
         raise Exception(f"Prettier config file not found: {config_path}")

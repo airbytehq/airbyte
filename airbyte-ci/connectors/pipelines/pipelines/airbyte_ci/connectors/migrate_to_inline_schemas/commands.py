@@ -25,5 +25,8 @@ from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 async def migrate_to_inline_schemas(ctx: click.Context, report: bool) -> bool:
     verify_formatters()
     return await run_connector_pipeline(
-        ctx, "Migrate to inline schemas", run_connector_migrate_to_inline_schemas_pipeline, enable_report_auto_open=report
+        ctx,
+        "Migrate to inline schemas",
+        report,
+        run_connector_migrate_to_inline_schemas_pipeline,
     )
