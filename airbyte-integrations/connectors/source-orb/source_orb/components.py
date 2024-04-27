@@ -14,7 +14,6 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 from airbyte_cdk.sources.streams.core import Stream
 
 
-
 @dataclass
 class SubscriptionUsageTransformation(RecordTransformation):
 
@@ -58,6 +57,7 @@ class SubscriptionUsageTransformation(RecordTransformation):
                     output[nested_key] = nested_value
                 yield output
         yield from []
+
 
 @dataclass
 class SubscriptionUsagePartitionRouter(StreamSlicer):
