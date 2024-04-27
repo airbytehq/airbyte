@@ -124,9 +124,13 @@ class RestoreOriginalState(Step):
             status=StepStatus.SUCCESS,
         )
 
-    async def _cleanup(self) -> None:
+    async def _cleanup(self) -> StepResult:
         if self.backup_schema_path:
             shutil.rmtree(self.backup_schema_path)
+        return StepResult(
+            step=self,
+            status=StepStatus.SUCCESS,
+        )
 
 
 class InlineSchemas(Step):
