@@ -6,7 +6,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 import os
-from typing import TYPE_CHECKING, Any, List
+from typing import TYPE_CHECKING, Any, List, Set
 import shutil
 import tempfile
 
@@ -54,22 +54,40 @@ class CreatePullRequest(Step):
 
     title = "Migrate connector to inline schemas."  # type: ignore
 
-    def __init__(self, context: PipelineContext) -> None:
+    def __init__(self, context: ConnectorContext, all_modified_files: Set[Path]) -> None:
         super().__init__(context)
+        self.connector_files = filter_to_changes_in_connector(context, all_modified_files)
 
     async def _run(self) -> StepResult:  # type: ignore
+        if len(self.connector_files) == 0:
+            return StepResult(step=self, status=StepStatus.SKIPPED, stderr="Files modified in this connector.")
+
         connector = self.context.connector
         connector_path = connector.code_directory
         manifest_path = connector.manifest_path
         python_path = connector.python_source_dir_path
         logger = self.logger
 
-        logger.info("Hey!")
+        for file in self.connector_files:
+            logger.info(f"Modified file: {file}")
 
         return StepResult(step=self, status=StepStatus.SUCCESS)
 
 
-async def run_connector_pull_request(context: ConnectorContext, semaphore: "Semaphore") -> Report:
+def filter_to_changes_in_connector(context: ConnectorContext, all_modified_files: Set[Path]) -> Set[Path]:
+    directory = context.connector.code_directory
+    # get a list of files that are a child of this path
+    connector_files = set([file for file in all_modified_files if directory in file.parents])
+    # get doc too
+    doc_path = context.connector.documentation_file_path
+
+    if doc_path in all_modified_files:
+        connector_files.add(doc_path)
+
+    return connector_files
+
+
+async def run_connector_pull_request(context: ConnectorContext, semaphore: "Semaphore", modified_files: Set[Path]) -> Report:
     restore_original_state = RestoreOriginalState(context)
 
     context.targeted_platforms = [LOCAL_BUILD_PLATFORM]
@@ -80,7 +98,7 @@ async def run_connector_pull_request(context: ConnectorContext, semaphore: "Sema
         [
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.PULL_REQUEST_CREATE,
-                step=CreatePullRequest(context),
+                step=CreatePullRequest(context, modified_files),
                 depends_on=[],
             )
         ]
