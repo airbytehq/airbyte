@@ -49,7 +49,7 @@ class StorageAccountKey(BaseModel):
     )
 
 
-class Config(AbstractFileBasedSpec):
+class SourceAzureBlobStorageSpec(AbstractFileBasedSpec):
     """
     NOTE: When this Spec is changed, legacy_config_transformer.py must also be modified to uptake the changes
     because it is responsible for converting legacy Azure Blob Storage v0 configs into v1 configs using the File-Based CDK.
