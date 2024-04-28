@@ -82,9 +82,10 @@ async def run_connector_steps(
                     await restore_original_state.run()
                 else:
                     # cleanup if available
-                    method = getattr(restore_original_state, "_cleanup")
-                    if callable(method):
-                        await method()
+                    if hasattr(restore_original_state, "_cleanup"):
+                        method = getattr(restore_original_state, "_cleanup")
+                        if callable(method):
+                            await method()
 
             report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
             context.report = report

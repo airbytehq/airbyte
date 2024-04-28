@@ -17,6 +17,7 @@ from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions.python.common import with_python_connector_installed
 from pipelines.helpers.connectors.cdk_helpers import get_latest_python_cdk_version
+from pipelines.helpers.connectors.command import run_connector_steps
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
 from pipelines.models.steps import Step, StepResult, StepStatus
 
@@ -273,6 +274,7 @@ async def run_connector_up_to_date_pipeline(
     context: ConnectorContext,
     semaphore: "Semaphore",
     dev: bool = False,
+    pull: bool = False,
     specific_dependencies: List[str] = [],
 ) -> Report:
     restore_original_state = RestoreOriginalState(context)
@@ -344,20 +346,4 @@ async def run_connector_up_to_date_pipeline(
             ]
         )
 
-    async with semaphore:
-        async with context:
-            try:
-                result_dict = await run_steps(
-                    runnables=steps_to_run,
-                    options=context.run_step_options,
-                )
-            except Exception as e:
-                await restore_original_state.run()
-                raise e
-            results = list(result_dict.values())
-            if any(step_result.status is StepStatus.FAILURE for step_result in results):
-                await restore_original_state.run()
-            report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
-            context.report = report
-
-    return report  # type: ignore
+    return await run_connector_steps(context, semaphore, steps_to_run, restore_original_state=restore_original_state)
