@@ -568,7 +568,7 @@ Migrate source-quickbooks to use inline schemas:
 
 ### <a id="connectors-pull_request"></a>`connectors pull_request` command
 
-Makes a pull request for all changed connectors
+Makes a pull request for all changed connectors. If the branch already exists, it will update the existing one.
 
 #### Examples
 
@@ -577,6 +577,9 @@ Make a PR for all changes, bump the version and make a changelog in those PRs. T
 
 Do it just for a few connectors:
 `airbyte-ci connectors --name source-aha --name source-quickbooks pull_request -m "upgrading connectors" -b ci_update/round2 --bump patch --changelog`
+
+You can also set or set/change the title or body of the PR"
+`airbyte-ci connectors --name source-aha --name source-quickbooks pull_request -m "upgrading connectors" -b ci_update/round2 --title "New title" --body "full body\n\ngoes here"`
 
 ### <a id="format-subgroup"></a>`format` command subgroup
 
