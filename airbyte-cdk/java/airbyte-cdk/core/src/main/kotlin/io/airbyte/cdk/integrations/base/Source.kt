@@ -8,7 +8,6 @@ import io.airbyte.commons.util.AutoCloseableIterator
 import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-import java.util.List
 
 interface Source : Integration {
     /**
@@ -68,6 +67,6 @@ interface Source : Integration {
         catalog: ConfiguredAirbyteCatalog,
         state: JsonNode?
     ): Collection<AutoCloseableIterator<AirbyteMessage>>? {
-        return List.of(read(config, catalog, state))
+        return listOf(read(config, catalog, state))
     }
 }
