@@ -149,6 +149,7 @@ At this point you can run `airbyte-ci` commands.
 - [`connectors migrate_to_base_image` command](#connectors-migrate_to_base_image)
 - [`connectors migrate-to-poetry` command](#connectors-migrate-to-poetry)
 - [`connectors migrate_to_inline_schemas` command](#migrate_to_inline_schemas)
+- [`connectors pull_request` command](#pull_request)
 - [`format` command subgroup](#format-subgroup)
   - [`format check` command](#format-check-command)
   - [`format fix` command](#format-fix-command)
@@ -562,8 +563,20 @@ Migrate .json schemas into manifest.yaml files, when present.
 
 #### Examples
 
-Migrate source-openweather to use the base image:
-`airbyte-ci connectors --name=source-openweather migrate_to_inline_schemas`
+Migrate source-quickbooks to use inline schemas:
+`airbyte-ci connectors --name=source-quickbooks migrate_to_inline_schemas`
+
+### <a id="connectors-pull_request"></a>`connectors pull_request` command
+
+Makes a pull request for all changed connectors
+
+#### Examples
+
+Make a PR for all changes, bump the version and make a changelog in those PRs. They will be on the branch ci_update/round2/<connector-name>:
+`airbyte-ci connectors pull_request -m "upgrading connectors" -b ci_update/round2 --bump patch --changelog`
+
+Do it just for a few connectors:
+`airbyte-ci connectors --name source-aha --name source-quickbooks pull_request -m "upgrading connectors" -b ci_update/round2 --bump patch --changelog`
 
 ### <a id="format-subgroup"></a>`format` command subgroup
 
