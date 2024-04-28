@@ -405,6 +405,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
             expected
                 .stream()
                 .map { m: AirbyteRecordMessage -> this.pruneEmittedAt(m) }
+                .map { m: AirbyteRecordMessage -> this.pruneCdcMetadata(m) }
                 .collect(Collectors.toList())
         val prunedActual =
             actual
