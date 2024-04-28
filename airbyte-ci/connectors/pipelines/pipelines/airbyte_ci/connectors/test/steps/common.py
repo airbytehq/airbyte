@@ -331,7 +331,8 @@ class RegressionTests(Step):
 
     def regression_tests_command(self) -> List[str]:
         return [
-            "poetry",
+            "./cloud-sql-proxy prod-ab-cloud-proj:us-west3:prod-pgsql-replica --credentials-file /tmp/credentials.json & " +
+            " ".join(["poetry",
             "run",
             "pytest",
             "src/live_tests/regression_tests",
@@ -348,7 +349,7 @@ class RegressionTests(Step):
             "--run-id",
             self.run_id or "",
             "--should-read-with-state",
-            str(self.should_read_with_state),
+            str(self.should_read_with_state)]),
         ]
 
     def __init__(self, context: ConnectorContext) -> None:
@@ -461,11 +462,6 @@ class RegressionTests(Step):
                     "chmod",
                     "+x",
                     "cloud-sql-proxy",
-                ])
-                .with_exec([
-                    "bash",
-                    "-c",
-                    "./cloud-sql-proxy prod-ab-cloud-proj:us-west3:prod-pgsql-replica --credentials-file /tmp/credentials.json &",
                 ])
             )
 
