@@ -11,6 +11,7 @@ from connector_ops.utils import ConnectorLanguage  # type: ignore
 from packaging.version import Version
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, SetConnectorVersion, get_bumped_version
+from pipelines.airbyte_ci.connectors.common.regression_test import RegressionTest
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
@@ -184,36 +185,6 @@ class RestoreUpToDateState(Step):
         )
 
 
-class RegressionTest(Step):
-    """Run the regression test for the connector.
-    We test that:
-    - The original dependencies are installed in the new connector image.
-    - The dev dependencies are not installed in the new connector image.
-    - The connector spec command successfully.
-    """
-
-    context: ConnectorContext
-
-    title = "Run regression test"  # type: ignore
-
-    async def _run(self, new_connector_container: dagger.Container) -> StepResult:  # type: ignore
-        try:
-            await new_connector_container.with_exec(["spec"])
-            await new_connector_container.with_mounted_file(
-                "pyproject.toml", (await self.context.get_connector_dir(include=["pyproject.toml"])).file("pyproject.toml")
-            ).with_exec(["poetry", "run", self.context.connector.technical_name, "spec"], skip_entrypoint=True)
-        except dagger.ExecError as e:
-            return StepResult(
-                step=self,
-                status=StepStatus.FAILURE,
-                stderr=str(e),
-            )
-        return StepResult(
-            step=self,
-            status=StepStatus.SUCCESS,
-        )
-
-
 def pick_airbyte_cdk_version(current_version: Version, context: ConnectorContext) -> Version:
     latest = Version(get_latest_python_cdk_version())
 
@@ -279,18 +250,20 @@ async def run_connector_up_to_date_pipeline(
 ) -> Report:
     restore_original_state = RestoreUpToDateState(context)
 
-    # TODO: could pipe in the new version from the command line
-    should_bump = False
-    if should_bump:
-        new_version = get_bumped_version(context.connector.version, "patch")
-    else:
-        new_version = None
+    new_version = get_bumped_version(context.connector.version, "patch")
 
     context.targeted_platforms = [LOCAL_BUILD_PLATFORM]
 
     steps_to_run: STEP_TREE = []
 
-    steps_to_run.append([StepToRun(id=CONNECTOR_TEST_STEP_ID.CHECK_UPDATE_CANDIDATE, step=CheckIsPythonUpdateable(context))])
+    steps_to_run.append(
+        [
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.CHECK_UPDATE_CANDIDATE,
+                step=CheckIsPythonUpdateable(context),
+            )
+        ]
+    )
 
     steps_to_run.append(
         [
