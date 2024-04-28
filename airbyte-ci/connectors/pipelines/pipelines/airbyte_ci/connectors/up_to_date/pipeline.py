@@ -19,7 +19,7 @@ from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions.python.common import with_python_connector_installed
 from pipelines.helpers.connectors.cdk_helpers import get_latest_python_cdk_version
 from pipelines.helpers.connectors.command import run_connector_steps
-from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
+from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 if TYPE_CHECKING:

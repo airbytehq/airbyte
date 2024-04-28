@@ -6,7 +6,6 @@
 
 from __future__ import annotations
 
-import asyncclick as click
 import logging
 import os
 from datetime import datetime

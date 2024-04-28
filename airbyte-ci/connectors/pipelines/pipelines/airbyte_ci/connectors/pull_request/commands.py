@@ -7,8 +7,6 @@ import asyncclick as click
 from pipelines.helpers.connectors.command import run_connector_pipeline
 from pipelines.airbyte_ci.connectors.pull_request.pipeline import run_connector_pull_request
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-from pipelines.helpers.git import get_modified_files
-from pipelines.helpers.utils import transform_strs_to_paths
 
 
 @click.command(

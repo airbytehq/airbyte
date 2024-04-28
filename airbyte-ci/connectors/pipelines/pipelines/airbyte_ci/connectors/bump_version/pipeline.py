@@ -6,7 +6,7 @@ import re
 from typing import TYPE_CHECKING
 
 import semver
-from dagger import Container, Directory
+from dagger import Directory
 import yaml
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report

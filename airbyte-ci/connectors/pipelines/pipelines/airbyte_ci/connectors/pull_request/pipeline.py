@@ -7,7 +7,7 @@ import base64
 from dataclasses import dataclass
 import hashlib
 import re
-from typing import TYPE_CHECKING, Any, List, Set
+from typing import TYPE_CHECKING, List, Set
 
 from pathlib import Path
 from github import Github, InputGitTreeElement, GithubException, UnknownObjectException
@@ -133,7 +133,7 @@ async def get_connector_changes(context: ConnectorContext) -> Set[Path]:
     return connector_files
 
 
-def default_branch_details(message: str):
+def default_branch_details(message: str) -> str:
     transformed = re.sub(r"\W", "-", message.lower())
     truncated = transformed[:20]
     data_bytes = message.encode()
@@ -266,15 +266,15 @@ async def create_github_pull_request(
     if found_pr:
         pull_request_number = found_pr.number
         if input_title and input_body:
-            logger.info(f"          Updating title and body")
+            logger.info("          Updating title and body")
             if write:
                 found_pr.edit(title=input_title, body=input_body)
         elif input_title:
-            logger.info(f"          Updating title")
+            logger.info("          Updating title")
             if write:
                 found_pr.edit(title=input_title)
         elif input_body:
-            logger.info(f"          Updating body")
+            logger.info("          Updating body")
             if write:
                 found_pr.edit(body=input_body)
     else:

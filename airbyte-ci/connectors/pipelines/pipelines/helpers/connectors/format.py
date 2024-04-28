@@ -1,9 +1,7 @@
-import os
 from pathlib import Path
 import subprocess
 from typing import List
 
-from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.cli.ensure_repo_root import get_airbyte_repo_path_with_fallback
 
 
