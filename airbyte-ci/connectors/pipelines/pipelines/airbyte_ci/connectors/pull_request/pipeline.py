@@ -12,10 +12,14 @@ from typing import TYPE_CHECKING, Any, List, Set
 from pathlib import Path
 from github import Github, InputGitTreeElement, GithubException, UnknownObjectException
 from pipelines import main_logger
-from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, SetConnectorVersion, get_bumped_version
+from pipelines.airbyte_ci.connectors.bump_version.pipeline import (
+    AddChangelogEntry,
+    RestoreVersionState,
+    SetConnectorVersion,
+    get_bumped_version,
+)
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.cli.ensure_repo_root import get_airbyte_repo_path_with_fallback
 from pipelines.helpers.connectors.command import run_connector_steps
 from pipelines.airbyte_ci.connectors.reports import Report
 from pipelines.consts import LOCAL_BUILD_PLATFORM
@@ -29,27 +33,26 @@ if TYPE_CHECKING:
     from anyio import Semaphore  # type: ignore
 
 
-# TODO: need a way to roll up the original states of all the children.
-# For example, this one can run the changelog and the bump - it needs to delegate to those
-class RestoreOriginalState(Step):
+class RestorePullRequestState(Step):
     context: ConnectorContext
 
     title = "Restore original state"  # type: ignore
 
     def __init__(self, context: ConnectorContext) -> None:
         super().__init__(context)
+        self.bump_state = RestoreVersionState(context)
 
     async def _run(self) -> StepResult:  # type: ignore
-        return StepResult(
-            step=self,
-            status=StepStatus.SUCCESS,
-        )
+        result = await self.bump_state.run()
+        if result.status is not StepStatus.SUCCESS:
+            return result
+        return StepResult(step=self, status=StepStatus.SUCCESS)
 
     async def _cleanup(self) -> StepResult:  # type: ignore
-        return StepResult(
-            step=self,
-            status=StepStatus.SUCCESS,
-        )
+        result = await self.bump_state._cleanup()
+        if result.status is not StepStatus.SUCCESS:
+            return result
+        return StepResult(step=self, status=StepStatus.SUCCESS)
 
 
 PULL_REQUEST_OUTPUT_ID = "pull_request_number"
@@ -308,7 +311,7 @@ async def run_connector_pull_request(
     bump: str | None,
     dry_run: bool,
 ) -> Report:
-    restore_original_state = RestoreOriginalState(context)
+    restore_original_state = RestorePullRequestState(context)
 
     context.targeted_platforms = [LOCAL_BUILD_PLATFORM]
 

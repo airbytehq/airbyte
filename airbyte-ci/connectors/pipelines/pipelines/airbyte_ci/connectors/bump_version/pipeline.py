@@ -34,6 +34,43 @@ def get_bumped_version(version: str | None, bump_type: str) -> str:
     return str(new_version)
 
 
+class RestoreVersionState(Step):
+    context: ConnectorContext
+
+    title = "Restore original version state"  # type: ignore
+
+    def __init__(self, context: ConnectorContext) -> None:
+        super().__init__(context)
+        connector = context.connector
+        if connector.metadata_file_path.is_file():
+            self.metadata_content = connector.metadata_file_path.read_text()
+        if connector.dockerfile_file_path.is_file():
+            self.dockerfile_content = connector.dockerfile_file_path.read_text()
+        if connector.poetry_file_path.is_file():
+            self.poetry_content = connector.poetry_file_path.read_text()
+        if connector.documentation_file_path and connector.documentation_file_path.is_file():
+            self.documentation_content = connector.documentation_file_path.read_text()
+
+    async def _run(self) -> StepResult:  # type: ignore
+        connector = self.context.connector
+        if self.metadata_content:
+            connector.metadata_file_path.write_text(self.metadata_content)
+        if self.dockerfile_content:
+            connector.dockerfile_file_path.write_text(self.dockerfile_content)
+        if self.poetry_content:
+            connector.poetry_file_path.write_text(self.poetry_content)
+        if self.documentation_content and connector.documentation_file_path:
+            connector.documentation_file_path.write_text(self.documentation_content)
+
+    async def _cleanup(self) -> StepResult:
+        return StepResult(step=self, status=StepStatus.SUCCESS)
+
+        return StepResult(
+            step=self,
+            status=StepStatus.SUCCESS,
+        )
+
+
 class AddChangelogEntry(Step):
     context: ConnectorContext
     title = "Add changelog entry"  # type: ignore

@@ -94,7 +94,7 @@ def copy_directory(src: Path, dest: Path) -> None:
     shutil.copytree(src, dest)
 
 
-class RestoreOriginalState(Step):
+class RestoreInlineState(Step):
     context: ConnectorContext
 
     title = "Restore original state"  # type: ignore
@@ -361,7 +361,7 @@ def _parse_json_streams(python_path: Path) -> dict[str, JsonStream]:
 
 
 async def run_connector_migrate_to_inline_schemas_pipeline(context: ConnectorContext, semaphore: "Semaphore") -> Report:
-    restore_original_state = RestoreOriginalState(context)
+    restore_original_state = RestoreInlineState(context)
 
     context.targeted_platforms = [LOCAL_BUILD_PLATFORM]
 

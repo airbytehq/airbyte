@@ -252,7 +252,7 @@ class DeleteSetUpPy(Step):
         return StepResult(step=self, status=StepStatus.SUCCESS, output=original_setup_py)
 
 
-class RestoreOriginalState(Step):
+class RestorePoetryState(Step):
     context: ConnectorContext
 
     title = "Restore original state"  # type: ignore
@@ -406,7 +406,7 @@ class UpdateReadMe(Step):
 
 
 async def run_connector_migration_to_poetry_pipeline(context: ConnectorContext, semaphore: "Semaphore") -> Report:
-    restore_original_state = RestoreOriginalState(context)
+    restore_original_state = RestorePoetryState(context)
     new_version = get_bumped_version(context.connector.version, "patch")
     context.targeted_platforms = [LOCAL_BUILD_PLATFORM]
     steps_to_run: STEP_TREE = [

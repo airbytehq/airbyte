@@ -156,7 +156,7 @@ class UpdatePoetry(Step):
         return StepResult(step=self, status=StepStatus.SUCCESS, output=all_changeset)
 
 
-class RestoreOriginalState(Step):
+class RestoreUpToDateState(Step):
     context: ConnectorContext
 
     title = "Restore original state"  # type: ignore
@@ -277,7 +277,7 @@ async def run_connector_up_to_date_pipeline(
     pull: bool = False,
     specific_dependencies: List[str] = [],
 ) -> Report:
-    restore_original_state = RestoreOriginalState(context)
+    restore_original_state = RestoreUpToDateState(context)
 
     # TODO: could pipe in the new version from the command line
     should_bump = False
