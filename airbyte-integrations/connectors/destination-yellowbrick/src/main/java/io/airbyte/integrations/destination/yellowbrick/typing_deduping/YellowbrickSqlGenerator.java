@@ -257,7 +257,7 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
       String arrayPattern = String.format(":\\s*(\\[.*?\\])");
       return field("SUBSTRING({0} FROM '\"' || {1} || '\"' || {2})", name(COLUMN_NAME_DATA), val(column.originalName()), arrayPattern);
     } else {
-        return field("json_lookup({0}, '/' || {1}, 'jpointer_simdjson')", name(COLUMN_NAME_DATA), val(column.originalName()));
+      return field("json_lookup({0}, '/' || {1}, 'jpointer_simdjson')", name(COLUMN_NAME_DATA), val(column.originalName()));
     }
   }
 

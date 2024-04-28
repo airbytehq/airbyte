@@ -115,10 +115,10 @@ public class YellowbrickDestination extends AbstractJdbcDestination<YellowbrickS
     return new YellowbrickSqlGenerator(new YellowbrickSQLNameTransformer());
   }
 
- @Override
+  @Override
   protected StreamAwareDataTransformer getDataTransformer(ParsedCatalog parsedCatalog, String defaultNamespace) {
     return new YellowbrickDataTransformer();
-  } 
+  }
 
   @Override
   public boolean isV2Destination() {
