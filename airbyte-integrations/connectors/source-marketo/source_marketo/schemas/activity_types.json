@@ -3,34 +3,44 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the activity type.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the activity type.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "A description of the activity type.",
       "type": ["null", "string"]
     },
     "primaryAttribute": {
+      "description": "The primary attribute of the activity, which could be the most essential or relevant data point.",
       "type": ["null", "object"],
       "properties": {
         "name": {
+          "description": "The name of the primary attribute.",
           "type": ["null", "string"]
         },
         "dataType": {
+          "description": "The data type of the primary attribute.",
           "type": ["null", "string"]
         }
       }
     },
     "attributes": {
+      "description": "An array containing the activity attributes including details like type, value, timestamp, etc.",
       "type": ["null", "array"],
       "items": {
+        "description": "Properties related to a specific activity attribute.",
         "type": ["null", "object"],
         "properties": {
           "name": {
+            "description": "The name of the attribute.",
             "type": ["null", "string"]
           },
           "dataType": {
+            "description": "The data type of the attribute.",
             "type": ["null", "string"]
           }
         }
