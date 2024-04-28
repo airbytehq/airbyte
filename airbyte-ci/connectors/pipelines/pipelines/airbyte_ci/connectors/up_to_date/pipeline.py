@@ -10,11 +10,11 @@ import dagger
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from packaging.version import Version
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
-from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, SetConnectorVersion, get_bumped_version
 from pipelines.airbyte_ci.connectors.common.regression_test import RegressionTest
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
-from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
+from pipelines.airbyte_ci.connectors.pull_request.pipeline import PULL_REQUEST_OUTPUT_ID, run_connector_pull_request
+from pipelines.airbyte_ci.connectors.reports import Report
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions.python.common import with_python_connector_installed
 from pipelines.helpers.connectors.cdk_helpers import get_latest_python_cdk_version
@@ -157,10 +157,59 @@ class UpdatePoetry(Step):
         return StepResult(step=self, status=StepStatus.SUCCESS, output=all_changeset)
 
 
+class MakePullRequest(Step):
+    context: ConnectorContext
+    pull: bool
+
+    title = "Bump version, add changelog, and make pull request"  # type: ignore
+
+    def __init__(
+        self,
+        context: PipelineContext,
+        pull: bool,
+        semaphore: "Semaphore",
+    ) -> None:
+        super().__init__(context)
+        self.pull = pull
+        self.semaphore = semaphore
+
+    async def _run(self) -> StepResult:  # type: ignore
+        message = "Updating python dependencies"  # TODO: update this based on what it actually did, used for commit and changelog
+        branch_id = "up_to_date"
+        title = "Up to date"
+        body = "Updating python dependencies"  # TODO: update this based on what it actually did
+        changelog = True
+        bump = "patch"
+        dry_run = not self.pull
+        report = await run_connector_pull_request(
+            context=self.context,
+            semaphore=self.semaphore,
+            message=message,
+            branch_id=branch_id,
+            title=title,
+            body=body,
+            changelog=changelog,
+            bump=bump,
+            dry_run=dry_run,
+        )
+
+        results = report.steps_results
+        pull_request_number = 0
+        for step_result in results:
+            if step_result.status is StepStatus.FAILURE:
+                return step_result
+            if hasattr(step_result.output, PULL_REQUEST_OUTPUT_ID):
+                pull_request_number = step_result.output[PULL_REQUEST_OUTPUT_ID]
+
+        return StepResult(step=self, status=StepStatus.SUCCESS, output={PULL_REQUEST_OUTPUT_ID: pull_request_number})
+
+
 class RestoreUpToDateState(Step):
     context: ConnectorContext
 
     title = "Restore original state"  # type: ignore
+
+    # Note: Pull request stuff resotres itself because it's run using the outer method
 
     def __init__(self, context: ConnectorContext) -> None:
         super().__init__(context)
@@ -250,9 +299,9 @@ async def run_connector_up_to_date_pipeline(
 ) -> Report:
     restore_original_state = RestoreUpToDateState(context)
 
-    new_version = get_bumped_version(context.connector.version, "patch")
-
     context.targeted_platforms = [LOCAL_BUILD_PLATFORM]
+
+    do_regression_test = False
 
     steps_to_run: STEP_TREE = []
 
@@ -275,48 +324,36 @@ async def run_connector_up_to_date_pipeline(
         ]
     )
 
-    steps_to_run.append(
-        [StepToRun(id=CONNECTOR_TEST_STEP_ID.BUILD, step=BuildConnectorImages(context), depends_on=[CONNECTOR_TEST_STEP_ID.UPDATE_POETRY])]
-    )
+    steps_before_pull: List[str] = [CONNECTOR_TEST_STEP_ID.UPDATE_POETRY]
+    if do_regression_test:
+        steps_to_run.append(
+            [
+                StepToRun(
+                    id=CONNECTOR_TEST_STEP_ID.BUILD, step=BuildConnectorImages(context), depends_on=[CONNECTOR_TEST_STEP_ID.UPDATE_POETRY]
+                )
+            ]
+        )
+
+        steps_before_pull.append(CONNECTOR_TEST_STEP_ID.REGRESSION_TEST)
+        steps_to_run.append(
+            [
+                StepToRun(
+                    id=CONNECTOR_TEST_STEP_ID.REGRESSION_TEST,
+                    step=RegressionTest(context),
+                    depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+                    args=lambda results: {"new_connector_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
+                )
+            ]
+        )
 
     steps_to_run.append(
         [
             StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.REGRESSION_TEST,
-                step=RegressionTest(context),
-                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
-                args=lambda results: {"new_connector_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
+                id=CONNECTOR_TEST_STEP_ID.UPDATE_PULL_REQUEST,
+                step=MakePullRequest(context, pull, semaphore),
+                depends_on=steps_before_pull,
             )
         ]
     )
-
-    if new_version:
-        steps_to_run.append(
-            [
-                StepToRun(
-                    id=CONNECTOR_TEST_STEP_ID.SET_CONNECTOR_VERSION,
-                    step=SetConnectorVersion(
-                        context,
-                        new_version,
-                        export=True,
-                    ),
-                    depends_on=[CONNECTOR_TEST_STEP_ID.REGRESSION_TEST],
-                )
-            ]
-        )
-        steps_to_run.append(
-            [
-                StepToRun(
-                    id=CONNECTOR_TEST_STEP_ID.ADD_CHANGELOG_ENTRY,
-                    step=AddChangelogEntry(
-                        context,
-                        new_version,
-                        "TODO: better message - Poetry update.",
-                        "0",
-                    ),
-                    depends_on=[CONNECTOR_TEST_STEP_ID.REGRESSION_TEST],
-                )
-            ]
-        )
 
     return await run_connector_steps(context, semaphore, steps_to_run, restore_original_state=restore_original_state)

@@ -469,12 +469,12 @@ Actions:
 
 ### Examples
 
-Bump source-openweather:
+Get source-openweather up to date. If there are changes, bump the version and add to changelog:
 
 * `airbyte-ci connectors --name=source-openweather up_to_date`: upgrades main dependecies
 * `airbyte-ci connectors --name=source-openweather up_to_date --dev`: forces update if there are only dev changes
 * `airbyte-ci connectors --name=source-openweather up_to_date --dep pytest@^8.10 --dep airbyte-cdk@0.80.0`: allows update to toml files as well
-
+* `airbyte-ci connectors --name=source-openweather up_to_date --pull`: make a pull request for it
 
  ### Other things it could do
 

@@ -34,6 +34,7 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     SET_CONNECTOR_VERSION = "bump_version.set"
     CHECK_UPDATE_CANDIDATE = "up_to_date.check"
     UPDATE_POETRY = "up_to_date.poetry"
+    UPDATE_PULL_REQUEST = "up_to_date.pull"
     INLINE_CANDIDATE = "migration_to_inline_schemas.candidate"
     INLINE_MIGRATION = "migration_to_inline_schemas.migration"
     PULL_REQUEST_CREATE = "pull_request.create"
