@@ -10,11 +10,11 @@ from base_images import version_registry  # type: ignore
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from dagger import Directory
 from jinja2 import Template
+import yaml
 from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, SetConnectorVersion, get_bumped_version
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.helpers import git
-from pipelines.helpers.connectors import metadata_change_helpers
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 if TYPE_CHECKING:
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 class UpgradeBaseImageMetadata(Step):
     context: ConnectorContext
 
-    title = "Upgrade the base image to the latest version in metadata.yaml"
+    title = "Upgrade the base image to the latest version in metadata.yaml"  # type: ignore
 
     def __init__(
         self,
@@ -41,9 +41,9 @@ class UpgradeBaseImageMetadata(Step):
     async def get_latest_base_image_address(self) -> "Optional[str]":
         try:
             version_registry_for_language = await version_registry.get_registry_for_language(
-                self.dagger_client, self.context.connector.language, (self.context.docker_hub_username, self.context.docker_hub_password)
+                self.dagger_client, self.context.connector.language, (self.context.docker_hub_username, self.context.docker_hub_password)  # type: ignore
             )
-            return version_registry_for_language.latest_not_pre_released_published_entry.published_docker_image.address
+            return version_registry_for_language.latest_not_pre_released_published_entry.published_docker_image.address  # type: ignore
         except NotImplementedError:
             return None
 
@@ -57,7 +57,7 @@ class UpgradeBaseImageMetadata(Step):
         }
         return updated_metadata
 
-    async def _run(self) -> StepResult:
+    async def _run(self) -> StepResult:  # type: ignore
         latest_base_image_address = await self.get_latest_base_image_address()
         if latest_base_image_address is None:
             return StepResult(
@@ -68,7 +68,7 @@ class UpgradeBaseImageMetadata(Step):
             )
 
         metadata_path = self.context.connector.metadata_file_path
-        current_metadata = await metadata_change_helpers.get_current_metadata(self.repo_dir, metadata_path)
+        current_metadata = yaml.safe_load(await self.repo_dir.file(str(metadata_path)).contents())
         current_base_image_address = current_metadata.get("data", {}).get("connectorBuildOptions", {}).get("baseImage")
 
         if current_base_image_address is None and not self.set_if_not_exists:
@@ -87,7 +87,7 @@ class UpgradeBaseImageMetadata(Step):
                 output=self.repo_dir,
             )
         updated_metadata = self.update_base_image_in_metadata(current_metadata, latest_base_image_address)
-        updated_repo_dir = metadata_change_helpers.get_repo_dir_with_updated_metadata(self.repo_dir, metadata_path, updated_metadata)
+        updated_repo_dir = self.repo_dir.with_new_file(str(metadata_path), contents=yaml.safe_dump(updated_metadata))
 
         return StepResult(
             step=self,
@@ -112,7 +112,7 @@ class DeleteConnectorFile(Step):
     def title(self) -> str:
         return f"Delete {self.file_to_delete}"
 
-    async def _run(self) -> StepResult:
+    async def _run(self) -> StepResult:  # type: ignore
         file_to_delete_path = self.context.connector.code_directory / self.file_to_delete
         if not file_to_delete_path.exists():
             return StepResult(
@@ -133,13 +133,13 @@ class DeleteConnectorFile(Step):
 class AddBuildInstructionsToReadme(Step):
     context: ConnectorContext
 
-    title = "Add build instructions to README.md"
+    title = "Add build instructions to README.md"  # type: ignore
 
     def __init__(self, context: PipelineContext, repo_dir: Directory) -> None:
         super().__init__(context)
         self.repo_dir = repo_dir
 
-    async def _run(self) -> StepResult:
+    async def _run(self) -> StepResult:  # type: ignore
         readme_path = self.context.connector.code_directory / "README.md"
         if not readme_path.exists():
             return StepResult(
@@ -240,7 +240,7 @@ class AddBuildInstructionsToReadme(Step):
 
         build_instructions = build_instructions_template.render(
             {
-                "connector_image": self.context.connector.metadata["dockerRepository"],
+                "connector_image": self.context.connector.metadata["dockerRepository"],  # type: ignore
                 "connector_technical_name": self.context.connector.technical_name,
             }
         )
@@ -280,7 +280,7 @@ async def run_connector_base_image_upgrade_pipeline(context: ConnectorContext, s
             await og_repo_dir.diff(final_repo_dir).export(str(git.get_git_repo_path()))
             report = ConnectorReport(context, steps_results, name="BASE IMAGE UPGRADE RESULTS")
             context.report = report
-    return report
+    return report  # type: ignore
 
 
 async def run_connector_migration_to_base_image_pipeline(
@@ -320,7 +320,7 @@ async def run_connector_migration_to_base_image_pipeline(
             steps_results.append(update_base_image_in_metadata_result)
             if update_base_image_in_metadata_result.status is not StepStatus.SUCCESS:
                 context.report = ConnectorReport(context, steps_results, name="BASE IMAGE UPGRADE RESULTS")
-                return context.report
+                return context.report  # type: ignore
 
             latest_repo_dir_state = update_base_image_in_metadata_result.output
             # BUMP CONNECTOR VERSION IN METADATA
@@ -334,10 +334,11 @@ async def run_connector_migration_to_base_image_pipeline(
             if pull_request_number is not None:
                 add_changelog_entry = AddChangelogEntry(
                     context,
-                    latest_repo_dir_state,
                     new_version,
                     "Base image migration: remove Dockerfile and use the python-connector-base image",
                     pull_request_number,
+                    latest_repo_dir_state,
+                    False,
                 )
                 add_changelog_entry_result = await add_changelog_entry.run()
                 steps_results.append(add_changelog_entry_result)
@@ -356,4 +357,4 @@ async def run_connector_migration_to_base_image_pipeline(
             await og_repo_dir.diff(latest_repo_dir_state).export(str(git.get_git_repo_path()))
             report = ConnectorReport(context, steps_results, name="MIGRATE TO BASE IMAGE RESULTS")
             context.report = report
-    return report
+    return report  # type: ignore

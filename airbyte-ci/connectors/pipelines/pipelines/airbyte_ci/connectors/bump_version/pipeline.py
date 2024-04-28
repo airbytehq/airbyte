@@ -41,20 +41,23 @@ class AddChangelogEntry(Step):
     def __init__(
         self,
         context: ConnectorContext,
-        repo_dir: Container,
         new_version: str,
         comment: str,
         pull_request_number: str,
-        export_docs: bool = False,
+        repo_dir: Directory | None = None,
+        export: bool = True,
     ) -> None:
         super().__init__(context)
         self.repo_dir = repo_dir
         self.new_version = semver.VersionInfo.parse(new_version)
         self.comment = comment
         self.pull_request_number = int(pull_request_number)
-        self.export_docs = export_docs
+        self.export = export
 
     async def _run(self, pull_request_number: int | None = None) -> StepResult:  # type: ignore
+        if not self.repo_dir:
+            self.repo_dir = await self.context.get_repo_dir(include=[str(self.context.connector.local_connector_documentation_directory)])
+
         if pull_request_number is None:
             # this allows passing it dyanmically from a result of another action (like creating a pull request)
             pull_request_number = self.pull_request_number
@@ -77,7 +80,7 @@ class AddChangelogEntry(Step):
                 step=self, status=StepStatus.FAILURE, stderr=f"Could not add changelog entry: {e}", output=self.repo_dir, exc_info=e
             )
         updated_repo_dir = self.repo_dir.with_new_file(str(doc_path), contents=updated_doc)
-        if self.export_docs:
+        if self.export:
             await updated_repo_dir.file(str(doc_path)).export(str(doc_path))
         return StepResult(
             step=self,
@@ -244,10 +247,11 @@ async def run_connector_version_bump_pipeline(
 
             add_changelog_entry = AddChangelogEntry(
                 context,
-                repo_dir_with_updated_metadata,
                 new_version,
                 changelog_entry,
                 pull_request_number,
+                repo_dir_with_updated_metadata,
+                False,
             )
             add_changelog_entry_result = await add_changelog_entry.run()
             steps_results.append(add_changelog_entry_result)

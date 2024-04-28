@@ -42,10 +42,10 @@ class CheckIsMigrationCandidate(Step):
 
     context: ConnectorContext
 
-    title = "Check if the connector is a candidate for migration to poetry."
+    title = "Check if the connector is a candidate for migration to poetry."  # type: ignore
     airbyte_repo = git.Repo(search_parent_directories=True)
 
-    async def _run(self) -> StepResult:
+    async def _run(self) -> StepResult:  # type: ignore
         connector_dir_entries = await (await self.context.get_connector_dir()).entries()
         if self.context.connector.language not in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
             return StepResult(
@@ -71,7 +71,7 @@ class CheckIsMigrationCandidate(Step):
                 status=StepStatus.SKIPPED,
                 stderr="The connector can't be migrated to poetry because it does not have a setup.py file.",
             )
-        if not self.context.connector.metadata.get("connectorBuildOptions", {}).get("baseImage"):
+        if not self.context.connector.metadata.get("connectorBuildOptions", {}).get("baseImage"):  # type: ignore
             return StepResult(
                 step=self,
                 status=StepStatus.SKIPPED,
@@ -87,7 +87,7 @@ class CheckIsMigrationCandidate(Step):
 class PoetryInit(Step):
     context: ConnectorContext
 
-    title = "Generate pyproject.toml and poetry.lock"
+    title = "Generate pyproject.toml and poetry.lock"  # type: ignore
     python_version = "^3.9,<3.12"
     build_system = {
         "requires": ["poetry-core>=1.0.0"],
@@ -115,9 +115,9 @@ class PoetryInit(Step):
             "name": package_info_dict["Name"],
             "description": package_info_dict["Summary"],
             "authors": [package_info_dict["Author"] + " <" + package_info_dict["Author-email"] + ">"],
-            "license": self.context.connector.metadata["license"],
+            "license": self.context.connector.metadata["license"],  # type: ignore
             "readme": "README.md",
-            "documentation": self.context.connector.metadata["documentationUrl"],
+            "documentation": self.context.connector.metadata["documentationUrl"],  # type: ignore
             "homepage": "https://airbyte.com",
             "repository": "https://github.com/airbytehq/airbyte",
         }
@@ -177,8 +177,8 @@ class PoetryInit(Step):
                 non_transitive_deps.append(line.replace("Requirement already satisfied: ", "").split(" ")[0].replace("_", "-"))
         return set(non_transitive_deps)
 
-    async def _run(self) -> StepResult:
-        base_image_name = self.context.connector.metadata["connectorBuildOptions"]["baseImage"]
+    async def _run(self) -> StepResult:  # type: ignore
+        base_image_name = self.context.connector.metadata["connectorBuildOptions"]["baseImage"]  # type: ignore
         base_container = self.dagger_client.container(platform=LOCAL_BUILD_PLATFORM).from_(base_image_name)
         connector_container = await with_python_connector_installed(
             self.context,
@@ -195,7 +195,7 @@ class PoetryInit(Step):
         dev_dependencies = await self.get_dependencies(connector_container, groups=["dev", "tests"]) - dependencies
         latest_pip_freeze = (
             await self.context.dagger_client.container(platform=LOCAL_BUILD_PLATFORM)
-            .from_(f"{self.context.connector.metadata['dockerRepository']}:latest")
+            .from_(f"{self.context.connector.metadata['dockerRepository']}:latest")  # type: ignore
             .with_exec(["pip", "freeze"], skip_entrypoint=True)
             .stdout()
         )
@@ -242,9 +242,9 @@ class PoetryInit(Step):
 class DeleteSetUpPy(Step):
     context: ConnectorContext
 
-    title = "Delete setup.py"
+    title = "Delete setup.py"  # type: ignore
 
-    async def _run(self) -> StepResult:
+    async def _run(self) -> StepResult:  # type: ignore
         setup_path = self.context.connector.code_directory / "setup.py"
         original_setup_py = setup_path.read_text()
         setup_path.unlink()
@@ -255,7 +255,7 @@ class DeleteSetUpPy(Step):
 class RestoreOriginalState(Step):
     context: ConnectorContext
 
-    title = "Restore original state"
+    title = "Restore original state"  # type: ignore
 
     def __init__(self, context: ConnectorContext) -> None:
         super().__init__(context)
@@ -267,16 +267,17 @@ class RestoreOriginalState(Step):
         self.doc_path = context.connector.documentation_file_path
         self.original_setup_py = self.setup_path.read_text() if self.setup_path.exists() else None
         self.original_metadata = self.metadata_path.read_text()
-        self.original_docs = self.doc_path.read_text()
+        self.original_docs = self.doc_path.read_text() if self.doc_path and self.doc_path.exists() else None
         self.original_readme = self.readme_path.read_text()
 
-    async def _run(self) -> StepResult:
+    async def _run(self) -> StepResult:  # type: ignore
         if self.original_setup_py:
             self.setup_path.write_text(self.original_setup_py)
         self.logger.info(f"Restored setup.py for {self.context.connector.technical_name}")
         self.metadata_path.write_text(self.original_metadata)
         self.logger.info(f"Restored metadata.yaml for {self.context.connector.technical_name}")
-        self.doc_path.write_text(self.original_docs)
+        if self.doc_path and self.original_docs:
+            self.doc_path.write_text(self.original_docs)
         self.logger.info(f"Restored documentation file for {self.context.connector.technical_name}")
         self.readme_path.write_text(self.original_readme)
         self.logger.info(f"Restored README.md for {self.context.connector.technical_name}")
@@ -303,9 +304,9 @@ class RegressionTest(Step):
 
     context: ConnectorContext
 
-    title = "Run regression test"
+    title = "Run regression test"  # type: ignore
 
-    async def _run(
+    async def _run(  # type: ignore
         self, new_connector_container: dagger.Container, original_dependencies: List[str], original_dev_dependencies: List[str]
     ) -> StepResult:
         try:
@@ -339,7 +340,7 @@ class RegressionTest(Step):
     ) -> None:
         previous_pip_freeze = (
             await self.dagger_client.container(platform=LOCAL_BUILD_PLATFORM)
-            .from_(f'{self.context.connector.metadata["dockerRepository"]}:latest')
+            .from_(f'{self.context.connector.metadata["dockerRepository"]}:latest')  # type: ignore
             .with_exec(["pip", "freeze"], skip_entrypoint=True)
             .stdout()
         ).splitlines()
@@ -385,9 +386,9 @@ class RegressionTest(Step):
 class UpdateReadMe(Step):
     context: ConnectorContext
 
-    title = "Update README.md"
+    title = "Update README.md"  # type: ignore
 
-    async def _run(self) -> StepResult:
+    async def _run(self) -> StepResult:  # type: ignore
         readme_path = self.context.connector.code_directory / "README.md"
         jinja_env = Environment(
             loader=PackageLoader("pipelines.airbyte_ci.connectors.migrate_to_poetry"),
@@ -451,11 +452,9 @@ async def run_connector_migration_to_poetry_pipeline(context: ConnectorContext, 
                 id=CONNECTOR_TEST_STEP_ID.ADD_CHANGELOG_ENTRY,
                 step=AddChangelogEntry(
                     context,
-                    await context.get_repo_dir(include=[str(context.connector.local_connector_documentation_directory)]),
                     new_version,
                     "Manage dependencies with Poetry.",
                     "0",
-                    export_docs=True,
                 ),
                 depends_on=[CONNECTOR_TEST_STEP_ID.REGRESSION_TEST],
             )
@@ -482,4 +481,4 @@ async def run_connector_migration_to_poetry_pipeline(context: ConnectorContext, 
             report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
             context.report = report
 
-    return report
+    return report  # type: ignore

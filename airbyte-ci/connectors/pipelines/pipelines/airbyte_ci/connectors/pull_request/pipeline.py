@@ -360,11 +360,9 @@ async def run_connector_pull_request(
                     id=CONNECTOR_TEST_STEP_ID.ADD_CHANGELOG_ENTRY,
                     step=AddChangelogEntry(
                         context,
-                        await context.get_repo_dir(include=[str(context.connector.local_connector_documentation_directory)]),
                         connector_version,
                         message,
                         "0",  # overridden in the step via args
-                        export_docs=True,
                     ),
                     depends_on=[CONNECTOR_TEST_STEP_ID.PULL_REQUEST_CREATE],
                     args=lambda results: {

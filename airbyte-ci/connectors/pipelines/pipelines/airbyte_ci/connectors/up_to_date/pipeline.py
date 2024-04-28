@@ -335,11 +335,9 @@ async def run_connector_up_to_date_pipeline(
                     id=CONNECTOR_TEST_STEP_ID.ADD_CHANGELOG_ENTRY,
                     step=AddChangelogEntry(
                         context,
-                        await context.get_repo_dir(include=[str(context.connector.local_connector_documentation_directory)]),
                         new_version,
                         "TODO: better message - Poetry update.",
                         "0",
-                        export_docs=True,
                     ),
                     depends_on=[CONNECTOR_TEST_STEP_ID.REGRESSION_TEST],
                 )
