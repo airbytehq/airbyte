@@ -27,6 +27,7 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlInitialLoadGlobalStateManager.class);
   private final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo;
   private StateManager stateManager;
+  private final CdcState initialCdcState;
   // Only one global state is emitted, which is fanned out into many entries in the DB by platform. As
   // a result, we need to keep track of streams that have completed the snapshot.
   private Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot;
@@ -37,15 +38,21 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
   public MssqlInitialLoadGlobalStateManager(final InitialLoadStreams initialLoadStreams,
                                             final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo,
                                             final StateManager stateManager,
-                                            final ConfiguredAirbyteCatalog catalog) {
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final CdcState initialCdcState) {
     this.pairToOrderedColLoadStatus = MssqlInitialLoadStateManager.initPairToOrderedColumnLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
     this.pairToOrderedColInfo = pairToOrderedColInfo;
     this.stateManager = stateManager;
+    this.initialCdcState = initialCdcState;
     initStreams(initialLoadStreams, catalog);
   }
 
   private AirbyteGlobalState generateGlobalState(final List<AirbyteStreamState> streamStates) {
-    final CdcState cdcState = stateManager.getCdcStateManager().getCdcState();
+    CdcState cdcState = stateManager.getCdcStateManager().getCdcState();
+    if (cdcState == null || cdcState.getState() == null) {
+      cdcState = initialCdcState;
+    }
+
     final AirbyteGlobalState globalState = new AirbyteGlobalState();
     globalState.setSharedState(Jsons.jsonNode(cdcState));
     globalState.setStreamStates(streamStates);

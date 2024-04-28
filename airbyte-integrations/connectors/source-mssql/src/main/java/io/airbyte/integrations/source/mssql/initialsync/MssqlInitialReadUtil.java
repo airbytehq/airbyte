@@ -135,8 +135,7 @@ public class MssqlInitialReadUtil {
             || stateManager.getCdcStateManager().getCdcState().getState() == null)) {
       // Construct the initial state for Mssql. If there is already existing state, we use that instead
       // since that is associated with the debezium state associated with the initial sync.
-      final MssqlDebeziumStateUtil mssqlDebeziumStateUtil = new MssqlDebeziumStateUtil();
-      final JsonNode initialDebeziumState = mssqlDebeziumStateUtil.constructInitialDebeziumState(
+      final JsonNode initialDebeziumState = MssqlDebeziumStateUtil.constructInitialDebeziumState(
               getDebeziumProperties(database, catalog, false), catalog, database);
       return new CdcState().withState(initialDebeziumState);
     } else {
@@ -152,7 +151,7 @@ public class MssqlInitialReadUtil {
 
     final JsonNode state =
             (stateManager.getCdcStateManager().getCdcState() == null || stateManager.getCdcStateManager().getCdcState().getState() == null)
-                    ? mssqlDebeziumStateUtil.constructInitialDebeziumState(getDebeziumProperties(database, catalog, false), catalog, database)
+                    ? MssqlDebeziumStateUtil.constructInitialDebeziumState(getDebeziumProperties(database, catalog, false), catalog, database)
                     : Jsons.clone(stateManager.getCdcStateManager().getCdcState().getState());
 
 
@@ -184,7 +183,7 @@ public class MssqlInitialReadUtil {
       final CdcState stateToBeUsed = getCdcState(database, catalog, stateManager, savedOffsetStillPresentOnServer);
 
       return new MssqlInitialLoadGlobalStateManager(initialLoadStreams, initPairToOrderedColumnInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
-              stateManager, catalog);
+              stateManager, catalog, stateToBeUsed);
     }
     public static List<AutoCloseableIterator<AirbyteMessage>> getCdcReadIterators(final JdbcDatabase database,
                                                                                   final ConfiguredAirbyteCatalog catalog,

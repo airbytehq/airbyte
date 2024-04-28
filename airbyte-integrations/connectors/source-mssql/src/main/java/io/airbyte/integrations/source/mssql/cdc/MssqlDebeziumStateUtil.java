@@ -51,7 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
-  private static JsonNode initialState;
+  private static ThreadLocal<JsonNode> initialState = new ThreadLocal<>();
 
   final static String LSN_OFFSET_INCLUDED_QUERY = """
                                                       DECLARE @saved_lsn BINARY(10), @min_lsn BINARY(10), @max_lsn BINARY(10), @res BIT
@@ -70,10 +70,10 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
   /**
    * Generate initial state for debezium state.
    */
-  public JsonNode constructInitialDebeziumState(final Properties properties,
+  public static synchronized JsonNode constructInitialDebeziumState(final Properties properties,
                                                 final ConfiguredAirbyteCatalog catalog,
                                                 final JdbcDatabase database) {
-    if (initialState == null) {
+    if (initialState.get() == null) {
       properties.setProperty("heartbeat.interval.ms", "0");
       final JsonNode highWaterMark = constructLsnSnapshotState(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText());
       final AirbyteFileOffsetBackingStore emptyOffsetManager = AirbyteFileOffsetBackingStore.initializeState(null,
@@ -132,9 +132,11 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
       if (asJson.get(MssqlCdcStateConstants.MSSQL_DB_HISTORY).asText().isBlank()) {
         throw new RuntimeException("Schema history snapshot returned empty history.");
       }
-      initialState = asJson;
+      initialState.set(asJson);
     }
-    return initialState;
+    LOGGER.info("*** constructInitialDebeziumState {}", initialState.get());
+    return initialState.get();
+//    return asJson;
 
   }
 
@@ -171,12 +173,12 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
    * ["test",{"server":"test","database":"test"}]" :
    * "{"transaction_id":null,"event_serial_no":1,"commit_lsn":"00000644:00002ff8:0099","change_lsn":"0000062d:00017ff0:016d"}"
    */
-  JsonNode constructLsnSnapshotState(final JdbcDatabase database, final String dbName) {
+  static JsonNode constructLsnSnapshotState(final JdbcDatabase database, final String dbName) {
     return format(getStateAttributesFromDB(database), dbName);
   }
 
   @VisibleForTesting
-  public JsonNode format(final MssqlDebeziumStateAttributes attributes, final String dbName) {
+  public static JsonNode format(final MssqlDebeziumStateAttributes attributes, final String dbName) {
     final String key = "[\"" + dbName + "\",{\"server\":\"" + dbName + "\",\"database\":\"" + dbName + "\"}]";
     final String value =
         "{\"commit_lsn\":\"" + attributes.lsn.toString() + "\",\"snapshot\":true,\"snapshot_completed\":true"

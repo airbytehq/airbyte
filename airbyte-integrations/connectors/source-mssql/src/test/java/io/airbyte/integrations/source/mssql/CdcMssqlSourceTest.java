@@ -188,13 +188,12 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   // Utilize the setup to do test on MssqlDebeziumStateUtil.
   @Test
   public void testCdcSnapshot() {
-    MssqlDebeziumStateUtil util = new MssqlDebeziumStateUtil();
 
     JdbcDatabase testDatabase = testDatabase();
     testDatabase.setSourceConfig(config());
     testDatabase.setDatabaseConfig(source().toDatabaseConfig(config()));
 
-    JsonNode debeziumState = util.constructInitialDebeziumState(MssqlCdcHelper.getDebeziumProperties(testDatabase, getConfiguredCatalog(), true),
+    JsonNode debeziumState = MssqlDebeziumStateUtil.constructInitialDebeziumState(MssqlCdcHelper.getDebeziumProperties(testDatabase, getConfiguredCatalog(), true),
         getConfiguredCatalog(), testDatabase);
 
     Assertions.assertEquals(3, Jsons.object(debeziumState, Map.class).size());
@@ -418,7 +417,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
       if (Objects.isNull(sharedState)) {
         sharedState = global.getSharedState();
       } else {
-        assertEquals(sharedState.toString().replaceAll("ts_ms\\\\\":\\d+", ""), global.getSharedState().toString().replaceAll("ts_ms\\\\\":\\d+", ""));
+        assertEquals(sharedState, global.getSharedState());
+//        assertEquals(sharedState.toString().replaceAll("ts_ms\\\\\":\\d+", ""), global.getSharedState().toString().replaceAll("ts_ms\\\\\":\\d+", ""));
       }
       assertEquals(1, global.getStreamStates().size());
       final AirbyteStreamState streamState = global.getStreamStates().get(0);
