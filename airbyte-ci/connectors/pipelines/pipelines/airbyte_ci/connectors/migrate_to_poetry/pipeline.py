@@ -13,13 +13,13 @@ import toml
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from jinja2 import Environment, PackageLoader, select_autoescape
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
-from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, BumpDockerImageTagInMetadata, get_bumped_version
+from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, SetConnectorVersion, get_bumped_version
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions.python.common import with_python_connector_installed
-from pipelines.helpers.execution.run_steps import StepToRun, run_steps
+from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 if TYPE_CHECKING:
@@ -408,7 +408,7 @@ async def run_connector_migration_to_poetry_pipeline(context: ConnectorContext, 
     restore_original_state = RestoreOriginalState(context)
     new_version = get_bumped_version(context.connector.version, "patch")
     context.targeted_platforms = [LOCAL_BUILD_PLATFORM]
-    steps_to_run: list[StepToRun | list[StepToRun]] = [
+    steps_to_run: STEP_TREE = [
         [StepToRun(id=CONNECTOR_TEST_STEP_ID.CHECK_MIGRATION_CANDIDATE, step=CheckIsMigrationCandidate(context))],
         [
             StepToRun(
@@ -441,10 +441,8 @@ async def run_connector_migration_to_poetry_pipeline(context: ConnectorContext, 
         ],
         [
             StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.BUMP_METADATA_VERSION,
-                step=BumpDockerImageTagInMetadata(
-                    context, await context.get_repo_dir(include=[str(context.connector.code_directory)]), new_version, export_metadata=True
-                ),
+                id=CONNECTOR_TEST_STEP_ID.SET_CONNECTOR_VERSION,
+                step=SetConnectorVersion(context, new_version),
                 depends_on=[CONNECTOR_TEST_STEP_ID.REGRESSION_TEST],
             )
         ],

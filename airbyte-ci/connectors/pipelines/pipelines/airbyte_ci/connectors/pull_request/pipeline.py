@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, List, Set
 from pathlib import Path
 from github import Github, InputGitTreeElement, GithubException, UnknownObjectException
 from pipelines import main_logger
-from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, BumpDockerImageTagInMetadata, get_bumped_version
+from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, SetConnectorVersion, get_bumped_version
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.cli.ensure_repo_root import get_airbyte_repo_path_with_fallback
@@ -337,17 +337,12 @@ async def run_connector_pull_request(
     if bump:
         # we are only bumping if there are changes, though
         connector_version = get_bumped_version(connector_version, bump)
-        update_step_ids.append(CONNECTOR_TEST_STEP_ID.BUMP_METADATA_VERSION)
+        update_step_ids.append(CONNECTOR_TEST_STEP_ID.SET_CONNECTOR_VERSION)
         steps_to_run.append(
             [
                 StepToRun(
-                    id=CONNECTOR_TEST_STEP_ID.BUMP_METADATA_VERSION,
-                    step=BumpDockerImageTagInMetadata(
-                        context,
-                        await context.get_repo_dir(include=[str(context.connector.code_directory)]),
-                        connector_version,
-                        export_metadata=True,
-                    ),
+                    id=CONNECTOR_TEST_STEP_ID.SET_CONNECTOR_VERSION,
+                    step=SetConnectorVersion(context, connector_version),
                     depends_on=[CONNECTOR_TEST_STEP_ID.PULL_REQUEST_CREATE],
                 )
             ]

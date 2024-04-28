@@ -10,7 +10,7 @@ from base_images import version_registry  # type: ignore
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from dagger import Directory
 from jinja2 import Template
-from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, BumpDockerImageTagInMetadata, get_bumped_version
+from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, SetConnectorVersion, get_bumped_version
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.helpers import git
@@ -325,11 +325,7 @@ async def run_connector_migration_to_base_image_pipeline(
             latest_repo_dir_state = update_base_image_in_metadata_result.output
             # BUMP CONNECTOR VERSION IN METADATA
             new_version = get_bumped_version(context.connector.version, "patch")
-            bump_version_in_metadata = BumpDockerImageTagInMetadata(
-                context,
-                latest_repo_dir_state,
-                new_version,
-            )
+            bump_version_in_metadata = SetConnectorVersion(context, new_version, latest_repo_dir_state, False)
             bump_version_in_metadata_result = await bump_version_in_metadata.run()
             steps_results.append(bump_version_in_metadata_result)
 

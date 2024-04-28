@@ -35,7 +35,7 @@ def get_bumped_version(version: str | None, bump_type: str) -> str:
 
 class AddChangelogEntry(Step):
     context: ConnectorContext
-    title = "Add changelog entry"
+    title = "Add changelog entry"  # type: ignore
 
     def __init__(
         self,
@@ -53,7 +53,7 @@ class AddChangelogEntry(Step):
         self.pull_request_number = int(pull_request_number)
         self.export_docs = export_docs
 
-    async def _run(self, pull_request_number: int | None = None) -> StepResult:
+    async def _run(self, pull_request_number: int | None = None) -> StepResult:  # type: ignore
         if pull_request_number is None:
             # this allows passing it dyanmically from a result of another action (like creating a pull request)
             pull_request_number = self.pull_request_number
@@ -86,30 +86,34 @@ class AddChangelogEntry(Step):
         )
 
 
-class BumpDockerImageTagInMetadata(Step):
+class SetConnectorVersion(Step):
     context: ConnectorContext
-    title = "Upgrade the dockerImageTag to the new version in metadata.yaml"
+    title = "Upgrade the version of the connector"  # type: ignore
 
     def __init__(
         self,
         context: ConnectorContext,
-        repo_dir: Directory,
         new_version: str,
-        export_metadata: bool = False,
+        repo_dir: Directory | None = None,
+        export: bool = True,
     ) -> None:
         super().__init__(context)
         self.repo_dir = repo_dir
         self.new_version = new_version
-        self.export_metadata = export_metadata
+        self.export = export
 
     @staticmethod
     def get_metadata_with_bumped_version(previous_version: str, new_version: str, metadata_str: str) -> str:
         return metadata_str.replace("dockerImageTag: " + previous_version, "dockerImageTag: " + new_version)
 
-    async def _run(self) -> StepResult:
+    async def _run(self) -> StepResult:  # type: ignore
+        repo_dir = self.repo_dir
+        if not repo_dir:
+            repo_dir = await self.context.get_repo_dir(include=[str(self.context.connector.code_directory)])
+
         metadata_path = self.context.connector.metadata_file_path
-        current_metadata = await metadata_change_helpers.get_current_metadata(self.repo_dir, metadata_path)
-        current_metadata_str = await metadata_change_helpers.get_current_metadata_str(self.repo_dir, metadata_path)
+        current_metadata = await metadata_change_helpers.get_current_metadata(repo_dir, metadata_path)
+        current_metadata_str = await metadata_change_helpers.get_current_metadata_str(repo_dir, metadata_path)
         current_version = metadata_change_helpers.get_current_version(current_metadata)
         if current_version is None:
             return StepResult(
@@ -120,14 +124,14 @@ class BumpDockerImageTagInMetadata(Step):
             )
         updated_metadata_str = self.get_metadata_with_bumped_version(current_version, self.new_version, current_metadata_str)
         repo_dir_with_updated_metadata = metadata_change_helpers.get_repo_dir_with_updated_metadata_str(
-            self.repo_dir, metadata_path, updated_metadata_str
+            repo_dir, metadata_path, updated_metadata_str
         )
         metadata_validation_results = await MetadataValidation(self.context).run()
         # Exit early if the metadata file is invalid.
         if metadata_validation_results.status is not StepStatus.SUCCESS:
             return metadata_validation_results
 
-        if self.export_metadata:
+        if self.export:
             await repo_dir_with_updated_metadata.file(str(metadata_path)).export(str(metadata_path))
         return StepResult(
             step=self,
@@ -158,11 +162,7 @@ async def run_connector_version_bump_pipeline(
         async with context:
             og_repo_dir = await context.get_repo_dir()
             new_version = get_bumped_version(context.connector.version, bump_type)
-            update_docker_image_tag_in_metadata = BumpDockerImageTagInMetadata(
-                context,
-                og_repo_dir,
-                new_version,
-            )
+            update_docker_image_tag_in_metadata = SetConnectorVersion(context, new_version, og_repo_dir, False)
             update_docker_image_tag_in_metadata_result = await update_docker_image_tag_in_metadata.run()
             repo_dir_with_updated_metadata = update_docker_image_tag_in_metadata_result.output
             steps_results.append(update_docker_image_tag_in_metadata_result)
@@ -176,8 +176,10 @@ async def run_connector_version_bump_pipeline(
             )
             add_changelog_entry_result = await add_changelog_entry.run()
             steps_results.append(add_changelog_entry_result)
+
             final_repo_dir = add_changelog_entry_result.output
             await og_repo_dir.diff(final_repo_dir).export(str(git.get_git_repo_path()))
+
             report = ConnectorReport(context, steps_results, name="CONNECTOR VERSION BUMP RESULTS")
             context.report = report
-    return report
+    return report  # type: ignore

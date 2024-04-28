@@ -10,7 +10,7 @@ import dagger
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from packaging.version import Version
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
-from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, BumpDockerImageTagInMetadata, get_bumped_version
+from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, SetConnectorVersion, get_bumped_version
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
@@ -319,12 +319,11 @@ async def run_connector_up_to_date_pipeline(
         steps_to_run.append(
             [
                 StepToRun(
-                    id=CONNECTOR_TEST_STEP_ID.BUMP_METADATA_VERSION,
-                    step=BumpDockerImageTagInMetadata(
+                    id=CONNECTOR_TEST_STEP_ID.SET_CONNECTOR_VERSION,
+                    step=SetConnectorVersion(
                         context,
-                        await context.get_repo_dir(include=[str(context.connector.code_directory)]),
                         new_version,
-                        export_metadata=True,
+                        export=True,
                     ),
                     depends_on=[CONNECTOR_TEST_STEP_ID.REGRESSION_TEST],
                 )

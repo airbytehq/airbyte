@@ -25,7 +25,7 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     DEPLOY_ORCHESTRATOR = "deploy_orchestrator"
     UPDATE_README = "update_readme"
     ADD_CHANGELOG_ENTRY = "add_changelog_entry"
-    BUMP_METADATA_VERSION = "bump_metadata_version"
+    SET_CONNECTOR_VERSION = "bump_version.set"
     REGRESSION_TEST = "regression_test"
     CHECK_MIGRATION_CANDIDATE = "check_migration_candidate"
     POETRY_INIT = "poetry_init"
