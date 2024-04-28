@@ -7,12 +7,12 @@ from typing import TYPE_CHECKING
 
 import semver
 from dagger import Container, Directory
+import yaml
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.airbyte_ci.metadata.pipeline import MetadataValidation
 from pipelines.helpers import git
 from pipelines.helpers.changelog import Changelog
-from pipelines.helpers.connectors import metadata_change_helpers
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 if TYPE_CHECKING:
@@ -103,10 +103,6 @@ class SetConnectorVersion(Step):
         self.new_version = new_version
         self.export = export
 
-    @staticmethod
-    def get_metadata_with_bumped_version(previous_version: str, new_version: str, metadata_str: str) -> str:
-        return metadata_str.replace("dockerImageTag: " + previous_version, "dockerImageTag: " + new_version)
-
     async def get_repo_dir(self) -> Directory:
         if not self.repo_dir:
             self.repo_dir = await self.context.get_repo_dir(include=[str(self.context.connector.code_directory)])
@@ -131,10 +127,14 @@ class SetConnectorVersion(Step):
 
     async def update_metadata(self) -> StepResult:
         repo_dir = await self.get_repo_dir()
-        metadata_path = self.context.connector.metadata_file_path
-        current_metadata = await metadata_change_helpers.get_current_metadata(repo_dir, metadata_path)
-        current_metadata_str = await metadata_change_helpers.get_current_metadata_str(repo_dir, metadata_path)
-        current_version = metadata_change_helpers.get_current_version(current_metadata)
+        file_path = self.context.connector.metadata_file_path
+        if not file_path.exists():
+            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="Connector does not have a metadata file.", output=self.repo_dir)
+
+        content = await repo_dir.file(str(file_path)).contents()
+        metadata = yaml.safe_load(content)
+        current_version = metadata.get("data", {}).get("dockerImageTag")
+
         if current_version is None:
             return StepResult(
                 step=self,
@@ -142,20 +142,22 @@ class SetConnectorVersion(Step):
                 stdout="Can't retrieve the connector current version.",
                 output=self.repo_dir,
             )
-        updated_metadata_str = self.get_metadata_with_bumped_version(current_version, self.new_version, current_metadata_str)
-        self.repo_dir = metadata_change_helpers.get_repo_dir_with_updated_metadata_str(repo_dir, metadata_path, updated_metadata_str)
+
+        new_content = content.replace("dockerImageTag: " + current_version, "dockerImageTag: " + self.new_version)
+        self.repo_dir = repo_dir.with_new_file(str(file_path), contents=new_content)
+
         metadata_validation_results = await MetadataValidation(self.context).run()
         # Exit early if the metadata file is invalid.
         if metadata_validation_results.status is not StepStatus.SUCCESS:
             return metadata_validation_results
 
         if self.export:
-            await self.repo_dir.file(str(metadata_path)).export(str(metadata_path))
+            await self.repo_dir.file(str(file_path)).export(str(file_path))
 
         return StepResult(
             step=self,
             status=StepStatus.SUCCESS,
-            stdout=f"Updated dockerImageTag from {current_version} to {self.new_version} in {metadata_path}",
+            stdout=f"Updated dockerImageTag from {current_version} to {self.new_version} in {file_path}",
             output=self.repo_dir,
         )
 
