@@ -9,8 +9,8 @@ from typing import List
 from unittest.mock import AsyncMock, MagicMock
 
 import anyio
-import pytest
 import asyncclick as click
+import pytest
 from connector_ops.utils import Connector, ConnectorLanguage
 from dagger import Directory
 from pipelines.airbyte_ci.connectors.context import ConnectorContext

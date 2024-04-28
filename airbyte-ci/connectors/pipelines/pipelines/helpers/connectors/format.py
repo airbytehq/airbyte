@@ -1,5 +1,7 @@
-from pathlib import Path
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 import subprocess
+from pathlib import Path
 from typing import List
 
 from pipelines.cli.ensure_repo_root import get_airbyte_repo_path_with_fallback

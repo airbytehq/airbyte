@@ -5,8 +5,8 @@
 import uuid
 from typing import Optional
 
-import dagger
 import asyncclick as click
+import dagger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.steps.docker import SimpleDockerStep

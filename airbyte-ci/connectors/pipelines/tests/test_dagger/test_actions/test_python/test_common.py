@@ -3,8 +3,8 @@
 #
 import datetime
 
-import pytest
 import asyncclick as click
+import pytest
 import requests
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.python import common

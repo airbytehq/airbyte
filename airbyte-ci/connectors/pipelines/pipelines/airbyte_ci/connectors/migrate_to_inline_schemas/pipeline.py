@@ -3,26 +3,25 @@
 #
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
 import os
-from typing import TYPE_CHECKING, Any, List
 import shutil
 import tempfile
-
+from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING, Any, List
+
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
+from pipelines.airbyte_ci.connectors.reports import Report
+from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.helpers.connectors.command import run_connector_steps
 from pipelines.helpers.connectors.format import format_prettier
 from pipelines.helpers.connectors.yaml import read_yaml, write_yaml
-from pipelines.airbyte_ci.connectors.reports import Report
-from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.models.steps import Step, StepResult, StepStatus
-
 
 if TYPE_CHECKING:
     from anyio import Semaphore  # type: ignore

@@ -6,8 +6,8 @@ import re
 from typing import TYPE_CHECKING
 
 import semver
-from dagger import Directory
 import yaml
+from dagger import Directory
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.airbyte_ci.metadata.pipeline import MetadataValidation

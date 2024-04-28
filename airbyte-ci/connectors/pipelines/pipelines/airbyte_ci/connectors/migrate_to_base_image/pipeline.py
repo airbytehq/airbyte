@@ -6,11 +6,11 @@ import textwrap
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
+import yaml
 from base_images import version_registry  # type: ignore
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from dagger import Directory
 from jinja2 import Template
-import yaml
 from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, SetConnectorVersion, get_bumped_version
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report

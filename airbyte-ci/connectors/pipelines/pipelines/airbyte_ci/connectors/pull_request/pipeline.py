@@ -4,13 +4,13 @@
 from __future__ import annotations
 
 import base64
-from dataclasses import dataclass
 import hashlib
 import re
+from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING, List, Set
 
-from pathlib import Path
-from github import Github, InputGitTreeElement, GithubException, UnknownObjectException
+from github import Github, GithubException, InputGitTreeElement, UnknownObjectException
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.bump_version.pipeline import (
     AddChangelogEntry,
@@ -20,14 +20,13 @@ from pipelines.airbyte_ci.connectors.bump_version.pipeline import (
 )
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.helpers.connectors.command import run_connector_steps
 from pipelines.airbyte_ci.connectors.reports import Report
 from pipelines.consts import LOCAL_BUILD_PLATFORM
+from pipelines.helpers.connectors.command import run_connector_steps
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.helpers.git import get_modified_files
 from pipelines.helpers.utils import transform_strs_to_paths
 from pipelines.models.steps import Step, StepResult, StepStatus
-
 
 if TYPE_CHECKING:
     from anyio import Semaphore  # type: ignore

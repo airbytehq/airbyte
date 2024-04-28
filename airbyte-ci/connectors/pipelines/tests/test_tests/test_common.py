@@ -7,9 +7,9 @@ import pathlib
 import time
 from typing import List
 
+import asyncclick as click
 import dagger
 import pytest
-import asyncclick as click
 import yaml
 from freezegun import freeze_time
 from pipelines.airbyte_ci.connectors.context import ConnectorContext

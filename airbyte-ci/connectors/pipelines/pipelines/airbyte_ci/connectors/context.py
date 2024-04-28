@@ -7,12 +7,12 @@
 from __future__ import annotations
 
 from datetime import datetime
+from pathlib import Path
 from types import TracebackType
 from typing import TYPE_CHECKING
 
-import yaml  # type: ignore
 import asyncclick as click
-from pathlib import Path
+import yaml  # type: ignore
 from asyncer import asyncify
 from dagger import Directory, Platform, Secret
 from github import PullRequest

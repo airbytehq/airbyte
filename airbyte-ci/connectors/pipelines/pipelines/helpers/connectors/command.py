@@ -1,6 +1,8 @@
-from typing import TYPE_CHECKING, Any, Callable, List
-import asyncclick as click
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+from typing import TYPE_CHECKING, Any, Callable, List
+
+import asyncclick as click
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report

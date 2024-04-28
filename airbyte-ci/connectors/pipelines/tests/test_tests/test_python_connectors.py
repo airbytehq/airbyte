@@ -4,8 +4,8 @@
 
 from unittest.mock import patch
 
-import pytest
 import asyncclick as click
+import pytest
 from connector_ops.utils import Connector, ConnectorLanguage
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
