@@ -2,22 +2,22 @@
 
 This page will walk through the process of developing with the Java CDK.
 
-* [Developing with the Java CDK](#developing-with-the-java-cdk)
-   * [Intro to the Java CDK](#intro-to-the-java-cdk)
-      * [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
-      * [How is the CDK published?](#how-is-the-cdk-published)
-   * [Using the Java CDK](#using-the-java-cdk)
-      * [Building the CDK](#building-the-cdk)
-      * [Bumping the CDK version](#bumping-the-cdk-version)
-      * [Publishing the CDK](#publishing-the-cdk)
-   * [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
-      * [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
-      * [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
-      * [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
-      * [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
-      * [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
-   * [Changelog](#changelog)
-      * [Java CDK](#java-cdk)
+- [Developing with the Java CDK](#developing-with-the-java-cdk)
+  - [Intro to the Java CDK](#intro-to-the-java-cdk)
+    - [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
+    - [How is the CDK published?](#how-is-the-cdk-published)
+  - [Using the Java CDK](#using-the-java-cdk)
+    - [Building the CDK](#building-the-cdk)
+    - [Bumping the CDK version](#bumping-the-cdk-version)
+    - [Publishing the CDK](#publishing-the-cdk)
+  - [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
+    - [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
+    - [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
+    - [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
+    - [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
+    - [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
+  - [Changelog](#changelog)
+    - [Java CDK](#java-cdk)
 
 ## Intro to the Java CDK
 
@@ -31,15 +31,23 @@ The java CDK is comprised of separate modules, among which:
 
 Each CDK submodule may contain these elements:
 
-- `src/main` - (Required.) The classes that will ship with the connector, providing capabilities to the connectors.
-- `src/test` - (Required.) These are unit tests that run as part of every build of the CDK. They help ensure that CDK `main` code is in a healthy state.
-- `src/testFixtures` - (Optional.) These shared classes are exported for connectors for use in the connectors' own test implementations. Connectors will have access to these classes within their unit and integration tests, but the classes will not be shipped with connectors when they are published.
+- `src/main` - (Required.) The classes that will ship with the connector, providing capabilities to
+  the connectors.
+- `src/test` - (Required.) These are unit tests that run as part of every build of the CDK. They
+  help ensure that CDK `main` code is in a healthy state.
+- `src/testFixtures` - (Optional.) These shared classes are exported for connectors for use in the
+  connectors' own test implementations. Connectors will have access to these classes within their
+  unit and integration tests, but the classes will not be shipped with connectors when they are
+  published.
 
 ### How is the CDK published?
 
-The CDK is published as a set of jar files sharing a version number. Every submodule generates one runtime jar for the main classes. If the submodule contains test fixtures, a second jar will be published with the test fixtures classes.
+The CDK is published as a set of jar files sharing a version number. Every submodule generates one
+runtime jar for the main classes. If the submodule contains test fixtures, a second jar will be
+published with the test fixtures classes.
 
-Note: Connectors do not have to manage which jars they should depend on, as this is handled automatically by the `airbyte-java-connector` plugin. See example below.
+Note: Connectors do not have to manage which jars they should depend on, as this is handled
+automatically by the `airbyte-java-connector` plugin. See example below.
 
 ## Using the Java CDK
 
@@ -55,7 +63,8 @@ To build and test the Java CDK, execute the following:
 
 You will need to bump this version manually whenever you are making changes to code inside the CDK.
 
-While under development, the next version number for the CDK is tracked in the file: `airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties`.
+While under development, the next version number for the CDK is tracked in the file:
+`airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties`.
 
 If the CDK is not being modified, this file will contain the most recently published version number.
 
@@ -63,9 +72,11 @@ If the CDK is not being modified, this file will contain the most recently publi
 
 _⚠️ These steps should only be performed after all testing and approvals are in place on the PR. ⚠️_
 
-The CDK can be published with a GitHub Workflow and a slash command which can be run by Airbyte personnel.
+The CDK can be published with a GitHub Workflow and a slash command which can be run by Airbyte
+personnel.
 
-To invoke via slash command (recommended), use the following syntax in a comment on the PR that contains your changes:
+To invoke via slash command (recommended), use the following syntax in a comment on the PR that
+contains your changes:
 
 ```bash
 /publish-java-cdk                # Run with the defaults (dry-run=false, force=false)
@@ -77,12 +88,18 @@ Note:
 
 - Remember to **document your changes** in the Changelog section below.
 - After you publish the CDK, remember to toggle `useLocalCdk` back to `false` in all connectors.
-- Unless you specify `force=true`, the pipeline should fail if the version you are trying to publish already exists.
-- By running the publish with `dry-run=true`, you can confirm the process is working as expected, without actually publishing the changes.
-- In dry-run mode, you can also view and download the jars that are generated. To do so, navigate to the job status in GitHub Actions and navigate to the 'artifacts' section.
-- You can also invoke manually in the GitHub Web UI. To do so: go to `Actions` tab, select the `Publish Java CDK` workflow, and click `Run workflow`.
-- You can view and administer published CDK versions here: https://admin.cloudrepo.io/repository/airbyte-public-jars/io/airbyte/cdk
-- The public endpoint for published CDK versions is here: https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/cdk/
+- Unless you specify `force=true`, the pipeline should fail if the version you are trying to publish
+  already exists.
+- By running the publish with `dry-run=true`, you can confirm the process is working as expected,
+  without actually publishing the changes.
+- In dry-run mode, you can also view and download the jars that are generated. To do so, navigate to
+  the job status in GitHub Actions and navigate to the 'artifacts' section.
+- You can also invoke manually in the GitHub Web UI. To do so: go to `Actions` tab, select the
+  `Publish Java CDK` workflow, and click `Run workflow`.
+- You can view and administer published CDK versions here:
+  https://admin.cloudrepo.io/repository/airbyte-public-jars/io/airbyte/cdk
+- The public endpoint for published CDK versions is here:
+  https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/cdk/
 
 ## Developing Connectors with the Java CDK
 
@@ -104,20 +121,26 @@ airbyteJavaConnector {
 
 ```
 
-Replace `0.1.0` with the CDK version you are working with. If you're actively developing the CDK and want to use the latest version locally, use the `useLocalCdk` flag to use the live CDK code during builds and tests.
+Replace `0.1.0` with the CDK version you are working with. If you're actively developing the CDK and
+want to use the latest version locally, use the `useLocalCdk` flag to use the live CDK code during
+builds and tests.
 
 ### Developing a connector alongside the CDK
 
-You can iterate on changes in the CDK local and test them in the connector without needing to publish the CDK changes publicly.
+You can iterate on changes in the CDK local and test them in the connector without needing to
+publish the CDK changes publicly.
 
 When modifying the CDK and a connector in the same PR or branch, please use the following steps:
 
-1. Set the version of the CDK in `version.properties` to the next appropriate version number and add a description in the `Changelog` at the bottom of this readme file.
+1. Set the version of the CDK in `version.properties` to the next appropriate version number and add
+   a description in the `Changelog` at the bottom of this readme file.
 2. Modify your connector's build.gradle file as follows:
-   1. Set `useLocalCdk` to `true` in the connector you are working on. This will ensure the connector always uses the local CDK definitions instead of the published version.
+   1. Set `useLocalCdk` to `true` in the connector you are working on. This will ensure the
+      connector always uses the local CDK definitions instead of the published version.
    2. Set `cdkVersionRequired` to use the new _to-be-published_ CDK version.
 
-After the above, you can build and test your connector as usual. Gradle will automatically use the local CDK code files while you are working on the connector.
+After the above, you can build and test your connector as usual. Gradle will automatically use the
+local CDK code files while you are working on the connector.
 
 ### Publishing the CDK and switching to a pinned CDK reference
 
@@ -128,30 +151,38 @@ Once you are done developing and testing your CDK changes:
 
 ### Troubleshooting CDK Dependency Caches
 
-Note: after switching between a local and a pinned CDK reference, you may need to refresh dependency caches in Gradle and/or your IDE.
+Note: after switching between a local and a pinned CDK reference, you may need to refresh dependency
+caches in Gradle and/or your IDE.
 
-In Gradle, you can use the CLI arg `--refresh-dependencies` the next time you build or test your connector, which will ensure that the correct version of the CDK is used after toggling the `useLocalCdk` value.
+In Gradle, you can use the CLI arg `--refresh-dependencies` the next time you build or test your
+connector, which will ensure that the correct version of the CDK is used after toggling the
+`useLocalCdk` value.
 
 ### Developing a connector against a pinned CDK version
 
-You can always pin your connector to a prior stable version of the CDK, which may not match what is the latest version in the `airbyte` repo. For instance, your connector can be pinned to `0.1.1` while the latest version may be `0.2.0`.
+You can always pin your connector to a prior stable version of the CDK, which may not match what is
+the latest version in the `airbyte` repo. For instance, your connector can be pinned to `0.1.1`
+while the latest version may be `0.2.0`.
 
-Maven and Gradle will automatically reference the correct (pinned) version of the CDK for your connector, and you can use your local IDE to browse the prior version of the codebase that corresponds to that version.
+Maven and Gradle will automatically reference the correct (pinned) version of the CDK for your
+connector, and you can use your local IDE to browse the prior version of the codebase that
+corresponds to that version.
 
 ## Changelog
 
 ### Java CDK
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
-|:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.30.11 | 2024-04-25 | [\#36899](https://github.com/airbytehq/airbyte/pull/36899) | changes for bigQuery destination.                                                                                                   |
-| 0.30.10 | 2024-04-24 | [\#37541](https://github.com/airbytehq/airbyte/pull/37541) | remove excessive logging                                                 |
-| 0.30.9  | 2024-04-24 | [\#37477](https://github.com/airbytehq/airbyte/pull/37477) | remove unnecessary logs
-| 0.30.7  | 2024-04-23 | [\#37477](https://github.com/airbytehq/airbyte/pull/37477) | fix kotlin warnings in core CDK submodule
-| 0.30.7  | 2024-04-23 | [\#37484](https://github.com/airbytehq/airbyte/pull/37484) | fix kotlin warnings in dependencies CDK submodule                                                                                                   |
-| 0.30.7  | 2024-04-23 | [\#37479](https://github.com/airbytehq/airbyte/pull/37479) | fix kotlin warnings in azure-destination, datastore-{bigquery,mongo,postgres} CDK submodules                                                                                                   |
-| 0.30.7  | 2024-04-23 | [\#37481](https://github.com/airbytehq/airbyte/pull/37481) | fix kotlin warnings in destination CDK submodules                                                                                                   |
-| 0.30.7  | 2024-04-23 | [\#37482](https://github.com/airbytehq/airbyte/pull/37482) | fix kotlin warnings in db-sources CDK submodule                                                                                                   |
+| :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.31.0  | 2024-04-26 | [\#37584](https://github.com/airbytehq/airbyte/pull/37584) | Update S3 destination deps to exclude zookeeper and hadoop-yarn-common                                                                                         |
+| 0.30.11 | 2024-04-25 | [\#36899](https://github.com/airbytehq/airbyte/pull/36899) | changes for bigQuery destination.                                                                                                                              |
+| 0.30.10 | 2024-04-24 | [\#37541](https://github.com/airbytehq/airbyte/pull/37541) | remove excessive logging                                                                                                                                       |
+| 0.30.9  | 2024-04-24 | [\#37477](https://github.com/airbytehq/airbyte/pull/37477) | remove unnecessary logs                                                                                                                                        |
+| 0.30.7  | 2024-04-23 | [\#37477](https://github.com/airbytehq/airbyte/pull/37477) | fix kotlin warnings in core CDK submodule                                                                                                                      |
+| 0.30.7  | 2024-04-23 | [\#37484](https://github.com/airbytehq/airbyte/pull/37484) | fix kotlin warnings in dependencies CDK submodule                                                                                                              |
+| 0.30.7  | 2024-04-23 | [\#37479](https://github.com/airbytehq/airbyte/pull/37479) | fix kotlin warnings in azure-destination, datastore-{bigquery,mongo,postgres} CDK submodules                                                                   |
+| 0.30.7  | 2024-04-23 | [\#37481](https://github.com/airbytehq/airbyte/pull/37481) | fix kotlin warnings in destination CDK submodules                                                                                                              |
+| 0.30.7  | 2024-04-23 | [\#37482](https://github.com/airbytehq/airbyte/pull/37482) | fix kotlin warnings in db-sources CDK submodule                                                                                                                |
 | 0.30.6  | 2024-04-19 | [\#37442](https://github.com/airbytehq/airbyte/pull/37442) | Destinations: Rename File format related classes to be agnostic of S3                                                                                          |
 | 0.30.3  | 2024-04-12 | [\#37106](https://github.com/airbytehq/airbyte/pull/37106) | Destinations: Simplify constructors in `AsyncStreamConsumer`                                                                                                   |
 | 0.30.2  | 2024-04-12 | [\#36926](https://github.com/airbytehq/airbyte/pull/36926) | Destinations: Remove `JdbcSqlOperations#formatData`; misc changes for java interop                                                                             |
