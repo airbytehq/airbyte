@@ -58,6 +58,7 @@ def download_catalog(catalog_url):
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
 METADATA_FILE_NAME = "metadata.yaml"
 MANIFEST_FILE_NAME = "manifest.yaml"
+DOCKERFILE_FILE_NAME = "Dockerfile"
 ICON_FILE_NAME = "icon.svg"
 
 STRATEGIC_CONNECTOR_THRESHOLDS = {
@@ -370,7 +371,11 @@ class Connector:
 
     @property
     def has_dockerfile(self) -> bool:
-        return (self.code_directory / "Dockerfile").is_file()
+        return self.dockerfile_file_path.is_file()
+
+    @property
+    def dockerfile_file_path(self) -> Path:
+        return self.code_directory / DOCKERFILE_FILE_NAME
 
     @property
     def metadata_file_path(self) -> Path:

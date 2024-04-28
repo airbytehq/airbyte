@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import datetime
+import re
 from typing import TYPE_CHECKING
 
 import semver
@@ -106,11 +107,30 @@ class SetConnectorVersion(Step):
     def get_metadata_with_bumped_version(previous_version: str, new_version: str, metadata_str: str) -> str:
         return metadata_str.replace("dockerImageTag: " + previous_version, "dockerImageTag: " + new_version)
 
-    async def _run(self) -> StepResult:  # type: ignore
-        repo_dir = self.repo_dir
-        if not repo_dir:
-            repo_dir = await self.context.get_repo_dir(include=[str(self.context.connector.code_directory)])
+    async def get_repo_dir(self) -> Directory:
+        if not self.repo_dir:
+            self.repo_dir = await self.context.get_repo_dir(include=[str(self.context.connector.code_directory)])
+        return self.repo_dir
 
+    async def _run(self) -> StepResult:  # type: ignore
+        result = await self.update_metadata()
+        if result.status is not StepStatus.SUCCESS:
+            return result
+
+        if self.context.connector.dockerfile_file_path.is_file():
+            result = await self.update_dockerfile()
+            if result.status is not StepStatus.SUCCESS:
+                return result
+
+        return StepResult(
+            step=self,
+            status=StepStatus.SUCCESS,
+            stdout=f"Updated connector to {self.new_version}",
+            output=self.repo_dir,
+        )
+
+    async def update_metadata(self) -> StepResult:
+        repo_dir = await self.get_repo_dir()
         metadata_path = self.context.connector.metadata_file_path
         current_metadata = await metadata_change_helpers.get_current_metadata(repo_dir, metadata_path)
         current_metadata_str = await metadata_change_helpers.get_current_metadata_str(repo_dir, metadata_path)
@@ -123,21 +143,40 @@ class SetConnectorVersion(Step):
                 output=self.repo_dir,
             )
         updated_metadata_str = self.get_metadata_with_bumped_version(current_version, self.new_version, current_metadata_str)
-        repo_dir_with_updated_metadata = metadata_change_helpers.get_repo_dir_with_updated_metadata_str(
-            repo_dir, metadata_path, updated_metadata_str
-        )
+        self.repo_dir = metadata_change_helpers.get_repo_dir_with_updated_metadata_str(repo_dir, metadata_path, updated_metadata_str)
         metadata_validation_results = await MetadataValidation(self.context).run()
         # Exit early if the metadata file is invalid.
         if metadata_validation_results.status is not StepStatus.SUCCESS:
             return metadata_validation_results
 
         if self.export:
-            await repo_dir_with_updated_metadata.file(str(metadata_path)).export(str(metadata_path))
+            await self.repo_dir.file(str(metadata_path)).export(str(metadata_path))
+
         return StepResult(
             step=self,
             status=StepStatus.SUCCESS,
             stdout=f"Updated dockerImageTag from {current_version} to {self.new_version} in {metadata_path}",
-            output=repo_dir_with_updated_metadata,
+            output=self.repo_dir,
+        )
+
+    async def update_dockerfile(self) -> StepResult:
+        repo_dir = await self.get_repo_dir()
+        file_path = self.context.connector.dockerfile_file_path
+        if not file_path.exists():
+            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="Connector does not have a Dockerfile.", output=self.repo_dir)
+
+        content = await repo_dir.file(str(file_path)).contents()
+        new_content = re.sub(r"(?<=\bio.airbyte.version=)(.*)", self.new_version, content)
+        self.repo_dir = repo_dir.with_new_file(str(file_path), contents=new_content)
+
+        if self.export:
+            await self.repo_dir.file(str(file_path)).export(str(file_path))
+
+        return StepResult(
+            step=self,
+            status=StepStatus.SUCCESS,
+            stdout=f"Updated Dockerfile to {self.new_version} in {file_path}",
+            output=self.repo_dir,
         )
 
 
