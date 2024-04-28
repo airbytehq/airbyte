@@ -6,6 +6,7 @@ concurrency:
   # - github.head_ref is only defined on PR runs, it makes sure that the concurrency group is unique for pull requests
   #  ensuring that only one run per pull request is active at a time.
   group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
 
 on:
   # The pull request target event is triggered on PR open and synchronize events.

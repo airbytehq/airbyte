@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 public class InitialSnapshotHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InitialSnapshotHandler.class);
+  private static final int DEFAULT_CHUNK_SIZE = 1_000_000;
 
   /**
    * For each given stream configured as incremental sync it will output an iterator that will
@@ -67,7 +68,7 @@ public class InitialSnapshotHandler {
           final Optional<MongoDbStreamState> existingState =
               stateManager.getStreamState(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
 
-          final var recordIterator = new MongoDbInitialLoadRecordIterator(collection, fields, existingState, isEnforceSchema);
+          final var recordIterator = new MongoDbInitialLoadRecordIterator(collection, fields, existingState, isEnforceSchema, DEFAULT_CHUNK_SIZE);
           final var stateIterator =
               new SourceStateIterator<>(recordIterator, airbyteStream, stateManager, new StateEmitFrequency(checkpointInterval,
                   MongoConstants.CHECKPOINT_DURATION));
