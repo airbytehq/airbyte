@@ -451,6 +451,22 @@ class RegressionTests(Step):
                 )
                 .with_new_file("/tmp/credentials.json", contents=os.getenv("GCP_INTEGRATION_TESTER_CREDENTIALS"))
                 .with_env_variable("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/credentials.json")
+                .with_exec([
+                    "curl",
+                    "-o",
+                    "cloud-sql-proxy",
+                    "https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.11.0/cloud-sql-proxy.linux.amd64",
+                ])
+                .with_exec([
+                    "chmod",
+                    "+x",
+                    "cloud-sql-proxy",
+                ])
+                .with_exec([
+                    "bash",
+                    "-c",
+                    "./cloud-sql-proxy prod-ab-cloud-proj:us-west3:prod-pgsql-replica --credentials-file /tmp/credentials.json &",
+                ])
             )
 
         else:
