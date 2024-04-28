@@ -29,6 +29,7 @@ async def deploy_orchestrator(ctx: click.Context) -> None:
     from pipelines.airbyte_ci.metadata.pipeline import run_metadata_orchestrator_deploy_pipeline
 
     await run_metadata_orchestrator_deploy_pipeline(
+        ctx,
         ctx.obj["is_local"],
         ctx.obj["git_branch"],
         ctx.obj["git_revision"],

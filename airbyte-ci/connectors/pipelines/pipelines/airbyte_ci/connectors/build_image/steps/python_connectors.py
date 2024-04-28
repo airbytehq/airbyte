@@ -22,17 +22,17 @@ class BuildConnectorImages(BuildConnectorImagesBase):
     context: ConnectorContext
     PATH_TO_INTEGRATION_CODE = "/airbyte/integration_code"
 
-    async def _build_connector(self, platform: Platform, *args: Any) -> Container:
+    async def _build_connector(self, platform: Platform, *args: Any) -> Container:  # type: ignore
         if (
-            "connectorBuildOptions" in self.context.connector.metadata
-            and "baseImage" in self.context.connector.metadata["connectorBuildOptions"]
+            "connectorBuildOptions" in self.context.connector.metadata  # type: ignore
+            and "baseImage" in self.context.connector.metadata["connectorBuildOptions"]  # type: ignore
         ):
             return await self._build_from_base_image(platform)
         else:
             return await self._build_from_dockerfile(platform)
 
     def _get_base_container(self, platform: Platform) -> Container:
-        base_image_name = self.context.connector.metadata["connectorBuildOptions"]["baseImage"]
+        base_image_name = self.context.connector.metadata["connectorBuildOptions"]["baseImage"]  # type: ignore
         self.logger.info(f"Building connector from base image {base_image_name}")
         return self.dagger_client.container(platform=platform).from_(base_image_name)
 
@@ -46,13 +46,9 @@ class BuildConnectorImages(BuildConnectorImagesBase):
             Container: The builder container, with installed dependencies.
         """
         ONLY_BUILD_FILES = ["pyproject.toml", "poetry.lock", "poetry.toml", "setup.py", "requirements.txt", "README.md"]
-        
+
         builder = await with_python_connector_installed(
-            self.context,
-            base_container,
-            str(self.context.connector.code_directory),
-            install_root_package=False,
-            include=ONLY_BUILD_FILES
+            self.context, base_container, str(self.context.connector.code_directory), install_root_package=False, include=ONLY_BUILD_FILES
         )
         return builder
 
@@ -85,8 +81,8 @@ class BuildConnectorImages(BuildConnectorImagesBase):
             )
             .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint))
             .with_entrypoint(entrypoint)
-            .with_label("io.airbyte.version", self.context.connector.metadata["dockerImageTag"])
-            .with_label("io.airbyte.name", self.context.connector.metadata["dockerRepository"])
+            .with_label("io.airbyte.version", self.context.connector.metadata["dockerImageTag"])  # type: ignore
+            .with_label("io.airbyte.name", self.context.connector.metadata["dockerRepository"])  # type: ignore
         )
         customized_connector = await build_customization.post_install_hooks(self.context.connector, connector_container, self.logger)
         return customized_connector

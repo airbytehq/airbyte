@@ -218,7 +218,7 @@ class GradleTask(Step, ABC):
 
         return await self.get_step_result(gradle_container, artifacts)
 
-    async def get_step_result(self, container: Container, outputs: List[Artifact]) -> StepResult:
+    async def get_step_result(self, container: Container, outputs: List[Artifact]) -> StepResult:  # type: ignore
         step_result = await super().get_step_result(container)
         # Decorate with test report, if applicable.
         return StepResult(
@@ -247,12 +247,10 @@ class GradleTask(Step, ABC):
             self.context.logger.warn(f"No {test_logs_dir_name_in_container} found directory in the build folder")
             return None
         try:
-            zip_file = await (
-                dagger_directory_as_zip_file(
-                    self.dagger_client,
-                    await gradle_container.directory(f"{self.context.connector.code_directory}/build/{test_logs_dir_name_in_container}"),
-                    test_logs_dir_name_in_zip,
-                )
+            zip_file = await dagger_directory_as_zip_file(
+                self.dagger_client,
+                await gradle_container.directory(f"{self.context.connector.code_directory}/build/{test_logs_dir_name_in_container}"),
+                test_logs_dir_name_in_zip,
             )
             return Artifact(
                 name=f"{test_logs_dir_name_in_zip}.zip",
@@ -282,12 +280,10 @@ class GradleTask(Step, ABC):
             self.context.logger.warn(f"No {test_results_dir_name_in_container} found directory in the build folder")
             return None
         try:
-            zip_file = await (
-                dagger_directory_as_zip_file(
-                    self.dagger_client,
-                    await gradle_container.directory(f"{self.context.connector.code_directory}/build/{test_results_dir_name_in_container}"),
-                    test_results_dir_name_in_zip,
-                )
+            zip_file = await dagger_directory_as_zip_file(
+                self.dagger_client,
+                await gradle_container.directory(f"{self.context.connector.code_directory}/build/{test_results_dir_name_in_container}"),
+                test_results_dir_name_in_zip,
             )
             return Artifact(
                 name=f"{test_results_dir_name_in_zip}.zip",

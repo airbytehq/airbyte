@@ -6,6 +6,7 @@ import uuid
 from typing import Optional
 
 import dagger
+import asyncclick as click
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
@@ -102,7 +103,7 @@ class MetadataUpload(SimpleDockerStep):
 
 
 class DeployOrchestrator(Step):
-    title = "Deploy Metadata Orchestrator to Dagster Cloud"
+    title = "Deploy Metadata Orchestrator to Dagster Cloud"  # type: ignore
     deploy_dagster_command = [
         "dagster-cloud",
         "serverless",
@@ -119,7 +120,7 @@ class DeployOrchestrator(Step):
         "3.9",
     ]
 
-    async def _run(self) -> StepResult:
+    async def _run(self) -> StepResult:  # type: ignore
         # mount metadata_service/lib and metadata_service/orchestrator
         parent_dir = self.context.get_repo_dir("airbyte-ci/connectors/metadata_service")
         python_base = with_python_base(self.context, "3.9")
@@ -153,6 +154,7 @@ class TestOrchestrator(PoetryRunStep):
 
 
 async def run_metadata_orchestrator_deploy_pipeline(
+    ctx: click.Context,
     is_local: bool,
     git_branch: str,
     git_revision: str,

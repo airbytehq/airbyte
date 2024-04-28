@@ -61,7 +61,7 @@ class PytestStep(Step, ABC):
             return ("dev",)
         return ("dev", "tests")
 
-    async def _run(self, connector_under_test: Container) -> StepResult:
+    async def _run(self, connector_under_test: Container) -> StepResult:  # type: ignore
         """Run all pytest tests declared in the test directory of the connector code.
 
         Args:
@@ -177,8 +177,8 @@ class PytestStep(Step, ABC):
 class UnitTests(PytestStep):
     """A step to run the connector unit tests with Pytest."""
 
-    title = "Unit tests"
-    test_directory_name = "unit_tests"
+    title = "Unit tests"  # type: ignore
+    test_directory_name = "unit_tests"  # type: ignore
     common_test_dependencies = ["pytest-cov==4.1.0"]
     MINIMUM_COVERAGE_FOR_CERTIFIED_CONNECTORS = 90
 
@@ -198,11 +198,11 @@ class UnitTests(PytestStep):
 class PyAirbyteValidation(Step):
     """A step to validate the connector will work with PyAirbyte, using the PyAirbyte validation helper."""
 
-    title = "PyAirbyte validation tests"
+    title = "PyAirbyte validation tests"  # type: ignore
 
     context: ConnectorContext
 
-    async def _run(self, connector_under_test: Container) -> StepResult:
+    async def _run(self, connector_under_test: Container) -> StepResult:  # type: ignore
         """Run all pytest tests declared in the test directory of the connector code.
         Args:
             connector_under_test (Container): The connector under test container.
@@ -241,8 +241,8 @@ class PyAirbyteValidation(Step):
 class IntegrationTests(PytestStep):
     """A step to run the connector integration tests with Pytest."""
 
-    title = "Integration tests"
-    test_directory_name = "integration_tests"
+    title = "Integration tests"  # type: ignore
+    test_directory_name = "integration_tests"  # type: ignore
     bind_to_docker_host = True
 
 

@@ -11,7 +11,7 @@ from pipelines.models.steps import Step, StepResult, StepStatus
 class NoOpStep(Step):
     """A step that does nothing."""
 
-    title = "No Op"
+    title = "No Op"  # type: ignore
     should_log = False
 
     def __init__(self, context: PipelineContext, step_status: StepStatus) -> None:

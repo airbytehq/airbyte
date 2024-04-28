@@ -140,7 +140,7 @@ def test_get_modified_connectors_with_dependency_scanning(all_connectors, enable
     )
     modified_files.append(modified_java_connector.code_directory / "foo.bar")
 
-    modified_connectors = get_modified_connectors(modified_files, all_connectors, enable_dependency_scanning)
+    modified_connectors = get_modified_connectors(set(modified_files), all_connectors, enable_dependency_scanning)
     if enable_dependency_scanning:
         assert not_modified_java_connector in modified_connectors
     else:

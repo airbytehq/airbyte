@@ -101,6 +101,7 @@ class ConnectorContext(PipelineContext):
 
         self.pipeline_name = pipeline_name
         self.connector = connector
+        self.click_context = click_context
         self.use_remote_secrets = use_remote_secrets
         self.connector_acceptance_test_image = connector_acceptance_test_image
         self._secrets_dir: Optional[Directory] = None
@@ -125,7 +126,6 @@ class ConnectorContext(PipelineContext):
             git_branch=git_branch,
             git_revision=git_revision,
             report_output_prefix=report_output_prefix,
-            click_context=click_context,
             gha_workflow_run_url=gha_workflow_run_url,
             dagger_logs_url=dagger_logs_url,
             pipeline_start_timestamp=pipeline_start_timestamp,

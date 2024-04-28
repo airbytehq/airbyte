@@ -67,6 +67,7 @@ class PublishConnectorContext(ConnectorContext):
 
         super().__init__(
             pipeline_name=pipeline_name,
+            click_context=click_context,
             connector=connector,
             report_output_prefix=report_output_prefix,
             ci_report_bucket=ci_report_bucket,
@@ -111,7 +112,7 @@ class PublishConnectorContext(ConnectorContext):
 
     def create_slack_message(self) -> str:
 
-        docker_hub_url = f"https://hub.docker.com/r/{self.connector.metadata['dockerRepository']}/tags"
+        docker_hub_url = f"https://hub.docker.com/r/{self.connector.metadata['dockerRepository']}/tags"  # type: ignore
         message = f"*Publish <{docker_hub_url}|{self.docker_image}>*\n"
         if self.is_ci:
             message += f"🤖 <{self.gha_workflow_run_url}|GitHub Action workflow>\n"

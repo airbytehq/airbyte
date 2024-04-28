@@ -93,7 +93,7 @@ class SimpleDockerStep(Step):
 
         return container
 
-    async def _run(self, command: Optional[List[str]] = None) -> StepResult:
+    async def _run(self, command: Optional[List[str]] = None) -> StepResult:  # type: ignore
         command_to_run = command or self.command
         if not command_to_run:
             raise ValueError(f"No command given to the {self.title} step")

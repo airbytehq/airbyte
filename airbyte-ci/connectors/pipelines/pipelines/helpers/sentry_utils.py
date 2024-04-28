@@ -52,7 +52,7 @@ def with_step_context(func: Callable) -> Callable:
             )
 
             if hasattr(self.context, "connector"):
-                connector: Connector = self.context.connector
+                connector: Connector = self.context.connector  # type: ignore
                 scope.set_tag("connector", connector.technical_name)
                 scope.set_context(
                     "Connector",
