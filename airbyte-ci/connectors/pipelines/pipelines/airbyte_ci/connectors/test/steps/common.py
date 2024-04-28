@@ -330,8 +330,9 @@ class RegressionTests(Step):
         }
 
     def regression_tests_command(self) -> List[str]:
+        # return ["bash -c 'sleep 1 && echo hello & echo bye'"]
         return [
-            "./cloud-sql-proxy prod-ab-cloud-proj:us-west3:prod-pgsql-replica --credentials-file /tmp/credentials.json & " +
+            "timeout 600 ./cloud-sql-proxy prod-ab-cloud-proj:us-west3:prod-pgsql-replica --credentials-file /tmp/credentials.json & " +
             " ".join(["poetry",
             "run",
             "pytest",
