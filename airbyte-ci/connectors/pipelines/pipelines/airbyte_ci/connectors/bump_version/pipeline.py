@@ -118,6 +118,11 @@ class SetConnectorVersion(Step):
             if result.status is not StepStatus.SUCCESS:
                 return result
 
+        if self.context.connector.poetry_file_path.is_file():
+            result = await self.update_poetry()
+            if result.status is not StepStatus.SUCCESS:
+                return result
+
         return StepResult(
             step=self,
             status=StepStatus.SUCCESS,
@@ -165,7 +170,12 @@ class SetConnectorVersion(Step):
         repo_dir = await self.get_repo_dir()
         file_path = self.context.connector.dockerfile_file_path
         if not file_path.exists():
-            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="Connector does not have a Dockerfile.", output=self.repo_dir)
+            return StepResult(
+                step=self,
+                status=StepStatus.SKIPPED,
+                stdout=f"Connector does not have a Dockerfile. Tried: {file_path}",
+                output=self.repo_dir,
+            )
 
         content = await repo_dir.file(str(file_path)).contents()
         new_content = re.sub(r"(?<=\bio.airbyte.version=)(.*)", self.new_version, content)
@@ -181,8 +191,32 @@ class SetConnectorVersion(Step):
             output=self.repo_dir,
         )
 
+    async def update_poetry(self) -> StepResult:
+        repo_dir = await self.get_repo_dir()
+        file_path = self.context.connector.poetry_file_path
+        if not file_path.exists():
+            return StepResult(
+                step=self,
+                status=StepStatus.SKIPPED,
+                stdout=f"Connector does not have a Dockerfile. Tried: {file_path}",
+                output=self.repo_dir,
+            )
 
-# TODO: this doesn't bump the pyproject.toml file (or setup.py?) which is also needed for the version bump
+        content = await repo_dir.file(str(file_path)).contents()
+        new_content = re.sub(r"(?<=\bversion = \")(.*)(?=\")", self.new_version, content)
+        self.repo_dir = repo_dir.with_new_file(str(file_path), contents=new_content)
+
+        if self.export:
+            await self.repo_dir.file(str(file_path)).export(str(file_path))
+
+        return StepResult(
+            step=self,
+            status=StepStatus.SUCCESS,
+            stdout=f"Updated Poetry to {self.new_version} in {file_path}",
+            output=self.repo_dir,
+        )
+
+
 async def run_connector_version_bump_pipeline(
     context: ConnectorContext,
     semaphore: "Semaphore",

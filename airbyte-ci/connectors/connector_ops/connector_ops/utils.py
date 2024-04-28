@@ -59,6 +59,7 @@ OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
 METADATA_FILE_NAME = "metadata.yaml"
 MANIFEST_FILE_NAME = "manifest.yaml"
 DOCKERFILE_FILE_NAME = "Dockerfile"
+POETRY_FILE_NAME = "pyproject.toml"
 ICON_FILE_NAME = "icon.svg"
 
 STRATEGIC_CONNECTOR_THRESHOLDS = {
@@ -376,6 +377,10 @@ class Connector:
     @property
     def dockerfile_file_path(self) -> Path:
         return self.code_directory / DOCKERFILE_FILE_NAME
+
+    @property
+    def poetry_file_path(self) -> Path:
+        return self.code_directory / POETRY_FILE_NAME
 
     @property
     def metadata_file_path(self) -> Path:
