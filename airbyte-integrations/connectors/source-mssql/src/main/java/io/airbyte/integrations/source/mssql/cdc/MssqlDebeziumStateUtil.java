@@ -127,7 +127,7 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
       assert Objects.nonNull(schemaHistory.getSchema());
 
       final JsonNode asJson = serialize(offset, schemaHistory);
-      LOGGER.info("Initial Debezium state constructed. offset={}", Jsons.jsonNode(offset));
+      LOGGER.info("Initial Debezium state constructed. offset={}. configured db was {}", Jsons.jsonNode(offset), properties);
 
       if (asJson.get(MssqlCdcStateConstants.MSSQL_DB_HISTORY).asText().isBlank()) {
         throw new RuntimeException("Schema history snapshot returned empty history.");
