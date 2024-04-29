@@ -86,9 +86,7 @@ def test_failed_jobs_with_successful_switching(caplog, input_sandbox_config, str
         m.register_uri(
             "POST",
             create_query_matcher,
-            json={
-                "id": "fake_id",
-            },
+            json=SalesforceJobResponseBuilder().get_response(),
         )
         m.register_uri("GET", job_matcher, json=SalesforceJobResponseBuilder().with_state("Failed").with_error_message("unknown error").get_response())
         m.register_uri("DELETE", job_matcher, json=SalesforceJobResponseBuilder().get_response())
