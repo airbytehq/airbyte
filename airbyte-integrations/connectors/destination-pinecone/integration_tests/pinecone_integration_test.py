@@ -25,7 +25,7 @@ class PineconeIntegrationTest(BaseIntegrationTest):
         self.pinecone_index_rest = self.pc_rest.Index(name=self.config["indexing"]["index"])
     
     def _wait(self):
-        print("Waiting for Pinecone to index the data...", end='', flush=True)
+        print("Waiting for Pinecone...", end='', flush=True)
         for i in range(15):
             time.sleep(1)
             print(".", end='', flush=True)
@@ -35,12 +35,20 @@ class PineconeIntegrationTest(BaseIntegrationTest):
         with open("secrets/config.json", "r") as f:
             self.config = json.loads(f.read())
         self._init_pinecone()
+        # self.pinecone_index.delete(delete_all=True)
 
     def tearDown(self):
         self._wait()
         # make sure pinecone is initialized correctly before cleaning up        
         self._init_pinecone()
-        # self.pinecone_index.delete(delete_all=True, namespace="")
+        try:
+            self.pinecone_index.delete(delete_all=True)
+        except PineconeException as e:
+            if "Namespace not found" not in str(e):
+                raise(e)
+            else :
+                print("Noting to delete. No data in the index/namespace.")
+
 
     def test_check_valid_config(self):
         outcome = DestinationPinecone().check(logging.getLogger("airbyte"), self.config)        

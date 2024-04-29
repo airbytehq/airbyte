@@ -126,7 +126,6 @@ class PineconeIndexer(Indexer):
             pinecone_docs.append((prefix + "#" + str(uuid.uuid4()), chunk.embedding, metadata))
         serial_batches = create_chunks(pinecone_docs, batch_size=PINECONE_BATCH_SIZE * PARALLELISM_LIMIT)
         for batch in serial_batches:
-            print(self.pinecone_index)
             async_results = []
             for ids_vectors_chunk in create_chunks(batch, batch_size=PINECONE_BATCH_SIZE):            
                 async_result = self.pinecone_index.upsert(vectors=ids_vectors_chunk, async_req=True, show_progress=False)
