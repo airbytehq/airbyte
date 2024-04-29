@@ -4576,4 +4576,4 @@ vector-db-based = ["cohere", "langchain", "openai", "tiktoken"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "1ecb1a50fb1560c75bbc9793235c3cefe0990af20db7d5920e0feea1dc334969"
+content-hash = "fd4961079f6cb035a9900d8a6bb12a4310948e2491ca600d50bef650d1215a73"
