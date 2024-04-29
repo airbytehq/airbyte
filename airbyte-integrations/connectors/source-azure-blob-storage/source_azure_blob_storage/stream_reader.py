@@ -12,7 +12,7 @@ from azure.core.credentials import AccessToken
 from azure.storage.blob import BlobServiceClient, ContainerClient
 from smart_open import open
 
-from .config import Config
+from .spec import SourceAzureBlobStorageSpec
 
 
 class AzureOauth2Authenticator(Oauth2Authenticator):
@@ -35,11 +35,11 @@ class SourceAzureBlobStorageStreamReader(AbstractFileBasedStreamReader):
         self._config = None
 
     @property
-    def config(self) -> Config:
+    def config(self) -> SourceAzureBlobStorageSpec:
         return self._config
 
     @config.setter
-    def config(self, value: Config) -> None:
+    def config(self, value: SourceAzureBlobStorageSpec) -> None:
         self._config = value
 
     @property
@@ -83,8 +83,7 @@ class SourceAzureBlobStorageStreamReader(AbstractFileBasedStreamReader):
         for prefix in prefixes:
             for blob in self.azure_container_client.list_blobs(name_starts_with=prefix):
                 remote_file = RemoteFile(uri=blob.name, last_modified=blob.last_modified.astimezone(pytz.utc).replace(tzinfo=None))
-                if not globs or self.file_matches_globs(remote_file, globs):
-                    yield remote_file
+                yield from self.filter_files_by_globs_and_start_date([remote_file], globs)
 
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         try:
