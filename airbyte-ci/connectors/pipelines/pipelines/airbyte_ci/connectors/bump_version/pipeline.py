@@ -46,8 +46,8 @@ class RestoreVersionState(Step):
             self.metadata_content = connector.metadata_file_path.read_text()
         if connector.dockerfile_file_path.is_file():
             self.dockerfile_content = connector.dockerfile_file_path.read_text()
-        if connector.poetry_file_path.is_file():
-            self.poetry_content = connector.poetry_file_path.read_text()
+        if connector.pyproject_file_path.is_file():
+            self.poetry_content = connector.pyproject_file_path.read_text()
         if connector.documentation_file_path and connector.documentation_file_path.is_file():
             self.documentation_content = connector.documentation_file_path.read_text()
 
@@ -58,17 +58,12 @@ class RestoreVersionState(Step):
         if self.dockerfile_content:
             connector.dockerfile_file_path.write_text(self.dockerfile_content)
         if self.poetry_content:
-            connector.poetry_file_path.write_text(self.poetry_content)
+            connector.pyproject_file_path.write_text(self.poetry_content)
         if self.documentation_content and connector.documentation_file_path:
             connector.documentation_file_path.write_text(self.documentation_content)
 
     async def _cleanup(self) -> StepResult:
         return StepResult(step=self, status=StepStatus.SUCCESS)
-
-        return StepResult(
-            step=self,
-            status=StepStatus.SUCCESS,
-        )
 
 
 class AddChangelogEntry(Step):
@@ -158,7 +153,7 @@ class SetConnectorVersion(Step):
             if result.status is not StepStatus.SUCCESS:
                 return result
 
-        if self.context.connector.poetry_file_path.is_file():
+        if self.context.connector.pyproject_file_path.is_file():
             result = await self.update_poetry()
             if result.status is not StepStatus.SUCCESS:
                 return result
@@ -233,7 +228,7 @@ class SetConnectorVersion(Step):
 
     async def update_poetry(self) -> StepResult:
         repo_dir = await self.get_repo_dir()
-        file_path = self.context.connector.poetry_file_path
+        file_path = self.context.connector.pyproject_file_path
         if not file_path.exists():
             return StepResult(
                 step=self,
