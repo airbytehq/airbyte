@@ -312,16 +312,21 @@
         <section>
             <h2>Connection objects</h2>
             <div class="section_content">
+                <p class="testDescription">Each object below relates to an "argument" passed to one (or many) of the Connectors standard commands (spec/check/discover/read). The source of these arguments is either the connector itself (catalog), the connection (config/state) or both (configured catalog). To learn more checkout the <a href="https://docs.airbyte.com/understanding-airbyte/airbyte-protocol" target="_blank">Airbyte Protocol Documentation</a></p>
                 <h3>Source configuration <button class="monospace secondaryButton" onclick="copyToClipboard('config')">📋 copy</button></h3>
+                <p class="testDescription">The configuration object taken from the given connection that was passed to each version of the connector during the test.</p>
                 <pre><code class="language-json" id="config">{{ source_config }}</code></pre>
                 {% if state %}
                 <h3>State <button class="monospace secondaryButton" onclick="copyToClipboard('state')">📋 copy</button></h3>
+                <p class="testDescription">The state object taken from the given connection that was passed to each version of the connector during the test.</p>
                 <pre><code class="language-json" id="state">{{ state }}</code>
                 </pre>
                 {% endif %}
                 <h3>Configured catalog <button class="monospace secondaryButton" onclick="copyToClipboard('configured-catalog')">📋 copy</button></h3>
+                <p class="testDescription">The configured catalog object taken returned by the connector given the connection config.</p>
                 <pre><code class="language-json" id="configured-catalog">{{ configured_catalog }}</code></pre>
                 <h3>Catalog <button class="monospace secondaryButton" onclick="copyToClipboard('catalog')">📋 copy</button></h3>
+                <p class="testDescription">The catalog object returned by the connector.</p>
                 <pre><code class="language-json" id="catalog">{{ catalog }}</code></pre>
             </div>
         </section>
