@@ -33,7 +33,7 @@ java {
 airbyteJavaConnector.addCdkDependencies()
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.databricks.DatabricksDestination'
+    mainClass = 'io.airbyte.integrations.destination.databricks.DatabricksDestinationKt'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
@@ -44,11 +44,11 @@ dependencies {
 
 }
 
-integrationTestJava {
-    // This is needed to make the destination-snowflake tests succeed - https://github.com/snowflakedb/snowflake-jdbc/issues/589#issuecomment-983944767
-    jvmArgs = ["-Dio.netty.tryReflectionSetAccessible=true","--add-opens=java.base/java.nio=ALL-UNNAMED", "--add-opens=jdk.unsupported/sun.misc=ALL-UNNAMED", "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED", "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]
-}
-
+//integrationTestJava {
+//    // This is needed to make the destination-snowflake tests succeed - https://github.com/snowflakedb/snowflake-jdbc/issues/589#issuecomment-983944767
+//    jvmArgs = ["-Dio.netty.tryReflectionSetAccessible=true"]
+//}
+//
 test {
     jvmArgs = ["-Dio.netty.tryReflectionSetAccessible=true","--add-opens=java.base/java.nio=ALL-UNNAMED", "--add-opens=jdk.unsupported/sun.misc=ALL-UNNAMED", "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED", "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]
 }

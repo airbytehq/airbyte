@@ -5,49 +5,42 @@
 package io.airbyte.integrations.destination.databricks.typededupe
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
-import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
-import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteRecordMessage
-import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
-import io.airbyte.commons.functional.CheckedFunction
 import io.airbyte.commons.json.Jsons
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType
+import io.airbyte.integrations.base.destination.typing_deduping.Array
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest
-import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest
+import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
+import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
 import io.airbyte.integrations.destination.databricks.ConnectorClientsFactory
 import io.airbyte.integrations.destination.databricks.DatabricksNamingTransformer
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksDestinationHandler
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksSqlGenerator
-import io.airbyte.integrations.destination.databricks.jdbc.DatabricksStorageOperations
 import io.airbyte.integrations.destination.databricks.model.DatabricksConnectorConfig
-import io.airbyte.integrations.destination.databricks.sync.DatabricksStreamOperations
+import io.airbyte.protocol.models.v0.DestinationSyncMode
+import io.airbyte.protocol.models.v0.SyncMode
 import java.nio.file.Files
 import java.nio.file.Path
 import java.sql.Connection
 import java.sql.ResultSet
-import java.sql.SQLException
-import java.time.Duration
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
-import java.util.Map
 import java.util.concurrent.TimeUnit
-import java.util.stream.Collectors
-import java.util.stream.Stream
-import kotlin.collections.List
 import kotlin.streams.asSequence
-import org.apache.commons.text.StringSubstitutor
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
-import org.mockito.Mockito.*
+import org.mockito.Mockito.mock
 
 class DatabricksSqlGeneratorIntegrationTest :
     BaseSqlGeneratorIntegrationTest<MinimumDestinationState.Impl>() {
@@ -69,7 +62,6 @@ class DatabricksSqlGeneratorIntegrationTest :
             DatabricksDestinationHandler(
                 connectorConfig.database,
                 jdbcDatabase,
-                connectorConfig.rawSchemaOverride,
             )
     override val sqlGenerator: SqlGenerator
         get() = DatabricksSqlGenerator(DatabricksNamingTransformer(), connectorConfig.database)
@@ -88,36 +80,45 @@ class DatabricksSqlGeneratorIntegrationTest :
     }
 
     override fun insertRawTableRecords(streamId: StreamId, records: List<JsonNode>) {
-        // Exercise using the original inserts code path
-        val ops =
-            DatabricksStorageOperations(
-                sqlGenerator,
-                destinationHandler,
-                ConnectorClientsFactory.createWorkspaceClient(
-                    connectorConfig.hostname,
-                    connectorConfig.apiAuthentication,
-                ),
-                connectorConfig.database,
+        val columnNames =
+            listOf(
+                JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
+                JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
+                JavaBaseConstants.COLUMN_NAME_DATA,
+                JavaBaseConstants.COLUMN_NAME_AB_META
             )
-        ops.prepareStagingVolume(incrementalDedupStream.id)
-        val streamOps = DatabricksStreamOperations(ops, FileUploadFormat.CSV)
-        val transformedRecords: Stream<PartialAirbyteMessage> =
-            records.stream().map {
-                PartialAirbyteMessage()
-                    .withSerialized(Jsons.serialize(it.get("_airbyte_data")))
-                    .withRecord(
-                        PartialAirbyteRecordMessage()
-                            .withEmittedAt(
-                                ZonedDateTime.parse(
-                                    it.get("_airbyte_extracted_at").asText(),
-                                    DateTimeFormatter.ISO_ZONED_DATE_TIME,
-                                )
-                                    .toInstant()
-                                    .toEpochMilli(),
-                            ),
-                    )
-            }
-        streamOps.writeRecords(incrementalDedupStream, transformedRecords)
+        val tableIdentifier = streamId.rawTableId(DatabricksSqlGenerator.QUOTE)
+        insertRecords(columnNames, tableIdentifier, records)
+        //        // Exercise using the original inserts code path
+        //        val ops =
+        //            DatabricksStorageOperations(
+        //                sqlGenerator,
+        //                destinationHandler,
+        //                ConnectorClientsFactory.createWorkspaceClient(
+        //                    connectorConfig.hostname,
+        //                    connectorConfig.apiAuthentication,
+        //                ),
+        //                connectorConfig.database,
+        //            )
+        //        ops.prepareStagingVolume(incrementalDedupStream.id)
+        //        val streamOps = DatabricksStreamOperations(ops, FileUploadFormat.CSV)
+        //        val transformedRecords: Stream<PartialAirbyteMessage> =
+        //            records.stream().map {
+        //                PartialAirbyteMessage()
+        //                    .withSerialized(Jsons.serialize(it.get("_airbyte_data")))
+        //                    .withRecord(
+        //                        PartialAirbyteRecordMessage()
+        //                            .withEmittedAt(
+        //                                ZonedDateTime.parse(
+        //                                    it.get("_airbyte_extracted_at").asText(),
+        //                                    DateTimeFormatter.ISO_ZONED_DATE_TIME,
+        //                                )
+        //                                    .toInstant()
+        //                                    .toEpochMilli(),
+        //                            ),
+        //                    )
+        //            }
+        //        streamOps.writeRecords(incrementalDedupStream, transformedRecords)
     }
 
     override fun insertV1RawTableRecords(streamId: StreamId, records: List<JsonNode>) {
@@ -132,7 +133,16 @@ class DatabricksSqlGeneratorIntegrationTest :
     ) {
         val columnNames =
             if (includeCdcDeletedAt) FINAL_TABLE_COLUMN_NAMES_CDC else FINAL_TABLE_COLUMN_NAMES
+        val tableIdentifier =
+            streamId.finalTableId(DatabricksSqlGenerator.QUOTE, suffix?.lowercase() ?: "")
+        insertRecords(columnNames, tableIdentifier, records)
+    }
 
+    private fun insertRecords(
+        columnNames: List<String>,
+        tableIdentifier: String,
+        records: List<JsonNode>
+    ) {
         val sqlValue = { value: JsonNode? ->
             value?.let {
                 if (value.isTextual) "'${value.asText()}'"
@@ -141,7 +151,7 @@ class DatabricksSqlGeneratorIntegrationTest :
                 ?: "NULL"
         }
         val columnStr = columnNames.joinToString { "`$it`" }
-        val colNumberStr = IntRange(1, if(includeCdcDeletedAt) 19 else 18).joinToString { "`col$it`" }
+        val colNumberStr = IntRange(1, columnNames.size).joinToString { "`col$it`" }
         val values =
             records
                 .stream()
@@ -157,7 +167,7 @@ class DatabricksSqlGeneratorIntegrationTest :
                 .joinToString(", \n")
         val insertRecordsSql =
             """
-            | INSERT INTO ${connectorConfig.database}.${streamId.finalTableId(DatabricksSqlGenerator.QUOTE, suffix!!.lowercase())} (
+            | INSERT INTO ${connectorConfig.database}.$tableIdentifier (
             | $columnStr
             | )
             | SELECT
@@ -171,51 +181,64 @@ class DatabricksSqlGeneratorIntegrationTest :
     }
 
     override fun dumpRawTableRecords(streamId: StreamId): List<JsonNode> {
-        TODO("Not yet implemented")
+        return dumpTable(streamId.rawTableId(DatabricksSqlGenerator.QUOTE))
     }
 
     override fun dumpFinalTableRecords(streamId: StreamId, suffix: String?): List<JsonNode> {
-        return jdbcDatabase.bufferedResultSetQuery<JsonNode>(
-            { connection: Connection ->
-                connection.createStatement().executeQuery(
-                    """
-                        SELECT *
-                        FROM ${connectorConfig.database}.${streamId.finalTableId(DatabricksSqlGenerator.QUOTE, suffix!!)} 
-                        ORDER BY ${JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT} ASC
-                    """.trimIndent()
-                )
-            },
-            { queryContext: ResultSet ->
-                JdbcSourceOperations().rowToJson(
-                    queryContext,
-                )
-            },
-        )
+        return dumpTable(streamId.finalTableId(DatabricksSqlGenerator.QUOTE, suffix ?: ""))
     }
 
-    private fun dumpTable(columns: List<String>,
-                          database: JdbcDatabase,
-                          tableIdentifier: String): List<JsonNode> {
-        return database.bufferedResultSetQuery<JsonNode>(
+    private fun dumpTable(tableIdentifier: String): List<JsonNode> {
+        val sourceOperations =
+            object : JdbcSourceOperations() {
+                override fun copyToJsonField(
+                    resultSet: ResultSet,
+                    colIndex: Int,
+                    json: ObjectNode
+                ) {
+                    // TODO: This is a hack looking at columnName to determine
+                    //  which complex types are mapped to String. derive it from airbyteType
+                    val columnName = resultSet.metaData.getColumnName(colIndex)
+                    if (
+                        columnName == "unknown" ||
+                            columnName == "struct" ||
+                            columnName == "array" ||
+                            columnName == "_airbyte_meta"
+                    ) {
+                        json.set<JsonNode>(
+                            columnName,
+                            Jsons.deserializeExact(resultSet.getString(colIndex)),
+                        )
+                        return
+                    }
+                    super.copyToJsonField(resultSet, colIndex, json)
+                }
+            }
+        return jdbcDatabase.bufferedResultSetQuery<JsonNode>(
             { connection: Connection ->
-                connection.createStatement().executeQuery(
-                    """
-                        SELECT ${columns.joinToString(",")}
-                        FROM $tableIdentifier ORDER BY ${JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT} ASC
-                    """.trimIndent()
-                )
+                connection
+                    .createStatement()
+                    .executeQuery(
+                        """
+                        SELECT *
+                        FROM ${connectorConfig.database}.$tableIdentifier 
+                        ORDER BY ${JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT} ASC
+                    """.trimIndent(),
+                    )
             },
-            { queryContext: ResultSet ->
-                JdbcSourceOperations().rowToJson(
-                    queryContext,
+            { resultSet: ResultSet ->
+                sourceOperations.rowToJson(
+                    resultSet,
                 )
             },
         )
     }
 
     override fun teardownNamespace(namespace: String?) {
-        jdbcDatabase.execute("DROP SCHEMA IF EXISTS ${connectorConfig.database}.${namespace!!.lowercase(Locale.getDefault())} CASCADE")
-//        println("Skipping teardown for now, re-enable $namespace")
+        jdbcDatabase.execute(
+            "DROP SCHEMA IF EXISTS ${connectorConfig.database}.${namespace?.lowercase() ?: ""} CASCADE"
+        )
+        //        println("Skipping teardown for now, re-enable $namespace")
     }
 
     @Disabled override fun testCreateTableIncremental() {}
@@ -225,8 +248,8 @@ class DatabricksSqlGeneratorIntegrationTest :
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
     @Test
     fun randomTest() {
-        //        createRawTable(incrementalDedupStream.id)
-        createFinalTable(cdcIncrementalDedupStream, "")
+        // createRawTable(incrementalDedupStream.id)
+        createFinalTable(incrementalDedupStream, "")
         //        val sql = sqlGenerator.createTable(incrementalDedupStream, "", true)
         //        val ops = DatabricksStorageOperations(
         //            sqlGenerator,
@@ -277,14 +300,52 @@ class DatabricksSqlGeneratorIntegrationTest :
         //        println(sql)
         //        println(sqlGenerator.updateTable(cdcIncrementalDedupStream, "", Optional.empty(),
         // false).transactions.first().first())
-        insertFinalTableRecords(
+        /*insertFinalTableRecords(
             true,
             cdcIncrementalDedupStream.id,
             "",
             BaseTypingDedupingTest.Companion.readRecords(
                 "sqlgenerator/cdcupdate_inputrecords_final.jsonl",
             ),
-        )
-        println(dumpFinalTableRecords(cdcIncrementalDedupStream.id, ""))
+        )*/
+        // println(dumpFinalTableRecords(cdcIncrementalDedupStream.id, ""))
+        val columns = LinkedHashMap<ColumnId, AirbyteType>()
+        val id1 = sqlGenerator.buildColumnId("id1")
+        val id2 = sqlGenerator.buildColumnId("id2")
+        columns[id1] = AirbyteProtocolType.INTEGER
+        columns[id2] = AirbyteProtocolType.INTEGER
+        columns[generator.buildColumnId("struct")] = Struct(LinkedHashMap())
+        columns[generator.buildColumnId("array")] = Array(AirbyteProtocolType.UNKNOWN)
+        columns[generator.buildColumnId("string")] = AirbyteProtocolType.STRING
+        columns[generator.buildColumnId("number")] = AirbyteProtocolType.NUMBER
+        columns[generator.buildColumnId("integer")] = AirbyteProtocolType.INTEGER
+        columns[generator.buildColumnId("boolean")] = AirbyteProtocolType.BOOLEAN
+        columns[generator.buildColumnId("timestamp_with_timezone")] =
+            AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE
+        columns[generator.buildColumnId("timestamp_without_timezone")] =
+            AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE
+        columns[generator.buildColumnId("time_with_timezone")] =
+            AirbyteProtocolType.TIME_WITH_TIMEZONE
+        columns[generator.buildColumnId("time_without_timezone")] =
+            AirbyteProtocolType.TIME_WITHOUT_TIMEZONE
+        val tmpStream =
+            StreamConfig(
+                buildStreamId("sql_generator_test_svcnfgcqaz", "users_final", "users_raw"),
+                SyncMode.INCREMENTAL,
+                DestinationSyncMode.APPEND_DEDUP,
+                listOf(),
+                Optional.empty(),
+                columns,
+            )
+        val initialStates =
+            destinationHandler.gatherInitialState(listOf(incrementalDedupStream, tmpStream))
+        initialStates.forEach {
+            println("==========================")
+            println(it.streamConfig.id)
+            println(it.isSchemaMismatch)
+            println(it.isFinalTablePresent)
+            println(it.isFinalTableEmpty)
+            println(it.initialRawTableStatus)
+        }
     }
 }

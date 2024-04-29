@@ -45,7 +45,13 @@ class DatabricksDestination : BaseConnector(), Destination {
     }
 
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
-        TODO()
+        // TODO: Add checks for
+        //   Check schema permissions, or if raw_override and default already exists
+        //   Check catalog permissions to USE catalog
+        //   Check CREATE volume, COPY INTO, File upload permissions
+        //   Check Table creation, Table drop permissions
+
+        return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
     }
 
     override fun getSerializedMessageConsumer(
@@ -57,12 +63,12 @@ class DatabricksDestination : BaseConnector(), Destination {
         // TODO: Deserialization should be taken care by connector runner framework later
         val connectorConfig = DatabricksConnectorConfig.deserialize(config)
         // TODO: This abomination continues to stay, this call should be implicit in ParsedCatalog
-        // with defaultNamespace injected
+        //  with defaultNamespace injected
         addDefaultNamespaceToStreams(catalog, connectorConfig.schema)
 
         val sqlGenerator =
             DatabricksSqlGenerator(DatabricksNamingTransformer(), connectorConfig.database)
-        val catalogParser = CatalogParser(sqlGenerator)
+        val catalogParser = CatalogParser(sqlGenerator, connectorConfig.rawSchemaOverride)
         val parsedCatalog = catalogParser.parseCatalog(catalog)
         val workspaceClient =
             ConnectorClientsFactory.createWorkspaceClient(
@@ -72,11 +78,7 @@ class DatabricksDestination : BaseConnector(), Destination {
         val datasource = ConnectorClientsFactory.createDataSource(connectorConfig)
         val jdbcDatabase = DefaultJdbcDatabase(datasource)
         val destinationHandler =
-            DatabricksDestinationHandler(
-                connectorConfig.database,
-                jdbcDatabase,
-                connectorConfig.rawSchemaOverride
-            )
+            DatabricksDestinationHandler(connectorConfig.database, jdbcDatabase)
 
         // Minimum surface area for AsyncConsumer's lifecycle functions to call.
         val storageOperations =

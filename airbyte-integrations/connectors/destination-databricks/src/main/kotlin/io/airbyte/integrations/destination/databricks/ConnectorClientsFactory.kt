@@ -35,8 +35,13 @@ object ConnectorClientsFactory {
         val className = Driver::class.java.canonicalName
         Class.forName(className)
         val datasource = com.databricks.client.jdbc.DataSource()
+        // https://community.databricks.com/t5/data-engineering/java-21-support-with-databricks-jdbc-driver/td-p/49297
+        // Jdbc driver 2.3.36 still uses Apache Arrow which isn't compatible with Java 21
+        // EnableArrow=0 flag is undocumented and disables ArrowBuf when reading data
+        // Destinations only reads data for metadata or for comparison of actual data in tests. so
+        // we don't need it to be optimized.
         val jdbcUrl =
-            "jdbc:databricks://${config.hostname}:${config.port}/${config.database};transportMode=http;httpPath=${config.httpPath}"
+            "jdbc:databricks://${config.hostname}:${config.port}/${config.database};transportMode=http;httpPath=${config.httpPath};EnableArrow=0"
         when (config.jdbcAuthentication) {
             is JdbcAuthentication.BasicAuthentication -> {
                 datasource.userID = config.jdbcAuthentication.username

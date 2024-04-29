@@ -31,6 +31,7 @@ class DatabricksNamingTransformer : NamingConventionTransformer {
     }
 
     override fun applyDefaultCase(input: String): String {
-        return input.lowercase()
+        // Preserve casing as we are using quoted strings for all identifiers.
+        return input
     }
 }

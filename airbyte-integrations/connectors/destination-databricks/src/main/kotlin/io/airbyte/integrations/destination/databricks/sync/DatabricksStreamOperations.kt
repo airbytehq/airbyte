@@ -123,9 +123,9 @@ class DatabricksStreamOperations(
     override fun writeRecords(streamConfig: StreamConfig, stream: Stream<PartialAirbyteMessage>) {
         val writeBuffer = SerializableBufferFactory.createBuffer(fileUploadFormat)
         writeBuffer.use {
-            stream.forEach { record: PartialAirbyteMessage? ->
+            stream.forEach { record: PartialAirbyteMessage ->
                 it.accept(
-                    record!!.serialized!!,
+                    record.serialized!!,
                     Jsons.serialize(record.record!!.meta),
                     record.record!!.emittedAt
                 )

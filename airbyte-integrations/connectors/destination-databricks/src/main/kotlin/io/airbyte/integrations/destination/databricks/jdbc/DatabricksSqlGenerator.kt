@@ -34,11 +34,42 @@ class DatabricksSqlGenerator(
     companion object {
         const val QUOTE = "`"
         const val CDC_DELETED_COLUMN_NAME = "_ab_cdc_deleted_at"
-        private const val AB_RAW_ID = constants.COLUMN_NAME_AB_RAW_ID
-        private const val AB_EXTRACTED_AT = constants.COLUMN_NAME_AB_EXTRACTED_AT
-        private const val AB_LOADED_AT = constants.COLUMN_NAME_AB_LOADED_AT
-        private const val AB_DATA = constants.COLUMN_NAME_DATA
-        private const val AB_META = constants.COLUMN_NAME_AB_META
+        const val AB_RAW_ID = constants.COLUMN_NAME_AB_RAW_ID
+        const val AB_EXTRACTED_AT = constants.COLUMN_NAME_AB_EXTRACTED_AT
+        const val AB_LOADED_AT = constants.COLUMN_NAME_AB_LOADED_AT
+        const val AB_DATA = constants.COLUMN_NAME_DATA
+        const val AB_META = constants.COLUMN_NAME_AB_META
+
+        fun toDialectType(type: AirbyteType): String {
+            return when (type) {
+                is AirbyteProtocolType -> toDialectType(type)
+
+                // Databricks has only STRING for semi structured data, else we need to map
+                // each subTypes inside the Struct and Array
+                is Struct,
+                is Array,
+                is UnsupportedOneOf -> "STRING"
+                is Union -> toDialectType(type.chooseType())
+                else -> {
+                    throw IllegalArgumentException("Unsupported AirbyteType $type")
+                }
+            }
+        }
+
+        private fun toDialectType(type: AirbyteProtocolType): String {
+            return when (type) {
+                AirbyteProtocolType.STRING,
+                AirbyteProtocolType.TIME_WITHOUT_TIMEZONE,
+                AirbyteProtocolType.TIME_WITH_TIMEZONE,
+                AirbyteProtocolType.UNKNOWN -> "STRING"
+                AirbyteProtocolType.DATE -> "DATE"
+                AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE -> "TIMESTAMP_NTZ"
+                AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE -> "TIMESTAMP"
+                AirbyteProtocolType.NUMBER -> "DECIMAL(38, 10)"
+                AirbyteProtocolType.INTEGER -> "BIGINT"
+                AirbyteProtocolType.BOOLEAN -> "BOOLEAN"
+            }
+        }
     }
     override fun buildStreamId(
         namespace: String,
@@ -107,37 +138,6 @@ class DatabricksSqlGenerator(
         )
     }
 
-    private fun toDialectType(type: AirbyteType): String {
-        return when (type) {
-            is AirbyteProtocolType -> toDialectType(type)
-
-            // Databricks has only STRING for semi structured data, else we need to map
-            // each subTypes inside the Struct and Array
-            is Struct,
-            is Array,
-            is UnsupportedOneOf -> "STRING"
-            is Union -> toDialectType(type.chooseType())
-            else -> {
-                throw IllegalArgumentException("Unsupported AirbyteType $type")
-            }
-        }
-    }
-
-    private fun toDialectType(type: AirbyteProtocolType): String {
-        return when (type) {
-            AirbyteProtocolType.STRING,
-            AirbyteProtocolType.TIME_WITHOUT_TIMEZONE,
-            AirbyteProtocolType.TIME_WITH_TIMEZONE,
-            AirbyteProtocolType.UNKNOWN -> "STRING"
-            AirbyteProtocolType.DATE -> "DATE"
-            AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE -> "TIMESTAMP_NTZ"
-            AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE -> "TIMESTAMP"
-            AirbyteProtocolType.NUMBER -> "DECIMAL(38, 10)"
-            AirbyteProtocolType.INTEGER -> "BIGINT"
-            AirbyteProtocolType.BOOLEAN -> "BOOLEAN"
-        }
-    }
-
     override fun createSchema(schema: String?): Sql {
         return Sql.of("CREATE SCHEMA IF NOT EXISTS $unityCatalogName.`$schema`")
     }
@@ -148,15 +148,20 @@ class DatabricksSqlGenerator(
         minRawTimestamp: Optional<Instant>,
         useExpensiveSaferCasting: Boolean
     ): Sql {
-        if (stream.destinationSyncMode == DestinationSyncMode.APPEND_DEDUP) {
-            return upsertNewRecords(stream, finalSuffix, minRawTimestamp, useExpensiveSaferCasting)
-        }
-        return insertNewRecordsNoDedupe(
-            stream,
-            finalSuffix,
-            minRawTimestamp,
-            useExpensiveSaferCasting
-        )
+
+        val addRecordsToFinalTable =
+            if (stream.destinationSyncMode == DestinationSyncMode.APPEND_DEDUP) {
+                upsertNewRecords(stream, finalSuffix, minRawTimestamp, useExpensiveSaferCasting)
+            } else {
+                insertNewRecordsNoDedupe(
+                    stream,
+                    finalSuffix,
+                    minRawTimestamp,
+                    useExpensiveSaferCasting,
+                )
+            }
+
+        return Sql.concat(addRecordsToFinalTable, checkpointRawTable(stream.id, minRawTimestamp))
     }
 
     private fun upsertNewRecords(
@@ -304,40 +309,52 @@ class DatabricksSqlGenerator(
                     """.trimMargin()
                     },
                 )
+        val typeCastErrorsArray =
+            """
+            |array_compact(
+            |   array(
+            |${typeCastErrors.replaceIndent("       ")}
+            |   )
+            |)
+            """.trimMargin()
         val airbyteMetaField =
             """
-            |named_struct(
-            |   "changes",
-            |   array_compact(
-            |       array(
-            |${typeCastErrors.replaceIndent("           ")}
+            |to_json(
+            |   named_struct(
+            |       "changes",
+            |       array_union(
+            |           _airbyte_type_errors,
+            |           CASE
+            |               WHEN _airbyte_meta.changes IS NULL THEN ARRAY()
+            |               ELSE _airbyte_meta.changes
+            |           END
             |       )
             |   )
             |)
             """.trimMargin()
-
         val selectFromRawTable =
             """SELECT
-                                    |${projectionColumns.replaceIndent("   ")},
-                                    |   $AB_RAW_ID,
-                                    |   $AB_EXTRACTED_AT,
-                                    |   $airbyteMetaField as $AB_META
-                                    |FROM
-                                    |   $unityCatalogName.${stream.id.rawTableId(QUOTE)}
-                                    |WHERE
-                                    |   $rawTableSelectionCondition""".trimMargin()
+            |${projectionColumns.replaceIndent("   ")},
+            |   $AB_RAW_ID,
+            |   $AB_EXTRACTED_AT,
+            |   from_json($AB_META, 'STRUCT<`changes` : ARRAY<STRUCT<`field`: STRING, `change`: STRING, `reason`: STRING>>>') as `_airbyte_meta`,
+            |${typeCastErrorsArray.replaceIndent("   ")} as `_airbyte_type_errors`
+            |FROM
+            |   $unityCatalogName.${stream.id.rawTableId(QUOTE)}
+            |WHERE
+            |   $rawTableSelectionCondition""".trimMargin()
 
         val selectCTENoDedupe =
             """WITH intermediate_data as (
-                              |${selectFromRawTable.replaceIndent("     ")}
-                              |)
-                              |SELECT 
-                              |${finalColumnNames.replaceIndent("     ")},
-                              |     $AB_RAW_ID,
-                              |     $AB_EXTRACTED_AT,
-                              |     to_json($AB_META) as $AB_META
-                              |FROM
-                              |     intermediate_data""".trimMargin()
+            |${selectFromRawTable.replaceIndent("     ")}
+            |)
+            |SELECT 
+            |${finalColumnNames.replaceIndent("     ")},
+            |     $AB_RAW_ID,
+            |     $AB_EXTRACTED_AT,
+            |${airbyteMetaField.replaceIndent("     ")} as $AB_META
+            |FROM
+            |     intermediate_data""".trimMargin()
         if (!dedupe) {
             return selectCTENoDedupe
         }
@@ -354,7 +371,7 @@ class DatabricksSqlGenerator(
             |${finalColumnNames.replaceIndent("       ")},
             |       $AB_RAW_ID,
             |       $AB_EXTRACTED_AT,
-            |       to_json($AB_META) as $AB_META
+            |${airbyteMetaField.replaceIndent("       ")} as $AB_META
             |   FROM
             |       intermediate_data
             |), numbered_rows AS (
@@ -376,6 +393,20 @@ class DatabricksSqlGenerator(
         """.trimMargin()
 
         return selectCTEDedupe
+    }
+
+    private fun checkpointRawTable(streamId: StreamId, minRawTimestamp: Optional<Instant>): Sql {
+        val extractedAtCondition =
+            minRawTimestamp.map { " AND `$AB_EXTRACTED_AT` > '$it'" }.orElse("")
+
+        return Sql.of(
+            """
+            | UPDATE $unityCatalogName.${streamId.rawTableId(QUOTE)}
+            | SET ${constants.COLUMN_NAME_AB_LOADED_AT} = CURRENT_TIMESTAMP
+            | WHERE ${constants.COLUMN_NAME_AB_LOADED_AT} IS NULL
+            | $extractedAtCondition
+        """.trimMargin()
+        )
     }
 
     override fun overwriteFinalTable(stream: StreamId, finalSuffix: String): Sql {
