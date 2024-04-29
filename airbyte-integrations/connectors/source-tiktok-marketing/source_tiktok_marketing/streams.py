@@ -905,7 +905,10 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
     def select_cursor_field_value(self, data: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None) -> str:
         if stream_slice:
-            return stream_slice["end_date"]
+            result = stream_slice["end_date"]
+            if len(result) == 10:
+                result = result + " 00:00:00"
+            return result
         return super().select_cursor_field_value(data)
 
 
