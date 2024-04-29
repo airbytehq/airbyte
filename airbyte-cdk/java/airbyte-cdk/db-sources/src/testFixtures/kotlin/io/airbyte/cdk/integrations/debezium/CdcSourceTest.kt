@@ -27,7 +27,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
-    @JvmField protected var testdb: T = createTestDatabase()
+    @JvmField protected var testdb: T? = null /*= createTestDatabase()*/
 
     protected open fun createTableSqlFmt(): String {
         return "CREATE TABLE %s.%s(%s);"
@@ -133,8 +133,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         val actualColumns =
             ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)")
         testdb
-            .with(createSchemaSqlFmt(), modelsSchema())
-            .with(
+            ?.with(createSchemaSqlFmt(), modelsSchema())
+            ?.with(
                 createTableSqlFmt(),
                 modelsSchema(),
                 MODELS_STREAM_NAME,
