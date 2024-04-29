@@ -481,7 +481,7 @@ def test_given_retryable_error_when_download_data_then_retry(send_http_request_p
 @patch("source_salesforce.source.BulkSalesforceStream._non_retryable_send_http_request")
 def test_given_first_download_fail_when_download_data_then_retry_job_only_once(send_http_request_patch):
     sf_api = Mock()
-    sf_api.generate_schema.return_value = SalesforceJobResponseBuilder().with_id("any id").with_state("JobComplete").get_response()
+    sf_api.generate_schema.return_value = SalesforceJobResponseBuilder().with_state("JobComplete").get_response()
     sf_api.instance_url = "http://test_given_first_download_fail_when_download_data_then_retry_job.com"
     job_creation_return_values = [_A_JSON_RESPONSE, _A_SUCCESSFUL_JOB_CREATION_RESPONSE]
     send_http_request_patch.return_value.json.side_effect = job_creation_return_values * 2
