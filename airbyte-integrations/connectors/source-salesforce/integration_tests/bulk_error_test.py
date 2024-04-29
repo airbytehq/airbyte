@@ -12,6 +12,7 @@ import pytest
 import requests_mock
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.streams import Stream
+from salesforce_job_response_builder import SalesforceJobResponseBuilder
 from source_salesforce.source import SourceSalesforce
 
 HERE = Path(__file__).parent
@@ -89,8 +90,8 @@ def test_failed_jobs_with_successful_switching(caplog, input_sandbox_config, str
                 "id": "fake_id",
             },
         )
-        m.register_uri("GET", job_matcher, json={"state": "Failed", "errorMessage": "unknown error"})
-        m.register_uri("DELETE", job_matcher, json={})
+        m.register_uri("GET", job_matcher, json= SalesforceJobResponseBuilder().with_state("Failed").with_error_message("unknown error").get_response())
+        m.register_uri("DELETE", job_matcher, json=SalesforceJobResponseBuilder().get_response())
         with caplog.at_level(logging.WARNING):
             loaded_record_ids = set(
                 record["Id"] for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
