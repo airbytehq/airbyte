@@ -21,6 +21,7 @@ import java.sql.SQLException
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.time.Duration
+import java.util.Arrays
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.Stream
@@ -61,7 +62,7 @@ protected constructor(val container: C) : AutoCloseable {
     private val dateFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")
 
     init {
-        LOGGER!!.info(formatLogLine("creating database " + databaseName))
+        LOGGER!!.info(formatLogLine("creating database " + databaseName + ":" + Arrays.toString(Thread.currentThread().stackTrace)))
     }
 
     protected fun formatLogLine(logLine: String?): String? {
