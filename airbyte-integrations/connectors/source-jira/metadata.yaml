@@ -32,7 +32,7 @@ data:
     breakingChanges:
       2.0.0:
         message: "The migration to low-code will result in incremental stream states changing their format by saving them per partition. Additionally, an issue in the `ProjectAvatars` stream has been fixed, where a field was defined as 'project_id,' when in reality, it holds a project key (now it holds project id)."
-        upgradeDeadline: "2024-05-06"
+        upgradeDeadline: "2024-05-10"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["board_issues", "issues", "sprint_issues"]
