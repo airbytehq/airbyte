@@ -180,6 +180,10 @@ class InlineSchemas(Step):
             else:
                 yaml_stream = stream
 
+            if not yaml_stream:
+                logger.info(f"    !! Yaml stream not found: {stream}")
+                continue
+
             stream_name = _get_stream_name(yaml_stream)
             if not stream_name:
                 logger.info(f"    !! Stream name not found: {stream}")

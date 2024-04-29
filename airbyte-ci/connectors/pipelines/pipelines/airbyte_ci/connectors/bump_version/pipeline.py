@@ -6,7 +6,7 @@ import re
 from typing import TYPE_CHECKING
 
 import semver
-import yaml
+import yaml  # type: ignore
 from dagger import Directory
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
@@ -87,7 +87,7 @@ class AddChangelogEntry(Step):
         self.export = export
 
     async def _run(self, pull_request_number: int | None = None) -> StepResult:  # type: ignore
-        if not self.repo_dir:
+        if self.repo_dir is None:
             self.repo_dir = await self.context.get_repo_dir(include=[str(self.context.connector.local_connector_documentation_directory)])
 
         if pull_request_number is None:
@@ -111,14 +111,14 @@ class AddChangelogEntry(Step):
             return StepResult(
                 step=self, status=StepStatus.FAILURE, stderr=f"Could not add changelog entry: {e}", output=self.repo_dir, exc_info=e
             )
-        updated_repo_dir = self.repo_dir.with_new_file(str(doc_path), contents=updated_doc)
+        self.repo_dir = self.repo_dir.with_new_file(str(doc_path), contents=updated_doc)
         if self.export:
-            await updated_repo_dir.file(str(doc_path)).export(str(doc_path))
+            await self.repo_dir.file(str(doc_path)).export(str(doc_path))
         return StepResult(
             step=self,
             status=StepStatus.SUCCESS,
             stdout=f"Added changelog entry to {doc_path}",
-            output=updated_repo_dir,
+            output=self.repo_dir,
         )
 
 
