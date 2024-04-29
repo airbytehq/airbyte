@@ -52,14 +52,11 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.connector.sqlserver.Lsn;
+
+import java.sql.Array;
 import java.sql.SQLException;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -409,6 +406,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
 
   private void assertStateTypes(final List<? extends AirbyteStateMessage> stateMessages, final int indexTillWhichExpectOcState) {
     JsonNode sharedState = null;
+    LOGGER.info("*** states to assert: {}", Arrays.deepToString(stateMessages.toArray()));
     for (int i = 0; i < stateMessages.size(); i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);
       assertEquals(AirbyteStateType.GLOBAL, stateMessage.getType());
@@ -417,7 +415,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
       if (Objects.isNull(sharedState)) {
         sharedState = global.getSharedState();
       } else {
-        assertEquals(sharedState, global.getSharedState());
+        assertEquals(sharedState, global.getSharedState(), "states were " + Arrays.deepToString(stateMessages.toArray()));
 //        assertEquals(sharedState.toString().replaceAll("ts_ms\\\\\":\\d+", ""), global.getSharedState().toString().replaceAll("ts_ms\\\\\":\\d+", ""));
       }
       assertEquals(1, global.getStreamStates().size());
