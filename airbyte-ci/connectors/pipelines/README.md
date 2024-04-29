@@ -466,6 +466,19 @@ Meant to be run on a cron script.
 Actions:
 
 * Upgrades dependecies to the current versions
+* Can make a pull request and bump version, changelog
+
+```
+Usage: airbyte-ci connectors up_to_date [OPTIONS]
+
+Options:
+  --dev       Force update when there are only dev changes.
+  --dep TEXT  Give a specific set of `poetry add` dependencies to update. For
+              example: --dep airbyte-cdk==0.80.0 --dep pytest@^6.2
+  --report    Auto open report browser.
+  --pull      Create a pull request.
+  --help      Show this message and exit.
+```
 
 ### Examples
 
@@ -559,7 +572,15 @@ Migrate source-openweather to use the base image:
 
 ### <a id="connectors-migrate_to_inline_schemas"></a>`connectors migrate_to_inline_schemas` command
 
-Migrate .json schemas into manifest.yaml files, when present.
+Migrate `.json` schemas into `manifest.yaml` files, when present.
+
+```
+Usage: airbyte-ci connectors migrate_to_inline_schemas [OPTIONS]
+
+Options:
+  --report  Auto open report browser.
+  --help    Show this message and exit.
+```
 
 #### Examples
 
@@ -570,6 +591,28 @@ Migrate source-quickbooks to use inline schemas:
 
 Makes a pull request for all changed connectors. If the branch already exists, it will update the existing one.
 
+```
+Usage: airbyte-ci connectors pull_request [OPTIONS]
+
+Options:
+  -m, --message TEXT          Commit message and pull request title and
+                              changelog (if enabled).  [required]
+  -b, --branch_id TEXT        update a branch named <branch_id>/<connector-
+                              name> instead generating one from the message.
+                              [required]
+  --report                    Auto open report browser.
+  --title TEXT                Title of the PR to be created or edited
+                              (optional - defaults to message or no change).
+  --body TEXT                 Body of the PR to be created or edited (optional
+                              - defaults to empty or not change).
+  --changelog                 Add message to the changelog for this version.
+  --bump [patch|minor|major]  Bump the metadata.yaml version. Can be `major`,
+                              `minor`, or `patch`.
+  --dry-run                   Don't actually make the pull requests. Just
+                              print the files that would be changed.
+  --help                      Show this message and exit.
+```
+
 #### Examples
 
 Make a PR for all changes, bump the version and make a changelog in those PRs. They will be on the branch ci_update/round2/<connector-name>:
@@ -578,7 +621,7 @@ Make a PR for all changes, bump the version and make a changelog in those PRs. T
 Do it just for a few connectors:
 `airbyte-ci connectors --name source-aha --name source-quickbooks pull_request -m "upgrading connectors" -b ci_update/round2 --bump patch --changelog`
 
-You can also set or set/change the title or body of the PR"
+You can also set or set/change the title or body of the PR:
 `airbyte-ci connectors --name source-aha --name source-quickbooks pull_request -m "upgrading connectors" -b ci_update/round2 --title "New title" --body "full body\n\ngoes here"`
 
 ### <a id="format-subgroup"></a>`format` command subgroup
