@@ -21,7 +21,7 @@ def get_current_git_branch() -> str:  # noqa D103
 
 
 async def get_modified_files_in_branch_remote(
-    current_git_repo_url: str, current_git_branch: str, current_git_revision: str, diffed_branch: str = "origin/master", retries: int = 3
+    current_git_repo_url: str, current_git_branch: str, current_git_revision: str, diffed_branch: str = "master", retries: int = 3
 ) -> Set[str]:
     """Use git diff to spot the modified files on the remote branch."""
     try:
@@ -30,7 +30,7 @@ async def get_modified_files_in_branch_remote(
                 dagger_client, current_git_branch, current_git_revision, diffed_branch, repo_url=current_git_repo_url
             )
             modified_files = await container.with_exec(
-                ["diff", f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed_branch}...{current_git_branch}"]
+                ["diff", f"--diff-filter={DIFF_FILTER}", "--name-only", f"origin/{diffed_branch}...target/{current_git_branch}"]
             ).stdout()
     except SessionError:
         if retries > 0:
