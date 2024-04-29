@@ -463,7 +463,7 @@ class BulkSalesforceStream(SalesforceStream):
                     raise AirbyteTracedException(message=message, failure_type=FailureType.config_error, exception=error)
                 else:
                     raise error
-            job_id = job_info["id"]
+            job_id = job_info.get("id", "anything")
             if job_status != job_info["state"]:
                 self.logger.info(f"Job {self.name}/{job_id} status changed from {job_status} to {job_info['state']}")
             job_status = job_info["state"]
