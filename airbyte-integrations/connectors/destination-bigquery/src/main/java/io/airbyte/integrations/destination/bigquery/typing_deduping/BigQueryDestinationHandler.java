@@ -75,16 +75,16 @@ public class BigQueryDestinationHandler implements DestinationHandler<MinimumDes
   }
 
   public Optional<TableDefinition> findExistingTable(final StreamId id) {
-    final Table table = bq.getTable(id.finalNamespace(), id.finalName());
+    final Table table = bq.getTable(id.getFinalNamespace(), id.getFinalName());
     return Optional.ofNullable(table).map(Table::getDefinition);
   }
 
   public boolean isFinalTableEmpty(final StreamId id) {
-    return BigInteger.ZERO.equals(bq.getTable(TableId.of(id.finalNamespace(), id.finalName())).getNumRows());
+    return BigInteger.ZERO.equals(bq.getTable(TableId.of(id.getFinalNamespace(), id.getFinalName())).getNumRows());
   }
 
   public InitialRawTableStatus getInitialRawTableState(final StreamId id) throws Exception {
-    final Table rawTable = bq.getTable(TableId.of(id.rawNamespace(), id.rawName()));
+    final Table rawTable = bq.getTable(TableId.of(id.getRawNamespace(), id.getRawName()));
     if (rawTable == null) {
       // Table doesn't exist. There are no unprocessed records, and no timestamp.
       return new InitialRawTableStatus(false, false, Optional.empty());
@@ -195,7 +195,7 @@ public class BigQueryDestinationHandler implements DestinationHandler<MinimumDes
   public List<DestinationInitialStatus<Impl>> gatherInitialState(List<StreamConfig> streamConfigs) throws Exception {
     final List<DestinationInitialStatus<MinimumDestinationState.Impl>> initialStates = new ArrayList<>();
     for (final StreamConfig streamConfig : streamConfigs) {
-      final StreamId id = streamConfig.id();
+      final StreamId id = streamConfig.getId();
       final Optional<TableDefinition> finalTable = findExistingTable(id);
       final InitialRawTableStatus rawTableState = getInitialRawTableState(id);
       initialStates.add(new DestinationInitialStatus<>(
@@ -211,7 +211,7 @@ public class BigQueryDestinationHandler implements DestinationHandler<MinimumDes
   }
 
   @Override
-  public void commitDestinationStates(Map<StreamId, MinimumDestinationState.Impl> destinationStates) throws Exception {
+  public void commitDestinationStates(Map<StreamId, ? extends MinimumDestinationState.Impl> destinationStates) throws Exception {
     // Intentionally do nothing. Bigquery doesn't actually support destination states.
   }
 
@@ -226,9 +226,9 @@ public class BigQueryDestinationHandler implements DestinationHandler<MinimumDes
       tablePartitioningMatches = partitioningMatches(standardExistingTable);
     }
     LOGGER.info("Alter Table Report {} {} {}; Clustering {}; Partitioning {}",
-        alterTableReport.columnsToAdd(),
-        alterTableReport.columnsToRemove(),
-        alterTableReport.columnsToChangeType(),
+        alterTableReport.getColumnsToAdd(),
+        alterTableReport.getColumnsToRemove(),
+        alterTableReport.getColumnsToChangeType(),
         tableClusteringMatches,
         tablePartitioningMatches);
 
@@ -238,9 +238,9 @@ public class BigQueryDestinationHandler implements DestinationHandler<MinimumDes
   public AlterTableReport buildAlterTableReport(final StreamConfig stream, final TableDefinition existingTable) {
     final Set<String> pks = getPks(stream);
 
-    final Map<String, StandardSQLTypeName> streamSchema = stream.columns().entrySet().stream()
+    final Map<String, StandardSQLTypeName> streamSchema = stream.getColumns().entrySet().stream()
         .collect(toMap(
-            entry -> entry.getKey().name(),
+            entry -> entry.getKey().getName(),
             entry -> toDialectType(entry.getValue())));
 
     final Map<String, StandardSQLTypeName> existingSchema = existingTable.getSchema().getFields().stream()
@@ -317,7 +317,8 @@ public class BigQueryDestinationHandler implements DestinationHandler<MinimumDes
   }
 
   private static Set<String> getPks(final StreamConfig stream) {
-    return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).collect(Collectors.toSet()) : Collections.emptySet();
+    return stream.getPrimaryKey() != null ? stream.getPrimaryKey().stream().map(ColumnId::getName).collect(Collectors.toSet())
+        : Collections.emptySet();
   }
 
 }

@@ -30,6 +30,10 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
   private static final String PUT_FILE_QUERY = "PUT file://%s @%s/%s PARALLEL = %d;";
   private static final String LIST_STAGE_QUERY = "LIST @%s/%s/%s;";
   // the 1s1t copy query explicitly quotes the raw table+schema name.
+  // we set error_on_column_count_mismatch because (at time of writing), we haven't yet added
+  // the airbyte_meta column to the raw table.
+  // See also https://github.com/airbytehq/airbyte/issues/36410 for improved error handling.
+  // TODO remove error_on_column_count_mismatch once snowflake has airbyte_meta in raw data.
   private static final String COPY_QUERY_1S1T =
       """
       COPY INTO "%s"."%s" FROM '@%s/%s'
@@ -40,6 +44,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
         skip_header = 0
         FIELD_OPTIONALLY_ENCLOSED_BY = '"'
         NULL_IF=('')
+        error_on_column_count_mismatch=false
       )""";
   private static final String DROP_STAGE_QUERY = "DROP STAGE IF EXISTS %s;";
   private static final String REMOVE_QUERY = "REMOVE @%s;";

@@ -23,11 +23,13 @@ acceptance_tests:
         empty_streams:
           - name: cards
             bypass_reason: "data changes very fast"
+          - name: databases
+            bypass_reason: "data changes very fast"
           - name: collections
             bypass_reason: "data changes very fast"
-          - name: dashboards
-            bypass_reason: "data changes very fast"
           - name: users
+            bypass_reason: "data changes very fast"
+          - name: native_query_snippets
             bypass_reason: "data changes very fast"
         fail_on_extra_columns: false
   full_refresh:

@@ -256,6 +256,16 @@ def test_get_updated_state():
         assert state2_modify_time.dict() == "2020-01-08 00:00:00"
 
 
+def test_get_updated_state_no_cursor_field():
+    """
+    Some full_refresh streams (which don't define a cursor) inherit the get_updated_state() method from an incremental
+    stream. This test verifies that the stream does not attempt to extract the cursor value from the latest record
+    """
+    ads_reports = AdsReports(**CONFIG_SANDBOX)
+    state1 = ads_reports.get_updated_state(current_stream_state={}, latest_record={})
+    assert state1 == {}
+
+
 @pytest.mark.parametrize(
     "value, expected",
     [

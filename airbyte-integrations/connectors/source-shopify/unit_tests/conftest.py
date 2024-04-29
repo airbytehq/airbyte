@@ -4,7 +4,7 @@
 
 import os
 from json import dumps
-from typing import Any
+from typing import Any, List, Mapping
 
 import pytest
 import requests
@@ -13,6 +13,15 @@ from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, Configur
 
 os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
+def records_per_slice(parent_records: List[Mapping[str, Any]], state_checkpoint_interval) -> List[int]:
+    num_batches = len(parent_records) // state_checkpoint_interval
+    if len(parent_records) % state_checkpoint_interval != 0:
+        num_batches += 1
+    records_per_slice = len(parent_records) // num_batches
+    remaining_elements = len(parent_records) % num_batches
+    result = [records_per_slice] * (num_batches - remaining_elements) + [records_per_slice + 1] * remaining_elements
+    result.reverse()
+    return result
 
 @pytest.fixture
 def logger():

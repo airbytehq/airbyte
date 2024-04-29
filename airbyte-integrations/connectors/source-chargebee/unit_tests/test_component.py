@@ -1,10 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-from typing import Any, MutableMapping
-
 import pytest
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice
 from source_chargebee.components import CustomFieldTransformation, IncrementalSingleSliceCursor
 
 
@@ -17,8 +15,6 @@ from source_chargebee.components import CustomFieldTransformation, IncrementalSi
             {
                 "pk": 1,
                 "name": "example",
-                "cf_field1": "val1",
-                "cf_field2": "val2",
                 "custom_fields": [{"name": "cf_field1", "value": "val1"}, {"name": "cf_field2", "value": "val2"}],
             },
         ),
@@ -30,15 +26,26 @@ def test_field_transformation(record, expected_record):
     transformed_record = transformer.transform(record)
     assert transformed_record == expected_record
 
-def test_slicer():
+@pytest.mark.parametrize(
+    "record_data, expected",
+    [
+        ({"pk": 1, "name": "example", "updated_at": 1662459011}, True),
+    ]
+)
+def test_slicer(record_data, expected):
     date_time_dict = {"updated_at": 1662459010}
-    slicer = IncrementalSingleSliceCursor(config={}, parameters={}, cursor_field="updated_at")
-    slicer.close_slice(date_time_dict, date_time_dict)
-    assert slicer.get_stream_state() == date_time_dict
+    new_state = {"updated_at": 1662459011}
+    slicer = IncrementalSingleSliceCursor(cursor_field="updated_at", config={}, parameters={})
+    stream_slice = StreamSlice(partition={}, cursor_slice=date_time_dict)
+    record = Record(data=record_data, associated_slice=stream_slice)
+    slicer.observe(StreamSlice(partition={}, cursor_slice=date_time_dict), record)
+    slicer.close_slice(stream_slice)
+    assert slicer.get_stream_state() == new_state
     assert slicer.get_request_headers() == {}
     assert slicer.get_request_body_data() == {}
     assert slicer.get_request_params() == {}
     assert slicer.get_request_body_json() == {}
+
 
 @pytest.mark.parametrize(
     "first_record, second_record, expected",

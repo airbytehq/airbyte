@@ -34,6 +34,10 @@ inputs:
     description: "GCP credentials for GCP Secret Manager"
     required: false
     default: ""
+  git_repo_url:
+    description: "Git repository URL"
+    default: https://github.com/airbytehq/airbyte.git
+    required: false
   git_branch:
     description: "Git branch to checkout"
     required: false
@@ -79,7 +83,10 @@ inputs:
   python_registry_token:
     description: "Python registry API token to publish python package"
     required: false
-
+  is_fork:
+    description: "Whether the PR is from a fork"
+    required: false
+    default: "false"
 runs:
   using: "composite"
   steps:
@@ -87,16 +94,6 @@ runs:
       id: get-start-timestamp
       shell: bash
       run: echo "name=start-timestamp=$(date +%s)" >> $GITHUB_OUTPUT
-
-    - name: Check if PR is from a fork
-      id: check-if-pr-is-from-fork
-      if: github.event_name == 'pull_request'
-      shell: bash
-      run: |
-        if [ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]; then
-          echo "PR is from a fork. Exiting workflow..."
-          exit 78
-        fi
 
     - name: Docker login
       id: docker-login
@@ -110,7 +107,7 @@ runs:
       uses: ./.github/actions/install-airbyte-ci
       with:
         airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url }}
-
+        is_fork: ${{ inputs.is_fork }}
     - name: Run airbyte-ci
       id: run-airbyte-ci
       shell: bash
@@ -118,6 +115,7 @@ runs:
         airbyte-ci --disable-update-check --disable-dagger-run --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
       env:
         CI_CONTEXT: "${{ inputs.context }}"
+        CI_GIT_REPO_URL: ${{ inputs.git_repo_url }}
         CI_GIT_BRANCH: ${{ inputs.git_branch || github.head_ref }}
         CI_GIT_REVISION: ${{ inputs.git_revision || github.sha }}
         CI_GITHUB_ACCESS_TOKEN: ${{ inputs.github_token }}
@@ -149,4 +147,31 @@ runs:
       id: stop-engine
       if: always()
       shell: bash
-      run: docker stop --time 300 $(docker ps --filter name="dagger-engine-*" -q)
+      run: |
+        mapfile -t containers < <(docker ps --filter name="dagger-engine-*" -q)
+        if [[ "${#containers[@]}" -gt 0 ]]; then
+          docker stop -t 300 "${containers[@]}";
+        fi
+
+    - name: Collect docker logs on failure
+      id: collect-docker-logs
+      if: always()
+      uses: jwalton/gh-docker-logs@v2
+      with:
+        dest: "./docker_logs"
+        images: "registry.dagger.io/engine"
+
+    - name: Tar logs
+      id: tar-logs
+      if: always()
+      shell: bash
+      run: tar cvzf ./docker_logs.tgz ./docker_logs
+
+    - name: Upload logs to GitHub
+      id: upload-docker-logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker_logs.tgz
+        path: ./docker_logs.tgz
+        retention-days: 7

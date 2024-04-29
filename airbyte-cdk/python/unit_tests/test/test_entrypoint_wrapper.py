@@ -3,7 +3,7 @@
 import json
 import logging
 import os
-from typing import Any, Iterator, List
+from typing import Any, Iterator, List, Mapping
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
@@ -16,7 +16,9 @@ from airbyte_protocol.models import (
     AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
+    AirbyteStateBlob,
     AirbyteStateMessage,
+    AirbyteStreamState,
     AirbyteStreamStatus,
     AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
@@ -28,8 +30,8 @@ from airbyte_protocol.models import (
 )
 
 
-def _a_state_message(state: Any) -> AirbyteMessage:
-    return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=state))
+def _a_state_message(stream_name: str, stream_state: Mapping[str, Any]) -> AirbyteMessage:
+    return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob(**stream_state))))
 
 
 def _a_status_message(stream_name: str, status: AirbyteStreamStatus) -> AirbyteMessage:
@@ -49,7 +51,7 @@ def _a_status_message(stream_name: str, status: AirbyteStreamStatus) -> AirbyteM
 _A_RECORD = AirbyteMessage(
     type=Type.RECORD, record=AirbyteRecordMessage(stream="stream", data={"record key": "record value"}, emitted_at=0)
 )
-_A_STATE_MESSAGE = _a_state_message({"state key": "state value for _A_STATE_MESSAGE"})
+_A_STATE_MESSAGE = _a_state_message("stream_name", {"state key": "state value for _A_STATE_MESSAGE"})
 _A_LOG = AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="This is an Airbyte log message"))
 _AN_ERROR_MESSAGE = AirbyteMessage(
     type=Type.TRACE,
@@ -176,8 +178,9 @@ class EntrypointWrapperTest(TestCase):
 
     @patch("airbyte_cdk.test.entrypoint_wrapper.AirbyteEntrypoint")
     def test_given_many_state_messages_and_records_when_read_then_output_has_records_and_state_message(self, entrypoint):
-        last_emitted_state = {"last state key": "last state value"}
-        entrypoint.return_value.run.return_value = _to_entrypoint_output([_A_STATE_MESSAGE, _a_state_message(last_emitted_state)])
+        state_value = {"state_key": "last state value"}
+        last_emitted_state = AirbyteStreamState(stream_descriptor=StreamDescriptor(name="stream_name"), stream_state=AirbyteStateBlob(**state_value))
+        entrypoint.return_value.run.return_value = _to_entrypoint_output([_A_STATE_MESSAGE, _a_state_message("stream_name", state_value)])
 
         output = read(self._a_source, _A_CONFIG, _A_CATALOG, _A_STATE)
 

@@ -3,18 +3,18 @@
   "type": "object",
   "properties": {
     "self": {
-      "type": "string",
       "description": "The URL of the comment.",
+      "type": "string",
       "readOnly": true
     },
     "id": {
-      "type": "string",
       "description": "The ID of the comment.",
+      "type": "string",
       "readOnly": true
     },
     "issueId": {
-      "type": ["null", "string"],
       "description": "Id of the related issue.",
+      "type": ["null", "string"],
       "readOnly": true
     },
     "author": {
@@ -22,56 +22,56 @@
       "readOnly": true
     },
     "body": {
-      "type": "object",
-      "description": "The comment text in [Atlassian Document Format](https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/)."
+      "description": "The comment text in Atlassian Document Format.",
+      "type": "object"
     },
     "renderedBody": {
-      "type": "string",
       "description": "The rendered version of the comment.",
+      "type": "string",
       "readOnly": true
     },
     "updateAuthor": {
+      "description": "The ID of the user who updated the comment last.",
       "type": "object",
       "additionalProperties": true,
-      "description": "The ID of the user who updated the comment last.",
       "readOnly": true
     },
     "created": {
-      "type": "string",
       "description": "The date and time at which the comment was created.",
+      "type": "string",
       "format": "date-time",
       "readOnly": true
     },
     "updated": {
-      "type": "string",
       "description": "The date and time at which the comment was updated last.",
+      "type": "string",
       "format": "date-time",
       "readOnly": true
     },
     "visibility": {
+      "description": "The group or role to which this item is visible.",
       "type": ["object", "null"],
       "properties": {
         "type": {
-          "type": "string",
           "description": "Whether visibility of this item is restricted to a group or role.",
+          "type": "string",
           "enum": ["group", "role"]
         },
         "value": {
-          "type": "string",
-          "description": "The name of the group or role to which visibility of this item is restricted."
+          "description": "The name of the group or role to which visibility of this item is restricted.",
+          "type": "string"
         }
       },
-      "additionalProperties": true,
-      "description": "The group or role to which this item is visible."
+      "additionalProperties": true
     },
     "jsdPublic": {
+      "description": "Whether the comment is visible in Jira Service Desk. Defaults to true when comments are created in the Jira Cloud Platform.",
       "type": "boolean",
-      "description": "Whether the comment is visible in Jira Service Desk. Defaults to true when comments are created in the Jira Cloud Platform. This includes when the site doesn't use Jira Service Desk or the project isn't a Jira Service Desk project and, therefore, there is no Jira Service Desk for the issue to be visible on. To create a comment with its visibility in Jira Service Desk set to false, use the Jira Service Desk REST API [Create request comment](https://developer.atlassian.com/cloud/jira/service-desk/rest/#api-rest-servicedeskapi-request-issueIdOrKey-comment-post) operation.",
       "readOnly": true
     },
     "properties": {
-      "type": "array",
-      "description": "A list of comment properties. Optional on create and update."
+      "description": "A list of comment properties. Optional on create and update.",
+      "type": "array"
     }
   },
   "additionalProperties": true,

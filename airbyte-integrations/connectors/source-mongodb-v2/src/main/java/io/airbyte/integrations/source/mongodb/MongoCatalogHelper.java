@@ -35,7 +35,7 @@ public class MongoCatalogHelper {
   /**
    * The list of supported sync modes for a given stream.
    */
-  public static final List<SyncMode> SUPPORTED_SYNC_MODES = List.of(SyncMode.INCREMENTAL);
+  public static final List<SyncMode> SUPPORTED_SYNC_MODES = List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL);
 
   /**
    * Name of the property in the JSON representation of an Airbyte stream that contains the discovered

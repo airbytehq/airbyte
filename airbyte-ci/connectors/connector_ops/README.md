@@ -4,43 +4,38 @@ A collection of utilities for working with Airbyte connectors.
 
 # Setup
 
-## Prerequisites
-
-#### Poetry
-
-Before you can start working on this project, you will need to have Poetry installed on your system. Please follow the instructions below to install Poetry:
-
-1. Open your terminal or command prompt.
-2. Install Poetry using the recommended installation method:
-
-```bash
-curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.5.1 python3 -
-```
-
-Alternatively, you can use `pip` to install Poetry:
-
-```bash
-pip install --user poetry
-```
-
-3. After the installation is complete, close and reopen your terminal to ensure the newly installed `poetry` command is available in your system's PATH.
-
-For more detailed instructions and alternative installation methods, please refer to the official Poetry documentation: https://python-poetry.org/docs/#installation
-
-### Using Poetry in the Project
-
-Once Poetry is installed, you can use it to manage the project's dependencies and virtual environment. To get started, navigate to the project's root directory in your terminal and follow these steps:
-
-
 ## Installation
+
+`connector_ops` tools use [Poetry](https://github.com/python-poetry/poetry) to manage dependencies,
+and targets Python 3.10 and higher.
+
+Assuming you're in Airbyte repo root:
+
 ```bash
+cd airbyte-ci/connectors/connector_ops
 poetry install
 ```
 
+## Usage
 
-## Testing Locally
+`connector_ops` provides a set of tools that verify connector characteristics. They're intended to
+be used in CI. They will detect the list of connectors that are modified compared to `master` branch
+of the repository, and only run checks on them. You can run them locally, too, with
+`poetry run TOOL_NAME`.
 
-Simply run
+- `write-review-requirements-file` writes required reviewers github action file.
+- `print-mandatory-reviewers` prints out the GitHub comment with required reviewers.
+
+## Contributing to `connector_ops`
+
+### Running tests
+
+To run tests locally:
+
 ```bash
 poetry run pytest
 ```
+
+## Changelog
+
+- 0.4.0: Removed acceptance test configuration and allowed hosts checks as they're not used.

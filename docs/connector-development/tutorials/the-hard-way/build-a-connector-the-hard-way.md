@@ -1093,7 +1093,7 @@ Airbyte's build system builds and tags your connector's image correctly by defau
 connector's standard `build` process. **From the Airbyte repo root**, run:
 
 ```bash
-./gradlew clean :airbyte-integrations:connectors:source-stock-ticker-api:build
+airbyte-ci connectors --name source-stock-ticker-api build
 ```
 
 This is the equivalent of running `docker build . -t airbyte/source-stock-ticker-api:dev` from the
@@ -1249,5 +1249,5 @@ contributor now ;\)
 
 ## Additional guides
 
-- [Building a Python Source](https://docs.airbyte.com/connector-development/tutorials/building-a-python-source.md)
+- [Building a Python Source](https://docs.airbyte.com/connector-development/tutorials/cdk-speedrun)
 - [Building a Java Destination](https://docs.airbyte.com/connector-development/tutorials/building-a-java-destination)
