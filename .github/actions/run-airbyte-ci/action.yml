@@ -147,4 +147,31 @@ runs:
       id: stop-engine
       if: always()
       shell: bash
-      run: docker stop --time 300 $(docker ps --filter name="dagger-engine-*" -q)
+      run: |
+        mapfile -t containers < <(docker ps --filter name="dagger-engine-*" -q)
+        if [[ "${#containers[@]}" -gt 0 ]]; then
+          docker stop -t 300 "${containers[@]}";
+        fi
+
+    - name: Collect docker logs on failure
+      id: collect-docker-logs
+      if: always()
+      uses: jwalton/gh-docker-logs@v2
+      with:
+        dest: "./docker_logs"
+        images: "registry.dagger.io/engine"
+
+    - name: Tar logs
+      id: tar-logs
+      if: always()
+      shell: bash
+      run: tar cvzf ./docker_logs.tgz ./docker_logs
+
+    - name: Upload logs to GitHub
+      id: upload-docker-logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker_logs.tgz
+        path: ./docker_logs.tgz
+        retention-days: 7

@@ -1075,7 +1075,7 @@ abstract class BaseTypingDedupingTest {
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(BaseTypingDedupingTest::class.java)
-        protected val SCHEMA: JsonNode
+        @JvmField protected val SCHEMA: JsonNode
 
         init {
             try {
