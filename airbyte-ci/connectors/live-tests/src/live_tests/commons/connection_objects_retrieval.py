@@ -1,10 +1,11 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 import json
 import logging
 import os
 from pathlib import Path
-from typing import Dict, Optional, Set
+from typing import Optional
 
 import rich
 from connection_retriever import ConnectionObject, retrieve_objects  # type: ignore
@@ -16,7 +17,7 @@ LOGGER = logging.getLogger(__name__)
 console = rich.get_console()
 
 
-def parse_config(config: Dict | str | None) -> Optional[SecretDict]:
+def parse_config(config: dict | str | None) -> Optional[SecretDict]:
     if not config:
         return None
     if isinstance(config, str):
@@ -25,7 +26,7 @@ def parse_config(config: Dict | str | None) -> Optional[SecretDict]:
         return SecretDict(config)
 
 
-def parse_catalog(catalog: Dict | str | None) -> Optional[AirbyteCatalog]:
+def parse_catalog(catalog: dict | str | None) -> Optional[AirbyteCatalog]:
     if not catalog:
         return None
     if isinstance(catalog, str):
@@ -35,7 +36,7 @@ def parse_catalog(catalog: Dict | str | None) -> Optional[AirbyteCatalog]:
 
 
 def parse_configured_catalog(
-    configured_catalog: Dict | str | None, selected_streams: Set[str] | None = None
+    configured_catalog: dict | str | None, selected_streams: set[str] | None = None
 ) -> Optional[ConfiguredAirbyteCatalog]:
     if not configured_catalog:
         return None
@@ -48,7 +49,7 @@ def parse_configured_catalog(
     return catalog
 
 
-def parse_state(state: Dict | str | None) -> Optional[Dict]:
+def parse_state(state: dict | str | None) -> Optional[dict]:
     if not state:
         return None
     if isinstance(state, str):
@@ -61,11 +62,11 @@ def get_connector_config_from_path(config_path: Path) -> Optional[SecretDict]:
     return parse_config(config_path.read_text())
 
 
-def get_state_from_path(state_path: Path) -> Optional[Dict]:
+def get_state_from_path(state_path: Path) -> Optional[dict]:
     return parse_state(state_path.read_text())
 
 
-def get_configured_catalog_from_path(path: Path, selected_streams: Optional[Set[str]] = None) -> Optional[ConfiguredAirbyteCatalog]:
+def get_configured_catalog_from_path(path: Path, selected_streams: Optional[set[str]] = None) -> Optional[ConfiguredAirbyteCatalog]:
     return parse_configured_catalog(path.read_text(), selected_streams)
 
 
@@ -83,7 +84,7 @@ COMMAND_TO_REQUIRED_OBJECT_TYPES = {
 
 
 def get_connection_objects(
-    requested_objects: Set[ConnectionObject],
+    requested_objects: set[ConnectionObject],
     connection_id: Optional[str],
     custom_config_path: Optional[Path],
     custom_configured_catalog_path: Optional[Path],
@@ -92,7 +93,7 @@ def get_connection_objects(
     fail_if_missing_objects: bool = True,
     connector_image: Optional[str] = None,
     auto_select_connection: bool = False,
-    selected_streams: Optional[Set[str]] = None,
+    selected_streams: Optional[set[str]] = None,
 ) -> ConnectionObjects:
     """This function retrieves the connection objects values.
     It checks that the required objects are available and raises a UsageError if they are not.
