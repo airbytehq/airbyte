@@ -13,6 +13,7 @@ data:
   githubIssueLabel: source-azure-blob-storage
   icon: azureblobstorage.svg
   license: MIT
+  maxSecondsBetweenMessages: 1
   name: Azure Blob Storage
   remoteRegistries:
     pypi:
