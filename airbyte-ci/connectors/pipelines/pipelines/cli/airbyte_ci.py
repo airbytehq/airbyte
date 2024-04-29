@@ -38,7 +38,7 @@ from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, LOCAL_BUILD_PLATFORM, CIC
 from pipelines.dagger.actions.connector.hooks import get_dagger_sdk_version
 from pipelines.helpers import github
 from pipelines.helpers.git import get_current_git_branch, get_current_git_revision
-from pipelines.helpers.utils import get_current_epoch_time
+from pipelines.helpers.utils import AIRBYTE_REPO_URL, get_current_epoch_time
 
 
 def log_context_info(ctx: click.Context) -> None:
@@ -47,6 +47,7 @@ def log_context_info(ctx: click.Context) -> None:
     main_logger.info("Running airbyte-ci in CI mode.")
     main_logger.info(f"CI Context: {ctx.obj['ci_context']}")
     main_logger.info(f"CI Report Bucket Name: {ctx.obj['ci_report_bucket_name']}")
+    main_logger.info(f"Git Repo URL: {ctx.obj['git_repo_url']}")
     main_logger.info(f"Git Branch: {ctx.obj['git_branch']}")
     main_logger.info(f"Git Revision: {ctx.obj['git_revision']}")
     main_logger.info(f"GitHub Workflow Run ID: {ctx.obj['gha_workflow_run_id']}")
@@ -146,12 +147,13 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
 @click.option("--enable-update-check/--disable-update-check", default=True)
 @click.option("--enable-auto-update/--disable-auto-update", default=True)
 @click.option("--is-local/--is-ci", default=True)
+@click.option("--git-repo-url", default=AIRBYTE_REPO_URL, envvar="CI_GIT_REPO_URL")
 @click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
 @click.option("--git-revision", default=get_current_git_revision, envvar="CI_GIT_REVISION")
 @click.option(
     "--diffed-branch",
     help="Branch to which the git diff will happen to detect new or modified connectors",
-    default="origin/master",
+    default="master",
     type=str,
 )
 @click.option("--gha-workflow-run-id", help="[CI Only] The run id of the GitHub action workflow", default=None, type=str)
