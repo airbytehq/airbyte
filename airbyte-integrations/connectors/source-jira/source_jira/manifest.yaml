@@ -788,9 +788,8 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
         extractor:
-          type: CustomRecordExtractor
-          class_name: "source_jira.components.extractors.UnionListsRecordExtractor"
-          field_path: "*/*"
+          type: DpathExtractor
+          field_path: ["*", "*"]
       requester:
         $ref: "#/definitions/requester"
         error_handler:

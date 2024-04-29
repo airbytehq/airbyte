@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice
-from source_jira.components.extractors import LabelsRecordExtractor, UnionListsRecordExtractor
+from source_jira.components.extractors import LabelsRecordExtractor
 from source_jira.components.paginators import UrlPaginationStrategy
 from source_jira.components.partition_routers import SprintIssuesSubstreamPartitionRouter, SubstreamPartitionRouterWithContext
 
@@ -30,43 +30,6 @@ def test_labels_record_extractor(json_response, expected_output):
 
     # Assert to check if the output matches the expected result
     assert extracted == expected_output, "The extracted records do not match the expected output"
-
-
-@pytest.mark.parametrize(
-    "json_response, field_path, expected_output",
-    [
-        # Simple direct path to nested lists under multiple keys
-        ({"key 1": [{"id": 1}, {"id": 2}], "key 2": [{"id": 3}]}, "*/*", [{"id": 1}, {"id": 2}, {"id": 3}]),
-        # Path pointing to a single key
-        ({"key 1": [{"id": 1}, {"id": 2}], "key 2": [{"id": 3}]}, "key 1/*", [{"id": 1}, {"id": 2}]),
-        # Path with a wildcard, extracting across all nested items under multiple keys
-        ({"key 1": [{"id": 1}, {"id": 2}], "key 2": [{"id": 3}], "key 3": []}, "*/*", [{"id": 1}, {"id": 2}, {"id": 3}]),
-        # Path that matches no keys resulting in an empty output
-        ({"key 1": [{"id": 1}, {"id": 2}], "key 2": [{"id": 3}]}, "key 4/", []),
-        # Testing empty response for all keys
-        ({"key 1": [], "key 2": []}, "*/*", []),
-        # Testing completely empty response
-        ({}, "*/*", []),
-    ],
-)
-def test_union_lists_record_extractor(json_response, field_path, expected_output):
-    # Create the extractor instance with parameters if needed
-    parameters = {}  # You might need to pass some parameters based on your configuration needs
-    extractor = UnionListsRecordExtractor(field_path=field_path, config={}, parameters={})
-    extractor.__post_init__(parameters)
-
-    # Set up the mocked response
-    response_mock = MagicMock(spec=requests.Response)
-    response_mock.json = MagicMock(return_value=json_response)
-
-    # Evaluate mock: simulate the evaluation of the interpolated string (or direct field path)
-    extractor.field_path.eval = MagicMock(return_value=field_path)
-
-    # Call the extract_records to process the mocked response
-    extracted = extractor.extract_records(response_mock)
-
-    # Assert to check if the output matches the expected result
-    assert extracted == expected_output, f"The extracted records for path {field_path} do not match the expected output"
 
 
 @pytest.mark.parametrize(

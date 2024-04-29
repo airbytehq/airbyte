@@ -1,12 +1,9 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 from dataclasses import dataclass
-from typing import Any, List, Mapping, Union
+from typing import Any, List, Mapping
 
-import dpath.util
-import requests
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from requests_cache import Response
 
 
@@ -22,30 +19,3 @@ class LabelsRecordExtractor(DpathExtractor):
     def extract_records(self, response: Response) -> List[Mapping[str, Any]]:
         records = super().extract_records(response)
         return [{"label": record} for record in records]
-
-
-@dataclass
-class UnionListsRecordExtractor(DpathExtractor):
-    """
-    A custom record extractor is needed to handle cases when records are represented as values of multiple keys instead of list of dictionaries.
-    Example:
-        -> {"key 1": [{}, {}, ...], "key 2": [{}, {}, ...], "key n": [{}, {}, ...], ...}
-        <- [{}, {}, ..., {}, {}, ..., {}, {}, ...,]
-    """
-
-    field_path: Union[InterpolatedString, str]
-
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        if isinstance(self.field_path, str):
-            self.field_path = InterpolatedString.create(self.field_path, parameters=parameters)
-
-    def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
-        response_body = self.decoder.decode(response)
-        path = self.field_path.eval(self.config)
-        extracted = dpath.util.values(response_body, path)
-        if isinstance(extracted, list):
-            return extracted
-        elif extracted:
-            return [extracted]
-        else:
-            return []
