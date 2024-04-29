@@ -4,7 +4,6 @@
 
 
 from pytest import fixture
-import json
 
 
 @fixture

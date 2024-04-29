@@ -3,9 +3,10 @@
 #
 
 from typing import Any, Mapping
-from source_primetric.source import SourcePrimetric
-from airbyte_cdk.sources.streams import Stream
+
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams import Stream
+from source_primetric.source import SourcePrimetric
 
 
 def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
