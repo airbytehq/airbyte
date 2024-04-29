@@ -44,6 +44,7 @@ class BuildConnectorImagesBase(Step, ABC):
                         status=StepStatus.FAILURE,
                         stderr=str(e),
                         stdout=f"Failed to run the spec command on the connector container for platform {platform}.",
+                        exc_info=e,
                     )
                 build_results_per_platform[platform] = connector
             except QueryError as e:

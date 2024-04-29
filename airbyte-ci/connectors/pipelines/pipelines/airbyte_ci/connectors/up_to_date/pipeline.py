@@ -13,7 +13,7 @@ from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import 
 from pipelines.airbyte_ci.connectors.common.regression_test import RegressionTest
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
-from pipelines.airbyte_ci.connectors.pull_request.pipeline import PULL_REQUEST_OUTPUT_ID, run_connector_pull_request
+from pipelines.airbyte_ci.connectors.pull_request.pipeline import PULL_REQUEST_OUTPUT_ID, run_connector_pull_request_pipeline
 from pipelines.airbyte_ci.connectors.reports import Report
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions.python.common import with_python_connector_installed
@@ -181,7 +181,7 @@ class MakePullRequest(Step):
         changelog = True
         bump = "patch"
         dry_run = not self.pull
-        report = await run_connector_pull_request(
+        report = await run_connector_pull_request_pipeline(
             context=self.context,
             semaphore=self.semaphore,
             message=message,

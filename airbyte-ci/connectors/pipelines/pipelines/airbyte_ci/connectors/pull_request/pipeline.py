@@ -299,7 +299,7 @@ async def create_github_pull_request(
     return pull_request_number
 
 
-async def run_connector_pull_request(
+async def run_connector_pull_request_pipeline(
     context: ConnectorContext,
     semaphore: "Semaphore",
     message: str,

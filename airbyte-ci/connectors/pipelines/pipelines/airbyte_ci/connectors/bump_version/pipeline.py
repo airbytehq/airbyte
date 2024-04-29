@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 def get_bumped_version(version: str | None, bump_type: str) -> str:
     if version is None:
-        raise Exception("Version is not set")
+        raise ValueError("Version is not set")
     current_version = semver.VersionInfo.parse(version)
     if bump_type == "patch":
         new_version = current_version.bump_patch()
@@ -91,7 +91,7 @@ class AddChangelogEntry(Step):
             self.repo_dir = await self.context.get_repo_dir(include=[str(self.context.connector.local_connector_documentation_directory)])
 
         if pull_request_number is None:
-            # this allows passing it dyanmically from a result of another action (like creating a pull request)
+            # this allows passing it dynamically from a result of another action (like creating a pull request)
             pull_request_number = self.pull_request_number
 
         doc_path = self.context.connector.documentation_file_path
@@ -140,7 +140,7 @@ class SetConnectorVersion(Step):
 
     async def get_repo_dir(self) -> Directory:
         if not self.repo_dir:
-            self.repo_dir = await self.context.get_repo_dir(include=[str(self.context.connector.code_directory)])
+            self.repo_dir = await self.context.get_connector_dir()
         return self.repo_dir
 
     async def _run(self) -> StepResult:  # type: ignore
@@ -154,7 +154,7 @@ class SetConnectorVersion(Step):
                 return result
 
         if self.context.connector.pyproject_file_path.is_file():
-            result = await self.update_poetry()
+            result = await self.update_package_version()
             if result.status is not StepStatus.SUCCESS:
                 return result
 
@@ -168,6 +168,7 @@ class SetConnectorVersion(Step):
     async def update_metadata(self) -> StepResult:
         repo_dir = await self.get_repo_dir()
         file_path = self.context.connector.metadata_file_path
+        # TODO: This should use the repo_dir instead of the local file system. Make hlper
         if not file_path.exists():
             return StepResult(step=self, status=StepStatus.SKIPPED, stdout="Connector does not have a metadata file.", output=self.repo_dir)
 
@@ -226,7 +227,7 @@ class SetConnectorVersion(Step):
             output=self.repo_dir,
         )
 
-    async def update_poetry(self) -> StepResult:
+    async def update_package_version(self) -> StepResult:
         repo_dir = await self.get_repo_dir()
         file_path = self.context.connector.pyproject_file_path
         if not file_path.exists():
@@ -247,7 +248,7 @@ class SetConnectorVersion(Step):
         return StepResult(
             step=self,
             status=StepStatus.SUCCESS,
-            stdout=f"Updated Poetry to {self.new_version} in {file_path}",
+            stdout=f"Updated the package version to {self.new_version} in {file_path}",
             output=self.repo_dir,
         )
 

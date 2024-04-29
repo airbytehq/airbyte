@@ -4,7 +4,7 @@
 
 
 import asyncclick as click
-from pipelines.airbyte_ci.connectors.pull_request.pipeline import run_connector_pull_request
+from pipelines.airbyte_ci.connectors.pull_request.pipeline import run_connector_pull_request_pipeline
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.helpers.connectors.command import run_connector_pipeline
 
@@ -81,7 +81,7 @@ async def pull_request(
         ctx,
         "Create pull request",
         report,
-        run_connector_pull_request,
+        run_connector_pull_request_pipeline,
         message,
         branch_id,
         title,
