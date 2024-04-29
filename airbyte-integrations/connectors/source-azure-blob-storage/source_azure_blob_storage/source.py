@@ -2,9 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping
+from typing import Any
 
-from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.sources.declarative.models import OAuthConfigSpecification
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_protocol.models import AdvancedAuth, ConnectorSpecification
