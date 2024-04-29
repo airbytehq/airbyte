@@ -15,6 +15,7 @@ import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
 import java.util.*
+import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import java.util.stream.Collectors
 import java.util.stream.Stream
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -373,6 +375,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     @Test
     @Throws(Exception::class)
+    @Timeout(value = 5, unit = TimeUnit.MINUTES)
     fun testExistingData() {
         val targetPosition = cdcLatestTargetPosition()
         val read = source()!!.read(config()!!, configuredCatalog, null)
@@ -660,7 +663,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         } else {
             assertExpectedStateMessageCountMatches(
                 stateMessages1,
-                MODEL_RECORDS.size.toLong() + MODEL_RECORDS_2.size.toLong()
+                MODEL_RECORDS.size.toLong() + MODEL_RECORDS_2.size.toLong(),
             )
             assertExpectedRecords(
                 Streams.concat(MODEL_RECORDS_2.stream(), MODEL_RECORDS.stream())
@@ -1122,7 +1125,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         assertExpectedStateMessageCountMatches(
             stateAfterFirstBatch,
-            MODEL_RECORDS.size.toLong() + MODEL_RECORDS_2.size.toLong()
+            MODEL_RECORDS.size.toLong() + MODEL_RECORDS_2.size.toLong(),
         )
     }
 
