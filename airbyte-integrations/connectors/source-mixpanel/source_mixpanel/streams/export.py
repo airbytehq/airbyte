@@ -157,9 +157,22 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
 
             # convert timestamp to datetime string
             if "time" in item: # time is not always present in the response
-                item["time"] = pendulum.from_timestamp(int(item["time"]), tz="UTC").to_iso8601_string()
-                if cursor_date and item["time"] < cursor_date:
-                    continue
+                timestamp = None
+                try:
+                    timestamp = int(item["time"])
+                except ValueError as e:
+                    self.logger.warning(f"couldn't parse record time {e}")
+
+                if not timestamp and "_time" in item:
+                    try:
+                        timestamp = int(item["_time"])
+                    except ValueError as e:
+                        self.logger.warning(f"couldn't parse record time {e}")
+
+                if timestamp:
+                    item["time"] = pendulum.from_timestamp(timestamp, tz="UTC").to_iso8601_string()
+                    if cursor_date and item["time"] < cursor_date:
+                        continue
 
             yield item
 
