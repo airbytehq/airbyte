@@ -121,4 +121,4 @@ jobs:
           sudo chmod +x /usr/local/bin/airbyte-ci
       - name: Run format checks
         run: |
-          /usr/local/bin/airbyte-ci format check all
+          /usr/local/bin/airbyte-ci --disable-update-check format check all
