@@ -123,6 +123,8 @@ protected constructor(driverClassName: String) :
         catalog: ConfiguredAirbyteCatalog,
         state: JsonNode?
     ): AutoCloseableIterator<AirbyteMessage> {
+        LOGGER.info("*** start read. input catalog: *** " + catalog)
+
         val supportedStateType = getSupportedStateType(config)
         val stateManager =
             StateManagerFactory.createStateManager(
