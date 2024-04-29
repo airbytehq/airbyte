@@ -23,4 +23,4 @@ def auth_url():
 
 @fixture
 def auth_token():
-    return {"access_token": "good", "expires_in": 3600}
+    return { "access_token": "good", "expires_in": 3600 }
