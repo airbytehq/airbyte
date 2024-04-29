@@ -1377,6 +1377,7 @@ class ContactsAllBase(Stream, StateMixin):
     _state = {}
     limit_field = "count"
     limit = 100
+    _record_count = 0
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -1397,6 +1398,8 @@ class ContactsAllBase(Stream, StateMixin):
         This is a specialized read_records for resumable full refresh that only attempts to read a single page of records
         at a time and updates the state w/ a synthetic cursor based on the Hubspot cursor pagination value `vidOffset`
         """
+        if self._records_count >= 1800:
+            raise ValueError(f"Failing beause more than 1800 records were read")
 
         next_page_token = stream_slice
         logger.info(f"Read in self.state and setting next_page_token to: f{next_page_token}")
@@ -1416,6 +1419,10 @@ class ContactsAllBase(Stream, StateMixin):
                     properties=properties,
                 )
                 records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
+                
+            records = list(records)
+            self._records_count += records
+
 
             if self.filter_old_records:
                 records = self._filter_old_records(records)
