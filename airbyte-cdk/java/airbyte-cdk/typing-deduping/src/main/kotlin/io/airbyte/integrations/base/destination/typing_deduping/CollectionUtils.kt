@@ -18,6 +18,7 @@ object CollectionUtils {
      * @param search the value to look for
      * @return whether the value matches anything in the collection
      */
+    @JvmStatic
     fun containsIgnoreCase(collection: Collection<String>, search: String): Boolean {
         return matchingKey(collection, search).isPresent
     }
@@ -30,6 +31,7 @@ object CollectionUtils {
      * @param searchTerms the keys you're looking for
      * @return whether all searchTerms are in the searchCollection
      */
+    @JvmStatic
     fun containsAllIgnoreCase(
         searchCollection: Collection<String>,
         searchTerms: Collection<String>
@@ -55,6 +57,7 @@ object CollectionUtils {
      * @param search the key you're looking for
      * @return an Optional value which might contain the key that matches the search
      */
+    @JvmStatic
     fun matchingKey(collection: Collection<String>, search: String): Optional<String> {
         if (collection.contains(search)) {
             return Optional.of(search)
