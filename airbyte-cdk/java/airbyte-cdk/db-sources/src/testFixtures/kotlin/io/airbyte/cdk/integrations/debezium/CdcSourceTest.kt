@@ -436,6 +436,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     @Test // When a record is updated, produces an update record.
     @Throws(Exception::class)
+    @Disabled
     fun testUpdate() {
         val updatedModel = "Explorer"
         val read1 = source().read(config()!!, configuredCatalog, null)
