@@ -124,6 +124,7 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
         synchronized (getContainer()) {
           LOGGER.info(formatLogLine("Trying to enable CDC for table {}.{} and role {}, instance {}, try {}/{}"), schemaName, tableName, roleName,
               instanceName, tryCount, MAX_RETRIES);
+          with(String.format("USE %s", getDatabaseName()));
           with(ENABLE_CDC_SQL_FMT.formatted(schemaName, tableName, sqlRoleName, instanceName));
         }
         CDC_INSTANCE_NAMES.add(instanceName);
