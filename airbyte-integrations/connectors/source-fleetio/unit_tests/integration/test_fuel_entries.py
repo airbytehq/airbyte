@@ -16,10 +16,11 @@ from airbyte_cdk.test.mock_http.response_builder import (
 )
 from airbyte_protocol.models import SyncMode
 from integration.config import ConfigBuilder
+
 from source_fleetio import SourceFleetio
 
-_AN_ACCOUNT_TOKEN = "example_account_token" # used from our dev docs as an example
-_AN_API_KEY = "example_api_key" # used from our dev docs as an example
+_AN_ACCOUNT_TOKEN = "example_account_token"  # used from our dev docs as an example
+_AN_API_KEY = "example_api_key"  # used from our dev docs as an example
 _STREAM_NAME = "fuel_entries"
 _TEMPLATE_NAME = "fuel_entries"
 _RECORDS_PATH = FieldPath("fuel_entries")
@@ -44,14 +45,14 @@ def _fuel_entries_response() -> HttpResponseBuilder:
 def _read(
     config_builder: ConfigBuilder,
     state: Optional[Dict[str, Any]] = None,
-    expecting_exception: bool = False
+    expecting_exception: bool = False,
 ) -> EntrypointOutput:
     return read(
         SourceFleetio(),
         config_builder.build(),
         CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build(),
         state,
-        expecting_exception
+        expecting_exception,
     )
 
 
@@ -70,9 +71,13 @@ class FuelEntriesTest(TestCase):
                     "X-Client-Name": "data_connector",
                     "X-Client-Platform": "fleetio_airbyte",
                     "X-Api-Version": _API_VERSION,
-                }
+                },
             ),
-            _fuel_entries_response().build()
+            _fuel_entries_response().build(),
         )
 
-        _read(ConfigBuilder().with_account_token(_AN_ACCOUNT_TOKEN).with_api_key(_AN_API_KEY))
+        _read(
+            ConfigBuilder()
+            .with_account_token(_AN_ACCOUNT_TOKEN)
+            .with_api_key(_AN_API_KEY)
+        )
