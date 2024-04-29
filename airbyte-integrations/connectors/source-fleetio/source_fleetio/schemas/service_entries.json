@@ -1,6 +1,6 @@
 {
     "type": "object",
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "attachment_permissions": {
         "type": "object"

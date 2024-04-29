@@ -1,5 +1,6 @@
 {
     "$schema": "http://json-schema.org/schema#",
+    "additionalProperties": true,
     "properties": {
       "approved_at": {
         "type": [

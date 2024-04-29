@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
   "properties": {
     "account_id": {
       "type": "number"
