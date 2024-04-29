@@ -190,7 +190,7 @@
       "type": ["null", "string"]
     },
     "TopImpressionRatePercent": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "AdGroupStatus": {
       "type": ["null", "string"]
@@ -223,10 +223,10 @@
       "type": ["null", "string"]
     },
     "AbsoluteTopImpressionRatePercent": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "BaseCampaignId": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "AccountNumber": {
       "type": ["null", "string"]
