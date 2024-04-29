@@ -3,6 +3,7 @@ version = "0.1.0"
 name = "source-fleetio"
 description = "Source implementation for Fleetio."
 authors = ["John Michael Mizerany <jmizerany@fleetio.com>"]
+license = "MIT"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/fleetio"
 homepage = "https://airbyte.com"
