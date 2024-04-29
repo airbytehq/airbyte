@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory
 
 /**
  * When adding a new S3 destination acceptance test, extend this class and do the following:
- * * Implement [.getFormatConfig] that returns a [S3FormatConfig]
+ * * Implement [.getFormatConfig] that returns a [UploadFormatConfig]
  * * Implement [.retrieveRecords] that returns the Json records for the test
  *
  * Under the hood, a [S3DestinationConfig] is constructed as follows:
@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory
  * * Get the format config from [.getFormatConfig]
  */
 abstract class S3DestinationAcceptanceTest
-protected constructor(protected val outputFormat: S3Format) : DestinationAcceptanceTest() {
+protected constructor(protected val outputFormat: FileUploadFormat) : DestinationAcceptanceTest() {
     protected val secretFilePath: String = "secrets/config.json"
     protected var configJson: JsonNode? = null
     protected var s3DestinationConfig: S3DestinationConfig = mock()
@@ -46,8 +46,11 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
     protected var s3nameTransformer: NamingConventionTransformer = mock()
     protected var s3StorageOperations: S3StorageOperations? = null
 
-    protected val baseConfigJson: JsonNode
+    protected open val baseConfigJson: JsonNode
         get() = Jsons.deserialize(IOs.readFile(Path.of(secretFilePath)))
+
+    override val imageName: String
+        get() = "airbyte/destination-s3:dev"
 
     override fun getDefaultSchema(config: JsonNode): String? {
         if (config.has("s3_bucket_path")) {
@@ -79,7 +82,7 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
                 namespaceStr,
                 streamNameStr,
                 DateTime.now(DateTimeZone.UTC),
-                s3DestinationConfig.pathFormat!!
+                s3DestinationConfig.pathFormat!!,
             )
         // the child folder contains a non-deterministic epoch timestamp, so use the parent folder
         val parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1)
@@ -96,7 +99,7 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
             objectSummaries
                 .stream()
                 .map { o: S3ObjectSummary -> String.format("%s/%s", o.bucketName, o.key) }
-                .collect(Collectors.toList())
+                .collect(Collectors.toList()),
         )
         return objectSummaries
     }
@@ -117,7 +120,7 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
             String.format(
                 "%s_test_%s",
                 outputFormat.name.lowercase(),
-                RandomStringUtils.randomAlphanumeric(5)
+                RandomStringUtils.randomAlphanumeric(5),
             )
         (configJson as ObjectNode)
             .put("s3_bucket_path", testBucketPath)
@@ -128,7 +131,7 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
         LOGGER.info(
             "Test full path: {}/{}",
             s3DestinationConfig.bucketName,
-            s3DestinationConfig.bucketPath
+            s3DestinationConfig.bucketPath,
         )
 
         this.s3Client = s3DestinationConfig.getS3Client()
@@ -152,11 +155,11 @@ protected constructor(protected val outputFormat: S3Format) : DestinationAccepta
             LOGGER.info(
                 "Tearing down test bucket path: {}/{}",
                 s3DestinationConfig.bucketName,
-                s3DestinationConfig.bucketPath
+                s3DestinationConfig.bucketPath,
             )
             val result =
                 s3Client!!.deleteObjects(
-                    DeleteObjectsRequest(s3DestinationConfig.bucketName).withKeys(keysToDelete)
+                    DeleteObjectsRequest(s3DestinationConfig.bucketName).withKeys(keysToDelete),
                 )
             LOGGER.info("Deleted {} file(s).", result.deletedObjects.size)
         }

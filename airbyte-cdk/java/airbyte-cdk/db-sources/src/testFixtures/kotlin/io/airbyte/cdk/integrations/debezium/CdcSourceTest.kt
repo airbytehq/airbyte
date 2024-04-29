@@ -27,20 +27,20 @@ import org.slf4j.LoggerFactory
 abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     @JvmField protected var testdb: T = createTestDatabase()
 
-    protected fun createTableSqlFmt(): String {
+    protected open fun createTableSqlFmt(): String {
         return "CREATE TABLE %s.%s(%s);"
     }
 
-    protected fun createSchemaSqlFmt(): String {
+    protected open fun createSchemaSqlFmt(): String {
         return "CREATE SCHEMA %s;"
     }
 
-    protected fun modelsSchema(): String {
+    protected open fun modelsSchema(): String {
         return "models_schema"
     }
 
     /** The schema of a random table which is used as a new table in snapshot test */
-    protected fun randomSchema(): String {
+    protected open fun randomSchema(): String {
         return "models_schema_random"
     }
 
@@ -203,7 +203,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         writeRecords(recordJson, modelsSchema(), MODELS_STREAM_NAME, COL_ID, COL_MAKE_ID, COL_MODEL)
     }
 
-    protected fun writeRecords(
+    protected open fun writeRecords(
         recordJson: JsonNode,
         dbName: String?,
         streamName: String?,
@@ -224,7 +224,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         )
     }
 
-    protected fun deleteMessageOnIdCol(streamName: String?, idCol: String?, idValue: Int) {
+    protected open fun deleteMessageOnIdCol(streamName: String?, idCol: String?, idValue: Int) {
         testdb!!.with("DELETE FROM %s.%s WHERE %s = %s", modelsSchema(), streamName, idCol, idValue)
     }
 
@@ -232,7 +232,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         testdb!!.with("DELETE FROM %s.%s", modelsSchema(), streamName)
     }
 
-    protected fun updateCommand(
+    protected open fun updateCommand(
         streamName: String?,
         modelCol: String?,
         modelVal: String?,
@@ -1084,6 +1084,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 }
                 .toList()
 
+        @JvmStatic
         protected fun removeDuplicates(
             messages: Set<AirbyteRecordMessage>
         ): Set<AirbyteRecordMessage> {

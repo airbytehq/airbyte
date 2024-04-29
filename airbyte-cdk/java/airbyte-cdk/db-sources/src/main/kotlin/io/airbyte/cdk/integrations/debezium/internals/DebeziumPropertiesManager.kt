@@ -93,6 +93,7 @@ abstract class DebeziumPropertiesManager(
         const val NAME_KEY: String = "name"
         const val TOPIC_PREFIX_KEY: String = "topic.prefix"
 
+        @JvmStatic
         fun sanitizeTopicPrefix(topicName: String): String {
             val sanitizedNameBuilder = StringBuilder(topicName.length)
             var changed = false

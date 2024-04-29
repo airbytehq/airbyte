@@ -54,6 +54,7 @@ object RelationalDbQueryUtils {
     }
 
     /** @return fully qualified table name with the schema (if a schema exists) without quotes. */
+    @JvmStatic
     fun getFullyQualifiedTableName(schemaName: String?, tableName: String): String {
         return if (schemaName != null) "$schemaName.$tableName" else tableName
     }
@@ -103,9 +104,7 @@ object RelationalDbQueryUtils {
     fun prettyPrintConfiguredAirbyteStreamList(streamList: List<ConfiguredAirbyteStream>): String {
         return streamList
             .stream()
-            .map { s: ConfiguredAirbyteStream ->
-                "%s.%s".formatted(s.stream.namespace, s.stream.name)
-            }
+            .map { s: ConfiguredAirbyteStream -> "${s.stream.namespace}.${s.stream.name}" }
             .collect(Collectors.joining(", "))
     }
 
