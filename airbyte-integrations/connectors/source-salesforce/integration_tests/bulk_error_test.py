@@ -83,13 +83,6 @@ def test_failed_jobs_with_successful_switching(caplog, input_sandbox_config, str
     job_matcher = re.compile(r"jobs/query/fake_id$")
     loaded_record_ids = []
     with requests_mock.Mocker(real_http=True) as m:
-        m.register_uri(
-            "POST",
-            create_query_matcher,
-            json=SalesforceJobResponseBuilder().get_response(),
-        )
-        m.register_uri("GET", job_matcher, json=SalesforceJobResponseBuilder().with_state("Failed").with_error_message("unknown error").get_response())
-        m.register_uri("DELETE", job_matcher, json=SalesforceJobResponseBuilder().get_response())
         with caplog.at_level(logging.WARNING):
             loaded_record_ids = set(
                 record["Id"] for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
