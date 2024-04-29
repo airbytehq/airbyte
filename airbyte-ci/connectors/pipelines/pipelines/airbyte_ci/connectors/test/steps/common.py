@@ -10,6 +10,7 @@ import time
 from abc import ABC, abstractmethod
 from functools import cached_property
 from pathlib import Path
+from textwrap import dedent
 from typing import ClassVar, List, Optional
 
 import requests  # type: ignore
@@ -330,9 +331,8 @@ class RegressionTests(Step):
         }
 
     def regression_tests_command(self) -> List[str]:
-        return [
-            "./cloud-sql-proxy prod-ab-cloud-proj:us-west3:prod-pgsql-replica --credentials-file /tmp/credentials.json & " +
-            " ".join(["poetry",
+        run_proxy = "./cloud-sql-proxy prod-ab-cloud-proj:us-west3:prod-pgsql-replica --credentials-file /tmp/credentials.json"
+        run_pytest = " ".join(["poetry",
             "run",
             "pytest",
             "src/live_tests/regression_tests",
@@ -349,8 +349,17 @@ class RegressionTests(Step):
             "--run-id",
             self.run_id or "",
             "--should-read-with-state",
-            str(self.should_read_with_state)]),
-        ]
+            str(self.should_read_with_state)])
+        run_pytest_with_proxy = dedent(f"""
+        {run_proxy} &
+        proxy_pid=$!
+        {run_pytest}
+        pytest_exit=$?
+        kill $proxy_pid
+        wait $proxy_pid
+        exit $pytest_exit
+        """)
+        return [f"bash -c '{run_pytest_with_proxy}'"]
 
     def __init__(self, context: ConnectorContext) -> None:
         """Create a step to run regression tests for a connector.
