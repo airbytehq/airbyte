@@ -56,6 +56,18 @@
     "sortable_flag": {
       "type": ["null", "boolean"]
     },
+    "json_column_flag": {
+      "type": ["null", "boolean"]
+    },
+    "parent_id": {
+      "type": ["null", "integer"]
+    },
+    "id_suffix": {
+      "type": ["null", "string"]
+    },
+    "is_subfield": {
+      "type": ["null", "boolean"]
+    },
     "options": {
       "type": ["null", "array"],
       "items": {

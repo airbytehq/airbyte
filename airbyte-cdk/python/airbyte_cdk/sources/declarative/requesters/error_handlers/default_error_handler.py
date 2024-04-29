@@ -95,10 +95,12 @@ class DefaultErrorHandler(ErrorHandler):
     config: Config
     response_filters: Optional[List[HttpResponseFilter]] = None
     max_retries: Optional[int] = 5
+    max_time: int = 60 * 10
     _max_retries: int = field(init=False, repr=False, default=5)
+    _max_time: int = field(init=False, repr=False, default=60 * 10)
     backoff_strategies: Optional[List[BackoffStrategy]] = None
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self.response_filters = self.response_filters or []
 
         if not self.response_filters:
@@ -114,12 +116,12 @@ class DefaultErrorHandler(ErrorHandler):
 
         self._last_request_to_attempt_count: MutableMapping[requests.PreparedRequest, int] = {}
 
-    @property
+    @property  # type: ignore # overwrite the property to handle the case where max_retries is not provided in the constructor
     def max_retries(self) -> Union[int, None]:
         return self._max_retries
 
     @max_retries.setter
-    def max_retries(self, value: Union[int, None]):
+    def max_retries(self, value: int) -> None:
         # Covers the case where max_retries is not provided in the constructor, which causes the property object
         # to be set which we need to avoid doing
         if not isinstance(value, property):
@@ -132,12 +134,13 @@ class DefaultErrorHandler(ErrorHandler):
             self._last_request_to_attempt_count = {request: 1}
         else:
             self._last_request_to_attempt_count[request] += 1
-        for response_filter in self.response_filters:
-            matched_status = response_filter.matches(
-                response=response, backoff_time=self._backoff_time(response, self._last_request_to_attempt_count[request])
-            )
-            if matched_status is not None:
-                return matched_status
+        if self.response_filters:
+            for response_filter in self.response_filters:
+                matched_status = response_filter.matches(
+                    response=response, backoff_time=self._backoff_time(response, self._last_request_to_attempt_count[request])
+                )
+                if matched_status is not None:
+                    return matched_status
 
         if response.ok:
             return response_status.SUCCESS
@@ -146,8 +149,9 @@ class DefaultErrorHandler(ErrorHandler):
 
     def _backoff_time(self, response: requests.Response, attempt_count: int) -> Optional[float]:
         backoff = None
-        for backoff_strategies in self.backoff_strategies:
-            backoff = backoff_strategies.backoff(response, attempt_count)
-            if backoff:
-                return backoff
+        if self.backoff_strategies:
+            for backoff_strategies in self.backoff_strategies:
+                backoff = backoff_strategies.backoff(response, attempt_count)
+                if backoff:
+                    return backoff
         return backoff

@@ -6,26 +6,30 @@ package io.airbyte.integrations.destination.redshift.operations;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.cdk.integrations.destination.s3.AesCbcEnvelopeEncryption;
+import io.airbyte.cdk.integrations.destination.s3.AesCbcEnvelopeEncryptionBlobDecorator;
+import io.airbyte.cdk.integrations.destination.s3.EncryptionConfig;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations;
+import io.airbyte.cdk.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
+import io.airbyte.cdk.integrations.destination.staging.StagingOperations;
 import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.redshift.manifest.Entry;
 import io.airbyte.integrations.destination.redshift.manifest.Manifest;
-import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption;
-import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryptionBlobDecorator;
-import io.airbyte.integrations.destination.s3.EncryptionConfig;
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.integrations.destination.s3.S3StorageOperations;
-import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
-import io.airbyte.integrations.destination.staging.StagingOperations;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Base64;
 import java.util.Base64.Encoder;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implements StagingOperations {
 
@@ -36,6 +40,8 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   private final ObjectMapper objectMapper;
   private final byte[] keyEncryptingKey;
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftS3StagingSqlOperations.class);
+
   public RedshiftS3StagingSqlOperations(final NamingConventionTransformer nameTransformer,
                                         final AmazonS3 s3Client,
                                         final S3DestinationConfig s3Config,
@@ -44,7 +50,7 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
     this.s3StorageOperations = new S3StorageOperations(nameTransformer, s3Client, s3Config);
     this.s3Config = s3Config;
     this.objectMapper = new ObjectMapper();
-    if (encryptionConfig instanceof AesCbcEnvelopeEncryption e) {
+    if (encryptionConfig instanceof final AesCbcEnvelopeEncryption e) {
       this.s3StorageOperations.addBlobDecorator(new AesCbcEnvelopeEncryptionBlobDecorator(e.key()));
       this.keyEncryptingKey = e.key();
     } else {
@@ -53,30 +59,31 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   }
 
   @Override
-  public String getStageName(final String namespace, final String streamName) {
-    return nameTransformer.applyDefaultCase(String.join("_",
-        nameTransformer.convertStreamName(namespace),
-        nameTransformer.convertStreamName(streamName)));
-  }
-
-  @Override
-  public String getStagingPath(final UUID connectionId, final String namespace, final String streamName, final DateTime writeDatetime) {
+  public String getStagingPath(final UUID connectionId,
+                               final String namespace,
+                               final String streamName,
+                               final String outputTableName,
+                               final Instant writeDatetime) {
     final String bucketPath = s3Config.getBucketPath();
     final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
+    final ZonedDateTime zdt = writeDatetime.atZone(ZoneOffset.UTC);
     return nameTransformer.applyDefaultCase(String.format("%s%s/%s_%02d_%02d_%02d_%s/",
         prefix,
-        getStageName(namespace, streamName),
-        writeDatetime.year().get(),
-        writeDatetime.monthOfYear().get(),
-        writeDatetime.dayOfMonth().get(),
-        writeDatetime.hourOfDay().get(),
+        nameTransformer.applyDefaultCase(nameTransformer.convertStreamName(outputTableName)),
+        zdt.getYear(),
+        zdt.getMonthValue(),
+        zdt.getDayOfMonth(),
+        zdt.getHour(),
         connectionId));
   }
 
   @Override
+  public String getStageName(final String namespace, final String streamName) {
+    return "garbage-unused";
+  }
+
+  @Override
   public void createStageIfNotExists(final JdbcDatabase database, final String stageName) throws Exception {
-    final String bucketPath = s3Config.getBucketPath();
-    final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
     s3StorageOperations.createBucketIfNotExists();
   }
 
@@ -87,7 +94,7 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
                                      final String stageName,
                                      final String stagingPath)
       throws Exception {
-    return s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stageName, stagingPath);
+    return s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stagingPath);
   }
 
   private String putManifest(final String manifestContents, final String stagingPath) {
@@ -167,17 +174,9 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   }
 
   @Override
-  public void cleanUpStage(final JdbcDatabase database, final String stageName, final List<String> stagedFiles) throws Exception {
-    final String bucketPath = s3Config.getBucketPath();
-    final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
-    s3StorageOperations.cleanUpBucketObject(prefix + stageName, stagedFiles);
-  }
-
-  @Override
-  public void dropStageIfExists(final JdbcDatabase database, final String stageName) throws Exception {
-    final String bucketPath = s3Config.getBucketPath();
-    final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
-    s3StorageOperations.dropBucketObject(prefix + stageName);
+  public void dropStageIfExists(final JdbcDatabase database, final String stageName, final String stagingPath) throws Exception {
+    // stageName is unused here but used in Snowflake. This interface needs to be fixed.
+    s3StorageOperations.dropBucketObject(stagingPath);
   }
 
 }

@@ -1,0 +1,26 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "allowed_categories": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "blocked_categories": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "spending_limits": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"]
+      }
+    },
+    "spending_limits_currency": {
+      "type": ["null", "string"]
+    }
+  }
+}

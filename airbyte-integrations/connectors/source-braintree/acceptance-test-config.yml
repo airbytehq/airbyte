@@ -20,9 +20,7 @@ acceptance_tests:
             bypass_reason: "No subscription in the test account"
         expect_records:
           path: integration_tests/expected_records.jsonl
-          extra_fields: no
           exact_order: no
-          extra_records: yes
   incremental:
     tests:
       - config_path: secrets/config.json

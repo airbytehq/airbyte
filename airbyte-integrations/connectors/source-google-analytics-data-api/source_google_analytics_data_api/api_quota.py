@@ -8,6 +8,9 @@ from functools import wraps
 from typing import Any, Iterable, Mapping, Optional
 
 import requests
+from requests.exceptions import JSONDecodeError
+
+from .utils import API_LIMIT_PER_HOUR
 
 
 class GoogleAnalyticsApiQuotaBase:
@@ -22,8 +25,9 @@ class GoogleAnalyticsApiQuotaBase:
     should_retry: Optional[bool] = True
     backoff_time: Optional[int] = None
     raise_on_http_errors: bool = True
-    # stop making new slices globaly
+    # stop making new slices globally
     stop_iter: bool = False
+    error_message = None
     # mapping with scenarios for each quota kind
     quota_mapping: Mapping[str, Any] = {
         "concurrentRequests": {
@@ -39,6 +43,7 @@ class GoogleAnalyticsApiQuotaBase:
             "should_retry": True,
             "raise_on_http_errors": False,
             "stop_iter": False,
+            "error_message": API_LIMIT_PER_HOUR,
         },
         "potentiallyThresholdedRequestsPerHour": {
             "error_pattern": "Exhausted potentially thresholded requests quota.",
@@ -46,8 +51,9 @@ class GoogleAnalyticsApiQuotaBase:
             "should_retry": True,
             "raise_on_http_errors": False,
             "stop_iter": False,
+            "error_message": API_LIMIT_PER_HOUR,
         },
-        # TODO: The next scenarious are commented out for now.
+        # TODO: The next scenarios are commented out for now.
         # When we face with one of these at least 1 time,
         # we should be able to uncomment the one matches the criteria
         # and fill-in the `error_pattern` to track that quota as well.
@@ -103,6 +109,7 @@ class GoogleAnalyticsApiQuotaBase:
             self.raise_on_http_errors = quota.get("raise_on_http_errors")
             self.stop_iter = quota.get("stop_iter")
             self.backoff_time = quota.get("backoff")
+            self.error_message = quota.get("error_message")
 
     def _set_default_retry_attrs(self) -> None:
         self.should_retry = True
@@ -121,9 +128,11 @@ class GoogleAnalyticsApiQuotaBase:
             remaining_percent: float = remaining / total_available
             # make an early stop if we faced with the quota that is going to run out
             if remaining_percent <= self.treshold:
-                self.logger.warn(f"The `{quota_name}` quota is running out of tokens. Available {remaining} out of {total_available}.")
+                self.logger.warning(f"The `{quota_name}` quota is running out of tokens. Available {remaining} out of {total_available}.")
                 self._set_retry_attrs_for_quota(quota_name)
                 return None
+            elif self.error_message:
+                self.logger.warning(self.error_message)
 
     def _check_for_errors(self, response: requests.Response) -> None:
         try:
@@ -136,8 +145,8 @@ class GoogleAnalyticsApiQuotaBase:
                     self._set_retry_attrs_for_quota(quota_name)
                     self.logger.warn(f"The `{quota_name}` quota is exceeded!")
                     return None
-        except AttributeError as attr_e:
-            self.logger.warn(
+        except (AttributeError, JSONDecodeError) as attr_e:
+            self.logger.warning(
                 f"`GoogleAnalyticsApiQuota._check_for_errors`: Received non JSON response from the API. Full error: {attr_e}. Bypassing."
             )
             pass
@@ -151,7 +160,7 @@ class GoogleAnalyticsApiQuota(GoogleAnalyticsApiQuotaBase):
         # try get json from response
         try:
             parsed_response = response.json()
-        except AttributeError as e:
+        except (AttributeError, JSONDecodeError) as e:
             self.logger.warn(
                 f"`GoogleAnalyticsApiQuota._check_quota`: Received non JSON response from the API. Full error: {e}. Bypassing."
             )

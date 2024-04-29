@@ -9,11 +9,11 @@
         }
       }
     },
-    "galaxyIcebergSchema" : {
-      "\"_airbyte_ab_id\"" : "varchar",
-      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
-      "\"node_id\"" : "varchar",
-      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    "galaxyIcebergSchema": {
+      "\"_airbyte_ab_id\"": "varchar",
+      "\"_airbyte_emitted_at\"": "timestamp(6) with time zone",
+      "\"node_id\"": "varchar",
+      "\"_airbyte_additional_properties\"": "map(varchar, varchar)"
     }
   },
   {
@@ -37,12 +37,12 @@
         }
       }
     },
-    "galaxyIcebergSchema" : {
-      "\"_airbyte_ab_id\"" : "varchar",
-      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
-      "\"node_id\"" : "varchar",
-      "\"user\"" : "row(first_name varchar, last_name varchar, _airbyte_additional_properties map(varchar, varchar))",
-      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    "galaxyIcebergSchema": {
+      "\"_airbyte_ab_id\"": "varchar",
+      "\"_airbyte_emitted_at\"": "timestamp(6) with time zone",
+      "\"node_id\"": "varchar",
+      "\"user\"": "row(first_name varchar, last_name varchar, _airbyte_additional_properties map(varchar, varchar))",
+      "\"_airbyte_additional_properties\"": "map(varchar, varchar)"
     }
   },
   {
@@ -58,11 +58,11 @@
         }
       }
     },
-    "galaxyIcebergSchema" : {
-      "\"_airbyte_ab_id\"" : "varchar",
-      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
-      "\"identifier\"" : "row(member0 double, member1 varchar)",
-      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    "galaxyIcebergSchema": {
+      "\"_airbyte_ab_id\"": "varchar",
+      "\"_airbyte_emitted_at\"": "timestamp(6) with time zone",
+      "\"identifier\"": "row(member0 double, member1 varchar)",
+      "\"_airbyte_additional_properties\"": "map(varchar, varchar)"
     }
   },
   {
@@ -78,11 +78,11 @@
         }
       }
     },
-    "galaxyIcebergSchema" : {
-      "\"_airbyte_ab_id\"" : "varchar",
-      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
-      "\"identifier\"" : "array(varchar)",
-      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    "galaxyIcebergSchema": {
+      "\"_airbyte_ab_id\"": "varchar",
+      "\"_airbyte_emitted_at\"": "timestamp(6) with time zone",
+      "\"identifier\"": "array(varchar)",
+      "\"_airbyte_additional_properties\"": "map(varchar, varchar)"
     }
   },
   {
@@ -101,11 +101,11 @@
         }
       }
     },
-    "galaxyIcebergSchema" : {
-      "\"_airbyte_ab_id\"" : "varchar",
-      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
-      "\"identifiers\"" : "array(row(member0 varchar, member1 bigint, member2 boolean))",
-      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    "galaxyIcebergSchema": {
+      "\"_airbyte_ab_id\"": "varchar",
+      "\"_airbyte_emitted_at\"": "timestamp(6) with time zone",
+      "\"identifiers\"": "array(row(member0 varchar, member1 bigint, member2 boolean))",
+      "\"_airbyte_additional_properties\"": "map(varchar, varchar)"
     }
   },
   {
@@ -127,11 +127,11 @@
         }
       }
     },
-    "galaxyIcebergSchema" : {
-      "\"_airbyte_ab_id\"" : "varchar",
-      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
-      "\"created_at\"" : "row(member0 varchar, member1 bigint)",
-      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    "galaxyIcebergSchema": {
+      "\"_airbyte_ab_id\"": "varchar",
+      "\"_airbyte_emitted_at\"": "timestamp(6) with time zone",
+      "\"created_at\"": "row(member0 varchar, member1 bigint)",
+      "\"_airbyte_additional_properties\"": "map(varchar, varchar)"
     }
   },
   {
@@ -158,11 +158,11 @@
         }
       }
     },
-    "galaxyIcebergSchema" : {
-      "\"_airbyte_ab_id\"" : "varchar",
-      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
-      "\"user\"" : "row(created_at row(member0 varchar, member1 bigint), _airbyte_additional_properties map(varchar, varchar))",
-      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    "galaxyIcebergSchema": {
+      "\"_airbyte_ab_id\"": "varchar",
+      "\"_airbyte_emitted_at\"": "timestamp(6) with time zone",
+      "\"user\"": "row(created_at row(member0 varchar, member1 bigint), _airbyte_additional_properties map(varchar, varchar))",
+      "\"_airbyte_additional_properties\"": "map(varchar, varchar)"
     }
   },
   {
@@ -189,11 +189,11 @@
         }
       }
     },
-    "galaxyIcebergSchema" : {
-      "\"_airbyte_ab_id\"" : "varchar",
-      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
-      "\"identifiers\"" : "array(row(member0 bigint, member1 varchar, member2 boolean))",
-      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    "galaxyIcebergSchema": {
+      "\"_airbyte_ab_id\"": "varchar",
+      "\"_airbyte_emitted_at\"": "timestamp(6) with time zone",
+      "\"identifiers\"": "array(row(member0 bigint, member1 varchar, member2 boolean))",
+      "\"_airbyte_additional_properties\"": "map(varchar, varchar)"
     }
   },
   {
@@ -209,11 +209,11 @@
         }
       }
     },
-    "galaxyIcebergSchema" : {
-      "\"_airbyte_ab_id\"" : "varchar",
-      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
-      "\"node_id\"" : "varchar",
-      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    "galaxyIcebergSchema": {
+      "\"_airbyte_ab_id\"": "varchar",
+      "\"_airbyte_emitted_at\"": "timestamp(6) with time zone",
+      "\"node_id\"": "varchar",
+      "\"_airbyte_additional_properties\"": "map(varchar, varchar)"
     }
   },
   {
@@ -229,11 +229,11 @@
         }
       }
     },
-    "galaxyIcebergSchema" : {
-      "\"_airbyte_ab_id\"" : "varchar",
-      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
-      "\"node_id\"" : "varchar",
-      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    "galaxyIcebergSchema": {
+      "\"_airbyte_ab_id\"": "varchar",
+      "\"_airbyte_emitted_at\"": "timestamp(6) with time zone",
+      "\"node_id\"": "varchar",
+      "\"_airbyte_additional_properties\"": "map(varchar, varchar)"
     }
   },
   {
@@ -241,10 +241,10 @@
     "jsonSchema": {
       "type": "object"
     },
-    "galaxyIcebergSchema" : {
-      "\"_airbyte_ab_id\"" : "varchar",
-      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
-      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    "galaxyIcebergSchema": {
+      "\"_airbyte_ab_id\"": "varchar",
+      "\"_airbyte_emitted_at\"": "timestamp(6) with time zone",
+      "\"_airbyte_additional_properties\"": "map(varchar, varchar)"
     }
   },
   {
@@ -289,12 +289,12 @@
         }
       }
     },
-    "galaxyIcebergSchema" : {
-      "\"_airbyte_ab_id\"" : "varchar",
-      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
-      "\"author\"" : "row(id bigint, _airbyte_additional_properties map(varchar, varchar))",
-      "\"commit\"" : "row(message varchar, author row(name varchar, pr row(id varchar, message varchar, _airbyte_additional_properties map(varchar, varchar)), _airbyte_additional_properties map(varchar, varchar)), _airbyte_additional_properties map(varchar, varchar))",
-      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    "galaxyIcebergSchema": {
+      "\"_airbyte_ab_id\"": "varchar",
+      "\"_airbyte_emitted_at\"": "timestamp(6) with time zone",
+      "\"author\"": "row(id bigint, _airbyte_additional_properties map(varchar, varchar))",
+      "\"commit\"": "row(message varchar, author row(name varchar, pr row(id varchar, message varchar, _airbyte_additional_properties map(varchar, varchar)), _airbyte_additional_properties map(varchar, varchar)), _airbyte_additional_properties map(varchar, varchar))",
+      "\"_airbyte_additional_properties\"": "map(varchar, varchar)"
     }
   },
   {
@@ -307,11 +307,11 @@
         }
       }
     },
-    "galaxyIcebergSchema" : {
-      "\"_airbyte_ab_id\"" : "varchar",
-      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
-      "\"identifier\"" : "array(varchar)",
-      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    "galaxyIcebergSchema": {
+      "\"_airbyte_ab_id\"": "varchar",
+      "\"_airbyte_emitted_at\"": "timestamp(6) with time zone",
+      "\"identifier\"": "array(varchar)",
+      "\"_airbyte_additional_properties\"": "map(varchar, varchar)"
     }
   },
   {
@@ -367,11 +367,11 @@
         }
       }
     },
-    "galaxyIcebergSchema" : {
-      "\"_airbyte_ab_id\"" : "varchar",
-      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
-      "\"parent_object\"" : "row(object_array array(row(member0 bigint, member1 boolean, member2 row(id row(id_part_1 row(member0 bigint, member1 varchar), id_part_2 row(member0 varchar, member1 bigint), _airbyte_additional_properties map(varchar, varchar)), _message varchar, _airbyte_additional_properties map(varchar, varchar)))), _airbyte_additional_properties map(varchar, varchar))",
-      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    "galaxyIcebergSchema": {
+      "\"_airbyte_ab_id\"": "varchar",
+      "\"_airbyte_emitted_at\"": "timestamp(6) with time zone",
+      "\"parent_object\"": "row(object_array array(row(member0 bigint, member1 boolean, member2 row(id row(id_part_1 row(member0 bigint, member1 varchar), id_part_2 row(member0 varchar, member1 bigint), _airbyte_additional_properties map(varchar, varchar)), _message varchar, _airbyte_additional_properties map(varchar, varchar)))), _airbyte_additional_properties map(varchar, varchar))",
+      "\"_airbyte_additional_properties\"": "map(varchar, varchar)"
     }
   },
   {
@@ -395,11 +395,11 @@
         }
       }
     },
-    "galaxyIcebergSchema" : {
-      "\"_airbyte_ab_id\"" : "varchar",
-      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
-      "\"filters\"" : "array(array(row(filterFamily varchar, _airbyte_additional_properties map(varchar, varchar))))",
-      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    "galaxyIcebergSchema": {
+      "\"_airbyte_ab_id\"": "varchar",
+      "\"_airbyte_emitted_at\"": "timestamp(6) with time zone",
+      "\"filters\"": "array(array(row(filterFamily varchar, _airbyte_additional_properties map(varchar, varchar))))",
+      "\"_airbyte_additional_properties\"": "map(varchar, varchar)"
     }
   },
   {
@@ -413,11 +413,11 @@
         }
       }
     },
-    "galaxyIcebergSchema" : {
-      "\"_airbyte_ab_id\"" : "varchar",
-      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
-      "\"array_field\"" : "array(varchar)",
-      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    "galaxyIcebergSchema": {
+      "\"_airbyte_ab_id\"": "varchar",
+      "\"_airbyte_emitted_at\"": "timestamp(6) with time zone",
+      "\"array_field\"": "array(varchar)",
+      "\"_airbyte_additional_properties\"": "map(varchar, varchar)"
     }
   },
   {
@@ -430,11 +430,11 @@
         }
       }
     },
-    "galaxyIcebergSchema" : {
-      "\"_airbyte_ab_id\"" : "varchar",
-      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
-      "\"node_id\"" : "double",
-      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    "galaxyIcebergSchema": {
+      "\"_airbyte_ab_id\"": "varchar",
+      "\"_airbyte_emitted_at\"": "timestamp(6) with time zone",
+      "\"node_id\"": "double",
+      "\"_airbyte_additional_properties\"": "map(varchar, varchar)"
     }
   },
   {
@@ -469,12 +469,12 @@
         }
       }
     },
-    "galaxyIcebergSchema" : {
-      "\"_airbyte_ab_id\"" : "varchar",
-      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
-      "\"same_record_name_field\"" : "row(sub_field_1 varchar, _airbyte_additional_properties map(varchar, varchar))",
-      "\"any_of_field\"" : "row(same_record_name_field row(sub_field_2 varchar, _airbyte_additional_properties map(varchar, varchar)), _airbyte_additional_properties map(varchar, varchar))",
-      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    "galaxyIcebergSchema": {
+      "\"_airbyte_ab_id\"": "varchar",
+      "\"_airbyte_emitted_at\"": "timestamp(6) with time zone",
+      "\"same_record_name_field\"": "row(sub_field_1 varchar, _airbyte_additional_properties map(varchar, varchar))",
+      "\"any_of_field\"": "row(same_record_name_field row(sub_field_2 varchar, _airbyte_additional_properties map(varchar, varchar)), _airbyte_additional_properties map(varchar, varchar))",
+      "\"_airbyte_additional_properties\"": "map(varchar, varchar)"
     }
   },
   {
@@ -509,12 +509,12 @@
         }
       }
     },
-    "galaxyIcebergSchema" : {
-      "\"_airbyte_ab_id\"" : "varchar",
-      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
-      "\"same_record_name_field\"" : "row(sub_field_1 varchar, _airbyte_additional_properties map(varchar, varchar))",
-      "\"all_of_field\"" : "row(same_record_name_field row(sub_field_2 varchar, _airbyte_additional_properties map(varchar, varchar)), _airbyte_additional_properties map(varchar, varchar))",
-      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    "galaxyIcebergSchema": {
+      "\"_airbyte_ab_id\"": "varchar",
+      "\"_airbyte_emitted_at\"": "timestamp(6) with time zone",
+      "\"same_record_name_field\"": "row(sub_field_1 varchar, _airbyte_additional_properties map(varchar, varchar))",
+      "\"all_of_field\"": "row(same_record_name_field row(sub_field_2 varchar, _airbyte_additional_properties map(varchar, varchar)), _airbyte_additional_properties map(varchar, varchar))",
+      "\"_airbyte_additional_properties\"": "map(varchar, varchar)"
     }
   },
   {
@@ -549,12 +549,12 @@
         }
       }
     },
-    "galaxyIcebergSchema" : {
-      "\"_airbyte_ab_id\"" : "varchar",
-      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
-      "\"same_record_name_field\"" : "row(sub_field_1 varchar, _airbyte_additional_properties map(varchar, varchar))",
-      "\"any_of_field\"" : "row(same_record_name_field row(sub_field_2 varchar, _airbyte_additional_properties map(varchar, varchar)), _airbyte_additional_properties map(varchar, varchar))",
-      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    "galaxyIcebergSchema": {
+      "\"_airbyte_ab_id\"": "varchar",
+      "\"_airbyte_emitted_at\"": "timestamp(6) with time zone",
+      "\"same_record_name_field\"": "row(sub_field_1 varchar, _airbyte_additional_properties map(varchar, varchar))",
+      "\"any_of_field\"": "row(same_record_name_field row(sub_field_2 varchar, _airbyte_additional_properties map(varchar, varchar)), _airbyte_additional_properties map(varchar, varchar))",
+      "\"_airbyte_additional_properties\"": "map(varchar, varchar)"
     }
   },
   {
@@ -594,20 +594,20 @@
         }
       }
     },
-    "galaxyIcebergSchema" : {
-      "\"_airbyte_ab_id\"" : "varchar",
-      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
-      "\"string_type\"" : "varchar",
-      "\"integer_type\"" : "bigint",
-      "\"number_type\"" : "double",
-      "\"boolean_type\"" : "boolean",
-      "\"binary_type\"" : "varbinary",
-      "\"date_type\"" : "date",
-      "\"timestamp_with_tz_type\"" : "timestamp(6) with time zone",
-      "\"timestamp_without_tz_type\"" : "timestamp(6) with time zone",
-      "\"time_with_tz_type\"" : "varchar",
-      "\"time_without_tz_type\"" : "time(6)",
-      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    "galaxyIcebergSchema": {
+      "\"_airbyte_ab_id\"": "varchar",
+      "\"_airbyte_emitted_at\"": "timestamp(6) with time zone",
+      "\"string_type\"": "varchar",
+      "\"integer_type\"": "bigint",
+      "\"number_type\"": "double",
+      "\"boolean_type\"": "boolean",
+      "\"binary_type\"": "varbinary",
+      "\"date_type\"": "date",
+      "\"timestamp_with_tz_type\"": "timestamp(6) with time zone",
+      "\"timestamp_without_tz_type\"": "timestamp(6) with time zone",
+      "\"time_with_tz_type\"": "varchar",
+      "\"time_without_tz_type\"": "time(6)",
+      "\"_airbyte_additional_properties\"": "map(varchar, varchar)"
     }
   }
 ]

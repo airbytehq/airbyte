@@ -117,8 +117,11 @@ definitions:
             datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
             datetime_format: "%Y-%m-%dT%H:%M:%S%z"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+          cursor_datetime_formats:
+            - "%Y-%m-%dT%H:%M:%S.%f%z"
+            - "%Y-%m-%dT%H:%M:%S+00:00"
           cursor_granularity: "PT0.000001S"
-          step: "P30D"
+          step: "P{{ config.get('events_time_step', 30) }}D"
           cursor_field: timestamp
           start_time_option:
             field_name: after
@@ -129,7 +132,13 @@ definitions:
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
-      class_name: source_posthog.components.EventsSimpleRetriever
+      transformations:
+        - class_name: "source_posthog.components.EventsSimpleRetriever"
+          fields:
+            - path: ["name"]
+              value: "{{ parameters['name'] }}"
+            - path: ["primary_key"]
+              value: "{{ parameters['primary_key'] }}"
       name: "{{ parameters['name'] }}"
       primary_key: "{{ parameters['primary_key'] }}"
       record_selector:

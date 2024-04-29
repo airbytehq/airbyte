@@ -32,7 +32,7 @@ Okta is the complete identity solution for all your apps and people that’s uni
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Okta** from the Source type dropdown and enter a name for this connector.
 4. Add **Name**
-5. Add **Okta-Domain**
+5. Add **Okta Domain** (If your Okta URL is `https://MY_DOMAIN.okta.com/`, then `MY_DOMAIN` is your Okta domain.)
 6. Add **Start date** (defaults to 7 days if no date is included)
 7. Choose the method of authentication
 8. If you select Token authentication - fill the field  **Personal Api Token** 
@@ -79,6 +79,8 @@ The connector is restricted by normal Okta [requests limitation](https://develop
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.1.16  | 2023-07-07 | [20833](https://github.com/airbytehq/airbyte/pull/20833) | Fix infinite loop for GroupMembers stream                                      |
+| 0.1.15  | 2023-06-20 | [27533](https://github.com/airbytehq/airbyte/pull/27533) | Fixed group member stream and resource sets stream pagination                                                     |
 | 0.1.14  | 2022-12-24 | [20877](https://github.com/airbytehq/airbyte/pull/20877) | Disabled OAuth2.0 authorization method                                         |
 | 0.1.13  | 2022-08-12 | [14700](https://github.com/airbytehq/airbyte/pull/14700) | Add resource sets                                                              |
 | 0.1.12  | 2022-08-05 | [15050](https://github.com/airbytehq/airbyte/pull/15050) | Add parameter `start_date` for Logs stream                                     |

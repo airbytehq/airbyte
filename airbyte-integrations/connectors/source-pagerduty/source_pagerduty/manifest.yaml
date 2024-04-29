@@ -1,0 +1,110 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["{{ parameters.extractorPath }}"]
+
+  requester:
+    type: HttpRequester
+    url_base: "https://api.pagerduty.com"
+    http_method: "GET"
+    authenticator:
+      type: "ApiKeyAuthenticator"
+      header: "Authorization"
+      api_token: "Token token={{ config['token'] }}"
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  incidents_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "incidents"
+      primary_key: "id"
+      extractorPath: "incidents"
+      path: "/incidents"
+
+  incidents_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/incidents_stream"
+        parent_key: "id"
+        partition_field: "incident_id"
+
+  incident_logs_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "incident_logs"
+      primary_key: "id"
+      extractorPath: "log_entries"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        $ref: "#/definitions/incidents_partition_router"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/incidents/{{ stream_partition.incident_id }}/log_entries"
+
+  teams_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "teams"
+      primary_key: "id"
+      extractorPath: "teams"
+      path: "/teams"
+
+  services_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "services"
+      primary_key: "id"
+      extractorPath: "services"
+      path: "/services"
+
+  users_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "users"
+      primary_key: "id"
+      extractorPath: "users"
+      path: "/users"
+
+  priorities_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "priorities"
+      primary_key: "id"
+      extractorPath: "priorities"
+      path: "/priorities"
+
+streams:
+  - "#/definitions/incidents_stream"
+  - "#/definitions/incident_logs_stream"
+  - "#/definitions/teams_stream"
+  - "#/definitions/services_stream"
+  - "#/definitions/users_stream"
+  - "#/definitions/priorities_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "incidents"
+    - "incident_logs"
+    - "teams"
+    - "services"
+    - "users"
+    - "priorities"

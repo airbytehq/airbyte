@@ -9,7 +9,7 @@ import static io.airbyte.integrations.destination.starburst_galaxy.StarburstGala
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import org.slf4j.Logger;
 
 public abstract class StarburstGalaxyStagingStorageConfig {

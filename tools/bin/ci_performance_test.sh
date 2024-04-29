@@ -32,15 +32,12 @@ else
   if [[ "$connector" == *"base-normalization"* ]]; then
     selected_performance_test="base-normalization"
     performanceTestCommand="$(_to_gradle_path "airbyte-integrations/bases/base-normalization" performanceTest)"
-    export SUB_BUILD="CONNECTORS_BASE"
     # avoid schema conflicts when multiple tests for normalization are run concurrently
     export RANDOM_TEST_SCHEMA="true"
-    ./gradlew --no-daemon --scan airbyteDocker
   elif [[ "$connector" == *"bases"* ]]; then
     connector_name=$(echo $connector | cut -d / -f 2)
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector_name$" || echo "")
     performanceTestCommand="$(_to_gradle_path "airbyte-integrations/$connector" performanceTest)"
-    export SUB_BUILD="CONNECTORS_BASE"
   elif [[ "$connector" == *"connectors"* ]]; then
     connector_name=$(echo $connector | cut -d / -f 2)
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector_name$" || echo "")

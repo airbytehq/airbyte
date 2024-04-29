@@ -1,0 +1,46 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "order_id": {
+      "type": ["null", "integer"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "amount": {
+      "type": ["null", "string"]
+    },
+    "reason": {
+      "type": ["null", "string"]
+    },
+    "network_reason_code": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "initiated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "evidence_due_by": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "evidence_sent_on": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "finalized_on": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

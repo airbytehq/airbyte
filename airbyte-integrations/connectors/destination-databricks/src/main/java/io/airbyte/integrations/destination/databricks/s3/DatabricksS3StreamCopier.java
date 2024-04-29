@@ -8,16 +8,16 @@ import static org.apache.logging.log4j.util.Strings.EMPTY;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.cdk.integrations.destination.jdbc.copy.StreamCopier;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.cdk.integrations.destination.s3.parquet.S3ParquetFormatConfig;
+import io.airbyte.cdk.integrations.destination.s3.parquet.S3ParquetWriter;
+import io.airbyte.cdk.integrations.destination.s3.writer.S3WriterFactory;
 import io.airbyte.integrations.destination.databricks.DatabricksDestinationConfig;
 import io.airbyte.integrations.destination.databricks.DatabricksStreamCopier;
-import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
-import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
-import io.airbyte.integrations.destination.s3.writer.S3WriterFactory;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.sql.Timestamp;
@@ -115,12 +115,14 @@ public class DatabricksS3StreamCopier extends DatabricksStreamCopier {
         "COPY INTO %s.%s.%s " +
             "FROM '%s' " +
             "FILEFORMAT = PARQUET " +
-            "PATTERN = '%s'",
+            "PATTERN = '%s' " +
+            "COPY_OPTIONS ('mergeSchema' = '%s')",
         catalogName,
         schemaName,
         destTableName,
         getTmpTableLocation(),
-        parquetWriter.getOutputFilename());
+        parquetWriter.getOutputFilename(),
+        databricksConfig.enableSchemaEvolution());
     LOGGER.info(copyData);
     return copyData;
   }

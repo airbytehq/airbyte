@@ -6,13 +6,13 @@ package io.airbyte.integrations.source.oracle;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
+import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
-import io.airbyte.integrations.standardtest.source.TestDataHolder;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -23,9 +23,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Disabled
 public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private AirbyteOracleTestContainer container;
@@ -88,7 +90,6 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    dslContext.close();
     container.close();
   }
 

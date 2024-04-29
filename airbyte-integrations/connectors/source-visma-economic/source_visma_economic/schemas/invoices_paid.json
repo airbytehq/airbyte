@@ -1,8 +1,7 @@
 {
-  "$schema": "http://json-schema.org/draft-03/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "title": "Paid invoice",
   "type": "object",
-  "restdocs": "http://restdocs.e-conomic.com/#get-invoices-paid",
   "properties": {
     "bookedInvoiceNumber": {
       "type": "integer",
@@ -10,6 +9,15 @@
       "filterable": true,
       "sortable": true,
       "description": "A reference number for the booked invoice document."
+    },
+    "exchangeRate": {
+      "type": ["null", "number"]
+    },
+    "orderNumber": {
+      "type": ["null", "integer"]
+    },
+    "grossAmountInBaseCurrency": {
+      "type": ["null", "number"]
     },
     "date": {
       "type": "string",

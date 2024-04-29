@@ -39,6 +39,8 @@ class CatalogModel(BaseModel):
                     if prop["type"] == "array" and prop["items"]:
                         if prop["items"].pop("additionalProperties", None):
                             prop["items"]["additionalProperties"] = True
+            if schema["type"] == "object":
+                schema["type"] = ["object", "null"]
 
 
 class MetricsReport(CatalogModel):
@@ -79,3 +81,22 @@ class Keywords(KeywordsBase):
 
 class NegativeKeywords(KeywordsBase):
     matchType: str
+
+
+class Budget(CatalogModel):
+    amount: Decimal = None
+    currencyCode: str = None
+    policy: str = None
+    startDate: str = None
+    endDate: str = None
+
+
+class Portfolio(CatalogModel):
+    portfolioId: int
+    name: str = None
+    budget: Budget = None
+    inBudget: bool = None
+    state: str = None
+    creationDate: int = None
+    lastUpdatedDate: int = None
+    servingStatus: str = None

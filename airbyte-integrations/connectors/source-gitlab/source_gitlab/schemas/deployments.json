@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "iid": {
+      "type": ["null", "integer"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "ref": {
+      "type": ["null", "string"]
+    },
+    "sha": {
+      "type": ["null", "string"]
+    },
+    "environment_name": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "user": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "user_full_name": {
+      "type": ["null", "string"]
+    },
+    "user_username": {
+      "type": ["null", "string"]
+    },
+    "user_id": {
+      "type": ["null", "integer"]
+    },
+    "environment": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "environment_id": {
+      "type": ["null", "integer"]
+    },
+    "project_id": {
+      "type": ["null", "integer"]
+    },
+    "deployable": {
+      "type": ["null", "object"],
+      "properties": {
+        "commit": {
+          "type": ["null", "object"],
+          "properties": {
+            "author_email": {
+              "type": ["null", "string"]
+            },
+            "author_name": {
+              "type": ["null", "string"]
+            },
+            "created_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "id": {
+              "type": ["null", "string"]
+            },
+            "message": {
+              "type": ["null", "string"]
+            },
+            "short_id": {
+              "type": ["null", "string"]
+            },
+            "title": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "coverage": {
+          "type": ["null", "string"]
+        },
+        "created_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "finished_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "ref": {
+          "type": ["null", "string"]
+        },
+        "runner": {
+          "type": ["null", "string"]
+        },
+        "stage": {
+          "type": ["null", "string"]
+        },
+        "started_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "status": {
+          "type": ["null", "string"]
+        },
+        "tag": {
+          "type": ["null", "boolean"]
+        },
+        "project": {
+          "type": ["null", "object"],
+          "properties": {
+            "ci_job_token_scope_enabled": {
+              "type": ["null", "boolean"]
+            }
+          }
+        },
+        "user": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": ["null", "integer"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "username": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            },
+            "avatar_url": {
+              "type": ["null", "string"]
+            },
+            "web_url": {
+              "type": ["null", "string"]
+            },
+            "created_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "bio": {
+              "type": ["null", "string"]
+            },
+            "location": {
+              "type": ["null", "string"]
+            },
+            "public_email": {
+              "type": ["null", "string"]
+            },
+            "skype": {
+              "type": ["null", "string"]
+            },
+            "linkedin": {
+              "type": ["null", "string"]
+            },
+            "twitter": {
+              "type": ["null", "string"]
+            },
+            "website_url": {
+              "type": ["null", "string"]
+            },
+            "organization": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "pipeline": {
+          "type": ["null", "object"],
+          "properties": {
+            "created_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "id": {
+              "type": ["null", "integer"]
+            },
+            "ref": {
+              "type": ["null", "string"]
+            },
+            "sha": {
+              "type": ["null", "string"]
+            },
+            "status": {
+              "type": ["null", "string"]
+            },
+            "updated_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "web_url": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

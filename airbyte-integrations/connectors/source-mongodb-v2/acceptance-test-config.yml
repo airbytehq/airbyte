@@ -5,6 +5,8 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "integration_tests/expected_spec.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.2.5"
         config_path: "secrets/credentials.json"
         timeout_seconds: 60
   connection:
@@ -15,15 +17,17 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/credentials.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.2.5"
         timeout_seconds: 60
   basic_read:
-    tests:
-      - config_path: "secrets/credentials.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        timeout_seconds: 120
+    bypass_reason: "Full refresh syncs are not supported on this connector."
   full_refresh:
+    bypass_reason: "Full refresh syncs are not supported on this connector."
+  incremental:
+    #    bypass_reason: "Incremental syncs are not yet supported by this connector."
+    #    #TODO: remove bypass_reason once a version that supports incremental syncs is released + uncomment the lines below
     tests:
       - config_path: "secrets/credentials.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         timeout_seconds: 180
-

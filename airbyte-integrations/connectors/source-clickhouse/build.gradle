@@ -1,8 +1,11 @@
 plugins {
-    id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
-    id 'airbyte-connector-acceptance-test'
+    id 'airbyte-java-connector'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.20.4'
+    features = ['db-sources']
+    useLocalCdk = false
 }
 
 application {
@@ -20,8 +23,5 @@ dependencies {
 
     implementation 'com.clickhouse:clickhouse-jdbc:0.4.6:all'
 
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-clickhouse')
-    integrationTestJavaImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
-    integrationTestJavaImplementation libs.connectors.source.testcontainers.clickhouse
+    testImplementation 'org.testcontainers:clickhouse:1.19.4'
 }

@@ -1,147 +1,1715 @@
-version: "0.29.0"
-
-definitions:
-  selector:
-    extractor:
-      field_path: []
-
-  requester:
-    url_base: "https://api.spacexdata.com/v4/"
-    http_method: "GET"
-
-  retriever:
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: NoPagination
-    requester:
-      $ref: "#/definitions/requester"
-
-  base_stream:
-    schema_loader:
-      type: JsonFileSchemaLoader
-      file_path: "./source_spacex_api/schemas/{{ parameters['name'] }}.json"
-    retriever:
-      $ref: "#/definitions/retriever"
-
-  launches_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "launches"
-      primary_key: "id"
-      path: "/launches/{{config['options'] or config['id'] or latest}}"
-
-  capsules_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "capsules"
-      primary_key: "id"
-      path: "/capsules"
-
-  company_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "company"
-      primary_key: "id"
-      path: "/company"
-
-  crew_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "crew"
-      primary_key: "id"
-      path: "/crew"
-
-  cores_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "cores"
-      primary_key: "id"
-      path: "/cores"
-
-  dragons_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "dragons"
-      primary_key: "id"
-      path: "/dragons"
-
-  landpads_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "landpads"
-      primary_key: "id"
-      path: "/landpads"
-
-  payloads_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "payloads"
-      primary_key: "id"
-      path: "/payloads"
-
-  history_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "history"
-      primary_key: "id"
-      path: "/history"
-
-  rockets_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "rockets"
-      primary_key: "id"
-      path: "/rockets"
-
-  roadster_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "roadster"
-      primary_key: "id"
-      path: "/roadster"
-
-  ships_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "ships"
-      primary_key: "id"
-      path: "/ships"
-
-  starlink_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "starlink"
-      primary_key: "id"
-      path: "/starlink"
-
-streams:
-  - "#/definitions/launches_stream"
-  - "#/definitions/capsules_stream"
-  - "#/definitions/company_stream"
-  - "#/definitions/crew_stream"
-  - "#/definitions/cores_stream"
-  - "#/definitions/dragons_stream"
-  - "#/definitions/landpads_stream"
-  - "#/definitions/payloads_stream"
-  - "#/definitions/history_stream"
-  - "#/definitions/rockets_stream"
-  - "#/definitions/roadster_stream"
-  - "#/definitions/ships_stream"
-  - "#/definitions/starlink_stream"
-
+version: 0.51.41
+type: DeclarativeSource
 check:
+  type: CheckStream
   stream_names:
-    - "launches"
-    - "capsules"
-    - "company"
-    - "crew"
-    - "cores"
-    - "dragons"
-    - "landpads"
-    - "payloads"
-    - "history"
-    - "rockets"
-    - "roadster"
-    - "ships"
-    - "starlink"
+    - launches
+    - capsules
+    - company
+    - crew
+    - cores
+    - dragons
+    - landpads
+    - payloads
+    - history
+    - rockets
+    - roadster
+    - ships
+    - starlink
+streams:
+  - type: DeclarativeStream
+    name: launches
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          auto_update:
+            type: boolean
+          capsules:
+            items:
+              type:
+                - "null"
+                - string
+            type: array
+          cores:
+            items:
+              properties:
+                core:
+                  type:
+                    - "null"
+                    - string
+                flight:
+                  type: number
+                gridfins:
+                  type: boolean
+                landing_attempt:
+                  type: boolean
+                landing_success:
+                  type: boolean
+                landing_type:
+                  type:
+                    - "null"
+                    - string
+                landpad:
+                  type:
+                    - "null"
+                    - string
+                legs:
+                  type: boolean
+                reused:
+                  type: boolean
+              type: object
+            type: array
+          crew:
+            items:
+              type:
+                - "null"
+                - string
+            type: array
+          date_local:
+            type:
+              - "null"
+              - string
+          date_precision:
+            type:
+              - "null"
+              - string
+          date_unix:
+            type: number
+          date_utc:
+            type:
+              - "null"
+              - string
+          static_fire_date_unix:
+            type:
+              - "null"
+              - number
+          static_fire_date_utc:
+            type:
+              - "null"
+              - string
+          window:
+            type:
+              - "null"
+              - number
+          details:
+            type: string
+          fairings:
+            properties:
+              recovered:
+                type: boolean
+              recovery_attempt:
+                type: boolean
+              reused:
+                type: boolean
+              ships:
+                items:
+                  type:
+                    - "null"
+                    - string
+                type: array
+            type: object
+          failures:
+            type: array
+          flight_number:
+            type: number
+          id:
+            type:
+              - "null"
+              - string
+          launch_library_id:
+            type:
+              - "null"
+              - string
+          launchpad:
+            type:
+              - "null"
+              - string
+          links:
+            properties:
+              flickr:
+                properties:
+                  original:
+                    items:
+                      type:
+                        - "null"
+                        - string
+                    type: array
+                  small:
+                    type: array
+                type: object
+              patch:
+                properties:
+                  large:
+                    type:
+                      - "null"
+                      - string
+                  small:
+                    type:
+                      - "null"
+                      - string
+                type: object
+              reddit:
+                properties:
+                  launch:
+                    type:
+                      - "null"
+                      - string
+                type: object
+              article:
+                type:
+                  - "null"
+                  - string
+              webcast:
+                type:
+                  - "null"
+                  - string
+              wikipedia:
+                type:
+                  - "null"
+                  - string
+              youtube_id:
+                type:
+                  - "null"
+                  - string
+            type: object
+          name:
+            type:
+              - "null"
+              - string
+          net:
+            type: boolean
+          payloads:
+            items:
+              type:
+                - "null"
+                - string
+            type: array
+          rocket:
+            type:
+              - "null"
+              - string
+          ships:
+            type: array
+          success:
+            type: boolean
+          tbd:
+            type: boolean
+          upcoming:
+            type: boolean
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.spacexdata.com/v4/
+        path: /launches/{{config['options'] or config['id'] or 'latest'}}
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: NoAuth
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: capsules
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          land_landings:
+            type: number
+          last_update:
+            type:
+              - "null"
+              - string
+          launches:
+            items:
+              type:
+                - "null"
+                - string
+            type: array
+          reuse_count:
+            type: number
+          serial:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          water_landings:
+            type: number
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.spacexdata.com/v4/
+        path: /capsules
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: NoAuth
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: company
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          ceo:
+            type:
+              - "null"
+              - string
+          coo:
+            type:
+              - "null"
+              - string
+          cto:
+            type:
+              - "null"
+              - string
+          cto_propulsion:
+            type:
+              - "null"
+              - string
+          employees:
+            type: number
+          founded:
+            type: number
+          founder:
+            type:
+              - "null"
+              - string
+          headquarters:
+            properties:
+              address:
+                type:
+                  - "null"
+                  - string
+              city:
+                type:
+                  - "null"
+                  - string
+              state:
+                type:
+                  - "null"
+                  - string
+            type: object
+          id:
+            type:
+              - "null"
+              - string
+          launch_sites:
+            type: number
+          links:
+            properties:
+              elon_twitter:
+                type:
+                  - "null"
+                  - string
+              flickr:
+                type:
+                  - "null"
+                  - string
+              twitter:
+                type:
+                  - "null"
+                  - string
+              website:
+                type:
+                  - "null"
+                  - string
+            type: object
+          name:
+            type:
+              - "null"
+              - string
+          summary:
+            type:
+              - "null"
+              - string
+          test_sites:
+            type: number
+          valuation:
+            type: number
+          vehicles:
+            type: number
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.spacexdata.com/v4/
+        path: /company
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: NoAuth
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: crew
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          agency:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          image:
+            type:
+              - "null"
+              - string
+          launches:
+            items:
+              type:
+                - "null"
+                - string
+            type: array
+          name:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          wikipedia:
+            type:
+              - "null"
+              - string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.spacexdata.com/v4/
+        path: /crew
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: NoAuth
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: cores
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          asds_attempts:
+            type: number
+          asds_landings:
+            type: number
+          block:
+            type:
+              - "null"
+              - number
+          id:
+            type:
+              - "null"
+              - string
+          last_update:
+            type:
+              - "null"
+              - string
+          launches:
+            items:
+              type:
+                - "null"
+                - string
+            type: array
+          reuse_count:
+            type: number
+          rtls_attempts:
+            type: number
+          rtls_landings:
+            type: number
+          serial:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.spacexdata.com/v4/
+        path: /cores
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: NoAuth
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: dragons
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          active:
+            type: boolean
+          crew_capacity:
+            type: number
+          description:
+            type:
+              - "null"
+              - string
+          diameter:
+            properties:
+              feet:
+                type: number
+              meters:
+                type: number
+            type: object
+          dry_mass_kg:
+            type: number
+          dry_mass_lb:
+            type: number
+          first_flight:
+            type:
+              - "null"
+              - string
+          flickr_images:
+            items:
+              type:
+                - "null"
+                - string
+            type: array
+          heat_shield:
+            properties:
+              dev_partner:
+                type:
+                  - "null"
+                  - string
+              material:
+                type:
+                  - "null"
+                  - string
+              size_meters:
+                type: number
+              temp_degrees:
+                type: number
+            type: object
+          height_w_trunk:
+            properties:
+              feet:
+                type: number
+              meters:
+                type: number
+            type: object
+          id:
+            type:
+              - "null"
+              - string
+          launch_payload_mass:
+            properties:
+              kg:
+                type: number
+              lb:
+                type: number
+            type: object
+          launch_payload_vol:
+            properties:
+              cubic_feet:
+                type: number
+              cubic_meters:
+                type: number
+            type: object
+          name:
+            type:
+              - "null"
+              - string
+          orbit_duration_yr:
+            type: number
+          pressurized_capsule:
+            properties:
+              payload_volume:
+                properties:
+                  cubic_feet:
+                    type: number
+                  cubic_meters:
+                    type: number
+                type: object
+            type: object
+          return_payload_mass:
+            properties:
+              kg:
+                type: number
+              lb:
+                type: number
+            type: object
+          return_payload_vol:
+            properties:
+              cubic_feet:
+                type: number
+              cubic_meters:
+                type: number
+            type: object
+          sidewall_angle_deg:
+            type: number
+          thrusters:
+            items:
+              properties:
+                amount:
+                  type: number
+                fuel_1:
+                  type:
+                    - "null"
+                    - string
+                fuel_2:
+                  type:
+                    - "null"
+                    - string
+                isp:
+                  type: number
+                pods:
+                  type: number
+                thrust:
+                  properties:
+                    kN:
+                      type: number
+                    lbf:
+                      type: number
+                  type: object
+                type:
+                  type:
+                    - "null"
+                    - string
+              type: object
+            type: array
+          trunk:
+            properties:
+              cargo:
+                properties:
+                  solar_array:
+                    type: number
+                  unpressurized_cargo:
+                    type: boolean
+                type: object
+              trunk_volume:
+                properties:
+                  cubic_feet:
+                    type: number
+                  cubic_meters:
+                    type: number
+                type: object
+            type: object
+          type:
+            type:
+              - "null"
+              - string
+          wikipedia:
+            type:
+              - "null"
+              - string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.spacexdata.com/v4/
+        path: /dragons
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: NoAuth
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: landpads
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          details:
+            type:
+              - "null"
+              - string
+          full_name:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          images:
+            properties:
+              large:
+                items:
+                  type:
+                    - "null"
+                    - string
+                type: array
+            type: object
+          landing_attempts:
+            type: number
+          landing_successes:
+            type: number
+          latitude:
+            type: number
+          launches:
+            items:
+              type:
+                - "null"
+                - string
+            type: array
+          locality:
+            type:
+              - "null"
+              - string
+          longitude:
+            type: number
+          name:
+            type:
+              - "null"
+              - string
+          region:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          wikipedia:
+            type:
+              - "null"
+              - string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.spacexdata.com/v4/
+        path: /landpads
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: NoAuth
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: payloads
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          apoapsis_km:
+            type:
+              - "null"
+              - number
+          arg_of_pericenter:
+            type:
+              - "null"
+              - number
+          customers:
+            items:
+              type:
+                - "null"
+                - string
+            type: array
+          dragon:
+            properties:
+              capsule:
+                type:
+                  - "null"
+                  - string
+              flight_time_sec:
+                type:
+                  - "null"
+                  - number
+              land_landing:
+                type:
+                  - boolean
+                  - "null"
+              manifest:
+                type:
+                  - "null"
+                  - string
+              mass_returned_kg:
+                type:
+                  - "null"
+                  - number
+              mass_returned_lbs:
+                type:
+                  - "null"
+                  - number
+              water_landing:
+                type:
+                  - boolean
+                  - "null"
+            type: object
+          eccentricity:
+            type:
+              - "null"
+              - number
+          epoch:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          inclination_deg:
+            type:
+              - "null"
+              - number
+          launch:
+            type:
+              - "null"
+              - string
+          lifespan_years:
+            type:
+              - "null"
+              - number
+          longitude:
+            type:
+              - "null"
+              - number
+          manufacturers:
+            items:
+              type:
+                - "null"
+                - string
+            type: array
+          mass_kg:
+            type:
+              - "null"
+              - number
+          mass_lbs:
+            type:
+              - "null"
+              - number
+          mean_anomaly:
+            type:
+              - "null"
+              - number
+          mean_motion:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          nationalities:
+            items:
+              type:
+                - "null"
+                - string
+            type: array
+          norad_ids:
+            items:
+              type: number
+            type: array
+          orbit:
+            type:
+              - "null"
+              - string
+          periapsis_km:
+            type:
+              - "null"
+              - number
+          period_min:
+            type:
+              - "null"
+              - number
+          raan:
+            type:
+              - "null"
+              - number
+          reference_system:
+            type:
+              - "null"
+              - string
+          regime:
+            type:
+              - "null"
+              - string
+          reused:
+            type: boolean
+          semi_major_axis_km:
+            type:
+              - "null"
+              - number
+          type:
+            type:
+              - "null"
+              - string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.spacexdata.com/v4/
+        path: /payloads
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: NoAuth
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: history
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          details:
+            type:
+              - "null"
+              - string
+          event_date_unix:
+            type: number
+          event_date_utc:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          links:
+            properties:
+              article:
+                type:
+                  - "null"
+                  - string
+            type: object
+          title:
+            type:
+              - "null"
+              - string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.spacexdata.com/v4/
+        path: /history
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: NoAuth
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: rockets
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          active:
+            type: boolean
+          boosters:
+            type: number
+          company:
+            type:
+              - "null"
+              - string
+          cost_per_launch:
+            type: number
+          country:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          diameter:
+            properties:
+              feet:
+                type: number
+              meters:
+                type: number
+            type: object
+          engines:
+            properties:
+              engine_loss_max:
+                type:
+                  - "null"
+                  - number
+              isp:
+                properties:
+                  sea_level:
+                    type: number
+                  vacuum:
+                    type: number
+                type: object
+              layout:
+                type:
+                  - "null"
+                  - string
+              number:
+                type: number
+              propellant_1:
+                type:
+                  - "null"
+                  - string
+              propellant_2:
+                type:
+                  - "null"
+                  - string
+              thrust_sea_level:
+                properties:
+                  kN:
+                    type: number
+                  lbf:
+                    type: number
+                type: object
+              thrust_to_weight:
+                type: number
+              thrust_vacuum:
+                properties:
+                  kN:
+                    type: number
+                  lbf:
+                    type: number
+                type: object
+              type:
+                type:
+                  - "null"
+                  - string
+              version:
+                type:
+                  - "null"
+                  - string
+            type: object
+          first_flight:
+            type:
+              - "null"
+              - string
+          first_stage:
+            properties:
+              burn_time_sec:
+                type:
+                  - "null"
+                  - number
+              engines:
+                type: number
+              fuel_amount_tons:
+                type: number
+              reusable:
+                type: boolean
+              thrust_sea_level:
+                properties:
+                  kN:
+                    type: number
+                  lbf:
+                    type: number
+                type: object
+              thrust_vacuum:
+                properties:
+                  kN:
+                    type: number
+                  lbf:
+                    type: number
+                type: object
+            type: object
+          flickr_images:
+            items:
+              type:
+                - "null"
+                - string
+            type: array
+          height:
+            properties:
+              feet:
+                type: number
+              meters:
+                type: number
+            type: object
+          id:
+            type:
+              - "null"
+              - string
+          landing_legs:
+            properties:
+              material:
+                type:
+                  - "null"
+                  - string
+              number:
+                type: number
+            type: object
+          mass:
+            properties:
+              kg:
+                type: number
+              lb:
+                type: number
+            type: object
+          name:
+            type:
+              - "null"
+              - string
+          payload_weights:
+            items:
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                kg:
+                  type: number
+                lb:
+                  type: number
+                name:
+                  type:
+                    - "null"
+                    - string
+              type: object
+            type: array
+          second_stage:
+            properties:
+              burn_time_sec:
+                type:
+                  - "null"
+                  - number
+              engines:
+                type: number
+              fuel_amount_tons:
+                type: number
+              payloads:
+                properties:
+                  composite_fairing:
+                    properties:
+                      diameter:
+                        properties:
+                          feet:
+                            type:
+                              - "null"
+                              - number
+                          meters:
+                            type:
+                              - "null"
+                              - number
+                        type: object
+                      height:
+                        properties:
+                          feet:
+                            type:
+                              - "null"
+                              - number
+                          meters:
+                            type:
+                              - "null"
+                              - number
+                        type: object
+                    type: object
+                  option_1:
+                    type:
+                      - "null"
+                      - string
+                type: object
+              reusable:
+                type: boolean
+              thrust:
+                properties:
+                  kN:
+                    type: number
+                  lbf:
+                    type: number
+                type: object
+            type: object
+          stages:
+            type: number
+          success_rate_pct:
+            type: number
+          type:
+            type:
+              - "null"
+              - string
+          wikipedia:
+            type:
+              - "null"
+              - string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.spacexdata.com/v4/
+        path: /rockets
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: NoAuth
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: roadster
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          apoapsis_au:
+            type: number
+          details:
+            type:
+              - "null"
+              - string
+          earth_distance_km:
+            type: number
+          earth_distance_mi:
+            type: number
+          eccentricity:
+            type: number
+          epoch_jd:
+            type: number
+          flickr_images:
+            items:
+              type:
+                - "null"
+                - string
+            type: array
+          id:
+            type:
+              - "null"
+              - string
+          inclination:
+            type: number
+          launch_date_unix:
+            type: number
+          launch_date_utc:
+            type:
+              - "null"
+              - string
+          launch_mass_kg:
+            type: number
+          launch_mass_lbs:
+            type: number
+          longitude:
+            type: number
+          mars_distance_km:
+            type: number
+          mars_distance_mi:
+            type: number
+          name:
+            type:
+              - "null"
+              - string
+          norad_id:
+            type: number
+          orbit_type:
+            type:
+              - "null"
+              - string
+          periapsis_arg:
+            type: number
+          periapsis_au:
+            type: number
+          period_days:
+            type: number
+          semi_major_axis_au:
+            type: number
+          speed_kph:
+            type: number
+          speed_mph:
+            type: number
+          video:
+            type:
+              - "null"
+              - string
+          wikipedia:
+            type:
+              - "null"
+              - string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.spacexdata.com/v4/
+        path: /roadster
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: NoAuth
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: ships
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          abs:
+            type:
+              - "null"
+              - number
+          active:
+            type: boolean
+          class:
+            type:
+              - "null"
+              - number
+          home_port:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          image:
+            type:
+              - "null"
+              - string
+          imo:
+            type:
+              - "null"
+              - number
+          latitude:
+            type:
+              - "null"
+              - number
+          course_deg:
+            type:
+              - "null"
+              - number
+          last_ais_update:
+            type:
+              - "null"
+              - string
+          speed_kn:
+            type:
+              - "null"
+              - number
+          launches:
+            items:
+              type:
+                - "null"
+                - string
+            type: array
+          legacy_id:
+            type:
+              - "null"
+              - string
+          link:
+            type:
+              - "null"
+              - string
+          longitude:
+            type:
+              - "null"
+              - number
+          mass_kg:
+            type:
+              - "null"
+              - number
+          mass_lbs:
+            type:
+              - "null"
+              - number
+          mmsi:
+            type:
+              - "null"
+              - number
+          model:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          roles:
+            items:
+              type:
+                - "null"
+                - string
+            type: array
+          status:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          year_built:
+            type:
+              - "null"
+              - number
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.spacexdata.com/v4/
+        path: /ships
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: NoAuth
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: starlink
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          height_km:
+            type:
+              - "null"
+              - number
+          id:
+            type:
+              - "null"
+              - string
+          latitude:
+            type:
+              - "null"
+              - number
+          launch:
+            type:
+              - "null"
+              - string
+          longitude:
+            type:
+              - "null"
+              - number
+          spaceTrack:
+            properties:
+              APOAPSIS:
+                type: number
+              ARG_OF_PERICENTER:
+                type: number
+              BSTAR:
+                type: number
+              CCSDS_OMM_VERS:
+                type:
+                  - "null"
+                  - string
+              CENTER_NAME:
+                type:
+                  - "null"
+                  - string
+              CLASSIFICATION_TYPE:
+                type:
+                  - "null"
+                  - string
+              COMMENT:
+                type:
+                  - "null"
+                  - string
+              COUNTRY_CODE:
+                type:
+                  - "null"
+                  - string
+              CREATION_DATE:
+                type:
+                  - "null"
+                  - string
+              DECAYED:
+                type: number
+              DECAY_DATE:
+                type:
+                  - "null"
+                  - string
+              ECCENTRICITY:
+                type: number
+              ELEMENT_SET_NO:
+                type: number
+              EPHEMERIS_TYPE:
+                type: number
+              EPOCH:
+                type:
+                  - "null"
+                  - string
+              FILE:
+                type: number
+              GP_ID:
+                type: number
+              INCLINATION:
+                type: number
+              LAUNCH_DATE:
+                type:
+                  - "null"
+                  - string
+              MEAN_ANOMALY:
+                type: number
+              MEAN_ELEMENT_THEORY:
+                type:
+                  - "null"
+                  - string
+              MEAN_MOTION:
+                type: number
+              MEAN_MOTION_DDOT:
+                type: number
+              MEAN_MOTION_DOT:
+                type: number
+              NORAD_CAT_ID:
+                type: number
+              OBJECT_ID:
+                type:
+                  - "null"
+                  - string
+              OBJECT_NAME:
+                type:
+                  - "null"
+                  - string
+              OBJECT_TYPE:
+                type:
+                  - "null"
+                  - string
+              ORIGINATOR:
+                type:
+                  - "null"
+                  - string
+              PERIAPSIS:
+                type: number
+              PERIOD:
+                type: number
+              RA_OF_ASC_NODE:
+                type: number
+              RCS_SIZE:
+                type:
+                  - "null"
+                  - string
+              REF_FRAME:
+                type:
+                  - "null"
+                  - string
+              REV_AT_EPOCH:
+                type: number
+              SEMIMAJOR_AXIS:
+                type: number
+              SITE:
+                type:
+                  - "null"
+                  - string
+              TIME_SYSTEM:
+                type:
+                  - "null"
+                  - string
+              TLE_LINE0:
+                type:
+                  - "null"
+                  - string
+              TLE_LINE1:
+                type:
+                  - "null"
+                  - string
+              TLE_LINE2:
+                type:
+                  - "null"
+                  - string
+            type: object
+          velocity_kms:
+            type:
+              - "null"
+              - number
+          version:
+            type:
+              - "null"
+              - string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.spacexdata.com/v4/
+        path: /starlink
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: NoAuth
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+spec:
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required: []
+    properties:
+      id:
+        title: Unique ID for specific source target
+        type: string
+        desciption: Optional, For a specific ID
+        order: 0
+      options:
+        title: Configuration options for endpoints
+        type: string
+        desciption: >-
+          Optional, Possible values for an endpoint. Example values for
+          launches-latest, upcoming, past
+        order: 1
+    additionalProperties: true
+  type: Spec
+metadata:
+  autoImportSchema:
+    launches: false
+    capsules: false
+    company: false
+    crew: false
+    cores: false
+    dragons: false
+    landpads: false
+    payloads: false
+    history: false
+    rockets: false
+    roadster: false
+    ships: false
+    starlink: false

@@ -43,8 +43,11 @@ class SourceLeverHiring(AbstractSource):
     }
 
     def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        authenticator = _auth_from_config(config)
-        _ = authenticator.get_auth_header()
+        try:
+            authenticator = _auth_from_config(config)
+            _ = authenticator.get_auth_header()
+        except Exception as e:
+            return False, str(e)
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

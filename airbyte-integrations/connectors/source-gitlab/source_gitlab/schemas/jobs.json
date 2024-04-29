@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
@@ -10,6 +10,9 @@
     },
     "stage": {
       "type": ["null", "string"]
+    },
+    "archived": {
+      "type": ["null", "boolean"]
     },
     "name": {
       "type": ["null", "string"]
@@ -87,6 +90,21 @@
     },
     "project_id": {
       "type": ["null", "integer"]
+    },
+    "erased_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "failure_reason": {
+      "type": ["null", "string"]
+    },
+    "project": {
+      "type": ["null", "object"],
+      "properties": {
+        "ci_job_token_scope_enabled": {
+          "type": ["null", "boolean"]
+        }
+      }
     }
   }
 }

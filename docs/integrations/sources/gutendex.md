@@ -34,12 +34,14 @@ ___
 
 Lists of book information in the Project Gutenberg database are queried using the API at /books (e.g. gutendex.com/books). Book data will be returned in the format:-
 
-    {
-        "count": <number>,
-        "next": <string or null>,
-        "previous": <string or null>,
-        "results": <array of Books>
-    }
+```
+{
+    "count": <number>,
+    "next": <string or null>,
+    "previous": <string or null>,
+    "results": <array of Books>
+}
+```
 
 where `results` is an array of 0-32 book objects, next and previous are URLs to the next and previous pages of results, and count in the total number of books for the query on all pages combined.
 

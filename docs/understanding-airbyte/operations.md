@@ -1,6 +1,6 @@
 # Operations
 
-Airbyte [connections](connections/) support configuring additional transformations that execute after the sync. Useful applications could be:
+Airbyte [connections](/using-airbyte/core-concepts/sync-modes/) support configuring additional transformations that execute after the sync. Useful applications could be:
 
 * Customized normalization to better fit the requirements of your own business context.
 * Business transformations from a technical data representation into a more logical and business oriented data structure. This can facilitate usage by end-users, non-technical operators, and executives looking to generate Business Intelligence dashboards and reports.

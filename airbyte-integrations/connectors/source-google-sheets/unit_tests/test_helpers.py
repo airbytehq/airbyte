@@ -34,6 +34,18 @@ def google_sheet_client(row_data, spreadsheet_id, client):
     return sheet_client
 
 
+def google_sheet_invalid_client(spreadsheet_id, client):
+    fake_response = Spreadsheet(
+        spreadsheetId=spreadsheet_id,
+        sheets=[Sheet(data=[])],
+    )
+    client.get.return_value.execute.return_value = fake_response
+    with patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes: None):
+        sheet_client = GoogleSheetsClient({"fake": "credentials"}, ["auth_scopes"])
+        sheet_client.client = client
+    return sheet_client
+
+
 class TestHelpers(unittest.TestCase):
     def test_headers_to_airbyte_stream(self):
         sheet_name = "sheet1"
@@ -53,7 +65,7 @@ class TestHelpers(unittest.TestCase):
         actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
         self.assertEqual(expected_stream, actual_stream)
 
-    def test_duplicate_headers_retrived(self):
+    def test_duplicate_headers_retrieved(self):
         header_values = ["h1", "h1", "h3"]
 
         expected_valid_header_values = ["h3"]
@@ -190,6 +202,26 @@ class TestHelpers(unittest.TestCase):
         self.assertEqual(Helpers.get_first_row(sheet_client, spreadsheet_id, sheet), [])
         client.get.assert_called_with(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet}!1:1")
 
+    def test_check_sheet_is_valid(self):
+        spreadsheet_id = "123"
+        sheet = "s1"
+        expected_first_row = ["1", "2", "3", "4"]
+        row_data = [RowData(values=[CellData(formattedValue=v) for v in expected_first_row])]
+        client = Mock()
+        sheet_client = google_sheet_client(row_data, spreadsheet_id, client)
+        is_valid, reason = Helpers.check_sheet_is_valid(sheet_client, spreadsheet_id, sheet)
+        self.assertTrue(is_valid)
+        self.assertEqual(reason, "")
+
+    def test_check_sheet_is_valid_empty(self):
+        spreadsheet_id = "123"
+        sheet = "s1"
+        client = Mock()
+        sheet_client = google_sheet_invalid_client(spreadsheet_id, client)
+        is_valid, reason = Helpers.check_sheet_is_valid(sheet_client, spreadsheet_id, sheet)
+        self.assertFalse(is_valid)
+        self.assertEqual(reason, "Expected data for exactly one range for sheet s1")
+
     def test_get_sheets_in_spreadsheet(self):
         spreadsheet_id = "id1"
         expected_sheets = ["s1", "s2"]
@@ -234,10 +266,36 @@ class TestHelpers(unittest.TestCase):
         with patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes: None):
             sheet_client = GoogleSheetsClient({"fake": "credentials"}, ["auth_scopes"])
             sheet_client.client = client
-        actual = Helpers.get_available_sheets_to_column_index_to_name(
-            sheet_client, spreadsheet_id, {sheet1: frozenset(sheet1_first_row), "doesnotexist": frozenset(["1", "2"])}
-        )
+
         expected = {sheet1: {0: "1", 1: "2", 2: "3", 3: "4"}}
+
+        # names_conversion = False
+        actual = Helpers.get_available_sheets_to_column_index_to_name(
+            client=sheet_client,
+            spreadsheet_id=spreadsheet_id,
+            requested_sheets_and_columns={sheet1: frozenset(sheet1_first_row), "doesnotexist": frozenset(["1", "2"])},
+        )
+        self.assertEqual(expected, actual)
+
+        # names_conversion = False, with null header cell
+        sheet1_first_row = ["1", "2", "3", "4", None]
+        expected = {sheet1: {0: "1", 1: "2", 2: "3", 3: "4", 4: None}}
+        actual = Helpers.get_available_sheets_to_column_index_to_name(
+            client=sheet_client,
+            spreadsheet_id=spreadsheet_id,
+            requested_sheets_and_columns={sheet1: frozenset(sheet1_first_row), "doesnotexist": frozenset(["1", "2"])},
+        )
+        self.assertEqual(expected, actual)
+
+        # names_conversion = True, with null header cell
+        sheet1_first_row = ["AB", "Some Header", "Header", "4", "1MyName", None]
+        expected = {sheet1: {0: "ab", 1: "some_header", 2: "header", 3: "_4", 4: "_1_my_name", 5: None}}
+        actual = Helpers.get_available_sheets_to_column_index_to_name(
+            client=sheet_client,
+            spreadsheet_id=spreadsheet_id,
+            requested_sheets_and_columns={sheet1: frozenset(sheet1_first_row), "doesnotexist": frozenset(["1", "2"])},
+            names_conversion=True,
+        )
 
         self.assertEqual(expected, actual)
 

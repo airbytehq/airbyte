@@ -58,6 +58,23 @@
     },
     "type": {
       "type": ["null", "string"]
+    },
+    "team_priority_level": {
+      "type": ["null", "object"],
+      "properties": {
+        "primary_team_ids": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "integer"]
+          }
+        },
+        "secondary_team_ids": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "integer"]
+          }
+        }
+      }
     }
   }
 }

@@ -29,14 +29,6 @@ used for editable installs (`pip install -e`) to pull in Python dependencies fro
 If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
 should work as you expect.
 
-#### Building via Gradle
-You can also build the connector in Gradle. This is typically used in CI and not needed for your development workflow.
-
-To build using Gradle, from the Airbyte repository root, run:
-```
-./gradlew :airbyte-integrations:connectors:source-google-webfonts:build
-```
-
 #### Create credentials
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/google-webfonts)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_google_webfonts/spec.yaml` file.
@@ -48,18 +40,19 @@ and place them into `secrets/config.json`.
 
 ### Locally running the connector docker image
 
+
 #### Build
-First, make sure you build the latest Docker image:
-```
-docker build . -t airbyte/source-google-webfonts:dev
+**Via [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) (recommended):**
+```bash
+airbyte-ci connectors --name=source-google-webfonts build
 ```
 
-You can also build the connector image via Gradle:
+An image will be built with the tag `airbyte/source-google-webfonts:dev`.
+
+**Via `docker build`:**
+```bash
+docker build -t airbyte/source-google-webfonts:dev .
 ```
-./gradlew :airbyte-integrations:connectors:source-google-webfonts:airbyteDocker
-```
-When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
-the Dockerfile.
 
 #### Run
 Then run any of the connector commands as follows:
@@ -69,24 +62,16 @@ docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-google-webfonts:dev ch
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-google-webfonts:dev discover --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-google-webfonts:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
+
 ## Testing
+You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+```bash
+airbyte-ci connectors --name=source-google-webfonts test
+```
 
-#### Acceptance Tests
-Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
+### Customizing acceptance Tests
+Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
-
-To run your integration tests with docker
-
-### Using gradle to run tests
-All commands should be run from airbyte project root.
-To run unit tests:
-```
-./gradlew :airbyte-integrations:connectors:source-google-webfonts:unitTest
-```
-To run acceptance and custom integration tests:
-```
-./gradlew :airbyte-integrations:connectors:source-google-webfonts:integrationTest
-```
 
 ## Dependency Management
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
@@ -96,8 +81,11 @@ We split dependencies between two groups, dependencies that are:
 
 ### Publishing a new version of the connector
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
-1. Make sure your changes are passing unit and integration tests.
-1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use [SemVer](https://semver.org/)).
-1. Create a Pull Request.
-1. Pat yourself on the back for being an awesome contributor.
-1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-google-webfonts test`
+2. Bump the connector version in `metadata.yaml`: increment the `dockerImageTag` value. Please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors).
+3. Make sure the `metadata.yaml` content is up to date.
+4. Make the connector documentation and its changelog is up to date (`docs/integrations/sources/google-webfonts.md`).
+5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
+6. Pat yourself on the back for being an awesome contributor.
+7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+

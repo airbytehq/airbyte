@@ -1,9 +1,8 @@
 {
-  "$schema": "http://json-schema.org/draft-03/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "title": "Booked invoice collection schema",
   "description": "A schema for retrieving a collection of booked invoices.",
   "type": "object",
-  "restdocs": "http://restdocs.e-conomic.com/#get-invoices-booked",
   "properties": {
     "bookedInvoiceNumber": {
       "type": "integer",
@@ -11,6 +10,9 @@
       "filterable": true,
       "sortable": true,
       "description": "A reference number for the booked invoice document."
+    },
+    "orderNumber": {
+      "type": ["null", "integer"]
     },
     "date": {
       "type": "string",

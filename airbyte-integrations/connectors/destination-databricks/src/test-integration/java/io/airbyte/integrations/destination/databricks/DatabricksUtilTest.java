@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.databricks;
 
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
 import io.airbyte.integrations.destination.databricks.utils.DatabricksConstants;
 import io.airbyte.integrations.destination.databricks.utils.DatabricksDatabaseUtil;
 import java.sql.SQLException;

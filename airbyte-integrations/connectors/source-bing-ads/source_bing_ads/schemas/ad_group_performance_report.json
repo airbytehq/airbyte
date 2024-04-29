@@ -12,7 +12,8 @@
       "type": ["null", "integer"]
     },
     "TimePeriod": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date"
     },
     "CurrencyCode": {
       "type": ["null", "string"]

@@ -23,7 +23,7 @@ properties:
     type: boolean
   license:
     type: string
-  supportUrl:
+  documentationUrl:
     type: string
     format: uri
   connectorSubtype:

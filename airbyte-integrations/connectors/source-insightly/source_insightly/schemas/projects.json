@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "additionalProperties": true,
   "type": "object",
   "properties": {
     "PROJECT_ID": {
@@ -59,6 +60,12 @@
     },
     "RESPONSIBLE_USER_ID": {
       "type": ["integer", "null"]
+    },
+    "VISIBLE_TEAM_ID": {
+      "type": ["integer", "null"]
+    },
+    "VISIBLE_TO": {
+      "type": ["string", "null"]
     },
     "CUSTOMFIELDS": {
       "type": "array",

@@ -27,7 +27,15 @@
       "type": ["null", "string"]
     },
     "LinkedAgencies": {
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "properties": {
+        "Id": {
+          "type": ["null", "integer"]
+        },
+        "Name": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "TaxInformation": {
       "type": ["null", "string"]
@@ -89,7 +97,9 @@
       "type": ["null", "number"]
     },
     "LastModifiedTime": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "Name": {
       "type": ["null", "string"]
@@ -117,6 +127,32 @@
     },
     "TimeStamp": {
       "type": ["null", "string"]
+    },
+    "TaxCertificate": {
+      "type": ["null", "object"],
+      "properties": {
+        "TaxCertificateBlobContainerName": {
+          "type": ["null", "string"]
+        },
+        "Status": {
+          "type": ["null", "string"],
+          "enum": ["Invalid", "Pending", "Valid"]
+        },
+        "TaxCertificates": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "key": {
+                "type": ["null", "string"]
+              },
+              "value": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

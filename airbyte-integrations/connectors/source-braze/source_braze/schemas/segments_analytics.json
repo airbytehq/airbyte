@@ -9,7 +9,7 @@
       "type": ["null", "string"]
     },
     "size": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     }
   }
 }

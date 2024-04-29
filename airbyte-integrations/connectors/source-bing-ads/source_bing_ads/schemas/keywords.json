@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "Account Id": {
+      "type": ["null", "integer"]
+    },
+    "Id": {
+      "type": ["null", "integer"]
+    },
+    "Ad Group": {
+      "type": ["null", "string"]
+    },
+    "Bid": {
+      "type": ["null", "string"]
+    },
+    "Bid Strategy Type": {
+      "type": ["null", "string"]
+    },
+    "Campaign": {
+      "type": ["null", "string"]
+    },
+    "Client Id": {
+      "type": ["null", "integer"]
+    },
+    "Custom Parameter": {
+      "type": ["null", "string"]
+    },
+    "Destination Url": {
+      "type": ["null", "string"]
+    },
+    "Modified Time": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "Editorial Appeal Status": {
+      "type": ["null", "string"]
+    },
+    "Editorial Location": {
+      "type": ["null", "string"]
+    },
+    "Editorial Reason Code": {
+      "type": ["null", "string"]
+    },
+    "Editorial Status": {
+      "type": ["null", "string"]
+    },
+    "Editorial Term": {
+      "type": ["null", "string"]
+    },
+    "Final Url": {
+      "type": ["null", "string"]
+    },
+    "Final Url Suffix": {
+      "type": ["null", "string"]
+    },
+    "Inherited Bid Strategy Type": {
+      "type": ["null", "string"]
+    },
+    "Keyword": {
+      "type": ["null", "string"]
+    },
+    "Keyword Relevance": {
+      "type": ["null", "string"]
+    },
+    "Landing Page Relevance": {
+      "type": ["null", "string"]
+    },
+    "Landing Page User Experience": {
+      "type": ["null", "string"]
+    },
+    "Match Type": {
+      "type": ["null", "string"]
+    },
+    "Mobile Final Url": {
+      "type": ["null", "string"]
+    },
+    "Param1": {
+      "type": ["null", "string"]
+    },
+    "Param2": {
+      "type": ["null", "string"]
+    },
+    "Param3": {
+      "type": ["null", "string"]
+    },
+    "Parent Id": {
+      "type": ["null", "string"]
+    },
+    "Publisher Countries": {
+      "type": ["null", "string"]
+    },
+    "Quality Score": {
+      "type": ["null", "string"]
+    },
+    "Status": {
+      "type": ["null", "string"]
+    },
+    "Tracking Template": {
+      "type": ["null", "string"]
+    }
+  }
+}

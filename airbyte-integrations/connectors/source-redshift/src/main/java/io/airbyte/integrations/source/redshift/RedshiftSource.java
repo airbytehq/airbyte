@@ -6,16 +6,16 @@ package io.airbyte.integrations.source.redshift;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto;
+import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
-import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -47,10 +47,7 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
     final ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, redshiftConfig.get(JdbcUtils.USERNAME_KEY).asText())
         .put(JdbcUtils.PASSWORD_KEY, redshiftConfig.get(JdbcUtils.PASSWORD_KEY).asText())
-        .put(JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
-            redshiftConfig.get(JdbcUtils.HOST_KEY).asText(),
-            redshiftConfig.get(JdbcUtils.PORT_KEY).asInt(),
-            redshiftConfig.get(JdbcUtils.DATABASE_KEY).asText()));
+        .put(JdbcUtils.JDBC_URL_KEY, getJdbcUrl(redshiftConfig));
 
     if (redshiftConfig.has(JdbcUtils.SCHEMAS_KEY) && redshiftConfig.get(JdbcUtils.SCHEMAS_KEY).isArray()) {
       schemas = new ArrayList<>();
@@ -73,6 +70,13 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
 
     return Jsons.jsonNode(builder
         .build());
+  }
+
+  public static String getJdbcUrl(final JsonNode redshiftConfig) {
+    return String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
+        redshiftConfig.get(JdbcUtils.HOST_KEY).asText(),
+        redshiftConfig.get(JdbcUtils.PORT_KEY).asInt(),
+        redshiftConfig.get(JdbcUtils.DATABASE_KEY).asText());
   }
 
   private void addSsl(final List<String> additionalProperties) {
@@ -105,6 +109,7 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
     return new HashSet<>(database.bufferedResultSetQuery(
         connection -> {

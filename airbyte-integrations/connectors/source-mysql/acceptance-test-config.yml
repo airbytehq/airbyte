@@ -3,5 +3,8 @@
 connector_image: airbyte/source-mysql:dev
 tests:
   spec:
-    - spec_path: "src/test-integration/resources/expected_spec.json"
+    - spec_path: "src/test-integration/resources/expected_oss_spec.json"
+      config_path: "src/test-integration/resources/dummy_config.json"
+    - deployment_mode: cloud
+      spec_path: "src/test-integration/resources/expected_cloud_spec.json"
       config_path: "src/test-integration/resources/dummy_config.json"

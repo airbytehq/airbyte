@@ -88,6 +88,12 @@
     "replyCount": {
       "type": ["null", "integer"]
     },
+    "schedule": {
+      "items": {
+        "type": ["null", "integer"]
+      },
+      "type": ["null", "array"]
+    },
     "scheduleCount": {
       "type": ["null", "integer"]
     },

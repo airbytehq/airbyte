@@ -1,5 +1,9 @@
-{
-  "nasa_apod": {
-    "date": "9999-12-31"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "date": "9999-12-31" },
+      "stream_descriptor": { "name": "nasa_apod" }
+    }
   }
-}
+]

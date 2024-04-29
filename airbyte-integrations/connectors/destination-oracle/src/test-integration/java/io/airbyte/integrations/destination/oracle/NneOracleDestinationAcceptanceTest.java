@@ -12,12 +12,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.DefaultJdbcDatabase;
-import io.airbyte.db.jdbc.JdbcDatabase;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -43,7 +44,8 @@ public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestina
                 config.get("host").asText(),
                 config.get("port").asInt(),
                 config.get("sid").asText()),
-            getAdditionalProperties(algorithm)));
+            getAdditionalProperties(algorithm),
+            Duration.ofMinutes(5)));
 
     final String networkServiceBanner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
@@ -78,7 +80,7 @@ public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestina
                 clone.get("host").asText(),
                 clone.get("port").asInt(),
                 clone.get("sid").asText()),
-            getAdditionalProperties(algorithm)));
+            getAdditionalProperties(algorithm), Duration.ofMinutes(5)));
 
     final String networkServiceBanner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
     final List<JsonNode> collect = database.queryJsons(networkServiceBanner);

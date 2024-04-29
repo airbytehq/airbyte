@@ -1,0 +1,23 @@
+{
+  "object": "list",
+  "url": "/v1/accounts/acct_1032D82eZvKYlo2C/external_accounts",
+  "has_more": false,
+  "data": [
+    {
+      "id": "ba_1NB1IV2eZvKYlo2CByiLrMWv",
+      "object": "bank_account",
+      "account_holder_name": "Jane Austen",
+      "account_holder_type": "company",
+      "account_type": null,
+      "bank_name": "STRIPE TEST BANK",
+      "country": "US",
+      "currency": "usd",
+      "fingerprint": "1JWtPxqbdX5Gamtc",
+      "last4": "6789",
+      "metadata": {},
+      "routing_number": "110000000",
+      "status": "new",
+      "account": "acct_1032D82eZvKYlo2C"
+    }
+  ]
+}

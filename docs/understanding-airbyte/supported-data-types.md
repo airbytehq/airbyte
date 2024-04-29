@@ -10,20 +10,20 @@ This type system does not constrain values. However, destinations may not fully 
 
 This table summarizes the available types. See the [Specific Types](#specific-types) section for explanation of optional parameters.
 
-| Airbyte type                                                   | JSON Schema                                                                               | Examples                                                                        |
-| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| String                                                         | `{"type": "string""}`                                                                     | `"foo bar"`                                                                     |
-| Boolean                                                        | `{"type": "boolean"}`                                                                     | `true` or `false`                                                               |
-| Date                                                           | `{"type": "string", "format": "date"}`                                                    | `"2021-01-23"`, `"2021-01-23 BC"`                                               |
-| Timestamp with timezone                                        | `{"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"}`    | `"2022-11-22T01:23:45.123456+05:00"`, `"2022-11-22T01:23:45Z BC"`               |
-| Timestamp without timezone                                     | `{"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"}` | `"2022-11-22T01:23:45"`, `"2022-11-22T01:23:45.123456 BC"`                      |
-| Time without timezone                                          | `{"type": "string", "airbyte_type": "time_with_timezone"}`                                | `"01:23:45.123456"`, `"01:23:45"`                                               |
-| Time with timezone                                             | `{"type": "string", "airbyte_type": "time_without_timezone"}`                             | `"01:23:45.123456+05:00"`, `"01:23:45Z"`                                        |
-| Integer                                                        | `{"type": "integer"}` or `{"type": "number", "airbyte_type": "integer"}`                  | `42`                                                                            |
-| Number                                                         | `{"type": "number"}`                                                                      | `1234.56`                                                                       |
-| Array                                                          | `{"type": "array"}`; optionally `items`                                                   | `[1, 2, 3]`                                                                     |
-| Object                                                         | `{"type": "object"}`; optionally `properties`                                             | `{"foo": "bar"}`                                                                |
-| Union                                                          | `{"oneOf": [...]}`                                                                        |                                                                                 |ß
+| Airbyte type               | JSON Schema                                                                                         | Examples                                                          |
+|----------------------------|-----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------|
+| String                     | `{"type": "string"}`                                                                                | `"foo bar"`                                                       |
+| Boolean                    | `{"type": "boolean"}`                                                                               | `true` or `false`                                                 |
+| Date                       | `{"type": "string", "format": "date"}`                                                              | `"2021-01-23"`, `"2021-01-23 BC"`                                 |
+| Timestamp without timezone | `{"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"}`           | `"2022-11-22T01:23:45"`, `"2022-11-22T01:23:45.123456 BC"`        |
+| Timestamp with timezone    | `{"type": "string", "format": "date-time"}`; optionally `"airbyte_type": "timestamp_with_timezone"` | `"2022-11-22T01:23:45.123456+05:00"`, `"2022-11-22T01:23:45Z BC"` |
+| Time without timezone      | `{"type": "string", "format": "time", "airbyte_type": "time_without_timezone"}`                     | `"01:23:45.123456"`, `"01:23:45"`                                 |
+| Time with timezone         | `{"type": "string", "format": "time", "airbyte_type": "time_with_timezone"}`                        | `"01:23:45.123456+05:00"`, `"01:23:45Z"`                          |
+| Integer                    | `{"type": "integer"}` or `{"type": "number", "airbyte_type": "integer"}`                            | `42`                                                              |
+| Number                     | `{"type": "number"}`                                                                                | `1234.56`                                                         |
+| Array                      | `{"type": "array"}`; optionally `items`                                                             | `[1, 2, 3]`                                                       |
+| Object                     | `{"type": "object"}`; optionally `properties`                                                       | `{"foo": "bar"}`                                                  |
+| Union                      | `{"oneOf": [...]}`                                                                                  |                                                                   |
 
 ### Record structure
 As a reminder, sources expose a `discover` command, which returns a list of [`AirbyteStreams`](https://github.com/airbytehq/airbyte/blob/111131a193359027d0081de1290eb4bb846662ef/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L122), and a `read` method, which emits a series of [`AirbyteRecordMessages`](https://github.com/airbytehq/airbyte/blob/111131a193359027d0081de1290eb4bb846662ef/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L46-L66). The type system determines what a valid `json_schema` is for an `AirbyteStream`, which in turn dictates what messages `read` is allowed to emit.
@@ -46,7 +46,7 @@ For example, a source could produce this `AirbyteStream` (remember that the `jso
         "items": {
           "type": "string",
           "format": "date-time",
-          "airbyte_type": "timestampt_with_timezone"
+          "airbyte_type": "timestamp_with_timezone"
         }
       }
     }
@@ -69,7 +69,7 @@ Along with this `AirbyteRecordMessage` (observe that the `data` field conforms t
 The top-level `object` must conform to the type system. This [means](#objects) that all of the fields must also conform to the type system.
 
 #### Nulls
-Many sources cannot guarantee that all fields are present on all records. In these cases, sources should simply not list them as `required` fields. In most cases, sources do not need to list fields as required; by default, all fields are treated as nullable.
+Many sources cannot guarantee that all fields are present on all records. In these cases, sources should not list them as `required` fields, and add that the property can be null in the jsonSchema, e.g. `[null, string]`.  If a null property is found for a non-nullable schema, a validation error may occur in the platform or the destination may have trouble storing the record. 
 
 #### Unsupported types
 Destinations must have handling for all types, but they are free to cast types to a convenient representation. For example, let's say a source discovers a stream with this schema:

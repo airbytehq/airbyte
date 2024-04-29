@@ -3,7 +3,7 @@
 connector_image: airbyte/source-lever-hiring:dev
 tests:
   spec:
-    - spec_path: "integration_tests/spec.json"
+    - spec_path: "source_lever_hiring/spec.json"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

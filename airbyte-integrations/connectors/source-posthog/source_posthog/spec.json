@@ -26,6 +26,16 @@
         "title": "Base URL",
         "description": "Base PostHog url. Defaults to PostHog Cloud (https://app.posthog.com).",
         "examples": ["https://posthog.example.com"]
+      },
+      "events_time_step": {
+        "type": "integer",
+        "order": 3,
+        "default": 30,
+        "minimum": 1,
+        "maximum": 91,
+        "title": "Events stream slice step size (in days)",
+        "description": "Set lower value in case of failing long running sync of events stream.",
+        "examples": [30, 10, 5]
       }
     }
   }

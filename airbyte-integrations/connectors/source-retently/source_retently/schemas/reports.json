@@ -4,77 +4,81 @@
   "additionalProperties": true,
   "properties": {
     "campaignId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
-    "trend": {
-      "type": "array",
+    "questionsStats": {
+      "type": ["null", "array"],
       "items": {
         "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "trend": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
         "properties": {
           "day": {
-            "type": ["string", "null"]
+            "type": ["null", "string"]
           },
           "promoters": {
-            "type": ["number", "null"]
+            "type": ["null", "number"]
           },
           "passives": {
-            "type": ["number", "null"]
+            "type": ["null", "number"]
           },
           "detractors": {
-            "type": ["number", "null"]
+            "type": ["null", "number"]
           },
           "total": {
-            "type": ["number", "null"]
+            "type": ["null", "number"]
           },
           "score": {
-            "type": ["number", "null"]
+            "type": ["null", "number"]
           }
         }
       }
     },
     "last": {
-      "type": "object",
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "promoters": {
-          "type": ["number", "null"]
+          "type": ["null", "number"]
         },
         "passives": {
-          "type": ["number", "null"]
+          "type": ["null", "number"]
         },
         "detractors": {
-          "type": ["number", "null"]
+          "type": ["null", "number"]
         },
         "total": {
-          "type": ["number", "null"]
+          "type": ["null", "number"]
         },
         "score": {
-          "type": ["number", "null"]
+          "type": ["null", "number"]
         }
       }
     },
-    "questionsStats": {
-      "type": ["null", "array"],
-      "items": {
-        "type": "string"
-      }
-    },
     "deliveryStats": {
-      "type": "object",
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "totalCount": {
-          "type": ["number", "null"]
+          "type": ["null", "number"]
         },
         "opened": {
-          "type": ["number", "null"]
+          "type": ["null", "number"]
         },
         "responded": {
-          "type": ["number", "null"]
+          "type": ["null", "number"]
         },
         "optedOut": {
-          "type": ["number", "null"]
+          "type": ["null", "number"]
         },
         "isBounced": {
-          "type": ["number", "null"]
+          "type": ["null", "number"]
         }
       }
     }

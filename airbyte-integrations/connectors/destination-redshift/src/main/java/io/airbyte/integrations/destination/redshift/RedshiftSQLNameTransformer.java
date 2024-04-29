@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.redshift;
 
-import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 
 public class RedshiftSQLNameTransformer extends StandardNameTransformer {
 

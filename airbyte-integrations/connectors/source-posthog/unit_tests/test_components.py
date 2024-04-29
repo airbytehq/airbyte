@@ -3,7 +3,6 @@
 #
 
 import pytest as pytest
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
@@ -71,10 +70,10 @@ stream_slicers = [
 def test_update_cursor(test_name, initial_state, stream_slice, last_record, expected_state):
     slicer = EventsCartesianProductStreamSlicer(stream_slicers=stream_slicers, parameters={})
     # set initial state
-    slicer.update_cursor(initial_state, None)
+    slicer.set_initial_state(initial_state)
 
     if last_record:
-        slicer.update_cursor(stream_slice, last_record)
+        slicer.close_slice(stream_slice, last_record)
 
     updated_state = slicer.get_stream_state()
     assert updated_state == expected_state
@@ -122,5 +121,6 @@ def test_update_cursor(test_name, initial_state, stream_slice, last_record, expe
 )
 def test_stream_slices(test_name, stream_state, expected_stream_slices):
     slicer = EventsCartesianProductStreamSlicer(stream_slicers=stream_slicers, parameters={})
-    stream_slices = slicer.stream_slices(SyncMode.incremental, stream_state=stream_state)
+    slicer.set_initial_state(stream_state)
+    stream_slices = slicer.stream_slices()
     assert list(stream_slices) == expected_stream_slices

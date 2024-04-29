@@ -15,8 +15,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -93,6 +94,20 @@ class PostgresUtilsTest {
     ((ObjectNode) config).put("replication_method", replicationMethod2);
 
     assertFalse(PostgresUtils.shouldFlushAfterSync(config));
+  }
+
+  @Test
+  void testDebugMode() {
+    final var config = MoreMappers.initMapper().createObjectNode();
+    assertFalse(PostgresUtils.isCdc(config));
+
+    config.set("replication_method", Jsons.jsonNode(Map.of(
+        "replication_slot", "slot",
+        "publication", "ab_pub")));
+    assertFalse(PostgresUtils.isDebugMode(config));
+
+    config.set("debug_mode", Jsons.jsonNode(true));
+    assertTrue(PostgresUtils.isDebugMode(config));
   }
 
 }

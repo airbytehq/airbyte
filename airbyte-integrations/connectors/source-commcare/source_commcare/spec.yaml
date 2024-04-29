@@ -15,7 +15,7 @@ connectionSpecification:
         Commcare API Key
       airbyte_secret: true
       order: 0
-    project_space: 
+    project_space:
       type: string
       title: Project Space
       description: >-

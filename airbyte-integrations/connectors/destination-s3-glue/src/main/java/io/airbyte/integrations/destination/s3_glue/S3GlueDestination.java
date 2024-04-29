@@ -5,17 +5,17 @@
 package io.airbyte.integrations.destination.s3_glue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
+import io.airbyte.cdk.integrations.destination.s3.BaseS3Destination;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations;
+import io.airbyte.cdk.integrations.destination.s3.SerializedBufferFactory;
+import io.airbyte.cdk.integrations.destination.s3.StorageProvider;
+import io.airbyte.cdk.integrations.destination.s3.util.S3NameTransformer;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.destination.record_buffer.FileBuffer;
-import io.airbyte.integrations.destination.s3.BaseS3Destination;
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.integrations.destination.s3.S3StorageOperations;
-import io.airbyte.integrations.destination.s3.SerializedBufferFactory;
-import io.airbyte.integrations.destination.s3.StorageProvider;
-import io.airbyte.integrations.destination.s3.util.S3NameTransformer;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;

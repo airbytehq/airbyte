@@ -5,11 +5,11 @@
 package io.airbyte.integrations.destination.databricks;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.databricks.azure.DatabricksAzureBlobStorageConfigProvider;
 import io.airbyte.integrations.destination.databricks.s3.DatabricksS3StorageConfigProvider;
 import io.airbyte.integrations.destination.databricks.utils.DatabricksConstants;
-import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

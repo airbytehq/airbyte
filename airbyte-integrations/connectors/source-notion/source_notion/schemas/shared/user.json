@@ -10,7 +10,7 @@
       "type": "string"
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "avatar_url": {
       "type": ["null", "string"]
@@ -23,7 +23,7 @@
       "additionalProperties": true,
       "properties": {
         "email": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
@@ -37,10 +37,38 @@
             "type": {
               "type": "string"
             },
+            "info": {
+              "avatar_url": {
+                "type": ["null", "string"]
+              },
+              "id": {
+                "type": ["null", "string"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              },
+              "object": {
+                "type": ["null", "string"]
+              },
+              "person": {
+                "type": ["null", "object"],
+                "properties": {
+                  "email": {
+                    "type": ["null", "string"]
+                  },
+                  "type": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            },
             "workspace": {
               "type": ["null", "boolean"]
             }
           }
+        },
+        "workspace_name": {
+          "type": ["null", "string"]
         }
       }
     }

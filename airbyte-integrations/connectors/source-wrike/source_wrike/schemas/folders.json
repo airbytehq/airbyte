@@ -1,12 +1,13 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["object", "null"],
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "scope": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "createdDate": {
       "type": ["null", "string"],
@@ -19,10 +20,10 @@
       }
     },
     "space": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "title": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "project": {
       "type": ["object", "null"],

@@ -6,15 +6,15 @@
     },
     "number_integer_type": {
       "type": "number",
-      "airbyte_type" : "integer"
+      "airbyte_type": "integer"
     },
     "string_big_integer_type": {
       "type": "string",
-      "airbyte_type" : "big_integer"
+      "airbyte_type": "big_integer"
     },
     "number_float_type": {
       "type": "number",
-      "airbyte_type" : "float"
+      "airbyte_type": "float"
     },
     "number_type": {
       "type": "number"

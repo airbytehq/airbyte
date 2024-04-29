@@ -36,9 +36,7 @@
       }
     ],
     "name": "Jira Software",
-    "defaultGroups": [
-      "jira-software-users"
-    ],
+    "defaultGroups": ["jira-software-users"],
     "defaultGroupsDetails": [
       {
         "name": "jira-software-users",

@@ -22,6 +22,15 @@
     "ad_name": {
       "type": "string"
     },
+    "tracking_app_id": {
+      "type": ["null", "string"]
+    },
+    "tracking_offline_event_set_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
     "call_to_action": {
       "type": ["null", "string"]
     },
@@ -116,6 +125,9 @@
     "click_tracking_url": {
       "type": ["null", "string"]
     },
+    "tracking_pixel_id": {
+      "type": ["null", "integer"]
+    },
     "deeplink": {
       "type": ["null", "string"]
     },
@@ -186,8 +198,23 @@
     "identity_type": {
       "type": ["null", "string"]
     },
+    "identity_authorized_bc_id": {
+      "type": ["null", "string"]
+    },
+    "phone_region_code": {
+      "type": ["null", "string"]
+    },
+    "phone_region_calling_code": {
+      "type": ["null", "string"]
+    },
     "optimization_event": {
       "type": ["null", "string"]
+    },
+    "phone_number": {
+      "type": ["null", "string"]
+    },
+    "carousel_image_index": {
+      "type": ["null", "integer"]
     },
     "viewability_postbid_partner": {
       "type": ["null", "string"]
@@ -196,6 +223,76 @@
       "type": ["null", "string"]
     },
     "music_id": {
+      "type": ["null", "string"]
+    },
+    "utm_params": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "key": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "shopping_ads_deeplink_type": {
+      "type": ["null", "string"]
+    },
+    "dark_post_status": {
+      "type": ["null", "string"]
+    },
+    "branded_content_disabled": {
+      "type": ["null", "string"]
+    },
+    "product_specific_type": {
+      "type": ["null", "string"]
+    },
+    "catalog_id": {
+      "type": ["null", "string"]
+    },
+    "item_group_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "product_set_id": {
+      "type": ["null", "string"]
+    },
+    "sku_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "dynamic_format": {
+      "type": ["null", "string"]
+    },
+    "vertical_video_strategy": {
+      "type": ["null", "string"]
+    },
+    "dynamic_destination": {
+      "type": ["null", "string"]
+    },
+    "showcase_products": {
+      "type": ["null", "object"],
+      "properties": {
+        "item_group_id": {
+          "type": ["null", "string"]
+        },
+        "store_id": {
+          "type": ["null", "string"]
+        },
+        "catalog_id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "tiktok_page_category": {
       "type": ["null", "string"]
     }
   }

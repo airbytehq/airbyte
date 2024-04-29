@@ -1,24 +1,24 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_zone": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_country": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "iso_code": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "active": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }
