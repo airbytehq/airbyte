@@ -12,8 +12,8 @@ import pytest
 import requests_mock
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.streams import Stream
-from unit_tests.salesforce_job_response_builder import SalesforceJobResponseBuilder
 from source_salesforce.source import SourceSalesforce
+from unit_tests.salesforce_job_response_builder import SalesforceJobResponseBuilder
 
 HERE = Path(__file__).parent
 _ANY_CATALOG = ConfiguredAirbyteCatalog.parse_obj({"streams": []})

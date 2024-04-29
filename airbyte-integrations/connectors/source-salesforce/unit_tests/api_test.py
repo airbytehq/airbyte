@@ -47,7 +47,7 @@ from source_salesforce.streams import (
 
 _A_CHUNKED_RESPONSE = [b"first chunk", b"second chunk"]
 _A_JSON_RESPONSE = {"id": "any id"}
-_A_SUCCESSFUL_JOB_CREATION_RESPONSE = SalesforceJobResponseBuilder().with_id("any id").with_state("JobComplete").get_response()
+_A_SUCCESSFUL_JOB_CREATION_RESPONSE = SalesforceJobResponseBuilder().with_state("JobComplete").get_response()
 _A_PK = "a_pk"
 _A_STREAM_NAME = "a_stream_name"
 
