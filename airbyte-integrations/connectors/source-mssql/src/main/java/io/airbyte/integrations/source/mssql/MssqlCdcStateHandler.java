@@ -47,10 +47,10 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
     final JsonNode asJson = Jsons.jsonNode(state);
 
     LOGGER.info("debezium state offset: {}", Jsons.jsonNode(offset));
-    LOGGER.info("*** stateManager before {}", stateManager);
+    LOGGER.info("*** stateManager before {} {}", stateManager, stateManager.getCdcStateManager());
     final CdcState cdcState = new CdcState().withState(asJson);
     stateManager.getCdcStateManager().setCdcState(cdcState);
-    LOGGER.info("*** stateManager after {}", stateManager);
+    LOGGER.info("*** stateManager after {} {}", stateManager, stateManager.getCdcStateManager());
     /*
      * Namespace pair is ignored by global state manager, but is needed for satisfy the API contract.
      * Therefore, provide an empty optional.
