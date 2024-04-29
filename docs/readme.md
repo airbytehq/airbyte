@@ -1,6 +1,9 @@
 ---
 displayed_sidebar: docs
 ---
+import OctaviaComic from './assets/docs/after-xkcd-airbyte-2.jpg'
+import AirbyteGif from './assets/docs/airbyte_product.gif'
+
 # Welcome to Airbyte Docs
 ## What is Airbyte?
 
@@ -16,20 +19,33 @@ There are three major components to know in Airbyte: 
 
 Airbyte is suitable for a wide range of data integration use cases, including AI data infrastructure and EL(T) workloads. Airbyte is also [embeddable](https://airbyte.com/product/powered-by-airbyte) within your own application or platform to power your product.
 
-## For Airbyte Cloud users
+<div align="center" >
+   <img src={AirbyteGif} alt="Airbyte Product GIF" width="800" height="470" />
+</div>
 
-Browse the [connector catalog](/integrations/) to find the connector you want. In case the connector is not yet supported on Airbyte Cloud, consider using [Airbyte Open Source](#for-airbyte-open-source-users).
+## Why an open-source data movement infrastructure?
 
-Next, check out the [step-by-step tutorial](/using-airbyte/getting-started) to sign up for Airbyte Cloud, understand Airbyte [concepts](/using-airbyte/core-concepts), and run your first sync.
+Today, teams and organizations require efficient and timely data access to an ever-growing list of data sources. In-house data pipelines are brittle and costly to build and maintain. How many times have we been in this situation?
+<div align="center" >
+   <img src={OctaviaComic} alt="Octavia Comic" width="700" height="700"/>
+</div>
 
-## For Airbyte Open Source users
+Closed-source solutions are inflexible, and will always often still require complimentary in-house solutions. So at this point, investing in such solutions is just postponing the moment you’ll pile up very costly data pipeline technical debts. 
+Is there a way to have a scalable and efficient data movement infrastructure that will enable your data team to be successful? That’s why we created Airbyte.
 
-Browse the [connector catalog](/integrations/) to find the connector you want. If the connector is not yet supported on Airbyte Open Source, [build your own connector](/connector-development/).
+## Getting Started
 
-Next, check out the [Airbyte Open Source QuickStart](/deploying-airbyte/local-deployment). Then learn how to [deploy](/deploying-airbyte/local-deployment) and [manage](/operator-guides/upgrading-airbyte) Airbyte Open Source in your cloud infrastructure. 
+There are 4 products to Airbyte: 
 
-## For Airbyte contributors
+1. [Airbyte Open-Source](https://docs.airbyte.com/category/deploy-airbyte): Check out the [Airbyte Open Source QuickStart](https://docs.airbyte.com/quickstart/deploy-airbyte). Then learn how to [deploy](https://docs.airbyte.com/deploying-airbyte/local-deployment) and [manage](https://docs.airbyte.com/operator-guides/upgrading-airbyte) Airbyte Open Source in your cloud infrastructure.
+2. [Airbyte Cloud](http://cloud.airbyte.com/signup): Cloud is the fastest way to start syncing your data in minutes.
+3. [Airbyte Enterprise](https://airbyte.com/product/airbyte-enterprise): Own your data infrastructure, with advanced features and premium support.
+4. [Powered by Airbyte](https://reference.airbyte.com/reference/powered-by-airbyte?_gl=1*2lrnqy*_gcl_au*MTM1OTY1NTMzNi4xNzEyNjIwMDY3): White-label Airbyte to offer data integration features for your end users.
 
-To contribute to Airbyte code, connectors, and documentation, refer to our [Contributing Guide](/contributing-to-airbyte/).
+## Resources
 
-[![GitHub stars](https://img.shields.io/github/stars/airbytehq/airbyte?style=social&label=Star&maxAge=2592000)](https://GitHub.com/airbytehq/airbyte/stargazers/) [![License](https://img.shields.io/static/v1?label=license&message=MIT&color=brightgreen)](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md) [![License](https://img.shields.io/static/v1?label=license&message=ELv2&color=brightgreen)](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md)
+If you want to learn more:
+
+- [Build vs. Buy your data pipelines](https://build-vs-buy.airbyte.com/)
+- [Industry’s survey on the best data infrastructure tools](https://state-of-data.com/)
+- [How Airbyte Powers Datadog’s Self-Serve Analytics Tool](https://airbyte.com/success-stories/datadog)
