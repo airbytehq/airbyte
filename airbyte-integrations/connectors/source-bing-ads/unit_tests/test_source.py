@@ -16,7 +16,7 @@ from source_bing_ads.source import SourceBingAds
 @patch.object(source_bing_ads.source, "Client")
 def test_streams_config_based(mocked_client, config):
     streams = SourceBingAds().streams(config)
-    assert len(streams) == 60
+    assert len(streams) == 77
 
 
 @patch.object(source_bing_ads.source, "Client")

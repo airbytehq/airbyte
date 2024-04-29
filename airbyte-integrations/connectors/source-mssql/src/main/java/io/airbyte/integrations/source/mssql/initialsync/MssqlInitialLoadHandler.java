@@ -15,11 +15,14 @@ import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYN
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.db.SqlDatabase;
+import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
-import io.airbyte.cdk.integrations.source.relationaldb.models.OrderedColumnLoadStatus;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -30,6 +33,7 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -40,12 +44,8 @@ import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +61,6 @@ public class MssqlInitialLoadHandler {
   private final MssqlInitialLoadStateManager initialLoadStateManager;
   private static final long QUERY_TARGET_SIZE_GB = 1_073_741_824;
   private static final long DEFAULT_CHUNK_SIZE = 1_000_000;
-  private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
   final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap;
 
   public MssqlInitialLoadHandler(
@@ -70,14 +69,12 @@ public class MssqlInitialLoadHandler {
                                  final MssqlSourceOperations sourceOperations,
                                  final String quoteString,
                                  final MssqlInitialLoadStateManager initialLoadStateManager,
-                                 final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
                                  final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap) {
     this.config = config;
     this.database = database;
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
     this.initialLoadStateManager = initialLoadStateManager;
-    this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
     this.tableSizeInfoMap = tableSizeInfoMap;
   }
 
@@ -171,12 +168,12 @@ public class MssqlInitialLoadHandler {
           }
         });
 
-        final AutoCloseableIterator<JsonNode> queryStream =
+        final AutoCloseableIterator<AirbyteRecordData> queryStream =
             new MssqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair,
                 calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream));
         final AutoCloseableIterator<AirbyteMessage> recordIterator =
             getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
-        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
+        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream);
         iteratorList.add(augmentWithLogs(recordAndMessageIterator, pair, streamName));
       }
     }
@@ -185,7 +182,7 @@ public class MssqlInitialLoadHandler {
 
   // Transforms the given iterator to create an {@link AirbyteRecordMessage}
   private AutoCloseableIterator<AirbyteMessage> getRecordIterator(
-                                                                  final AutoCloseableIterator<JsonNode> recordIterator,
+                                                                  final AutoCloseableIterator<AirbyteRecordData> recordIterator,
                                                                   final String streamName,
                                                                   final String namespace,
                                                                   final long emittedAt) {
@@ -195,7 +192,12 @@ public class MssqlInitialLoadHandler {
             .withStream(streamName)
             .withNamespace(namespace)
             .withEmittedAt(emittedAt)
-            .withData(r)));
+            .withData(r.rawRowData())
+            .withMeta(isMetaChangesEmptyOrNull(r.meta()) ? null : r.meta())));
+  }
+
+  private boolean isMetaChangesEmptyOrNull(AirbyteRecordMessageMeta meta) {
+    return meta == null || meta.getChanges() == null || meta.getChanges().isEmpty();
   }
 
   // Augments the given iterator with record count logs.
@@ -215,22 +217,18 @@ public class MssqlInitialLoadHandler {
   }
 
   private AutoCloseableIterator<AirbyteMessage> augmentWithState(final AutoCloseableIterator<AirbyteMessage> recordIterator,
-                                                                 final AirbyteStreamNameNamespacePair pair) {
-    final OrderedColumnLoadStatus currentOcLoadStatus = initialLoadStateManager.getOrderedColumnLoadStatus(pair);
-    final JsonNode incrementalState =
-        (currentOcLoadStatus == null || currentOcLoadStatus.getIncrementalState() == null)
-            ? streamStateForIncrementalRunSupplier.apply(pair)
-            : currentOcLoadStatus.getIncrementalState();
+                                                                 final ConfiguredAirbyteStream stream) {
+    final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
 
     final Duration syncCheckpointDuration =
         config.get(SYNC_CHECKPOINT_DURATION_PROPERTY) != null
             ? Duration.ofSeconds(config.get(SYNC_CHECKPOINT_DURATION_PROPERTY).asLong())
-            : MssqlInitialSyncStateIterator.SYNC_CHECKPOINT_DURATION;
+            : DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION;
     final Long syncCheckpointRecords = config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY) != null ? config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY).asLong()
-        : MssqlInitialSyncStateIterator.SYNC_CHECKPOINT_RECORDS;
+        : DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS;
 
     return AutoCloseableIterators.transformIterator(
-        r -> new MssqlInitialSyncStateIterator(r, pair, initialLoadStateManager, incrementalState, syncCheckpointDuration, syncCheckpointRecords),
+        r -> new SourceStateIterator<>(r, stream, initialLoadStateManager, new StateEmitFrequency(syncCheckpointRecords, syncCheckpointDuration)),
         recordIterator, pair);
   }
 

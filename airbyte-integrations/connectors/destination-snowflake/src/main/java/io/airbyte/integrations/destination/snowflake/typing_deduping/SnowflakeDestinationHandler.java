@@ -14,19 +14,22 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
-import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialState;
-import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStateImpl;
-import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableState;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus;
+import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableStatus;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.migrations.SnowflakeState;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -40,10 +43,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import net.snowflake.client.jdbc.SnowflakeSQLException;
 import org.apache.commons.text.StringSubstitutor;
+import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeDestinationHandler extends JdbcDestinationHandler {
+public class SnowflakeDestinationHandler extends JdbcDestinationHandler<SnowflakeState> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDestinationHandler.class);
   public static final String EXCEPTION_COMMON_PREFIX = "JavaScript execution error: Uncaught Execution of multiple statements failed on statement";
@@ -51,9 +55,11 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler {
   private final String databaseName;
   private final JdbcDatabase database;
 
-  public SnowflakeDestinationHandler(final String databaseName, final JdbcDatabase database) {
-    super(databaseName, database);
-    this.databaseName = databaseName;
+  public SnowflakeDestinationHandler(final String databaseName, final JdbcDatabase database, final String rawTableSchema) {
+    // Postgres is close enough to Snowflake SQL for our purposes.
+    super(databaseName, database, rawTableSchema, SQLDialect.POSTGRES);
+    // We don't quote the database name in any queries, so just upcase it.
+    this.databaseName = databaseName.toUpperCase();
     this.database = database;
   }
 
@@ -107,7 +113,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler {
                            AND table_name IN (%s)
                          """.formatted(paramHolder, paramHolder);
     final String[] bindValues = new String[streamIds.size() * 2 + 1];
-    bindValues[0] = databaseName.toUpperCase();
+    bindValues[0] = databaseName;
     System.arraycopy(namespaces, 0, bindValues, 1, namespaces.length);
     System.arraycopy(names, 0, bindValues, namespaces.length + 1, names.length);
     final List<JsonNode> results = database.queryJsons(query, bindValues);
@@ -120,14 +126,18 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler {
     return tableRowCounts;
   }
 
-  public InitialRawTableState getInitialRawTableState(final StreamId id) throws Exception {
+  private InitialRawTableStatus getInitialRawTableState(final StreamId id, final DestinationSyncMode destinationSyncMode) throws Exception {
+    // Short-circuit for overwrite, table will be truncated anyway
+    if (destinationSyncMode == DestinationSyncMode.OVERWRITE) {
+      return new InitialRawTableStatus(false, false, Optional.empty());
+    }
     final ResultSet tables = database.getMetaData().getTables(
         databaseName,
         id.rawNamespace(),
         id.rawName(),
         null);
     if (!tables.next()) {
-      return new InitialRawTableState(false, Optional.empty());
+      return new InitialRawTableStatus(false, false, Optional.empty());
     }
     // Snowflake timestamps have nanosecond precision, so decrement by 1ns
     // And use two explicit queries because COALESCE doesn't short-circuit.
@@ -136,33 +146,55 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler {
         conn -> conn.createStatement().executeQuery(new StringSubstitutor(Map.of(
             "raw_table", id.rawTableId(SnowflakeSqlGenerator.QUOTE))).replace(
                 """
-                SELECT to_varchar(
-                  TIMESTAMPADD(NANOSECOND, -1, MIN("_airbyte_extracted_at")),
-                  'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM'
-                ) AS MIN_TIMESTAMP
-                FROM ${raw_table}
-                WHERE "_airbyte_loaded_at" IS NULL
+                WITH MIN_TS AS (
+                  SELECT TIMESTAMPADD(NANOSECOND, -1,
+                    MIN(TIMESTAMPADD(
+                      HOUR,
+                      EXTRACT(timezone_hour from "_airbyte_extracted_at"),
+                        TIMESTAMPADD(
+                          MINUTE,
+                          EXTRACT(timezone_minute from "_airbyte_extracted_at"),
+                          CONVERT_TIMEZONE('UTC', "_airbyte_extracted_at")
+                        )
+                    ))) AS MIN_TIMESTAMP
+                  FROM ${raw_table}
+                  WHERE "_airbyte_loaded_at" IS NULL
+                ) SELECT TO_VARCHAR(MIN_TIMESTAMP,'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MIN_TIMESTAMP_UTC from MIN_TS;
                 """)),
         // The query will always return exactly one record, so use .get(0)
-        record -> record.getString("MIN_TIMESTAMP")).get(0));
+        record -> record.getString("MIN_TIMESTAMP_UTC")).get(0));
     if (minUnloadedTimestamp.isPresent()) {
-      return new InitialRawTableState(true, minUnloadedTimestamp.map(Instant::parse));
+      return new InitialRawTableStatus(true, true, minUnloadedTimestamp.map(Instant::parse));
     }
 
     // If there are no unloaded raw records, then we can safely skip all existing raw records.
     // This second query just finds the newest raw record.
+
+    // This is _technically_ wrong, because during the DST transition we might select
+    // the wrong max timestamp. We _should_ do the UTC conversion inside the CTE, but that's a lot
+    // of work for a very small edge case.
+    // We released the fix to write extracted_at in UTC before DST changed, so this is fine.
     final Optional<String> maxTimestamp = Optional.ofNullable(database.queryStrings(
         conn -> conn.createStatement().executeQuery(new StringSubstitutor(Map.of(
             "raw_table", id.rawTableId(SnowflakeSqlGenerator.QUOTE))).replace(
                 """
-                SELECT to_varchar(
-                  MAX("_airbyte_extracted_at"),
-                  'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM'
-                ) AS MIN_TIMESTAMP
-                FROM ${raw_table}
+                WITH MAX_TS AS (
+                  SELECT MAX("_airbyte_extracted_at")
+                  AS MAX_TIMESTAMP
+                  FROM ${raw_table}
+                ) SELECT TO_VARCHAR(
+                  TIMESTAMPADD(
+                    HOUR,
+                    EXTRACT(timezone_hour from MAX_TIMESTAMP),
+                    TIMESTAMPADD(
+                      MINUTE,
+                      EXTRACT(timezone_minute from MAX_TIMESTAMP),
+                      CONVERT_TIMEZONE('UTC', MAX_TIMESTAMP)
+                    )
+                ),'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MAX_TIMESTAMP_UTC from MAX_TS;
                 """)),
-        record -> record.getString("MIN_TIMESTAMP")).get(0));
-    return new InitialRawTableState(false, maxTimestamp.map(Instant::parse));
+        record -> record.getString("MAX_TIMESTAMP_UTC")).get(0));
+    return new InitialRawTableStatus(true, false, maxTimestamp.map(Instant::parse));
   }
 
   @Override
@@ -171,7 +203,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler {
     final UUID queryId = UUID.randomUUID();
     for (final String transaction : transactions) {
       final UUID transactionId = UUID.randomUUID();
-      LOGGER.debug("Executing sql {}-{}: {}", queryId, transactionId, transaction);
+      LOGGER.info("Executing sql {}-{}: {}", queryId, transactionId, transaction);
       final long startTime = System.currentTimeMillis();
 
       try {
@@ -190,7 +222,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler {
         throw new RuntimeException(trimmedMessage, e);
       }
 
-      LOGGER.debug("Sql {}-{} completed in {} ms", queryId, transactionId, System.currentTimeMillis() - startTime);
+      LOGGER.info("Sql {}-{} completed in {} ms", queryId, transactionId, System.currentTimeMillis() - startTime);
     }
   }
 
@@ -250,7 +282,9 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler {
   }
 
   @Override
-  public List<DestinationInitialState> gatherInitialState(List<StreamConfig> streamConfigs) throws Exception {
+  public List<DestinationInitialStatus<SnowflakeState>> gatherInitialState(List<StreamConfig> streamConfigs) throws Exception {
+    final Map<AirbyteStreamNameNamespacePair, SnowflakeState> destinationStates = super.getAllDestinationStates();
+
     List<StreamId> streamIds = streamConfigs.stream().map(StreamConfig::id).toList();
     final LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> existingTables = findExistingTables(database, databaseName, streamIds);
     final LinkedHashMap<String, LinkedHashMap<String, Integer>> tableRowCounts = getFinalTableRowCount(streamIds);
@@ -267,8 +301,15 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler {
           isSchemaMismatch = !existingSchemaMatchesStreamConfig(streamConfig, existingTable);
           isFinalTableEmpty = hasRowCount && tableRowCounts.get(namespace).get(name) == 0;
         }
-        final InitialRawTableState initialRawTableState = getInitialRawTableState(streamConfig.id());
-        return new DestinationInitialStateImpl(streamConfig, isFinalTablePresent, initialRawTableState, isSchemaMismatch, isFinalTableEmpty);
+        final InitialRawTableStatus initialRawTableState = getInitialRawTableState(streamConfig.id(), streamConfig.destinationSyncMode());
+        final SnowflakeState destinationState = destinationStates.getOrDefault(streamConfig.id().asPair(), toDestinationState(Jsons.emptyObject()));
+        return new DestinationInitialStatus<>(
+            streamConfig,
+            isFinalTablePresent,
+            initialRawTableState,
+            isSchemaMismatch,
+            isFinalTableEmpty,
+            destinationState);
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
@@ -288,6 +329,12 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler {
       case Union.TYPE -> toJdbcTypeName(((Union) airbyteType).chooseType());
       default -> throw new IllegalArgumentException("Unrecognized type: " + airbyteType.getTypeName());
     };
+  }
+
+  @Override
+  protected SnowflakeState toDestinationState(JsonNode json) {
+    return new SnowflakeState(
+        json.hasNonNull("needsSoftReset") && json.get("needsSoftReset").asBoolean());
   }
 
   private String toJdbcTypeName(final AirbyteProtocolType airbyteProtocolType) {

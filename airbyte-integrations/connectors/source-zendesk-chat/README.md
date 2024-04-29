@@ -30,7 +30,7 @@ See `sample_files/sample_config.json` for a sample config file.
 poetry run source-zendesk-chat spec
 poetry run source-zendesk-chat check --config secrets/config.json
 poetry run source-zendesk-chat discover --config secrets/config.json
-poetry run source-zendesk-chat read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run source-zendesk-chat read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Running unit tests

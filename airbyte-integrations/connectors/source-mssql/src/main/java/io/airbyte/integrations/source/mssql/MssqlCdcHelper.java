@@ -100,6 +100,7 @@ public class MssqlCdcHelper {
       final String sslMethod = sslConfig.get("ssl_method").asText();
       if ("unencrypted".equals(sslMethod)) {
         props.setProperty("database.encrypt", "false");
+        props.setProperty("driver.trustServerCertificate", "true");
       } else if ("encrypted_trust_server_certificate".equals(sslMethod)) {
         props.setProperty("driver.encrypt", "true");
         props.setProperty("driver.trustServerCertificate", "true");
@@ -118,6 +119,8 @@ public class MssqlCdcHelper {
           props.setProperty("database.hostNameInCertificate", dbConfig.get("hostNameInCertificate").asText());
         }
       }
+    } else {
+      props.setProperty("driver.trustServerCertificate", "true");
     }
 
     return props;

@@ -3,32 +3,32 @@
   "type": "object",
   "properties": {
     "expand": {
-      "type": "string",
       "description": "Expand options that include additional issue details in the response.",
+      "type": "string",
       "readOnly": true,
       "xml": {
         "attribute": true
       }
     },
     "id": {
+      "description": "The unique ID of the issue.",
       "type": "string",
-      "description": "The ID of the issue.",
       "readOnly": true
     },
     "self": {
-      "type": "string",
       "description": "The URL of the issue details.",
+      "type": "string",
       "readOnly": true
     },
     "key": {
+      "description": "The unique key of the issue.",
       "type": "string",
-      "description": "The key of the issue.",
       "readOnly": true
     },
     "renderedFields": {
+      "description": "The rendered value of each field present on the issue.",
       "type": "object",
       "additionalProperties": true,
-      "description": "The rendered value of each field present on the issue.",
       "readOnly": true,
       "properties": {
         "statuscategorychangedate": {
@@ -152,6 +152,7 @@
           "type": ["null", "string"]
         },
         "comment": {
+          "description": "Details of comments on the issue.",
           "type": ["null", "object"],
           "properties": {
             "comments": {
@@ -166,6 +167,7 @@
                     "type": ["null", "string"]
                   },
                   "author": {
+                    "description": "Details of the author of the comment.",
                     "type": ["null", "object"],
                     "properties": {
                       "self": {
@@ -209,6 +211,7 @@
                     }
                   },
                   "body": {
+                    "description": "Details of the body of the comment.",
                     "type": ["null", "object"],
                     "properties": {
                       "version": {
@@ -245,6 +248,7 @@
                     }
                   },
                   "updateAuthor": {
+                    "description": "Details of the author who updated the comment.",
                     "type": ["null", "object"],
                     "properties": {
                       "self": {
@@ -336,25 +340,25 @@
       }
     },
     "properties": {
+      "description": "Details of the issue properties identified in the request.",
       "type": "object",
       "additionalProperties": true,
-      "description": "Details of the issue properties identified in the request.",
       "readOnly": true
     },
     "names": {
+      "description": "The ID and name of each field present on the issue.",
       "type": "object",
       "additionalProperties": true,
-      "description": "The ID and name of each field present on the issue.",
       "readOnly": true
     },
     "schema": {
-      "type": "object",
       "description": "The schema describing each field present on the issue.",
+      "type": "object",
       "readOnly": true
     },
     "transitions": {
-      "type": "array",
       "description": "The transitions that can be performed on the issue.",
+      "type": "array",
       "readOnly": true,
       "items": {
         "type": ["null", "object"],
@@ -427,18 +431,18 @@
       }
     },
     "operations": {
-      "type": ["object", "null"],
       "description": "The operations that can be performed on the issue.",
+      "type": ["object", "null"],
       "readOnly": true
     },
     "editmeta": {
-      "type": ["object", "null"],
       "description": "The metadata for the fields on the issue that can be amended.",
+      "type": ["object", "null"],
       "readOnly": true
     },
     "changelog": {
-      "type": ["object", "null"],
       "description": "Details of changelogs associated with the issue.",
+      "type": ["object", "null"],
       "readOnly": true,
       "properties": {
         "startAt": {
@@ -459,6 +463,7 @@
                 "type": ["null", "string"]
               },
               "author": {
+                "description": "Details of the author of the changelog.",
                 "type": ["null", "object"],
                 "properties": {
                   "self": {
@@ -509,6 +514,9 @@
                 "items": {
                   "type": ["null", "object"],
                   "properties": {
+                    "fieldId": {
+                      "type": ["null", "string"]
+                    },
                     "field": {
                       "type": ["null", "string"]
                     },
@@ -526,6 +534,12 @@
                     },
                     "toString": {
                       "type": ["null", "string"]
+                    },
+                    "tmpFromAccountId": {
+                      "type": ["null", "string"]
+                    },
+                    "tmpToAccountId": {
+                      "type": ["null", "string"]
                     }
                   }
                 }
@@ -536,50 +550,749 @@
       }
     },
     "versionedRepresentations": {
+      "description": "The versions of each field on the issue.",
       "type": "object",
       "additionalProperties": true,
-      "description": "The versions of each field on the issue.",
       "readOnly": true
     },
     "fieldsToInclude": {
+      "description": "Specify the fields to include in the fetched issues data. Use specific field names or 'all' to include all fields.",
       "type": "object"
     },
     "fields": {
+      "description": "Details of various fields associated with the issue.",
       "type": "object",
       "properties": {
         "created": {
+          "description": "The timestamp when the issue was created.",
           "type": ["string", "null"],
-          "format": "date-time",
-          "description": "This field is not shown in schema / swagger, but exists in records and we use it as cursor fiekd. Updated may be absent. Added to solve the #4341"
+          "format": "date-time"
         },
         "updated": {
+          "description": "The timestamp when the issue was last updated.",
           "type": ["string", "null"],
-          "format": "date-time",
-          "description": "This field is not shown in schema / swagger, but exists in records and we use it as cursor fiekd. Updated may be absent. Added to solve the #4341"
+          "format": "date-time"
+        },
+        "aggregateprogress": {
+          "description": "Details of the aggregate progress on the issue.",
+          "type": ["null", "object"],
+          "properties": {
+            "percent": {
+              "type": ["null", "integer"]
+            },
+            "progress": {
+              "type": ["null", "integer"]
+            },
+            "total": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "assignee": {
+          "description": "Details of the assignee of the issue.",
+          "type": ["null", "object"],
+          "properties": {
+            "accountId": {
+              "type": ["null", "string"]
+            },
+            "accountType": {
+              "type": ["null", "string"]
+            },
+            "active": {
+              "type": ["null", "boolean"]
+            },
+            "avatarUrls": {
+              "type": ["null", "object"],
+              "properties": {
+                "16x16": {
+                  "type": ["null", "string"]
+                },
+                "24x24": {
+                  "type": ["null", "string"]
+                },
+                "32x32": {
+                  "type": ["null", "string"]
+                },
+                "48x48": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "displayName": {
+              "type": ["null", "string"]
+            },
+            "emailAddress": {
+              "type": ["null", "string"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            },
+            "timeZone": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "aggregatetimeestimate": {
+          "type": ["null", "integer"]
+        },
+        "aggregatetimeoriginalestimate": {
+          "type": ["null", "integer"]
+        },
+        "aggregatetimespent": {
+          "type": ["null", "integer"]
+        },
+        "attachment": {
+          "type": ["null", "array"]
+        },
+        "comment": {
+          "description": "Details of comments on the issue.",
+          "type": ["null", "object"],
+          "properties": {
+            "comments": {
+              "type": ["null", "array"]
+            },
+            "maxResults": {
+              "type": ["null", "integer"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            },
+            "startAt": {
+              "type": ["null", "integer"]
+            },
+            "total": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "components": {
+          "type": ["null", "array"]
+        },
+        "creator": {
+          "description": "Details of the creator of the issue.",
+          "type": ["null", "object"],
+          "properties": {
+            "accountId": {
+              "type": ["null", "string"]
+            },
+            "accountType": {
+              "type": ["null", "string"]
+            },
+            "active": {
+              "type": ["null", "boolean"]
+            },
+            "avatarUrls": {
+              "type": ["null", "object"],
+              "properties": {
+                "16x16": {
+                  "type": ["null", "string"]
+                },
+                "24x24": {
+                  "type": ["null", "string"]
+                },
+                "32x32": {
+                  "type": ["null", "string"]
+                },
+                "48x48": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "displayName": {
+              "type": ["null", "string"]
+            },
+            "emailAddress": {
+              "type": ["null", "string"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            },
+            "timeZone": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "description": {
+          "description": "Details of the description of the issue.",
+          "type": ["null", "object"],
+          "properties": {
+            "content": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "content": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "text": {
+                          "type": ["null", "string"]
+                        },
+                        "type": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  },
+                  "type": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            },
+            "type": {
+              "type": ["null", "string"]
+            },
+            "version": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "fixVersions": {
+          "type": ["null", "array"]
+        },
+        "issuelinks": {
+          "type": ["null", "array"]
+        },
+        "issuerestriction": {
+          "description": "Details of the issue restriction.",
+          "type": ["null", "object"],
+          "properties": {
+            "issuerestrictions": {
+              "type": ["null", "object"]
+            },
+            "shouldDisplay": {
+              "type": ["null", "boolean"]
+            }
+          }
+        },
+        "issuetype": {
+          "description": "Details of the issue type.",
+          "type": ["null", "object"],
+          "properties": {
+            "avatarId": {
+              "type": ["null", "integer"]
+            },
+            "description": {
+              "type": ["null", "string"]
+            },
+            "entityId": {
+              "type": ["null", "string"]
+            },
+            "hierarchyLevel": {
+              "type": ["null", "integer"]
+            },
+            "iconUrl": {
+              "type": ["null", "string"]
+            },
+            "id": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            },
+            "subtask": {
+              "type": ["null", "boolean"]
+            }
+          }
+        },
+        "labels": {
+          "description": "Details of labels attached to the issue.",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "lastViewed": {
+          "description": "The timestamp when the issue was last viewed.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "priority": {
+          "description": "Details of the priority of the issue.",
+          "type": ["null", "object"],
+          "properties": {
+            "iconUrl": {
+              "type": ["null", "string"]
+            },
+            "id": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "progress": {
+          "description": "Details of the progress on the issue.",
+          "type": ["null", "object"],
+          "properties": {
+            "percent": {
+              "type": ["null", "integer"]
+            },
+            "progress": {
+              "type": ["null", "integer"]
+            },
+            "total": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "project": {
+          "description": "Details of the project associated with the issue.",
+          "type": ["null", "object"],
+          "properties": {
+            "avatarUrls": {
+              "type": ["null", "object"],
+              "properties": {
+                "16x16": {
+                  "type": ["null", "string"]
+                },
+                "24x24": {
+                  "type": ["null", "string"]
+                },
+                "32x32": {
+                  "type": ["null", "string"]
+                },
+                "48x48": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "id": {
+              "type": ["null", "string"]
+            },
+            "key": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "projectCategory": {
+              "type": ["null", "object"],
+              "properties": {
+                "description": {
+                  "type": ["null", "string"]
+                },
+                "id": {
+                  "type": ["null", "string"]
+                },
+                "name": {
+                  "type": ["null", "string"]
+                },
+                "self": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "projectTypeKey": {
+              "type": ["null", "string"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            },
+            "simplified": {
+              "type": ["null", "boolean"]
+            }
+          }
+        },
+        "reporter": {
+          "description": "Details of the reporter of the issue.",
+          "type": ["null", "object"],
+          "properties": {
+            "accountId": {
+              "type": ["null", "string"]
+            },
+            "accountType": {
+              "type": ["null", "string"]
+            },
+            "active": {
+              "type": ["null", "boolean"]
+            },
+            "avatarUrls": {
+              "type": ["null", "object"],
+              "properties": {
+                "16x16": {
+                  "type": ["null", "string"]
+                },
+                "24x24": {
+                  "type": ["null", "string"]
+                },
+                "32x32": {
+                  "type": ["null", "string"]
+                },
+                "48x48": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "displayName": {
+              "type": ["null", "string"]
+            },
+            "emailAddress": {
+              "type": ["null", "string"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            },
+            "timeZone": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "resolution": {
+          "description": "Details of the resolution of the issue.",
+          "type": ["null", "object"],
+          "properties": {
+            "description": {
+              "type": ["null", "string"]
+            },
+            "id": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "resolutiondate": {
+          "description": "The timestamp when the issue was resolved.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "status": {
+          "description": "Details of the status of the issue.",
+          "type": ["null", "object"],
+          "properties": {
+            "description": {
+              "type": ["null", "string"]
+            },
+            "iconUrl": {
+              "type": ["null", "string"]
+            },
+            "id": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            },
+            "statusCategory": {
+              "type": ["null", "object"],
+              "properties": {
+                "self": {
+                  "type": ["null", "string"]
+                },
+                "id": {
+                  "type": ["null", "integer"]
+                },
+                "key": {
+                  "type": ["null", "string"]
+                },
+                "colorName": {
+                  "type": ["null", "string"]
+                },
+                "name": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "statuscategorychangedate": {
+          "description": "The timestamp when the status category of the issue changed.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "subtasks": {
+          "type": ["null", "array"]
+        },
+        "summary": {
+          "description": "The summary of the issue.",
+          "type": ["null", "string"]
+        },
+        "timeestimate": {
+          "type": ["null", "integer"]
+        },
+        "timeoriginalestimate": {
+          "type": ["null", "integer"]
+        },
+        "timespent": {
+          "type": ["null", "integer"]
+        },
+        "timetracking": {
+          "description": "Details of time tracking on the issue.",
+          "type": ["null", "object"],
+          "properties": {
+            "remainingEstimate": {
+              "type": ["null", "string"]
+            },
+            "remainingEstimateSeconds": {
+              "type": ["null", "integer"]
+            },
+            "timeSpent": {
+              "type": ["null", "string"]
+            },
+            "timeSpentSeconds": {
+              "type": ["null", "integer"]
+            },
+            "originalEstimate": {
+              "type": ["null", "string"]
+            },
+            "originalEstimateSeconds": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "versions": {
+          "type": ["null", "array"]
+        },
+        "votes": {
+          "description": "Details of votes on the issue.",
+          "type": ["null", "object"],
+          "properties": {
+            "hasVoted": {
+              "type": ["null", "boolean"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            },
+            "votes": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "watches": {
+          "description": "Details of watchers on the issue.",
+          "type": ["null", "object"],
+          "properties": {
+            "isWatching": {
+              "type": ["null", "boolean"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            },
+            "watchCount": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "worklog": {
+          "description": "Details of worklogs on the issue.",
+          "type": ["null", "object"],
+          "properties": {
+            "maxResults": {
+              "type": ["null", "integer"]
+            },
+            "startAt": {
+              "type": ["null", "integer"]
+            },
+            "total": {
+              "type": ["null", "integer"]
+            },
+            "worklogs": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "author": {
+                    "description": "Details of the author of the worklog.",
+                    "type": ["null", "object"],
+                    "properties": {
+                      "accountId": {
+                        "type": ["null", "string"]
+                      },
+                      "accountType": {
+                        "type": ["null", "string"]
+                      },
+                      "active": {
+                        "type": ["null", "boolean"]
+                      },
+                      "avatarUrls": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "16x16": {
+                            "type": ["null", "string"]
+                          },
+                          "24x24": {
+                            "type": ["null", "string"]
+                          },
+                          "32x32": {
+                            "type": ["null", "string"]
+                          },
+                          "48x48": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      },
+                      "displayName": {
+                        "type": ["null", "string"]
+                      },
+                      "emailAddress": {
+                        "type": ["null", "string"]
+                      },
+                      "self": {
+                        "type": ["null", "string"]
+                      },
+                      "timeZone": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  },
+                  "comment": {
+                    "description": "Details of the comment in the worklog.",
+                    "type": ["null", "object"],
+                    "properties": {
+                      "version": {
+                        "type": ["null", "integer"]
+                      },
+                      "type": {
+                        "type": ["null", "string"]
+                      },
+                      "content": {
+                        "type": ["null", "array"],
+                        "items": {
+                          "type": ["null", "object"],
+                          "properties": {
+                            "type": {
+                              "type": ["null", "string"]
+                            },
+                            "content": {
+                              "type": "array",
+                              "items": {
+                                "type": ["null", "object"],
+                                "properties": {
+                                  "type": {
+                                    "type": ["null", "string"]
+                                  },
+                                  "text": {
+                                    "type": ["null", "string"]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "created": {
+                    "description": "The timestamp when the worklog was created.",
+                    "type": ["null", "string"],
+                    "format": "date-time"
+                  },
+                  "started": {
+                    "description": "The timestamp when the worklog was started.",
+                    "type": ["null", "string"],
+                    "format": "date-time"
+                  },
+                  "updated": {
+                    "description": "The timestamp when the worklog was last updated.",
+                    "type": ["null", "string"],
+                    "format": "date-time"
+                  },
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "issueId": {
+                    "type": ["null", "string"]
+                  },
+                  "self": {
+                    "type": ["null", "string"]
+                  },
+                  "timeSpent": {
+                    "type": ["null", "string"]
+                  },
+                  "timeSpentSeconds": {
+                    "type": ["null", "integer"]
+                  },
+                  "updateAuthor": {
+                    "description": "Details of the author who updated the worklog.",
+                    "type": ["null", "object"],
+                    "properties": {
+                      "accountId": {
+                        "type": ["null", "string"]
+                      },
+                      "accountType": {
+                        "type": ["null", "string"]
+                      },
+                      "active": {
+                        "type": ["null", "boolean"]
+                      },
+                      "avatarUrls": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "16x16": {
+                            "type": ["null", "string"]
+                          },
+                          "24x24": {
+                            "type": ["null", "string"]
+                          },
+                          "32x32": {
+                            "type": ["null", "string"]
+                          },
+                          "48x48": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      },
+                      "displayName": {
+                        "type": ["null", "string"]
+                      },
+                      "emailAddress": {
+                        "type": ["null", "string"]
+                      },
+                      "self": {
+                        "type": ["null", "string"]
+                      },
+                      "timeZone": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "workratio": {
+          "type": ["null", "integer"]
         }
       },
       "additionalProperties": true
     },
     "projectId": {
-      "type": "string",
       "description": "The ID of the project containing the issue.",
+      "type": "string",
       "readOnly": true
     },
     "projectKey": {
-      "type": "string",
       "description": "The key of the project containing the issue.",
+      "type": "string",
       "readOnly": true
     },
     "created": {
+      "description": "The timestamp when the issue was created.",
       "type": ["string", "null"],
       "format": "date-time",
-      "description": "This field transformed from fields attr",
       "readOnly": true
     },
     "updated": {
+      "description": "The timestamp when the issue was last updated.",
       "type": ["string", "null"],
       "format": "date-time",
-      "description": "This field transformed from fields attr",
       "readOnly": true
     }
   },

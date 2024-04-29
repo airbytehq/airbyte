@@ -88,6 +88,9 @@
     "billing_day_of_week_mode": {
       "type": ["string", "null"]
     },
+    "billing_month": {
+      "type": ["integer", "null"]
+    },
     "pii_cleared": {
       "type": ["string", "null"]
     },

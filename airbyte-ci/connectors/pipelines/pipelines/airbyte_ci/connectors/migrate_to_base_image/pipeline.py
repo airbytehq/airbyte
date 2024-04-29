@@ -284,12 +284,11 @@ async def run_connector_base_image_upgrade_pipeline(context: ConnectorContext, s
 
 
 async def run_connector_migration_to_base_image_pipeline(
-    context: ConnectorContext, semaphore: "Semaphore", pull_request_number: str
+    context: ConnectorContext, semaphore: "Semaphore", pull_request_number: str | None
 ) -> Report:
     async with semaphore:
         steps_results = []
         async with context:
-            # DELETE DOCKERFILE
             delete_docker_file = DeleteConnectorFile(
                 context,
                 "Dockerfile",
@@ -308,10 +307,13 @@ async def run_connector_migration_to_base_image_pipeline(
 
             og_repo_dir = await context.get_repo_dir()
 
+            # latest_repo_dir_state gets mutated by each step
+            latest_repo_dir_state = og_repo_dir
+
             # UPDATE BASE IMAGE IN METADATA
             update_base_image_in_metadata = UpgradeBaseImageMetadata(
                 context,
-                og_repo_dir,
+                latest_repo_dir_state,
                 set_if_not_exists=True,
             )
             update_base_image_in_metadata_result = await update_base_image_in_metadata.run()
@@ -320,38 +322,42 @@ async def run_connector_migration_to_base_image_pipeline(
                 context.report = ConnectorReport(context, steps_results, name="BASE IMAGE UPGRADE RESULTS")
                 return context.report
 
+            latest_repo_dir_state = update_base_image_in_metadata_result.output
             # BUMP CONNECTOR VERSION IN METADATA
             new_version = get_bumped_version(context.connector.version, "patch")
             bump_version_in_metadata = BumpDockerImageTagInMetadata(
                 context,
-                update_base_image_in_metadata_result.output,
+                latest_repo_dir_state,
                 new_version,
             )
             bump_version_in_metadata_result = await bump_version_in_metadata.run()
             steps_results.append(bump_version_in_metadata_result)
 
-            # ADD CHANGELOG ENTRY
-            add_changelog_entry = AddChangelogEntry(
-                context,
-                bump_version_in_metadata_result.output,
-                new_version,
-                "Base image migration: remove Dockerfile and use the python-connector-base image",
-                pull_request_number,
-            )
-            add_changelog_entry_result = await add_changelog_entry.run()
-            steps_results.append(add_changelog_entry_result)
+            latest_repo_dir_state = bump_version_in_metadata_result.output
+            # ADD CHANGELOG ENTRY only if the PR number is provided.
+            if pull_request_number is not None:
+                add_changelog_entry = AddChangelogEntry(
+                    context,
+                    latest_repo_dir_state,
+                    new_version,
+                    "Base image migration: remove Dockerfile and use the python-connector-base image",
+                    pull_request_number,
+                )
+                add_changelog_entry_result = await add_changelog_entry.run()
+                steps_results.append(add_changelog_entry_result)
+                latest_repo_dir_state = add_changelog_entry_result.output
 
             # UPDATE DOC
             add_build_instructions_to_doc = AddBuildInstructionsToReadme(
                 context,
-                add_changelog_entry_result.output,
+                latest_repo_dir_state,
             )
             add_build_instructions_to_doc_results = await add_build_instructions_to_doc.run()
             steps_results.append(add_build_instructions_to_doc_results)
+            latest_repo_dir_state = add_build_instructions_to_doc_results.output
 
             # EXPORT MODIFIED FILES BACK TO HOST
-            final_repo_dir = add_build_instructions_to_doc_results.output
-            await og_repo_dir.diff(final_repo_dir).export(str(git.get_git_repo_path()))
+            await og_repo_dir.diff(latest_repo_dir_state).export(str(git.get_git_repo_path()))
             report = ConnectorReport(context, steps_results, name="MIGRATE TO BASE IMAGE RESULTS")
             context.report = report
     return report
