@@ -6,22 +6,13 @@
       "type": "number"
     },
     "archived_at": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "fuel_type_id": {
-      "type": [
-        "number",
-        "null"
-      ]
+      "type": ["number", "null"]
     },
     "fuel_type_name": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "ai_enabled": {
       "type": "boolean"
@@ -30,10 +21,7 @@
       "type": "string"
     },
     "color": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "comments_count": {
       "type": "number"
@@ -42,43 +30,25 @@
       "type": "string"
     },
     "current_location_entry_id": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "default_image_url_small": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "external_ids": {
-      "type": [
-        "object",
-        "null"
-      ]
+      "type": ["object", "null"]
     },
     "documents_count": {
       "type": "number"
     },
     "estimated_replacement_mileage": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "estimated_resale_price_cents": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "estimated_service_months": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "fuel_entries_count": {
       "type": "number"
@@ -87,22 +57,13 @@
       "type": "string"
     },
     "group_ancestry": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "group_id": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "group_name": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "id": {
       "type": "number"
@@ -111,16 +72,10 @@
       "type": "number"
     },
     "in_service_date": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "in_service_meter_value": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "is_sample": {
       "type": "boolean"
@@ -132,67 +87,40 @@
       "type": "array"
     },
     "license_plate": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "make": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "model": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "name": {
       "type": "string"
     },
     "out_of_service_date": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "out_of_service_meter_value": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "ownership": {
       "type": "string"
     },
     "primary_meter_date": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "primary_meter_unit": {
       "type": "string"
     },
     "primary_meter_usage_per_day": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "secondary_meter_unit": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "secondary_meter_date": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "primary_meter_value": {
       "type": "string"
@@ -201,10 +129,7 @@
       "type": "number"
     },
     "secondary_meter_usage_per_day": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "secondary_meter_value": {
       "type": "string"
@@ -219,16 +144,10 @@
       "type": "string"
     },
     "trim": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "registration_state": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "updated_at": {
       "type": "string"
@@ -252,19 +171,13 @@
       "type": "string"
     },
     "vin": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "work_orders_count": {
       "type": "number"
     },
     "year": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     }
   },
   "type": "object"

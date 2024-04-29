@@ -16,7 +16,6 @@ from airbyte_cdk.test.mock_http.response_builder import (
 )
 from airbyte_protocol.models import SyncMode
 from integration.config import ConfigBuilder
-
 from source_fleetio import SourceFleetio
 
 _AN_ACCOUNT_TOKEN = "example_account_token"  # used from our dev docs as an example
