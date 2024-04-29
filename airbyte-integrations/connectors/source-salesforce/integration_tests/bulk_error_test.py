@@ -12,7 +12,7 @@ import pytest
 import requests_mock
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.streams import Stream
-from salesforce_job_response_builder import SalesforceJobResponseBuilder
+from unit_tests.salesforce_job_response_builder import SalesforceJobResponseBuilder
 from source_salesforce.source import SourceSalesforce
 
 HERE = Path(__file__).parent
