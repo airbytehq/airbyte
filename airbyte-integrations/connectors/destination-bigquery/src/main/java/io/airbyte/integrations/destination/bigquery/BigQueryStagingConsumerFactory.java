@@ -10,11 +10,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer;
+import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager;
+import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction;
-import io.airbyte.cdk.integrations.destination_async.AsyncStreamConsumer;
-import io.airbyte.cdk.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
@@ -25,6 +26,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -57,21 +59,15 @@ public class BigQueryStagingConsumerFactory {
         recordFormatterCreator,
         tmpTableNameTransformer);
 
-    final var flusher = new BigQueryAsyncFlush(writeConfigsByDescriptor, bigQueryGcsOperations, catalog);
+    final DestinationFlushFunction flusher = new BigQueryAsyncFlush(writeConfigsByDescriptor, bigQueryGcsOperations, catalog);
     return new AsyncStreamConsumer(
         outputRecordCollector,
         onStartFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper),
-        (hasFailed, recordCounts) -> {
-          try {
-            onCloseFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper).accept(hasFailed, recordCounts);
-          } catch (final Exception e) {
-            throw new RuntimeException(e);
-          }
-        },
+        onCloseFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper),
         flusher,
         catalog,
         new BufferManager(getBigQueryBufferMemoryLimit()),
-        defaultNamespace);
+        Optional.ofNullable(defaultNamespace));
   }
 
   /**
@@ -98,8 +94,8 @@ public class BigQueryStagingConsumerFactory {
           final String streamName = stream.getName();
           final BigQueryRecordFormatter recordFormatter = recordFormatterCreator.apply(stream.getJsonSchema());
 
-          final var internalTableNamespace = streamConfig.id().rawNamespace();
-          final var targetTableName = streamConfig.id().rawName();
+          final var internalTableNamespace = streamConfig.getId().getRawNamespace();
+          final var targetTableName = streamConfig.getId().getRawName();
 
           final BigQueryWriteConfig writeConfig = new BigQueryWriteConfig(
               streamName,

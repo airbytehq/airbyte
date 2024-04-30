@@ -107,6 +107,10 @@ poe lint
 ```
 ## Changelog
 
+### 1.3.0
+
+Added `CheckConnectorMaxSecondsBetweenMessagesValue` check that verifies presence of `maxSecondsBetweenMessages` value in `metadata.yaml` file for all source certified connectors.
+
 ### 1.2.0
 
 Added `ValidateBreakingChangesDeadlines` check that verifies the minimal compliance of breaking change rollout deadline.

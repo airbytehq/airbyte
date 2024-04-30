@@ -25,60 +25,37 @@
     </script>
     <style>
         body {
-            font-family: -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; 
+            font-family: -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
             background-color: #0d1117;
             color: #c9d1d9;
             padding: 16px;
             font-size: 14px;
         }
 
-        .monospace {
-            font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
-            margin: 0;
-            font-size: 85%;
-            color: #fff;
-        }
-
-        .test-name {
-            font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
-            font-size: 1.15rem
-        }
-
-        .metric {
-            text-align: center;
-        }
-        .highlighted {
-            background-color: #212c36;
-        }
         a {
             color: #4493f8;
             text-decoration: underline;
             text-underline-offset: .2rem;
         }
+
         button {
             border: 1px solid #30363d;
             background-color: #1a1c26;
             padding: 5px;
             cursor: pointer;
+            opacity: 0.7;
+            border-radius: 5px;
+            transition: opacity 0.5s;
         }
-       
-        .container {
-            max-width: 1280px;
-            margin-right: auto;
-            margin-left: auto;
+
+        button:hover {
+            opacity: 1;
         }
+
         section {
             margin-bottom: 30px;
             border: 1px solid #30363d;
             border-radius: 6px;
-        }
-
-        .section_content {
-            padding: 15px;
-        }
-
-        .no-border {
-            border: none;
         }
 
         h1 {
@@ -86,6 +63,7 @@
             font-weight: 600;
             font-size: 2rem;
         }
+
         h2 {
             font-size: 1.5rem;
             font-optical-sizing: auto;
@@ -120,14 +98,17 @@
             list-style: none;
             padding: 0;
         }
+
         li {
             margin-bottom: 15px;
         }
+
         table {
             border-collapse: collapse;
             margin-top: 15px;
             width: 100%;
         }
+
         th, td {
             border: 1px solid #30363d;
             padding: 8px;
@@ -137,6 +118,7 @@
             overflow-x: auto;
             scrollbar-color: hotpink #0d1116;
         }
+
         th {
             text-align: center;
         }
@@ -148,7 +130,41 @@
             scrollbar-color: hotpink #1a1b26;
             white-space: pre-wrap;
         }
-        
+
+        .monospace {
+            font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+            margin: 0;
+            font-size: 85%;
+            color: #fff;
+        }
+
+        .test-name {
+            font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+            font-size: 1.15rem
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .highlighted {
+            background-color: #212c36;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin-right: auto;
+            margin-left: auto;
+        }
+
+        .section_content {
+            padding: 15px;
+        }
+
+        .no-border {
+            border: none;
+        }
+
         .full-width {
             width: 100%;
         }
@@ -169,9 +185,10 @@
             animation: rotation 1s linear infinite;
             margin-right: 10px;
         }
+
         .loader::after,
         .loader::before {
-            content: '';  
+            content: '';
             box-sizing: border-box;
             position: absolute;
             left: 0;
@@ -182,6 +199,7 @@
             transform: translate(150%, 150%);
             border-radius: 50%;
         }
+
         .loader::before {
             left: auto;
             top: auto;
@@ -199,6 +217,12 @@
         .testDescription {
             color: #9c9c9c;
         }
+
+        .secondaryButton {
+            font-size: 0.75rem;
+            padding: 2px 10px;
+        }
+
         @keyframes rotation {
             0% {
                 transform: rotate(0deg);
@@ -206,7 +230,7 @@
             100% {
                 transform: rotate(360deg);
             }
-        } 
+        }
     </style>
 </head>
 <body>
@@ -288,16 +312,21 @@
         <section>
             <h2>Connection objects</h2>
             <div class="section_content">
-                <h3>Source configuration <button class="monospace" onclick="copyToClipboard('config')">Copy</button></h3>
+                <p class="testDescription">Each object below relates to an "argument" passed to one (or many) of the Connectors standard commands (spec/check/discover/read). The source of these arguments is either the connector itself (catalog), the connection (config/state) or both (configured catalog). To learn more checkout the <a href="https://docs.airbyte.com/understanding-airbyte/airbyte-protocol" target="_blank">Airbyte Protocol Documentation</a></p>
+                <h3>Source configuration <button class="monospace secondaryButton" onclick="copyToClipboard('config')">📋 copy</button></h3>
+                <p class="testDescription">The configuration object taken from the given connection that was passed to each version of the connector during the test.</p>
                 <pre><code class="language-json" id="config">{{ source_config }}</code></pre>
                 {% if state %}
-                <h3>State <button class="monospace" onclick="copyToClipboard('state')">Copy</button></h3>
+                <h3>State <button class="monospace secondaryButton" onclick="copyToClipboard('state')">📋 copy</button></h3>
+                <p class="testDescription">The state object taken from the given connection that was passed to each version of the connector during the test.</p>
                 <pre><code class="language-json" id="state">{{ state }}</code>
                 </pre>
                 {% endif %}
-                <h3>Configured catalog <button class="monospace" onclick="copyToClipboard('configured-catalog')">Copy</button></h3>
+                <h3>Configured catalog <button class="monospace secondaryButton" onclick="copyToClipboard('configured-catalog')">📋 copy</button></h3>
+                <p class="testDescription">The configured catalog object taken returned by the connector given the connection config.</p>
                 <pre><code class="language-json" id="configured-catalog">{{ configured_catalog }}</code></pre>
-                <h3>Catalog <button class="monospace" onclick="copyToClipboard('catalog')">Copy</button></h3>
+                <h3>Catalog <button class="monospace secondaryButton" onclick="copyToClipboard('catalog')">📋 copy</button></h3>
+                <p class="testDescription">The catalog object returned by the connector.</p>
                 <pre><code class="language-json" id="catalog">{{ catalog }}</code></pre>
             </div>
         </section>
@@ -390,7 +419,7 @@
                         <th>duplicate request count</th>
                         <th>cache hit ratio</th>
                         <th>request count</th>
-                    </tr> 
+                    </tr>
                 <tbody>
                 {% for command in http_metrics_per_command %}
                     <tr>
@@ -417,7 +446,7 @@
             <h2><span class="loader"></span>Requested URLs</h2>
             {% else%}
              <h2>Requested URLs</h2>
-            {% endif %}            
+            {% endif %}
             <div class="section_content">
                 {% for command, flows in requested_urls_per_command.items() %}
                 <h3>{{ command.value.upper() }}</h3>
@@ -453,7 +482,7 @@
         <h2><span class="loader"></span>Test results</h2>
         {% else%}
             <h2>Test results</h2>
-        {% endif %}     
+        {% endif %}
         <div class="section_content">
             {% for test in test_results %}
                 <div class="test-result">
