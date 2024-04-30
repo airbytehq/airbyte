@@ -51,6 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
+
   // Testing is done concurrently so initialState is cached in a thread local variable
   // in order to provide each test thread with its own correct initial state
   private static ThreadLocal<JsonNode> initialState = new ThreadLocal<>();
@@ -73,17 +74,17 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
    * Generate initial state for debezium state.
    */
   public static synchronized JsonNode constructInitialDebeziumState(final Properties properties,
-                                                final ConfiguredAirbyteCatalog catalog,
-                                                final JdbcDatabase database) {
+                                                                    final ConfiguredAirbyteCatalog catalog,
+                                                                    final JdbcDatabase database) {
     // There is no need to construct an initial state after it was already constructed in this run
     // Starting and stopping mssql debezium too many times causes it to hang during shutdown
     if (initialState.get() == null) {
       properties.setProperty("heartbeat.interval.ms", "0");
       final JsonNode highWaterMark = constructLsnSnapshotState(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText());
       final AirbyteFileOffsetBackingStore emptyOffsetManager = AirbyteFileOffsetBackingStore.initializeState(null,
-              Optional.empty());
+          Optional.empty());
       final AirbyteSchemaHistoryStorage schemaHistoryStorage =
-              AirbyteSchemaHistoryStorage.initializeDBHistory(new SchemaHistory<>(Optional.empty(), false), false);
+          AirbyteSchemaHistoryStorage.initializeDBHistory(new SchemaHistory<>(Optional.empty(), false), false);
       final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
       final Instant engineStartTime = Instant.now();
       boolean schemaHistoryRead = false;
@@ -109,7 +110,7 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
             LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", 300);
             publisher.close();
             throw new RuntimeException(
-                    "Building schema history has timed out. Please consider increasing the debezium wait time in advanced options.");
+                "Building schema history has timed out. Please consider increasing the debezium wait time in advanced options.");
           }
         }
       } catch (final InterruptedException ine) {
@@ -119,7 +120,7 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
       }
 
       final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(highWaterMark,
-              Optional.empty());
+          Optional.empty());
 
       final Map<String, String> offset = offsetManager.read();
       if (!schemaHistoryRead) {
@@ -143,9 +144,10 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
   }
 
   public static void disposeInitialState() {
-      LOGGER.debug("Dispose initial state cached for {}", Thread.currentThread());
-      initialState.remove();
+    LOGGER.debug("Dispose initial state cached for {}", Thread.currentThread());
+    initialState.remove();
   }
+
   private static JsonNode serialize(final Map<String, String> offset, final SchemaHistory<String> dbHistory) {
     final Map<String, Object> state = new HashMap<>();
     state.put(MssqlCdcStateConstants.MSSQL_CDC_OFFSET, offset);

@@ -188,7 +188,8 @@ internal class DefaultJdbcSourceAcceptanceTest :
                     connectionPropertiesUrl
                 )
             }
-        val customParameters = parseJdbcParameters(config!!, JdbcUtils.CONNECTION_PROPERTIES_KEY, "&")
+        val customParameters =
+            parseJdbcParameters(config!!, JdbcUtils.CONNECTION_PROPERTIES_KEY, "&")
         val defaultParameters = mapOf("ssl" to "true", "sslmode" to "require")
         Assertions.assertThrows(IllegalArgumentException::class.java) {
             JdbcDataSourceUtils.assertCustomParametersDontOverwriteDefaultParameters(

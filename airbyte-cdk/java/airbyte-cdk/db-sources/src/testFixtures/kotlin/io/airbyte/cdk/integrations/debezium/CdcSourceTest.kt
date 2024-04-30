@@ -15,7 +15,6 @@ import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
 import java.util.*
-import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import java.util.stream.Collectors
 import java.util.stream.Stream
@@ -23,7 +22,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Timeout
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -53,12 +51,12 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 .withStreams(
                     java.util.List.of(
                         CatalogHelpers.createAirbyteStream(
-                            MODELS_STREAM_NAME,
-                            modelsSchema(),
-                            Field.of(COL_ID, JsonSchemaType.INTEGER),
-                            Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
-                            Field.of(COL_MODEL, JsonSchemaType.STRING),
-                        )
+                                MODELS_STREAM_NAME,
+                                modelsSchema(),
+                                Field.of(COL_ID, JsonSchemaType.INTEGER),
+                                Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
+                                Field.of(COL_MODEL, JsonSchemaType.STRING),
+                            )
                             .withSupportedSyncModes(
                                 Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
                             )
@@ -374,7 +372,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     @Test
     @Throws(Exception::class)
-//    @Timeout(value = 5, unit = TimeUnit.MINUTES) // TODO: check here
+    //    @Timeout(value = 5, unit = TimeUnit.MINUTES) // TODO: check here
     fun testExistingData() {
         val targetPosition = cdcLatestTargetPosition()
         val read = source()!!.read(config()!!, configuredCatalog, null)
@@ -597,12 +595,12 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             ConfiguredAirbyteStream()
                 .withStream(
                     CatalogHelpers.createAirbyteStream(
-                        MODELS_STREAM_NAME_2,
-                        modelsSchema(),
-                        Field.of(COL_ID, JsonSchemaType.INTEGER),
-                        Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
-                        Field.of(COL_MODEL, JsonSchemaType.STRING),
-                    )
+                            MODELS_STREAM_NAME_2,
+                            modelsSchema(),
+                            Field.of(COL_ID, JsonSchemaType.INTEGER),
+                            Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
+                            Field.of(COL_MODEL, JsonSchemaType.STRING),
+                        )
                         .withSupportedSyncModes(
                             Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
                         )
@@ -818,12 +816,12 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                     .withStreams(
                         java.util.List.of(
                             CatalogHelpers.createAirbyteStream(
-                                RANDOM_TABLE_NAME,
-                                randomSchema(),
-                                Field.of(COL_ID + "_random", JsonSchemaType.NUMBER),
-                                Field.of(COL_MAKE_ID + "_random", JsonSchemaType.NUMBER),
-                                Field.of(COL_MODEL + "_random", JsonSchemaType.STRING),
-                            )
+                                    RANDOM_TABLE_NAME,
+                                    randomSchema(),
+                                    Field.of(COL_ID + "_random", JsonSchemaType.NUMBER),
+                                    Field.of(COL_MAKE_ID + "_random", JsonSchemaType.NUMBER),
+                                    Field.of(COL_MODEL + "_random", JsonSchemaType.STRING),
+                                )
                                 .withSupportedSyncModes(
                                     Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
                                 )
@@ -1087,12 +1085,12 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             ConfiguredAirbyteStream()
                 .withStream(
                     CatalogHelpers.createAirbyteStream(
-                        MODELS_STREAM_NAME_2,
-                        modelsSchema(),
-                        Field.of(COL_ID, JsonSchemaType.INTEGER),
-                        Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
-                        Field.of(COL_MODEL, JsonSchemaType.STRING),
-                    )
+                            MODELS_STREAM_NAME_2,
+                            modelsSchema(),
+                            Field.of(COL_ID, JsonSchemaType.INTEGER),
+                            Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
+                            Field.of(COL_MODEL, JsonSchemaType.STRING),
+                        )
                         .withSupportedSyncModes(
                             Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
                         )
@@ -1218,12 +1216,12 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         val randomStream =
             CatalogHelpers.createAirbyteStream(
-                RANDOM_TABLE_NAME,
-                randomSchema(),
-                Field.of(COL_ID + "_random", JsonSchemaType.INTEGER),
-                Field.of(COL_MAKE_ID + "_random", JsonSchemaType.INTEGER),
-                Field.of(COL_MODEL + "_random", JsonSchemaType.STRING),
-            )
+                    RANDOM_TABLE_NAME,
+                    randomSchema(),
+                    Field.of(COL_ID + "_random", JsonSchemaType.INTEGER),
+                    Field.of(COL_MAKE_ID + "_random", JsonSchemaType.INTEGER),
+                    Field.of(COL_MODEL + "_random", JsonSchemaType.STRING),
+                )
                 .withSourceDefinedCursor(true)
                 .withSupportedSyncModes(
                     Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),

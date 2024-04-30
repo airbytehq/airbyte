@@ -14,12 +14,12 @@ import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.Ini
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.OrderedColumnInfo;
 import io.airbyte.protocol.models.v0.*;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-
 public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateManager {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlInitialLoadGlobalStateManager.class);
   private final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo;
   private StateManager stateManager;
@@ -61,14 +61,14 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
     this.resumableFullRefreshStreams = new HashSet<>();
     catalog.getStreams().forEach(configuredAirbyteStream -> {
       if (!initialLoadStreams.streamsForInitialLoad().contains(configuredAirbyteStream)
-      && configuredAirbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
+          && configuredAirbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
         this.streamsThatHaveCompletedSnapshot.add(
-                new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()));
+            new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()));
       }
       if (initialLoadStreams.streamsForInitialLoad().contains(configuredAirbyteStream)
-      && configuredAirbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
+          && configuredAirbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
         this.resumableFullRefreshStreams.add(
-                new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()));
+            new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()));
       }
     });
   }
@@ -87,15 +87,15 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
     });
 
     if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
-      AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
+      AirbyteStreamNameNamespacePair pair =
+          new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
       var ocStatus = getOrderedColumnLoadStatus(pair);
       streamStates.add(getAirbyteStreamState(pair, Jsons.jsonNode(ocStatus)));
     }
 
-
     return new AirbyteStateMessage()
-            .withType(AirbyteStateType.GLOBAL)
-            .withGlobal(generateGlobalState(streamStates));
+        .withType(AirbyteStateType.GLOBAL)
+        .withGlobal(generateGlobalState(streamStates));
   }
 
   private AirbyteStreamState getAirbyteStreamState(final AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
@@ -112,7 +112,8 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
   @Override
   public AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream airbyteStream) {
     if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
-      io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair pair = new io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
+      io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair pair = new io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(
+          airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
       streamsThatHaveCompletedSnapshot.add(pair);
     }
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
@@ -127,8 +128,8 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
     });
 
     return new AirbyteStateMessage()
-            .withType(AirbyteStateType.GLOBAL)
-            .withGlobal(generateGlobalState(streamStates));
+        .withType(AirbyteStateType.GLOBAL)
+        .withGlobal(generateGlobalState(streamStates));
   }
 
   @Override

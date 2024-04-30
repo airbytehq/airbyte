@@ -424,4 +424,5 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
     MssqlDebeziumStateUtil.disposeInitialState();
     super.close();
   }
+
 }

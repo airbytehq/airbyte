@@ -32,7 +32,6 @@ import io.airbyte.integrations.source.mssql.MssqlSourceOperations;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.*;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-
 import java.sql.DatabaseMetaData;
 import java.sql.JDBCType;
 import java.sql.SQLException;
@@ -41,8 +40,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
-import java.util.stream.Stream;
-
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,7 +144,7 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
 
         // Grab the selected fields to sync
         final TableInfo<CommonField<JDBCType>> table = tableNameToTable.get(fullyQualifiedTableName);
-        iteratorList.add(getIteratorForStream(airbyteStream, table,emittedAt));
+        iteratorList.add(getIteratorForStream(airbyteStream, table, emittedAt));
       }
     }
     return iteratorList;
@@ -155,21 +152,23 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
 
   @NotNull
   @Override
-  public AutoCloseableIterator<AirbyteMessage> getIteratorForStream(@NotNull final ConfiguredAirbyteStream airbyteStream, @NotNull final TableInfo<CommonField<JDBCType>> table, @NotNull final Instant emittedAt) {
+  public AutoCloseableIterator<AirbyteMessage> getIteratorForStream(@NotNull final ConfiguredAirbyteStream airbyteStream,
+                                                                    @NotNull final TableInfo<CommonField<JDBCType>> table,
+                                                                    @NotNull final Instant emittedAt) {
     final AirbyteStream stream = airbyteStream.getStream();
     final String streamName = stream.getName();
     final String namespace = stream.getNamespace();
     final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamName, namespace);
     final List<String> selectedDatabaseFields = table.getFields()
-            .stream()
-            .map(CommonField::getName)
-            .filter(CatalogHelpers.getTopLevelFieldNames(airbyteStream)::contains)
-            .toList();
+        .stream()
+        .map(CommonField::getName)
+        .filter(CatalogHelpers.getTopLevelFieldNames(airbyteStream)::contains)
+        .toList();
     final AutoCloseableIterator<AirbyteRecordData> queryStream =
-            new MssqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair,
-                    calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream));
+        new MssqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair,
+            calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream));
     final AutoCloseableIterator<AirbyteMessage> recordIterator =
-            getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
+        getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
     final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream);
     return augmentWithLogs(recordAndMessageIterator, pair, streamName);
   }
@@ -212,7 +211,8 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
 
   private AutoCloseableIterator<AirbyteMessage> augmentWithState(final AutoCloseableIterator<AirbyteMessage> recordIterator,
                                                                  final ConfiguredAirbyteStream airbyteStream) {
-    final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
+    final AirbyteStreamNameNamespacePair pair =
+        new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
 
     final Duration syncCheckpointDuration =
         config.get(SYNC_CHECKPOINT_DURATION_PROPERTY) != null
@@ -223,7 +223,8 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
 
     initialLoadStateManager.setStreamStateForIncrementalRunSupplier(streamStateForIncrementalRunSupplier);
     return AutoCloseableIterators.transformIterator(
-        r -> new SourceStateIterator<>(r, airbyteStream, initialLoadStateManager, new StateEmitFrequency(syncCheckpointRecords, syncCheckpointDuration)),
+        r -> new SourceStateIterator<>(r, airbyteStream, initialLoadStateManager,
+            new StateEmitFrequency(syncCheckpointRecords, syncCheckpointDuration)),
         recordIterator, new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(pair.getName(), pair.getNamespace()));
   }
 

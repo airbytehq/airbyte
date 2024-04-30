@@ -185,46 +185,46 @@ public class MssqlQueryUtils {
 
     final Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, CursorBasedStatus> cursorBasedStatusMap = new HashMap<>();
     streams.forEach(stream -> {
-        final String name = stream.getStream().getName();
-        final String namespace = stream.getStream().getNamespace();
-        final String fullTableName =
-            getFullyQualifiedTableNameWithQuoting(namespace, name, quoteString);
+      final String name = stream.getStream().getName();
+      final String namespace = stream.getStream().getNamespace();
+      final String fullTableName =
+          getFullyQualifiedTableNameWithQuoting(namespace, name, quoteString);
 
-        final Optional<CursorInfo> cursorInfoOptional =
-            stateManager.getCursorInfo(new AirbyteStreamNameNamespacePair(name, namespace));
-        if (cursorInfoOptional.isEmpty()) {
-          throw new RuntimeException(String.format("Stream %s was not provided with an appropriate cursor", stream.getStream().getName()));
+      final Optional<CursorInfo> cursorInfoOptional =
+          stateManager.getCursorInfo(new AirbyteStreamNameNamespacePair(name, namespace));
+      if (cursorInfoOptional.isEmpty()) {
+        throw new RuntimeException(String.format("Stream %s was not provided with an appropriate cursor", stream.getStream().getName()));
+      }
+      final CursorBasedStatus cursorBasedStatus = new CursorBasedStatus();
+      final Optional<String> maybeCursorField = Optional.ofNullable(cursorInfoOptional.get().getCursorField());
+      maybeCursorField.ifPresent(cursorField -> {
+        LOGGER.info("Querying max cursor value for {}.{}", namespace, name);
+        final String quotedCursorField = getIdentifierWithQuoting(cursorField, quoteString);
+        final String cursorBasedSyncStatusQuery = String.format(MAX_CURSOR_VALUE_QUERY,
+            quotedCursorField,
+            fullTableName,
+            quotedCursorField,
+            quotedCursorField,
+            fullTableName);
+        final List<JsonNode> jsonNodes;
+        try {
+          jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(cursorBasedSyncStatusQuery).executeQuery(),
+              resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+        } catch (SQLException e) {
+          throw new RuntimeException("Failed to read max cursor value from %s.%s".formatted(namespace, name), e);
         }
-        final CursorBasedStatus cursorBasedStatus = new CursorBasedStatus();
-        final Optional<String> maybeCursorField = Optional.ofNullable(cursorInfoOptional.get().getCursorField());
-        maybeCursorField.ifPresent(cursorField -> {
-          LOGGER.info("Querying max cursor value for {}.{}", namespace, name);
-          final String quotedCursorField = getIdentifierWithQuoting(cursorField, quoteString);
-          final String cursorBasedSyncStatusQuery = String.format(MAX_CURSOR_VALUE_QUERY,
-                  quotedCursorField,
-                  fullTableName,
-                  quotedCursorField,
-                  quotedCursorField,
-                  fullTableName);
-            final List<JsonNode> jsonNodes;
-            try {
-                jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(cursorBasedSyncStatusQuery).executeQuery(),
-                        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
-            } catch (SQLException e) {
-                throw new RuntimeException("Failed to read max cursor value from %s.%s".formatted(namespace, name), e);
-            }
-            cursorBasedStatus.setCursorField(ImmutableList.of(cursorField));
-          if (!jsonNodes.isEmpty()) {
-            final JsonNode result = jsonNodes.get(0);
-            cursorBasedStatus.setCursor(result.get(cursorField).asText());
-            cursorBasedStatus.setCursorRecordCount((long) jsonNodes.size());
-          }
-          cursorBasedStatus.setStateType(StateType.CURSOR_BASED);
-          cursorBasedStatus.setVersion(2L);
-          cursorBasedStatus.setStreamName(name);
-          cursorBasedStatus.setStreamNamespace(namespace);
-          cursorBasedStatusMap.put(new AirbyteStreamNameNamespacePair(name, namespace), cursorBasedStatus);
-        });
+        cursorBasedStatus.setCursorField(ImmutableList.of(cursorField));
+        if (!jsonNodes.isEmpty()) {
+          final JsonNode result = jsonNodes.get(0);
+          cursorBasedStatus.setCursor(result.get(cursorField).asText());
+          cursorBasedStatus.setCursorRecordCount((long) jsonNodes.size());
+        }
+        cursorBasedStatus.setStateType(StateType.CURSOR_BASED);
+        cursorBasedStatus.setVersion(2L);
+        cursorBasedStatus.setStreamName(name);
+        cursorBasedStatus.setStreamNamespace(namespace);
+        cursorBasedStatusMap.put(new AirbyteStreamNameNamespacePair(name, namespace), cursorBasedStatus);
+      });
     });
 
     return cursorBasedStatusMap;

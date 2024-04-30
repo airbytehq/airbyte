@@ -52,8 +52,6 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.connector.sqlserver.Lsn;
-
-import java.sql.Array;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.*;
@@ -62,7 +60,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
-
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.parallel.Execution;
@@ -187,8 +184,9 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
     testDatabase.setSourceConfig(config());
     testDatabase.setDatabaseConfig(source().toDatabaseConfig(config()));
 
-    JsonNode debeziumState = MssqlDebeziumStateUtil.constructInitialDebeziumState(MssqlCdcHelper.getDebeziumProperties(testDatabase, getConfiguredCatalog(), true),
-        getConfiguredCatalog(), testDatabase);
+    JsonNode debeziumState =
+        MssqlDebeziumStateUtil.constructInitialDebeziumState(MssqlCdcHelper.getDebeziumProperties(testDatabase, getConfiguredCatalog(), true),
+            getConfiguredCatalog(), testDatabase);
 
     Assertions.assertEquals(3, Jsons.object(debeziumState, Map.class).size());
     Assertions.assertTrue(debeziumState.has("is_compressed"));
@@ -201,7 +199,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
   // Tests even with consistent inserting operations, CDC snapshot and incremental load will not lose
   // data.
   @Test
-  @Timeout(value = 5, unit = TimeUnit.MINUTES)
+  @Timeout(value = 5,
+           unit = TimeUnit.MINUTES)
   public void testCdcNotLoseDataWithConsistentWriting() throws Exception {
     ExecutorService executor = Executors.newFixedThreadPool(10);
 
@@ -414,7 +413,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
         sharedState = global.getSharedState();
       } else {
         assertEquals(sharedState, global.getSharedState(), "states were " + Arrays.deepToString(stateMessages.toArray()));
-//        assertEquals(sharedState.toString().replaceAll("ts_ms\\\\\":\\d+", ""), global.getSharedState().toString().replaceAll("ts_ms\\\\\":\\d+", ""));
+        // assertEquals(sharedState.toString().replaceAll("ts_ms\\\\\":\\d+", ""),
+        // global.getSharedState().toString().replaceAll("ts_ms\\\\\":\\d+", ""));
       }
       assertEquals(1, global.getStreamStates().size());
       final AirbyteStreamState streamState = global.getStreamStates().get(0);
@@ -465,4 +465,5 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
     // Full refresh will only send 6 state messages - one for each record (including the final one).
     assertEquals(6, stateMessages.size());
   }
+
 }

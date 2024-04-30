@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.mssql;
 
 import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -14,8 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-
-import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jooq.Record;

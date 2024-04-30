@@ -38,7 +38,7 @@ import org.mockito.Mockito
 @SuppressFBWarnings(
     value = ["MS_SHOULD_BE_FINAL"],
     justification =
-    "The static variables are updated in subclasses for convenience, and cannot be final."
+        "The static variables are updated in subclasses for convenience, and cannot be final."
 )
 abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
     @JvmField protected var testdb: T? = null
@@ -364,11 +364,11 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         catalogStreams.addAll(expected.streams)
         catalogStreams.add(
             CatalogHelpers.createAirbyteStream(
-                TABLE_NAME,
-                SCHEMA_NAME2,
-                Field.of(COL_ID, JsonSchemaType.STRING),
-                Field.of(COL_NAME, JsonSchemaType.STRING)
-            )
+                    TABLE_NAME,
+                    SCHEMA_NAME2,
+                    Field.of(COL_ID, JsonSchemaType.STRING),
+                    Field.of(COL_NAME, JsonSchemaType.STRING)
+                )
                 .withSupportedSyncModes(
                     java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                 )
@@ -1002,7 +1002,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         // some databases don't make insertion order guarantee when equal ordering value
         if (
             testdb!!.databaseDriver == DatabaseDriver.TERADATA ||
-            testdb!!.databaseDriver == DatabaseDriver.ORACLE
+                testdb!!.databaseDriver == DatabaseDriver.ORACLE
         ) {
             MatcherAssert.assertThat(
                 listOf("a", "b"),
@@ -1221,34 +1221,34 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             .withStreams(
                 java.util.List.of(
                     CatalogHelpers.createAirbyteStream(
-                        TABLE_NAME,
-                        defaultNamespace,
-                        Field.of(COL_ID, JsonSchemaType.INTEGER),
-                        Field.of(COL_NAME, JsonSchemaType.STRING),
-                        Field.of(COL_UPDATED_AT, JsonSchemaType.STRING)
-                    )
+                            TABLE_NAME,
+                            defaultNamespace,
+                            Field.of(COL_ID, JsonSchemaType.INTEGER),
+                            Field.of(COL_NAME, JsonSchemaType.STRING),
+                            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING)
+                        )
                         .withSupportedSyncModes(
                             java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                         )
                         .withSourceDefinedPrimaryKey(java.util.List.of(java.util.List.of(COL_ID))),
                     CatalogHelpers.createAirbyteStream(
-                        TABLE_NAME_WITHOUT_PK,
-                        defaultNamespace,
-                        Field.of(COL_ID, JsonSchemaType.INTEGER),
-                        Field.of(COL_NAME, JsonSchemaType.STRING),
-                        Field.of(COL_UPDATED_AT, JsonSchemaType.STRING)
-                    )
+                            TABLE_NAME_WITHOUT_PK,
+                            defaultNamespace,
+                            Field.of(COL_ID, JsonSchemaType.INTEGER),
+                            Field.of(COL_NAME, JsonSchemaType.STRING),
+                            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING)
+                        )
                         .withSupportedSyncModes(
                             java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                         )
                         .withSourceDefinedPrimaryKey(emptyList()),
                     CatalogHelpers.createAirbyteStream(
-                        TABLE_NAME_COMPOSITE_PK,
-                        defaultNamespace,
-                        Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
-                        Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
-                        Field.of(COL_UPDATED_AT, JsonSchemaType.STRING)
-                    )
+                            TABLE_NAME_COMPOSITE_PK,
+                            defaultNamespace,
+                            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
+                            Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
+                            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING)
+                        )
                         .withSupportedSyncModes(
                             java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
                         )

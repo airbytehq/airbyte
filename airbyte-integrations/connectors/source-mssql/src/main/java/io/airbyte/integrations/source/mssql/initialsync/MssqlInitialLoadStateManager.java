@@ -10,7 +10,6 @@ import io.airbyte.cdk.integrations.source.relationaldb.models.OrderedColumnLoadS
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageProducer;
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.OrderedColumnInfo;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.Map;
@@ -30,16 +29,16 @@ public abstract class MssqlInitialLoadStateManager implements SourceStateMessage
 
   protected Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
 
-
   void setStreamStateForIncrementalRunSupplier(final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
   }
-    /**
-     * Updates the {@link OrderedColumnLoadStatus} for the state associated with the given pair.
-     *
-     * @param pair pair
-     * @param ocLoadStatus updated status
-     */
+
+  /**
+   * Updates the {@link OrderedColumnLoadStatus} for the state associated with the given pair.
+   *
+   * @param pair pair
+   * @param ocLoadStatus updated status
+   */
   public void updateOrderedColumnLoadState(final AirbyteStreamNameNamespacePair pair, final OrderedColumnLoadStatus ocLoadStatus) {
     pairToOrderedColLoadStatus.put(pair, ocLoadStatus);
   }
@@ -75,7 +74,7 @@ public abstract class MssqlInitialLoadStateManager implements SourceStateMessage
   protected JsonNode getIncrementalState(final AirbyteStreamNameNamespacePair pair) {
     final OrderedColumnLoadStatus currentOcLoadStatus = getOrderedColumnLoadStatus(pair);
     return (currentOcLoadStatus == null || currentOcLoadStatus.getIncrementalState() == null) ? streamStateForIncrementalRunSupplier.apply(pair)
-            : currentOcLoadStatus.getIncrementalState();
+        : currentOcLoadStatus.getIncrementalState();
   }
 
   @Override

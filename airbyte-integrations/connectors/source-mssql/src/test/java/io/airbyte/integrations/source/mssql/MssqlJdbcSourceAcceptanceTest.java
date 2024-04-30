@@ -470,9 +470,10 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Mssq
   protected void validateFullRefreshStateMessageReadSuccess(final List<? extends AirbyteStateMessage> stateMessages) {
     var finalStateMessage = stateMessages.get(stateMessages.size() - 1);
     assertEquals(
-            finalStateMessage.getStream().getStreamState().get("state_type").textValue(),
-            "ordered_column");
+        finalStateMessage.getStream().getStreamState().get("state_type").textValue(),
+        "ordered_column");
     assertEquals(finalStateMessage.getStream().getStreamState().get("ordered_col").textValue(), "id");
     assertEquals(finalStateMessage.getStream().getStreamState().get("ordered_col_val").textValue(), "3");
   }
+
 }

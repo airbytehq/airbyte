@@ -8,7 +8,6 @@ import static io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler.isAnyS
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT;
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.*;
-import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbReadUtil.convertNameNamespacePairFromV0;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbReadUtil.identifyStreamsForCursorBased;
 import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getCursorBasedSyncStatusForStreams;
 import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getTableSizeInfoForStreams;
@@ -72,7 +71,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -409,7 +407,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final JsonNode sourceConfig = database.getSourceConfig();
     if (MssqlCdcHelper.isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
       LOGGER.info("using OC + CDC");
-      return MssqlInitialReadUtil.getCdcReadIterators(database, catalog, tableNameToTable, stateManager, initialLoadStateManager, emittedAt, getQuoteString());
+      return MssqlInitialReadUtil.getCdcReadIterators(database, catalog, tableNameToTable, stateManager, initialLoadStateManager, emittedAt,
+          getQuoteString());
     } else {
       if (isAnyStreamIncrementalSyncMode(catalog)) {
         LOGGER.info("Syncing via Primary Key");
@@ -584,15 +583,15 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       throws Exception {
     final AirbyteStateType supportedType = getSupportedStateType(config);
     final StateManager stateManager = StateManagerFactory.createStateManager(supportedType,
-            StateGeneratorUtils.deserializeInitialState(state, supportedType), catalog);
+        StateGeneratorUtils.deserializeInitialState(state, supportedType), catalog);
     final Instant emittedAt = Instant.now();
     final JdbcDatabase database = createDatabase(config);
     final Map<String, TableInfo<CommonField<JDBCType>>> fullyQualifiedTableNameToInfo =
-            discoverWithoutSystemTables(database)
-                    .stream()
-                            .collect(Collectors.toMap(t -> String.format("%s.%s", t.getNameSpace(), t.getName()),
-                                            Function
-                                                    .identity()));
+        discoverWithoutSystemTables(database)
+            .stream()
+            .collect(Collectors.toMap(t -> String.format("%s.%s", t.getNameSpace(), t.getName()),
+                Function
+                    .identity()));
     initializeForStateManager(database, catalog, fullyQualifiedTableNameToInfo, stateManager);
     logPreSyncDebugData(database, catalog);
     return super.readStreams(config, catalog, state);
@@ -625,7 +624,10 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
-  protected void initializeForStateManager(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable, final StateManager stateManager) {
+  protected void initializeForStateManager(final JdbcDatabase database,
+                                           final ConfiguredAirbyteCatalog catalog,
+                                           final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                           final StateManager stateManager) {
     if (initialLoadStateManager != null) {
       return;
     }
@@ -636,26 +638,30 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       final MssqlCursorBasedStateManager cursorBasedStateManager = new MssqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
       final InitialLoadStreams initialLoadStreams = streamsForInitialOrderedColumnLoad(cursorBasedStateManager, catalog);
       initialLoadStateManager = new MssqlInitialLoadStreamStateManager(catalog, initialLoadStreams,
-              initPairToOrderedColumnInfoMap(database, initialLoadStreams, tableNameToTable, getQuoteString()));
+          initPairToOrderedColumnInfoMap(database, initialLoadStreams, tableNameToTable, getQuoteString()));
     }
   }
 
   @Nullable
   @Override
-  public InitialLoadHandler<JDBCType> getInitialLoadHandler(final JdbcDatabase database, final ConfiguredAirbyteStream airbyteStream, final ConfiguredAirbyteCatalog catalog, final StateManager stateManager) {
+  public InitialLoadHandler<JDBCType> getInitialLoadHandler(final JdbcDatabase database,
+                                                            final ConfiguredAirbyteStream airbyteStream,
+                                                            final ConfiguredAirbyteCatalog catalog,
+                                                            final StateManager stateManager) {
     var sourceConfig = database.getSourceConfig();
     if (MssqlCdcHelper.isCdc(sourceConfig)) {
-      return getMssqlFullRefreshInitialLoadHandler(database, catalog, initialLoadStateManager, stateManager, airbyteStream, Instant.now(), getQuoteString())
+      return getMssqlFullRefreshInitialLoadHandler(database, catalog, initialLoadStateManager, stateManager, airbyteStream, Instant.now(),
+          getQuoteString())
               .get();
     } else {
       final MssqlCursorBasedStateManager cursorBasedStateManager = new MssqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
       final InitialLoadStreams initialLoadStreams = streamsForInitialOrderedColumnLoad(cursorBasedStateManager, catalog);
 
       final Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> pairToCursorBasedStatus =
-              getCursorBasedSyncStatusForStreams(database, initialLoadStreams.streamsForInitialLoad(), stateManager, getQuoteString());
+          getCursorBasedSyncStatusForStreams(database, initialLoadStreams.streamsForInitialLoad(), stateManager, getQuoteString());
       return new MssqlInitialLoadHandler(sourceConfig, database, new MssqlSourceOperations(), getQuoteString(), initialLoadStateManager,
-              namespacePair -> Jsons.jsonNode(pairToCursorBasedStatus.get(namespacePair)),
-              getTableSizeInfoForStreams(database, catalog.getStreams(), getQuoteString()));
+          namespacePair -> Jsons.jsonNode(pairToCursorBasedStatus.get(namespacePair)),
+          getTableSizeInfoForStreams(database, catalog.getStreams(), getQuoteString()));
     }
   }
 
@@ -663,7 +669,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public boolean supportResumableFullRefresh(final ConfiguredAirbyteStream airbyteStream) {
     // for CDC, primary key is stored in stream.sourceDefinedPrimaryKey.
     if (airbyteStream.getStream() != null && airbyteStream.getStream().getSourceDefinedPrimaryKey() != null
-            && !airbyteStream.getStream().getSourceDefinedPrimaryKey().isEmpty()) {
+        && !airbyteStream.getStream().getSourceDefinedPrimaryKey().isEmpty()) {
       return true;
     }
     // for cursor based, primary key is stored in primary key under this stream.
