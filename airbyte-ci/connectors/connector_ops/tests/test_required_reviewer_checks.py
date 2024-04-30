@@ -11,7 +11,7 @@ import yaml
 from connector_ops import required_reviewer_checks
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def mock_diffed_branched(mocker):
     airbyte_repo = git.Repo(search_parent_directories=True)
     mocker.patch.object(required_reviewer_checks.utils, "DIFFED_BRANCH", airbyte_repo.active_branch)
