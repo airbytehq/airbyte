@@ -12,7 +12,7 @@ from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 @click.command(cls=DaggerPipelineCommand, short_help="Upgrade CDK version")
 @click.argument("target-cdk-version", type=str, default="latest")
 @click.pass_context
-async def bump_version(
+async def upgrade_cdk(
     ctx: click.Context,
     target_cdk_version: str,
 ) -> bool:
