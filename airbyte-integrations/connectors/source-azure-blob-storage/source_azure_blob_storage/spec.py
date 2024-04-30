@@ -49,7 +49,7 @@ class StorageAccountKey(BaseModel):
     )
 
 
-class Config(AbstractFileBasedSpec):
+class SourceAzureBlobStorageSpec(AbstractFileBasedSpec):
     """
     NOTE: When this Spec is changed, legacy_config_transformer.py must also be modified to uptake the changes
     because it is responsible for converting legacy Azure Blob Storage v0 configs into v1 configs using the File-Based CDK.
@@ -59,17 +59,17 @@ class Config(AbstractFileBasedSpec):
     def documentation_url(cls) -> AnyUrl:
         return AnyUrl("https://docs.airbyte.com/integrations/sources/azure-blob-storage", scheme="https")
 
-    azure_blob_storage_account_name: str = Field(
-        title="Azure Blob Storage account name",
-        description="The account's name of the Azure Blob Storage.",
-        examples=["airbyte5storage"],
-        order=2,
-    )
     credentials: Union[Oauth2, StorageAccountKey] = Field(
         title="Authentication",
         description="Credentials for connecting to the Azure Blob Storage",
         discriminator="auth_type",
         type="object",
+        order=2,
+    )
+    azure_blob_storage_account_name: str = Field(
+        title="Azure Blob Storage account name",
+        description="The account's name of the Azure Blob Storage.",
+        examples=["airbyte5storage"],
         order=3,
     )
     azure_blob_storage_container_name: str = Field(
