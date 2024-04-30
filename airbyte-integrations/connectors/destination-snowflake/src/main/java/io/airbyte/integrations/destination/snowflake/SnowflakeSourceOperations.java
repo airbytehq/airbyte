@@ -67,4 +67,10 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
     node.put(columnName, timestampWithOffset.format(DataTypeUtils.TIMESTAMPTZ_FORMATTER));
   }
 
+  protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    // for backward compatibility
+    var instant = resultSet.getTimestamp(index).toInstant();
+    node.put(columnName, DataTypeUtils.toISO8601StringWithMicroseconds(instant));
+  }
+
 }
