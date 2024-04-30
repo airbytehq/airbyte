@@ -97,7 +97,7 @@ object StateManagerFactory {
         when (airbyteStateMessage.type) {
             AirbyteStateMessage.AirbyteStateType.STREAM ->
                 throw ConfigErrorException(
-                    "Unable to convert connector state from stream to global.  Please reset the connection to continue."
+                    "You've changed replication modes - please reset the streams in this connector"
                 )
             AirbyteStateMessage.AirbyteStateType.LEGACY -> {
                 globalStateMessage =
@@ -129,7 +129,7 @@ object StateManagerFactory {
         when (airbyteStateMessage.type) {
             AirbyteStateMessage.AirbyteStateType.GLOBAL ->
                 throw ConfigErrorException(
-                    "You've changed to replication modes - please reset the streams in this connector"
+                    "You've changed replication modes - please reset the streams in this connector"
                 )
             AirbyteStateMessage.AirbyteStateType.LEGACY ->
                 streamStates.addAll(
