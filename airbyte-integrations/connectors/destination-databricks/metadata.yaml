@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 072d5540-f236-4294-ba7c-ade8fd918496
-  dockerImageTag: 1.1.0
+  dockerImageTag: 1.1.2
   dockerRepository: airbyte/destination-databricks
   githubIssueLabel: destination-databricks
   icon: databricks.svg
@@ -11,8 +11,10 @@ data:
   registries:
     cloud:
       enabled: true
+      dockerImageTag: 1.1.0 # pinning due to CDK incompatibility, see https://github.com/airbytehq/alpha-beta-issues/issues/2596
     oss:
       enabled: true
+      dockerImageTag: 1.1.0 # pinning due to CDK incompatibility, see https://github.com/airbytehq/alpha-beta-issues/issues/2596
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/databricks
   tags:

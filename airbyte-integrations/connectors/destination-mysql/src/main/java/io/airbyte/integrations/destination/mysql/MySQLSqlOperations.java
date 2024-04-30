@@ -4,13 +4,11 @@
 
 package io.airbyte.integrations.destination.mysql;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
-import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage;
 import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,7 +30,7 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
+                                    final List<PartialAirbyteMessage> records,
                                     final String schemaName,
                                     final String tmpTableName)
       throws SQLException {
@@ -52,8 +50,17 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
     }
   }
 
+  @Override
+  protected void insertRecordsInternalV2(final JdbcDatabase database,
+                                         final List<PartialAirbyteMessage> records,
+                                         final String schemaName,
+                                         final String tableName)
+      throws Exception {
+    throw new UnsupportedOperationException("mysql does not yet support DV2");
+  }
+
   private void loadDataIntoTable(final JdbcDatabase database,
-                                 final List<AirbyteRecordMessage> records,
+                                 final List<PartialAirbyteMessage> records,
                                  final String schemaName,
                                  final String tmpTableName,
                                  final File tmpFile)
@@ -75,11 +82,6 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
         throw new RuntimeException(e);
       }
     });
-  }
-
-  @Override
-  protected JsonNode formatData(final JsonNode data) {
-    return StandardNameTransformer.formatJsonPath(data);
   }
 
   void verifyLocalFileEnabled(final JdbcDatabase database) throws SQLException {

@@ -23,12 +23,12 @@ acceptance_tests:
             bypass_reason: Sandbox account can't seed this stream
           - name: incident_teams
             bypass_reason: Sandbox account can't seed this stream
+          - name: service_level_objectives
+            bypass_reason: Sandbox account can't seed this stream
   # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
   #        expect_records:
   #          path: "integration_tests/expected_records.jsonl"
-  #          extra_fields: no
   #          exact_order: no
-  #          extra_records: yes
   incremental:
     bypass_reason: "This connector does not implement incremental sync"
   # TODO uncomment this block this block if your connector implements incremental sync:
@@ -41,3 +41,9 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        ignored_fields:
+          logs:
+            - name: "attributes.timestamp"
+              bypass_reason: "Change everytime"
+            - name: "id"
+              bypass_reason: "Change everytime"

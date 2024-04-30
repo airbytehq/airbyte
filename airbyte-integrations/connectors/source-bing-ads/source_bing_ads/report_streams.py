@@ -6,7 +6,7 @@ import re
 import xml.etree.ElementTree as ET
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 from urllib.parse import urlparse
 
 import _csv
@@ -19,6 +19,7 @@ from bingads import ServiceClient
 from bingads.v13.internal.reporting.row_report import _RowReport
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord
 from bingads.v13.reporting import ReportingDownloadParameters
+from cached_property import cached_property
 from source_bing_ads.base_streams import Accounts, BingAdsStream
 from source_bing_ads.utils import transform_date_format_to_rfc_3339, transform_report_hourly_datetime_format_to_rfc_3339
 from suds import WebFault, sudsobject
@@ -31,7 +32,6 @@ class HourlyReportTransformerMixin:
     @transformer.registerCustomTransform
     def custom_transform_datetime_rfc3339(original_value, field_schema):
         if original_value and "format" in field_schema and field_schema["format"] == "date-time":
-            print(original_value)
             transformed_value = transform_report_hourly_datetime_format_to_rfc_3339(original_value)
             return transformed_value
         return original_value
@@ -104,9 +104,13 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
             return None
         if "%" in value:
             value = value.replace("%", "")
-        if value and set(self.get_json_schema()["properties"].get(column, {}).get("type")) & {"integer", "number"}:
+        if value and column in self._get_schema_numeric_properties:
             value = value.replace(",", "")
         return value
+
+    @cached_property
+    def _get_schema_numeric_properties(self) -> Set[str]:
+        return set(k for k, v in self.get_json_schema()["properties"].items() if set(v.get("type")) & {"integer", "number"})
 
     def get_request_date(self, reporting_service: ServiceClient, date: datetime) -> sudsobject.Object:
         """
@@ -227,12 +231,16 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
         )
 
     def stream_slices(
-        self,
-        **kwargs: Mapping[str, Any],
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
-            for period in self.default_time_periods:
-                yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"], "time_period": period}
+        accounts = Accounts(self.client, self.config)
+        for _slice in accounts.stream_slices():
+            for account in accounts.read_records(SyncMode.full_refresh, _slice):
+                if self.get_start_date(stream_state, account["Id"]):  # if start date is not provided default time periods will be used
+                    yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
+                else:
+                    for period in self.default_time_periods:
+                        yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"], "time_period": period}
 
 
 class BingAdsReportingServicePerformanceStream(BingAdsReportingServiceStream, ABC):
@@ -659,6 +667,151 @@ class UserLocationPerformanceReportWeekly(UserLocationPerformanceReport):
 
 
 class UserLocationPerformanceReportMonthly(UserLocationPerformanceReport):
+    report_aggregation = "Monthly"
+
+
+class ProductDimensionPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
+    """
+    https://learn.microsoft.com/en-us/advertising/reporting-service/productdimensionperformancereportrequest?view=bingads-13
+    """
+
+    report_name: str = "ProductDimensionPerformanceReport"
+    report_schema_name = "product_dimension_performance_report"
+    primary_key = None
+
+    @property
+    def report_columns(self) -> Iterable[str]:
+        """AccountId is not in reporting columns for this report"""
+        properties = list(self.get_json_schema().get("properties", {}).keys())
+        properties.remove("AccountId")
+        return properties
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record = super().transform(record, stream_slice)
+        record["AccountId"] = stream_slice["account_id"]
+        return record
+
+
+class ProductDimensionPerformanceReportHourly(HourlyReportTransformerMixin, ProductDimensionPerformanceReport):
+    report_aggregation = "Hourly"
+    report_schema_name = "product_dimension_performance_report_hourly"
+
+
+class ProductDimensionPerformanceReportDaily(ProductDimensionPerformanceReport):
+    report_aggregation = "Daily"
+
+
+class ProductDimensionPerformanceReportWeekly(ProductDimensionPerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class ProductDimensionPerformanceReportMonthly(ProductDimensionPerformanceReport):
+    report_aggregation = "Monthly"
+
+
+class ProductSearchQueryPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
+    """
+    https://learn.microsoft.com/en-us/advertising/reporting-service/productsearchqueryperformancereportrequest?view=bingads-13
+    """
+
+    report_name: str = "ProductSearchQueryPerformanceReport"
+    report_schema_name = "product_search_query_performance_report"
+    primary_key = [
+        "AccountId",
+        "TimePeriod",
+        "CampaignId",
+        "AdId",
+        "AdGroupId",
+        "SearchQuery",
+        "DeviceType",
+        "DeviceOS",
+        "Language",
+        "Network",
+    ]
+
+
+class ProductSearchQueryPerformanceReportHourly(HourlyReportTransformerMixin, ProductSearchQueryPerformanceReport):
+    report_aggregation = "Hourly"
+    report_schema_name = "product_search_query_performance_report_hourly"
+
+
+class ProductSearchQueryPerformanceReportDaily(ProductSearchQueryPerformanceReport):
+    report_aggregation = "Daily"
+
+
+class ProductSearchQueryPerformanceReportWeekly(ProductSearchQueryPerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class ProductSearchQueryPerformanceReportMonthly(ProductSearchQueryPerformanceReport):
+    report_aggregation = "Monthly"
+
+
+class GoalsAndFunnelsReport(BingAdsReportingServicePerformanceStream, ABC):
+    """
+    https://learn.microsoft.com/en-us/advertising/reporting-service/goalsandfunnelsreportrequest?view=bingads-13
+    """
+
+    report_name: str = "GoalsAndFunnelsReport"
+    report_schema_name = "goals_and_funnels_report"
+    primary_key = [
+        "GoalId",
+        "TimePeriod",
+        "AccountId",
+        "CampaignId",
+        "DeviceType",
+        "DeviceOS",
+        "AdGroupId",
+    ]
+
+
+class GoalsAndFunnelsReportHourly(HourlyReportTransformerMixin, GoalsAndFunnelsReport):
+    report_aggregation = "Hourly"
+    report_schema_name = "goals_and_funnels_report_hourly"
+
+
+class GoalsAndFunnelsReportDaily(GoalsAndFunnelsReport):
+    report_aggregation = "Daily"
+
+
+class GoalsAndFunnelsReportWeekly(GoalsAndFunnelsReport):
+    report_aggregation = "Weekly"
+
+
+class GoalsAndFunnelsReportMonthly(GoalsAndFunnelsReport):
+    report_aggregation = "Monthly"
+
+
+class AudiencePerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
+    """
+    https://learn.microsoft.com/en-us/advertising/reporting-service/audienceperformancereportrequest?view=bingads-13
+    """
+
+    report_name: str = "AudiencePerformanceReport"
+    report_schema_name = "audience_performance_report"
+    primary_key = [
+        "AudienceId",
+        "TimePeriod",
+        "AccountId",
+        "CampaignId",
+        "AdGroupId",
+    ]
+
+
+class AudiencePerformanceReportHourly(HourlyReportTransformerMixin, AudiencePerformanceReport):
+    report_aggregation = "Hourly"
+    report_schema_name = "audience_performance_report_hourly"
+
+
+class AudiencePerformanceReportDaily(AudiencePerformanceReport):
+    report_aggregation = "Daily"
+
+
+class AudiencePerformanceReportWeekly(AudiencePerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class AudiencePerformanceReportMonthly(AudiencePerformanceReport):
     report_aggregation = "Monthly"
 
 

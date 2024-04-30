@@ -7,87 +7,54 @@
     "amazon-order-id": {
       "type": "string"
     },
-    "asin": {
-      "type": ["null", "string"]
-    },
-    "currency": {
-      "type": ["null", "string"]
-    },
-    "fulfillment-channel": {
-      "type": ["null", "string"]
-    },
-    "gift-wrap-price": {
-      "type": ["null", "string"]
-    },
-    "gift-wrap-tax": {
-      "type": ["null", "string"]
-    },
-    "is-business-order": {
-      "type": ["null", "string"]
-    },
-    "item-price": {
-      "type": ["null", "string"]
-    },
-    "item-promotion-discount": {
-      "type": ["null", "string"]
-    },
-    "item-status": {
-      "type": ["null", "string"]
-    },
-    "item-tax": {
-      "type": ["null", "string"]
-    },
-    "last-updated-date": {
-      "type": "string",
-      "format": "date-time"
-    },
     "merchant-order-id": {
-      "type": ["null", "string"]
-    },
-    "order-channel": {
-      "type": ["null", "string"]
-    },
-    "order-status": {
-      "type": ["null", "string"]
-    },
-    "price-designation": {
-      "type": ["null", "string"]
-    },
-    "product-name": {
-      "type": ["null", "string"]
-    },
-    "promotion-ids": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "purchase-date": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "purchase-order-number": {
+    "last-updated-date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "order-status": {
       "type": ["null", "string"]
     },
-    "quantity": {
+    "fulfillment-channel": {
       "type": ["null", "string"]
     },
     "sales-channel": {
       "type": ["null", "string"]
     },
-    "ship-city": {
-      "type": ["null", "string"]
-    },
-    "ship-country": {
-      "type": ["null", "string"]
-    },
-    "ship-postal-code": {
-      "type": ["null", "string"]
-    },
-    "ship-promotion-discount": {
+    "order-channel": {
       "type": ["null", "string"]
     },
     "ship-service-level": {
       "type": ["null", "string"]
     },
-    "ship-state": {
+    "product-name": {
+      "type": ["null", "string"]
+    },
+    "sku": {
+      "type": ["null", "string"]
+    },
+    "asin": {
+      "type": ["null", "string"]
+    },
+    "item-status": {
+      "type": ["null", "string"]
+    },
+    "quantity": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "item-price": {
+      "type": ["null", "string"]
+    },
+    "item-tax": {
       "type": ["null", "string"]
     },
     "shipping-price": {
@@ -96,8 +63,51 @@
     "shipping-tax": {
       "type": ["null", "string"]
     },
-    "sku": {
+    "gift-wrap-price": {
       "type": ["null", "string"]
+    },
+    "gift-wrap-tax": {
+      "type": ["null", "string"]
+    },
+    "item-promotion-discount": {
+      "type": ["null", "string"]
+    },
+    "ship-promotion-discount": {
+      "type": ["null", "string"]
+    },
+    "ship-city": {
+      "type": ["null", "string"]
+    },
+    "ship-state": {
+      "type": ["null", "string"]
+    },
+    "ship-postal-code": {
+      "type": ["null", "string"]
+    },
+    "ship-country": {
+      "type": ["null", "string"]
+    },
+    "promotion-ids": {
+      "type": ["null", "string"]
+    },
+    "cpf": {
+      "type": ["null", "string"]
+    },
+    "is-business-order": {
+      "type": ["null", "string"]
+    },
+    "purchase-order-number": {
+      "type": ["null", "string"]
+    },
+    "price-designation": {
+      "type": ["null", "string"]
+    },
+    "signature-confirmation-recommended": {
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

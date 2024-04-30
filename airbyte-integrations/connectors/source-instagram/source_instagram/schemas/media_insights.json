@@ -10,8 +10,11 @@
     "id": {
       "type": ["null", "string"]
     },
-    "engagement": {
-      "type": ["null", "integer"]
+    "ig_reels_avg_watch_time": {
+      "type": ["null", "number"]
+    },
+    "ig_reels_video_view_total_time": {
+      "type": ["null", "number"]
     },
     "impressions": {
       "type": ["null", "integer"]
@@ -23,18 +26,6 @@
       "type": ["null", "integer"]
     },
     "video_views": {
-      "type": ["null", "integer"]
-    },
-    "carousel_album_engagement": {
-      "type": ["null", "integer"]
-    },
-    "carousel_album_impressions": {
-      "type": ["null", "integer"]
-    },
-    "carousel_album_reach": {
-      "type": ["null", "integer"]
-    },
-    "carousel_album_saved": {
       "type": ["null", "integer"]
     },
     "comments": {

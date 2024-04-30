@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "metadata-service"
-version = "0.3.1"
+version = "0.3.4"
 description = ""
 authors = ["Ben Church <ben@airbyte.io>"]
 readme = "README.md"
@@ -18,11 +18,9 @@ pydash = "^6.0.2"
 semver = "^3.0.1"
 
 
-[tool.poetry.group.test.dependencies]
-pytest = "^7.2.2"
-
 
 [tool.poetry.group.dev.dependencies]
+pytest = "^8"
 datamodel-code-generator = "^0.17.1"
 pytest-mock = "^3.10.0"
 poethepoet = "^0.20.0"
@@ -35,6 +33,11 @@ generate-models = { shell = "./bin/generate-python-classes.sh" }
 replicate-prod = "gsutil -m rsync -r -d gs://prod-airbyte-cloud-connector-metadata-service gs://$TARGET_BUCKET"
 copy-connector-from-prod = "gsutil  -m rsync -r -d gs://prod-airbyte-cloud-connector-metadata-service/metadata/$CONNECTOR/$VERSION gs://$TARGET_BUCKET/metadata/$CONNECTOR/$VERSION"
 promote-connector-to-latest = "gsutil  -m rsync -r -d gs://$TARGET_BUCKET/metadata/$CONNECTOR/$VERSION gs://$TARGET_BUCKET/metadata/$CONNECTOR/latest"
+test = "pytest tests"
+
+[tool.airbyte_ci]
+optional_poetry_groups = ["dev"]
+poe_tasks = ["test"]
 
 [build-system]
 requires = ["poetry-core"]

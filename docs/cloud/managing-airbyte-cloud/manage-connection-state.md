@@ -1,4 +1,8 @@
-# Manage the connection state
+---
+products: all
+---
+
+# Modifying connection state
 
 The connection state provides additional information about incremental syncs. It includes the most recent values for the global or stream-level cursors, which can aid in debugging or determining which data will be included in the next sync. 
 

@@ -35,6 +35,76 @@
             "properties": {
               "country_code": {
                 "type": ["null", "string"]
+              },
+              "operation": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "locations": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "circles": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "latitude": {
+                      "type": ["null", "number"]
+                    },
+                    "longitude": {
+                      "type": ["null", "number"]
+                    },
+                    "name": {
+                      "type": ["null", "string"]
+                    },
+                    "radius": {
+                      "type": ["null", "number"]
+                    },
+                    "unit": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              },
+              "operation": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "auto_expansion_options": {
+          "type": ["null", "object"],
+          "properties": {
+            "interest_expansion_option": {
+              "type": ["null", "object"],
+              "properties": {
+                "enabled": {
+                  "type": ["null", "boolean"]
+                }
+              }
+            }
+          }
+        },
+        "enable_targeting_expansion": {
+          "type": ["null", "boolean"]
+        },
+        "interests": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "category_id": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              },
+              "operation": {
+                "type": ["null", "string"]
               }
             }
           }
@@ -77,6 +147,9 @@
     "delivery_constraint": {
       "type": ["null", "string"]
     },
+    "delivery_properties_version": {
+      "type": ["null", "integer"]
+    },
     "pacing_type": {
       "type": ["null", "string"]
     },
@@ -95,9 +168,26 @@
         "type": ["null", "string"]
       }
     },
+    "event_sources": {
+      "type": ["null", "object"],
+      "properties": {
+        "PLACE": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
     "skadnetwork_properties": {
       "type": ["null", "object"],
       "properties": {
+        "ecid_enrollment_status": {
+          "type": ["null", "string"]
+        },
+        "enable_skoverlay": {
+          "type": ["null", "boolean"]
+        },
         "status": {
           "type": ["null", "string"]
         }

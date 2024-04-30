@@ -1,8 +1,0 @@
-{
-  "sourceDefinitionId": "7e20ce3e-d820-4327-ad7a-88f3927fd97a",
-  "name": "VictorOps",
-  "dockerRepository": "farosai/airbyte-victorops-source",
-  "dockerImageTag": "0.1.23",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/victorops",
-  "icon": "victorops.svg"
-}

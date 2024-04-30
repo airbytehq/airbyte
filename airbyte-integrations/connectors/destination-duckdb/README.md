@@ -54,8 +54,9 @@ cat integration_tests/messages.jsonl| python main.py write --config integration_
 #### Build
 **Via [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) (recommended):**
 ```bash
-airbyte-ci connectors --name=destination-duckdb build
+airbyte-ci connectors --name=destination-duckdb build [--architecture=...]
 ```
+
 
 An image will be built with the tag `airbyte/destination-duckdb:dev`.
 

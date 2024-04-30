@@ -107,6 +107,7 @@ definitions:
       cursor_field: updatedAt
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
       datetime_format: "%s"
       start_datetime:
         datetime: "{{ config['start_date'] }}"

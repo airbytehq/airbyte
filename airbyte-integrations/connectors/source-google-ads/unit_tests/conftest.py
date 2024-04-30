@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 import pytest
 from source_google_ads.models import CustomerModel
 
@@ -18,7 +19,7 @@ def test_config():
         "customer_id": "123",
         "start_date": "2021-01-01",
         "conversion_window_days": 14,
-        "custom_queries": [
+        "custom_queries_array": [
             {
                 "query": "SELECT campaign.accessible_bidding_strategy, segments.ad_destination_type, campaign.start_date, campaign.end_date FROM campaign",
                 "primary_key": None,
@@ -53,3 +54,12 @@ def mock_oauth_call(requests_mock):
 @pytest.fixture
 def customers(config):
     return [CustomerModel(id=_id, time_zone="local", is_manager_account=False) for _id in config["customer_id"].split(",")]
+
+@pytest.fixture
+def additional_customers(config, customers):
+    return customers + [CustomerModel(id="789", time_zone="local", is_manager_account=False)]
+
+
+@pytest.fixture
+def customers_manager(config):
+    return [CustomerModel(id=_id, time_zone="local", is_manager_account=True) for _id in config["customer_id"].split(",")]

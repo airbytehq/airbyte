@@ -9,14 +9,14 @@ The resources are listed [here](https://developers.google.com/google-ads/api/ref
 When querying data, there are three categories of information that can be fetched: 
 
 - **Attributes**: These are properties of the various entities in the API e.g: the title or ID of an ad campaign. 
-- **Metrics**: metrics are statistics related to entities in the API. For example, the number of impressions for an ad or an ad campaign. All available metrics can be found [here](https://developers.google.com/google-ads/api/fields/v11/metrics).
+- **Metrics**: metrics are statistics related to entities in the API. For example, the number of impressions for an ad or an ad campaign. All available metrics can be found [here](https://developers.google.com/google-ads/api/fields/v15/metrics).
 - **Segments**: These are ways to partition metrics returned in the query by particular attributes. For example, one could query for the number of impressions (views of an ad) by running SELECT 
 metrics.impressions FROM campaigns which would return the number of impressions for each campaign e.g: 10k impressions. Or you could query for impressions segmented by device type e.g; SELECT 
 metrics.impressions, segments.device FROM campaigns which would return the number of impressions broken down by device type e.g: 3k iOS and 7k Android. When summing the result across all segments, 
 the sum should be the same (approximately) as when requesting the whole query without segments. This is a useful feature for granular data analysis as an advertiser may for example want to know if 
 their ad is successful with a particular kind of person over the other. See more about segmentation [here](https://developers.google.com/google-ads/api/docs/concepts/retrieving-objects).
 
-If you want to get a representation of the raw resources in the API e.g: just know what are all the ads or campaigns in your google account, you would query only for attributes e.g. SELECT campaign.title FROM campaigns. 
+If you want to get a representation of the raw resources in the API e.g: just know what are all the ads or campaigns in your Google account, you would query only for attributes e.g. SELECT campaign.title FROM campaigns. 
 
 But if you wanted to get reports about the data (a common use case is impression data for an ad campaign) then you would query for metrics, potentially with segmentation.
 

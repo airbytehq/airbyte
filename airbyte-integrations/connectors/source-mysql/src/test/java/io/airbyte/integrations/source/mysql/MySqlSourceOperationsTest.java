@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mysql.cj.MysqlType;
 import io.airbyte.cdk.db.jdbc.DateTimeConverter;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.BaseImage;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -91,7 +92,7 @@ public class MySqlSourceOperationsTest {
       throws SQLException {
     final var sqlSourceOperations = new MySqlSourceOperations();
     final String cursorColumn = "cursor_column";
-    try (final var testdb = MySQLTestDatabase.in("mysql:8.0")
+    try (final var testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8)
         .with("CREATE TABLE cursor_table (id INTEGER PRIMARY KEY, %s %s);", cursorColumn, sqlType)) {
 
       final List<JsonNode> expectedRecords = new ArrayList<>();

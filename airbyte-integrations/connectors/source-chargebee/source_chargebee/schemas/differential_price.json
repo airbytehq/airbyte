@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "Add-on",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["string", "null"]
+    },
+    "item_price_id": {
+      "type": ["string", "null"]
+    },
+    "parent_item_id": {
+      "type": ["string", "null"]
+    },
+    "price": {
+      "type": ["integer", "null"]
+    },
+    "price_in_decimal": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "resource_version": {
+      "type": ["integer", "null"]
+    },
+    "updated_at": {
+      "type": ["integer", "null"]
+    },
+    "created_at": {
+      "type": ["integer", "null"]
+    },
+    "modified_at": {
+      "type": ["integer", "null"]
+    },
+    "currency_code": {
+      "type": ["string", "null"]
+    },
+    "tiers": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "starting_unit": {
+            "type": ["integer", "null"]
+          },
+          "ending_unit": {
+            "type": ["integer", "null"]
+          },
+          "price": {
+            "type": ["integer", "null"]
+          }
+        }
+      }
+    },
+    "parent_periods": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "period_unit": {
+            "type": ["string", "null"]
+          },
+          "period": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["integer", "null"]
+            }
+          }
+        }
+      }
+    },
+    "object": {
+      "type": ["string", "null"]
+    },
+    "custom_fields": {
+      "$ref": "_definitions.json#/definitions/custom_fields"
+    }
+  }
+}

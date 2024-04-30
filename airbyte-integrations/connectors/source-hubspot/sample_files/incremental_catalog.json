@@ -275,6 +275,54 @@
       "sync_mode": "incremental",
       "cursor_field": ["updatedAt"],
       "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "contacts_property_history",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["timestamp"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["timestamp"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "companies_property_history",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["timestamp"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["timestamp"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "deals_property_history",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["timestamp"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["timestamp"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "contacts_web_analytics",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["occurredAt"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["occurredAt"],
+      "destination_sync_mode": "append"
     }
   ]
 }

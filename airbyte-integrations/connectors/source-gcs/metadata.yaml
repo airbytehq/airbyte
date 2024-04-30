@@ -7,13 +7,17 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 2a8c41ae-8c23-4be0-a73f-2ab10ca1a820
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.4.0
   dockerRepository: airbyte/source-gcs
   documentationUrl: https://docs.airbyte.com/integrations/sources/gcs
   githubIssueLabel: source-gcs
   icon: gcs.svg
   license: ELv2
   name: GCS
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-gcs
   registries:
     cloud:
       enabled: true
@@ -23,4 +27,5 @@ data:
   supportLevel: community
   tags:
     - language:python
+    - cdk:python-file-based
 metadataSpecVersion: "1.0"

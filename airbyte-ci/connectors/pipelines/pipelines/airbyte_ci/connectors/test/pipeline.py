@@ -3,101 +3,74 @@
 #
 """This module groups factory like functions to dispatch tests steps according to the connector under test language."""
 
-import itertools
-from typing import List
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import anyio
-import asyncer
-from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
+from connector_ops.utils import ConnectorLanguage  # type: ignore
+from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.connectors.test.steps import java_connectors, python_connectors
-from pipelines.airbyte_ci.connectors.test.steps.common import QaChecks, VersionFollowsSemverCheck, VersionIncrementCheck
-from pipelines.airbyte_ci.metadata.pipeline import MetadataValidation
-from pipelines.models.steps import StepResult
+from pipelines.airbyte_ci.connectors.test.steps.common import QaChecks, VersionIncrementCheck
+from pipelines.helpers.execution.run_steps import StepToRun, run_steps
+
+if TYPE_CHECKING:
+
+    from pipelines.helpers.execution.run_steps import STEP_TREE
 
 LANGUAGE_MAPPING = {
-    "run_all_tests": {
-        ConnectorLanguage.PYTHON: python_connectors.run_all_tests,
-        ConnectorLanguage.LOW_CODE: python_connectors.run_all_tests,
-        ConnectorLanguage.JAVA: java_connectors.run_all_tests,
-    }
+    "get_test_steps": {
+        ConnectorLanguage.PYTHON: python_connectors.get_test_steps,
+        ConnectorLanguage.LOW_CODE: python_connectors.get_test_steps,
+        ConnectorLanguage.JAVA: java_connectors.get_test_steps,
+    },
 }
 
 
-async def run_metadata_validation(context: ConnectorContext) -> List[StepResult]:
-    """Run the metadata validation on a connector.
-    Args:
-        context (ConnectorContext): The current connector context.
-
-    Returns:
-        List[StepResult]: The results of the metadata validation steps.
-    """
-    return [await MetadataValidation(context).run()]
-
-
-async def run_version_checks(context: ConnectorContext) -> List[StepResult]:
-    """Run the version checks on a connector.
+def get_test_steps(context: ConnectorContext) -> STEP_TREE:
+    """Get all the tests steps according to the connector language.
 
     Args:
         context (ConnectorContext): The current connector context.
 
     Returns:
-        List[StepResult]: The results of the version checks steps.
+        STEP_TREE: The list of tests steps.
     """
-    return [await VersionFollowsSemverCheck(context).run(), await VersionIncrementCheck(context).run()]
-
-
-async def run_qa_checks(context: ConnectorContext) -> List[StepResult]:
-    """Run the QA checks on a connector.
-
-    Args:
-        context (ConnectorContext): The current connector context.
-
-    Returns:
-        List[StepResult]: The results of the QA checks steps.
-    """
-    return [await QaChecks(context).run()]
-
-
-async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
-    """Run all the tests steps according to the connector language.
-
-    Args:
-        context (ConnectorContext): The current connector context.
-
-    Returns:
-        List[StepResult]: The results of the tests steps.
-    """
-    if _run_all_tests := LANGUAGE_MAPPING["run_all_tests"].get(context.connector.language):
-        return await _run_all_tests(context)
+    if _get_test_steps := LANGUAGE_MAPPING["get_test_steps"].get(context.connector.language):
+        return _get_test_steps(context)
     else:
         context.logger.warning(f"No tests defined for connector language {context.connector.language}!")
         return []
 
 
 async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
-    """Run a test pipeline for a single connector.
-
-    A visual DAG can be found on the README.md file of the pipelines modules.
-
-    Args:
-        context (ConnectorContext): The initialized connector context.
-
-    Returns:
-        ConnectorReport: The test reports holding tests results.
     """
+    Compute the steps to run for a connector test pipeline.
+    """
+    all_steps_to_run: STEP_TREE = []
+
+    all_steps_to_run += get_test_steps(context)
+
+    if not context.code_tests_only:
+        static_analysis_steps_to_run = [
+            [
+                StepToRun(id=CONNECTOR_TEST_STEP_ID.VERSION_INC_CHECK, step=VersionIncrementCheck(context)),
+                StepToRun(id=CONNECTOR_TEST_STEP_ID.QA_CHECKS, step=QaChecks(context)),
+            ]
+        ]
+        all_steps_to_run += static_analysis_steps_to_run
+
     async with semaphore:
         async with context:
-            async with asyncer.create_task_group() as task_group:
-                tasks = [task_group.soonify(run_all_tests)(context)]
-                if not context.code_tests_only:
-                    tasks += [
-                        task_group.soonify(run_metadata_validation)(context),
-                        task_group.soonify(run_version_checks)(context),
-                        task_group.soonify(run_qa_checks)(context),
-                    ]
-            results = list(itertools.chain(*(task.value for task in tasks)))
-            context.report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
+            result_dict = await run_steps(
+                runnables=all_steps_to_run,
+                options=context.run_step_options,
+            )
 
-        return context.report
+            results = list(result_dict.values())
+            report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
+            context.report = report
+
+        return report

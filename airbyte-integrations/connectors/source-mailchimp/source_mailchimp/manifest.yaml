@@ -1,0 +1,369 @@
+version: 0.52.0
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - "campaigns"
+
+definitions:
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['access_token'] }}"
+  basic_authenticator:
+    type: BasicHttpAuthenticator
+    username: "anystring"
+    password: "{{ config.get('apikey') or config['credentials']['apikey'] }}"
+
+  transformer_remove_empty_fields:
+    type: RemoveFields
+    field_pointers:
+      - ["**"]
+    condition: "{{ property|string == '' }}"
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: ["{{ parameters.get('data_field') }}"]
+    paginator:
+      type: "DefaultPaginator"
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 1000
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "count"
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "offset"
+    requester:
+      url_base: https://{{ config['data_center'] }}.api.mailchimp.com/3.0/
+      http_method: GET
+      authenticator:
+        type: SelectiveAuthenticator
+        authenticator_selection_path: ["credentials", "auth_type"]
+        authenticators:
+          oauth2.0: "#/definitions/bearer_authenticator"
+          apikey: "#/definitions/basic_authenticator"
+      request_parameters:
+        exclude_fields: "{{ parameters.get('data_field') }}._links"
+
+  base_stream:
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  base_incremental_stream:
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort_field: "{{ parameters['cursor_field'] }}"
+          sort_dir: "ASC"
+          exclude_fields: "{{ parameters.get('data_field') }}._links"
+    transformations:
+      - "#/definitions/transformer_remove_empty_fields"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_field: "{{ parameters['cursor_field'] }}"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '1970-01-01T00:00:00.0Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        lookback_window: PT0.1S
+      start_time_option:
+        inject_into: request_parameter
+        field_name: "since_{{ parameters['cursor_field'] }}"
+        type: RequestOption
+      end_time_option:
+        inject_into: request_parameter
+        field_name: "before_{{ parameters['cursor_field'] }}"
+        type: RequestOption
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      lookback_window: PT1S
+
+  automations_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "automations"
+      primary_key: "id"
+      path: "automations"
+      data_field: "automations"
+      cursor_field: "create_time"
+
+  campaigns_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "campaigns"
+      primary_key: "id"
+      path: "/campaigns"
+      data_field: "campaigns"
+      cursor_field: "create_time"
+
+  list_members_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/lists_stream"
+            parent_key: id
+            partition_field: id
+    state_migrations:
+      - type: LegacyToPerPartitionStateMigration
+    $parameters:
+      name: "list_members"
+      primary_key: ["id", "list_id"]
+      path: "/lists/{{ stream_slice.id }}/members"
+      data_field: "members"
+      cursor_field: "last_changed"
+
+  lists_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "lists"
+      primary_key: "id"
+      path: "lists"
+      data_field: "lists"
+      cursor_field: "date_created"
+
+  tags_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/lists_stream"
+            parent_key: id
+            partition_field: id
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["list_id"]
+            value: "{{ stream_slice.id }}"
+    $parameters:
+      name: "tags"
+      primary_key: "id"
+      path: "lists/{{ stream_slice.id }}/tag-search"
+      data_field: "tags"
+
+  interest_categories_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["list_id"]
+            value: "{{ stream_slice.id }}"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/lists_stream"
+            parent_key: id
+            partition_field: id
+    $parameters:
+      name: "interest_categories"
+      primary_key: "id"
+      path: "lists/{{ stream_slice.id }}/interest-categories"
+      data_field: "categories"
+
+  interests_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/interest_categories_stream"
+            parent_key: id
+            partition_field: id
+    $parameters:
+      name: "interests"
+      primary_key: "id"
+      path: "lists/{{ stream_slice.parent_slice.id }}/interest-categories/{{ stream_slice.id }}/interests"
+      data_field: "interests"
+
+  reports_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "reports"
+      primary_key: "id"
+      path: "reports"
+      data_field: "reports"
+      cursor_field: "send_time"
+
+  segments_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/lists_stream"
+            parent_key: id
+            partition_field: id
+    state_migrations:
+      - type: LegacyToPerPartitionStateMigration
+    $parameters:
+      name: "segments"
+      primary_key: "id"
+      path: "/lists/{{ stream_slice.id }}/segments"
+      data_field: "segments"
+      cursor_field: "updated_at"
+
+  segment_members_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/segments_stream"
+            parent_key: id
+            partition_field: id
+      record_selector:
+        $ref: "#/definitions/retriever/record_selector"
+        record_filter:
+          type: CustomRecordFilter
+          class_name: source_mailchimp.components.MailChimpRecordFilter
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_field: "{{ parameters['cursor_field'] }}"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '1970-01-01T00:00:00.0Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      lookback_window: PT0.1S
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["segment_id"]
+            value: "{{ stream_slice.id }}"
+      - "#/definitions/transformer_remove_empty_fields"
+    state_migrations:
+      - type: LegacyToPerPartitionStateMigration
+    $parameters:
+      name: "segment_members"
+      primary_key: ["id", "segment_id"]
+      path: "/lists/{{ stream_slice.parent_slice.id }}/segments/{{ stream_slice.id }}/members"
+      data_field: "members"
+      cursor_field: "last_changed"
+
+  unsubscribes_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/campaigns_stream"
+            parent_key: id
+            partition_field: id
+      record_selector:
+        $ref: "#/definitions/retriever/record_selector"
+        record_filter:
+          type: CustomRecordFilter
+          class_name: source_mailchimp.components.MailChimpRecordFilter
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_field: "{{ parameters['cursor_field'] }}"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '1970-01-01T00:00:00.0Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      lookback_window: PT0.1S
+    state_migrations:
+      - type: LegacyToPerPartitionStateMigration
+    $parameters:
+      name: "unsubscribes"
+      primary_key: ["campaign_id", "email_id", "timestamp"]
+      path: "/reports/{{ stream_slice.id }}/unsubscribed"
+      data_field: "unsubscribes"
+      cursor_field: "timestamp"
+
+  email_activity_stream:
+    type: DeclarativeStream
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/campaigns_stream"
+            parent_key: id
+            partition_field: id
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_mailchimp.components.MailChimpRecordExtractorEmailActivity
+          field_path: ["{{ parameters.get('data_field') }}"]
+    incremental_sync:
+      type: DatetimeBasedCursor
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+      cursor_field: "{{ parameters['cursor_field'] }}"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '1970-01-01T00:00:00.000Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        lookback_window: PT1S
+      start_time_option:
+        inject_into: request_parameter
+        field_name: "since"
+        type: RequestOption
+      lookback_window: PT0.1S
+    state_migrations:
+      - type: LegacyToPerPartitionStateMigration
+    $parameters:
+      name: "email_activity"
+      primary_key: ["timestamp", "email_id", "action"]
+      path: "/reports/{{ stream_slice.id }}/email-activity"
+      data_field: "emails"
+      cursor_field: "timestamp"
+
+streams:
+  - "#/definitions/automations_stream"
+  - "#/definitions/campaigns_stream"
+  - "#/definitions/email_activity_stream"
+  - "#/definitions/lists_stream"
+  - "#/definitions/list_members_stream"
+  - "#/definitions/tags_stream"
+  - "#/definitions/interest_categories_stream"
+  - "#/definitions/interests_stream"
+  - "#/definitions/reports_stream"
+  - "#/definitions/segments_stream"
+  - "#/definitions/segment_members_stream"
+  - "#/definitions/unsubscribes_stream"

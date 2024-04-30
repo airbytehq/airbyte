@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "destination-duckdb"
-version = "0.3.0"
+version = "0.3.5"
 description = "Destination implementation for Duckdb."
 authors = ["Simon Späti, Airbyte"]
 license = "MIT"
@@ -9,14 +9,19 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.8"
 airbyte-cdk = "^0.51.6"
-duckdb = "0.9.1"
+duckdb = "0.9.2"
+pyarrow = "15.0.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
 ruff = "^0.0.286"
 black = "^23.7.0"
 mypy = "^1.5.1"
+faker = "24.4.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+destination-duckdb = "destination_duckdb.run:run"

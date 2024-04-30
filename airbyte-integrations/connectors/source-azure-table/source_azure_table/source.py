@@ -39,6 +39,7 @@ class SourceAzureTable(AbstractSource):
         return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
+            "additionalProperties": True,
             "properties": {"PartitionKey": {"type": "string"}},
         }
 
@@ -50,7 +51,7 @@ class SourceAzureTable(AbstractSource):
             next(tables_iterator)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except StopIteration:
-            logger.log("No tables found, but credentials are correct.")
+            logger.info("The credentials you provided are valid, but no tables were found in the Storage Account.")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
@@ -70,8 +71,7 @@ class SourceAzureTable(AbstractSource):
                 default_cursor_field=["PartitionKey"],
             )
             streams.append(stream)
-        logger.info(f"Total {streams.count} streams found.")
-
+        logger.info(f"Total {len(streams)} streams found.")
         return AirbyteCatalog(streams=streams)
 
     def streams(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> List[Stream]:

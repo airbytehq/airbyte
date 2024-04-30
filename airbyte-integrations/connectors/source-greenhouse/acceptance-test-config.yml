@@ -31,13 +31,6 @@ acceptance_tests:
             bypass_reason: "No data"
           - name: user_permissions
             bypass_reason: "No Data"
-        ignored_fields:
-          users:
-            - name: updated_at
-              bypass_reason: "Updated when you login to account"
-          job_posts:
-            - name: updated_at
-              bypass_reason: "Updated when you try edit without editing"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

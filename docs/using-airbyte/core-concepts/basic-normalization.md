@@ -1,3 +1,7 @@
+---
+products: all
+---
+
 # Basic Normalization
 
 :::danger

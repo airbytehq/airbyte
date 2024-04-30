@@ -1,5 +1,7 @@
 # Monday
 
+This page contains the setup guide and reference information for the [Monday](https://monday.com/) source connector.
+
 ## Prerequisites
 
 * Monday API Token / Monday Access Token
@@ -15,18 +17,20 @@ You can get the API token for Monday by going to Profile picture (bottom left co
 3. On the Set up the source page, enter the name for the Monday connector and select **Monday** from the Source type dropdown.
 4. Fill in your API Key or authenticate using OAuth and then click **Set up source**.
 
-### Connect using `OAuth 2.0` option:
+### Connect using `OAuth 2.0` option
+
 1. Select `OAuth2.0` in `Authorization Method`.
 2. Click on `authenticate your Monday account`.
-2. Proceed the authentication using your credentials for your Monday account.
+3. Proceed with the authentication using the credentials for your Monday account.
 
-### Connect using `API Token` option:
+### Connect using `API Token` option
+
 1. Generate an API Token as described [here](https://developer.monday.com/api-reference/docs/authentication).
 2. Use the generated `api_token` in the Airbyte connection.
 
 ## Supported sync modes
 
-The Monday supports full refresh syncs
+The Monday source connector supports the following features:
 
 | Feature           | Supported? |
 |:------------------|:-----------|
@@ -49,6 +53,7 @@ Several output streams are available from this source:
 * [Workspaces](https://developer.monday.com/api-reference/docs/workspaces)
 
 Important Notes:
+
 * `Columns` are available from the `Boards` stream. By syncing the `Boards` stream you will get the `Columns` for each `Board` synced in the database
 The typical name of the table depends on the `destination` you use like `boards.columns`, for instance.
 
@@ -61,16 +66,22 @@ Ids of boards and items are extracted from activity logs events and used to sele
 Some data may be lost if the time between incremental syncs is longer than the activity logs retention time for your plan.
 Check your Monday plan at https://monday.com/pricing.
 
-
 ## Performance considerations
 
 The Monday connector should not run into Monday API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
-
 
 ## Changelog
 
 | Version | Date       | Pull Request                                              | Subject                                                                 |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------|
+| 2.1.1   | 2024-04-05 | [36717](https://github.com/airbytehq/airbyte/pull/36717)  | Add handling of complexityBudgetExhausted error.                        |
+| 2.1.0   | 2024-04-03 | [36746](https://github.com/airbytehq/airbyte/pull/36746)  | Pin airbyte-cdk version to `^0`                                         |
+| 2.0.4   | 2024-02-28 | [35696](https://github.com/airbytehq/airbyte/pull/35696)  | Fix extraction for `null` value in stream `Activity logs`               |
+| 2.0.3   | 2024-02-21 | [35506](https://github.com/airbytehq/airbyte/pull/35506)  | Support for column values of the mirror type for the `Items` stream.    |
+| 2.0.2   | 2024-02-12 | [35146](https://github.com/airbytehq/airbyte/pull/35146)  | Manage dependencies with Poetry.                                        |
+| 2.0.1   | 2024-02-08 | [35016](https://github.com/airbytehq/airbyte/pull/35016)  | Migrated to the latest airbyte cdk                                      |
+| 2.0.0   | 2024-01-12 | [34108](https://github.com/airbytehq/airbyte/pull/34108)  | Migrated to the latest API version: 2024-01                             |
+| 1.1.4   | 2023-12-13 | [33448](https://github.com/airbytehq/airbyte/pull/33448)  | Increase test coverage and migrate to base image                        |
 | 1.1.3   | 2023-09-23 | [30248](https://github.com/airbytehq/airbyte/pull/30248)  | Add new field "type" to board stream                                    |
 | 1.1.2   | 2023-08-23 | [29777](https://github.com/airbytehq/airbyte/pull/29777)  | Add retry for `502` error                                               |
 | 1.1.1   | 2023-08-15 | [29429](https://github.com/airbytehq/airbyte/pull/29429)  | Ignore `null` records in response                                       |

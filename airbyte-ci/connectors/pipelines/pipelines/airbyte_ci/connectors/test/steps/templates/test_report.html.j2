@@ -82,7 +82,7 @@
       transition: max-height .25s ease-in-out;
     }
     .toggle:checked + .lbl-toggle + .collapsible-content {
-      max-height: 100vh;
+      max-height: 70vh;
     }
     .toggle:checked + .lbl-toggle {
       border-bottom-right-radius: 0;
@@ -110,6 +110,14 @@
     }
   </style>
 </head>
+<script>
+function copyToClipBoard(htmlElement) {
+  var copyText = htmlElement.parentNode.parentNode.getElementsByTagName('pre')[0].innerText;
+  htmlElement.parentNode.parentNode.getElementsByTagName('pre')[0].setSelectionRange
+
+  navigator.clipboard.writeText(copyText);
+}
+</script>
 <body>
   <h1><img src="{{ icon_url }}" width="40" height="40"> {{ connector_name }} test report</h1>
   <ul>
@@ -159,14 +167,26 @@
       <label for="{{ step_result.step.title }}" class="lbl-toggle">{{ step_result.step.title }} | {{ format_duration(step_result.step.run_duration) }}</label>
     {% endif %}
     <div class="collapsible-content">
+      {% if step_result_to_artifact_links[step_result.step.title] %}
+      <h3>Artifacts</h3>
+      <ul>
+      {% for artifact in step_result_to_artifact_links[step_result.step.title] %}
+        <li><a href="{{ artifact.url }}" download>{{ artifact.name }}</a></li>
+      {% endfor %}
+      </ul>
+      {% endif %}
       <div class="content-inner">
+        {% if step_result.report %}
+        <div>{{ step_result.report }}</div>
+        {% else %}
         {% if step_result.stdout %}
-        <span class="std">Standard output:</span>
-        <pre>{{ step_result.stdout }}</pre>
+        <span class="std">Standard output(<button onclick="copyToClipBoard(this)">Copy to clipboard</button>):</span>
+        <pre>{{ step_result.stdout|e }}</pre>
         {% endif %}
         {% if step_result.stderr %}
-        <span class="std">Standard error:</span>
-        <pre>{{ step_result.stderr }}</pre>
+        <span class="std">Standard error(<button onclick="copyToClipBoard(this)">Copy to clipboard</button>):</span>
+        <pre>{{ step_result.stderr|e }}</pre>
+        {% endif %}
         {% endif %}
       </div>
     </div>
