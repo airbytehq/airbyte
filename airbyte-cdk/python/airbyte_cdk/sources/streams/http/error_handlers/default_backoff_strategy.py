@@ -24,15 +24,19 @@ class DefaultBackoffStrategy(BackoffStrategy):
         self._raise_on_http_errors = raise_on_http_errors
         self.backoff_time = backoff_time or self.backoff_time
 
+    @property
     def max_retries(self) -> int:
         return self._max_retries
 
+    @property
     def max_time(self) -> int:
         return self._max_time
 
+    @property
     def retry_factor(self) -> float:
         return self._retry_factor
 
+    @property
     def raise_on_http_errors(self) -> bool:
         return self._raise_on_http_errors
 

@@ -186,8 +186,10 @@ class HttpClient:
             failure_type = FailureType.transient_error
             response_error_message = f"Request to {request.url} failed with exception: {exc}"
             self._logger.debug(response_error_message)
+            exc = exc
         else:
             response_action, failure_type, response_error_message = self._http_error_handler.interpret_response(response=response)
+            exc = None
 
         # Evaluation of response.text can be heavy, for example, if streaming a large response
         # Do it only in debug mode
@@ -198,11 +200,12 @@ class HttpClient:
 
         if response_action == ResponseAction.FAIL:
             error_message = (
-                response_error_message
+                f"Request failed to {request.url} with error {exc}"
+                if exc
+                else response_error_message
                 or f"Request to {response.request.url} failed with status code {response.status_code} and error message {self._error_message_parser.parse_response_error_message(response)}"
-                if response
-                else f"Request failed to {request.url} with error {exc}"
             )
+            # TODO: Provide better internal/external error messaging
             raise AirbyteTracedException(
                 internal_message=error_message,
                 message=error_message,
