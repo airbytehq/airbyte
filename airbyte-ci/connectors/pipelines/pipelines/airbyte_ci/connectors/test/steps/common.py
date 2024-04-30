@@ -408,12 +408,7 @@ class RegressionTests(Step):
         main_logger.info(">>>>>>>>>>>>>>>>>>>>> done never_fail_exec")
         regression_tests_artifacts_dir = str(self.regression_tests_artifacts_dir)
         path_to_report = f"{regression_tests_artifacts_dir}/session_{self.run_id}/report.html"
-        await container.file(path_to_report).export(path_to_report)
-
         exit_code, stdout, stderr = await get_exec_result(container)
-
-        with open(path_to_report, "r") as fp:
-            regression_test_report = fp.read()
 
         return StepResult(
             step=self,
@@ -421,7 +416,6 @@ class RegressionTests(Step):
             stderr=stderr,
             stdout=stdout,
             output=container,
-            report=regression_test_report,
         )
 
     async def _build_regression_test_container(self, target_container_id: str) -> Container:
