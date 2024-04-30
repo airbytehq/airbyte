@@ -40,6 +40,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -57,7 +58,7 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
   private final MySqlSourceOperations sourceOperations;
   private final String quoteString;
   private final MySqlInitialLoadStateManager initialLoadStateManager;
-  private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
+  private final Optional<Function<AirbyteStreamNameNamespacePair, JsonNode>> streamStateForIncrementalRunSupplier;
 
   private static final long QUERY_TARGET_SIZE_GB = 1_073_741_824;
   private static final long DEFAULT_CHUNK_SIZE = 1_000_000;
@@ -68,7 +69,7 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
                                  final MySqlSourceOperations sourceOperations,
                                  final String quoteString,
                                  final MySqlInitialLoadStateManager initialLoadStateManager,
-                                 final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
+                                 final Optional<Function<AirbyteStreamNameNamespacePair, JsonNode>> streamStateForIncrementalRunSupplier,
                                  final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap) {
     this.config = config;
     this.database = database;
@@ -189,8 +190,9 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
     final Long syncCheckpointRecords = config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY) != null ? config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY).asLong()
         : DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS;
 
-    initialLoadStateManager.setStreamStateForIncrementalRunSupplier(streamStateForIncrementalRunSupplier);
-
+    if (streamStateForIncrementalRunSupplier.isPresent()) {
+      initialLoadStateManager.setStreamStateForIncrementalRunSupplier(streamStateForIncrementalRunSupplier.get());
+    }
     return AutoCloseableIterators.transformIterator(
         r -> new SourceStateIterator<>(r, airbyteStream, initialLoadStateManager,
             new StateEmitFrequency(syncCheckpointRecords, syncCheckpointDuration)),

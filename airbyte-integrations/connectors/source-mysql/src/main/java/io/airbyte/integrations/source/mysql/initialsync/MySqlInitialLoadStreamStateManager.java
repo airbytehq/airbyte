@@ -35,18 +35,7 @@ public class MySqlInitialLoadStreamStateManager extends MySqlInitialLoadStateMan
                                             final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, PrimaryKeyInfo> pairToPrimaryKeyInfo) {
     this.pairToPrimaryKeyInfo = pairToPrimaryKeyInfo;
     this.pairToPrimaryKeyLoadStatus = MySqlInitialLoadStateManager.initPairToPrimaryKeyLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
-  }
-
-  /**
-   * @param pair
-   * @param pkLoadStatus
-   * @return
-   */
-
-  @Override
-  public void updatePrimaryKeyLoadState(final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair,
-                                        final PrimaryKeyLoadStatus pkLoadStatus) {
-    pairToPrimaryKeyLoadStatus.put(pair, pkLoadStatus);
+    this.streamStateForIncrementalRunSupplier = pair -> Jsons.emptyObject();
   }
 
   @Override

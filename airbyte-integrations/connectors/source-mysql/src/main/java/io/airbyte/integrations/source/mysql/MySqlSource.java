@@ -233,7 +233,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
               .get();
     } else {
       return new MySqlInitialLoadHandler(sourceConfig, database, new MySqlSourceOperations(), getQuoteString(), initialLoadStateManager,
-          namespacePair -> Jsons.emptyObject(),
+          Optional.empty(),
           getTableSizeInfoForStreams(database, catalog.getStreams(), getQuoteString()));
     }
   }
@@ -480,7 +480,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
         final MySqlInitialLoadHandler initialLoadHandler =
             new MySqlInitialLoadHandler(sourceConfig, database, new MySqlSourceOperations(), getQuoteString(), initialLoadStateManager,
-                namespacePair -> Jsons.jsonNode(pairToCursorBasedStatus.get(convertNameNamespacePairFromV0(namespacePair))),
+                Optional.of(namespacePair -> Jsons.jsonNode(pairToCursorBasedStatus.get(convertNameNamespacePairFromV0(namespacePair)))),
                 getTableSizeInfoForStreams(database, catalog.getStreams(), getQuoteString()));
         final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>(initialLoadHandler.getIncrementalIterators(
             new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),

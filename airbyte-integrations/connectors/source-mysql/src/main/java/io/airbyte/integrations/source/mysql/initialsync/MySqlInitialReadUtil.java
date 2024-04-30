@@ -119,7 +119,7 @@ public class MySqlInitialReadUtil {
         sourceOperations,
         quoteString,
         initialLoadStateManager,
-        namespacePair -> Jsons.emptyObject(),
+        Optional.empty(),
         getTableSizeInfoForStreams(database, initialLoadStreams.streamsForInitialLoad(), quoteString));
   }
 

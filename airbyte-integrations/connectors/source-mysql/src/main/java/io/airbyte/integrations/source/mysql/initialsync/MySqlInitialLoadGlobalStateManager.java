@@ -118,11 +118,6 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
   }
 
   @Override
-  public void updatePrimaryKeyLoadState(final AirbyteStreamNameNamespacePair pair, final PrimaryKeyLoadStatus pkLoadStatus) {
-    pairToPrimaryKeyLoadStatus.put(pair, pkLoadStatus);
-  }
-
-  @Override
   public AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream airbyteStream) {
     if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
       AirbyteStreamNameNamespacePair pair =
