@@ -52,12 +52,6 @@ pandas-stubs = "^2.2.0.240218"
 types-requests = "^2.31.0.20240311"
 types-pyyaml = "^6.0.12.20240311"
 
-
-[[tool.poetry.source]]
-name = "airbyte-platform-internal-source"
-url = "https://github.com/airbytehq/airbyte-platform-internal.git"
-priority = "supplemental"
-
 [tool.ruff.lint]
 select = ["I", "F"]
 
