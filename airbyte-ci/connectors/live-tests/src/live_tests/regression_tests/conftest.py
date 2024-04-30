@@ -68,11 +68,6 @@ def pytest_addoption(parser: Parser) -> None:
     parser.addoption("--catalog-path")
     parser.addoption("--state-path")
     parser.addoption("--connection-id")
-    parser.addoption(
-        "--auto-select-connection",
-        default=True,
-        help="Automatically select the connection to run the tests on.",
-    )
     parser.addoption("--pr-url", help="The URL of the PR you are testing")
     parser.addoption(
         "--stream",
@@ -94,7 +89,10 @@ def pytest_configure(config: Config) -> None:
     user_email = get_user_email()
     config.stash[stash_keys.RUN_IN_AIRBYTE_CI] = bool(os.getenv("RUN_IN_AIRBYTE_CI", False))
     config.stash[stash_keys.IS_PRODUCTION_CI] = bool(os.getenv("CI", False))
-    prompt_for_confirmation(user_email)
+
+    if not config.stash[stash_keys.RUN_IN_AIRBYTE_CI]:
+        prompt_for_confirmation(user_email)
+
     track_usage(
         "production-ci"
         if config.stash[stash_keys.IS_PRODUCTION_CI]
@@ -118,7 +116,8 @@ def pytest_configure(config: Config) -> None:
     dagger_log_path.touch()
     config.stash[stash_keys.DAGGER_LOG_PATH] = dagger_log_path
     config.stash[stash_keys.PR_URL] = get_option_or_fail(config, "--pr-url")
-    config.stash[stash_keys.AUTO_SELECT_CONNECTION] = config.getoption("--auto-select-connection")
+    _connection_id = config.getoption("--connection-id")
+    config.stash[stash_keys.AUTO_SELECT_CONNECTION] = _connection_id == "auto"
     config.stash[stash_keys.CONNECTOR_IMAGE] = get_option_or_fail(config, "--connector-image")
     config.stash[stash_keys.TARGET_VERSION] = get_option_or_fail(config, "--target-version")
     custom_source_config_path = config.getoption("--config-path")
@@ -147,7 +146,7 @@ def pytest_configure(config: Config) -> None:
                 ConnectionObject.SOURCE_ID,
                 ConnectionObject.DESTINATION_ID,
             },
-            config.getoption("--connection-id"),
+            None if _connection_id == "auto" else _connection_id,
             Path(custom_source_config_path) if custom_source_config_path else None,
             Path(custom_configured_catalog_path) if custom_configured_catalog_path else None,
             Path(custom_state_path) if custom_state_path else None,

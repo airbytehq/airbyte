@@ -89,7 +89,7 @@ async def test(
         raise click.UsageError("Cannot use both --only-step and --skip-step at the same time.")
     if not only_steps:
         skip_steps = list(skip_steps)
-        skip_steps += [CONNECTOR_TEST_STEP_ID.REGRESSION_TEST]
+        skip_steps += [CONNECTOR_TEST_STEP_ID.CONNECTOR_REGRESSION_TESTS]
     if ctx.obj["is_ci"]:
         fail_if_missing_docker_hub_creds(ctx)
 
@@ -116,6 +116,8 @@ async def test(
             git_revision=ctx.obj["git_revision"],
             diffed_branch=ctx.obj["diffed_branch"],
             git_repo_url=ctx.obj["git_repo_url"],
+            ci_git_user=ctx.obj["ci_git_user"],
+            ci_github_access_token=ctx.obj["ci_github_access_token"],
             ci_report_bucket=ctx.obj["ci_report_bucket_name"],
             report_output_prefix=ctx.obj["report_output_prefix"],
             use_remote_secrets=ctx.obj["use_remote_secrets"],
