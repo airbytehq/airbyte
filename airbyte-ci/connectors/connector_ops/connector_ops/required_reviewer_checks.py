@@ -8,9 +8,10 @@ import yaml
 from connector_ops import utils
 
 # We are toying with removing these as requirements.
-BACKWARD_COMPATIBILITY_REVIEWERS = set()
-TEST_STRICTNESS_LEVEL_REVIEWERS = set()
-BYPASS_REASON_REVIEWERS = set()
+# BACKWARD_COMPATIBILITY_REVIEWERS = {"connector-extensibility"}
+# TEST_STRICTNESS_LEVEL_REVIEWERS = {"connector-extensibility"}
+# BYPASS_REASON_REVIEWERS = {"connector-extensibility"}
+
 # TODO: Check to see if GL still wants to get tagged in this. If so,
 # the logic needs to be audited to make sure its actually just python.
 STRATEGIC_PYTHON_CONNECTOR_REVIEWERS = {"gl-python"}
@@ -47,17 +48,18 @@ def get_bypass_reason_changes() -> Set[utils.Connector]:
 
 def find_mandatory_reviewers() -> List[Dict[str, Union[str, Dict[str, List]]]]:
     requirements = [
-        {
-            "name": "Backwards compatibility test skip",
-            "teams": list(BACKWARD_COMPATIBILITY_REVIEWERS),
-            "is_required": utils.get_changed_acceptance_test_config(diff_regex="disable_for_version"),
-        },
-        {
-            "name": "Acceptance test strictness level",
-            "teams": list(TEST_STRICTNESS_LEVEL_REVIEWERS),
-            "is_required": utils.get_changed_acceptance_test_config(diff_regex="test_strictness_level"),
-        },
-        {"name": "Strategic connector bypass reasons", "teams": list(BYPASS_REASON_REVIEWERS), "is_required": get_bypass_reason_changes()},
+        # We are toying with removing these as requirements.
+        # {
+        #     "name": "Backwards compatibility test skip",
+        #     "teams": list(BACKWARD_COMPATIBILITY_REVIEWERS),
+        #     "is_required": utils.get_changed_acceptance_test_config(diff_regex="disable_for_version"),
+        # },
+        # {
+        #     "name": "Acceptance test strictness level",
+        #     "teams": list(TEST_STRICTNESS_LEVEL_REVIEWERS),
+        #     "is_required": utils.get_changed_acceptance_test_config(diff_regex="test_strictness_level"),
+        # },
+        # {"name": "Strategic connector bypass reasons", "teams": list(BYPASS_REASON_REVIEWERS), "is_required": get_bypass_reason_changes()},
         {
             "name": "Strategic python connectors",
             "teams": list(STRATEGIC_PYTHON_CONNECTOR_REVIEWERS),
@@ -70,9 +72,7 @@ def find_mandatory_reviewers() -> List[Dict[str, Union[str, Dict[str, List]]]]:
         },
     ]
 
-    required_reviewer_groups = [r for r in requirements if r["is_required"]]
-    # Don't return a group if there are no teams assigned to it.
-    return [{"name": r["name"], "teams": r["teams"]} for r in required_reviewer_groups if r["teams"]]
+    return [{"name": r["name"], "teams": r["teams"]} for r in requirements if r["is_required"]]
 
 
 def write_review_requirements_file():

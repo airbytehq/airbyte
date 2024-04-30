@@ -36,7 +36,7 @@ def strategic_connector_file():
 
 @pytest.fixture
 def not_strategic_backward_compatibility_change_expected_team(tmp_path, pokeapi_acceptance_test_config_path) -> List:
-    expected_teams = list(required_reviewer_checks.BACKWARD_COMPATIBILITY_REVIEWERS)
+    expected_teams = []
     backup_path = tmp_path / "backup_poke_acceptance"
     shutil.copyfile(pokeapi_acceptance_test_config_path, backup_path)
     with open(pokeapi_acceptance_test_config_path, "a") as acceptance_test_config_file:
@@ -47,7 +47,7 @@ def not_strategic_backward_compatibility_change_expected_team(tmp_path, pokeapi_
 
 @pytest.fixture
 def not_strategic_test_strictness_level_change_expected_team(tmp_path, pokeapi_acceptance_test_config_path) -> List:
-    expected_teams = list(required_reviewer_checks.TEST_STRICTNESS_LEVEL_REVIEWERS)
+    expected_teams = []
     backup_path = tmp_path / "non_strategic_acceptance_test_config.backup"
     shutil.copyfile(pokeapi_acceptance_test_config_path, backup_path)
     with open(pokeapi_acceptance_test_config_path, "a") as acceptance_test_config_file:
@@ -92,9 +92,7 @@ def strategic_connector_file_change_expected_team(tmp_path, strategic_connector_
 
 @pytest.fixture
 def strategic_connector_backward_compatibility_file_change_expected_team(tmp_path, strategic_connector_file):
-    expected_teams = list(
-        required_reviewer_checks.STRATEGIC_PYTHON_CONNECTOR_REVIEWERS.union(required_reviewer_checks.BACKWARD_COMPATIBILITY_REVIEWERS)
-    )
+    expected_teams = list(required_reviewer_checks.STRATEGIC_PYTHON_CONNECTOR_REVIEWERS)
     backup_path = tmp_path / "strategic_acceptance_test_config.backup"
     shutil.copyfile(strategic_connector_file, backup_path)
     with open(strategic_connector_file, "a") as strategic_acceptance_test_config_file:
@@ -105,9 +103,7 @@ def strategic_connector_backward_compatibility_file_change_expected_team(tmp_pat
 
 @pytest.fixture
 def strategic_connector_bypass_reason_file_change_expected_team(tmp_path, strategic_connector_file):
-    expected_teams = list(
-        required_reviewer_checks.STRATEGIC_PYTHON_CONNECTOR_REVIEWERS.union(required_reviewer_checks.BYPASS_REASON_REVIEWERS)
-    )
+    expected_teams = list(required_reviewer_checks.STRATEGIC_PYTHON_CONNECTOR_REVIEWERS)
     backup_path = tmp_path / "strategic_acceptance_test_config.backup"
     shutil.copyfile(strategic_connector_file, backup_path)
     with open(strategic_connector_file, "a") as strategic_acceptance_test_config_file:
@@ -118,9 +114,7 @@ def strategic_connector_bypass_reason_file_change_expected_team(tmp_path, strate
 
 @pytest.fixture
 def strategic_connector_test_strictness_level_file_change_expected_team(tmp_path, strategic_connector_file):
-    expected_teams = list(
-        required_reviewer_checks.STRATEGIC_PYTHON_CONNECTOR_REVIEWERS.union(required_reviewer_checks.TEST_STRICTNESS_LEVEL_REVIEWERS)
-    )
+    expected_teams = list(required_reviewer_checks.STRATEGIC_PYTHON_CONNECTOR_REVIEWERS)
     backup_path = tmp_path / "strategic_acceptance_test_config.backup"
     shutil.copyfile(strategic_connector_file, backup_path)
     with open(strategic_connector_file, "a") as strategic_acceptance_test_config_file:
