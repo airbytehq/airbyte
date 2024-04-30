@@ -41,7 +41,6 @@ class BackoffStrategy(ABC):
         """
         pass
 
-    # TODO: Determine appropriate way to handle -> optional response/exception?
     @abstractmethod
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """

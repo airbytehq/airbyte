@@ -40,7 +40,7 @@ class HttpClient:
         logger: logging.Logger,
         api_budget: Optional[APIBudget] = None,
         session: Optional[requests.Session] = None,
-        http_error_handler: Optional[ErrorHandler] = HttpStatusErrorHandler(),
+        http_error_handler: Optional[ErrorHandler] = None,
         backoff_strategy: Optional[BackoffStrategy] = DefaultBackoffStrategy(),
         response_decoder: Optional[Decoder] = JsonDecoder(),
         error_message_parser: Optional[ErrorMessageParser] = JsonErrorMessageParser(),
@@ -55,7 +55,7 @@ class HttpClient:
                 "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
             )
         self._logger = logger
-        self._http_error_handler = http_error_handler
+        self._http_error_handler = http_error_handler or HttpStatusErrorHandler(logger)
         self._backoff_strategy = backoff_strategy
         self._response_decoder = response_decoder
         self._error_message_parser = error_message_parser
