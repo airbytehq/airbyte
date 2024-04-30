@@ -67,7 +67,6 @@ If the answer to all questions is yes, you can use the low-code framework to bui
 - An API key for the source you want to build a connector for
 - Python >= 3.9
 - Docker
-- NodeJS
 
 ## Overview of the process
 

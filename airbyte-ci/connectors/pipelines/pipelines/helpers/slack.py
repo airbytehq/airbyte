@@ -8,7 +8,7 @@ import requests
 from pipelines import main_logger
 
 
-def send_message_to_webhook(message: str, channel: str, webhook: str) -> dict:
+def send_message_to_webhook(message: str, channel: str, webhook: str) -> requests.Response:
     payload = {"channel": f"#{channel}", "username": "Connectors CI/CD Bot", "text": message}
     response = requests.post(webhook, data={"payload": json.dumps(payload)})
 

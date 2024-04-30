@@ -1,41 +1,20 @@
-const fetch = require("node-fetch");
 const visit = require("unist-util-visit").visit;
+const { isDocsPage, getRegistryEntry } = require("./utils");
+const { isPypiConnector } = require("../connector_registry");
 
-const REGISTRY_URL =
-  "https://connectors.airbyte.com/files/generated_reports/connector_registry_report.json";
-
-const fetchCatalog = async () => {
-  console.log("Fetching connector registry...");
-  const json = await fetch(REGISTRY_URL).then((resp) => resp.json());
-  console.log(`fetched ${json.length} connectors form registry`);
-  return json;
-};
-
-const catalog = fetchCatalog();
-
-const toAttributes = (props) => Object.entries(props).map(([key, value]) => ({
-      type: "mdxJsxAttribute",
-      name: key,
-      value: value
+const toAttributes = (props) =>
+  Object.entries(props).map(([key, value]) => ({
+    type: "mdxJsxAttribute",
+    name: key,
+    value: value,
   }));
 
 const plugin = () => {
   const transformer = async (ast, vfile) => {
-    if (!isDocsPage(vfile)) return;
+    const docsPageInfo = isDocsPage(vfile);
+    if (!docsPageInfo.isDocsPage) return;
 
-    const pathParts = vfile.path.split("/");
-    const connectorName = pathParts.pop().split(".")[0];
-    const connectorType = pathParts.pop();
-    const dockerRepository = `airbyte/${connectorType.replace(
-      /s$/,
-      ""
-    )}-${connectorName}`;
-
-    const registry = await catalog;
-
-    const registryEntry = registry.find(
-      (r) => r.dockerRepository_oss === dockerRepository
-    );
+    const registryEntry = await getRegistryEntry(vfile);
 
     if (!registryEntry) return;
 
@@ -50,34 +29,22 @@ const plugin = () => {
         node.children = [];
         node.type = "mdxJsxFlowElement";
         node.name = "HeaderDecoration";
-        node.attributes =  toAttributes({
+        node.attributes = toAttributes({
           isOss: registryEntry.is_oss,
           isCloud: registryEntry.is_cloud,
+          isPypiPublished: isPypiConnector(registryEntry),
           supportLevel: registryEntry.supportLevel_oss,
           dockerImageTag: registryEntry.dockerImageTag_oss,
           iconUrl: registryEntry.iconUrl_oss,
+          github_url: registryEntry.github_url,
+          issue_url: registryEntry.issue_url,
           originalTitle,
-          originalId
+          originalId,
         });
       }
     });
   };
   return transformer;
-};
-
-const isDocsPage = (vfile) => {
-  if (
-    !vfile.path.includes("integrations/sources") &&
-    !vfile.path.includes("integrations/destinations")
-  ) {
-    return false;
-  }
-
-  if (vfile.path.includes("-migrations.md")) {
-    return false;
-  }
-
-  return true;
 };
 
 module.exports = plugin;

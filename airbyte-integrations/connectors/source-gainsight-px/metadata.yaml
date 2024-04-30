@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - api.aptrinsic.com/v1
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-gainsight-px
   registries:
     cloud:
       enabled: true
@@ -19,8 +23,8 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/gainsight-px
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100

@@ -78,12 +78,42 @@ definitions:
             parent_key: "id"
             partition_field: "parent_id"
 
+  requested_items_stream:
+    name: "requested_items"
+    primary_key: "id"
+    $parameters:
+      path_extractor: "requested_items"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "tickets/{{ stream_slice.parent_id }}/requested_items"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [404]
+                  action: IGNORE
+                  error_message: No data collected
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [429]
+                  action: RETRY
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: "Retry-After"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/tickets_stream"
+            parent_key: "id"
+            partition_field: "parent_id"
+
   problems_stream:
     $ref: "#/definitions/base_stream"
     name: "problems"
     primary_key: "id"
-    incremental_sync:
-      $ref: "#/definitions/incremental_base"
     $parameters:
       path_extractor: "problems"
       path: "/problems"
@@ -92,8 +122,6 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "changes"
     primary_key: "id"
-    incremental_sync:
-      $ref: "#/definitions/incremental_base"
     $parameters:
       path_extractor: "changes"
       path: "/changes"
@@ -186,6 +214,7 @@ streams:
   - "#/definitions/assets_stream"
   - "#/definitions/purchase_orders_stream"
   - "#/definitions/software_stream"
+  - "#/definitions/requested_items_stream"
 
 check:
   type: CheckStream

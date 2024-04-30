@@ -1,3 +1,7 @@
+---
+products: all
+---
+
 # Security
 
 Airbyte is committed to keeping your data safe by following industry-standard practices for securing physical deployments, setting access policies, and leveraging the security features of leading Cloud providers.
@@ -83,14 +87,6 @@ Note that this process is not reversible. Once you have converted to a secret st
 ### Encryption
 
 Most Airbyte Open Source connectors support encryption-in-transit (SSL or HTTPS). We recommend configuring your connectors to use the encryption option whenever available.
-
-### Telemetry
-
-Airbyte does send anonymized data to our services to improve the product (especially connector reliability and scale). To disable telemetry, modify the .env file and define the following environment variable:
-
-```
-TRACKING_STRATEGY=logging
-```
 
 ## Securing Airbyte Cloud
 

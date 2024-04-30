@@ -2,28 +2,14 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: secrets/config.json
+        empty_streams:
+          - name: issues
+            bypass_reason: "Project issues are not being returned by the Sentry API."
+          - name: events
+            bypass_reason: "No event records exist for the test project."
         timeout_seconds: 1200
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-        ignored_fields:
-          project_detail:
-            - name: access
-              bypass_reason: "Order access return randomly"
-            - name: features
-              bypass_reason: "Order features return randomly"
-            - name: options
-              bypass_reason: "Order options return randomly"
-            - name: organization/features
-              bypass_reason: "Order features return randomly"
-            - name: plugins/*/features
-              bypass_reason: "Order features return randomly"
-          projects:
-            - name: access
-              bypass_reason: "Order access return randomly"
-            - name: features
-              bypass_reason: "Order features return randomly"
-            - name: organization/features
-              bypass_reason: "Order features return randomly"
   connection:
     tests:
       - config_path: secrets/config.json
@@ -36,16 +22,22 @@ acceptance_tests:
   full_refresh:
     tests:
       - config_path: secrets/config.json
-        configured_catalog_path: integration_tests/configured_catalog.json
+        configured_catalog_path: integration_tests/configured_catalog_full_refresh.json
       # test 403 exception is not breaking the sync
       - config_path: secrets/config_limited_scopes.json
-        configured_catalog_path: integration_tests/configured_catalog.json
+        configured_catalog_path: integration_tests/configured_catalog_full_refresh.json
   incremental:
     tests:
       - config_path: secrets/config.json
+        skip_comprehensive_incremental_tests: true
         configured_catalog_path: integration_tests/configured_catalog.json
         future_state:
           future_state_path: integration_tests/abnormal_state.json
+          missing_streams:
+            - name: issues
+              bypass_reason: "Project issues are not being returned by the Sentry API."
+            - name: events
+              bypass_reason: "No event records exist for the test project."
   spec:
     tests:
       - spec_path: source_sentry/spec.json

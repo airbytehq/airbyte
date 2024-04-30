@@ -66,7 +66,7 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
   }
 
   @Override
-  protected List<JsonNode> dumpFinalTableRecords(String streamNamespace, final String streamName) throws InterruptedException {
+  public List<JsonNode> dumpFinalTableRecords(String streamNamespace, final String streamName) throws InterruptedException {
     if (streamNamespace == null) {
       streamNamespace = BigQueryUtils.getDatasetId(getConfig());
     }
@@ -87,7 +87,7 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
   }
 
   @Override
-  protected SqlGenerator<?> getSqlGenerator() {
+  protected SqlGenerator getSqlGenerator() {
     return new BigQuerySqlGenerator(getConfig().get(BigQueryConsts.CONFIG_PROJECT_ID).asText(), null);
   }
 
@@ -102,8 +102,8 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(new AirbyteStream()
-                .withNamespace(streamNamespace)
-                .withName(streamName)
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
                 .withJsonSchema(SCHEMA))));
 
     // First sync
@@ -145,8 +145,8 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
             .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
             .withStream(new AirbyteStream()
-                .withNamespace(streamNamespace)
-                .withName(streamName)
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
                 .withJsonSchema(SCHEMA))));
 
     // First sync
@@ -159,7 +159,7 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
 
     // Second sync
     runSync(catalog, messages); // does not throw with latest version
-    assertEquals(1, dumpFinalTableRecords(streamNamespace, streamName).toArray().length);
+    assertEquals(1, dumpFinalTableRecords(getStreamNamespace(), getStreamName()).toArray().length);
   }
 
   /**

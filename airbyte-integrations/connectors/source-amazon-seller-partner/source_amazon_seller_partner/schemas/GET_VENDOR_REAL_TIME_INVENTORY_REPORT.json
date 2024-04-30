@@ -4,51 +4,25 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "reportSpecification": {
-      "type": ["null", "object"],
-      "properties": {
-        "reportType": {
-          "type": ["null", "string"]
-        },
-        "dataStartTime": {
-          "type": ["null", "string"],
-          "format": "date-time"
-        },
-        "dataEndTime": {
-          "type": ["null", "string"],
-          "format": "date-time"
-        },
-        "marketplaceIds": {
-          "type": ["null", "array"],
-          "items": {
-            "type": ["string"]
-          }
-        }
-      }
+    "startTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
     },
-    "reportData": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["object"]
-      },
-      "properties": {
-        "startTime": {
-          "type": ["null", "string"],
-          "format": "date-time"
-        },
-        "endTime": {
-          "type": ["null", "string"],
-          "format": "date-time"
-        },
-        "asin": {
-          "type": ["null", "string"]
-        },
-        "highlyAvailableInventory": {
-          "type": ["null", "integer"]
-        }
-      }
+    "endTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "asin": {
+      "type": ["null", "string"]
+    },
+    "highlyAvailableInventory": {
+      "type": ["null", "integer"]
     },
     "dataEndTime": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "queryEndDate": {
       "type": ["null", "string"],
       "format": "date"
     }

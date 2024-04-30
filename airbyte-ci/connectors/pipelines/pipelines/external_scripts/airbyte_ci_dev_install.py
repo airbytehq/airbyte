@@ -8,7 +8,7 @@ import subprocess
 import sys
 
 
-def check_command_exists(command, not_found_message):
+def check_command_exists(command: str, not_found_message: str) -> None:
     """
     Check if a command exists in the system path.
     """
@@ -19,7 +19,7 @@ def check_command_exists(command, not_found_message):
         sys.exit(1)
 
 
-def main():
+def main() -> None:
     # Check if Python 3.10 is on the path
     check_command_exists(
         "python3.10",

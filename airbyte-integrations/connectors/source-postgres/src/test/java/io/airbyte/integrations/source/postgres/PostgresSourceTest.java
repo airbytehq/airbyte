@@ -246,20 +246,19 @@ class PostgresSourceTest {
       return null;
     });
     final JsonNode config = getConfig();
-    try (final DSLContext dslContext = getDslContextWithSpecifiedUser(config, "test_user_3", "132")) {
-      final Database database = new Database(dslContext);
-      database.query(ctx -> {
-        ctx.fetch("CREATE TABLE id_and_name_3(id INTEGER, name VARCHAR(200));");
-        ctx.fetch("CREATE VIEW id_and_name_3_view(id, name) as\n"
-            + "SELECT id_and_name_3.id,\n"
-            + "       id_and_name_3.name\n"
-            + "FROM id_and_name_3;\n"
-            + "ALTER TABLE id_and_name_3_view\n"
-            + "    owner TO test_user_3");
-        ctx.fetch("INSERT INTO id_and_name_3 (id, name) VALUES (1,'Zed'),  (2, 'Jack'), (3, 'Antuan');");
-        return null;
-      });
-    }
+    final DSLContext dslContext = getDslContextWithSpecifiedUser(config, "test_user_3", "132");
+    final Database database = new Database(dslContext);
+    database.query(ctx -> {
+      ctx.fetch("CREATE TABLE id_and_name_3(id INTEGER, name VARCHAR(200));");
+      ctx.fetch("CREATE VIEW id_and_name_3_view(id, name) as\n"
+          + "SELECT id_and_name_3.id,\n"
+          + "       id_and_name_3.name\n"
+          + "FROM id_and_name_3;\n"
+          + "ALTER TABLE id_and_name_3_view\n"
+          + "    owner TO test_user_3");
+      ctx.fetch("INSERT INTO id_and_name_3 (id, name) VALUES (1,'Zed'),  (2, 'Jack'), (3, 'Antuan');");
+      return null;
+    });
     final JsonNode anotherUserConfig = getConfig("test_user_3", "132");
     final Set<AirbyteMessage> actualMessages =
         MoreIterators.toSet(source().read(anotherUserConfig, CONFIGURED_CATALOG, null));
@@ -309,13 +308,12 @@ class PostgresSourceTest {
     });
     final var config = getConfig();
 
-    try (final DSLContext dslContext = getDslContextWithSpecifiedUser(config, "test_user_4", "132")) {
-      final Database database = new Database(dslContext);
-      database.query(ctx -> {
-        ctx.fetch("CREATE TABLE id_and_name_3(id INTEGER, name VARCHAR(200));");
-        return null;
-      });
-    }
+    final DSLContext dslContext = getDslContextWithSpecifiedUser(config, "test_user_4", "132");
+    final Database database = new Database(dslContext);
+    database.query(ctx -> {
+      ctx.fetch("CREATE TABLE id_and_name_3(id INTEGER, name VARCHAR(200));");
+      return null;
+    });
     AirbyteCatalog actual = source().discover(getConfig("test_user_4", "132"));
     Set<String> tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
     assertEquals(Sets.newHashSet("id_and_name", "id_and_name_7", "id_and_name_3"), tableNames);

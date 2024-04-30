@@ -4,8 +4,8 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.2.0'
-    features = ['db-destinations']
+    cdkVersionRequired = '0.29.10'
+    features = ['db-destinations', 's3-destinations', 'typing-deduping']
     useLocalCdk = false
 }
 

@@ -24,6 +24,56 @@
         "chat_access": {
           "type": ["null", "boolean"]
         },
+        "manage_automations": {
+          "type": ["null", "boolean"]
+        },
+        "manage_group_memberships": {
+          "type": ["null", "boolean"]
+        },
+        "manage_groups": {
+          "type": ["null", "boolean"]
+        },
+        "manage_macro_content_suggestions": {
+          "type": ["null", "boolean"]
+        },
+        "manage_organizations": {
+          "type": ["null", "boolean"]
+        },
+        "manage_skills": {
+          "type": ["null", "boolean"]
+        },
+        "manage_suspended_tickets": {
+          "type": ["null", "boolean"]
+        },
+        "manage_triggers": {
+          "type": ["null", "boolean"]
+        },
+        "manage_slas": {
+          "type": ["null", "boolean"]
+        },
+        "read_macro_content_suggestions": {
+          "type": ["null", "boolean"]
+        },
+        "ticket_redaction": {
+          "type": ["null", "boolean"]
+        },
+        "view_filter_tickets": {
+          "type": ["null", "boolean"]
+        },
+        "view_reduced_count": {
+          "type": ["null", "boolean"]
+        },
+        "manage_roles": {
+          "type": ["null", "string"]
+        },
+        "custom_objects": {
+          "type": ["null", "object"],
+          "properties": {},
+          "additionalProperties": true
+        },
+        "manage_deletion_schedules": {
+          "type": ["null", "string"]
+        },
         "end_user_list_access": {
           "type": ["null", "string"]
         },

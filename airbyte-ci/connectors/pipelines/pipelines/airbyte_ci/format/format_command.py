@@ -3,11 +3,9 @@
 #
 from __future__ import annotations
 
-import io
 import logging
 import sys
-import tempfile
-from typing import Any, Callable, List, Tuple
+from typing import Callable, List, Tuple
 
 import asyncclick as click
 import dagger
@@ -36,10 +34,8 @@ class FormatCommand(click.Command):
         get_format_container_fn: Callable,
         format_commands: List[str],
         export_formatted_code: bool,
-        *args,
         enable_logging: bool = True,
         exit_on_failure: bool = True,
-        **kwargs,
     ) -> None:
         """Initialize a FormatCommand.
 
@@ -52,7 +48,7 @@ class FormatCommand(click.Command):
             enable_logging (bool, optional): Make the command log its output. Defaults to True.
             exit_on_failure (bool, optional): Exit the process with status code 1 if the command fails. Defaults to True.
         """
-        super().__init__(formatter.value, *args, **kwargs)
+        super().__init__(formatter.value)
         self.formatter = formatter
         self.file_filter = file_filter
         self.get_format_container_fn = get_format_container_fn
@@ -76,7 +72,7 @@ class FormatCommand(click.Command):
             message = f"{message}."
         return message
 
-    def get_dir_to_format(self, dagger_client) -> dagger.Directory:
+    def get_dir_to_format(self, dagger_client: dagger.Client) -> dagger.Directory:
         """Get a directory with all the source code to format according to the file_filter.
         We mount the files to format in a git container and remove all gitignored files.
         It ensures we're not formatting files that are gitignored.
@@ -111,7 +107,7 @@ class FormatCommand(click.Command):
 
     @pass_pipeline_context
     @sentry_utils.with_command_context
-    async def invoke(self, ctx: click.Context, click_pipeline_context: ClickPipelineContext) -> Any:
+    async def invoke(self, ctx: click.Context, click_pipeline_context: ClickPipelineContext) -> CommandResult:
         """Run the command. If _exit_on_failure is True, exit the process with status code 1 if the command fails.
 
         Args:
@@ -128,7 +124,7 @@ class FormatCommand(click.Command):
         container = self.get_format_container_fn(dagger_client, dir_to_format)
         command_result = await self.get_format_command_result(dagger_client, container, dir_to_format)
 
-        if (formatted_code_dir := command_result.output_artifact) and self.export_formatted_code:
+        if (formatted_code_dir := command_result.output) and self.export_formatted_code:
             await formatted_code_dir.export(self.LOCAL_REPO_PATH)
 
         if self._enable_logging:
@@ -207,7 +203,7 @@ class FormatCommand(click.Command):
             if await dir_with_modified_files.entries():
                 modified_files = await list_files_in_directory(dagger_client, dir_with_modified_files)
                 self.logger.debug(f"Modified files: {modified_files}")
-                return CommandResult(self, status=StepStatus.FAILURE, stdout=stdout, stderr=stderr, output_artifact=dir_with_modified_files)
-            return CommandResult(self, status=StepStatus.SUCCESS, stdout=stdout, stderr=stderr)
+                return CommandResult(command=self, status=StepStatus.FAILURE, stdout=stdout, stderr=stderr, output=dir_with_modified_files)
+            return CommandResult(command=self, status=StepStatus.SUCCESS, stdout=stdout, stderr=stderr)
         except dagger.ExecError as e:
-            return CommandResult(self, status=StepStatus.FAILURE, stderr=e.stderr, stdout=e.stdout, exc_info=e)
+            return CommandResult(command=self, status=StepStatus.FAILURE, stderr=e.stderr, stdout=e.stdout, exc_info=e)

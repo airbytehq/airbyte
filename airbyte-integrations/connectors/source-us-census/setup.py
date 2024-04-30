@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1",
+    "airbyte-cdk",
 ]
 
 TEST_REQUIREMENTS = [
@@ -17,13 +17,30 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-us-census=source_us_census.run:run",
+        ],
+    },
     name="source_us_census",
     description="Source implementation for Us Census.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    package_data={
+        "": [
+            # Include yaml files in the package (if any)
+            "*.yml",
+            "*.yaml",
+            # Include all json files in the package, up to 4 levels deep
+            "*.json",
+            "*/*.json",
+            "*/*/*.json",
+            "*/*/*/*.json",
+            "*/*/*/*/*.json",
+        ]
+    },
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },

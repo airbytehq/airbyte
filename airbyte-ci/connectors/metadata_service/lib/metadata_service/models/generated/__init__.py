@@ -12,6 +12,7 @@ from .JobType import *
 from .NormalizationDestinationDefinitionConfig import *
 from .RegistryOverrides import *
 from .ReleaseStage import *
+from .RemoteRegistries import *
 from .ResourceRequirements import *
 from .SuggestedStreams import *
 from .SupportLevel import *

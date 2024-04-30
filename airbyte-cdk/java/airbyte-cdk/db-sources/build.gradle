@@ -1,42 +1,12 @@
 import org.jsonschema2pojo.SourceType
-import org.jsoup.Jsoup
-
-buildscript {
-    dependencies {
-        // from standard-source-test:
-        classpath 'org.jsoup:jsoup:1.13.1'  // for generateSourceTestDocs
-    }
-}
 
 plugins {
     id "com.github.eirnym.js2p" version "1.0"
-
-    id 'application'
-    id 'airbyte-integration-test-java'
-    id "java-library"
-    id "java-test-fixtures"  // https://docs.gradle.org/current/userguide/java_testing.html#sec:java_test_fixtures
 }
 
-java {
-    compileJava {
-        options.compilerArgs += "-Xlint:-try,-rawtypes,-unchecked,-removal"
-    }
-}
+compileTestFixturesKotlin.compilerOptions.allWarningsAsErrors = false
+compileTestKotlin.compilerOptions.allWarningsAsErrors = false
 
-project.configurations {
-    // From `base-debezium`:
-    testFixturesImplementation.extendsFrom implementation
-
-    // From source-jdbc
-    testFixturesImplementation.extendsFrom implementation
-    testFixturesRuntimeOnly.extendsFrom runtimeOnly
-}
-
-configurations.all {
-    // From airbyte-test-utils
-    exclude group: 'io.micronaut.jaxrs'
-    exclude group: 'io.micronaut.sql'
-}
 
 // Convert yaml to java: relationaldb.models
 jsonSchema2Pojo {
@@ -53,162 +23,32 @@ jsonSchema2Pojo {
     includeSetters = true
 }
 
-dependencies {
-    implementation project(':airbyte-cdk:java:airbyte-cdk:core')
-    testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness')
-
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli')
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:init-oss')
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
-
-    testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
-    testImplementation project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
-
-    testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
-    testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-api')
-    testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
-    testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:init-oss')
-
-    testFixturesImplementation "org.hamcrest:hamcrest-all:1.3"
-
-
-    implementation libs.bundles.junit
-    // implementation libs.junit.jupiter.api
-    implementation libs.junit.jupiter.params
-    implementation 'org.junit.platform:junit-platform-launcher:1.7.0'
-    implementation libs.jooq
-    testImplementation libs.junit.jupiter.engine
-    implementation 'net.sourceforge.argparse4j:argparse4j:0.8.1'
-    implementation "io.aesy:datasize:1.0.0"
-    implementation libs.apache.commons
-    implementation libs.apache.commons.lang
-    testImplementation 'commons-lang:commons-lang:2.6'
-    implementation 'commons-cli:commons-cli:1.4'
-    implementation 'org.apache.commons:commons-csv:1.4'
-
-    // Optional dependencies
-    // TODO: Change these to 'compileOnly' or 'testCompileOnly'
-
-    implementation libs.hikaricp
-    implementation libs.debezium.api
-    implementation libs.debezium.embedded
-    implementation libs.debezium.mysql
-    implementation libs.debezium.postgres
-    implementation libs.debezium.mongodb
-
-    implementation libs.bundles.datadog
-    // implementation 'com.datadoghq:dd-trace-api'
-    implementation 'org.apache.sshd:sshd-mina:2.8.0'
-
-    implementation libs.testcontainers
-    implementation libs.testcontainers.mysql
-    implementation libs.testcontainers.jdbc
-    implementation libs.testcontainers.postgresql
-    testImplementation libs.testcontainers.jdbc
-    testImplementation libs.testcontainers.mysql
-    testImplementation libs.testcontainers.postgresql
-    implementation 'org.codehaus.plexus:plexus-utils:3.4.2'
-
-    implementation 'org.bouncycastle:bcprov-jdk15on:1.66'
-
-    // Lombok
-    implementation 'org.projectlombok:lombok:1.18.20'
-    annotationProcessor 'org.projectlombok:lombok:1.18.20'
-    testFixturesImplementation 'org.projectlombok:lombok:1.18.20'
-    testFixturesAnnotationProcessor 'org.projectlombok:lombok:1.18.20'
-
-    testImplementation libs.junit.jupiter.system.stubs
-
-    // From `base-debezium`:
-    // implementation project(':airbyte-db:db-lib')
-    // testFixturesImplementation project(':airbyte-db:db-lib')
-    testFixturesImplementation 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
-    testFixturesImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
-    testFixturesImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'
-
-    // From source-jdbc
-    implementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation libs.postgresql
-    integrationTestJavaImplementation libs.testcontainers.postgresql
-    testFixturesImplementation libs.airbyte.protocol
-    // todo (cgardens) - the java-test-fixtures plugin doesn't by default extend from test.
-    //  we cannot make it depend on the dependencies of source-jdbc:test, because source-jdbc:test
-    //  is going to depend on these fixtures. need to find a way to get fixtures to inherit the
-    //  common test classes without duplicating them. this should be part of whatever solution we
-    //  decide on for a "test-java-lib". the current implementation is leveraging the existing
-    //  plugin, but we can something different if we don't like this tool.
-    testFixturesRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
-    testFixturesImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.0.0'
-
-    // From `standard-source-test`:
-    testFixturesImplementation 'org.mockito:mockito-core:4.6.1'
-    testFixturesRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
-    testFixturesImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
-    testFixturesImplementation 'org.junit.jupiter:junit-jupiter-params:5.8.1'
-
-    // From `airbyte-test-utils`:
-    // api project(':airbyte-db:db-lib')
-    testFixturesImplementation 'io.fabric8:kubernetes-client:5.12.2'
-    testFixturesImplementation libs.temporal.sdk
-    testFixturesApi libs.junit.jupiter.api
-    // Mark as compile only to avoid leaking transitively to connectors
-    testFixturesCompileOnly libs.testcontainers.jdbc
-    testFixturesCompileOnly libs.testcontainers.postgresql
-    testFixturesCompileOnly libs.testcontainers.cockroachdb
-    testFixturesImplementation libs.testcontainers.cockroachdb
-}
-
-def getFullPath(String className) {
-    def matchingFiles = project.fileTree("src/testFixtures/java")
-            .filter { file -> file.getName().equals("${className}.java".toString()) }.asCollection()
-    if (matchingFiles.size() == 0) {
-        throw new IllegalArgumentException("Ambiguous class name ${className}: no file found.")
-    }
-    if (matchingFiles.size() > 1) {
-        throw new IllegalArgumentException("Ambiguous class name ${className}: more than one matching file was found. Files found: ${matchingFiles}")
-    }
-    def absoluteFilePath = matchingFiles[0].toString()
-    def pathInPackage = project.relativePath(absoluteFilePath.toString()).replaceAll("src/testFixtures/java/", "").replaceAll("\\.java", "")
-    return pathInPackage
-}
-
-def generateSourceTestDocs = tasks.register('generateSourceTestDocs', Javadoc) {
-    def javadocOutputDir = project.file("${project.buildDir}/docs/testFixturesJavadoc")
-
-    options.addStringOption('Xdoclint:none', '-quiet')
-    classpath = sourceSets.testFixtures.compileClasspath
-    source = sourceSets.testFixtures.allJava
-    destinationDir = javadocOutputDir
-
-    doLast {
-        def className = "SourceAcceptanceTest"
-        // this can be made into a list once we have multiple standard tests, and can also be used for destinations
-        def pathInPackage = getFullPath(className)
-        def stdSrcTest = project.file("${javadocOutputDir}/${pathInPackage}.html").readLines().join("\n")
-        def methodList = Jsoup.parse(stdSrcTest).body().select("section.methodDetails>ul>li>section")
-        def md = ""
-        for (methodInfo in methodList) {
-            def annotations = methodInfo.select(".memberSignature>.annotations").text()
-            if (!annotations.contains("@Test")) {
-                continue
-            }
-            def methodName = methodInfo.selectFirst("div>span.memberName").text()
-            def methodDocstring = methodInfo.selectFirst("div.block")
-
-            md += "## ${methodName}\n\n"
-            md += "${methodDocstring != null ? methodDocstring.text().replaceAll(/([()])/, '\\\\$1') : 'No method description was provided'}\n\n"
-        }
-        def outputDoc = new File("${rootDir}/docs/connector-development/testing-connectors/standard-source-tests.md")
-        outputDoc.write "# Standard Source Test Suite\n\n"
-        outputDoc.append "Test methods start with `test`. Other methods are internal helpers in the java class implementing the test suite.\n\n"
-        outputDoc.append md
-    }
-
-    outputs.upToDateWhen { false }
-}
-
 tasks.register('generate').configure {
-    dependsOn generateSourceTestDocs
+    dependsOn tasks.named('generateJsonSchema2Pojo')
+}
+
+dependencies {
+
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
+
+    implementation 'io.debezium:debezium-api:2.4.0.Final'
+    implementation 'io.debezium:debezium-embedded:2.4.0.Final'
+    implementation 'org.codehaus.plexus:plexus-utils:4.0.0'
+
+    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies'))
+    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
+
+    testFixturesImplementation 'net.sourceforge.argparse4j:argparse4j:0.9.0'
+    testFixturesImplementation 'io.swagger:swagger-annotations:1.6.13'
+    testFixturesImplementation 'org.hamcrest:hamcrest-all:1.3'
+    testFixturesImplementation 'org.junit.platform:junit-platform-launcher:1.10.1'
+
+    testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-datastore-postgres')
+    testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-datastore-postgres'))
+
+    testImplementation 'uk.org.webcompere:system-stubs-jupiter:2.0.1'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
 }

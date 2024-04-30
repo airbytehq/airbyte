@@ -5,6 +5,10 @@ data:
   allowedHosts:
     hosts:
       - api.trello.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-trello
   registries:
     oss:
       enabled: true
@@ -29,5 +33,6 @@ data:
   releaseStage: beta
   supportLevel: community
   tags:
-    - language:low-code
+    - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

@@ -12,7 +12,6 @@ import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.TRU
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresConverter;
 import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.postgres.PostgresSource;
 import io.airbyte.integrations.source.postgres.PostgresUtils;
@@ -68,6 +67,11 @@ public class PostgresCdcProperties {
             ? HEARTBEAT_INTERVAL_IN_TESTS
             : HEARTBEAT_INTERVAL;
     props.setProperty("heartbeat.interval.ms", Long.toString(heartbeatInterval.toMillis()));
+
+    if (sourceConfig.get("replication_method").has("heartbeat_action_query")
+        && !sourceConfig.get("replication_method").get("heartbeat_action_query").asText().isEmpty()) {
+      props.setProperty("heartbeat.action.query", sourceConfig.get("replication_method").get("heartbeat_action_query").asText());
+    }
 
     if (PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
       props.setProperty("flush.lsn.source", "false");

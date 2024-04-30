@@ -306,6 +306,22 @@
               "type": ["null", "string"]
             }
           }
+        },
+        "secret_scanning_validity_checks": {
+          "type": ["null", "object"],
+          "properties": {
+            "status": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "dependabot_security_updates": {
+          "type": ["null", "object"],
+          "properties": {
+            "status": {
+              "type": ["null", "string"]
+            }
+          }
         }
       }
     }

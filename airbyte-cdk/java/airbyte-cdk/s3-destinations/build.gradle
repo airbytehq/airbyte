@@ -1,56 +1,51 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
-dependencies {
-
-    implementation project(':airbyte-cdk:java:airbyte-cdk:core')
-    implementation project(':airbyte-cdk:java:airbyte-cdk:db-destinations')
-    implementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
-    testImplementation project(':airbyte-cdk:java:airbyte-cdk:db-destinations')
-    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:db-destinations')
-    testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:db-destinations'))
-
-
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-api')
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli')
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:init-oss')
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
-
-    testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
-    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
-
-    testImplementation 'org.mockito:mockito-core:4.6.1'
-
-    // Lombok
-    implementation 'org.projectlombok:lombok:1.18.20'
-    annotationProcessor 'org.projectlombok:lombok:1.18.20'
-    testFixturesImplementation 'org.projectlombok:lombok:1.18.20'
-    testFixturesAnnotationProcessor 'org.projectlombok:lombok:1.18.20'
-
-    implementation ('org.apache.hadoop:hadoop-aws:3.3.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
-    implementation ('org.apache.hadoop:hadoop-mapreduce-client-core:3.3.3') {exclude group: 'org.slf4j', module: 'slf4j-log4j12' exclude group: 'org.slf4j', module: 'slf4j-reload4j'}
-    implementation group: 'com.hadoop.gplcompression', name: 'hadoop-lzo', version: '0.4.20'
-    implementation ('org.apache.hadoop:hadoop-common:3.3.3') {
-        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
-        exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+compileTestFixturesKotlin {
+    compilerOptions {
+        allWarningsAsErrors = false
     }
-
-    implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
-    implementation 'org.apache.commons:commons-csv:1.4'
-    implementation ('org.apache.parquet:parquet-avro:1.12.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
-    implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
-
-    implementation libs.bundles.junit
-    testImplementation libs.junit.jupiter.system.stubs
-
-
 }
 
-java {
-    compileJava {
-        options.compilerArgs.remove("-Werror")
+compileTestKotlin {
+    compilerOptions {
+        allWarningsAsErrors = false
     }
-    compileTestJava {
-        options.compilerArgs += "-Xlint:-try"
+}
+
+dependencies {
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations')
+
+    // Re-export dependencies for gcs-destinations.
+    api 'com.amazonaws:aws-java-sdk-s3:1.12.647'
+    api ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
+    api 'com.github.alexmojaki:s3-stream-upload:2.2.4'
+    api 'org.apache.avro:avro:1.11.3'
+    api 'org.apache.commons:commons-csv:1.10.0'
+    api 'org.apache.commons:commons-text:1.11.0'
+    api ('org.apache.hadoop:hadoop-aws:3.3.6') { exclude group: 'com.amazonaws', module: 'aws-java-sdk-bundle' }
+    api ('org.apache.hadoop:hadoop-common:3.3.6') {
+        exclude group: 'org.apache.zookeeper'
+        exclude group: 'org.apache.hadoop', module: 'hadoop-yarn-common'
     }
+    api ('org.apache.hadoop:hadoop-mapreduce-client-core:3.3.6') {
+        exclude group: 'org.apache.zookeeper'
+        exclude group: 'org.apache.hadoop', module: 'hadoop-yarn-common'
+    }
+    api 'org.apache.parquet:parquet-avro:1.13.1'
+    runtimeOnly 'com.hadoop.gplcompression:hadoop-lzo:0.4.20'
+
+    testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies'))
+    testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
+    testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping')
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping'))
+    testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations')
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations'))
+
+    testImplementation 'org.mockito:mockito-inline:5.2.0'
 }

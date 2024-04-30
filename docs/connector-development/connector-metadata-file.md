@@ -1,8 +1,8 @@
 # Connector Metadata.yaml File
 
-The `metadata.yaml` file is a new addition to Airbyte's connector folders. This file is created with the goal of simplifying and enhancing how we manage information related to each connector. It is designed to replace the previous `source_definitions.yaml` and `destinations_definitions.yaml` files.
-
 The `metadata.yaml` file contains crucial information about the connector, including its type, definition ID, Docker image tag, Docker repository, and much more. It plays a key role in the way Airbyte handles connector data and improves the overall organization and accessibility of this data.
+
+N.B. the `metadata.yaml` file replaces the previous `source_definitions.yaml` and `destinations_definitions.yaml` files.
 
 ## Structure
 
@@ -88,9 +88,6 @@ In the example above, the connector has three tags. Tags are used for two primar
 These are just examples of how tags can be used. As a free-form field, the tags list can be customized as required for each connector. This flexibility allows tags to be a powerful tool for managing and discovering connectors.
 
 ## The `icon` Field
-This denotes the name of the icon file for the connector. At this time the icon file is located in the `airbyte-platform` repository. So please ensure that the icon file is present in the `airbyte-platform` repository at [https://github.com/airbytehq/airbyte-platform/tree/main/airbyte-config/init/src/main/resources/icons](https://github.com/airbytehq/airbyte-platform/tree/main/airbyte-config/init/src/main/resources/icons) before adding the icon name to the `metadata.yaml` file.
-
-### Future Plans
 _⚠️ This property is in the process of being refactored to be a file in the connector folder_
 
 You may notice a `icon.svg` file in the connectors folder.
@@ -130,7 +127,7 @@ releases:
 The optional `scopedImpact` property allows you to provide a list of scopes for which the change is breaking.
 This allows you to reduce the scope of the change; it's assumed that any scopes not listed are unaffected by the breaking change.
 
-For example, consider the following `scopedImpact` defintion:
+For example, consider the following `scopedImpact` definition:
 
 ```yaml
 releases:
@@ -138,7 +135,7 @@ releases:
     1.0.0:
       message: "This version changes the cursor for the `Users` stream. After upgrading, please reset the stream."
       upgradeDeadline: "2023-12-31"
-      impactScope:
+      scopedImpact:
         - scopeType: stream
           impactedScopes: ["users"]
 ```
@@ -151,3 +148,19 @@ The supported scope types are listed below.
 | Scope Type | Value Type | Value Description |
 |------------|------------|------------------|
 | stream     | `list[str]`  | List of stream names |
+
+#### `remoteRegistries`
+The optional `remoteRegistries` property allows you to configure how a connector should be published to registries like Pypi.
+
+**Important note**: Currently no automated publishing will occur.
+
+```yaml
+remoteRegistries:
+  pypi:
+    enabled: true
+    packageName: airbyte-source-connector-name
+```
+
+The `packageName` property of the `pypi` section is the name of the installable package in the PyPi registry.
+
+If not specified, all remote registry configurations are disabled by default.

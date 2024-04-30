@@ -70,19 +70,25 @@
       "type": ["null", "string"]
     },
     "timestamp_signup": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "ip_opt": {
       "type": ["null", "string"]
     },
     "timestamp_opt": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "member_rating": {
       "type": ["null", "integer"]
     },
     "last_changed": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "language": {
       "type": ["null", "string"]
@@ -141,7 +147,8 @@
         },
         "created_at": {
           "type": ["null", "string"],
-          "format": "date-time"
+          "format": "date-time",
+          "airbyte_type": "timestamp_with_timezone"
         },
         "created_by": {
           "type": ["null", "string"]
