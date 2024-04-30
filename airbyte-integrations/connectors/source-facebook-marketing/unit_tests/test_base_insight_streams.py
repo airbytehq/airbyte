@@ -691,3 +691,54 @@ class TestBaseInsightsStream:
             breakdowns=breakdowns
         )
         assert stream.primary_key == expect_pks
+
+    @pytest.mark.parametrize(
+        "breakdowns, expect_pks",
+        (
+                (
+                        ["body_asset"], ["date_start", "account_id", "ad_id", "body_asset_id"]
+                ),
+                (
+                        ["call_to_action_asset"], ["date_start", "account_id", "ad_id", "call_to_action_asset_id"]
+                ),
+                (
+                        ["description_asset"], ["date_start", "account_id", "ad_id", "description_asset_id"]
+                ),
+                (
+                        ["image_asset"], ["date_start", "account_id", "ad_id", "image_asset_id"]
+                ),
+                (
+                        ["link_url_asset"], ["date_start", "account_id", "ad_id", "link_url_asset_id"]
+                ),
+                (
+                        ["title_asset"], ["date_start", "account_id", "ad_id", "title_asset_id"]
+                ),
+                (
+                        ["video_asset"], ["date_start", "account_id", "ad_id", "video_asset_id"]
+                ),
+                (
+                        ["video_asset", "skan_conversion_id", "place_page_id"],
+                        ["date_start", "account_id", "ad_id", "video_asset_id", "skan_conversion_id", "place_page_id"]
+                ),
+                (
+                        ["video_asset", "link_url_asset",  "skan_conversion_id", "place_page_id", "gender"],
+                        ["date_start", "account_id", "ad_id", "video_asset_id", "link_url_asset_id", "skan_conversion_id", "place_page_id", "gender"]
+                ),
+        )
+    )
+    def test_object_pk_added_to_schema(self, api, some_config, breakdowns, expect_pks):
+        start_date = pendulum.parse("2024-01-01")
+        end_date = start_date + duration(days=10)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=start_date,
+            end_date=end_date,
+            insights_lookback_window=1,
+            breakdowns=breakdowns
+        )
+        schema = stream.get_json_schema()
+        assert schema
+        assert stream.primary_key == expect_pks
+        for pk in expect_pks:
+            assert pk in schema["properties"]

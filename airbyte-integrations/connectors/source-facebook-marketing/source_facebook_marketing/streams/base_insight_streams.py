@@ -384,6 +384,11 @@ class AdsInsights(FBMarketingIncrementalStream):
         if self.breakdowns:
             breakdowns_properties = loader.get_schema("ads_insights_breakdowns")["properties"]
             schema["properties"].update({prop: breakdowns_properties[prop] for prop in self.breakdowns})
+            # adding object breakdown id to schema
+            for prop in self.breakdowns:
+                object_breakdown_id = self.object_breakdowns.get(prop)
+                if object_breakdown_id:
+                    schema["properties"].update({object_breakdown_id: breakdowns_properties[object_breakdown_id]})
         return schema
 
     def fields(self, **kwargs) -> List[str]:
