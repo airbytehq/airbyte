@@ -10,7 +10,7 @@ from typing import Any, List, Mapping, Tuple, Type
 import pendulum
 import requests
 from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from airbyte_cdk.utils import AirbyteTracedException
@@ -57,7 +57,10 @@ from .streams import (
 logger = logging.getLogger("airbyte")
 
 
-class SourcePinterest(AbstractSource):
+class SourcePinterest(YamlDeclarativeSource):
+    def __init__(self) -> None:
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})
+
     def _validate_and_transform(self, config: Mapping[str, Any], amount_of_days_allowed_for_lookup: int = 89):
         config = copy.deepcopy(config)
         today = pendulum.today()

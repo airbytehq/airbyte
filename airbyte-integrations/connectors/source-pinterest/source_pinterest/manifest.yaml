@@ -1,0 +1,95 @@
+version: 0.78.6
+type: DeclarativeSource
+
+definitions:
+  # Authenticator
+  authenticator:
+    type: OAuthAuthenticator
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: "{{ config['credentials']['refresh_token'] }}"
+    token_refresh_endpoint: "https://api.pinterest.com/v5/oauth/token"
+
+  # Requester
+  requester:
+    type: HttpRequester
+    url_base: "https://api.pinterest.com/v5/"
+    http_method: GET
+    authenticator: "#/definitions/authenticator"
+
+  # Selector
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["items"]
+
+  # Paginator
+  paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response.get('bookmark') }}"
+    page_token_option:
+      type: RequestOption
+      field_name: bookmark
+      inject_into: request_parameter
+
+  # Retriever
+  retriever:
+    type: SimpleRetriever
+    record_selector: "#/definitions/selector"
+    requester: "#/definitions/requester"
+    paginator: "#/definitions/paginator"
+
+  # Base stream
+  base_stream:
+    type: DeclarativeStream
+    retriever: "#/definitions/retriever"
+    primary_key: "id"
+
+  # Full refresh streams
+  boards_stream:
+    name: "boards"
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      path: "boards"
+
+  catalogs_stream:
+    name: "catalogs"
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      path: "catalogs"
+
+  catalogs_feeds_stream:
+    name: "catalogs_feeds"
+    $ref: "#/definitions/base_stream"
+    transformations:
+      - type: RemoveFields
+        field_pointers: ["credentials"]
+    $parameters:
+      path: "catalogs/feeds"
+
+  catalogs_product_groups_stream:
+    name: "catalogs_product_groups"
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      path: "catalogs/product_groups"
+
+  ad_accounts_stream:
+    name: "ad_accounts"
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      path: "ad_accounts"
+
+streams:
+  - "#/definitions/boards_stream"
+  - "#/definitions/catalogs_stream"
+  - "#/definitions/catalogs_feeds_stream"
+  - "#/definitions/catalogs_product_groups_stream"
+  - "#/definitions/ad_accounts_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - boards
