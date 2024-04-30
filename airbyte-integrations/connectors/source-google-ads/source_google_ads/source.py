@@ -187,8 +187,8 @@ class SourceGoogleAds(AbstractSource):
         logger.info(f"Found {len(customers)} customers: {[customer.id for customer in customers]}")
 
         # Check custom query request validity by sending metric request with non-existent time window
-        for customer in customers:
-            for query in config.get("custom_queries_array", []):
+        for query in config.get("custom_queries_array", []):
+            for customer in customers:
                 table_name = query["table_name"]
                 query = query["query"]
                 if customer.is_manager_account and self.is_metrics_in_custom_query(query):
@@ -215,6 +215,7 @@ class SourceGoogleAds(AbstractSource):
                 # iterate over the response otherwise exceptions will not be raised!
                 for _ in response:
                     pass
+                break
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

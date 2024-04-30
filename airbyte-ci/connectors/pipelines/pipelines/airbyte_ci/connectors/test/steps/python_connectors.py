@@ -15,12 +15,15 @@ from pipelines import hacks
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests
+from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, RegressionTests
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.models.steps import STEP_PARAMS, Step, StepResult
+
+# Pin the PyAirbyte version to avoid updates from breaking CI
+PYAIRBYTE_VERSION = "0.10.2"
 
 
 class PytestStep(Step, ABC):
@@ -230,7 +233,7 @@ class PyAirbyteValidation(Step):
             [
                 "pip",
                 "install",
-                "airbyte",
+                f"airbyte=={PYAIRBYTE_VERSION}",
             ]
         )
 
@@ -273,6 +276,12 @@ def get_test_steps(context: ConnectorContext) -> STEP_TREE:
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
                 step=AcceptanceTests(context, context.concurrent_cat),
+                args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
+                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+            ),
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.CONNECTOR_REGRESSION_TESTS,
+                step=RegressionTests(context),
                 args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),

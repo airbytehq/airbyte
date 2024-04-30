@@ -9,8 +9,9 @@ const fetchCatalog = async () => {
 };
 
 module.exports = {
+  REGISTRY_URL,
   catalog: fetchCatalog(),
   isPypiConnector: (connector) => {
     return Boolean(connector.remoteRegistries_oss?.pypi?.enabled);
-  }
-}
+  },
+};

@@ -1,7 +1,7 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/azure-blob-storage",
   "connectionSpecification": {
-    "title": "Config",
+    "title": "SourceAzureBlobStorageSpec",
     "description": "NOTE: When this Spec is changed, legacy_config_transformer.py must also be modified to uptake the changes\nbecause it is responsible for converting legacy Azure Blob Storage v0 configs into v1 configs using the File-Based CDK.",
     "type": "object",
     "properties": {
@@ -351,20 +351,86 @@
           "required": ["name", "format"]
         }
       },
+      "credentials": {
+        "title": "Authentication",
+        "description": "Credentials for connecting to the Azure Blob Storage",
+        "type": "object",
+        "order": 2,
+        "oneOf": [
+          {
+            "title": "Authenticate via Oauth2",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "default": "oauth2",
+                "const": "oauth2",
+                "enum": ["oauth2"],
+                "type": "string"
+              },
+              "tenant_id": {
+                "title": "Tenant ID",
+                "description": "Tenant ID of the Microsoft Azure Application user",
+                "airbyte_secret": true,
+                "type": "string"
+              },
+              "client_id": {
+                "title": "Client ID",
+                "description": "Client ID of your Microsoft developer application",
+                "airbyte_secret": true,
+                "type": "string"
+              },
+              "client_secret": {
+                "title": "Client Secret",
+                "description": "Client Secret of your Microsoft developer application",
+                "airbyte_secret": true,
+                "type": "string"
+              },
+              "refresh_token": {
+                "title": "Refresh Token",
+                "description": "Refresh Token of your Microsoft developer application",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "tenant_id",
+              "client_id",
+              "client_secret",
+              "refresh_token",
+              "auth_type"
+            ]
+          },
+          {
+            "title": "Authenticate via Storage Account Key",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "default": "storage_account_key",
+                "const": "storage_account_key",
+                "enum": ["storage_account_key"],
+                "type": "string"
+              },
+              "azure_blob_storage_account_key": {
+                "title": "Azure Blob Storage account key",
+                "description": "The Azure blob storage account key.",
+                "airbyte_secret": true,
+                "examples": [
+                  "Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd=="
+                ],
+                "order": 3,
+                "type": "string"
+              }
+            },
+            "required": ["azure_blob_storage_account_key", "auth_type"]
+          }
+        ]
+      },
       "azure_blob_storage_account_name": {
         "title": "Azure Blob Storage account name",
         "description": "The account's name of the Azure Blob Storage.",
         "examples": ["airbyte5storage"],
-        "order": 2,
-        "type": "string"
-      },
-      "azure_blob_storage_account_key": {
-        "title": "Azure Blob Storage account key",
-        "description": "The Azure blob storage account key.",
-        "airbyte_secret": true,
-        "examples": [
-          "Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd=="
-        ],
         "order": 3,
         "type": "string"
       },
@@ -385,9 +451,62 @@
     },
     "required": [
       "streams",
+      "credentials",
       "azure_blob_storage_account_name",
-      "azure_blob_storage_account_key",
       "azure_blob_storage_container_name"
     ]
+  },
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["credentials", "auth_type"],
+    "predicate_value": "oauth2",
+    "oauth_config_specification": {
+      "oauth_user_input_from_connector_config_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "tenant_id"]
+          }
+        }
+      },
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "refresh_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_secret"]
+          }
+        }
+      }
+    }
   }
 }

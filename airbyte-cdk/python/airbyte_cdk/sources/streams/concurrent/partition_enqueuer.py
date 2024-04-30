@@ -5,6 +5,7 @@ import time
 from queue import Queue
 
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
+from airbyte_cdk.sources.concurrent_source.stream_thread_exception import StreamThreadException
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.partitions.types import QueueItem
@@ -52,4 +53,5 @@ class PartitionEnqueuer:
                 self._queue.put(partition)
             self._queue.put(PartitionGenerationCompletedSentinel(stream))
         except Exception as e:
-            self._queue.put(e)
+            self._queue.put(StreamThreadException(e, stream.name))
+            self._queue.put(PartitionGenerationCompletedSentinel(stream))
