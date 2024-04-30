@@ -7,10 +7,14 @@ from typing import Dict, List, Set, Tuple, Union
 import yaml
 from connector_ops import utils
 
-BACKWARD_COMPATIBILITY_REVIEWERS = {"connector-extensibility"}
-TEST_STRICTNESS_LEVEL_REVIEWERS = {"connector-extensibility"}
-BYPASS_REASON_REVIEWERS = {"connector-extensibility"}
-STRATEGIC_PYTHON_CONNECTOR_REVIEWERS = {"gl-python", "connector-extensibility"}
+# We are toying with removing these as requirements.
+BACKWARD_COMPATIBILITY_REVIEWERS = set()
+TEST_STRICTNESS_LEVEL_REVIEWERS = set()
+BYPASS_REASON_REVIEWERS = set()
+# TODO: Check to see if GL still wants to get tagged in this. If so,
+# the logic needs to be audited to make sure its actually just python.
+STRATEGIC_PYTHON_CONNECTOR_REVIEWERS = {"gl-python"}
+# The breaking change reviewers is still in active use.
 BREAKING_CHANGE_REVIEWERS = {"breaking-change-reviewers"}
 REVIEW_REQUIREMENTS_FILE_PATH = ".github/connector_org_review_requirements.yaml"
 
@@ -66,7 +70,9 @@ def find_mandatory_reviewers() -> List[Dict[str, Union[str, Dict[str, List]]]]:
         },
     ]
 
-    return [{"name": r["name"], "teams": r["teams"]} for r in requirements if r["is_required"]]
+    required_reviewer_groups = [r for r in requirements if r["is_required"]]
+    # Don't return a group if there are no teams assigned to it.
+    return [{"name": r["name"], "teams": r["teams"]} for r in required_reviewer_groups if r["teams"]]
 
 
 def write_review_requirements_file():
