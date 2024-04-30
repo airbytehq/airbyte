@@ -7,10 +7,8 @@ from typing import Optional
 
 import requests
 
-from .response_action import ResponseAction
 
-
-class RetryStrategy(ABC):
+class BackoffStrategy(ABC):
     @property
     @abstractmethod
     def max_retries(self) -> int:
@@ -21,7 +19,7 @@ class RetryStrategy(ABC):
 
     @property
     @abstractmethod
-    def max_timeout(self) -> int:
+    def max_time(self) -> int:
         """
         Override if needed. Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit.
         """
@@ -35,19 +33,15 @@ class RetryStrategy(ABC):
         """
         pass
 
+    @property
     @abstractmethod
-    def should_retry(self, response: Optional[requests.Response] = None, response_action: Optional[ResponseAction] = None) -> bool:
+    def raise_on_http_errors(self) -> bool:
         """
-        Override to set different conditions for backoff based on the response from the server.
-
-        By default, back off on the following HTTP response statuses:
-         - 429 (Too Many Requests) indicating rate limiting
-         - 500s to handle transient server errors
-
-        Unexpected but transient exceptions (connection timeout, DNS resolution failed, etc..) are retried by default.
+        Override if needed. Specifies whether to raise exceptions for HTTP errors.
         """
         pass
 
+    # TODO: Determine appropriate way to handle -> optional response/exception?
     @abstractmethod
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
@@ -58,15 +52,5 @@ class RetryStrategy(ABC):
         :param response:
         :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
         to the default backoff behavior (e.g using an exponential algorithm).
-        """
-        pass
-
-    @abstractmethod
-    def error_message(self, response: requests.Response) -> str:
-        """
-        Override this method to specify a custom error message which can incorporate the HTTP response received
-
-        :param response: The incoming HTTP response from the API
-        :return:
         """
         pass
