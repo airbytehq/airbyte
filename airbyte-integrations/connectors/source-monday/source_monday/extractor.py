@@ -107,9 +107,7 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
 
         for record in result:
             if "updated_at" in record:
-                record["updated_at_int"] = int(
-                    datetime.strptime(record["updated_at"], "%Y-%m-%dT%H:%M:%S%z").timestamp()
-                )
+                record["updated_at_int"] = int(datetime.strptime(record["updated_at"], "%Y-%m-%dT%H:%M:%S%z").timestamp())
 
             column_values = record.get("column_values", [])
             for values in column_values:
