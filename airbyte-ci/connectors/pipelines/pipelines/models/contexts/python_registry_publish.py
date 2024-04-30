@@ -18,7 +18,6 @@ class PythonPackageMetadata:
 
 
 class PythonRegistryPublishContext(PipelineContext):
-
     def __init__(
         self,
         python_registry_token: str,
