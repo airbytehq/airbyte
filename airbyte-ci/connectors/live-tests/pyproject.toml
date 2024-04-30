@@ -27,8 +27,7 @@ pydash = "~=7.0.7"
 docker = ">=6,<7"
 asyncclick = "^8.1.7.1"
 # TODO: when this is open-sourced, don't require connection-retriever
-# TODO: get rid of rev when https://github.com/airbytehq/airbyte-platform-internal/pull/12286 is merged
-connection-retriever = {git = "git@github.com:airbytehq/airbyte-platform-internal", subdirectory = "tools/connection-retriever", rev = "catherine/connection-retriever-proxy"}
+connection-retriever = {git = "git@github.com:airbytehq/airbyte-platform-internal", subdirectory = "tools/connection-retriever"}
 duckdb = "^0.10.0"
 pandas = "^2.2.1"
 pytest-sugar = "^1.0.0"
