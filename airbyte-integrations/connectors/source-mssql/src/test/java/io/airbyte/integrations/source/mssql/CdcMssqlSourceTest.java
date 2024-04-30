@@ -166,7 +166,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
       throw new RuntimeException(e);
     }
     super.tearDown();
-    MssqlDebeziumStateUtil.dispose();
   }
 
   private JdbcDatabase testDatabase() {

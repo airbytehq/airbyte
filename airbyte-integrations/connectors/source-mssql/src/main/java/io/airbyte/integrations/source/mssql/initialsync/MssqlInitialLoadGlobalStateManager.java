@@ -8,20 +8,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState;
-import io.airbyte.cdk.integrations.source.relationaldb.models.OrderedColumnLoadStatus;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.InitialLoadStreams;
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.OrderedColumnInfo;
 import io.airbyte.protocol.models.v0.*;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlInitialLoadGlobalStateManager.class);

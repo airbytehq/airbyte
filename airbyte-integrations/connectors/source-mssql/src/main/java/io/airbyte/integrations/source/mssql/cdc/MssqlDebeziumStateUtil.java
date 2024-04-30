@@ -142,7 +142,8 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
 
   }
 
-  public static void dispose() {
+  public static void disposeInitialState() {
+      LOGGER.debug("Dispose initial state cached for {}", Thread.currentThread());
       initialState.remove();
   }
   private static JsonNode serialize(final Map<String, String> offset, final SchemaHistory<String> dbHistory) {

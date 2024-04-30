@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+
+import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jooq.Record;
@@ -281,6 +283,7 @@ public class MsSqlTestDatabaseWithBackgroundThreads extends MsSQLTestDatabase {
       bgThread.stop = true;
     }
     super.close();
+    MssqlDebeziumStateUtil.disposeInitialState();
   }
 
   private final Map<String, MssqlTestDatabaseBackgroundThreadQueryCdcTable> bgThreadByInstance = new ConcurrentHashMap<>();
