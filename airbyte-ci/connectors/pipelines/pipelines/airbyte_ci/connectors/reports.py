@@ -132,9 +132,9 @@ class ConnectorReport(Report):
             template_context["gha_workflow_run_url"] = self.pipeline_context.gha_workflow_run_url
             template_context["dagger_logs_url"] = self.pipeline_context.dagger_logs_url
             template_context["dagger_cloud_url"] = self.pipeline_context.dagger_cloud_url
-            template_context["icon_url"] = (
-                f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
-            )
+            template_context[
+                "icon_url"
+            ] = f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
         return template.render(template_context)
 
     async def save_html_report(self) -> None:
