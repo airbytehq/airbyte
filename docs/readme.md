@@ -16,17 +16,19 @@ There are three major components to know in Airbyte: 
 
 Airbyte is suitable for a wide range of data integration use cases, including AI data infrastructure and EL(T) workloads. Airbyte is also [embeddable](https://airbyte.com/product/powered-by-airbyte) within your own application or platform to power your product.
 
-## For Airbyte Cloud users
+<Arcade id="0k75Pa9c9EvrJb8zFsuU" title="Airbyte Demo" />
 
-Browse the [connector catalog](/integrations/) to find the connector you want. In case the connector is not yet supported on Airbyte Cloud, consider using [Airbyte Open Source](#for-airbyte-open-source-users).
+## Getting Started with Airbyte
 
-Next, check out the [step-by-step tutorial](/using-airbyte/getting-started) to sign up for Airbyte Cloud, understand Airbyte [concepts](/using-airbyte/core-concepts), and run your first sync.
+There are four Airbyte products:
 
-## For Airbyte Open Source users
+1. [Airybte Open-Source](/category/deploy-airbyte): Check out the [Airbyte Open Source QuickStart](/using-airbyte/getting-started). Then learn how to [deploy](/deploying-airbyte/local-deployment) and [manage](/operator-guides/upgrading-airbyte) Airbyte Open Source in your cloud infrastructure.
 
-Browse the [connector catalog](/integrations/) to find the connector you want. If the connector is not yet supported on Airbyte Open Source, [build your own connector](/connector-development/).
+2. [Airbyte Cloud](http://cloud.airbyte.com/signup) Cloud is the fastest way to start syncing your data in minutes.
 
-Next, check out the [Airbyte Open Source QuickStart](/deploying-airbyte/local-deployment). Then learn how to [deploy](/deploying-airbyte/local-deployment) and [manage](/operator-guides/upgrading-airbyte) Airbyte Open Source in your cloud infrastructure. 
+3. [Airbyte Enterprise](/enterprise-setup): Own your data infrastructure, with advanced features and premium support.
+
+4. [Powered by Airbyte](https://reference.airbyte.com/reference/powered-by-airbyte): White-label Airbyte to offer data integration features for your end users.
 
 ## For Airbyte contributors
 
