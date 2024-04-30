@@ -71,7 +71,7 @@ def test_given_parent_cursor_is_more_recent_than_parent_record_and_record_cursor
         "states": [
             {
                 "partition": {"parent_id": "ABC"},
-                "cursor": {"updated_at": "2021-01-01T00:00:00"},
+                "cursor": {"updated_at": "2021-01-02T00:00:00"},
             }
         ],
         "parent_state": {"updated_at": "2021-01-01T00:00:00"},
@@ -84,7 +84,7 @@ def test_given_parent_cursor_is_more_recent_than_parent_record_and_record_cursor
     record = {
         "id": "123",
         "parent_id": "ABC",
-        "updated_at": "2021-01-02T00:00:00",
+        "updated_at": "2021-01-03T00:00:00",
     }
 
     record_should_be_synced = True
@@ -92,7 +92,7 @@ def test_given_parent_cursor_is_more_recent_than_parent_record_and_record_cursor
         "states": [
             {
                 "partition": {"parent_id": "ABC"},
-                "cursor": {"updated_at": "2021-01-02T00:00:00"},
+                "cursor": {"updated_at": "2021-01-03T00:00:00"},
             }
         ],
         "parent_state": {"updated_at": "2021-01-01T00:00:00"},
