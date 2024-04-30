@@ -73,5 +73,16 @@
         "updated_at": 7626086649
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "activity_logs"
+      },
+      "stream_state": {
+        "created_at": 7626086649
+      }
+    }
   }
 ]

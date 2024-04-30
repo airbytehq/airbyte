@@ -94,6 +94,33 @@
     },
     "apply_credit_to_next_recurring_charge": {
       "type": ["null", "boolean"]
+    },
+    "apply_credit_to_next_checkout_charge": {
+      "type": ["null", "boolean"]
+    },
+    "external_customer_id": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "ecommerce": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "has_payment_method_in_dunning": {
+      "type": ["null", "boolean"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    },
+    "subscriptions_active_count": {
+      "type": ["null", "integer"]
+    },
+    "subscriptions_total_count": {
+      "type": ["null", "integer"]
+    },
+    "tax_exempt": {
+      "type": ["null", "boolean"]
     }
   }
 }

@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unit_tests.sources.file_based.scenarios.scenario_builder import IncrementalScenarioConfig, TestScenarioBuilder
 from unit_tests.sources.streams.concurrent.scenarios.stream_facade_builder import StreamFacadeSourceBuilder
 from unit_tests.sources.streams.concurrent.scenarios.utils import MockStream
@@ -116,15 +117,14 @@ test_stream_facade_single_stream = (
     .set_expected_logs(
         {
             "read": [
-                {"level": "INFO", "message": "Starting syncing StreamFacadeSource"},
+                {"level": "INFO", "message": "Starting syncing"},
                 {"level": "INFO", "message": "Marking stream stream1 as STARTED"},
                 {"level": "INFO", "message": "Syncing stream: stream1"},
                 {"level": "INFO", "message": "Marking stream stream1 as RUNNING"},
                 {"level": "INFO", "message": "Read 2 records from stream1 stream"},
                 {"level": "INFO", "message": "Marking stream stream1 as STOPPED"},
                 {"level": "INFO", "message": "Finished syncing stream1"},
-                {"level": "INFO", "message": "StreamFacadeSource runtimes"},
-                {"level": "INFO", "message": "Finished syncing StreamFacadeSource"},
+                {"level": "INFO", "message": "Finished syncing"},
             ]
         }
     )
@@ -158,7 +158,7 @@ test_stream_facade_raises_exception = (
             ]
         }
     )
-    .set_expected_read_error(ValueError, "test exception")
+    .set_expected_read_error(AirbyteTracedException, "Concurrent read failure")
     .build()
 )
 
@@ -358,10 +358,11 @@ test_incremental_stream_with_slice_boundaries = (
         [
             {"data": {"id": "1", "cursor_field": 0}, "stream": "stream1"},
             {"data": {"id": "2", "cursor_field": 1}, "stream": "stream1"},
-            {"stream1": {"slices": [{"start": 0, "end": 1}], "state_type": "date-range", "legacy": {}}},
+            {"cursor_field": 1},
             {"data": {"id": "3", "cursor_field": 2}, "stream": "stream1"},
             {"data": {"id": "4", "cursor_field": 3}, "stream": "stream1"},
-            {"stream1": {"slices": [{"start": 0, "end": 2}], "state_type": "date-range", "legacy": {}}},
+            {"cursor_field": 2},
+            {"cursor_field": 2},  # see Cursor.ensure_at_least_one_state_emitted
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
@@ -403,7 +404,8 @@ test_incremental_stream_without_slice_boundaries = (
         [
             {"data": {"id": "1", "cursor_field": 0}, "stream": "stream1"},
             {"data": {"id": "2", "cursor_field": 3}, "stream": "stream1"},
-            {"stream1": {"slices": [{"start": 0, "end": 3}], "state_type": "date-range", "legacy": {}}},
+            {"cursor_field": 3},
+            {"cursor_field": 3},  # see Cursor.ensure_at_least_one_state_emitted
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
@@ -440,7 +442,7 @@ test_incremental_stream_with_many_slices_but_without_slice_boundaries = (
         )
         .set_incremental(CursorField("cursor_field"), _NO_SLICE_BOUNDARIES)
     )
-    .set_expected_read_error(ValueError, "test exception")
+    .set_expected_read_error(AirbyteTracedException, "Concurrent read failure")
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
     .set_incremental_scenario_config(
         IncrementalScenarioConfig(

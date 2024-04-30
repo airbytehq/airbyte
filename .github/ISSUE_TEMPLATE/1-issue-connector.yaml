@@ -20,12 +20,12 @@ body:
         Make sure you update this issue with a concise title and provide all information you have to help us debug the problem together.
         Some examples of good titles following the convention:
         <ul>
-          <li> Source Name: issue description </li>
-          <li> Destination Name: issue description </li>
-          <li> Source Postgres: Add `_ab_cdc_inserted_at` column for CDC syncs </li>
-          <li> Source Chargebee: cannot sync transaction objects</li>
-          <li> Source Snowflake: support for case sensitive parameters in connection string</li>
-          <li> Destination BigQuery: normalization incorrectly processes arrays</li>
+          <li> [source-name] issue description </li>
+          <li> [destination-name] issue description </li>
+          <li> [source-postgres] Add `_ab_cdc_inserted_at` column for CDC syncs </li>
+          <li> [source-chargebee] cannot sync transaction objects</li>
+          <li> [source-snowflake] support for case sensitive parameters in connection string</li>
+          <li> [destination-bigquery] typing incorrectly arrays</li>
         </ul>
         <br>
         <p><small>Issues not following the template will be closed. </small></p>

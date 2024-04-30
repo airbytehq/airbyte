@@ -40,6 +40,12 @@
           "items": {
             "type": ["null", "string"]
           }
+        },
+        "completed": {
+          "type": ["null", "integer"]
+        },
+        "succeeded": {
+          "type": ["null", "integer"]
         }
       }
     },

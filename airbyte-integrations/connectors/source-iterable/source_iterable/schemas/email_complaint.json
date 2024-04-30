@@ -29,6 +29,9 @@
     "email": {
       "type": ["null", "string"]
     },
+    "userId": {
+      "type": ["null", "string"]
+    },
     "recipientState": {
       "type": ["null", "string"]
     }

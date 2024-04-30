@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.dynamodb;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.cdk.integrations.source.relationaldb.models.DbState;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.configoss.StateWrapper;
 import io.airbyte.configoss.helpers.StateMessageHelper;
@@ -53,9 +52,9 @@ public class DynamodbUtils {
             .withData(data));
   }
 
-  public static StreamState deserializeStreamState(final JsonNode state, final boolean useStreamCapableState) {
+  public static StreamState deserializeStreamState(final JsonNode state) {
     final Optional<StateWrapper> typedState =
-        StateMessageHelper.getTypedState(state, useStreamCapableState);
+        StateMessageHelper.getTypedState(state);
     return typedState.map(stateWrapper -> switch (stateWrapper.getStateType()) {
       case STREAM:
         yield new StreamState(AirbyteStateMessage.AirbyteStateType.STREAM,
@@ -68,15 +67,10 @@ public class DynamodbUtils {
         throw new UnsupportedOperationException("Unsupported stream state");
     }).orElseGet(() -> {
       // create empty initial state
-      if (useStreamCapableState) {
-        return new StreamState(AirbyteStateMessage.AirbyteStateType.STREAM, List.of(
-            new AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                .withStream(new AirbyteStreamState())));
-      } else {
-        return new StreamState(AirbyteStateMessage.AirbyteStateType.LEGACY, List.of(
-            new AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.LEGACY)
-                .withData(Jsons.jsonNode(new DbState()))));
-      }
+      return new StreamState(AirbyteStateMessage.AirbyteStateType.STREAM, List.of(
+          new AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+              .withStream(new AirbyteStreamState())));
+
     });
   }
 

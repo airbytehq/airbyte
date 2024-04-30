@@ -71,8 +71,9 @@ class TwilioStream(HttpStream, ABC):
             for record in records:
                 for field in self.changeable_fields:
                     record.pop(field, None)
-                    yield record
-        yield from records
+                yield record
+        else:
+            yield from records
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """This method is called if we run into the rate limit.

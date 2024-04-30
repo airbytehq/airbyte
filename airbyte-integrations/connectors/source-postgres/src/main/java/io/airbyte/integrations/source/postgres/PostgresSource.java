@@ -53,7 +53,6 @@ import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
-import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresReplicationConnection;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils;
 import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils;
@@ -61,7 +60,6 @@ import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
-import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
@@ -70,6 +68,7 @@ import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils.ResultWithFailed;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils.TableBlockSize;
+import io.airbyte.integrations.source.postgres.cdc.PostgresReplicationConnection;
 import io.airbyte.integrations.source.postgres.ctid.CtidPerStreamStateManager;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations;
 import io.airbyte.integrations.source.postgres.ctid.CtidStateManager;
@@ -98,6 +97,8 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -145,7 +146,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   private Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc;
   private static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
   private int stateEmissionFrequency;
-  private XminStatus xminStatus;
 
   public static Source sshWrappedSource(PostgresSource source) {
     return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, "security");
@@ -175,7 +175,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     // https://github.com/airbytehq/airbyte/issues/24796
     additionalParameters.add("prepareThreshold=0");
 
-    final String encodedDatabaseName = HostPortResolver.encodeValue(config.get(JdbcUtils.DATABASE_KEY).asText());
+    final String encodedDatabaseName = URLEncoder.encode(config.get(JdbcUtils.DATABASE_KEY).asText(), StandardCharsets.UTF_8);
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
         config.get(JdbcUtils.HOST_KEY).asText(),
@@ -273,11 +273,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       indexInfo.close();
     }
 
-    // Log and save the xmin status
-    this.xminStatus = PostgresQueryUtils.getXminStatus(database);
-    LOGGER.info(String.format("Xmin Status : {Number of wraparounds: %s, Xmin Transaction Value: %s, Xmin Raw Value: %s",
-        xminStatus.getNumWraparound(), xminStatus.getXminXidValue(), xminStatus.getXminRawValue()));
-
   }
 
   @Override
@@ -315,13 +310,15 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   @Override
   public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
     final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
+    final Map<String, String> connectionProperties = getConnectionProperties(sourceConfig);
     // Create the data source
     final DataSource dataSource = DataSourceFactory.create(
         jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        driverClass,
+        driverClassName,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        getConnectionProperties(sourceConfig));
+        connectionProperties,
+        getConnectionTimeout(connectionProperties, driverClassName));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
 
@@ -330,7 +327,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         sourceOperations,
         streamingQueryConfigProvider);
 
-    quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
+    setQuoteString((getQuoteString() == null ? database.getMetaData().getIdentifierQuoteString() : getQuoteString()));
     database.setSourceConfig(sourceConfig);
     database.setDatabaseConfig(jdbcConfig);
 
@@ -481,6 +478,15 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
 
     if (isAnyStreamIncrementalSyncMode(catalog) && PostgresUtils.isXmin(sourceConfig)) {
+      // Log and save the xmin status
+      final XminStatus xminStatus;
+      try {
+        xminStatus = PostgresQueryUtils.getXminStatus(database);
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+      LOGGER.info(String.format("Xmin Status : {Number of wraparounds: %s, Xmin Transaction Value: %s, Xmin Raw Value: %s",
+          xminStatus.getNumWraparound(), xminStatus.getXminXidValue(), xminStatus.getXminRawValue()));
       final StreamsCategorised<XminStreams> streamsCategorised = categoriseStreams(stateManager, catalog, xminStatus);
       final ResultWithFailed<List<AirbyteStreamNameNamespacePair>> streamsUnderVacuum = streamsUnderVacuum(database,
           streamsCategorised.ctidStreams().streamsForCtidSync(),
@@ -688,9 +694,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   @Override
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
-    if (!featureFlags.useStreamCapableState()) {
-      return AirbyteStateType.LEGACY;
-    }
     return PostgresUtils.isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
   }
 
@@ -840,7 +843,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   private boolean cloudDeploymentMode() {
-    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
+    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(getFeatureFlags().deploymentMode());
   }
 
 }

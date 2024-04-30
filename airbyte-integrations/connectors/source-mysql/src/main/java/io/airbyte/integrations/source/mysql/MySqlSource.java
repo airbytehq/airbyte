@@ -6,11 +6,10 @@ package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.cdk.db.jdbc.JdbcUtils.EQUALS;
 import static io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode;
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT;
 import static io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils.DEFAULT_JDBC_PARAMETERS_DELIMITER;
 import static io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils.assertCustomParametersDontOverwriteDefaultParameters;
-import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SSL_MODE;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getCursorBasedSyncStatusForStreams;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.logStreamSyncStatus;
@@ -33,8 +32,9 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
-import io.airbyte.cdk.integrations.debezium.internals.FirstRecordWaitTimeUtil;
+import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils;
 import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils;
@@ -44,16 +44,13 @@ import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateGeneratorUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
-import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.source.mysql.cdc.CdcConfigurationHelper;
 import io.airbyte.integrations.source.mysql.cursor_based.MySqlCursorBasedStateManager;
-import io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadHandler;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStreamStateManager;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil;
@@ -62,13 +59,18 @@ import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.Ini
 import io.airbyte.integrations.source.mysql.internal.models.CursorBasedStatus;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -88,6 +90,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source {
+
+  public static final String TUNNEL_METHOD = "tunnel_method";
+  public static final String NO_TUNNEL = "NO_TUNNEL";
+  public static final String SSL_MODE = "ssl_mode";
+  private static final String MODE = "mode";
+  public static final String SSL_MODE_PREFERRED = "preferred";
+  public static final String SSL_MODE_REQUIRED = "required";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSource.class);
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
@@ -116,15 +125,52 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       "useSSL=true",
       "requireSSL=true");
 
-  private final FeatureFlags featureFlags;
+  public static Source sshWrappedSource(MySqlSource source) {
+    return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+  }
 
-  public static Source sshWrappedSource() {
-    return new SshWrappedSource(new MySqlSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+  private ConnectorSpecification getCloudDeploymentSpec(final ConnectorSpecification originalSpec) {
+    final ConnectorSpecification spec = Jsons.clone(originalSpec);
+    // Remove the SSL options
+    ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
+    // Set SSL_MODE to required by default
+    ((ObjectNode) spec.getConnectionSpecification().get("properties").get(SSL_MODE)).put("default", SSL_MODE_REQUIRED);
+    return spec;
+  }
+
+  @Override
+  public ConnectorSpecification spec() throws Exception {
+    if (cloudDeploymentMode()) {
+      return getCloudDeploymentSpec(super.spec());
+    }
+    return super.spec();
+  }
+
+  @Override
+  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
+    // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting directly
+    // and not over SSH tunnel
+    if (cloudDeploymentMode()) {
+      if (config.has(TUNNEL_METHOD)
+          && config.get(TUNNEL_METHOD).has(TUNNEL_METHOD)
+          && config.get(TUNNEL_METHOD).get(TUNNEL_METHOD).asText().equals(NO_TUNNEL)) {
+        // If no SSH tunnel
+        if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)) {
+          if (Set.of(SSL_MODE_PREFERRED).contains(config.get(SSL_MODE).get(MODE).asText())) {
+            // Fail in case SSL mode is preferred
+            return new AirbyteConnectionStatus()
+                .withStatus(Status.FAILED)
+                .withMessage(
+                    "Unsecured connection not allowed. If no SSH Tunnel set up, please use one of the following SSL modes: required, verify-ca, verify-identity");
+          }
+        }
+      }
+    }
+    return super.check(config);
   }
 
   public MySqlSource() {
     super(DRIVER_CLASS, MySqlStreamingQueryConfig::new, new MySqlSourceOperations());
-    this.featureFlags = new EnvVariableFeatureFlags();
   }
 
   private static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
@@ -182,7 +228,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       checkOperations.addAll(CdcConfigurationHelper.getCheckOperations());
 
       checkOperations.add(database -> {
-        FirstRecordWaitTimeUtil.checkFirstRecordWaitTime(config);
+        RecordWaitTimeUtil.checkFirstRecordWaitTime(config);
         CdcConfigurationHelper.checkServerTimeZoneConfig(config);
       });
     }
@@ -216,7 +262,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     final AirbyteStateType supportedStateType = getSupportedStateType(config);
     final StateManager stateManager =
         StateManagerFactory.createStateManager(supportedStateType,
-            StateGeneratorUtils.deserializeInitialState(state, featureFlags.useStreamCapableState(), supportedStateType), catalog);
+            StateGeneratorUtils.deserializeInitialState(state, supportedStateType), catalog);
     final Instant emittedAt = Instant.now();
 
     final JdbcDatabase database = createDatabase(config);
@@ -262,7 +308,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    final String encodedDatabaseName = HostPortResolver.encodeValue(config.get(JdbcUtils.DATABASE_KEY).asText());
+    final String encodedDatabaseName = URLEncoder.encode(config.get(JdbcUtils.DATABASE_KEY).asText(), StandardCharsets.UTF_8);
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
         config.get(JdbcUtils.HOST_KEY).asText(),
         config.get(JdbcUtils.PORT_KEY).asText(),
@@ -273,7 +319,9 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     // When using this approach MySql creates a temporary table which may have some effect on db
     // performance.
     jdbcUrl.append("?useCursorFetch=true");
-    jdbcUrl.append("&zeroDateTimeBehavior=convertToNull");
+    // What should happen when the driver encounters DATETIME values that are composed entirely of zeros
+    // https://dev.mysql.com/doc/connector-j/8.1/en/connector-j-connp-props-datetime-types-processing.html#cj-conn-prop_zeroDateTimeBehavior
+    jdbcUrl.append("&zeroDateTimeBehavior=CONVERT_TO_NULL");
     // ensure the return tinyint(1) is boolean
     jdbcUrl.append("&tinyInt1isBit=true");
     // ensure the return year value is a Date; see the rationale
@@ -333,10 +381,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
-    if (!featureFlags.useStreamCapableState()) {
-      return AirbyteStateType.LEGACY;
-    }
-
     return isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
   }
 
@@ -357,7 +401,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         final MySqlCursorBasedStateManager cursorBasedStateManager = new MySqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
         final InitialLoadStreams initialLoadStreams = streamsForInitialPrimaryKeyLoad(cursorBasedStateManager, catalog);
         final Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> pairToCursorBasedStatus =
-            getCursorBasedSyncStatusForStreams(database, initialLoadStreams.streamsForInitialLoad(), stateManager, quoteString);
+            getCursorBasedSyncStatusForStreams(database, initialLoadStreams.streamsForInitialLoad(), stateManager, getQuoteString());
         final CursorBasedStreams cursorBasedStreams =
             new CursorBasedStreams(MySqlInitialReadUtil.identifyStreamsForCursorBased(catalog, initialLoadStreams.streamsForInitialLoad()),
                 pairToCursorBasedStatus);
@@ -367,7 +411,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
         final MySqlInitialLoadStreamStateManager mySqlInitialLoadStreamStateManager =
             new MySqlInitialLoadStreamStateManager(catalog, initialLoadStreams,
-                initPairToPrimaryKeyInfoMap(database, initialLoadStreams, tableNameToTable, quoteString));
+                initPairToPrimaryKeyInfoMap(database, initialLoadStreams, tableNameToTable, getQuoteString()));
         final MySqlInitialLoadHandler initialLoadHandler =
             new MySqlInitialLoadHandler(sourceConfig, database, new MySqlSourceOperations(), getQuoteString(), mySqlInitialLoadStreamStateManager,
                 namespacePair -> Jsons.jsonNode(pairToCursorBasedStatus.get(convertNameNamespacePairFromV0(namespacePair))),
@@ -457,8 +501,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     return "1".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value);
   }
 
-  private String toSslJdbcParam(final SslMode sslMode) {
-    return toSslJdbcParamInternal(sslMode);
+  private boolean cloudDeploymentMode() {
+    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(getFeatureFlags().deploymentMode());
   }
 
   @Override
@@ -466,7 +510,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
-  protected static String toSslJdbcParamInternal(final SslMode sslMode) {
+  public static String toSslJdbcParam(final SslMode sslMode) {
     final var result = switch (sslMode) {
       case DISABLED, PREFERRED, REQUIRED, VERIFY_CA, VERIFY_IDENTITY -> sslMode.name();
       default -> throw new IllegalArgumentException("unexpected ssl mode");
@@ -478,13 +522,15 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
     // return super.createDatabase(sourceConfig, this::getConnectionProperties);
     final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
+    final Map<String, String> connectionProperties = this.getConnectionProperties(sourceConfig);
     // Create the data source
     final DataSource dataSource = DataSourceFactory.create(
         jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        driverClass,
+        driverClassName,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        this.getConnectionProperties(sourceConfig));
+        connectionProperties,
+        getConnectionTimeout(connectionProperties, driverClassName));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
 
@@ -493,7 +539,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         sourceOperations,
         streamingQueryConfigProvider);
 
-    quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
+    setQuoteString((getQuoteString() == null ? database.getMetaData().getIdentifierQuoteString() : getQuoteString()));
     database.setSourceConfig(sourceConfig);
     database.setDatabaseConfig(jdbcConfig);
     return database;
@@ -530,7 +576,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   public static void main(final String[] args) throws Exception {
-    final Source source = MySqlSource.sshWrappedSource();
+    final Source source = MySqlSource.sshWrappedSource(new MySqlSource());
     LOGGER.info("starting source: {}", MySqlSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MySqlSource.class);

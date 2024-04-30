@@ -12,25 +12,28 @@ logger = getLogger("airbyte")
 
 
 class MeiliWriter:
-    write_buffer = []
     flush_interval = 50000
 
-    def __init__(self, client: Client, steam_name: str, primary_key: str):
+    def __init__(self, client: Client, stream_name: str, primary_key: str):
         self.client = client
-        self.steam_name = steam_name
         self.primary_key = primary_key
+        self.stream_name: str = stream_name
+        self._write_buffer = []
+
+        logger.info(f"Creating MeiliWriter for {self.stream_name}")
 
     def queue_write_operation(self, data: Mapping):
         random_key = str(uuid4())
-        self.write_buffer.append({**data, self.primary_key: random_key})
-        if len(self.write_buffer) == self.flush_interval:
+        self._write_buffer.append({**data, self.primary_key: random_key})
+        if len(self._write_buffer) == self.flush_interval:
+            logger.debug(f"Reached limit size: flushing records for {self.stream_name}")
             self.flush()
 
     def flush(self):
-        buffer_size = len(self.write_buffer)
+        buffer_size = len(self._write_buffer)
         if buffer_size == 0:
             return
-        logger.info(f"flushing {buffer_size} records")
-        response = self.client.index(self.steam_name).add_documents(self.write_buffer)
+        logger.info(f"Flushing {buffer_size} records")
+        response = self.client.index(self.stream_name).add_documents(self._write_buffer)
         self.client.wait_for_task(response.task_uid, 1800000, 1000)
-        self.write_buffer.clear()
+        self._write_buffer.clear()

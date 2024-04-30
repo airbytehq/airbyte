@@ -3,30 +3,31 @@
   "type": "object",
   "properties": {
     "self": {
-      "type": "string",
-      "description": "The URL of the issue priority."
+      "description": "The URL of the issue priority.",
+      "type": "string"
     },
     "statusColor": {
-      "type": "string",
-      "description": "The color used to indicate the issue priority."
+      "description": "The color used to indicate the issue priority.",
+      "type": "string"
     },
     "description": {
-      "type": "string",
-      "description": "The description of the issue priority."
+      "description": "The description of the issue priority.",
+      "type": "string"
     },
     "iconUrl": {
-      "type": "string",
-      "description": "The URL of the icon for the issue priority."
+      "description": "The URL of the icon for the issue priority.",
+      "type": "string"
     },
     "name": {
-      "type": "string",
-      "description": "The name of the issue priority."
+      "description": "The name of the issue priority.",
+      "type": "string"
     },
     "id": {
-      "type": "string",
-      "description": "The ID of the issue priority."
+      "description": "The ID of the issue priority.",
+      "type": "string"
     },
     "isDefault": {
+      "description": "Indicates if this issue priority is the default.",
       "type": ["null", "boolean"]
     }
   },

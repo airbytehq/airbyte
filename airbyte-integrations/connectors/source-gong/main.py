@@ -2,12 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_gong import SourceGong
+from source_gong.run import run
 
 if __name__ == "__main__":
-    source = SourceGong()
-    launch(source, sys.argv[1:])
+    run()

@@ -28,12 +28,15 @@ from airbyte_cdk.models import (
     AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
+    AirbyteStateMessage,
     AirbyteStream,
+    AirbyteStreamState,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
     DestinationSyncMode,
     Level,
+    StreamDescriptor,
     SyncMode,
 )
 from airbyte_cdk.models import Type
@@ -49,6 +52,18 @@ _stream_primary_key = "id"
 _stream_url_base = "https://api.sendgrid.com"
 _stream_options = {"name": _stream_name, "primary_key": _stream_primary_key, "url_base": _stream_url_base}
 _page_size = 2
+
+_A_STATE = [AirbyteStateMessage(
+    type="STREAM",
+    stream=AirbyteStreamState(
+        stream_descriptor=StreamDescriptor(
+            name=_stream_name
+        ),
+        stream_state={
+            "key": "value"
+        }
+    )
+)]
 
 MANIFEST = {
     "version": "0.30.3",
@@ -266,7 +281,7 @@ def test_resolve_manifest(valid_resolve_manifest_config_file):
     config["__command"] = command
     source = ManifestDeclarativeSource(MANIFEST)
     limits = TestReadLimits()
-    resolved_manifest = handle_connector_builder_request(source, command, config, create_configured_catalog("dummy_stream"), limits)
+    resolved_manifest = handle_connector_builder_request(source, command, config, create_configured_catalog("dummy_stream"), _A_STATE, limits)
 
     expected_resolved_manifest = {
         "type": "DeclarativeSource",
@@ -455,10 +470,11 @@ def test_read():
         ),
     )
     limits = TestReadLimits()
-    with patch("airbyte_cdk.connector_builder.message_grouper.MessageGrouper.get_message_groups", return_value=stream_read):
+    with patch("airbyte_cdk.connector_builder.message_grouper.MessageGrouper.get_message_groups", return_value=stream_read) as mock:
         output_record = handle_connector_builder_request(
-            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), limits
+            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _A_STATE, limits
         )
+        mock.assert_called_with(source, config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _A_STATE, limits.max_records)
         output_record.record.emitted_at = 1
         assert output_record == expected_airbyte_message
 
@@ -492,14 +508,26 @@ def test_config_update():
         return_value=refresh_request_response,
     ):
         output = handle_connector_builder_request(
-            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), TestReadLimits()
+            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _A_STATE, TestReadLimits()
         )
         assert output.record.data["latest_config_update"]
 
 
 @patch("traceback.TracebackException.from_exception")
 def test_read_returns_error_response(mock_from_exception):
+    class MockDeclarativeStream:
+        @property
+        def primary_key(self):
+            return [[]]
+
+        @property
+        def cursor_field(self):
+            return []
+
     class MockManifestDeclarativeSource:
+        def streams(self, config):
+            return [MockDeclarativeStream()]
+
         def read(self, logger, config, catalog, state):
             raise ValueError("error_message")
 
@@ -517,7 +545,7 @@ def test_read_returns_error_response(mock_from_exception):
 
     source = MockManifestDeclarativeSource()
     limits = TestReadLimits()
-    response = read_stream(source, TEST_READ_CONFIG, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), limits)
+    response = read_stream(source, TEST_READ_CONFIG, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _A_STATE, limits)
 
     expected_stream_read = StreamRead(
         logs=[LogMessage("error_message - a stack trace", "ERROR")],
@@ -704,7 +732,7 @@ def test_read_source(mock_http_stream):
 
     source = create_source(config, limits)
 
-    output_data = read_stream(source, config, catalog, limits).record.data
+    output_data = read_stream(source, config, catalog, _A_STATE, limits).record.data
     slices = output_data["slices"]
 
     assert len(slices) == max_slices
@@ -749,7 +777,7 @@ def test_read_source_single_page_single_slice(mock_http_stream):
 
     source = create_source(config, limits)
 
-    output_data = read_stream(source, config, catalog, limits).record.data
+    output_data = read_stream(source, config, catalog, _A_STATE, limits).record.data
     slices = output_data["slices"]
 
     assert len(slices) == max_slices
@@ -769,8 +797,8 @@ def test_read_source_single_page_single_slice(mock_http_stream):
     "deployment_mode, url_base, expected_error",
     [
         pytest.param("CLOUD", "https://airbyte.com/api/v1/characters", None, id="test_cloud_read_with_public_endpoint"),
-        pytest.param("CLOUD", "https://10.0.27.27", "ValueError", id="test_cloud_read_with_private_endpoint"),
-        pytest.param("CLOUD", "https://localhost:80/api/v1/cast", "ValueError", id="test_cloud_read_with_localhost"),
+        pytest.param("CLOUD", "https://10.0.27.27", "AirbyteTracedException", id="test_cloud_read_with_private_endpoint"),
+        pytest.param("CLOUD", "https://localhost:80/api/v1/cast", "AirbyteTracedException", id="test_cloud_read_with_localhost"),
         pytest.param("CLOUD", "http://unsecured.protocol/api/v1", "InvalidSchema", id="test_cloud_read_with_unsecured_endpoint"),
         pytest.param("CLOUD", "https://domainwithoutextension", "Invalid URL", id="test_cloud_read_with_invalid_url_endpoint"),
         pytest.param("OSS", "https://airbyte.com/api/v1/", None, id="test_oss_read_with_public_endpoint"),
@@ -805,7 +833,7 @@ def test_handle_read_external_requests(deployment_mode, url_base, expected_error
     source = create_source(config, limits)
 
     with mock.patch.dict(os.environ, {"DEPLOYMENT_MODE": deployment_mode}, clear=False):
-        output_data = read_stream(source, config, catalog, limits).record.data
+        output_data = read_stream(source, config, catalog, _A_STATE, limits).record.data
         if expected_error:
             assert len(output_data["logs"]) > 0, "Expected at least one log message with the expected error"
             error_message = output_data["logs"][0]
@@ -820,7 +848,7 @@ def test_handle_read_external_requests(deployment_mode, url_base, expected_error
     "deployment_mode, token_url, expected_error",
     [
         pytest.param("CLOUD", "https://airbyte.com/tokens/bearer", None, id="test_cloud_read_with_public_endpoint"),
-        pytest.param("CLOUD", "https://10.0.27.27/tokens/bearer", "ValueError", id="test_cloud_read_with_private_endpoint"),
+        pytest.param("CLOUD", "https://10.0.27.27/tokens/bearer", "AirbyteTracedException", id="test_cloud_read_with_private_endpoint"),
         pytest.param("CLOUD", "http://unsecured.protocol/tokens/bearer", "InvalidSchema", id="test_cloud_read_with_unsecured_endpoint"),
         pytest.param("CLOUD", "https://domainwithoutextension", "Invalid URL", id="test_cloud_read_with_invalid_url_endpoint"),
         pytest.param("OSS", "https://airbyte.com/tokens/bearer", None, id="test_oss_read_with_public_endpoint"),
@@ -863,7 +891,7 @@ def test_handle_read_external_oauth_request(deployment_mode, token_url, expected
     source = create_source(config, limits)
 
     with mock.patch.dict(os.environ, {"DEPLOYMENT_MODE": deployment_mode}, clear=False):
-        output_data = read_stream(source, config, catalog, limits).record.data
+        output_data = read_stream(source, config, catalog, _A_STATE, limits).record.data
         if expected_error:
             assert len(output_data["logs"]) > 0, "Expected at least one log message with the expected error"
             error_message = output_data["logs"][0]

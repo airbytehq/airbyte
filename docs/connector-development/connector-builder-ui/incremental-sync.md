@@ -12,7 +12,7 @@ To use incremental syncs, the API endpoint needs to fullfil the following requir
   - If the record's cursor field is nested, you can use an "Add Field" transformation to copy it to the top-level, and a Remove Field to remove it from the object. This will effectively move the field to the top-level of the record
 - It's possible to filter/request records by the cursor field
 
-The knowledge of a cursor value also allows the Airbyte system to automatically keep a history of changes to records in the destination. To learn more about how different modes of incremental syncs, check out the [Incremental Sync - Append](/understanding-airbyte/connections/incremental-append/) and [Incremental Sync - Append + Deduped](/understanding-airbyte/connections/incremental-append-deduped) pages.
+The knowledge of a cursor value also allows the Airbyte system to automatically keep a history of changes to records in the destination. To learn more about how different modes of incremental syncs, check out the [Incremental Sync - Append](/using-airbyte/core-concepts/sync-modes/incremental-append/) and [Incremental Sync - Append + Deduped](/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) pages.
 
 ## Configuration
 
@@ -82,10 +82,14 @@ Then when a sync is triggered for the same connection the next day, the followin
 curl 'https://content.guardianapis.com/search?from-date=<b>2023-04-15T07:30:58Z</b>&to-date={`<now>`}'
 </pre>
 
+:::info
+If the last record read has a datetime earlier than the end time of the stream interval, the end time of the interval will be stored in the state.
+:::
+
 The `from-date` is set to the cutoff date of articles synced already and the `to-date` is set to the current date.
 
 :::info
-In some cases, it's helpful to reference the start and end date of the interval that's currently synced, for example if it needs to be injected into the URL path of the current stream. In these cases it can be referenced using the `{{ stream_interval.start_date }}` and `{{ stream_interval.end_date }}` [placeholders](/connector-development/config-based/understanding-the-yaml-file/reference#variables). Check out [the tutorial](./tutorial.mdx#adding-incremental-reads) for such a case.
+In some cases, it's helpful to reference the start and end date of the interval that's currently synced, for example if it needs to be injected into the URL path of the current stream. In these cases it can be referenced using the `{{ stream_interval.start_time }}` and `{{ stream_interval.end_time }}` [placeholders](/connector-development/config-based/understanding-the-yaml-file/reference#variables). Check out [the tutorial](./tutorial.mdx#adding-incremental-reads) for such a case.
 :::
 
 ## Incremental sync without time filtering
@@ -132,7 +136,7 @@ Some APIs update records over time but do not allow to filter or search by modif
 
 In these cases, there are two options:
 
-- **Do not use incremental sync** and always sync the full set of records to always have a consistent state, losing the advantages of reduced load and [automatic history keeping in the destination](/understanding-airbyte/connections/incremental-append-deduped)
+- **Do not use incremental sync** and always sync the full set of records to always have a consistent state, losing the advantages of reduced load and [automatic history keeping in the destination](/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)
 - **Configure the "Lookback window"** to not only sync exclusively new records, but resync some portion of records before the cutoff date to catch changes that were made to existing records, trading off data consistency and the amount of synced records. In the case of the API of The Guardian, news articles tend to only be updated for a few days after the initial release date, so this strategy should be able to catch most updates without having to resync all articles.
 
 Reiterating the example from above with a "Lookback window" of 2 days configured, let's assume the last encountered article looked like this:

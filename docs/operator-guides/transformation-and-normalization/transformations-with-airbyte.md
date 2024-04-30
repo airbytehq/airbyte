@@ -1,6 +1,14 @@
+---
+products: oss-*
+---
+
 # Transformations with Airbyte (Part 3/3)
 
-## Overview
+:::warning
+Normalization and Custom Transformation are deprecated features. 
+Destinations using Normalization will be replaced by [Typing and Deduping](/using-airbyte/core-concepts/typing-deduping.md).
+Custom Transformation will be removed on March 31. For more information, visit [here](https://github.com/airbytehq/airbyte/discussions/34860).
+:::
 
 This tutorial will describe how to push a custom dbt transformation project back to Airbyte to use during syncs.
 
@@ -18,7 +26,7 @@ After replication of data from a source connector \(Extract\) to a destination c
 
 ## Public Git repository
 
-In the connection settings page, I can add new Transformations steps to apply after [normalization](../../understanding-airbyte/basic-normalization.md). For example, I want to run my custom dbt project jaffle_shop, whenever my sync is done replicating and normalizing my data.
+In the connection settings page, I can add new Transformations steps to apply after [normalization](../../using-airbyte/core-concepts/basic-normalization.md). For example, I want to run my custom dbt project jaffle_shop, whenever my sync is done replicating and normalizing my data.
 
 You can find the jaffle shop test repository by clicking [here](https://github.com/dbt-labs/jaffle_shop).
 

@@ -4,69 +4,89 @@
   "description": "Project Roles",
   "properties": {
     "actors": {
+      "description": "A list of actors assigned to the project role",
       "type": ["null", "array"],
       "items": {
+        "description": "Details of an actor (group or user)",
         "type": ["null", "object"],
         "properties": {
           "actorGroup": {
+            "description": "Details of an actor group",
             "type": ["null", "object"],
             "properties": {
               "displayName": {
+                "description": "The display name of the actor group.",
                 "type": ["null", "string"]
               },
               "groupId": {
+                "description": "The ID of the actor group.",
                 "type": ["null", "string"]
               },
               "name": {
+                "description": "The name of the actor group.",
                 "type": ["null", "string"]
               }
             }
           },
           "actorUser": {
+            "description": "Details of an actor user",
             "type": ["null", "object"],
             "properties": {
               "accountId": {
+                "description": "The account ID of the actor user.",
                 "type": ["null", "string"]
               }
             }
           },
           "avatarUrl": {
+            "description": "The URL of the user's avatar.",
             "type": ["null", "string"]
           },
           "displayName": {
+            "description": "The display name of the actor.",
             "type": ["null", "string"]
           },
           "id": {
+            "description": "The ID of the actor.",
             "type": ["null", "integer"]
           },
           "name": {
+            "description": "The name of the actor.",
             "type": ["null", "string"]
           },
           "type": {
+            "description": "The type of the actor (e.g., user or group).",
             "type": ["null", "string"]
           }
         }
       }
     },
     "admin": {
+      "description": "Flag indicating if the user has admin role.",
       "type": ["null", "boolean"]
     },
     "currentUserRole": {
+      "description": "The role assigned to the current user.",
       "type": ["null", "boolean"]
     },
     "default": {
+      "description": "Flag indicating if it is the default role.",
       "type": ["null", "boolean"]
     },
     "description": {
+      "description": "The description of the project role.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The ID of the project role.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the project role.",
       "type": ["null", "string"]
     },
     "roleConfigurable": {
+      "description": "Flag indicating if the role is configurable.",
       "type": ["null", "boolean"]
     },
     "scope": {
@@ -75,8 +95,8 @@
       "type": "object",
       "properties": {
         "type": {
+          "description": "The type of scope (e.g., project).",
           "type": ["null", "string"],
-          "description": "The type of scope.",
           "readOnly": true
         },
         "project": {
@@ -85,32 +105,32 @@
           "type": "object",
           "properties": {
             "self": {
-              "type": ["null", "string"],
               "description": "The URL of the project details.",
+              "type": ["null", "string"],
               "readOnly": true
             },
             "id": {
-              "type": ["null", "string"],
-              "description": "The ID of the project."
+              "description": "The ID of the project.",
+              "type": ["null", "string"]
             },
             "key": {
-              "type": ["null", "string"],
               "description": "The key of the project.",
+              "type": ["null", "string"],
               "readOnly": true
             },
             "name": {
-              "type": ["null", "string"],
               "description": "The name of the project.",
+              "type": ["null", "string"],
               "readOnly": true
             },
             "projectTypeKey": {
+              "description": "The project type of the project.",
               "type": ["null", "string"],
-              "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
               "readOnly": true
             },
             "simplified": {
+              "description": "Flag indicating if the project is simplified.",
               "type": ["null", "boolean"],
-              "description": "Whether or not the project is simplified.",
               "readOnly": true
             },
             "avatarUrls": {
@@ -119,20 +139,20 @@
               "type": "object",
               "properties": {
                 "16x16": {
-                  "type": ["null", "string"],
-                  "description": "The URL of the item's 16x16 pixel avatar."
+                  "description": "The URL of the item's 16x16 pixel avatar.",
+                  "type": ["null", "string"]
                 },
                 "24x24": {
-                  "type": ["null", "string"],
-                  "description": "The URL of the item's 24x24 pixel avatar."
+                  "description": "The URL of the item's 24x24 pixel avatar.",
+                  "type": ["null", "string"]
                 },
                 "32x32": {
-                  "type": ["null", "string"],
-                  "description": "The URL of the item's 32x32 pixel avatar."
+                  "description": "The URL of the item's 32x32 pixel avatar.",
+                  "type": ["null", "string"]
                 },
                 "48x48": {
-                  "type": ["null", "string"],
-                  "description": "The URL of the item's 48x48 pixel avatar."
+                  "description": "The URL of the item's 48x48 pixel avatar.",
+                  "type": ["null", "string"]
                 }
               }
             },
@@ -142,23 +162,23 @@
               "type": "object",
               "properties": {
                 "self": {
-                  "type": ["null", "string"],
                   "description": "The URL of the project category.",
+                  "type": ["null", "string"],
                   "readOnly": true
                 },
                 "id": {
-                  "type": ["null", "string"],
                   "description": "The ID of the project category.",
+                  "type": ["null", "string"],
                   "readOnly": true
                 },
                 "description": {
-                  "type": ["null", "string"],
                   "description": "The name of the project category.",
+                  "type": ["null", "string"],
                   "readOnly": true
                 },
                 "name": {
-                  "type": ["null", "string"],
                   "description": "The description of the project category.",
+                  "type": ["null", "string"],
                   "readOnly": true
                 }
               }
@@ -168,9 +188,11 @@
       }
     },
     "self": {
+      "description": "The URL of the project role details.",
       "type": ["null", "string"]
     },
     "translatedName": {
+      "description": "The translated name of the project role.",
       "type": ["null", "string"]
     }
   }

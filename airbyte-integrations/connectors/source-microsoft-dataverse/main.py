@@ -2,12 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_microsoft_dataverse import SourceMicrosoftDataverse
+from source_microsoft_dataverse.run import run
 
 if __name__ == "__main__":
-    source = SourceMicrosoftDataverse()
-    launch(source, sys.argv[1:])
+    run()

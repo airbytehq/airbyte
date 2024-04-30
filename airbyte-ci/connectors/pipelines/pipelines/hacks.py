@@ -47,7 +47,7 @@ async def cache_latest_cdk(context: ConnectorContext) -> None:
     )
 
 
-def never_fail_exec(command: List[str]) -> Callable:
+def never_fail_exec(command: List[str]) -> Callable[[Container], Container]:
     """
     Wrap a command execution with some bash sugar to always exit with a 0 exit code but write the actual exit code to a file.
 
@@ -66,7 +66,7 @@ def never_fail_exec(command: List[str]) -> Callable:
         Callable: _description_
     """
 
-    def never_fail_exec_inner(container: Container):
+    def never_fail_exec_inner(container: Container) -> Container:
         return container.with_exec(["sh", "-c", f"{' '.join(command)}; echo $? > /exit_code"], skip_entrypoint=True)
 
     return never_fail_exec_inner

@@ -46,6 +46,31 @@
     },
     "transfer_reversal": {
       "type": ["null", "string"]
+    },
+    "destination_details": {
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "card": {
+          "type": ["null", "object"],
+          "properties": {
+            "reference": {
+              "type": ["null", "string"]
+            },
+            "reference_status": {
+              "type": ["null", "string"]
+            },
+            "reference_type": {
+              "type": ["null", "string"]
+            },
+            "type": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
     }
   }
 }

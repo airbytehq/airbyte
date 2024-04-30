@@ -10,20 +10,17 @@ import static io.airbyte.protocol.models.JsonSchemaType.STRING_TIMESTAMP_WITH_TI
 import static io.airbyte.protocol.models.JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
 import static io.airbyte.protocol.models.JsonSchemaType.STRING_TIME_WITH_TIMEZONE;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.cdk.testutils.PostgresTestDatabase;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
-import java.sql.SQLException;
 import java.util.Set;
 
 public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   protected PostgresTestDatabase testdb;
-  protected JsonNode config;
 
   protected static final String SCHEMA_NAME = "test";
 
@@ -38,12 +35,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
   }
 
   @Override
-  protected JsonNode getConfig() {
-    return config;
-  }
-
-  @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     testdb.close();
   }
 
