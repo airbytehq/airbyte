@@ -23,7 +23,7 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
 @TestInstance(Lifecycle.PER_METHOD)
-@Execution(ExecutionMode.CONCURRENT)
+@Execution(ExecutionMode.SAME_THREAD)
 public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
 
   @Override
