@@ -58,6 +58,7 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
     this.catalog = catalog;
     this.savedOffsetStillPresentOnServer = savedOffsetStillPresentOnServer;
     this.defaultCdcState = defaultCdcState;
+    this.streamStateForIncrementalRunSupplier = pair -> Jsons.emptyObject();
     initStreams(initialLoadStreams, catalog);
   }
 
