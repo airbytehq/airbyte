@@ -370,7 +370,7 @@ class RegressionTests(Step):
         wait $proxy_pid
         exit $pytest_exit
         """)
-        return [f"bash -c '{run_pytest_with_proxy}'"]
+        return [f"bash", "-c", f"'{run_pytest_with_proxy}'"]
 
     def __init__(self, context: ConnectorContext) -> None:
         """Create a step to run regression tests for a connector.
