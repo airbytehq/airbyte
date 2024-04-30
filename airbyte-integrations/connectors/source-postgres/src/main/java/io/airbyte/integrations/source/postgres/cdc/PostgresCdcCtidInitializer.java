@@ -197,7 +197,6 @@ public class PostgresCdcCtidInitializer {
                   .filter(c -> !streamsUnderVacuum.contains(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(c)))
                   .toList();
       LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
-      LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(finalListOfStreamsToBeSyncedViaCtid));
       final FileNodeHandler fileNodeHandler = PostgresQueryUtils.fileNodeForStreams(database,
           finalListOfStreamsToBeSyncedViaCtid,
           quoteString);
