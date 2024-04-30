@@ -316,6 +316,8 @@ class RegressionTests(Step):
     accept_extra_params = True
     regression_tests_artifacts_dir = Path("/tmp/regression_tests_artifacts")
     working_directory = "/app"
+    github_user = "octavia-squidington-iii"
+    platform_repo_url = "airbytehq/airbyte-platform-internal"
 
     @property
     def default_params(self) -> STEP_PARAMS:
@@ -447,24 +449,23 @@ class RegressionTests(Step):
             container = (
                 (
                     container
+                    # In CI, use https to get the connection-retriever package from airbyte-platform-internal instead of ssh
                     .with_exec(
                         [
                             "sed",
                             "-i",
                             "-E",
-                            r"s,git@github\.com:airbytehq/airbyte-platform-internal,https://github.com/airbytehq/airbyte-platform-internal.git,",
+                            fr"s,git@github\.com:{self.platform_repo_url},https://github.com/{self.platform_repo_url}.git,",
                             "pyproject.toml",
                         ]
                     )
                     .with_exec(
                         ["poetry", "source", "add", "--priority=supplemental", "airbyte-platform-internal-source",
                          "https://github.com/airbytehq/airbyte-platform-internal.git"]
-                    ).with_exec(
-                        ["poetry", "config", "http-basic.airbyte-platform-internal-source", "octavia-squidington-iii",
-                         self.context.ci_github_access_token]
-                    ).with_exec(
-                        ["pip", "install", f"git+https://octavia-squidington-iii:{self.context.ci_github_access_token}@github.com/airbytehq/airbyte-platform-internal#subdirectory=tools/connection-retriever"]
-                    )
+                    ).with_exec(["poetry", "config", "http-basic.airbyte-platform-internal-source", self.github_user,
+                        self.context.ci_github_access_token,
+                    ])
+                    # Add GCP credentials from the environment and point google to their location (also required for connection-retriever)
                 )
                 .with_new_file("/tmp/credentials.json", contents=os.getenv("GCP_INTEGRATION_TESTER_CREDENTIALS"))
                 .with_env_variable("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/credentials.json")
