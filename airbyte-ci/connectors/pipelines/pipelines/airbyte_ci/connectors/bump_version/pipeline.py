@@ -13,6 +13,7 @@ from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.airbyte_ci.metadata.pipeline import MetadataValidation
 from pipelines.helpers import git
 from pipelines.helpers.changelog import Changelog
+from pipelines.helpers.connectors.dagger_fs import dagger_export_file, dagger_file_exists, dagger_read_file, dagger_write_file
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 if TYPE_CHECKING:
@@ -168,11 +169,10 @@ class SetConnectorVersion(Step):
     async def update_metadata(self) -> StepResult:
         repo_dir = await self.get_repo_dir()
         file_path = self.context.connector.metadata_file_path
-        # TODO: This should use the repo_dir instead of the local file system. Make hlper
-        if not file_path.exists():
+        if not await dagger_file_exists(repo_dir, file_path):
             return StepResult(step=self, status=StepStatus.SKIPPED, stdout="Connector does not have a metadata file.", output=self.repo_dir)
 
-        content = await repo_dir.file(str(file_path)).contents()
+        content = await dagger_read_file(repo_dir, file_path)
         metadata = yaml.safe_load(content)
         current_version = metadata.get("data", {}).get("dockerImageTag")
 
@@ -185,7 +185,7 @@ class SetConnectorVersion(Step):
             )
 
         new_content = content.replace("dockerImageTag: " + current_version, "dockerImageTag: " + self.new_version)
-        self.repo_dir = repo_dir.with_new_file(str(file_path), contents=new_content)
+        self.repo_dir = dagger_write_file(repo_dir, file_path, new_content)
 
         metadata_validation_results = await MetadataValidation(self.context).run()
         # Exit early if the metadata file is invalid.
@@ -193,7 +193,7 @@ class SetConnectorVersion(Step):
             return metadata_validation_results
 
         if self.export:
-            await self.repo_dir.file(str(file_path)).export(str(file_path))
+            await dagger_export_file(self.repo_dir, file_path)
 
         return StepResult(
             step=self,
@@ -205,7 +205,7 @@ class SetConnectorVersion(Step):
     async def update_dockerfile(self) -> StepResult:
         repo_dir = await self.get_repo_dir()
         file_path = self.context.connector.dockerfile_file_path
-        if not file_path.exists():
+        if not await dagger_file_exists(repo_dir, file_path):
             return StepResult(
                 step=self,
                 status=StepStatus.SKIPPED,
@@ -213,12 +213,12 @@ class SetConnectorVersion(Step):
                 output=self.repo_dir,
             )
 
-        content = await repo_dir.file(str(file_path)).contents()
+        content = await dagger_read_file(repo_dir, file_path)
         new_content = re.sub(r"(?<=\bio.airbyte.version=)(.*)", self.new_version, content)
-        self.repo_dir = repo_dir.with_new_file(str(file_path), contents=new_content)
+        self.repo_dir = dagger_write_file(repo_dir, file_path, new_content)
 
         if self.export:
-            await self.repo_dir.file(str(file_path)).export(str(file_path))
+            await dagger_export_file(self.repo_dir, file_path)
 
         return StepResult(
             step=self,
@@ -230,7 +230,7 @@ class SetConnectorVersion(Step):
     async def update_package_version(self) -> StepResult:
         repo_dir = await self.get_repo_dir()
         file_path = self.context.connector.pyproject_file_path
-        if not file_path.exists():
+        if not await dagger_file_exists(repo_dir, file_path):
             return StepResult(
                 step=self,
                 status=StepStatus.SKIPPED,
@@ -238,12 +238,12 @@ class SetConnectorVersion(Step):
                 output=self.repo_dir,
             )
 
-        content = await repo_dir.file(str(file_path)).contents()
+        content = await dagger_read_file(repo_dir, file_path)
         new_content = re.sub(r"(?<=\bversion = \")(.*)(?=\")", self.new_version, content)
-        self.repo_dir = repo_dir.with_new_file(str(file_path), contents=new_content)
+        self.repo_dir = await dagger_write_file(repo_dir, file_path, new_content)
 
         if self.export:
-            await self.repo_dir.file(str(file_path)).export(str(file_path))
+            await dagger_export_file(self.repo_dir, file_path)
 
         return StepResult(
             step=self,
