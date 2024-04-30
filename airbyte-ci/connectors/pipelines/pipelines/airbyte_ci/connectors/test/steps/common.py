@@ -422,13 +422,18 @@ class RegressionTests(Step):
         """Create a container to run regression tests."""
         container = with_poetry(self.context)
         main_logger.info(">>>>>>>>>>>>>>>>>>>>> _build_regression_test_container")
+        container_requirements = ["apt-get", "install", "-y", "git", "curl", "docker.io"]
+        if not self.context.is_ci:
+            # Outside of CI we use ssh to get the connection-retriever package from airbyte-platform-internal
+            container_requirements += ["openssh-client"]
         container = (
             container.with_exec(["apt-get", "update"])
-            .with_exec(["apt-get", "install", "-y", "git", "openssh-client", "curl", "docker.io"])
+            .with_exec(container_requirements)
             .with_exec(["bash", "-c", "curl https://sdk.cloud.google.com | bash"])
             .with_env_variable("PATH", "/root/google-cloud-sdk/bin:$PATH", expand=True)
             .with_mounted_directory("/app", self.context.live_tests_dir)
             .with_workdir("/app")
+            # Enable dagger-in-dagger
             .with_unix_socket("/var/run/docker.sock", self.dagger_client.host().unix_socket("/var/run/docker.sock"))
             .with_env_variable("RUN_IN_AIRBYTE_CI", "1")
             # The connector being tested is already built and is stored in a location accessible to an inner dagger kicked off by
