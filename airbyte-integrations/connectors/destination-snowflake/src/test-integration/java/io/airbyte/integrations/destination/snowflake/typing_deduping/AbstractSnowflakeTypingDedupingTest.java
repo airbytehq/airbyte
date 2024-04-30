@@ -47,7 +47,8 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
   private JdbcDatabase database;
   private DataSource dataSource;
 
-  private static volatile boolean cleanedAirbyteInternalTable = false
+  private static volatile boolean cleanedAirbyteInternalTable = false;
+
   private static void cleanAirbyteInternalTable(JdbcDatabase database) throws SQLException {
     if (!cleanedAirbyteInternalTable) {
       synchronized (AbstractSnowflakeTypingDedupingTest.class) {
