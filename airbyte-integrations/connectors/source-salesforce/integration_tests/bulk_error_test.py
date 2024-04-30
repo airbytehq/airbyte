@@ -78,7 +78,7 @@ def test_failed_jobs_with_successful_switching(caplog, input_sandbox_config, str
     stream = get_stream(input_sandbox_config, stream_name)
     stream_slice = {"start_date": "2023-01-01T00:00:00.000+0000", "end_date": "2023-02-01T00:00:00.000+0000"}
     expected_record_ids = set(record["Id"] for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
-    pytest.fail(f"{expected_record_ids} expected_record_ids!!!!")
+    
 
     create_query_matcher = re.compile(r"jobs/query$")
     job_matcher = re.compile(r"jobs/query/fake_id$")
@@ -104,4 +104,5 @@ def test_failed_jobs_with_successful_switching(caplog, input_sandbox_config, str
                     break
             else:
                 pytest.fail(f"{log_message} is missing from captured log")
+    pytest.fail(f"expected_record_ids: {expected_record_ids} !!!! loaded_record_ids: {loaded_record_ids}!!!!")
     assert loaded_record_ids == expected_record_ids
