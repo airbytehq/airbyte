@@ -140,6 +140,9 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
 
   }
 
+  public static void dispose() {
+      initialState.remove();
+  }
   private static JsonNode serialize(final Map<String, String> offset, final SchemaHistory<String> dbHistory) {
     final Map<String, Object> state = new HashMap<>();
     state.put(MssqlCdcStateConstants.MSSQL_CDC_OFFSET, offset);
