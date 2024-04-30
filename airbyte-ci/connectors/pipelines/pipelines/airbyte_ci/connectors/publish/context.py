@@ -22,7 +22,6 @@ class PublishConnectorContext(ConnectorContext):
 
     def __init__(
         self,
-        click_context: click.Context,
         connector: ConnectorWithModifiedFiles,
         pre_release: bool,
         spec_cache_gcs_credentials: str,
@@ -38,6 +37,8 @@ class PublishConnectorContext(ConnectorContext):
         is_local: bool,
         git_branch: str,
         git_revision: str,
+        diffed_branch: str,
+        git_repo_url: str,
         python_registry_url: str,
         python_registry_check_url: str,
         gha_workflow_run_url: Optional[str] = None,
@@ -67,13 +68,14 @@ class PublishConnectorContext(ConnectorContext):
 
         super().__init__(
             pipeline_name=pipeline_name,
-            click_context=click_context,
             connector=connector,
             report_output_prefix=report_output_prefix,
             ci_report_bucket=ci_report_bucket,
             is_local=is_local,
             git_branch=git_branch,
             git_revision=git_revision,
+            diffed_branch=diffed_branch,
+            git_repo_url=git_repo_url,
             gha_workflow_run_url=gha_workflow_run_url,
             dagger_logs_url=dagger_logs_url,
             pipeline_start_timestamp=pipeline_start_timestamp,

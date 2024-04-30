@@ -34,10 +34,11 @@ class TestUnitTests:
     def context_for_certified_connector_with_setup(self, mocker, certified_connector_with_setup, dagger_client, current_platform):
         context = ConnectorContext(
             pipeline_name="test unit tests",
-            click_context=click.Context(command=click.Command(name="test")),
             connector=certified_connector_with_setup,
             git_branch="test",
             git_revision="test",
+            diffed_branch="test",
+            git_repo_url="test",
             report_output_prefix="test",
             is_local=True,
             use_remote_secrets=True,
@@ -56,10 +57,11 @@ class TestUnitTests:
     def context_for_connector_with_poetry(self, mocker, connector_with_poetry, dagger_client, current_platform):
         context = ConnectorContext(
             pipeline_name="test unit tests",
-            click_context=click.Context(command=click.Command(name="test")),
             connector=connector_with_poetry,
             git_branch="test",
             git_revision="test",
+            diffed_branch="test",
+            git_repo_url="test",
             report_output_prefix="test",
             is_local=True,
             use_remote_secrets=True,
@@ -125,10 +127,11 @@ class TestPyAirbyteValidationTests:
     def context_for_valid_connector(self, compatible_connector, dagger_client, current_platform):
         context = ConnectorContext(
             pipeline_name="test pyairbyte validation",
-            click_context=click.Context(command=click.Command(name="test")),
             connector=compatible_connector,
             git_branch="test",
             git_revision="test",
+            diffed_branch="test",
+            git_repo_url="test",
             report_output_prefix="test",
             is_local=True,
             use_remote_secrets=True,
@@ -141,10 +144,11 @@ class TestPyAirbyteValidationTests:
     def context_for_invalid_connector(self, incompatible_connector, dagger_client, current_platform):
         context = ConnectorContext(
             pipeline_name="test pyairbyte validation",
-            click_context=click.Context(command=click.Command(name="test")),
             connector=incompatible_connector,
             git_branch="test",
             git_revision="test",
+            diffed_branch="test",
+            git_repo_url="test",
             report_output_prefix="test",
             is_local=True,
             use_remote_secrets=True,

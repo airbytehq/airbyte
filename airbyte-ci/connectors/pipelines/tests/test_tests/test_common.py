@@ -44,10 +44,11 @@ class TestAcceptanceTests:
     def test_context_ci(self, current_platform, dagger_client):
         context = ConnectorContext(
             pipeline_name="test",
-            click_context=click.Context(command=click.Command(name="test")),
             connector=ConnectorWithModifiedFiles("source-faker", frozenset()),
             git_branch="test",
             git_revision="test",
+            diffed_branch="test",
+            git_repo_url="test",
             report_output_prefix="test",
             is_local=False,
             use_remote_secrets=True,

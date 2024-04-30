@@ -39,10 +39,11 @@ def python_connector_with_setup_not_latest_cdk(all_connectors):
 def context_with_setup(dagger_client, python_connector_with_setup_not_latest_cdk):
     context = ConnectorContext(
         pipeline_name="test python common",
-        click_context=click.Context(command=click.Command(name="test")),
         connector=python_connector_with_setup_not_latest_cdk,
         git_branch="test",
         git_revision="test",
+        diffed_branch="test",
+        git_repo_url="test",
         report_output_prefix="test",
         is_local=True,
         use_remote_secrets=False,

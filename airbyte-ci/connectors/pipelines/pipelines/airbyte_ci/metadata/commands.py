@@ -33,6 +33,8 @@ async def deploy_orchestrator(ctx: click.Context) -> None:
         ctx.obj["is_local"],
         ctx.obj["git_branch"],
         ctx.obj["git_revision"],
+        ctx.obj["diffed_branch"],
+        ctx.obj["git_repo_url"],
         ctx.obj["report_output_prefix"],
         ctx.obj.get("gha_workflow_run_url"),
         ctx.obj.get("dagger_logs_url"),

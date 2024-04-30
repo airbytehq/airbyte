@@ -16,10 +16,11 @@ pytestmark = [
 def connector_context(dagger_client):
     context = ConnectorContext(
         pipeline_name="test",
-        click_context=click.Context(command=click.Command(name="test")),
         connector="source-faker",
         git_branch="test",
         git_revision="test",
+        diffed_branch="test",
+        git_repo_url="test",
         report_output_prefix="test",
         is_local=True,
         use_remote_secrets=True,

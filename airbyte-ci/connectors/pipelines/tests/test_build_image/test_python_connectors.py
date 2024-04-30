@@ -56,10 +56,11 @@ class TestBuildConnectorImage:
     ):
         context = ConnectorContext(
             pipeline_name="test build",
-            click_context=click.Context(command=click.Command(name="test")),
             connector=connector_with_base_image_no_build_customization,
             git_branch="test",
             git_revision="test",
+            diffed_branch="test",
+            git_repo_url="test",
             report_output_prefix="test",
             is_local=True,
             use_remote_secrets=True,
@@ -74,10 +75,11 @@ class TestBuildConnectorImage:
     ):
         context = ConnectorContext(
             pipeline_name="test build",
-            click_context=click.Context(command=click.Command(name="test")),
             connector=connector_with_base_image_with_build_customization,
             git_branch="test",
             git_revision="test",
+            diffed_branch="test",
+            git_repo_url="test",
             report_output_prefix="test",
             is_local=True,
             use_remote_secrets=True,
@@ -97,10 +99,11 @@ class TestBuildConnectorImage:
     def test_context_with_real_connector_without_base_image(self, connector_without_base_image, dagger_client, current_platform):
         context = ConnectorContext(
             pipeline_name="test build",
-            click_context=click.Context(command=click.Command(name="test")),
             connector=connector_without_base_image,
             git_branch="test",
             git_revision="test",
+            diffed_branch="test",
+            git_repo_url="test",
             report_output_prefix="test",
             is_local=True,
             use_remote_secrets=True,

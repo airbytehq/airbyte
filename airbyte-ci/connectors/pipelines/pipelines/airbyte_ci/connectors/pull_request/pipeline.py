@@ -21,7 +21,7 @@ from pipelines.airbyte_ci.connectors.bump_version.pipeline import (
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import Report
-from pipelines.consts import LOCAL_BUILD_PLATFORM
+from pipelines.consts import LOCAL_BUILD_PLATFORM, CIContext
 from pipelines.helpers.connectors.command import run_connector_steps
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.helpers.git import get_modified_files
@@ -109,12 +109,12 @@ async def get_connector_changes(context: ConnectorContext) -> Set[Path]:
     all_modified_files = set(
         transform_strs_to_paths(
             await get_modified_files(
-                context.click_context.obj["git_branch"],
-                context.click_context.obj["git_revision"],
-                context.click_context.obj["diffed_branch"],
-                context.click_context.obj["is_local"],
-                context.click_context.obj["ci_context"],
-                context.click_context.obj["git_repo_url"],
+                context.git_branch,
+                context.git_revision,
+                context.diffed_branch,
+                context.is_local,
+                CIContext(context.ci_context),
+                context.git_repo_url,
             )
         )
     )

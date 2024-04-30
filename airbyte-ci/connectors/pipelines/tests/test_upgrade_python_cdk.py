@@ -50,10 +50,11 @@ setup(
 def connector_context(sample_connector, dagger_client, current_platform):
     context = ConnectorContext(
         pipeline_name="test",
-        click_context=click.Context(command=click.Command(name="test")),
         connector=sample_connector,
         git_branch="test",
         git_revision="test",
+        diffed_branch="test",
+        git_repo_url="test",
         report_output_prefix="test",
         is_local=True,
         use_remote_secrets=True,
