@@ -14,8 +14,9 @@
         "oneOf": [
           {
             "title": "Authenticate via Access Keys",
-            "type": "object",
+            "type": ["null", "object"],
             "required": ["access_key_id", "secret_access_key"],
+            "additionalProperties": true,
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -43,6 +44,7 @@
           {
             "type": "object",
             "title": "Role Based Authentication",
+            "additionalProperties": true,
             "properties": {
               "auth_type": {
                 "type": "string",
