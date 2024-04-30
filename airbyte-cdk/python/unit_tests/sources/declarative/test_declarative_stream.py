@@ -179,7 +179,7 @@ def test_supports_checkpointing(use_cursor, expected_supports_checkpointing):
         parameters={"cursor_field": "created_at"},
     )
 
-    assert stream.supports_checkpointing == expected_supports_checkpointing
+    assert stream.is_resumable == expected_supports_checkpointing
 
 
 def _schema_loader():

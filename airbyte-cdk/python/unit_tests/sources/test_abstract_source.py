@@ -463,6 +463,7 @@ def test_valid_full_refresh_read_no_slices(mocker):
     s2 = MockStream([({"stream_slice": {}, "stream_state": {}, "sync_mode": SyncMode.full_refresh}, stream_output)], name="s2")
 
     mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(MockStream, "cursor_field", return_value=[])
 
     src = MockSource(streams=[s1, s2])
     catalog = ConfiguredAirbyteCatalog(
