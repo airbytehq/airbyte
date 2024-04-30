@@ -5,7 +5,7 @@ import io
 from pathlib import Path
 from typing import List
 
-from ruamel.yaml import YAML # type: ignore
+from ruamel.yaml import YAML  # type: ignore
 
 
 def read_yaml(file_path: Path) -> dict:
