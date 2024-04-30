@@ -37,7 +37,7 @@ Is there a way to have a scalable and efficient data movement infrastructure tha
 
 There are 4 products to Airbyte: 
 
-1. [Airbyte Open-Source](https://docs.airbyte.com/category/deploy-airbyte): Check out the [Airbyte Open Source QuickStart](https://docs.airbyte.com/quickstart/deploy-airbyte). Then learn how to [deploy](https://docs.airbyte.com/deploying-airbyte/local-deployment) and [manage](https://docs.airbyte.com/operator-guides/upgrading-airbyte) Airbyte Open Source in your cloud infrastructure.
+1. [Airbyte Open-Source](/category/deploy-airbyte): Check out the [Airbyte Open Source QuickStart](/quickstart/deploy-airbyte). Then learn how to [deploy](/deploying-airbyte/local-deployment) and [manage](/operator-guides/upgrading-airbyte) Airbyte Open Source in your cloud infrastructure.
 2. [Airbyte Cloud](http://cloud.airbyte.com/signup): Cloud is the fastest way to start syncing your data in minutes.
 3. [Airbyte Enterprise](https://airbyte.com/product/airbyte-enterprise): Own your data infrastructure, with advanced features and premium support.
 4. [Powered by Airbyte](https://reference.airbyte.com/reference/powered-by-airbyte?_gl=1*2lrnqy*_gcl_au*MTM1OTY1NTMzNi4xNzEyNjIwMDY3): White-label Airbyte to offer data integration features for your end users.
