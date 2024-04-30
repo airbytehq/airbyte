@@ -112,7 +112,7 @@ runs:
       id: run-airbyte-ci
       shell: bash
       run: |
-        ./airbyte-ci/connectors/pipelines/.venv/bin/airbyte-ci --disable-update-check --disable-dagger-run --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
+        airbyte-ci --disable-update-check --disable-dagger-run --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
       env:
         CI_CONTEXT: "${{ inputs.context }}"
         CI_GIT_REPO_URL: ${{ inputs.git_repo_url }}
