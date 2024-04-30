@@ -31,7 +31,7 @@ class BuildConnectorImagesBase(Step, ABC):
         self.build_platforms = context.targeted_platforms
         super().__init__(context)
 
-    async def _run(self, *args: Any) -> StepResult:  # type: ignore
+    async def _run(self, *args: Any) -> StepResult:
         build_results_per_platform = {}
         for platform in self.build_platforms:
             try:
@@ -89,7 +89,7 @@ class LoadContainerToLocalDockerHost(Step):
     def image_name(self) -> str:
         return f"airbyte/{self.context.connector.technical_name}"
 
-    async def _run(self) -> StepResult:  # type: ignore
+    async def _run(self) -> StepResult:
         loaded_images = []
         image_sha = None
         multi_platforms = len(self.containers) > 1

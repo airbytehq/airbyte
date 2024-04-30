@@ -73,9 +73,9 @@ class ConnectorReport(Report):
                 "run_timestamp": self.created_at.isoformat(),
                 "run_duration": self.run_duration.total_seconds(),
                 "success": self.success,
-                "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],  # type: ignore
-                "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],  # type: ignore
-                "skipped_steps": [s.step.__class__.__name__ for s in self.skipped_steps],  # type: ignore
+                "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],
+                "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],
+                "skipped_steps": [s.step.__class__.__name__ for s in self.skipped_steps],
                 "gha_workflow_run_url": self.pipeline_context.gha_workflow_run_url,
                 "pipeline_start_timestamp": self.pipeline_context.pipeline_start_timestamp,
                 "pipeline_end_timestamp": round(self.created_at.timestamp()),
@@ -132,9 +132,9 @@ class ConnectorReport(Report):
             template_context["gha_workflow_run_url"] = self.pipeline_context.gha_workflow_run_url
             template_context["dagger_logs_url"] = self.pipeline_context.dagger_logs_url
             template_context["dagger_cloud_url"] = self.pipeline_context.dagger_cloud_url
-            template_context[
-                "icon_url"
-            ] = f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
+            template_context["icon_url"] = (
+                f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
+            )
         return template.render(template_context)
 
     async def save_html_report(self) -> None:

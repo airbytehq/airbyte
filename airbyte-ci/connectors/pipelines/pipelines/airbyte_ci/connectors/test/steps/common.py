@@ -76,7 +76,7 @@ class VersionCheck(Step, ABC):
     def validate(self) -> StepResult:
         raise NotImplementedError()
 
-    async def _run(self) -> StepResult:  # type: ignore
+    async def _run(self) -> StepResult:
         if not self.should_run:
             return StepResult(step=self, status=StepStatus.SKIPPED, stdout="No modified files required a version bump.")
         if self.context.ci_context == CIContext.MASTER:
@@ -89,7 +89,7 @@ class VersionCheck(Step, ABC):
 
 class VersionIncrementCheck(VersionCheck):
     context: ConnectorContext
-    title = "Connector version increment check"  # type: ignore
+    title = "Connector version increment check"
 
     BYPASS_CHECK_FOR = [
         METADATA_FILE_NAME,
@@ -176,7 +176,7 @@ class AcceptanceTests(Step):
     """A step to run acceptance tests for a connector if it has an acceptance test config file."""
 
     context: ConnectorContext
-    title = "Acceptance tests"  # type: ignore
+    title = "Acceptance tests"
     CONTAINER_TEST_INPUT_DIRECTORY = "/test_input"
     CONTAINER_SECRETS_DIRECTORY = "/test_input/secrets"
     skipped_exit_code = 5
@@ -233,7 +233,7 @@ class AcceptanceTests(Step):
                 cat_command += ["-p", "integration_tests.acceptance"]
         return cat_command + self.params_as_cli_options
 
-    async def _run(self, connector_under_test_container: Container) -> StepResult:  # type: ignore
+    async def _run(self, connector_under_test_container: Container) -> StepResult:
         """Run the acceptance test suite on a connector dev image. Build the connector acceptance test image if the tag is :dev.
 
         Args:
@@ -311,7 +311,7 @@ class RegressionTests(Step):
     """A step to run regression tests for a connector."""
 
     context: ConnectorContext
-    title = "Regression tests"  # type: ignore
+    title = "Regression tests"
     skipped_exit_code = 5
     accept_extra_params = True
     regression_tests_artifacts_dir = Path("/tmp/regression_tests_artifacts")
@@ -403,7 +403,7 @@ class RegressionTests(Step):
         self.should_read_with_state = self.context.run_step_options.get_item_or_default(options, "should-read-with-state", True)
         self.run_id = os.getenv("GITHUB_RUN_ID") or str(int(time.time()))
 
-    async def _run(self, connector_under_test_container: Container) -> StepResult:  # type: ignore
+    async def _run(self, connector_under_test_container: Container) -> StepResult:
         """Run the regression test suite.
 
         Args:

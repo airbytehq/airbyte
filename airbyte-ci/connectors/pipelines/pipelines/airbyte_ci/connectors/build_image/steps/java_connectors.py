@@ -15,7 +15,7 @@ class BuildConnectorDistributionTar(GradleTask):
     A step to build a Java connector image using the distTar Gradle task.
     """
 
-    title = "Build connector tar"  # type: ignore
+    title = "Build connector tar"
     gradle_task_name = "distTar"
 
 
@@ -24,7 +24,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
     A step to build Java connector images using the distTar Gradle task.
     """
 
-    async def _run(self, dist_dir: Directory) -> StepResult:  # type: ignore
+    async def _run(self, dist_dir: Directory) -> StepResult:
         dist_tar: File
         try:
             dir_files = await dist_dir.entries()
@@ -42,7 +42,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
             return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
         return await super()._run(dist_tar)
 
-    async def _build_connector(self, platform: Platform, dist_tar: File) -> Container:  # type: ignore
+    async def _build_connector(self, platform: Platform, dist_tar: File) -> Container:
         return await java.with_airbyte_java_connector(self.context, dist_tar, platform)
 
 

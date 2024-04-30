@@ -53,4 +53,4 @@ async def run_connector_build_pipeline(context: ConnectorContext, semaphore: any
                 step_results.append(load_image_result)
             report = ConnectorReport(context, step_results, name="BUILD RESULTS")
             context.report = report
-    return report  # type: ignore
+    return report

@@ -40,12 +40,12 @@ class CheckIsPythonUpdateable(Step):
 
     context: ConnectorContext
 
-    title = "Check if the connector is a candidate for updating."  # type: ignore
+    title = "Check if the connector is a candidate for updating."
 
     def __init__(self, context: PipelineContext) -> None:
         super().__init__(context)
 
-    async def _run(self) -> StepResult:  # type: ignore
+    async def _run(self) -> StepResult:
         connector_dir_entries = await (await self.context.get_connector_dir()).entries()
         if self.context.connector.language not in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
             return StepResult(
@@ -84,15 +84,15 @@ class UpdatePoetry(Step):
     dev: bool
     specified_versions: dict[str, str]
 
-    title = "Update versions of libraries in poetry."  # type: ignore
+    title = "Update versions of libraries in poetry."
 
     def __init__(self, context: PipelineContext, dev: bool, specific_dependencies: List[str]) -> None:
         super().__init__(context)
         self.dev = dev
         self.specified_versions = parse_specific_dependencies(specific_dependencies)
 
-    async def _run(self) -> StepResult:  # type: ignore
-        base_image_name = self.context.connector.metadata["connectorBuildOptions"]["baseImage"]  # type: ignore
+    async def _run(self) -> StepResult:
+        base_image_name = self.context.connector.metadata["connectorBuildOptions"]["baseImage"]
         base_container = self.dagger_client.container(platform=LOCAL_BUILD_PLATFORM).from_(base_image_name)
         connector_container = await with_python_connector_installed(
             self.context,
@@ -161,7 +161,7 @@ class MakePullRequest(Step):
     context: ConnectorContext
     pull: bool
 
-    title = "Bump version, add changelog, and make pull request"  # type: ignore
+    title = "Bump version, add changelog, and make pull request"
 
     def __init__(
         self,
@@ -173,7 +173,7 @@ class MakePullRequest(Step):
         self.pull = pull
         self.semaphore = semaphore
 
-    async def _run(self) -> StepResult:  # type: ignore
+    async def _run(self) -> StepResult:
         message = "Updating python dependencies"  # TODO: update this based on what it actually did, used for commit and changelog
         branch_id = "up_to_date"
         title = "Up to date"
@@ -207,7 +207,7 @@ class MakePullRequest(Step):
 class RestoreUpToDateState(Step):
     context: ConnectorContext
 
-    title = "Restore original state"  # type: ignore
+    title = "Restore original state"
 
     # Note: Pull request stuff resotres itself because it's run using the outer method
 
@@ -220,7 +220,7 @@ class RestoreUpToDateState(Step):
         if self.poetry_lock_path.exists():
             self.original_poetry_lock = self.poetry_lock_path.read_text()
 
-    async def _run(self) -> StepResult:  # type: ignore
+    async def _run(self) -> StepResult:
         if self.original_pyproject:
             self.pyproject_path.write_text(self.original_pyproject)
             self.logger.info(f"Restored {POETRY_TOML_FILE} for {self.context.connector.technical_name}")

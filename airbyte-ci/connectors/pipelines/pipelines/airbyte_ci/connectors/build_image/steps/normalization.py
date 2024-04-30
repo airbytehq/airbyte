@@ -31,7 +31,7 @@ class BuildOrPullNormalization(Step):
     def title(self) -> str:
         return f"Build {self.normalization_image}" if self.use_dev_normalization else f"Pull {self.normalization_image}"
 
-    async def _run(self) -> StepResult:  # type: ignore
+    async def _run(self) -> StepResult:
         if self.use_dev_normalization:
             build_normalization_container = normalization.with_normalization(self.context, self.build_platform)
         else:

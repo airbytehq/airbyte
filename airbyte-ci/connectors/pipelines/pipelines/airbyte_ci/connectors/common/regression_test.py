@@ -36,9 +36,9 @@ class RegressionTest(Step):
 
     context: ConnectorContext
 
-    title = "Run regression test"  # type: ignore
+    title = "Run regression test"
 
-    async def _run(self, new_connector_container: dagger.Container) -> StepResult:  # type: ignore
+    async def _run(self, new_connector_container: dagger.Container) -> StepResult:
         try:
             await new_connector_container.with_exec(["spec"])
             await new_connector_container.with_mounted_file(

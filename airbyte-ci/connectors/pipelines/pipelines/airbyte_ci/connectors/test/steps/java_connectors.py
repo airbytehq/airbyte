@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 class IntegrationTests(GradleTask):
     """A step to run integrations tests for Java connectors using the integrationTestJava Gradle task."""
 
-    title = "Java Connector Integration Tests"  # type: ignore
+    title = "Java Connector Integration Tests"
     gradle_task_name = "integrationTestJava"
     mount_connector_secrets = True
     bind_to_docker_host = True
@@ -62,7 +62,7 @@ class IntegrationTests(GradleTask):
         await docker.load_image_to_docker_host(self.context, connector_tar_file, connector_image_tag)
         self.context.logger.info("Successfully loaded the connector image to the docker host.")
 
-    async def _run(self, connector_tar_file: File, normalization_tar_file: Optional[File]) -> StepResult:  # type: ignore
+    async def _run(self, connector_tar_file: File, normalization_tar_file: Optional[File]) -> StepResult:
         try:
             async with anyio.create_task_group() as tg:
                 if normalization_tar_file:
@@ -77,7 +77,7 @@ class IntegrationTests(GradleTask):
 class UnitTests(GradleTask):
     """A step to run unit tests for Java connectors."""
 
-    title = "Java Connector Unit Tests"  # type: ignore
+    title = "Java Connector Unit Tests"
     gradle_task_name = "test"
     bind_to_docker_host = True
     with_test_artifacts = True

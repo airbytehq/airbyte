@@ -218,7 +218,7 @@ class GradleTask(Step, ABC):
 
         return await self.get_step_result(gradle_container, artifacts)
 
-    async def get_step_result(self, container: Container, outputs: List[Artifact]) -> StepResult:  # type: ignore
+    async def get_step_result(self, container: Container, outputs: List[Artifact]) -> StepResult:
         step_result = await super().get_step_result(container)
         # Decorate with test report, if applicable.
         return StepResult(

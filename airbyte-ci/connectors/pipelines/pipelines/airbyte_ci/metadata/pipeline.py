@@ -103,7 +103,7 @@ class MetadataUpload(SimpleDockerStep):
 
 
 class DeployOrchestrator(Step):
-    title = "Deploy Metadata Orchestrator to Dagster Cloud"  # type: ignore
+    title = "Deploy Metadata Orchestrator to Dagster Cloud"
     deploy_dagster_command = [
         "dagster-cloud",
         "serverless",
@@ -120,7 +120,7 @@ class DeployOrchestrator(Step):
         "3.9",
     ]
 
-    async def _run(self) -> StepResult:  # type: ignore
+    async def _run(self) -> StepResult:
         # mount metadata_service/lib and metadata_service/orchestrator
         parent_dir = self.context.get_repo_dir("airbyte-ci/connectors/metadata_service")
         python_base = with_python_base(self.context, "3.9")

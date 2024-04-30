@@ -38,7 +38,7 @@ def get_bumped_version(version: str | None, bump_type: str) -> str:
 class RestoreVersionState(Step):
     context: ConnectorContext
 
-    title = "Restore original version state"  # type: ignore
+    title = "Restore original version state"
 
     def __init__(self, context: ConnectorContext) -> None:
         super().__init__(context)
@@ -52,7 +52,7 @@ class RestoreVersionState(Step):
         if connector.documentation_file_path and connector.documentation_file_path.is_file():
             self.documentation_content = connector.documentation_file_path.read_text()
 
-    async def _run(self) -> StepResult:  # type: ignore
+    async def _run(self) -> StepResult:
         connector = self.context.connector
         if self.metadata_content:
             connector.metadata_file_path.write_text(self.metadata_content)
@@ -62,6 +62,7 @@ class RestoreVersionState(Step):
             connector.pyproject_file_path.write_text(self.poetry_content)
         if self.documentation_content and connector.documentation_file_path:
             connector.documentation_file_path.write_text(self.documentation_content)
+        return StepResult(step=self, status=StepStatus.SUCCESS)
 
     async def _cleanup(self) -> StepResult:
         return StepResult(step=self, status=StepStatus.SUCCESS)
@@ -69,7 +70,7 @@ class RestoreVersionState(Step):
 
 class AddChangelogEntry(Step):
     context: ConnectorContext
-    title = "Add changelog entry"  # type: ignore
+    title = "Add changelog entry"
 
     def __init__(
         self,
@@ -87,7 +88,7 @@ class AddChangelogEntry(Step):
         self.pull_request_number = int(pull_request_number)
         self.export = export
 
-    async def _run(self, pull_request_number: int | None = None) -> StepResult:  # type: ignore
+    async def _run(self, pull_request_number: int | None = None) -> StepResult:
         if self.repo_dir is None:
             self.repo_dir = await self.context.get_repo_dir(include=[str(self.context.connector.local_connector_documentation_directory)])
 
@@ -125,7 +126,7 @@ class AddChangelogEntry(Step):
 
 class SetConnectorVersion(Step):
     context: ConnectorContext
-    title = "Upgrade the version of the connector"  # type: ignore
+    title = "Upgrade the version of the connector"
 
     def __init__(
         self,
@@ -144,7 +145,7 @@ class SetConnectorVersion(Step):
             self.repo_dir = await self.context.get_connector_dir()
         return self.repo_dir
 
-    async def _run(self) -> StepResult:  # type: ignore
+    async def _run(self) -> StepResult:
         result = await self.update_metadata()
         if result.status is not StepStatus.SUCCESS:
             return result
@@ -296,4 +297,4 @@ async def run_connector_version_bump_pipeline(
 
             report = ConnectorReport(context, steps_results, name="CONNECTOR VERSION BUMP RESULTS")
             context.report = report
-    return report  # type: ignore
+    return report

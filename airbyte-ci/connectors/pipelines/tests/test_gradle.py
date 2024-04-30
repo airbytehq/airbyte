@@ -18,9 +18,9 @@ pytestmark = [
 class TestGradleTask:
     class DummyStep(gradle.GradleTask):
         gradle_task_name = "dummyTask"
-        title = "Dummy Step"  # type: ignore
+        title = "Dummy Step"
 
-        async def _run(self) -> steps.StepResult:  # type: ignore
+        async def _run(self) -> steps.StepResult:
             return steps.StepResult(step=self, status=steps.StepStatus.SUCCESS)
 
     @pytest.fixture

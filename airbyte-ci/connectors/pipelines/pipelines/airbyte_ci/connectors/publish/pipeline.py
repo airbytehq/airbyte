@@ -31,9 +31,9 @@ class InvalidSpecOutputError(Exception):
 
 class CheckConnectorImageDoesNotExist(Step):
     context: PublishConnectorContext
-    title = "Check if the connector docker image does not exist on the registry."  # type: ignore
+    title = "Check if the connector docker image does not exist on the registry."
 
-    async def _run(self) -> StepResult:  # type: ignore
+    async def _run(self) -> StepResult:
         docker_repository, docker_tag = self.context.docker_image.split(":")
         crane_ls = (
             docker.with_crane(
@@ -59,9 +59,9 @@ class CheckConnectorImageDoesNotExist(Step):
 
 class CheckPythonRegistryPackageDoesNotExist(Step):
     context: PythonRegistryPublishContext
-    title = "Check if the connector is published on python registry"  # type: ignore
+    title = "Check if the connector is published on python registry"
 
-    async def _run(self) -> StepResult:  # type: ignore
+    async def _run(self) -> StepResult:
         is_published = is_package_published(
             self.context.package_metadata.name, self.context.package_metadata.version, self.context.registry_check_url
         )
@@ -90,10 +90,10 @@ class ConnectorDependenciesMetadata(BaseModel):
 
 class UploadDependenciesToMetadataService(Step):
     context: PublishConnectorContext
-    title = "Upload connector dependencies list to GCS."  # type: ignore
+    title = "Upload connector dependencies list to GCS."
     key_prefix = "connector_dependencies"
 
-    async def _run(self, built_containers_per_platform: Dict[Platform, Container]) -> StepResult:  # type: ignore
+    async def _run(self, built_containers_per_platform: Dict[Platform, Container]) -> StepResult:
         assert self.context.connector.language in [
             ConnectorLanguage.PYTHON,
             ConnectorLanguage.LOW_CODE,
@@ -133,13 +133,13 @@ class UploadDependenciesToMetadataService(Step):
 
 class PushConnectorImageToRegistry(Step):
     context: PublishConnectorContext
-    title = "Push connector image to registry"  # type: ignore
+    title = "Push connector image to registry"
 
     @property
     def latest_docker_image_name(self) -> str:
         return f"{self.context.docker_repository}:latest"
 
-    async def _run(self, built_containers_per_platform: List[Container], attempts: int = 3) -> StepResult:  # type: ignore
+    async def _run(self, built_containers_per_platform: List[Container], attempts: int = 3) -> StepResult:
         try:
             image_ref = await built_containers_per_platform[0].publish(
                 f"docker.io/{self.context.docker_image}",
@@ -164,7 +164,7 @@ class PushConnectorImageToRegistry(Step):
 
 class PullConnectorImageFromRegistry(Step):
     context: PublishConnectorContext
-    title = "Pull connector image from registry"  # type: ignore
+    title = "Pull connector image from registry"
 
     async def check_if_image_only_has_gzip_layers(self) -> bool:
         """Check if the image only has gzip layers.
@@ -191,7 +191,7 @@ class PullConnectorImageFromRegistry(Step):
                 raise Exception(f"Failed to parse manifest for {self.context.docker_image}: {inspect_stdout}") from e
         return has_only_gzip_layers
 
-    async def _run(self, attempt: int = 3) -> StepResult:  # type: ignore
+    async def _run(self, attempt: int = 3) -> StepResult:
         try:
             try:
                 await self.context.dagger_client.container().from_(f"docker.io/{self.context.docker_image}").with_exec(["spec"])
@@ -222,7 +222,7 @@ class PullConnectorImageFromRegistry(Step):
 
 class UploadSpecToCache(Step):
     context: PublishConnectorContext
-    title = "Upload connector spec to spec cache bucket"  # type: ignore
+    title = "Upload connector spec to spec cache bucket"
     default_spec_file_name = "spec.json"
     cloud_spec_file_name = "spec.cloud.json"
 
@@ -264,7 +264,7 @@ class UploadSpecToCache(Step):
     async def _get_spec_as_file(self, spec: str, name: str = "spec_to_cache.json") -> File:
         return (await self.context.get_connector_dir()).with_new_file(name, contents=spec).file(name)
 
-    async def _run(self, built_connector: Container) -> StepResult:  # type: ignore
+    async def _run(self, built_connector: Container) -> StepResult:
         try:
             oss_spec: str = await self._get_connector_spec(built_connector, "OSS")
             cloud_spec: str = await self._get_connector_spec(built_connector, "CLOUD")
@@ -396,7 +396,7 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             metadata_upload_results = await metadata_upload_step.run()
             results.append(metadata_upload_results)
             connector_report = create_connector_report(results)
-    return connector_report  # type: ignore
+    return connector_report
 
 
 async def _run_python_registry_publish_pipeline(context: PublishConnectorContext) -> Tuple[List[StepResult], bool]:

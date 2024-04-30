@@ -22,17 +22,17 @@ class BuildConnectorImages(BuildConnectorImagesBase):
     context: ConnectorContext
     PATH_TO_INTEGRATION_CODE = "/airbyte/integration_code"
 
-    async def _build_connector(self, platform: Platform, *args: Any) -> Container:  # type: ignore
+    async def _build_connector(self, platform: Platform, *args: Any) -> Container:
         if (
-            "connectorBuildOptions" in self.context.connector.metadata  # type: ignore
-            and "baseImage" in self.context.connector.metadata["connectorBuildOptions"]  # type: ignore
+            "connectorBuildOptions" in self.context.connector.metadata
+            and "baseImage" in self.context.connector.metadata["connectorBuildOptions"]
         ):
             return await self._build_from_base_image(platform)
         else:
             return await self._build_from_dockerfile(platform)
 
     def _get_base_container(self, platform: Platform) -> Container:
-        base_image_name = self.context.connector.metadata["connectorBuildOptions"]["baseImage"]  # type: ignore
+        base_image_name = self.context.connector.metadata["connectorBuildOptions"]["baseImage"]
         self.logger.info(f"Building connector from base image {base_image_name}")
         return self.dagger_client.container(platform=platform).from_(base_image_name)
 
@@ -81,8 +81,8 @@ class BuildConnectorImages(BuildConnectorImagesBase):
             )
             .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint))
             .with_entrypoint(entrypoint)
-            .with_label("io.airbyte.version", self.context.connector.metadata["dockerImageTag"])  # type: ignore
-            .with_label("io.airbyte.name", self.context.connector.metadata["dockerRepository"])  # type: ignore
+            .with_label("io.airbyte.version", self.context.connector.metadata["dockerImageTag"])
+            .with_label("io.airbyte.name", self.context.connector.metadata["dockerRepository"])
         )
         customized_connector = await build_customization.post_install_hooks(self.context.connector, connector_container, self.logger)
         return customized_connector

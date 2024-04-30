@@ -29,25 +29,25 @@ from pipelines.helpers.utils import transform_strs_to_paths
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 if TYPE_CHECKING:
-    from anyio import Semaphore  # type: ignore
+    from anyio import Semaphore
 
 
 class RestorePullRequestState(Step):
     context: ConnectorContext
 
-    title = "Restore original state"  # type: ignore
+    title = "Restore original state"
 
     def __init__(self, context: ConnectorContext) -> None:
         super().__init__(context)
         self.bump_state = RestoreVersionState(context)
 
-    async def _run(self) -> StepResult:  # type: ignore
+    async def _run(self) -> StepResult:
         result = await self.bump_state.run()
         if result.status is not StepStatus.SUCCESS:
             return result
         return StepResult(step=self, status=StepStatus.SUCCESS)
 
-    async def _cleanup(self) -> StepResult:  # type: ignore
+    async def _cleanup(self) -> StepResult:
         result = await self.bump_state._cleanup()
         if result.status is not StepStatus.SUCCESS:
             return result
@@ -67,7 +67,7 @@ class CreatePullRequest(Step):
     changelog: bool
     bump: str | None
 
-    title = "Create a pull request of changed files."  # type: ignore
+    title = "Create a pull request of changed files."
 
     def __init__(
         self,
@@ -85,7 +85,7 @@ class CreatePullRequest(Step):
         self.input_body = input_body
         self.write = not dry_run
 
-    async def _run(self) -> StepResult:  # type: ignore
+    async def _run(self) -> StepResult:
 
         connector_files = await get_connector_changes(self.context)
         if len(connector_files) == 0:

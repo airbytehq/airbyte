@@ -24,7 +24,7 @@ from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 if TYPE_CHECKING:
-    from anyio import Semaphore  # type: ignore
+    from anyio import Semaphore
 
 SCHEMAS_DIR_NAME = "schemas"
 
@@ -40,12 +40,12 @@ class CheckIsInlineCandidate(Step):
 
     context: ConnectorContext
 
-    title = "Check if the connector is a candidate for inline schema migration."  # type: ignore
+    title = "Check if the connector is a candidate for inline schema migration."
 
     def __init__(self, context: PipelineContext) -> None:
         super().__init__(context)
 
-    async def _run(self) -> StepResult:  # type: ignore
+    async def _run(self) -> StepResult:
         connector = self.context.connector
         manifest_path = connector.manifest_path
         python_path = connector.python_source_dir_path
@@ -96,7 +96,7 @@ def copy_directory(src: Path, dest: Path) -> None:
 class RestoreInlineState(Step):
     context: ConnectorContext
 
-    title = "Restore original state"  # type: ignore
+    title = "Restore original state"
 
     def __init__(self, context: ConnectorContext) -> None:
         super().__init__(context)
@@ -111,7 +111,7 @@ class RestoreInlineState(Step):
             self.backup_schema_path = Path(tempfile.mkdtemp())
             copy_directory(self.schemas_path, self.backup_schema_path)
 
-    async def _run(self) -> StepResult:  # type: ignore
+    async def _run(self) -> StepResult:
         if self.original_manifest:
             self.manifest_path.write_text(self.original_manifest)
 
@@ -135,12 +135,12 @@ class RestoreInlineState(Step):
 class InlineSchemas(Step):
     context: ConnectorContext
 
-    title = "Migrate connector to inline schemas."  # type: ignore
+    title = "Migrate connector to inline schemas."
 
     def __init__(self, context: PipelineContext) -> None:
         super().__init__(context)
 
-    async def _run(self) -> StepResult:  # type: ignore
+    async def _run(self) -> StepResult:
         connector = self.context.connector
         connector_path = connector.code_directory
         manifest_path = connector.manifest_path

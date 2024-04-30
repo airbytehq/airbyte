@@ -73,4 +73,4 @@ async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyi
             report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
             context.report = report
 
-        return report  # type: ignore
+        return report

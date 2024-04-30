@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 class SetCDKVersion(Step):
     context: ConnectorContext
-    title = "Set CDK Version"  # type: ignore
+    title = "Set CDK Version"
 
     def __init__(
         self,
@@ -33,7 +33,7 @@ class SetCDKVersion(Step):
         super().__init__(context)
         self.new_version = new_version
 
-    async def _run(self) -> StepResult:  # type: ignore
+    async def _run(self) -> StepResult:
         context = self.context
 
         try:
@@ -144,4 +144,4 @@ async def run_connector_cdk_upgrade_pipeline(
             steps_results.append(set_cdk_version_result)
             report = ConnectorReport(context, steps_results, name="CONNECTOR VERSION CDK UPGRADE RESULTS")
             context.report = report
-    return report  # type: ignore
+    return report

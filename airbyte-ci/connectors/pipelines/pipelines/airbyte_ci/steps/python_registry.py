@@ -25,7 +25,7 @@ class PackageType(Enum):
 
 class PublishToPythonRegistry(Step):
     context: PythonRegistryPublishContext
-    title = "Publish package to python registry"  # type: ignore
+    title = "Publish package to python registry"
 
     def _get_base_container(self) -> Container:
         return with_poetry(self.context)
@@ -50,7 +50,7 @@ class PublishToPythonRegistry(Step):
         else:
             return None
 
-    async def _run(self) -> StepResult:  # type: ignore
+    async def _run(self) -> StepResult:
         package_dir_to_publish = await self.context.get_repo_dir(self.context.package_path)
         package_type = await self._get_package_type(package_dir_to_publish)
 

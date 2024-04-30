@@ -92,4 +92,4 @@ async def run_connector_steps(
 
             report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
             context.report = report
-    return report  # type: ignore
+    return report
