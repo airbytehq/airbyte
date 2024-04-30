@@ -372,3 +372,17 @@ class AdsInsights(FBMarketingIncrementalStream):
         schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
         self._fields = list(schema.get("properties", {}).keys())
         return self._fields
+
+
+class AdsInsightsOld(AdsInsights):
+    def fields(self, **kwargs) -> List[str]:
+        """List of fields that we want to query, for now just all properties from stream's schema"""
+        if self._custom_fields:
+            return self._custom_fields
+
+        if self._fields:
+            return self._fields
+
+        schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights_old")
+        self._fields = list(schema.get("properties", {}).keys())
+        return self._fields

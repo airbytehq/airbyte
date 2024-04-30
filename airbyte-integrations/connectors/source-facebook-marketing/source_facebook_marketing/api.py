@@ -41,11 +41,11 @@ class MyFacebookAdsApi(FacebookAdsApi):
     class Throttle:
         """Utilization of call rate in %, from 0 to 100"""
 
-        per_application: float
-        per_account: float
+        per_application: float = 0
+        per_account: float = 0
 
     # Insights async jobs throttle
-    _ads_insights_throttle: Throttle
+    _ads_insights_throttle: Throttle = Throttle()
 
     @property
     def ads_insights_throttle(self) -> Throttle:
@@ -175,10 +175,10 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
-    def __init__(self, access_token: str, page_size: int = 100):
+    def __init__(self, access_token: str, page_size: int = 100, api_version: str = "v19.0"):
         self._accounts = {}
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
-        self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
+        self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False, api_version=api_version)
         # adding the default page size from config to the api base class
         # reference issue: https://github.com/airbytehq/airbyte/issues/25383
         setattr(self.api, "default_page_size", page_size)
