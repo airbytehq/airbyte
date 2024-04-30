@@ -159,6 +159,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         ) from exc
 
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
+        raise Exception("!!!!!!!!!!!!!!")
         try:
             params = {"client": self.s3_client}
         except Exception as exc:
