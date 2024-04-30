@@ -465,8 +465,6 @@ class RegressionTests(Step):
                     ).with_exec(
                         ["pip", "install", f"git+https://octavia-squidington-iii:{self.context.ci_github_access_token}@github.com/airbytehq/airbyte-platform-internal#subdirectory=tools/connection-retriever"]
                     )
-                    .with_exec(["poetry", "lock", "--no-update"])
-                    .with_exec(["poetry", "install"])
                 )
                 .with_new_file("/tmp/credentials.json", contents=os.getenv("GCP_INTEGRATION_TESTER_CREDENTIALS"))
                 .with_env_variable("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/credentials.json")
