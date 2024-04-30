@@ -17,7 +17,7 @@ import requests  # type: ignore
 import semver
 import yaml  # type: ignore
 from dagger import Container, Directory
-from pipelines import hacks, main_logger
+from pipelines import hacks
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
@@ -405,9 +405,7 @@ class RegressionTests(Step):
             StepResult: Failure or success of the regression tests with stdout and stderr.
         """
         container = await self._build_regression_test_container(await connector_under_test_container.id())
-        main_logger.info(">>>>>>>>>>>>>>>>>>>>> about to never_fail_exec")
         container = container.with_(hacks.never_fail_exec(self.regression_tests_command()))
-        main_logger.info(">>>>>>>>>>>>>>>>>>>>> done never_fail_exec")
         regression_tests_artifacts_dir = str(self.regression_tests_artifacts_dir)
         path_to_report = f"{regression_tests_artifacts_dir}/session_{self.run_id}/report.html"
         await container.file(path_to_report).export(path_to_report)
@@ -429,7 +427,6 @@ class RegressionTests(Step):
     async def _build_regression_test_container(self, target_container_id: str) -> Container:
         """Create a container to run regression tests."""
         container = with_poetry(self.context)
-        main_logger.info(">>>>>>>>>>>>>>>>>>>>> _build_regression_test_container")
         container_requirements = ["apt-get", "install", "-y", "git", "curl", "docker.io"]
         if not self.context.is_ci:
             # Outside of CI we use ssh to get the connection-retriever package from airbyte-platform-internal
