@@ -25,8 +25,10 @@ public record DynamodbConfig(
 ) {
 
   public static DynamodbConfig createDynamodbConfig(JsonNode jsonNode) {
-    JsonNode accessKeyId = jsonNode.get("access_key_id");
-    JsonNode secretAccessKey = jsonNode.get("secret_access_key");
+    JsonNode credentials = jsonNode.get("credentials");
+    JsonNode accessKeyId = credentials.get("access_key_id");
+    JsonNode secretAccessKey = credentials.get("secret_access_key");
+
     JsonNode endpoint = jsonNode.get("endpoint");
     JsonNode region = jsonNode.get("region");
     JsonNode attributeNames = jsonNode.get("reserved_attribute_names");
