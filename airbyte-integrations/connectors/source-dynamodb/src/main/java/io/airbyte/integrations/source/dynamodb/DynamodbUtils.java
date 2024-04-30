@@ -15,7 +15,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -24,7 +24,6 @@ import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import org.apache.commons.lang3.StringUtils;
 
 public class DynamodbUtils {
 

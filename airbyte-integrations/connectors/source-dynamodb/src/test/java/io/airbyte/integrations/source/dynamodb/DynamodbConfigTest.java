@@ -21,8 +21,7 @@ class DynamodbConfigTest {
         "endpoint", "http://localhost:8080",
         "region", "us-east-1",
         "credentials", Map.of("auth_type", "User", "access_key_id", "A012345678910EXAMPLE",
-            "secret_access_key", "a012345678910ABCDEFGH/AbCdEfGhLEKEY")
-        ));
+            "secret_access_key", "a012345678910ABCDEFGH/AbCdEfGhLEKEY")));
 
     var dynamodbConfig = DynamodbConfig.createDynamodbConfig(jsonConfig);
 
@@ -39,8 +38,7 @@ class DynamodbConfigTest {
     var jsonConfig = Jsons.jsonNode(Map.of(
         "endpoint", "http://localhost:8080",
         "region", "us-east-1",
-        "credentials", Map.of("auth_type", "Role")
-    ));
+        "credentials", Map.of("auth_type", "Role")));
 
     var dynamodbConfig = DynamodbConfig.createDynamodbConfig(jsonConfig);
 
