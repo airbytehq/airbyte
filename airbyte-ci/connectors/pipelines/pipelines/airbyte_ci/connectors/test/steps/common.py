@@ -496,12 +496,6 @@ class RegressionTests(Step):
                     self.dagger_client.host().file(str(Path("~/.config/gcloud/application_default_credentials.json").expanduser())),
                 )
             )
-            main_logger.info(f"_built_regression_test_container()")
 
-        container = (
-            container
-            .with_exec(["poetry", "lock", "--no-update"])
-            .with_exec(["poetry", "install"])
-        )
-
+        container = container.with_exec(["poetry", "lock", "--no-update"]).with_exec(["poetry", "install"])
         return container
