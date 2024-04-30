@@ -11,6 +11,7 @@ import yaml
 from connector_ops import required_reviewer_checks
 
 
+# This fixture ensure that the remote CI works the same way local CI does
 @pytest.fixture(autouse=True)
 def mock_diffed_branched(mocker):
     airbyte_repo = git.Repo(search_parent_directories=True)
