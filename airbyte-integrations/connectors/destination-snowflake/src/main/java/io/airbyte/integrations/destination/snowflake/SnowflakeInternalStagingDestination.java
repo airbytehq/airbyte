@@ -25,7 +25,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandl
 import io.airbyte.integrations.base.destination.typing_deduping.NoOpTyperDeduperWithV1V2Migrations;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDestinationHandler;
@@ -206,11 +205,10 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         config,
         catalog,
         true,
-        new TypeAndDedupeOperationValve(),
         typerDeduper,
         parsedCatalog,
         defaultNamespace,
-        DestinationColumns.V2_WITHOUT_META)
+            JavaBaseConstants.DestinationColumns.V2_WITHOUT_META)
         .setBufferMemoryLimit(Optional.of(getSnowflakeBufferMemoryLimit()))
         .setOptimalBatchSizeBytes(
             // The per stream size limit is following recommendations from:
