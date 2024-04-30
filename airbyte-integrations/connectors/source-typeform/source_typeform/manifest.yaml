@@ -1,4 +1,4 @@
-version: 0.50.0
+version: 0.85.0
 type: DeclarativeSource
 check:
   type: CheckStream
@@ -125,7 +125,7 @@ definitions:
         pagination_strategy:
           type: CursorPagination
           cursor_value: "{{ last_record['token'] }}"
-          stop_condition: "{{ not last_records }}"
+          stop_condition: "{{ not last_record }}"
           page_size: 1000
       partition_router:
         $ref: "#/definitions/form_id_partition_router"
