@@ -148,7 +148,7 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
       throws Exception {
     final StreamId streamId =
         new BigQuerySqlGenerator(null, null).buildStreamId(namespace, streamName, JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE);
-    return retrieveRecordsFromTable(streamId.rawName(), streamId.rawNamespace())
+    return retrieveRecordsFromTable(streamId.getRawName(), streamId.getRawNamespace())
         .stream()
         .map(node -> node.get(JavaBaseConstants.COLUMN_NAME_DATA).asText())
         .map(Jsons::deserialize)

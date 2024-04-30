@@ -16,6 +16,7 @@ data:
   githubIssueLabel: source-google-search-console
   icon: googlesearchconsole.svg
   license: Elv2
+  maxSecondsBetweenMessages: 86400
   name: Google Search Console
   remoteRegistries:
     pypi:

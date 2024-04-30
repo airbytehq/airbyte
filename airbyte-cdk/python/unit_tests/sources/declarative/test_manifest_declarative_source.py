@@ -1123,7 +1123,7 @@ def test_read_manifest_declarative_source(test_name, manifest, pages, expected_r
     _stream_name = "Rates"
     with patch.object(SimpleRetriever, "_fetch_next_page", side_effect=pages) as mock_retriever:
         output_data = [message.record.data for message in _run_read(manifest, _stream_name) if message.record]
-        assert expected_records == output_data
+        assert output_data == expected_records
         mock_retriever.assert_has_calls(expected_calls)
 
 

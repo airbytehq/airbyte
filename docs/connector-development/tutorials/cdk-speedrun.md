@@ -3,7 +3,7 @@
 ## CDK Speedrun \(HTTP API Source Creation Any Route\)
 
 This is a blazing fast guide to building an HTTP source connector. Think of it as the TL;DR version
-of [this tutorial.](cdk-tutorial-python-http/getting-started.md)
+of [this tutorial.](custom-python-connector/0-getting-started.md)
 
 If you are a visual learner and want to see a video version of this guide going over each part in
 detail, check it out below.
@@ -14,8 +14,7 @@ detail, check it out below.
 
 1. Python &gt;= 3.9
 2. [Poetry](https://python-poetry.org/)
-2. Docker
-3. NodeJS
+3. Docker
 
 #### Generate the Template
 
@@ -27,7 +26,7 @@ cd airbyte-integrations/connector-templates/generator
 ./generate.sh
 ```
 
-Select the `Python HTTP API Source` and name it `python-http-example`.
+Select the `Python CDK Source` and name it `python-http-example`.
 
 #### Create Dev Environment
 

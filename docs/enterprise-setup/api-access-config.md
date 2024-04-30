@@ -6,13 +6,7 @@ products: oss-enterprise
 
 The Airbyte API enables you to programmatically interact with Airbyte: create sources, destinations, run syncs, list workspaces, and much more.
 
-Access to the API in Self-Managed Enterprise deployments is controlled via application keys. Applications keys are tied to individual users and their respective permissions. Prior to configuring API access, ensure you have an up and running deployment of Airbyte Self-Managed Enterprise that exposes the `airbyte-api-server` service. To do this, follow the steps in the [implementation guide](./implementation-guide.md). 
-
-:::warning
-
-The Airbyte API is actively being migrated into the `airbyte-server` service. The `airbyte-api-server` service and pod will be deleted in an upcoming release. For example, the existing `/v1/workspaces` endpoint will soon only be available from `/api/public/v1/workspaces` under the `airbyte-server` service.
-
-:::
+Access to the API in Self-Managed Enterprise deployments is controlled via application keys. Applications keys are tied to individual users and their respective permissions. Prior to configuring API access, ensure you have an up and running deployment of Airbyte Self-Managed Enterprise that exposes the `airbyte-server` service. To do this, follow the steps in the [implementation guide](./implementation-guide.md).
 
 ## Step 1: Create an Application
 
@@ -44,7 +38,7 @@ The API response should provide an `access_token` which is a Bearer Token valid 
 You may now make requests to any endpoint documented in our [Airbyte API Reference](https://reference.airbyte.com). For example, you may use the [List workspaces endpoint](https://reference.airbyte.com/reference/listworkspaces) to verify the list of workspaces in your organization. Ensure to include your `access_token` as a `Bearer Token` in your request.:
 
 ```yaml
-GET <YOUR_WEBAPP_URL>/v1/workspaces
+GET <YOUR_WEBAPP_URL>/api/public/v1/workspaces
 ```
 
 Expect a response like the following:
