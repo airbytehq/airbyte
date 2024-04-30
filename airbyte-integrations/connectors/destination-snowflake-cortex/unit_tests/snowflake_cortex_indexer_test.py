@@ -4,7 +4,7 @@
 
 from unittest.mock import ANY, MagicMock, Mock, call, patch
 
-import pytest
+from typing import cast
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from destination_snowflake_cortex.config import SnowflakeCortexIndexingModel
 from destination_snowflake_cortex.indexer import (
@@ -19,25 +19,21 @@ from airbyte_cdk.models import (
     AirbyteRecordMessage,
     ConfiguredAirbyteCatalog,
     AirbyteMessage,
+    AirbyteStreamState,
+    AirbyteStateMessage,
     Type,
 )
 
-@pytest.fixture(scope="module", autouse=True)
-def mock_processor():
-    with patch("airbyte._processors.sql.snowflake.SnowflakeSqlProcessor") as mock:
-        mock.return_value = None
-        yield mock
 
-def _create_snowflake_cortex_indexer(mock_processor, catalog:ConfiguredAirbyteCatalog | None = None ):
+def _create_snowflake_cortex_indexer(catalog:ConfiguredAirbyteCatalog | None = None ):
     config = SnowflakeCortexIndexingModel(account="account", username="username", password="password", database="database", warehouse="warehouse", role="role")
-    indexer = SnowflakeCortexIndexer(config, 3, Mock(ConfiguredAirbyteCatalog) if catalog is None else catalog)
-    # TODO: figure how to mock SnowflakeSqlProcessor
-    # assert mock_processor.called
+    with patch.object(SnowflakeCortexIndexer, '_init_db_connection', side_effect=None):
+        indexer = SnowflakeCortexIndexer(config, 3, Mock(ConfiguredAirbyteCatalog) if catalog is None else catalog)
     return indexer 
     
 
-def test_get_airbyte_messsages_from_chunks(mock_processor):
-    indexer = _create_snowflake_cortex_indexer(mock_processor, generate_catalog())
+def test_get_airbyte_messsages_from_chunks():
+    indexer = _create_snowflake_cortex_indexer(generate_catalog())
     messages = indexer._get_airbyte_messsages_from_chunks(
         [
             Mock(page_content="test1", 
@@ -62,22 +58,8 @@ def test_get_airbyte_messsages_from_chunks(mock_processor):
         i += 1
 
 
-def test_add_columns_to_catalog(mock_processor):
-    indexer = _create_snowflake_cortex_indexer(mock_processor, generate_catalog())
-    message = AirbyteMessage(
-        type=Type.RECORD,
-        record=AirbyteRecordMessage(
-            stream="example_stream",
-            data={
-                'str_col': "Dogs are number 1",
-                'int_col': 5,
-                'page_content': "str_col: Dogs are number 1",
-                'metadata': {"int_col": 5, "_ab_stream": "myteststream"},
-                'embedding': [1, 2, 3, 4]
-            },
-            emitted_at=0,
-        )
-    )
+def test_add_columns_to_catalog():
+    indexer = _create_snowflake_cortex_indexer(generate_catalog())
     updated_catalog = indexer._get_updated_catalog()
     # test all streams in catalog have the new columns
     for stream in updated_catalog.streams:
@@ -87,27 +69,26 @@ def test_add_columns_to_catalog(mock_processor):
 
   
 
-def test_get_primary_keys(mock_processor):
+def test_get_primary_keys():
     # case: stream has one primary key 
-    indexer = _create_snowflake_cortex_indexer(mock_processor, generate_catalog())
+    indexer = _create_snowflake_cortex_indexer(generate_catalog())
     assert(indexer._get_primary_keys('example_stream') == [['int_col']])
     
     # case: stream has no primary key
     catalog = generate_catalog()    
     catalog.streams[0].primary_key = None
-    indexer = _create_snowflake_cortex_indexer(mock_processor, catalog)
+    indexer = _create_snowflake_cortex_indexer(catalog)
     assert(indexer._get_primary_keys('example_stream') == None)
 
     # case: multiple primary keys
     catalog.streams[0].primary_key = [["int_col"], ["str_col"]]
-    indexer = _create_snowflake_cortex_indexer(mock_processor, catalog)
-    print(indexer._get_primary_keys('example_stream') )
+    indexer = _create_snowflake_cortex_indexer(catalog)
     assert(indexer._get_primary_keys('example_stream') == [["int_col"], ["str_col"]])
 
 
-def test_get_record_primary_key(mock_processor):
+def test_get_record_primary_key():
     # case: stream has one primary key = int_col
-    indexer = _create_snowflake_cortex_indexer(mock_processor, generate_catalog())
+    indexer = _create_snowflake_cortex_indexer(generate_catalog())
     message = AirbyteMessage(
         type=Type.RECORD,
         record=AirbyteRecordMessage(
@@ -127,13 +108,25 @@ def test_get_record_primary_key(mock_processor):
     # case: stream has no primary key
     catalog = generate_catalog()    
     catalog.streams[0].primary_key = None
-    indexer = _create_snowflake_cortex_indexer(mock_processor, catalog)
+    indexer = _create_snowflake_cortex_indexer(catalog)
     assert(indexer._get_record_primary_key(message) == None)
 
     # case: multiple primary keys = [int_col, str_col]
     catalog.streams[0].primary_key = [["int_col"], ["str_col"]]
-    indexer = _create_snowflake_cortex_indexer(mock_processor, catalog)
+    indexer = _create_snowflake_cortex_indexer(catalog)
     assert(indexer._get_record_primary_key(message) == "5_Dogs are number 1")
+
+
+def test_create_state_message():
+    indexer = _create_snowflake_cortex_indexer(generate_catalog())
+    airbyte_message = indexer._create_state_message("example_stream", "ns1", {"state": "1"} )
+    assert airbyte_message.type == Type.STATE
+    assert airbyte_message.state.data == {"state": "1"}
+    state_msg = cast(AirbyteStateMessage, airbyte_message.state)
+    stream_state = cast(AirbyteStreamState, state_msg.stream)
+    assert stream_state.stream_descriptor.name == "example_stream"
+    assert stream_state.stream_descriptor.namespace == "ns1"
+    
 
 def generate_catalog():
     return ConfiguredAirbyteCatalog.parse_obj(

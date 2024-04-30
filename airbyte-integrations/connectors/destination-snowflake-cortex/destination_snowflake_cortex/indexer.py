@@ -11,12 +11,18 @@ from destination_snowflake_cortex.config import SnowflakeCortexIndexingModel
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 
 from airbyte.caches import SnowflakeCache
-from typing import Iterable
+from airbyte._processors.sql.snowflake import SnowflakeSqlProcessor
+
+from typing import Iterable, Any
 import dpath.util
 
 from airbyte_cdk.models import (
     AirbyteMessage,
     ConfiguredAirbyteCatalog,
+    AirbyteStateMessage,
+    AirbyteStateType,
+    AirbyteStreamState,
+    StreamDescriptor,
     Type,
 )
 
@@ -32,16 +38,19 @@ class SnowflakeCortexIndexer(Indexer):
 
     def __init__(self, config: SnowflakeCortexIndexingModel, embedding_dimensions: int, configured_catalog: ConfiguredAirbyteCatalog):
         super().__init__(config)
-        self.account = config.account
-        self.username = config.username
-        self.password = config.password
-        self.database = config.database
-        self.warehouse = config.warehouse
-        self.role = config.role
-        cache = SnowflakeCache(account=self.account, username=self.username, password=self.password, database=self.database, warehouse=self.warehouse, role=self.role)
-        # self.processor = SnowflakeSqlProcessor(cache=cache)
         self.embedding_dimensions = embedding_dimensions
         self.catalog = configured_catalog
+        self._init_db_connection(config)
+
+    def _init_db_connection(self, config: SnowflakeCortexIndexingModel):
+        account = config.account
+        username = config.username
+        password = config.password
+        database = config.database
+        warehouse = config.warehouse
+        role = config.role
+        cache = SnowflakeCache(account=account, username=username, password=password, database=database, warehouse=warehouse, role=role)
+        self.processor = SnowflakeSqlProcessor(cache=cache)
 
 
     def _get_airbyte_messsages_from_chunks(
@@ -82,7 +91,7 @@ class SnowflakeCortexIndexer(Indexer):
             stream.stream.json_schema["properties"][EMBEDDING_COLUMN] = {"type": "vector_array"}
             # set primary key, okay to override if already set
             stream.primary_key = [[DOCUMENT_ID_COLUMN]]
-            # TODO: how to set chunk_id as a constraint in the catalog
+            # TODO: do we want to set chunk_id as a constraint in the catalog
         return updated_catalog
     
 
@@ -111,6 +120,7 @@ class SnowflakeCortexIndexer(Indexer):
         stringified_primary_key = "_".join(primary_key)
         return stringified_primary_key
     
+
     def _create_document_id(self, record: AirbyteMessage) -> str:
         """Create document id based on the primary key values. Returns a random uuid if no primary key is found"""
         stream_name = record.record.stream
@@ -118,24 +128,35 @@ class SnowflakeCortexIndexer(Indexer):
         if primary_key is not None:
             return f"Stream_{stream_name}_Key_{primary_key}"
         return str(uuid.uuid4().int)
+    
 
+    def _create_state_message(self, stream, namespace, data: dict[str, Any]) -> AirbyteMessage:
+        """Create a state message for the stream"""
+        stream = AirbyteStreamState(
+            stream_descriptor=StreamDescriptor(name=stream, namespace=namespace)
+        )
+        return AirbyteMessage(
+            type=Type.STATE,
+            state=AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=stream, data=data),
+        )
+    
 
     def index(self, document_chunks, namespace, stream):
         # get list of airbyte messages from the document chunks
         airbyte_messages = self._get_airbyte_messsages_from_chunks(document_chunks)
+        # assuming it's per stream, let's add a stream specific state message to the list
+        airbyte_messages.append(self._create_state_message(namespace, stream, namespace, {}))
 
         # update catalog to match all columns in the airbyte messages
         if airbyte_messages is not None and len(airbyte_messages) > 0:
-            self._add_columns_to_catalog(airbyte_messages[0])
+            self.catalog = self._get_updated_catalog()
 
-        # TODO: call PyAirbyte SQL processor to process the airbyte messages
+            # TODO: call PyAirbyte SQL processor to process the airbyte messages
 
-        pass
 
     def delete(self, delete_ids, namespace, stream):
         # TODO: Confirm PyAirbyte SQL processor will handle deletes when needed. 
         pass 
 
     def check(self) -> Optional[str]:
-        # check database connection by getting the list of tables in the schema 
         self.processor._get_tables_list()
