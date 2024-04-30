@@ -262,6 +262,9 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
+### 0.17.0
+Enable running in GitHub actions.
+
 ### 0.16.0
 Enable running with airbyte-ci.
 
