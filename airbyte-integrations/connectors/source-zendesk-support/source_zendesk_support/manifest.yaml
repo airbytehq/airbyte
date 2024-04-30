@@ -85,6 +85,7 @@ definitions:
       type: DatetimeBasedCursor
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S%z"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_field: "{{ parameters.get('cursor_field',  'updated_at') }}"
       start_datetime:
