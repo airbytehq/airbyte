@@ -496,6 +496,69 @@ class PostgresSourceTest {
     assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "5.0", "name", "piccolo", "power", 100.0))));
   }
 
+  @Test
+  void testReadIncrementalSuccessWithFullRefresh() throws Exception {
+    // We want to test ordering, so we can delete the NaN entry and add a 3.
+    testdb.query(ctx -> {
+      ctx.fetch("DELETE FROM id_and_name WHERE id = 'NaN';");
+      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (3, 'gohan', 222.1);");
+      return null;
+    });
+
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CONFIGURED_INCR_CATALOG
+            .withStreams(List.of(CONFIGURED_INCR_CATALOG.getStreams().get(0), CONFIGURED_CATALOG.getStreams().get(1)));
+    final PostgresSource source = source();
+    source.setStateEmissionFrequencyForDebug(1);
+    final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(getConfig(), configuredCatalog, null));
+    setEmittedAtToNull(actualMessages);
+
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessage(actualMessages);
+
+    setEmittedAtToNull(actualMessages);
+
+    final Set<AirbyteMessage> expectedOutput = Sets.newHashSet(
+        createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
+        createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
+        createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1)));
+
+    // Assert that the correct number of messages are emitted. 4 for incremental streams, 4 for full
+    // refresh streams.
+    assertEquals(actualMessages.size(), 8);
+    assertThat(actualMessages.contains(expectedOutput));
+
+    // For per stream, platform will collect states for all streams and compose a new state. Thus, in
+    // the test since we want to reset full refresh,
+    // we need to get the last state for the "incremental stream", which is not necessarily the last
+    // state message of the batch.
+    final AirbyteStateMessage lastEmittedState = getLastStateMessageOfStream(stateAfterFirstBatch, STREAM_NAME);
+    final JsonNode state = Jsons.jsonNode(List.of(lastEmittedState));
+
+    testdb.query(ctx -> {
+      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (5, 'piccolo', 100.0);");
+      return null;
+    });
+    // Incremental sync should only read one new message (where id = '5.0')
+    final Set<AirbyteMessage> nextSyncMessages =
+        MoreIterators.toSet(source.read(getConfig(), configuredCatalog, state));
+    setEmittedAtToNull(nextSyncMessages);
+
+    // Incremental stream: An extra state message is emitted, in addition to the record messages.
+    // Full refresh stream: expect 4 messages (3 records and 1 state)
+    // Thus, we expect 6 messages.
+    assertEquals(6, nextSyncMessages.size());
+    assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "5.0", "name", "piccolo", "power", 100.0))));
+  }
+
+  private AirbyteStateMessage getLastStateMessageOfStream(List<AirbyteStateMessage> stateMessages, final String streamName) {
+    for (int i = stateMessages.size() - 1; i >= 0; i--) {
+      if (stateMessages.get(i).getStream().getStreamDescriptor().getName().equals(streamName)) {
+        return stateMessages.get(i);
+      }
+    }
+    throw new RuntimeException("stream not found in state message. stream name: " + streamName);
+  }
+
   /*
    * The messages that are emitted from an incremental sync should follow certain invariants. They
    * should : (i) Be emitted in increasing order of the defined cursor. (ii) A record that is emitted

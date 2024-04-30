@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.postgres.ctid;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageProducer;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
@@ -34,6 +35,7 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
 
   protected CtidStateManager(final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus) {
     this.pairToCtidStatus = pairToCtidStatus;
+    this.streamStateForIncrementalRunSupplier = namespacePair -> Jsons.emptyObject();
   }
 
   public CtidStatus getCtidStatus(final AirbyteStreamNameNamespacePair pair) {
@@ -55,9 +57,11 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
 
   public abstract AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun);
 
-  public void setStreamStateIteratorFields(Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
-                                           FileNodeHandler fileNodeHandler) {
+  public void setStreamStateIteratorFields(Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
+  }
+
+  public void setFileNodeHandler(final FileNodeHandler fileNodeHandler) {
     this.fileNodeHandler = fileNodeHandler;
   }
 
@@ -116,6 +120,9 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
 
   private JsonNode getStreamState(final AirbyteStreamNameNamespacePair pair) {
     final CtidStatus currentCtidStatus = getCtidStatus(pair);
+    System.out.println("stream state fetch: " + currentCtidStatus + " pair: " + pair);
+    System.out.println("if null, return this: " + streamStateForIncrementalRunSupplier.apply(pair));
+
     return (currentCtidStatus == null || currentCtidStatus.getIncrementalState() == null) ? streamStateForIncrementalRunSupplier.apply(pair)
         : currentCtidStatus.getIncrementalState();
   }

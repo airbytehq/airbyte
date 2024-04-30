@@ -112,7 +112,6 @@ public class PostgresCdcCtidInitializer {
 
     final CtidGlobalStateManager ctidStateManager =
         new CtidGlobalStateManager(ctidStreams, fileNodeHandler, stateManager, catalog, savedOffsetAfterReplicationSlotLSN, defaultCdcState);
-    ctidStateManager.setStreamStateIteratorFields(namespacePair -> Jsons.emptyObject(), fileNodeHandler);
     return ctidStateManager;
 
   }
