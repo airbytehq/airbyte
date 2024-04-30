@@ -288,7 +288,7 @@ internal constructor(
                  * hasFailed=false, then it could be full success. if hasFailed=true, then going for partial
                  * success.
                  */
-                onClose.accept(false, null)
+                onClose.accept(false, HashMap())
             }
 
             stateManager.listCommitted()!!.forEach(outputRecordCollector)

@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
 import java.util.stream.Collectors
 import kotlin.jvm.optionals.getOrNull
+import org.apache.mina.util.ConcurrentHashSet
 import org.jetbrains.annotations.VisibleForTesting
 
 private val logger = KotlinLogging.logger {}
@@ -75,6 +76,7 @@ constructor(
 
     // Note that this map will only be populated for streams with nonzero records.
     private val recordCounts: ConcurrentMap<StreamDescriptor, AtomicLong> = ConcurrentHashMap()
+    private val streamsWithSuccessStatus: ConcurrentHashSet<StreamDescriptor> = ConcurrentHashSet()
 
     private var hasStarted = false
     private var hasClosed = false

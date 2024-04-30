@@ -8,9 +8,11 @@ import io.airbyte.cdk.integrations.destination.async.GlobalMemoryManager
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.async.state.GlobalAsyncStateManager
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.util.Optional
 import java.util.concurrent.ConcurrentMap
+import org.apache.mina.util.ConcurrentHashSet
 
 /**
  * Represents the minimal interface over the underlying buffer queues required for enqueue
@@ -20,6 +22,7 @@ class BufferEnqueue(
     private val memoryManager: GlobalMemoryManager,
     private val buffers: ConcurrentMap<StreamDescriptor, StreamAwareQueue>,
     private val stateManager: GlobalAsyncStateManager,
+    private val streamsWithSuccessStatus: ConcurrentHashSet<StreamDescriptor>,
 ) {
     /**
      * Buffer a record. Contains memory management logic to dynamically adjust queue size based via
@@ -33,10 +36,23 @@ class BufferEnqueue(
         sizeInBytes: Int,
         defaultNamespace: Optional<String>,
     ) {
-        if (message.type == AirbyteMessage.Type.RECORD) {
-            handleRecord(message, sizeInBytes)
-        } else if (message.type == AirbyteMessage.Type.STATE) {
-            stateManager.trackState(message, sizeInBytes.toLong(), defaultNamespace.orElse(""))
+        when (message.type) {
+            AirbyteMessage.Type.RECORD -> {
+                handleRecord(message, sizeInBytes)
+            }
+            AirbyteMessage.Type.STATE -> {
+                stateManager.trackState(message, sizeInBytes.toLong(), defaultNamespace.orElse(""))
+            }
+            AirbyteMessage.Type.TRACE -> {
+                // There are many types of trace messages, but we only care about stream status messages
+                // with status=COMPLETE.
+                message.trace?.streamStatus?.let {
+                    if (it.status == AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE) {
+                        streamsWithSuccessStatus.add(it.streamDescriptor)
+                    }
+                }
+            }
+            else -> {}
         }
     }
 
