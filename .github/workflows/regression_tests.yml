@@ -15,14 +15,16 @@ on:
   workflow_dispatch:
     inputs:
       connector_name:
-        description: "Connector name (e.g. source-faker)"
+        description: Connector name (e.g. source-faker)
         required: true
       connection_id:
-        description: "ID of the connection to test"
+        description: ID of the connection to test; use "auto" to let the connection retriever choose a connection
         required: true
       pr_url:
-        description: "URL of the PR containing the code change"
+        description: URL of the PR containing the code change
         required: true
+      streams:
+        description: Streams to include in regression tests
 
 jobs:
   regression_tests:
