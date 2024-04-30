@@ -29,7 +29,6 @@ import java.util.Optional
 import java.util.concurrent.Executors
 import java.util.function.Consumer
 import java.util.function.Function
-import java.util.stream.Collectors
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -216,16 +215,14 @@ private constructor(
                 }
             }
             if (conflictingStreams.isNotEmpty()) {
+                var affectedStreamsAsString =
+                    conflictingStreams.joinToString(", ") { config: WriteConfig ->
+                        config.namespace + "." + config.streamName
+                    }
                 val message =
-                    String.format(
-                        "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using \${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: %s",
-                        conflictingStreams
-                            .stream()
-                            .map { config: WriteConfig ->
-                                config.namespace + "." + config.streamName
-                            }
-                            .collect(Collectors.joining(", "))
-                    )
+                    "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using " +
+                        "\${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. " +
+                        "Affected streams: $affectedStreamsAsString"
                 throw ConfigErrorException(message)
             }
             return streamDescToWriteConfig
