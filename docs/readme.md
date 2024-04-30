@@ -22,7 +22,7 @@ Airbyte is suitable for a wide range of data integration use cases, including AI
 
 There are four Airbyte products:
 
-1. [Airybte Open-Source](/category/deploy-airbyte): Check out our [quickstart](/using-airbyte/getting-started) to [deploy](/deploying-airbyte/local-deployment) and [manage](/operator-guides/upgrading-airbyte) Airbyte Open Source in your infrastructure.
+1. [Airbyte Open-Source](/category/deploy-airbyte): Check out our [quickstart](/using-airbyte/getting-started) to [deploy](/deploying-airbyte/local-deployment) and [manage](/operator-guides/upgrading-airbyte) Airbyte Open Source in your infrastructure.
 
 2. [Airbyte Cloud](http://cloud.airbyte.com/signup): Start syncing your data in minutes with our hosted solution.
 
