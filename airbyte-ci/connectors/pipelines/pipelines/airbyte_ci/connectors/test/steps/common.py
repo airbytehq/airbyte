@@ -485,7 +485,7 @@ class RegressionTests(Step):
                         "config",
                         "http-basic.airbyte-platform-internal-source",
                         self.github_user,
-                        self.context.ci_github_access_token,
+                        self.context.ci_github_access_token or "",
                     ]
                 )
                 # Add GCP credentials from the environment and point google to their location (also required for connection-retriever)
