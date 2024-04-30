@@ -16,6 +16,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
@@ -26,6 +28,8 @@ import org.apache.commons.lang3.StringUtils;
 
 public class DynamodbUtils {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(DynamodbUtils.class);
+
   private DynamodbUtils() {
 
   }
@@ -34,9 +38,11 @@ public class DynamodbUtils {
     final var dynamoDbClientBuilder = DynamoDbClient.builder();
     AwsCredentialsProvider awsCredentialsProvider;
     if (!StringUtils.isBlank(dynamodbConfig.accessKey()) && !StringUtils.isBlank(dynamodbConfig.secretKey())) {
+      LOGGER.info("Creating credentials using access key and secret key");
       AwsCredentials awsCreds = AwsBasicCredentials.create(dynamodbConfig.accessKey(), dynamodbConfig.secretKey());
       awsCredentialsProvider = StaticCredentialsProvider.create(awsCreds);
     } else {
+      LOGGER.info("Using Role Based Access");
       awsCredentialsProvider = DefaultCredentialsProvider.create();
     }
 

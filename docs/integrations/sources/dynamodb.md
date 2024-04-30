@@ -55,12 +55,18 @@ property type present in the previously generated schema:
 
 This guide describes in details how you can configure the connector to connect with Dynamodb.
 
+## Role Based Access
+
+Defining **_access_key_id_** and **_secret_access_key_** will use User based Access. Role based access can be achieved
+by omitting both values from the configuration. The connector will then use DefaultCredentialsProvider which will use 
+the underlying role executing the container workload in AWS. 
+
 ### Сonfiguration Parameters
 
 - **_endpoint_**: aws endpoint of the dynamodb instance
 - **_region_**: the region code of the dynamodb instance
-- **_access_key_id_**: the access key for the IAM user with the required permissions
-- **_secret_access_key_**: the secret key for the IAM user with the required permissions
+- (Optional) **_access_key_id_**: the access key for the IAM user with the required permissions. Omit for role based access.
+- (Optional) **_secret_access_key_**: the secret key for the IAM user with the required permissions. Omit for role based access.
 - **_reserved_attribute_names_**: comma separated list of attribute names present in the replication
   tables which contain reserved words or special characters.
   https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ExpressionAttributeNames.html
