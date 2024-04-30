@@ -218,6 +218,7 @@ class SetConnectorVersion(Step):
         self.repo_dir = dagger_write_file(repo_dir, file_path, new_content)
 
         if self.export:
+            assert self.repo_dir is not None
             await dagger_export_file(self.repo_dir, file_path)
 
         return StepResult(
@@ -243,6 +244,7 @@ class SetConnectorVersion(Step):
         self.repo_dir = await dagger_write_file(repo_dir, file_path, new_content)
 
         if self.export:
+            assert self.repo_dir is not None
             await dagger_export_file(self.repo_dir, file_path)
 
         return StepResult(
