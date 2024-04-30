@@ -173,7 +173,9 @@ corresponds to that version.
 ### Java CDK
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
-|:--------|:-----------| :--------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.31.5  | 2024-05-01 | [\#36910](https://github.com/airbytehq/airbyte/pull/36910) | changes for destination-snowflake\                                                                                                                             |
+| 0.31.4  | 2024-05-01 | [\#36910](https://github.com/airbytehq/airbyte/pull/36910) | debuggability improvements.                                                                                                                                    |
 | 0.31.3  | 2024-04-30 | [\#37726](https://github.com/airbytehq/airbyte/pull/37726) | Remove debezium retries                                                                                                                                        |
 | 0.31.2  | 2024-04-30 | [\#37507](https://github.com/airbytehq/airbyte/pull/37507) | Better error messages when switching between global/per-stream modes.                                                                                          |
 | 0.31.0  | 2024-04-26 | [\#37584](https://github.com/airbytehq/airbyte/pull/37584) | Update S3 destination deps to exclude zookeeper and hadoop-yarn-common                                                                                         |

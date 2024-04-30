@@ -356,7 +356,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                 existingTable.columns[JavaBaseConstants.COLUMN_NAME_AB_META]!!.type
     }
 
-    private fun existingSchemaMatchesStreamConfig(
+    open protected fun existingSchemaMatchesStreamConfig(
         stream: StreamConfig?,
         existingTable: TableDefinition
     ): Boolean {
@@ -479,9 +479,9 @@ abstract class JdbcDestinationHandler<DestinationState>(
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(JdbcDestinationHandler::class.java)
-        private const val DESTINATION_STATE_TABLE_NAME = "_airbyte_destination_state"
-        private const val DESTINATION_STATE_TABLE_COLUMN_NAME = "name"
-        private const val DESTINATION_STATE_TABLE_COLUMN_NAMESPACE = "namespace"
+        protected const val DESTINATION_STATE_TABLE_NAME = "_airbyte_destination_state"
+        protected const val DESTINATION_STATE_TABLE_COLUMN_NAME = "name"
+        protected const val DESTINATION_STATE_TABLE_COLUMN_NAMESPACE = "namespace"
         private const val DESTINATION_STATE_TABLE_COLUMN_STATE = "destination_state"
         private const val DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT = "updated_at"
 
@@ -542,6 +542,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
             return Optional.of(TableDefinition(retrievedColumnDefns))
         }
 
+        @JvmStatic
         fun fromIsNullableIsoString(isNullable: String?): Boolean {
             return "YES".equals(isNullable, ignoreCase = true)
         }
