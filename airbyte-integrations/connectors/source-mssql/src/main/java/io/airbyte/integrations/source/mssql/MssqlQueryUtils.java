@@ -211,7 +211,7 @@ public class MssqlQueryUtils {
                 jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(cursorBasedSyncStatusQuery).executeQuery(),
                         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
             } catch (SQLException e) {
-                throw new RuntimeException(e); // TEMP
+                throw new RuntimeException("Failed to read max cursor value from %s.%s".formatted(namespace, name), e);
             }
             cursorBasedStatus.setCursorField(ImmutableList.of(cursorField));
           if (!jsonNodes.isEmpty()) {

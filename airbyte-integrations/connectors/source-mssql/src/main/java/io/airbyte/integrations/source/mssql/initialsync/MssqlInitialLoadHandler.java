@@ -140,44 +140,14 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
       final AirbyteStream stream = airbyteStream.getStream();
       final String streamName = stream.getName();
       final String namespace = stream.getNamespace();
-//      // TODO: need to select column according to indexing status of table. may not be primary key
-//      List<String> keys = new ArrayList<>();
-//      final String clusteredFirstColumn = discoverClusteredIndexForStream(database, stream);
-//      if (clusteredFirstColumn == null) {
-//        keys = stream.getSourceDefinedPrimaryKey().stream().flatMap(pk -> Stream.of(pk.get(0))).toList();
-//      } else {
-//        keys.add(clusteredFirstColumn);
-//      }
+      // TODO: need to select column according to indexing status of table. may not be primary key
       final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamName, namespace);
-//      final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(namespace, streamName);
-//      if (!tableNameToTable.containsKey(fullyQualifiedTableName)) {
-//        LOGGER.info("Skipping stream {} because it is not in the source", fullyQualifiedTableName);
-//        continue;
-//      }
       if (airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL)) {
         final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(namespace, streamName);
 
         // Grab the selected fields to sync
         final TableInfo<CommonField<JDBCType>> table = tableNameToTable.get(fullyQualifiedTableName);
         iteratorList.add(getIteratorForStream(airbyteStream, table,emittedAt));
-//        final List<String> selectedDatabaseFields = table.getFields()
-//            .stream()
-//            .map(CommonField::getName)
-//            .filter(CatalogHelpers.getTopLevelFieldNames(airbyteStream)::contains)
-//            .toList();
-//        keys.forEach(key -> {
-//          if (!selectedDatabaseFields.contains(key)) {
-//            selectedDatabaseFields.add(0, key);
-//          }
-//        });
-//
-//        final AutoCloseableIterator<AirbyteRecordData> queryStream =
-//            new MssqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair,
-//                calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream));
-//        final AutoCloseableIterator<AirbyteMessage> recordIterator =
-//            getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
-//        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream);
-//        iteratorList.add(augmentWithLogs(recordAndMessageIterator, pair, streamName));
       }
     }
     return iteratorList;

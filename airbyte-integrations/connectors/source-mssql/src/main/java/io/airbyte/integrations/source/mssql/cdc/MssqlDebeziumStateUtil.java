@@ -51,6 +51,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
+  // Testing is done concurrently so initialState is cached in a thread local variable
+  // in order to provide each test thread with its own correct initial state
   private static ThreadLocal<JsonNode> initialState = new ThreadLocal<>();
 
   final static String LSN_OFFSET_INCLUDED_QUERY = """
@@ -109,7 +111,7 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
           }
         }
       } catch (final InterruptedException ine) {
-        LOGGER.info("*** interrupted");
+        LOGGER.debug("Interrupted during closing of publisher");
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
@@ -127,16 +129,14 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
       assert Objects.nonNull(schemaHistory.getSchema());
 
       final JsonNode asJson = serialize(offset, schemaHistory);
-      LOGGER.info("Initial Debezium state constructed. offset={}. configured db was {}", Jsons.jsonNode(offset), properties);
+      LOGGER.info("Initial Debezium state constructed. offset={}", Jsons.jsonNode(offset));
 
       if (asJson.get(MssqlCdcStateConstants.MSSQL_DB_HISTORY).asText().isBlank()) {
         throw new RuntimeException("Schema history snapshot returned empty history.");
       }
       initialState.set(asJson);
     }
-    LOGGER.info("*** constructInitialDebeziumState {}", initialState.get());
     return initialState.get();
-//    return asJson;
 
   }
 
