@@ -420,10 +420,9 @@ class RegressionTests(Step):
 
     async def _build_regression_test_container(self, target_container_id: str) -> Container:
         """Create a container to run regression tests."""
-        main_logger.info(
-            f"_build_regression_test_container(): tester credentials={os.getenv('GCP_INTEGRATION_TESTER_CREDENTIALS') is not None}")
 
         container = with_python_base(self.context)
+        main_logger.info(">>>>>>>>>>>>>>>>>>>>> _build_regression_test_container")
         container = (
             container.with_exec(["apt-get", "update"])
             .with_exec(["apt-get", "install", "-y", "git", "openssh-client", "curl", "docker.io"])
