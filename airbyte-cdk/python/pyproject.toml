@@ -24,7 +24,7 @@ keywords = ["airbyte", "connector-development-kit", "cdk"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-airbyte-protocol-models = "*"
+airbyte-protocol-models = ">=0.9.0, <1.0"
 backoff = "*"
 cachetools = "*"
 Deprecated = "~1.2"
