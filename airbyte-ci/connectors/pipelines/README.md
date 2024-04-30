@@ -142,6 +142,7 @@ At this point you can run `airbyte-ci` commands.
 - [`connectors publish` command](#connectors-publish-command)
 - [Examples](#examples)
 - [Options](#options-2)
+- [`connectors up_to_date` command](#up_to_date)
 - [`connectors bump_version` command](#connectors-bump_version)
 - [`connectors upgrade_cdk` command](#connectors-upgrade_cdk)
 - [`connectors upgrade_base_image` command](#connectors-upgrade_base_image)
@@ -456,6 +457,32 @@ remoteRegistries:
     packageName: airbyte-source-pokeapi
 ```
 
+### <a id="connectors-up_to_date"></a>`connectors up_to_date` command
+
+Meant to be run on a cron script. 
+
+Actions:
+
+* Upgrades dependecies to the current versions
+
+### Examples
+
+Bump source-openweather:
+
+* `airbyte-ci connectors --name=source-openweather up_to_date`: upgrades main dependecies
+* `airbyte-ci connectors --name=source-openweather up_to_date --dev`: forces update if there are only dev changes
+* `airbyte-ci connectors --name=source-openweather up_to_date --dep pytest@^8.10 --dep airbyte-cdk@0.80.0`: allows update to toml files as well
+
+
+ ### Other things it could do
+
+* upgrade it the latest base image
+* make sure it's the newest version of pytest
+* do a `poetry update` to update everything else
+* make the pull requests on a well known branch, replacing the last one if still open
+* bump the toml and metadata and changelog
+* also bump the manifest version of the CDK
+
 ### <a id="connectors-bump_version"></a>`connectors bump_version` command
 
 Bump the version of the selected connectors.
@@ -649,10 +676,13 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                |
 |---------| ---------------------------------------------------------- |----------------------------------------------------------------------------------------------------------------------------|
-| 4.10.3   | [#37615](https://github.com/airbytehq/airbyte/pull/37615)      | Fix `KeyError` when running `migrate-to-poetry` |
-| 4.10.2   | [#37614](https://github.com/airbytehq/airbyte/pull/37614)      | Fix `UnboundLocalError: local variable 'add_changelog_entry_result' referenced before assignment` in `migrate_to_base_image` |
-| 4.10.1   | [#37622](https://github.com/airbytehq/airbyte/pull/37622)  | Temporarily disable regression tests in CI                                                    |
-| 4.10.0   | [#37616](https://github.com/airbytehq/airbyte/pull/37616)  | Improve modified files comparison when the target branch is from a fork.                                                                       |
+| 4.11.0  | [#37641](https://github.com/airbytehq/airbyte/pull/37641)  | Updates to run regression tests in GitHub Actions.                                                                               |
+| 4.10.5  | [#37641](https://github.com/airbytehq/airbyte/pull/37641)  | Reintroduce changes from 4.10.0 with a fix.                                                                               |
+| 4.10.4  | [#37641](https://github.com/airbytehq/airbyte/pull/37641)  | Temporarily revert changes from version 4.10.0                                                                               |
+| 4.10.3  | [#37615](https://github.com/airbytehq/airbyte/pull/37615)      | Fix `KeyError` when running `migrate-to-poetry` |
+| 4.10.2  | [#37614](https://github.com/airbytehq/airbyte/pull/37614)      | Fix `UnboundLocalError: local variable 'add_changelog_entry_result' referenced before assignment` in `migrate_to_base_image` |
+| 4.10.1  | [#37622](https://github.com/airbytehq/airbyte/pull/37622)  | Temporarily disable regression tests in CI                                                    |
+| 4.10.0  | [#37616](https://github.com/airbytehq/airbyte/pull/37616)  | Improve modified files comparison when the target branch is from a fork.                                                                       |
 | 4.9.0   | [#37440](https://github.com/airbytehq/airbyte/pull/37440)  | Run regression tests with `airbyte-ci connectors test`                                                                       |
 | 4.8.0   | [#37404](https://github.com/airbytehq/airbyte/pull/37404)  | Accept a `git-repo-url` option on the `airbyte-ci` root command to checkout forked repo.                                     |
 | 4.7.4   | [#37485](https://github.com/airbytehq/airbyte/pull/37485)  | Allow java connectors to be written in kotlin.                                                                               |

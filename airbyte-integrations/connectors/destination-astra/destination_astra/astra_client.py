@@ -26,6 +26,7 @@ class AstraClient:
         self.request_header = {
             "x-cassandra-token": self.astra_application_token,
             "Content-Type": "application/json",
+            "User-Agent": "airbyte",
         }
 
     def _run_query(self, request_url: str, query: Dict):
