@@ -345,25 +345,30 @@ class RegressionTests(Step):
                 (See https://docs.dagger.io/manuals/developer/python/328492/services/ and https://cloud.google.com/sql/docs/postgres/sql-proxy#cloud-sql-auth-proxy-docker-image)
         """
         run_proxy = "./cloud-sql-proxy prod-ab-cloud-proj:us-west3:prod-pgsql-replica --credentials-file /tmp/credentials.json"
-        run_pytest = " ".join(["poetry",
-            "run",
-            "pytest",
-            "src/live_tests/regression_tests",
-            "--connector-image",
-            self.connector_image,
-            "--connection-id",
-            self.connection_id or "",
-            "--control-version",
-            self.control_version or "",
-            "--target-version",
-            self.target_version or "",
-            "--pr-url",
-            self.pr_url or "",
-            "--run-id",
-            self.run_id or "",
-            "--should-read-with-state",
-            str(self.should_read_with_state)])
-        run_pytest_with_proxy = dedent(f"""
+        run_pytest = " ".join(
+            [
+                "poetry",
+                "run",
+                "pytest",
+                "src/live_tests/regression_tests",
+                "--connector-image",
+                self.connector_image,
+                "--connection-id",
+                self.connection_id or "",
+                "--control-version",
+                self.control_version or "",
+                "--target-version",
+                self.target_version or "",
+                "--pr-url",
+                self.pr_url or "",
+                "--run-id",
+                self.run_id or "",
+                "--should-read-with-state",
+                str(self.should_read_with_state),
+            ]
+        )
+        run_pytest_with_proxy = dedent(
+            f"""
         {run_proxy} &
         proxy_pid=$!
         {run_pytest}
@@ -371,7 +376,8 @@ class RegressionTests(Step):
         kill $proxy_pid
         wait $proxy_pid
         exit $pytest_exit
-        """)
+        """
+        )
         return [f"bash", "-c", f"'{run_pytest_with_proxy}'"]
 
     def __init__(self, context: ConnectorContext) -> None:
@@ -457,40 +463,54 @@ class RegressionTests(Step):
                         "sed",
                         "-i",
                         "-E",
-                        fr"s,git@github\.com:{self.platform_repo_url},https://github.com/{self.platform_repo_url}.git,",
+                        rf"s,git@github\.com:{self.platform_repo_url},https://github.com/{self.platform_repo_url}.git,",
                         "pyproject.toml",
                     ]
                 )
                 .with_exec(
-                    ["poetry", "source", "add", "--priority=supplemental", "airbyte-platform-internal-source",
-                     "https://github.com/airbytehq/airbyte-platform-internal.git"]
-                ).with_exec(["poetry", "config", "http-basic.airbyte-platform-internal-source", self.github_user,
-                    self.context.ci_github_access_token,
-                ])
+                    [
+                        "poetry",
+                        "source",
+                        "add",
+                        "--priority=supplemental",
+                        "airbyte-platform-internal-source",
+                        "https://github.com/airbytehq/airbyte-platform-internal.git",
+                    ]
+                )
+                .with_exec(
+                    [
+                        "poetry",
+                        "config",
+                        "http-basic.airbyte-platform-internal-source",
+                        self.github_user,
+                        self.context.ci_github_access_token,
+                    ]
+                )
                 # Add GCP credentials from the environment and point google to their location (also required for connection-retriever)
                 .with_new_file("/tmp/credentials.json", contents=os.getenv("GCP_INTEGRATION_TESTER_CREDENTIALS"))
                 .with_env_variable("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/credentials.json")
-                .with_exec([
-                    "curl",
-                    "-o",
-                    "cloud-sql-proxy",
-                    "https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.11.0/cloud-sql-proxy.linux.amd64",
-                ])
-                .with_exec([
-                    "chmod",
-                    "+x",
-                    "cloud-sql-proxy",
-                ])
+                .with_exec(
+                    [
+                        "curl",
+                        "-o",
+                        "cloud-sql-proxy",
+                        "https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.11.0/cloud-sql-proxy.linux.amd64",
+                    ]
+                )
+                .with_exec(
+                    [
+                        "chmod",
+                        "+x",
+                        "cloud-sql-proxy",
+                    ]
+                )
                 .with_env_variable("CI", "1")
             )
 
         else:
             container = (
-                container
-                .with_mounted_file("/root/.ssh/id_rsa", self.dagger_client.host().file(str(Path("~/.ssh/id_rsa").expanduser())))
-                .with_mounted_file(
-                    "/root/.ssh/known_hosts", self.dagger_client.host().file(str(Path("~/.ssh/known_hosts").expanduser()))
-                )
+                container.with_mounted_file("/root/.ssh/id_rsa", self.dagger_client.host().file(str(Path("~/.ssh/id_rsa").expanduser())))
+                .with_mounted_file("/root/.ssh/known_hosts", self.dagger_client.host().file(str(Path("~/.ssh/known_hosts").expanduser())))
                 .with_mounted_file(
                     "/root/.config/gcloud/application_default_credentials.json",
                     self.dagger_client.host().file(str(Path("~/.config/gcloud/application_default_credentials.json").expanduser())),
