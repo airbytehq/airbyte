@@ -107,9 +107,12 @@ definitions:
     primary_key: response_id
     retriever:
       type: SimpleRetriever
+      ignore_stream_slicer_parameters_on_paginated_requests: true
       requester:
         $ref: "#/definitions/requester"
         path: forms/{{ stream_partition.form_id }}/responses
+        request_parameters:
+          sort: "submitted_at,asc"
       record_selector:
         $ref: "#/definitions/items_selector"
       paginator:
