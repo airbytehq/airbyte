@@ -62,7 +62,7 @@ jobs:
         run: echo "commit_id=$(git rev-parse origin/${{ steps.extract_branch.outputs.branch }})" >> $GITHUB_OUTPUT
 
       - name: Run Regression Tests [WORKFLOW DISPATCH]
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' # TODO: consider using the matrix strategy (https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs). See https://github.com/airbytehq/airbyte/pull/37659#discussion_r1583380234 for details.
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "manual"

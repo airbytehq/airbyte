@@ -331,6 +331,17 @@ class RegressionTests(Step):
         }
 
     def regression_tests_command(self) -> List[str]:
+        """
+        This command
+        1. Starts a Google Cloud SQL proxy running on localhost, which is used by the connection-retriever to connect to postgres.
+                2. Gets the PID of the proxy so it can be killed once done.
+        3. Runs the regression tests.
+        4. Kills the proxy, and waits for it to exit.
+        5. Exits with the regression tests' exit code.
+        We need to explicitly kill the proxy in order to allow the GitHub Action to exit.
+        An alternative that we can consider is to run the proxy as a separate service.
+                (See https://docs.dagger.io/manuals/developer/python/328492/services/ and https://cloud.google.com/sql/docs/postgres/sql-proxy#cloud-sql-auth-proxy-docker-image)
+        """
         run_proxy = "./cloud-sql-proxy prod-ab-cloud-proj:us-west3:prod-pgsql-replica --credentials-file /tmp/credentials.json"
         run_pytest = " ".join(["poetry",
             "run",
@@ -391,13 +402,11 @@ class RegressionTests(Step):
         Returns:
             StepResult: Failure or success of the regression tests with stdout and stderr.
         """
-        main_logger.info(">>>>>>>>>>>>>>> about to _build_regression_test_container")
         container = await self._build_regression_test_container(await connector_under_test_container.id())
+        main_logger.info(">>>>>>>>>>>>>>>>>>>>> about to never_fail_exec")
         container = container.with_(hacks.never_fail_exec(self.regression_tests_command()))
-        main_logger.info(f">>>>>>>>>>>>>>> never_fail_exec stdout: {await container.stdout()}")
-        main_logger.info(f">>>>>>>>>>>>>>> never_fail_exec stderr: {await container.stderr()}")
+        main_logger.info(">>>>>>>>>>>>>>>>>>>>> done never_fail_exec")
         regression_tests_artifacts_dir = str(self.regression_tests_artifacts_dir)
-
         path_to_report = f"{regression_tests_artifacts_dir}/session_{self.run_id}/report.html"
         await container.file(path_to_report).export(path_to_report)
 
@@ -430,6 +439,10 @@ class RegressionTests(Step):
             .with_workdir("/app")
             .with_unix_socket("/var/run/docker.sock", self.dagger_client.host().unix_socket("/var/run/docker.sock"))
             .with_env_variable("RUN_IN_AIRBYTE_CI", "1")
+            # The connector being tested is already built and is stored in a location accessible to an inner dagger kicked off by
+            # regression tests. The connector can be found if you know the container ID, so we write the container ID to a file and put
+            # it in the regression test container. This way regression tests will use the already-built connector instead of trying to
+            # build their own.
             .with_new_file("/tmp/container_id.txt", contents=str(target_container_id))
             .with_exec(["pip", "install", "poetry"])
         )
@@ -480,11 +493,11 @@ class RegressionTests(Step):
                 container
                 .with_mounted_file("/root/.ssh/id_rsa", self.dagger_client.host().file(str(Path("~/.ssh/id_rsa").expanduser())))
                 .with_mounted_file(
-                    "/root/.ssh/known_hosts", self.dagger_client.host().file(str(Path("~/.ssh/known_hosts").expanduser()))  # TODO
+                    "/root/.ssh/known_hosts", self.dagger_client.host().file(str(Path("~/.ssh/known_hosts").expanduser()))
                 )
                 .with_mounted_file(
                     "/root/.config/gcloud/application_default_credentials.json",
-                    self.dagger_client.host().file(str(Path("~/.config/gcloud/application_default_credentials.json").expanduser())),  # TODO
+                    self.dagger_client.host().file(str(Path("~/.config/gcloud/application_default_credentials.json").expanduser())),
                 )
             )
             main_logger.info(f"_built_regression_test_container()")

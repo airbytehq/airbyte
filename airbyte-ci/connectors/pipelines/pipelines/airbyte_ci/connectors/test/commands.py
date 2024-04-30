@@ -85,7 +85,6 @@ async def test(
     Args:
         ctx (click.Context): The click context.
     """
-    main_logger.info("<<<<<<<<<<<< starting test() command")
     if only_steps and skip_steps:
         raise click.UsageError("Cannot use both --only-step and --skip-step at the same time.")
     if not only_steps:
@@ -140,7 +139,6 @@ async def test(
     ]
 
     try:
-        main_logger.info(f"<<<<<<<<<<<< about to run_connectors_pipelines() run_step_options={run_step_options}")
         await run_connectors_pipelines(
             [connector_context for connector_context in connectors_tests_contexts],
             run_connector_test_pipeline,

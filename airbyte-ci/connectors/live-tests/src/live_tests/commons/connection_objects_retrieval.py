@@ -232,4 +232,3 @@ def _get_connection_objects_from_retrieved_objects(
         source_docker_image=retrieved_source_docker_image,
         connection_id=connection_id,
     )
-
