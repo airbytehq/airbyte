@@ -663,7 +663,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public boolean supportResumableFullRefresh(final ConfiguredAirbyteStream airbyteStream) {
     // for CDC, primary key is stored in stream.sourceDefinedPrimaryKey.
     if (airbyteStream.getStream() != null && airbyteStream.getStream().getSourceDefinedPrimaryKey() != null
-            && !airbyteStream.getStream().getSourceDefinedPrimaryKey().isEmpty()) { // TODO: needs to check for ordered column here
+            && !airbyteStream.getStream().getSourceDefinedPrimaryKey().isEmpty()) {
       return true;
     }
     // for cursor based, primary key is stored in primary key under this stream.

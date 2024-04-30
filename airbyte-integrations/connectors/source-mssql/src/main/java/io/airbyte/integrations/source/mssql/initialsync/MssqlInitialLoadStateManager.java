@@ -98,7 +98,7 @@ public abstract class MssqlInitialLoadStateManager implements SourceStateMessage
     return Objects.nonNull(getOrderedColumnInfo(new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace())));
   }
 
-  protected JsonNode getIncrementalState(final ConfiguredAirbyteStream stream) {
+  private JsonNode getIncrementalState(final ConfiguredAirbyteStream stream) {
     final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
     final OrderedColumnLoadStatus currentOcLoadStatus = getOrderedColumnLoadStatus(pair);
 

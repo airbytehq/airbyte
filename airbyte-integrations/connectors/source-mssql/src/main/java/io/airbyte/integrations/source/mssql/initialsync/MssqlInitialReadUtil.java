@@ -262,7 +262,7 @@ public class MssqlInitialReadUtil {
     // key load in progress.
     final Map<AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> pairToInitialLoadStatus = new HashMap<>();
     if (airbyteStateMessage != null && airbyteStateMessage.getGlobal() != null && airbyteStateMessage.getGlobal().getStreamStates() != null) {
-      LOGGER.info("Trying to extract streams need initial pk sync. State message: {}", airbyteStateMessage);
+      LOGGER.info("Trying to extract streams need initial oc sync. State message: {}", airbyteStateMessage);
       airbyteStateMessage.getGlobal().getStreamStates().forEach(stateMessage -> {
         LOGGER.info("State message in this stream: {}", stateMessage);
         final JsonNode streamState = stateMessage.getStreamState();
@@ -411,8 +411,8 @@ public class MssqlInitialReadUtil {
                                                                                                       final TableInfo<CommonField<JDBCType>> table,
                                                                                                       final String quoteString) {
     final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOcInfoMap = new HashMap<>();
-    // For every stream that is in primary initial key sync, we want to maintain information about the
-    // current primary key info associated with the
+    // For every stream that is in primary ordered column sync, we want to maintain information about the
+    // current ordered column info associated with the
     // stream
     initialLoadStreams.streamsForInitialLoad().forEach(stream -> {
       final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());

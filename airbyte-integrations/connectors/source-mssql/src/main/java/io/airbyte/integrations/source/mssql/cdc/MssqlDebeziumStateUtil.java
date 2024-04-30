@@ -75,6 +75,8 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
   public static synchronized JsonNode constructInitialDebeziumState(final Properties properties,
                                                 final ConfiguredAirbyteCatalog catalog,
                                                 final JdbcDatabase database) {
+    // There is no need to construct an initial state after it was already constructed in this run
+    // Starting and stopping mssql debezium too many times causes it to hang during shutdown
     if (initialState.get() == null) {
       properties.setProperty("heartbeat.interval.ms", "0");
       final JsonNode highWaterMark = constructLsnSnapshotState(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText());
