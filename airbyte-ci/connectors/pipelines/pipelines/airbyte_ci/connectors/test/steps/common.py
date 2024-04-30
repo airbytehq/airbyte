@@ -21,7 +21,7 @@ from pipelines import hacks, main_logger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
-from pipelines.consts import INTERNAL_TOOL_PATHS, LOCAL_MACHINE_TYPE, CIContext
+from pipelines.consts import INTERNAL_TOOL_PATHS, CIContext
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
@@ -469,12 +469,11 @@ class RegressionTests(Step):
                 )
                 .with_new_file("/tmp/credentials.json", contents=os.getenv("GCP_INTEGRATION_TESTER_CREDENTIALS"))
                 .with_env_variable("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/credentials.json")
-                # Set up Google Cloud SQL Proxy to connect to the database
                 .with_exec([
                     "curl",
                     "-o",
                     "cloud-sql-proxy",
-                    f"https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.11.0/cloud-sql-proxy.linux.{LOCAL_MACHINE_TYPE}",
+                    "https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.11.0/cloud-sql-proxy.linux.amd64",
                 ])
                 .with_exec([
                     "chmod",
