@@ -195,7 +195,7 @@ def _get_connection_objects_from_retrieved_objects(
     custom_state: Optional[Dict] = None,
 ):
     LOGGER.info("Retrieving connection objects from the database...")
-    _, retrieved_objects = retrieve_objects(
+    connection_id, retrieved_objects = retrieve_objects(
         requested_objects,
         retrieval_reason=retrieval_reason,
         source_docker_repository=source_docker_repository,
