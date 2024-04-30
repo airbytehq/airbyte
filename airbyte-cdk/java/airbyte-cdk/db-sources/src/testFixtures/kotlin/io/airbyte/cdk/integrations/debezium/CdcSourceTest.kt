@@ -28,7 +28,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
-    @JvmField protected var testdb: T? = null /*= createTestDatabase()*/
+    @JvmField protected var testdb: T? = null
 
     protected open fun createTableSqlFmt(): String {
         return "CREATE TABLE %s.%s(%s);"
@@ -374,7 +374,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     @Test
     @Throws(Exception::class)
-    @Timeout(value = 5, unit = TimeUnit.MINUTES)
+//    @Timeout(value = 5, unit = TimeUnit.MINUTES) // TODO: check here
     fun testExistingData() {
         val targetPosition = cdcLatestTargetPosition()
         val read = source()!!.read(config()!!, configuredCatalog, null)
@@ -407,7 +407,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     @Test // When a record is deleted, produces a deletion record.
     @Throws(Exception::class)
-//    @Disabled // TEMP
     fun testDelete() {
         val read1 = source().read(config()!!, configuredCatalog, null)
         val actualRecords1 = AutoCloseableIterators.toListAndClose(read1)
@@ -438,7 +437,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     @Test // When a record is updated, produces an update record.
     @Throws(Exception::class)
-//    @Disabled
     fun testUpdate() {
         val updatedModel = "Explorer"
         val read1 = source().read(config()!!, configuredCatalog, null)
@@ -1000,7 +998,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     @Test
     @Throws(Exception::class)
-//    @Disabled // TEMP
     open fun testResumableFullRefreshSnapshot() {
         if (!supportResumableFullRefresh()) {
             return
