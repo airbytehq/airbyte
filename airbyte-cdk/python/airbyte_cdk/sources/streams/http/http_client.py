@@ -38,6 +38,7 @@ class HttpClient:
         self,
         stream_name: str,
         logger: logging.Logger,
+        raise_on_http_errors: bool = True,
         api_budget: Optional[APIBudget] = None,
         session: Optional[requests.Session] = None,
         http_error_handler: Optional[ErrorHandler] = None,
@@ -59,6 +60,7 @@ class HttpClient:
         self._backoff_strategy = backoff_strategy
         self._response_decoder = response_decoder
         self._error_message_parser = error_message_parser
+        self._raise_on_http_errors = raise_on_http_errors
 
     # property moved from HttpStream
     @property
@@ -77,6 +79,10 @@ class HttpClient:
         Note that if the environment variable REQUEST_CACHE_PATH is not set, the cache will be in-memory only.
         """
         return False
+
+    @property
+    def raise_on_http_errors(self) -> bool:
+        return self._raise_on_http_errors
 
     # public moved method from HttpStream
     def request_session(self) -> requests.Session:
@@ -229,7 +235,7 @@ class HttpClient:
                 )
             else:
                 raise DefaultBackoffException(request=request, response=response, error_message=error_message)
-        elif self._backoff_strategy.raise_on_http_errors:
+        elif self.raise_on_http_errors:
             # Raise any HTTP exceptions that happened in case there were unexpected ones
             try:
                 response.raise_for_status()

@@ -33,14 +33,6 @@ class BackoffStrategy(ABC):
         """
         pass
 
-    @property
-    @abstractmethod
-    def raise_on_http_errors(self) -> bool:
-        """
-        Override if needed. Specifies whether to raise exceptions for HTTP errors.
-        """
-        pass
-
     @abstractmethod
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """

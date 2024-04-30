@@ -14,14 +14,12 @@ class DefaultBackoffStrategy(BackoffStrategy):
         max_retries: int = 5,
         max_time: Optional[int] = 60 * 10,
         retry_factor: float = 5,
-        raise_on_http_errors: bool = True,
         backoff_time: Callable[[requests.Response], Optional[float]] = None,
     ):
 
         self._max_retries = max_retries
         self._max_time = max_time
         self._retry_factor = retry_factor
-        self._raise_on_http_errors = raise_on_http_errors
         self.backoff_time = backoff_time or self.backoff_time
 
     @property
@@ -35,10 +33,6 @@ class DefaultBackoffStrategy(BackoffStrategy):
     @property
     def retry_factor(self) -> float:
         return self._retry_factor
-
-    @property
-    def raise_on_http_errors(self) -> bool:
-        return self._raise_on_http_errors
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
