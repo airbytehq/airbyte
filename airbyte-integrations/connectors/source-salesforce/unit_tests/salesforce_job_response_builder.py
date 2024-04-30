@@ -23,6 +23,10 @@ class SalesforceJobResponseBuilder:
         self._status_code = status_code
         return self
     
+    def with_error_message(self, error_message: int) -> "HttpResponseBuilder":
+        self._response["errorMessage"] = error_message
+        return self
+    
     def get_response(self) -> any:
         return self._response
 
