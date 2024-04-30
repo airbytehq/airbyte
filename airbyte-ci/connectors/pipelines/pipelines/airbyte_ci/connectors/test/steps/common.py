@@ -511,8 +511,7 @@ class RegressionTests(Step):
 
         else:
             container = (
-                container
-                .with_mounted_file("/root/.ssh/id_rsa", self.dagger_client.host().file(str(Path("~/.ssh/id_rsa").expanduser())))
+                container.with_mounted_file("/root/.ssh/id_rsa", self.dagger_client.host().file(str(Path("~/.ssh/id_rsa").expanduser())))
                 .with_mounted_file("/root/.ssh/known_hosts", self.dagger_client.host().file(str(Path("~/.ssh/known_hosts").expanduser())))
                 .with_mounted_file(
                     "/root/.config/gcloud/application_default_credentials.json",
