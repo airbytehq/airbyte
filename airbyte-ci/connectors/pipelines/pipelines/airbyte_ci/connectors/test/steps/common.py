@@ -334,15 +334,17 @@ class RegressionTests(Step):
 
     def regression_tests_command(self) -> List[str]:
         """
-        This command
+        This command:
+
         1. Starts a Google Cloud SQL proxy running on localhost, which is used by the connection-retriever to connect to postgres.
-                2. Gets the PID of the proxy so it can be killed once done.
+        2. Gets the PID of the proxy so it can be killed once done.
         3. Runs the regression tests.
         4. Kills the proxy, and waits for it to exit.
         5. Exits with the regression tests' exit code.
         We need to explicitly kill the proxy in order to allow the GitHub Action to exit.
         An alternative that we can consider is to run the proxy as a separate service.
-                (See https://docs.dagger.io/manuals/developer/python/328492/services/ and https://cloud.google.com/sql/docs/postgres/sql-proxy#cloud-sql-auth-proxy-docker-image)
+
+        (See https://docs.dagger.io/manuals/developer/python/328492/services/ and https://cloud.google.com/sql/docs/postgres/sql-proxy#cloud-sql-auth-proxy-docker-image)
         """
         run_proxy = "./cloud-sql-proxy prod-ab-cloud-proj:us-west3:prod-pgsql-replica --credentials-file /tmp/credentials.json"
         run_pytest = " ".join(
