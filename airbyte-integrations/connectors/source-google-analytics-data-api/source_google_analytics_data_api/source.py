@@ -283,7 +283,15 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
                 record["endDate"] = stream_slice["endDate"]
             yield record
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def get_updated_state(
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+    ) -> MutableMapping[str, Any]:
+        if not self.cursor_field:
+            # Some implementations of the GoogleAnalyticsDataApiBaseStream might not have a cursor because it's
+            # based on the `dimensions` config setting. This results in a full_refresh only stream that implements
+            # get_updated_state(), but does not define a cursor. For this scenario, there is no state value to extract
+            return {}
+
         updated_state = (
             utils.string_to_date(latest_record[self.cursor_field], self._record_date_format)
             if self.cursor_field == "date"

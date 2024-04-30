@@ -7,7 +7,7 @@ package io.airbyte.cdk.integrations.destination.async.state
 import com.google.common.base.Preconditions
 import com.google.common.base.Strings
 import io.airbyte.cdk.integrations.destination.async.GlobalMemoryManager
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -23,10 +23,7 @@ import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
 import org.apache.commons.io.FileUtils
-import org.apache.commons.lang3.tuple.ImmutablePair
 import org.apache.mina.util.ConcurrentHashSet
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 private val logger = KotlinLogging.logger {}
 
@@ -76,8 +73,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     private val stateIdToCounter: ConcurrentMap<Long, AtomicLong> = ConcurrentHashMap()
     private val stateIdToCounterForPopulatingDestinationStats: ConcurrentMap<Long, AtomicLong> =
         ConcurrentHashMap()
-    private val stateIdToState:
-        ConcurrentMap<Long, ImmutablePair<StateMessageWithArrivalNumber, Long>> =
+    private val stateIdToState: ConcurrentMap<Long, Pair<StateMessageWithArrivalNumber, Long>> =
         ConcurrentHashMap()
 
     // Alias-ing only exists in the non-STREAM case where we have to convert existing state ids to
@@ -154,7 +150,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
      * Intended to be called by [io.airbyte.cdk.integrations.destination.async.FlushWorkers] after a
      * worker has finished flushing its record batch.
      */
-    fun flushStates(outputRecordCollector: Consumer<AirbyteMessage?>) {
+    fun flushStates(outputRecordCollector: Consumer<AirbyteMessage>) {
         var bytesFlushed: Long = 0L
         logger.info { "Flushing states" }
         synchronized(lock) {
@@ -174,13 +170,13 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
                     // This can be if you call the flush method if there are 0 records/states
                     val oldestStateCounter: AtomicLong = stateIdToCounter[oldestStateId] ?: break
 
-                    val oldestState: ImmutablePair<StateMessageWithArrivalNumber, Long> =
+                    val oldestState: Pair<StateMessageWithArrivalNumber, Long> =
                         stateIdToState[oldestStateId] ?: break
                     // no state to flush for this stream
 
                     val allRecordsCommitted: Boolean = oldestStateCounter.get() == 0L
                     if (allRecordsCommitted) {
-                        val stateMessage: StateMessageWithArrivalNumber = oldestState.getLeft()
+                        val stateMessage: StateMessageWithArrivalNumber = oldestState.first
                         val flushedRecordsAssociatedWithState: Double =
                             stateIdToCounterForPopulatingDestinationStats[oldestStateId]!!
                                 .toDouble()
@@ -197,7 +193,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
                             AirbyteStateStats().withRecordCount(flushedRecordsAssociatedWithState)
                         outputRecordCollector.accept(message)
 
-                        bytesFlushed += oldestState.getRight()
+                        bytesFlushed += oldestState.second
 
                         // cleanup
                         entry.value!!.poll()
@@ -259,21 +255,20 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
      * @param bytesFlushed bytes that were flushed (and should be removed from memory used).
      */
     private fun freeBytes(bytesFlushed: Long) {
-        LOGGER.debug(
-            "Bytes flushed memory to store state message. Allocated: {}, Used: {}, Flushed: {}, % Used: {}",
-            FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
-            FileUtils.byteCountToDisplaySize(memoryUsed.get()),
-            FileUtils.byteCountToDisplaySize(bytesFlushed),
-            memoryUsed.get().toDouble() / memoryAllocated.get(),
-        )
+        logger.debug {
+            "Bytes flushed memory to store state message. Allocated: " +
+                "${FileUtils.byteCountToDisplaySize(memoryAllocated.get())}, " +
+                "Used: ${FileUtils.byteCountToDisplaySize(memoryUsed.get())}, " +
+                "Flushed: ${FileUtils.byteCountToDisplaySize(bytesFlushed)}, " +
+                "% Used: ${memoryUsed.get().toDouble() / memoryAllocated.get()}"
+        }
 
         memoryManager.free(bytesFlushed)
         memoryAllocated.addAndGet(-bytesFlushed)
         memoryUsed.addAndGet(-bytesFlushed)
-        LOGGER.debug(
-            "Returned {} of memory back to the memory manager.",
-            FileUtils.byteCountToDisplaySize(bytesFlushed),
-        )
+        logger.debug {
+            "Returned ${FileUtils.byteCountToDisplaySize(bytesFlushed)} of memory back to the memory manager."
+        }
     }
 
     private fun convertToGlobalIfNeeded(message: PartialAirbyteMessage) {
@@ -348,7 +343,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
         synchronized(lock) {
             logger.debug { "State with arrival number $arrivalNumber received" }
             stateIdToState[getStateId(resolvedDescriptor)] =
-                ImmutablePair.of(
+                Pair(
                     StateMessageWithArrivalNumber(
                         message,
                         arrivalNumber,
@@ -372,32 +367,27 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
             while (memoryAllocated.get() < memoryUsed.get() + sizeInBytes) {
                 memoryAllocated.addAndGet(memoryManager.requestMemory())
                 try {
-                    LOGGER.debug(
-                        "Insufficient memory to store state message. Allocated: {}, Used: {}, Size of State Msg: {}, Needed: {}",
-                        FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
-                        FileUtils.byteCountToDisplaySize(memoryUsed.get()),
-                        FileUtils.byteCountToDisplaySize(sizeInBytes),
-                        FileUtils.byteCountToDisplaySize(
-                            sizeInBytes - (memoryAllocated.get() - memoryUsed.get()),
-                        ),
-                    )
+                    logger.debug {
+                        "Insufficient memory to store state message. " +
+                            "Allocated: ${FileUtils.byteCountToDisplaySize(memoryAllocated.get())}, " +
+                            "Used: ${FileUtils.byteCountToDisplaySize(memoryUsed.get())}, " +
+                            "Size of State Msg: ${FileUtils.byteCountToDisplaySize(sizeInBytes)}, " +
+                            "Needed: ${FileUtils.byteCountToDisplaySize(
+                                sizeInBytes - (memoryAllocated.get() - memoryUsed.get()),
+                            )}"
+                    }
                     Thread.sleep(1000)
                 } catch (e: InterruptedException) {
                     throw RuntimeException(e)
                 }
             }
-            LOGGER.debug(memoryUsageMessage)
+            logger.debug { memoryUsageMessage }
         }
     }
 
     val memoryUsageMessage: String
         get() =
-            String.format(
-                "State Manager memory usage: Allocated: %s, Used: %s, percentage Used %f",
-                FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
-                FileUtils.byteCountToDisplaySize(memoryUsed.get()),
-                memoryUsed.get().toDouble() / memoryAllocated.get(),
-            )
+            "State Manager memory usage: Allocated: ${FileUtils.byteCountToDisplaySize(memoryAllocated.get())}, Used: ${FileUtils.byteCountToDisplaySize(memoryUsed.get())}, percentage Used ${memoryUsed.get().toDouble() / memoryAllocated.get()}"
 
     private fun getStateAfterAlias(stateId: Long): Long {
         return if (aliasIds.contains(stateId)) {
@@ -438,8 +428,6 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     )
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(GlobalAsyncStateManager::class.java)
-
         private val SENTINEL_GLOBAL_DESC: StreamDescriptor =
             StreamDescriptor()
                 .withName(

@@ -10,7 +10,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.base.DestinationConfig;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
-import io.airbyte.cdk.integrations.destination_async.AsyncStreamConsumer;
+import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDestination.DestinationType;
@@ -90,7 +90,7 @@ public class SnowflakeDestinationTest {
   void testWriteSnowflakeInternal() throws Exception {
     final JsonNode config = Jsons.deserialize(MoreResources.readResource("internal_staging_config.json"), JsonNode.class);
     final SerializedAirbyteMessageConsumer consumer = new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS)
-        .getSerializedMessageConsumer(config, new ConfiguredAirbyteCatalog(), null);
+        .getSerializedMessageConsumer(config, new ConfiguredAirbyteCatalog(), message -> {});
     assertEquals(AsyncStreamConsumer.class, consumer.getClass());
   }
 

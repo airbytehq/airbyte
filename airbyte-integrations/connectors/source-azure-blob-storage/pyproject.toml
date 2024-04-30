@@ -1,0 +1,35 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.4.2"
+name = "source-azure-blob-storage"
+description = "Source implementation for Azure Blob Storage."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/azure-blob-storage"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_azure_blob_storage"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+pytz = "==2024.1"
+airbyte-cdk = {extras = ["file-based"], version = "^0"}
+[tool.poetry.dependencies.smart-open]
+extras = [ "azure",]
+version = "==6.4.0"
+
+[tool.poetry.scripts]
+source-azure-blob-storage = "source_azure_blob_storage.run:run"
+
+[tool.poetry.group.dev.dependencies]
+docker = "^7.0.0"
+freezegun = "^1.4.0"
+pytest-mock = "^3.6.1"
+requests-mock = "^1.9.3"
+pandas = "2.2.1"
+pytest = "^6.2"

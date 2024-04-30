@@ -14,6 +14,11 @@ import io.airbyte.protocol.models.v0.StreamDescriptor
  *
  * The map of StreamSyncSummaries MUST be non-null, but MAY be empty. Streams not present in the map
  * will be treated as equivalent to [StreamSyncSummary.DEFAULT].
+ *
+ * The @JvmSuppressWildcards is here so that the 2nd parameter of accept stays a java
+ * Map<StreamDescriptor, StreamSyncSummary> rather than becoming a Map<StreamDescriptor, ? extends
+ * StreamSyncSummary>
  */
-interface OnCloseFunction :
-    CheckedBiConsumer<Boolean, Map<StreamDescriptor, StreamSyncSummary>, Exception>
+fun interface OnCloseFunction :
+    CheckedBiConsumer<
+        Boolean, @JvmSuppressWildcards Map<StreamDescriptor, StreamSyncSummary>, Exception>
