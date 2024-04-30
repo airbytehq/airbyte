@@ -1,7 +1,10 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
+from datetime import date, datetime
+
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
-from datetime import datetime, date
-from source_google_ads.state_converter import GadsStateConverter
 from source_google_ads.models import CustomerModel
+from source_google_ads.state_converter import GadsStateConverter
 
 
 def test_increment_increases_date_by_one_day():

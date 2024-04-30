@@ -6,7 +6,7 @@ import datetime
 import functools
 import logging
 import operator
-from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 from airbyte_cdk.models import FailureType, SyncMode
@@ -17,7 +17,7 @@ from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.concurrent.cursor import FinalStateCursor, CursorField
+from airbyte_cdk.sources.streams.concurrent.cursor import CursorField, FinalStateCursor
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import ConfiguredAirbyteCatalog
 from pendulum import duration, parse, today
@@ -69,9 +69,9 @@ class SourceGoogleAds(ConcurrentSourceAdapter):
     # Skip exceptions on missing streams
     raise_exception_on_missing_stream = False
 
-    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog] = None,
-                 config: Optional[Mapping[str, Any]] = None,
-                 state: TState = None, **kwargs):
+    def __init__(
+        self, catalog: Optional[ConfiguredAirbyteCatalog] = None, config: Optional[Mapping[str, Any]] = None, state: TState = None, **kwargs
+    ):
         if config:
             concurrency_level = min(config.get("num_workers", _DEFAULT_CONCURRENCY), _MAX_CONCURRENCY)
         else:
@@ -330,7 +330,9 @@ class SourceGoogleAds(ConcurrentSourceAdapter):
                     return catalog_stream.sync_mode
         return None
 
-    def _to_concurrent(self, stream: Stream, fallback_start, state_manager: ConnectorStateManager, customers: list[CustomerModel]) -> Stream:
+    def _to_concurrent(
+        self, stream: Stream, fallback_start, state_manager: ConnectorStateManager, customers: list[CustomerModel]
+    ) -> Stream:
         sync_mode = self._get_sync_mode_from_catalog(stream)
         if sync_mode == SyncMode.full_refresh:
             return StreamFacade.create_from_stream(
@@ -374,4 +376,3 @@ class SourceGoogleAds(ConcurrentSourceAdapter):
                 internal_message=message,
                 failure_type=FailureType.config_error,
             ) from e
-

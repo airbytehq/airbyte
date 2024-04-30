@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 

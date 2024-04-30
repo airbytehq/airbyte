@@ -1,11 +1,12 @@
-from typing import MutableMapping, Any, Tuple, Optional, Union
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
+from datetime import date, datetime, timedelta
+from typing import Any, MutableMapping, Optional, Tuple, Union
 
 import pendulum
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
 from airbyte_cdk.sources.streams.concurrent.state_converters.abstract_stream_state_converter import ConcurrencyCompatibleStateType
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
-from datetime import datetime, timedelta, date
-
 from source_google_ads.models import CustomerModel
 
 
@@ -34,7 +35,7 @@ class GadsStateConverter(EpochValueConcurrentStreamStateConverter):
         return state
 
     def convert_from_sequential_state(
-            self, cursor_field: CursorField, stream_state: MutableMapping[str, Any], start: datetime
+        self, cursor_field: CursorField, stream_state: MutableMapping[str, Any], start: datetime
     ) -> Tuple[MutableMapping[str, date], MutableMapping[str, Any]]:
         """
         Convert the state message to the format required by the GoogleAdsCursor.
