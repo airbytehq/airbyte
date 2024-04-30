@@ -23,7 +23,7 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
 from pipelines.consts import INTERNAL_TOOL_PATHS, CIContext
 from pipelines.dagger.actions import secrets
-from pipelines.dagger.containers.python import with_python_base
+from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
 from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, StepStatus
 
@@ -420,8 +420,7 @@ class RegressionTests(Step):
 
     async def _build_regression_test_container(self, target_container_id: str) -> Container:
         """Create a container to run regression tests."""
-
-        container = with_python_base(self.context)
+        container = with_poetry(self.context)
         main_logger.info(">>>>>>>>>>>>>>>>>>>>> _build_regression_test_container")
         container = (
             container.with_exec(["apt-get", "update"])
@@ -437,7 +436,6 @@ class RegressionTests(Step):
             # it in the regression test container. This way regression tests will use the already-built connector instead of trying to
             # build their own.
             .with_new_file("/tmp/container_id.txt", contents=str(target_container_id))
-            .with_exec(["pip", "install", "poetry"])
         )
 
         if self.context.is_ci:
