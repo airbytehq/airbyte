@@ -31,8 +31,6 @@ class CheckpointReader(ABC):
         WARNING: This is used to retain backwards compatibility with streams using the legacy get_stream_state() method.
         In order to uptake Resumable Full Refresh, connectors must migrate streams to use the state setter/getter methods.
         """
-        # todo blai: Ideally observe and get_checkpoint should just be one method, but because of the legacy state behavior
-        #  observation and reading Stream.state checkpoint are not 1:1 with each other
 
     @abstractmethod
     def get_checkpoint(self) -> Optional[Mapping[str, Any]]:

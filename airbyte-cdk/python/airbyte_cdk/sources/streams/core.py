@@ -142,8 +142,10 @@ class Stream(ABC):
         sync_mode = configured_stream.sync_mode
         cursor_field = configured_stream.cursor_field
 
-        # Get state from the stream's state getter or use the stream_state from incoming parameter if
-        # the connector uses legacy state
+        # WARNING: When performing a read() that uses incoming stream state, we MUST use the self.state that is defined as
+        # opposed to the incoming stream_state value. Because some connectors like ones using the file-based CDK modify
+        # state before setting the value on the Stream attribute, the most up-to-date state is derived from Stream.state
+        # instead of the stream_state parameter. This does not apply to legacy connectors using get_updated_state().
         try:
             stream_state = self.state  # type: ignore # we know the field might not exist...
         except AttributeError:
@@ -233,9 +235,8 @@ class Stream(ABC):
             name=self.name,
             json_schema=dict(self.get_json_schema()),
             supported_sync_modes=[SyncMode.full_refresh],
-            # This field doesn't exist yet, but it will in https://github.com/airbytehq/airbyte-protocol/pull/73/files
-            # The logic or field name may also be tweaked pending the protocol review discussions
-            # is_resumable=self.supports_checkpointing,
+            # todo: This field doesn't exist yet, but it will in https://github.com/airbytehq/airbyte-protocol/pull/73
+            # is_resumable=self.is_resumable,
         )
 
         if self.namespace:
@@ -261,17 +262,19 @@ class Stream(ABC):
         return len(self._wrapped_cursor_field()) > 0
 
     @property
-    def supports_checkpointing(self) -> bool:
+    def is_resumable(self) -> bool:
         """
         :return: True if this stream allows the checkpointing of sync progress and can resume from it on subsequent attempts.
         This differs from supports_incremental because certain kinds of streams like those supporting resumable full refresh
         can checkpoint progress in between attempts for improved fault tolerance. However, they will start from the beginning
         on the next sync job.
         """
+        if self.supports_incremental:
+            return True
         if hasattr(type(self), "parent"):
             # We temporarily gate substream to not support RFR because puts a pretty high burden on connector developers
-            # to structure stream state in a very specific way. We also can't check for issubclass(HttpSubStream)
-            # because it would be a circular dependency so we use parent as a surrogate
+            # to structure stream state in a very specific way. We also can't check for issubclass(HttpSubStream) because
+            # not all substreams implement the interface and it would be a circular dependency so we use parent as a surrogate
             return False
         elif hasattr(type(self), "state") and getattr(type(self), "state").fset is not None:
             # Modern case where a stream manages state using getter/setter
@@ -348,7 +351,7 @@ class Stream(ABC):
         :param stream_state:
         :return:
         """
-        return [{}]  # I really hate that this used to be None, which was just cruft to get the first loop in
+        return [{}]
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
@@ -403,7 +406,6 @@ class Stream(ABC):
             # specific slice values. None is bad, and now I feel bad that I have to write this hack.
             if slices == [None]:
                 slices = [{}]
-            logger.debug(f"Processing stream slices for {self.name}", extra={"stream_slices": slices})
             if checkpoint_mode == CheckpointMode.INCREMENTAL:
                 return IncrementalCheckpointReader(stream_slices=slices, stream_state=stream_state)
             else:
@@ -411,9 +413,9 @@ class Stream(ABC):
 
     @property
     def _checkpoint_mode(self) -> CheckpointMode:
-        if self.supports_checkpointing and len(self._wrapped_cursor_field()) > 0:
+        if self.is_resumable and len(self._wrapped_cursor_field()) > 0:
             return CheckpointMode.INCREMENTAL
-        elif self.supports_checkpointing:
+        elif self.is_resumable:
             return CheckpointMode.RESUMABLE_FULL_REFRESH
         else:
             return CheckpointMode.FULL_REFRESH
