@@ -281,15 +281,7 @@ class Step(ABC):
         """Run the step with a timeout and set the completion event when the step is done."""
         try:
             with anyio.fail_after(self.max_duration.total_seconds()):
-                try:
-                    result = await self._run(*args, **kwargs)
-                except:
-                    import traceback
-                    import sys
-                    tb = traceback.format_exc()
-                    print(tb)
-                    self.logger.error(tb)
-                    sys.exit(1)
+                result = await self._run(*args, **kwargs)
                 completion_event.set()
             return result
         except TimeoutError:
