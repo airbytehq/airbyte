@@ -34,6 +34,13 @@ object ConnectorExceptionUtil {
             isUnknownColumnInFieldListException(e)
     }
 
+    fun isTransientError(e: Throwable?): Boolean {
+        return isConfigErrorException(e) ||
+            isConnectionError(e) ||
+            isRecoveryConnectionException(e) ||
+            isUnknownColumnInFieldListException(e)
+    }
+
     fun getDisplayMessage(e: Throwable?): String? {
         return if (e is ConfigErrorException) {
             e.displayMessage
