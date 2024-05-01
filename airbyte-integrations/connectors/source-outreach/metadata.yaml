@@ -2,26 +2,28 @@ data:
   ab_internal:
     ql: 200
     sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: 3490c201-5d95-4783-b600-eaf07a4c7787
-  dockerImageTag: 0.5.0
+  dockerImageTag: 0.5.4
   dockerRepository: airbyte/source-outreach
   documentationUrl: https://docs.airbyte.com/integrations/sources/outreach
   githubIssueLabel: source-outreach
   icon: outreach.svg
   license: MIT
   name: Outreach
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-outreach
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-outreach
   supportLevel: community
   tags:
     - language:python
