@@ -54,8 +54,10 @@ public class MongoUtil {
    */
   private static final Set<String> IGNORED_COLLECTIONS = Set.of("system.", "replset.", "oplog.");
 
-  private static final int DEFAULT_CHUNK_SIZE = 1_000_000;
-  private static final int QUERY_TARGET_SIZE_GB = 1_073_741_824;
+  @VisibleForTesting
+  static final int DEFAULT_CHUNK_SIZE = 1_000_000;
+  @VisibleForTesting
+  static final long QUERY_TARGET_SIZE_GB = 1_073_741_824;
 
   /**
    * The minimum size of the Debezium event queue. This value will be selected if the provided
@@ -216,9 +218,9 @@ public class MongoUtil {
       return DEFAULT_CHUNK_SIZE;
     }
     CollectionStatistics stats = collectionStatistics.get();
-    final int totalRows = stats.count().intValue();
-    final int totalBytes = stats.size().intValue();
-    final int bytesPerRow = totalBytes / totalRows;
+    final long totalRows = stats.count().longValue();
+    final long totalBytes = stats.size().longValue();
+    final long bytesPerRow = totalBytes / totalRows;
     if (bytesPerRow == 0) {
       LOGGER.info("Chunk size could not be determined for: {}.{}, defaulting to {} rows", stream.getStream().getNamespace(),
           stream.getStream().getName(), DEFAULT_CHUNK_SIZE);
@@ -227,14 +229,19 @@ public class MongoUtil {
     // Otherwise the chunk size is essentially the limit - the number of rows to fetch per query. This
     // number is the number of rows that would
     // correspond to roughly ~1GB of data.
-    final int chunkSize = QUERY_TARGET_SIZE_GB / bytesPerRow;
+    final int chunkSize = (int) (QUERY_TARGET_SIZE_GB / bytesPerRow);
+    if (chunkSize <= 0) {
+      LOGGER.info("Chunk size could not be determined for: {}.{}, defaulting to {} rows", stream.getStream().getNamespace(),
+          stream.getStream().getName(), DEFAULT_CHUNK_SIZE);
+      return DEFAULT_CHUNK_SIZE;
+    }
     LOGGER.info("Chunk size determined for: {}.{}, to be {} rows", stream.getStream().getNamespace(),
         stream.getStream().getName(), chunkSize);
     return chunkSize;
   }
 
-  public static boolean shouldUseDefaultChunkSize(CollectionStatistics stats) {
-    return stats.size().intValue() == 0 || stats.count().intValue() == 0;
+  private static boolean shouldUseDefaultChunkSize(CollectionStatistics stats) {
+    return stats.size().longValue() == 0 || stats.count().longValue() == 0;
   }
 
   /**
