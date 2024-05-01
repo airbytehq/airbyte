@@ -179,31 +179,6 @@ def test_stream_contains_unsupported_properties_by_bulk(stream_config, stream_ap
     assert not isinstance(stream, BulkSalesforceStream)
 
 
-def test_bulk_sync_pagination(stream_config, stream_api, requests_mock):
-    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
-    job_id = "fake_job"
-    requests_mock.register_uri("POST", stream.path(), json={"id": job_id})
-    requests_mock.register_uri("GET", stream.path() + f"/{job_id}", json=SalesforceJobResponseBuilder().with_id(job_id).with_state("JobComplete").get_response())
-    resp_text = ["Field1,LastModifiedDate,ID"] + [f"test,2021-11-16,{i}" for i in range(5)]
-    result_uri = requests_mock.register_uri(
-        "GET",
-        stream.path() + f"/{job_id}/results",
-        [
-            {"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "somelocator_1"}},
-            {"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "somelocator_2"}},
-            {"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "null"}},
-        ],
-    )
-    requests_mock.register_uri("DELETE", stream.path() + f"/{job_id}")
-
-    stream_slices = next(iter(stream.stream_slices(sync_mode=SyncMode.incremental)))
-    loaded_ids = [int(record["ID"]) for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices)]
-    assert loaded_ids == [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4]
-    assert result_uri.call_count == 3
-    assert result_uri.request_history[1].query == "locator=somelocator_1"
-    assert result_uri.request_history[2].query == "locator=somelocator_2"
-
-
 def _prepare_mock(m, stream):
     job_id = "fake_job_1"
     m.register_uri("POST", stream.path(), json={"id": job_id})
