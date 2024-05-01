@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.redshift.typing_deduping;
 
+import static io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSuperLimitationTransformer.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
@@ -138,8 +140,8 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
                              }
                            }
                            """;
-    final String largeString1 = generateBigString(0);
-    final String largeString2 = generateBigString(2);
+    final String largeString1 = generateRandomString(REDSHIFT_VARCHAR_MAX_BYTE_SIZE);
+    final String largeString2 = generateRandomString(REDSHIFT_VARCHAR_MAX_BYTE_SIZE + 2);
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.FULL_REFRESH)
@@ -170,11 +172,10 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
 
   }
 
-  private String generateBigString(final int additionalChars) {
-    final int length = RedshiftSuperLimitationTransformer.REDSHIFT_VARCHAR_MAX_BYTE_SIZE + additionalChars;
+  protected String generateRandomString(final int totalLength) {
     return RANDOM
         .ints('a', 'z' + 1)
-        .limit(length)
+        .limit(totalLength)
         .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
         .toString();
   }
