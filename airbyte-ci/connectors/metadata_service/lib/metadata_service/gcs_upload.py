@@ -192,6 +192,14 @@ def _apply_prerelease_overrides(metadata_dict: dict, validator_opts: ValidatorOp
 
     return metadata_dict
 
+def _commit_to_git_info(commit: git.Commit) -> GitInfo:
+    return GitInfo(
+        commit_sha=commit.hexsha,
+        commit_timestamp=commit.authored_datetime,
+        commit_author=commit.author.name,
+        commit_author_email=commit.author.email,
+    )
+
 
 def _get_git_info_for_file(original_metadata_file_path: Path) -> Optional[GitInfo]:
     """
@@ -200,20 +208,17 @@ def _get_git_info_for_file(original_metadata_file_path: Path) -> Optional[GitInf
     e.g. The git commit hash, the date of the commit, the author of the commit, etc.
 
     """
-    repo = git.Repo(search_parent_directories=True)
     try:
+        repo = git.Repo(search_parent_directories=True)
+
         # get the commit hash for the last commit that modified the metadata file
         commit_sha = repo.git.log("-1", "--format=%H", str(original_metadata_file_path))
-        commit_timestamp = repo.git.log("-1", "--format=%ct", str(original_metadata_file_path))
-        commit_author = repo.git.log("-1", "--format=%an", str(original_metadata_file_path))
-        commit_author_email = repo.git.log("-1", "--format=%ae", str(original_metadata_file_path))
 
-        return GitInfo(
-            commit_author=commit_author,
-            commit_author_email=commit_author_email,
-            commit_timestamp=commit_timestamp,
-            commit_sha=commit_sha,
-        )
+        commit = repo.commit(commit_sha)
+        return _commit_to_git_info(commit)
+    except git.exc.InvalidGitRepositoryError:
+        logging.warning(f"Metadata file {original_metadata_file_path} is not in a git repository, skipping author info attachment.")
+        return None
     except git.exc.GitCommandError as e:
         if "unknown revision or path not in the working tree" in str(e):
             logging.warning(f"Metadata file {original_metadata_file_path} is not tracked by git, skipping author info attachment.")
