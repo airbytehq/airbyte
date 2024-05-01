@@ -25,6 +25,7 @@ from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_sta
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_protocol.models import SyncMode
+
 from source_stripe.streams import (
     CreatedCursorIncrementalStripeStream,
     CustomerBalanceTransactions,
