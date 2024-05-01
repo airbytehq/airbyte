@@ -7,9 +7,7 @@ from urllib.parse import urlencode
 import freezegun
 import pendulum
 import pytest
-
-from source_stripe.streams import (CustomerBalanceTransactions, Persons,
-                                   SetupAttempts)
+from source_stripe.streams import CustomerBalanceTransactions, Persons, SetupAttempts
 
 
 def read_from_stream(stream, sync_mode, state):

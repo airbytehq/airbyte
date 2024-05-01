@@ -7,15 +7,13 @@ from contextlib import nullcontext as does_not_raise
 from unittest.mock import patch
 
 import pytest
+import source_stripe
 import stripe
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
-from airbyte_cdk.sources.streams.call_rate import (CachedLimiterSession,
-                                                   LimiterSession, Rate)
+from airbyte_cdk.sources.streams.call_rate import CachedLimiterSession, LimiterSession, Rate
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils import AirbyteTracedException
-
-import source_stripe
 from source_stripe import SourceStripe
 
 logger = logging.getLogger("airbyte")
