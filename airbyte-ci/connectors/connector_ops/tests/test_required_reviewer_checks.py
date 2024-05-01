@@ -20,45 +20,19 @@ def mock_diffed_branched(mocker):
 
 
 @pytest.fixture
-def pokeapi_acceptance_test_config_path():
-    return "airbyte-integrations/connectors/source-pokeapi/acceptance-test-config.yml"
-
-
-@pytest.fixture
 def pokeapi_metadata_path():
     return "airbyte-integrations/connectors/source-pokeapi/metadata.yaml"
 
 
 @pytest.fixture
-def strategic_connector_file():
-    return "airbyte-integrations/connectors/source-amplitude/acceptance-test-config.yml"
-
-
-@pytest.fixture
-def strategic_connector_metadata_path():
-    return "airbyte-integrations/connectors/source-amplitude/metadata.yaml"
-
-
-@pytest.fixture
-def not_strategic_not_tracked_change_expected_team(tmp_path, pokeapi_acceptance_test_config_path):
+def not_tracked_change_expected_team(tmp_path, pokeapi_metadata_path):
     expected_teams = []
     backup_path = tmp_path / "non_strategic_acceptance_test_config.backup"
-    shutil.copyfile(pokeapi_acceptance_test_config_path, backup_path)
-    with open(pokeapi_acceptance_test_config_path, "a") as acceptance_test_config_file:
-        acceptance_test_config_file.write("not_tracked")
+    shutil.copyfile(pokeapi_metadata_path, backup_path)
+    with open(pokeapi_metadata_path, "a") as metadata_file:
+        metadata_file.write("not_tracked")
     yield expected_teams
-    shutil.copyfile(backup_path, pokeapi_acceptance_test_config_path)
-
-
-@pytest.fixture
-def strategic_connector_file_change_expected_team(tmp_path, strategic_connector_file):
-    expected_teams = list(required_reviewer_checks.STRATEGIC_PYTHON_CONNECTOR_REVIEWERS)
-    backup_path = tmp_path / "strategic_acceptance_test_config.backup"
-    shutil.copyfile(strategic_connector_file, backup_path)
-    with open(strategic_connector_file, "a") as strategic_acceptance_test_config_file:
-        strategic_acceptance_test_config_file.write("foobar")
-    yield expected_teams
-    shutil.copyfile(backup_path, strategic_connector_file)
+    shutil.copyfile(backup_path, pokeapi_metadata_path)
 
 
 @pytest.fixture
@@ -72,21 +46,6 @@ def test_breaking_change_release_expected_team(tmp_path, pokeapi_metadata_path) 
         )
     yield expected_teams
     shutil.copyfile(backup_path, pokeapi_metadata_path)
-
-
-@pytest.fixture
-def strategic_connector_breaking_change_release_expected_teams(tmp_path, strategic_connector_metadata_path):
-    expected_teams = list(
-        required_reviewer_checks.STRATEGIC_PYTHON_CONNECTOR_REVIEWERS.union(required_reviewer_checks.BREAKING_CHANGE_REVIEWERS)
-    )
-    backup_path = tmp_path / "strategic_acceptance_test_config.backup"
-    shutil.copyfile(strategic_connector_metadata_path, backup_path)
-    with open(strategic_connector_metadata_path, "a") as strategic_connector_metadata_file:
-        strategic_connector_metadata_file.write(
-            "releases:\n  breakingChanges:\n    23.0.0:\n      message: hi\n      upgradeDeadline: 2025-01-01"
-        )
-    yield expected_teams
-    shutil.copyfile(backup_path, strategic_connector_metadata_path)
 
 
 def verify_no_requirements_file_was_generated(captured: str):
@@ -115,19 +74,9 @@ def check_review_requirements_file(capsys, expected_teams: List):
         verify_review_requirements_file_contains_expected_teams(requirements_file_path, expected_teams)
 
 
-def test_find_mandatory_reviewers_ga(capsys, strategic_connector_file_change_expected_team):
-    check_review_requirements_file(capsys, strategic_connector_file_change_expected_team)
-
-
 def test_find_mandatory_reviewers_breaking_change_release(capsys, test_breaking_change_release_expected_team):
     check_review_requirements_file(capsys, test_breaking_change_release_expected_team)
 
 
-def test_find_mandatory_reviewers_no_tracked_changed(capsys, not_strategic_not_tracked_change_expected_team):
-    check_review_requirements_file(capsys, not_strategic_not_tracked_change_expected_team)
-
-
-def test_find_mandatory_reviewers_strategic_connector_breaking_change_release(
-    capsys, strategic_connector_breaking_change_release_expected_teams
-):
-    check_review_requirements_file(capsys, strategic_connector_breaking_change_release_expected_teams)
+def test_find_mandatory_reviewers_no_tracked_changed(capsys, not_tracked_change_expected_team):
+    check_review_requirements_file(capsys, not_tracked_change_expected_team)
