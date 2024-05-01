@@ -7,13 +7,17 @@ from urllib.parse import urlencode
 import freezegun
 import pendulum
 import pytest
-from source_stripe.streams import CustomerBalanceTransactions, Persons, SetupAttempts
+
+from source_stripe.streams import (CustomerBalanceTransactions, Persons,
+                                   SetupAttempts)
 
 
 def read_from_stream(stream, sync_mode, state):
     records = []
     for slice_ in stream.stream_slices(sync_mode=sync_mode, stream_state=state):
-        for record in stream.read_records(sync_mode=sync_mode, stream_slice=slice_, stream_state=state):
+        for record in stream.read_records(
+            sync_mode=sync_mode, stream_slice=slice_, stream_state=state
+        ):
             records.append(record)
     return records
 
@@ -87,7 +91,13 @@ bank_accounts_incremental_test_case = (
                     "object": "event",
                     "api_version": "2020-08-27",
                     "created": 1692802016,
-                    "data": {"object": {"object": "bank_account", "bank_account": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716}},
+                    "data": {
+                        "object": {
+                            "object": "bank_account",
+                            "bank_account": "cs_1K9GK0EcXtiJtvvhSo2LvGqT",
+                            "created": 1653341716,
+                        }
+                    },
                     "type": "customer.source.created",
                 },
                 {
@@ -95,7 +105,13 @@ bank_accounts_incremental_test_case = (
                     "object": "event",
                     "api_version": "2020-08-27",
                     "created": 1692802017,
-                    "data": {"object": {"object": "card", "card": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716}},
+                    "data": {
+                        "object": {
+                            "object": "card",
+                            "card": "cs_1K9GK0EcXtiJtvvhSo2LvGqT",
+                            "created": 1653341716,
+                        }
+                    },
                     "type": "customer.source.updated",
                 },
             ],
@@ -103,7 +119,14 @@ bank_accounts_incremental_test_case = (
         }
     },
     "bank_accounts",
-    [{"object": "bank_account", "bank_account": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716, "updated": 1692802016}],
+    [
+        {
+            "object": "bank_account",
+            "bank_account": "cs_1K9GK0EcXtiJtvvhSo2LvGqT",
+            "created": 1653341716,
+            "updated": 1692802016,
+        }
+    ],
     "incremental",
     {"updated": 1692802015},
 )
@@ -115,7 +138,14 @@ bank_accounts_incremental_test_case = (
 )
 @freezegun.freeze_time("2023-08-23T15:00:15Z")
 def test_lazy_substream_data_cursor_value_is_populated(
-    requests_mock, stream_by_name, config, requests_mock_map, stream_cls, expected_records, sync_mode, state
+    requests_mock,
+    stream_by_name,
+    config,
+    requests_mock_map,
+    stream_cls,
+    expected_records,
+    sync_mode,
+    state,
 ):
     config["start_date"] = str(pendulum.today().subtract(days=3))
     stream = stream_by_name(stream_cls, config)
@@ -128,10 +158,20 @@ def test_lazy_substream_data_cursor_value_is_populated(
         assert bool(record[stream.cursor_field])
 
 
-@pytest.mark.parametrize("requests_mock_map, stream_cls, expected_records, sync_mode, state", (bank_accounts_full_refresh_test_case,))
+@pytest.mark.parametrize(
+    "requests_mock_map, stream_cls, expected_records, sync_mode, state",
+    (bank_accounts_full_refresh_test_case,),
+)
 @freezegun.freeze_time("2023-08-23T15:00:15Z")
 def test_lazy_substream_data_is_expanded(
-    requests_mock, stream_by_name, config, requests_mock_map, stream_cls, expected_records, sync_mode, state
+    requests_mock,
+    stream_by_name,
+    config,
+    requests_mock_map,
+    stream_cls,
+    expected_records,
+    sync_mode,
+    state,
 ):
 
     config["start_date"] = str(pendulum.today().subtract(days=3))
@@ -143,16 +183,29 @@ def test_lazy_substream_data_is_expanded(
 
     assert list(records) == expected_records
     assert len(requests_mock.request_history) == 2
-    assert urlencode({"expand[]": "data.sources"}) in requests_mock.request_history[0].url
+    assert (
+        urlencode({"expand[]": "data.sources"}) in requests_mock.request_history[0].url
+    )
 
 
 @pytest.mark.parametrize(
     "requests_mock_map, stream_cls, expected_records, sync_mode, state, expected_object",
-    ((*bank_accounts_full_refresh_test_case, "bank_account"), (*bank_accounts_incremental_test_case, "bank_account")),
+    (
+        (*bank_accounts_full_refresh_test_case, "bank_account"),
+        (*bank_accounts_incremental_test_case, "bank_account"),
+    ),
 )
 @freezegun.freeze_time("2023-08-23T15:00:15Z")
 def test_lazy_substream_data_is_filtered(
-    requests_mock, stream_by_name, config, requests_mock_map, stream_cls, expected_records, sync_mode, state, expected_object
+    requests_mock,
+    stream_by_name,
+    config,
+    requests_mock_map,
+    stream_cls,
+    expected_records,
+    sync_mode,
+    state,
+    expected_object,
 ):
     config["start_date"] = str(pendulum.today().subtract(days=3))
     stream = stream_by_name(stream_cls, config)
@@ -166,8 +219,20 @@ def test_lazy_substream_data_is_filtered(
 
 
 balance_transactions_api_objects = [
-    {"id": "txn_1KVQhfEcXtiJtvvhF7ox3YEm", "object": "balance_transaction", "amount": 435, "created": 1653299388, "status": "available"},
-    {"id": "txn_tiJtvvhF7ox3YEmKvVQhfEcX", "object": "balance_transaction", "amount": -9164, "created": 1679568588, "status": "available"},
+    {
+        "id": "txn_1KVQhfEcXtiJtvvhF7ox3YEm",
+        "object": "balance_transaction",
+        "amount": 435,
+        "created": 1653299388,
+        "status": "available",
+    },
+    {
+        "id": "txn_tiJtvvhF7ox3YEmKvVQhfEcX",
+        "object": "balance_transaction",
+        "amount": -9164,
+        "created": 1679568588,
+        "status": "available",
+    },
 ]
 
 
@@ -227,7 +292,10 @@ refunds_api_objects = [
                     "status": "available",
                 },
             ],
-            [{"created[gte]": 1631199615, "created[lte]": 1662735615}, {"created[gte]": 1662735616, "created[lte]": 1692802815}],
+            [
+                {"created[gte]": 1631199615, "created[lte]": 1662735615},
+                {"created[gte]": 1662735616, "created[lte]": 1692802815},
+            ],
             "balance_transactions",
             "full_refresh",
             {},
@@ -292,7 +360,10 @@ refunds_api_objects = [
                     "currency": "eur",
                 },
             ],
-            [{"created[gte]": 1631199615, "created[lte]": 1662735615}, {"created[gte]": 1662735616, "created[lte]": 1692802815}],
+            [
+                {"created[gte]": 1631199615, "created[lte]": 1662735615},
+                {"created[gte]": 1662735616, "created[lte]": 1692802815},
+            ],
             "refunds",
             "full_refresh",
             {},
@@ -327,7 +398,15 @@ refunds_api_objects = [
 )
 @freezegun.freeze_time("2023-08-23T15:00:15Z")
 def test_created_cursor_incremental_stream(
-    requests_mock, requests_mock_map, stream_by_name, expected_records, expected_slices, stream_name, sync_mode, state, config
+    requests_mock,
+    requests_mock_map,
+    stream_by_name,
+    expected_records,
+    expected_slices,
+    stream_name,
+    sync_mode,
+    state,
+    config,
 ):
     config["start_date"] = str(pendulum.now().subtract(months=23))
     stream = stream_by_name(stream_name, {"lookback_window_days": 14, **config})
@@ -353,21 +432,54 @@ def test_created_cursor_incremental_stream(
         ("2020-01-01T00:00:00Z", 14, 0, {}, "2019-12-18T00:00:00Z"),
         ("2020-01-01T00:00:00Z", 0, 30, {}, "2023-07-24T15:00:15Z"),
         ("2020-01-01T00:00:00Z", 14, 30, {}, "2023-07-24T15:00:15Z"),
-        ("2020-01-01T00:00:00Z", 0, 0, {"created": pendulum.parse("2022-07-17T00:00:00Z").int_timestamp}, "2022-07-17T00:00:01Z"),
-        ("2020-01-01T00:00:00Z", 14, 0, {"created": pendulum.parse("2022-07-17T00:00:00Z").int_timestamp}, "2022-07-03T00:00:01Z"),
-        ("2020-01-01T00:00:00Z", 0, 30, {"created": pendulum.parse("2022-07-17T00:00:00Z").int_timestamp}, "2023-07-24T15:00:15Z"),
-        ("2020-01-01T00:00:00Z", 14, 30, {"created": pendulum.parse("2022-07-17T00:00:00Z").int_timestamp}, "2023-07-24T15:00:15Z"),
+        (
+            "2020-01-01T00:00:00Z",
+            0,
+            0,
+            {"created": pendulum.parse("2022-07-17T00:00:00Z").int_timestamp},
+            "2022-07-17T00:00:01Z",
+        ),
+        (
+            "2020-01-01T00:00:00Z",
+            14,
+            0,
+            {"created": pendulum.parse("2022-07-17T00:00:00Z").int_timestamp},
+            "2022-07-03T00:00:01Z",
+        ),
+        (
+            "2020-01-01T00:00:00Z",
+            0,
+            30,
+            {"created": pendulum.parse("2022-07-17T00:00:00Z").int_timestamp},
+            "2023-07-24T15:00:15Z",
+        ),
+        (
+            "2020-01-01T00:00:00Z",
+            14,
+            30,
+            {"created": pendulum.parse("2022-07-17T00:00:00Z").int_timestamp},
+            "2023-07-24T15:00:15Z",
+        ),
     ),
 )
 @freezegun.freeze_time("2023-08-23T15:00:15Z")
 def test_get_start_timestamp(
-    stream_by_name, config, start_date, lookback_window, max_days_from_now, stream_state, expected_start_timestamp
+    stream_by_name,
+    config,
+    start_date,
+    lookback_window,
+    max_days_from_now,
+    stream_state,
+    expected_start_timestamp,
 ):
     config["start_date"] = start_date
     config["lookback_window_days"] = lookback_window
     stream = stream_by_name("balance_transactions", config)
     stream.start_date_max_days_from_now = max_days_from_now
-    assert stream.get_start_timestamp(stream_state) == pendulum.parse(expected_start_timestamp).int_timestamp
+    assert (
+        stream.get_start_timestamp(stream_state)
+        == pendulum.parse(expected_start_timestamp).int_timestamp
+    )
 
 
 @pytest.mark.parametrize("sync_mode", ("full_refresh", "incremental"))
@@ -378,15 +490,22 @@ def test_updated_cursor_incremental_stream_slices(stream_by_name, sync_mode):
 
 @pytest.mark.parametrize(
     "last_record, stream_state, expected_state",
-    (({"updated": 110}, {"updated": 111}, {"updated": 111}), ({"created": 110}, {"updated": 111}, {"updated": 111})),
+    (
+        ({"updated": 110}, {"updated": 111}, {"updated": 111}),
+        ({"created": 110}, {"updated": 111}, {"updated": 111}),
+    ),
 )
-def test_updated_cursor_incremental_stream_get_updated_state(stream_by_name, last_record, stream_state, expected_state):
+def test_updated_cursor_incremental_stream_get_updated_state(
+    stream_by_name, last_record, stream_state, expected_state
+):
     stream = stream_by_name("credit_notes")
     assert stream.get_updated_state(last_record, stream_state) == expected_state
 
 
 @pytest.mark.parametrize("sync_mode", ("full_refresh", "incremental"))
-def test_updated_cursor_incremental_stream_read_wo_state(requests_mock, sync_mode, stream_by_name):
+def test_updated_cursor_incremental_stream_read_wo_state(
+    requests_mock, sync_mode, stream_by_name
+):
     requests_mock.get(
         "/v1/credit_notes",
         [
@@ -448,7 +567,13 @@ def test_updated_cursor_incremental_stream_read_w_state(requests_mock, stream_by
                             "object": "event",
                             "api_version": "2020-08-27",
                             "created": 1691629292,
-                            "data": {"object": {"object": "credit_note", "invoice": "in_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716}},
+                            "data": {
+                                "object": {
+                                    "object": "credit_note",
+                                    "invoice": "in_1K9GK0EcXtiJtvvhSo2LvGqT",
+                                    "created": 1653341716,
+                                }
+                            },
                             "type": "credit_note.voided",
                         }
                     ],
@@ -461,9 +586,21 @@ def test_updated_cursor_incremental_stream_read_w_state(requests_mock, stream_by
     stream = stream_by_name("credit_notes")
     records = [
         record
-        for record in stream.read_records("incremental", stream_state={"updated": pendulum.parse("2023-01-01T15:00:15Z").int_timestamp})
+        for record in stream.read_records(
+            "incremental",
+            stream_state={
+                "updated": pendulum.parse("2023-01-01T15:00:15Z").int_timestamp
+            },
+        )
     ]
-    assert records == [{"object": "credit_note", "invoice": "in_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716, "updated": 1691629292}]
+    assert records == [
+        {
+            "object": "credit_note",
+            "invoice": "in_1K9GK0EcXtiJtvvhSo2LvGqT",
+            "created": 1653341716,
+            "updated": 1691629292,
+        }
+    ]
 
 
 def test_customer_balance_transactions_stream_slices(requests_mock, stream_args):
@@ -472,16 +609,32 @@ def test_customer_balance_transactions_stream_slices(requests_mock, stream_args)
         "/v1/customers",
         json={
             "data": [
-                {"id": 1, "next_invoice_sequence": 1, "balance": 0, "created": 1653341716},
+                {
+                    "id": 1,
+                    "next_invoice_sequence": 1,
+                    "balance": 0,
+                    "created": 1653341716,
+                },
                 {"id": 2, "created": 1653341000},
-                {"id": 3, "next_invoice_sequence": 13, "balance": 343.43, "created": 1651716334},
+                {
+                    "id": 3,
+                    "next_invoice_sequence": 13,
+                    "balance": 343.43,
+                    "created": 1651716334,
+                },
             ]
         },
     )
     stream = CustomerBalanceTransactions(**stream_args)
     assert list(stream.stream_slices("full_refresh")) == [
         {"id": 2, "created": 1653341000, "updated": 1653341000},
-        {"id": 3, "next_invoice_sequence": 13, "balance": 343.43, "created": 1651716334, "updated": 1651716334},
+        {
+            "id": 3,
+            "next_invoice_sequence": 13,
+            "balance": 343.43,
+            "created": 1651716334,
+            "updated": 1651716334,
+        },
     ]
 
 
@@ -505,29 +658,51 @@ def test_setup_attempts(requests_mock, incremental_stream_args):
     )
     incremental_stream_args["slice_range"] = 1
     incremental_stream_args["lookback_window_days"] = 0
-    incremental_stream_args["start_date"] = pendulum.now().subtract(days=2).int_timestamp
+    incremental_stream_args["start_date"] = (
+        pendulum.now().subtract(days=2).int_timestamp
+    )
     stream = SetupAttempts(**incremental_stream_args)
     slices = list(stream.stream_slices("full_refresh"))
     assert slices == [
         {
             "created[gte]": 1692630015,
             "created[lte]": 1692716415,
-            "parent": {"id": 1, "created": 111, "updated": 111, "object": "setup_intent"},
+            "parent": {
+                "id": 1,
+                "created": 111,
+                "updated": 111,
+                "object": "setup_intent",
+            },
         },
         {
             "created[gte]": 1692716416,
             "created[lte]": 1692802815,
-            "parent": {"id": 1, "created": 111, "updated": 111, "object": "setup_intent"},
+            "parent": {
+                "id": 1,
+                "created": 111,
+                "updated": 111,
+                "object": "setup_intent",
+            },
         },
         {
             "created[gte]": 1692630015,
             "created[lte]": 1692716415,
-            "parent": {"id": 2, "created": 222, "updated": 222, "object": "setup_intent"},
+            "parent": {
+                "id": 2,
+                "created": 222,
+                "updated": 222,
+                "object": "setup_intent",
+            },
         },
         {
             "created[gte]": 1692716416,
             "created[lte]": 1692802815,
-            "parent": {"id": 2, "created": 222, "updated": 222, "object": "setup_intent"},
+            "parent": {
+                "id": 2,
+                "created": 222,
+                "updated": 222,
+                "object": "setup_intent",
+            },
         },
     ]
     records = []
@@ -543,11 +718,16 @@ def test_setup_attempts(requests_mock, incremental_stream_args):
 
 
 def test_persons_wo_state(requests_mock, stream_args):
-    requests_mock.get("/v1/accounts", json={"data": [{"id": 1, "object": "account", "created": 111}]})
+    requests_mock.get(
+        "/v1/accounts", json={"data": [{"id": 1, "object": "account", "created": 111}]}
+    )
     stream = Persons(**stream_args)
     slices = list(stream.stream_slices("full_refresh"))
     assert slices == [{"parent": {"id": 1, "object": "account", "created": 111}}]
-    requests_mock.get("/v1/accounts/1/persons", json={"data": [{"id": 11, "object": "person", "created": 222}]})
+    requests_mock.get(
+        "/v1/accounts/1/persons",
+        json={"data": [{"id": 11, "object": "person", "created": 222}]},
+    )
     records = []
     for slice_ in slices:
         for record in stream.read_records("full_refresh", stream_slice=slice_):
@@ -566,7 +746,13 @@ def test_persons_w_state(requests_mock, stream_args):
                     "object": "event",
                     "api_version": "2020-08-27",
                     "created": 1691629292,
-                    "data": {"object": {"object": "person", "name": "John", "created": 1653341716}},
+                    "data": {
+                        "object": {
+                            "object": "person",
+                            "name": "John",
+                            "created": 1653341716,
+                        }
+                    },
                     "type": "person.updated",
                 }
             ],
@@ -574,17 +760,45 @@ def test_persons_w_state(requests_mock, stream_args):
         },
     )
     stream = Persons(**stream_args)
-    slices = list(stream.stream_slices("incremental", stream_state={"updated": pendulum.parse("2023-08-20T00:00:00").int_timestamp}))
+    slices = list(
+        stream.stream_slices(
+            "incremental",
+            stream_state={
+                "updated": pendulum.parse("2023-08-20T00:00:00").int_timestamp
+            },
+        )
+    )
     assert slices == [{}]
     records = [
         record
-        for record in stream.read_records("incremental", stream_state={"updated": pendulum.parse("2023-08-20T00:00:00").int_timestamp})
+        for record in stream.read_records(
+            "incremental",
+            stream_state={
+                "updated": pendulum.parse("2023-08-20T00:00:00").int_timestamp
+            },
+        )
     ]
-    assert records == [{"object": "person", "name": "John", "created": 1653341716, "updated": 1691629292}]
+    assert records == [
+        {
+            "object": "person",
+            "name": "John",
+            "created": 1653341716,
+            "updated": 1691629292,
+        }
+    ]
 
 
-@pytest.mark.parametrize("sync_mode, stream_state", (("full_refresh", {}), ("incremental", {}), ("incremental", {"updated": 1693987430})))
-def test_cursorless_incremental_stream(requests_mock, stream_by_name, sync_mode, stream_state):
+@pytest.mark.parametrize(
+    "sync_mode, stream_state",
+    (
+        ("full_refresh", {}),
+        ("incremental", {}),
+        ("incremental", {"updated": 1693987430}),
+    ),
+)
+def test_cursorless_incremental_stream(
+    requests_mock, stream_by_name, sync_mode, stream_state
+):
     # Testing streams that *only* have the cursor field value in incremental mode because of API discrepancies,
     # e.g. /bank_accounts does not return created/updated date, however /events?type=bank_account.updated returns the update date.
     # Key condition here is that the underlying stream has legacy cursor field set to None.
@@ -628,25 +842,47 @@ def test_cursorless_incremental_stream(requests_mock, stream_by_name, sync_mode,
         },
     )
     for slice_ in stream.stream_slices(sync_mode=sync_mode, stream_state=stream_state):
-        for record in stream.read_records(sync_mode=sync_mode, stream_state=stream_state, stream_slice=slice_):
+        for record in stream.read_records(
+            sync_mode=sync_mode, stream_state=stream_state, stream_slice=slice_
+        ):
             stream.get_updated_state(stream_state, record)
     # no assertions, this should be just a successful sync
 
 
-@pytest.mark.parametrize("sync_mode, stream_state", (("full_refresh", {}), ("incremental", {}), ("incremental", {"updated": 1693987430})))
-def test_cursorless_incremental_substream(requests_mock, stream_by_name, sync_mode, stream_state):
+@pytest.mark.parametrize(
+    "sync_mode, stream_state",
+    (
+        ("full_refresh", {}),
+        ("incremental", {}),
+        ("incremental", {"updated": 1693987430}),
+    ),
+)
+def test_cursorless_incremental_substream(
+    requests_mock, stream_by_name, sync_mode, stream_state
+):
     # same for substreams
     stream = stream_by_name("bank_accounts")
     requests_mock.get(
         "/v1/customers",
         json={
             "data": [
-                {"id": 1, "created": 1, "object": "customer", "sources": {"data": [{"id": 1, "object": "bank_account"}], "has_more": True}}
+                {
+                    "id": 1,
+                    "created": 1,
+                    "object": "customer",
+                    "sources": {
+                        "data": [{"id": 1, "object": "bank_account"}],
+                        "has_more": True,
+                    },
+                }
             ],
             "has_more": False,
         },
     )
-    requests_mock.get("/v1/customers/1/bank_accounts", json={"has_more": False, "data": [{"id": 2, "object": "bank_account"}]})
+    requests_mock.get(
+        "/v1/customers/1/bank_accounts",
+        json={"has_more": False, "data": [{"id": 2, "object": "bank_account"}]},
+    )
     requests_mock.get(
         "/v1/events",
         json={
@@ -671,7 +907,9 @@ def test_cursorless_incremental_substream(requests_mock, stream_by_name, sync_mo
         },
     )
     for slice_ in stream.stream_slices(sync_mode=sync_mode, stream_state=stream_state):
-        for record in stream.read_records(sync_mode=sync_mode, stream_state=stream_state, stream_slice=slice_):
+        for record in stream.read_records(
+            sync_mode=sync_mode, stream_state=stream_state, stream_slice=slice_
+        ):
             stream.get_updated_state(stream_state, record)
 
 
@@ -684,11 +922,24 @@ def test_get_updated_state(stream_name, stream_by_name, requests_mock):
     requests_mock.get("/v1/invoices", json=response)
     requests_mock.get(
         "/v1/customers",
-        json={"data": [{"id": 1, "created": 1695292083, "sources": {"data": [{"id": 1, "object": "bank_account"}], "has_more": False}}]},
+        json={
+            "data": [
+                {
+                    "id": 1,
+                    "created": 1695292083,
+                    "sources": {
+                        "data": [{"id": 1, "object": "bank_account"}],
+                        "has_more": False,
+                    },
+                }
+            ]
+        },
     )
     state = {}
     for slice_ in stream.stream_slices(sync_mode="incremental", stream_state=state):
-        for record in stream.read_records(sync_mode="incremental", stream_slice=slice_, stream_state=state):
+        for record in stream.read_records(
+            sync_mode="incremental", stream_slice=slice_, stream_state=state
+        ):
             state = stream.get_updated_state(state, record)
             assert state
 
@@ -762,7 +1013,10 @@ def test_subscription_items_extra_request_params(requests_mock, stream_by_name, 
         },
     ]
     assert len(requests_mock.request_history) == 2
-    assert "subscription=sub_1OApco2eZvKYlo2CEDCzwLrE" in requests_mock.request_history[-1].url
+    assert (
+        "subscription=sub_1OApco2eZvKYlo2CEDCzwLrE"
+        in requests_mock.request_history[-1].url
+    )
 
 
 checkout_session_api_response = {
@@ -998,7 +1252,13 @@ checkout_session_events_response = {
 )
 @freezegun.freeze_time("2023-08-23T15:00:15")
 def test_parent_incremental_substream_stream_slices(
-    requests_mock, requests_mock_map, stream_by_name, stream_name, sync_mode, state, expected_slices
+    requests_mock,
+    requests_mock_map,
+    stream_by_name,
+    stream_name,
+    sync_mode,
+    state,
+    expected_slices,
 ):
     for url, response in requests_mock_map.items():
         requests_mock.get(url, json=response)
@@ -1020,14 +1280,20 @@ checkout_session_line_items_slice_to_record_data_map = {
     "requests_mock_map, stream_name, sync_mode, state, mapped_fields",
     (
         (
-            {**checkout_session_api_response, **checkout_session_line_items_api_response},
+            {
+                **checkout_session_api_response,
+                **checkout_session_line_items_api_response,
+            },
             "checkout_sessions_line_items",
             "full_refresh",
             {},
             checkout_session_line_items_slice_to_record_data_map,
         ),
         (
-            {**checkout_session_events_response, **checkout_session_line_items_api_response},
+            {
+                **checkout_session_events_response,
+                **checkout_session_line_items_api_response,
+            },
             "checkout_sessions_line_items",
             "incremental",
             {"checkout_session_updated": 1685898010},
@@ -1036,14 +1302,22 @@ checkout_session_line_items_slice_to_record_data_map = {
     ),
 )
 def test_parent_incremental_substream_records_contain_data_from_slice(
-    requests_mock, requests_mock_map, stream_by_name, stream_name, sync_mode, state, mapped_fields
+    requests_mock,
+    requests_mock_map,
+    stream_by_name,
+    stream_name,
+    sync_mode,
+    state,
+    mapped_fields,
 ):
     for url, response in requests_mock_map.items():
         requests_mock.get(url, json=response)
 
     stream = stream_by_name(stream_name)
     for slice_ in stream.stream_slices(sync_mode, stream_state=state):
-        for record in stream.read_records(sync_mode, stream_slice=slice_, stream_state=state):
+        for record in stream.read_records(
+            sync_mode, stream_slice=slice_, stream_state=state
+        ):
             for key, value in mapped_fields.items():
                 assert slice_["parent"][key] == record[value]
 
@@ -1077,7 +1351,10 @@ def test_parent_incremental_substream_records_contain_data_from_slice(
                     },
                     200,
                 ),
-                "/v1/checkout/sessions/cs_1K9GK0EcXtiJtvvhSo2LvGqT/line_items": ({}, 404),
+                "/v1/checkout/sessions/cs_1K9GK0EcXtiJtvvhSo2LvGqT/line_items": (
+                    {},
+                    404,
+                ),
             },
             "checkout_sessions_line_items",
             {"checkout_session_updated": 1686934810},
@@ -1085,7 +1362,9 @@ def test_parent_incremental_substream_records_contain_data_from_slice(
     ),
 )
 @freezegun.freeze_time("2023-08-23T15:00:15")
-def test_parent_incremental_substream_handles_404(requests_mock, requests_mock_map, stream_by_name, stream_name, state, caplog):
+def test_parent_incremental_substream_handles_404(
+    requests_mock, requests_mock_map, stream_by_name, stream_name, state, caplog
+):
     for url, (response, status) in requests_mock_map.items():
         requests_mock.get(url, json=response, status_code=status)
 

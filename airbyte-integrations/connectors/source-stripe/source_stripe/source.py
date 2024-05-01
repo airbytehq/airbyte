@@ -12,33 +12,37 @@ import stripe
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
-from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
-from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
+from airbyte_cdk.sources.concurrent_source.concurrent_source import \
+    ConcurrentSource
+from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import \
+    ConcurrentSourceAdapter
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate
+from airbyte_cdk.sources.streams.call_rate import (AbstractAPIBudget,
+                                                   HttpAPIBudget,
+                                                   HttpRequestMatcher,
+                                                   MovingWindowCallRatePolicy,
+                                                   Rate)
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
-from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
+from airbyte_cdk.sources.streams.concurrent.cursor import (ConcurrentCursor,
+                                                           CursorField,
+                                                           FinalStateCursor)
+from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import \
+    EpochValueConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_protocol.models import SyncMode
-from source_stripe.streams import (
-    CreatedCursorIncrementalStripeStream,
-    CustomerBalanceTransactions,
-    Events,
-    IncrementalStripeStream,
-    ParentIncrementalStipeSubStream,
-    Persons,
-    SetupAttempts,
-    StripeLazySubStream,
-    StripeStream,
-    StripeSubStream,
-    UpdatedCursorIncrementalStripeLazySubStream,
-    UpdatedCursorIncrementalStripeStream,
-)
+
+from source_stripe.streams import (CreatedCursorIncrementalStripeStream,
+                                   CustomerBalanceTransactions, Events,
+                                   IncrementalStripeStream,
+                                   ParentIncrementalStipeSubStream, Persons,
+                                   SetupAttempts, StripeLazySubStream,
+                                   StripeStream, StripeSubStream,
+                                   UpdatedCursorIncrementalStripeLazySubStream,
+                                   UpdatedCursorIncrementalStripeStream)
 
 logger = logging.getLogger("airbyte")
 
@@ -60,14 +64,26 @@ class SourceStripe(ConcurrentSourceAdapter):
         CreatedCursorIncrementalStripeStream: ("created[gte]", "created[lte]"),
     }
 
-    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+    def __init__(
+        self,
+        catalog: Optional[ConfiguredAirbyteCatalog],
+        config: Optional[Mapping[str, Any]],
+        state: TState,
+        **kwargs,
+    ):
         if config:
-            concurrency_level = min(config.get("num_workers", _DEFAULT_CONCURRENCY), _MAX_CONCURRENCY)
+            concurrency_level = min(
+                config.get("num_workers", _DEFAULT_CONCURRENCY), _MAX_CONCURRENCY
+            )
         else:
             concurrency_level = _DEFAULT_CONCURRENCY
         logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
         concurrent_source = ConcurrentSource.create(
-            concurrency_level, concurrency_level // 2, logger, self._slice_logger, self.message_repository
+            concurrency_level,
+            concurrency_level // 2,
+            logger,
+            self._slice_logger,
+            self.message_repository,
         )
         super().__init__(concurrent_source)
         self._state = state
@@ -82,7 +98,9 @@ class SourceStripe(ConcurrentSourceAdapter):
             self._streams_configured_as_full_refresh = set()
 
     @staticmethod
-    def validate_and_fill_with_defaults(config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def validate_and_fill_with_defaults(
+        config: MutableMapping[str, Any]
+    ) -> MutableMapping[str, Any]:
         lookback_window_days, slice_range = (
             config.get("lookback_window_days"),
             config.get("slice_range"),
@@ -110,7 +128,9 @@ class SourceStripe(ConcurrentSourceAdapter):
             )
         return config
 
-    def check_connection(self, logger: AirbyteLogger, config: MutableMapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(
+        self, logger: AirbyteLogger, config: MutableMapping[str, Any]
+    ) -> Tuple[bool, Any]:
         self.validate_and_fill_with_defaults(config)
         stripe.api_key = config["client_secret"]
         try:
@@ -189,7 +209,10 @@ class SourceStripe(ConcurrentSourceAdapter):
             "slice_range": config["slice_range"],
             "api_budget": self.get_api_call_budget(config),
         }
-        incremental_args = {**args, "lookback_window_days": config["lookback_window_days"]}
+        incremental_args = {
+            **args,
+            "lookback_window_days": config["lookback_window_days"],
+        }
         subscriptions = IncrementalStripeStream(
             name="subscriptions",
             path="subscriptions",
@@ -210,7 +233,9 @@ class SourceStripe(ConcurrentSourceAdapter):
         subscription_items = StripeLazySubStream(
             name="subscription_items",
             path="subscription_items",
-            extra_request_params=lambda self, stream_slice, *args, **kwargs: {"subscription": stream_slice["parent"]["id"]},
+            extra_request_params=lambda self, stream_slice, *args, **kwargs: {
+                "subscription": stream_slice["parent"]["id"]
+            },
             parent=subscriptions,
             use_cache=USE_CACHE,
             sub_items_attr="items",
@@ -272,7 +297,11 @@ class SourceStripe(ConcurrentSourceAdapter):
             UpdatedCursorIncrementalStripeStream(
                 name="external_account_cards",
                 path=lambda self, *args, **kwargs: f"accounts/{self.account_id}/external_accounts",
-                event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
+                event_types=[
+                    "account.external_account.created",
+                    "account.external_account.updated",
+                    "account.external_account.deleted",
+                ],
                 legacy_cursor_field=None,
                 extra_request_params={"object": "card"},
                 response_filter=lambda record: record["object"] == "card",
@@ -281,7 +310,11 @@ class SourceStripe(ConcurrentSourceAdapter):
             UpdatedCursorIncrementalStripeStream(
                 name="external_account_bank_accounts",
                 path=lambda self, *args, **kwargs: f"accounts/{self.account_id}/external_accounts",
-                event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
+                event_types=[
+                    "account.external_account.created",
+                    "account.external_account.updated",
+                    "account.external_account.deleted",
+                ],
                 legacy_cursor_field=None,
                 extra_request_params={"object": "bank_account"},
                 response_filter=lambda record: record["object"] == "bank_account",
@@ -290,14 +323,26 @@ class SourceStripe(ConcurrentSourceAdapter):
             Persons(**args),
             SetupAttempts(**incremental_args),
             StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args),
-            CreatedCursorIncrementalStripeStream(name="shipping_rates", path="shipping_rates", **incremental_args),
-            CreatedCursorIncrementalStripeStream(name="balance_transactions", path="balance_transactions", **incremental_args),
-            CreatedCursorIncrementalStripeStream(name="files", path="files", **incremental_args),
-            CreatedCursorIncrementalStripeStream(name="file_links", path="file_links", **incremental_args),
+            CreatedCursorIncrementalStripeStream(
+                name="shipping_rates", path="shipping_rates", **incremental_args
+            ),
+            CreatedCursorIncrementalStripeStream(
+                name="balance_transactions",
+                path="balance_transactions",
+                **incremental_args,
+            ),
+            CreatedCursorIncrementalStripeStream(
+                name="files", path="files", **incremental_args
+            ),
+            CreatedCursorIncrementalStripeStream(
+                name="file_links", path="file_links", **incremental_args
+            ),
             # The Refunds stream does not utilize the Events API as it created issues with data loss during the incremental syncs.
             # Therefore, we're using the regular API with the `created` cursor field. A bug has been filed with Stripe.
             # See more at https://github.com/airbytehq/oncall/issues/3090, https://github.com/airbytehq/oncall/issues/3428
-            CreatedCursorIncrementalStripeStream(name=_REFUND_STREAM_NAME, path="refunds", **incremental_args),
+            CreatedCursorIncrementalStripeStream(
+                name=_REFUND_STREAM_NAME, path="refunds", **incremental_args
+            ),
             UpdatedCursorIncrementalStripeStream(
                 name="payment_methods",
                 path="payment_methods",
@@ -312,26 +357,40 @@ class SourceStripe(ConcurrentSourceAdapter):
             UpdatedCursorIncrementalStripeStream(
                 name="credit_notes",
                 path="credit_notes",
-                event_types=["credit_note.created", "credit_note.updated", "credit_note.voided"],
+                event_types=[
+                    "credit_note.created",
+                    "credit_note.updated",
+                    "credit_note.voided",
+                ],
                 **args,
             ),
             UpdatedCursorIncrementalStripeStream(
                 name="early_fraud_warnings",
                 path="radar/early_fraud_warnings",
-                event_types=["radar.early_fraud_warning.created", "radar.early_fraud_warning.updated"],
+                event_types=[
+                    "radar.early_fraud_warning.created",
+                    "radar.early_fraud_warning.updated",
+                ],
                 **args,
             ),
             IncrementalStripeStream(
                 name="authorizations",
                 path="issuing/authorizations",
-                event_types=["issuing_authorization.created", "issuing_authorization.request", "issuing_authorization.updated"],
+                event_types=[
+                    "issuing_authorization.created",
+                    "issuing_authorization.request",
+                    "issuing_authorization.updated",
+                ],
                 **args,
             ),
             self.customers(**args),
             IncrementalStripeStream(
                 name="cardholders",
                 path="issuing/cardholders",
-                event_types=["issuing_cardholder.created", "issuing_cardholder.updated"],
+                event_types=[
+                    "issuing_cardholder.created",
+                    "issuing_cardholder.updated",
+                ],
                 **args,
             ),
             IncrementalStripeStream(
@@ -350,7 +409,10 @@ class SourceStripe(ConcurrentSourceAdapter):
                 **args,
             ),
             IncrementalStripeStream(
-                name="coupons", path="coupons", event_types=["coupon.created", "coupon.updated", "coupon.deleted"], **args
+                name="coupons",
+                path="coupons",
+                event_types=["coupon.created", "coupon.updated", "coupon.deleted"],
+                **args,
             ),
             IncrementalStripeStream(
                 name="disputes",
@@ -370,7 +432,11 @@ class SourceStripe(ConcurrentSourceAdapter):
                 name="invoice_items",
                 path="invoiceitems",
                 legacy_cursor_field="date",
-                event_types=["invoiceitem.created", "invoiceitem.updated", "invoiceitem.deleted"],
+                event_types=[
+                    "invoiceitem.created",
+                    "invoiceitem.updated",
+                    "invoiceitem.deleted",
+                ],
                 **args,
             ),
             IncrementalStripeStream(
@@ -393,11 +459,24 @@ class SourceStripe(ConcurrentSourceAdapter):
                 event_types=["plan.created", "plan.updated", "plan.deleted"],
                 **args,
             ),
-            IncrementalStripeStream(name="prices", path="prices", event_types=["price.created", "price.updated", "price.deleted"], **args),
             IncrementalStripeStream(
-                name="products", path="products", event_types=["product.created", "product.updated", "product.deleted"], **args
+                name="prices",
+                path="prices",
+                event_types=["price.created", "price.updated", "price.deleted"],
+                **args,
             ),
-            IncrementalStripeStream(name="reviews", path="reviews", event_types=["review.closed", "review.opened"], **args),
+            IncrementalStripeStream(
+                name="products",
+                path="products",
+                event_types=["product.created", "product.updated", "product.deleted"],
+                **args,
+            ),
+            IncrementalStripeStream(
+                name="reviews",
+                path="reviews",
+                event_types=["review.closed", "review.opened"],
+                **args,
+            ),
             subscriptions,
             IncrementalStripeStream(
                 name="subscription_schedule",
@@ -448,18 +527,30 @@ class SourceStripe(ConcurrentSourceAdapter):
                 **args,
             ),
             IncrementalStripeStream(
-                name="cards", path="issuing/cards", event_types=["issuing_card.created", "issuing_card.updated"], **args
+                name="cards",
+                path="issuing/cards",
+                event_types=["issuing_card.created", "issuing_card.updated"],
+                **args,
             ),
             IncrementalStripeStream(
                 name="transactions",
                 path="issuing/transactions",
-                event_types=["issuing_transaction.created", "issuing_transaction.updated"],
+                event_types=[
+                    "issuing_transaction.created",
+                    "issuing_transaction.updated",
+                ],
                 **args,
             ),
             IncrementalStripeStream(
                 name="top_ups",
                 path="topups",
-                event_types=["topup.canceled", "topup.created", "topup.failed", "topup.reversed", "topup.succeeded"],
+                event_types=[
+                    "topup.canceled",
+                    "topup.created",
+                    "topup.failed",
+                    "topup.reversed",
+                    "topup.succeeded",
+                ],
                 **args,
             ),
             UpdatedCursorIncrementalStripeLazySubStream(
@@ -474,7 +565,12 @@ class SourceStripe(ConcurrentSourceAdapter):
                 name="bank_accounts",
                 path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/bank_accounts",
                 parent=self.customers(expand_items=["data.sources"], **args),
-                event_types=["customer.source.created", "customer.source.expiring", "customer.source.updated", "customer.source.deleted"],
+                event_types=[
+                    "customer.source.created",
+                    "customer.source.expiring",
+                    "customer.source.updated",
+                    "customer.source.deleted",
+                ],
                 legacy_cursor_field=None,
                 sub_items_attr="sources",
                 response_filter=lambda record: record["object"] == "bank_account",
@@ -500,7 +596,10 @@ class SourceStripe(ConcurrentSourceAdapter):
                 path=lambda self, stream_slice, *args, **kwargs: f"invoices/{stream_slice['parent']['id']}/lines",
                 parent=invoices,
                 sub_items_attr="lines",
-                slice_data_retriever=lambda record, stream_slice: {"invoice_id": stream_slice["parent"]["id"], **record},
+                slice_data_retriever=lambda record, stream_slice: {
+                    "invoice_id": stream_slice["parent"]["id"],
+                    **record,
+                },
                 **args,
             ),
             subscription_items,
@@ -512,21 +611,22 @@ class SourceStripe(ConcurrentSourceAdapter):
             ),
             StripeSubStream(
                 name="usage_records",
-                path=lambda self,
-                stream_slice,
-                *args,
-                **kwargs: f"subscription_items/{stream_slice['parent']['id']}/usage_record_summaries",
+                path=lambda self, stream_slice, *args, **kwargs: f"subscription_items/{stream_slice['parent']['id']}/usage_record_summaries",
                 parent=subscription_items,
                 primary_key=None,
                 **args,
             ),
         ]
 
-        state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self._state)
+        state_manager = ConnectorStateManager(
+            stream_instance_map={s.name: s for s in streams}, state=self._state
+        )
         return [
             self._to_concurrent(
                 stream,
-                datetime.fromtimestamp(self._start_date_to_timestamp(config), timezone.utc),
+                datetime.fromtimestamp(
+                    self._start_date_to_timestamp(config), timezone.utc
+                ),
                 timedelta(days=config["slice_range"]),
                 state_manager,
             )
@@ -534,7 +634,11 @@ class SourceStripe(ConcurrentSourceAdapter):
         ]
 
     def _to_concurrent(
-        self, stream: Stream, fallback_start: datetime, slice_range: timedelta, state_manager: ConnectorStateManager
+        self,
+        stream: Stream,
+        fallback_start: datetime,
+        slice_range: timedelta,
+        state_manager: ConnectorStateManager,
     ) -> Stream:
         if stream.name in self._streams_configured_as_full_refresh:
             return StreamFacade.create_from_stream(
@@ -542,13 +646,26 @@ class SourceStripe(ConcurrentSourceAdapter):
                 self,
                 entrypoint_logger,
                 self._create_empty_state(),
-                FinalStateCursor(stream_name=stream.name, stream_namespace=stream.namespace, message_repository=self.message_repository),
+                FinalStateCursor(
+                    stream_name=stream.name,
+                    stream_namespace=stream.namespace,
+                    message_repository=self.message_repository,
+                ),
             )
 
         state = state_manager.get_stream_state(stream.name, stream.namespace)
-        slice_boundary_fields = self._SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION.get(type(stream))
-        if slice_boundary_fields and stream.name not in _INCREMENTAL_CONCURRENCY_EXCLUSION:
-            cursor_field = CursorField(stream.cursor_field) if isinstance(stream.cursor_field, str) else CursorField(stream.cursor_field[0])
+        slice_boundary_fields = self._SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION.get(
+            type(stream)
+        )
+        if (
+            slice_boundary_fields
+            and stream.name not in _INCREMENTAL_CONCURRENCY_EXCLUSION
+        ):
+            cursor_field = (
+                CursorField(stream.cursor_field)
+                if isinstance(stream.cursor_field, str)
+                else CursorField(stream.cursor_field[0])
+            )
             converter = EpochValueConcurrentStreamStateConverter()
             cursor = ConcurrentCursor(
                 stream.name,
@@ -564,7 +681,9 @@ class SourceStripe(ConcurrentSourceAdapter):
                 timedelta(seconds=0),
                 slice_range,
             )
-            return StreamFacade.create_from_stream(stream, self, entrypoint_logger, state, cursor)
+            return StreamFacade.create_from_stream(
+                stream, self, entrypoint_logger, state, cursor
+            )
 
         return stream
 
