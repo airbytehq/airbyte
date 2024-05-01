@@ -384,9 +384,9 @@ definitions:
     url_base: https://api.rd.services
     authenticator:
       type: OAuthAuthenticator
-      client_id: '{{ config[''client_id''] }}'
-      client_secret: '{{ config[''client_secret''] }}'
-      refresh_token: '{{ config[''client_refresh_token''] }}'
+      client_id: '{{ config["authorization"][''client_id''] }}'
+      client_secret: '{{ config["authorization"][''client_secret''] }}'
+      refresh_token: '{{ config["authorization"][''client_refresh_token''] }}'
       refresh_request_body: {}
       token_refresh_endpoint: https://api.rd.services/auth/token
       grant_type: refresh_token
