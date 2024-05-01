@@ -114,7 +114,7 @@ class DeclarativeStream(Stream):
         """
         :param: stream_state We knowingly avoid using stream_state as we want cursors to manage their own state.
         """
-        if stream_slice is None:
+        if stream_slice is None or stream_slice == {}:
             # As the parameter is Optional, many would just call `read_records(sync_mode)` during testing without specifying the field
             # As part of the declarative model without custom components, this should never happen as the CDK would wire up a
             # SinglePartitionRouter that would create this StreamSlice properly

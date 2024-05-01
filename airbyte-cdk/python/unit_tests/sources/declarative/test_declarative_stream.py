@@ -60,6 +60,39 @@ def test_declarative_stream():
     assert stream.stream_slices(sync_mode=SyncMode.incremental, cursor_field=_cursor_field, stream_state=None) == stream_slices
 
 
+def test_declarative_stream_using_empty_slice():
+    """
+    Tests that a declarative_stream
+    """
+    schema_loader = _schema_loader()
+
+    records = [
+        {"pk": 1234, "field": "value"},
+        {"pk": 4567, "field": "different_value"},
+        AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="This is a log  message")),
+        AirbyteMessage(type=Type.TRACE, trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=12345)),
+    ]
+
+    retriever = MagicMock()
+    retriever.read_records.return_value = records
+
+    config = {"api_key": "open_sesame"}
+
+    stream = DeclarativeStream(
+        name=_name,
+        primary_key=_primary_key,
+        stream_cursor_field="{{ parameters['cursor_field'] }}",
+        schema_loader=schema_loader,
+        retriever=retriever,
+        config=config,
+        parameters={"cursor_field": "created_at"},
+    )
+
+    assert stream.name == _name
+    assert stream.get_json_schema() == _json_schema
+    assert list(stream.read_records(SyncMode.full_refresh, _cursor_field, {})) == records
+
+
 def test_read_records_raises_exception_if_stream_slice_is_not_per_partition_stream_slice():
     schema_loader = _schema_loader()
 

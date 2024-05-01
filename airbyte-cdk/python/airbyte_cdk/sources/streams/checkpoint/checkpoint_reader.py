@@ -20,7 +20,8 @@ class CheckpointReader(ABC):
     @abstractmethod
     def next(self) -> Optional[Mapping[str, Any]]:
         """
-        Returns the next slice that will be used to fetch the next group of records
+        Returns the next slice that will be used to fetch the next group of records. Returning None indicates that the reader
+        has finished iterating over all slices.
         """
 
     @abstractmethod
@@ -35,7 +36,7 @@ class CheckpointReader(ABC):
     @abstractmethod
     def get_checkpoint(self) -> Optional[Mapping[str, Any]]:
         """
-        Retrieves the current state value of the stream
+        Retrieves the current state value of the stream. The connector does not emit state messages if the checkpoint value is None.
         """
 
 
@@ -84,8 +85,6 @@ class ResumableFullRefreshCheckpointReader(CheckpointReader):
         self._state: Mapping[str, Any] = stream_state
 
     def next(self) -> Optional[Mapping[str, Any]]:
-        #  todo blai: I think this is my main concern with the interface is that it puts a lot of onus on the connector developer to
-        #   structure their state object correctly to coincide with how the checkpoint_reader interprets values.
         if self._first_page:
             self._first_page = False
             return self._state
