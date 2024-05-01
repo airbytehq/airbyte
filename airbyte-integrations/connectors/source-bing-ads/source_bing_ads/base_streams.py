@@ -206,13 +206,21 @@ class Accounts(BingAdsStream):
             "ReturnAdditionalFields": self.additional_fields,
         }
 
+    def _transform_tax_fields(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        tax_certificates = record["TaxCertificate"].get("TaxCertificates", {}) if record.get("TaxCertificate") is not None else {}
+        if tax_certificates and not isinstance(tax_certificates, list):
+            tax_certificate_pairs = tax_certificates.get("KeyValuePairOfstringbase64Binary")
+            if tax_certificate_pairs:
+                record["TaxCertificate"]["TaxCertificates"] = tax_certificate_pairs
+        return record
+
     def parse_response(self, response: sudsobject.Object, **kwargs) -> Iterable[Mapping]:
         if response is not None and hasattr(response, self.data_field):
             records = self.client.asdict(response)[self.data_field]
             for record in records:
                 if record["Id"] not in self._unique_account_ids:
                     self._unique_account_ids.add(record["Id"])
-                    yield record
+                    yield self._transform_tax_fields(record)
 
 
 class Campaigns(BingAdsCampaignManagementStream):

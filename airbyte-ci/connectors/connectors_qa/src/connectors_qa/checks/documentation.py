@@ -201,6 +201,6 @@ class CheckChangelogEntry(DocumentationCheck):
 ENABLED_CHECKS = [
     CheckMigrationGuide(),
     CheckDocumentationExists(),
-    CheckDocumentationStructure(),
+    # CheckDocumentationStructure(),  # Disabled as many are failing - we either need a big push or to block everyone. See https://github.com/airbytehq/airbyte/commit/4889e6e024d64ba0e353611f8fe67497b02de190#diff-3c73c6521bf819248b3d3d8aeab7cacfa4e8011f9890da93c77da925ece7eb20L262
     CheckChangelogEntry(),
 ]

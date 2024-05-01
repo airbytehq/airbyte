@@ -484,9 +484,7 @@ invalid_jsonl_scenario = (
             ]
         }
     )
-    .set_expected_records(
-        []
-    )
+    .set_expected_records([])
     .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
     .set_expected_read_error(AirbyteTracedException, "Please check the logged errors for more information.")
     .set_expected_logs(

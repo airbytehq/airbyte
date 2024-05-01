@@ -66,9 +66,6 @@
     "error_code": {
       "type": ["string", "null"]
     },
-    "error-text": {
-      "type": ["string", "null"]
-    },
     "voided_at": {
       "type": ["integer", "null"]
     },
@@ -124,6 +121,9 @@
       "type": ["string", "null"]
     },
     "error_text": {
+      "type": ["string", "null"]
+    },
+    "error_detail": {
       "type": ["string", "null"]
     },
     "payment_method_details": {

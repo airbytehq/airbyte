@@ -31,24 +31,14 @@ class GoogleAdsStream(Stream, ABC):
         self.customers = customers
 
     def get_query(self, stream_slice: Mapping[str, Any]) -> str:
-        # The following construction excludes "user_interest.availabilities" and "user_interest.launched_to_all" fields
-        # from the query because they are a cause of "500 Internal server error" on the google side.
-        # The oncall issue: https://github.com/airbytehq/oncall/issues/4306
-        # TODO: replace with fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
-        fields = [
-            field
-            for field in GoogleAds.get_fields_from_schema(self.get_json_schema())
-            if not (field == "user_interest.availabilities" or field == "user_interest.launched_to_all")
-        ]
+        fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
         table_name = get_resource_name(self.name)
         query = GoogleAds.convert_schema_into_query(fields=fields, table_name=table_name)
         return query
 
     def parse_response(self, response: SearchPager, stream_slice: Optional[Mapping[str, Any]] = None) -> Iterable[Mapping]:
         for result in response:
-            yield self.google_ads_client.parse_single_result(
-                self.get_json_schema(), result, nullable=["user_interest.availabilities", "user_interest.launched_to_all"]
-            )
+            yield self.google_ads_client.parse_single_result(self.get_json_schema(), result)
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for customer in self.customers:
@@ -566,6 +556,37 @@ class ChangeStatus(IncrementalGoogleAdsStream):
         """Queries for ChangeStatus resource have to include limit in it"""
         return 10000
 
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
+        """Modifies the original stream_slices to return one empty slice for new customers that doesn't have state yet"""
+        stream_state = stream_state or {}
+        for customer in self.customers:
+            if stream_state.get(customer.id):
+                start_date = stream_state[customer.id].get(self.cursor_field) or self._start_date
+            # We should keep backward compatibility with the previous version
+            elif stream_state.get(self.cursor_field) and len(self.customers) == 1:
+                start_date = stream_state.get(self.cursor_field) or self._start_date
+            else:
+                # child stream doesn't need parent stream as it is used only for the updates
+                yield {"customer_id": customer.id, "login_customer_id": customer.login_customer_id}
+                continue
+
+            end_date = self._end_date
+
+            for chunk in chunk_date_range(
+                start_date=start_date,
+                end_date=end_date,
+                conversion_window=self.conversion_window_days,
+                days_of_data_storage=self.days_of_data_storage,
+                time_zone=customer.time_zone,
+                time_format=self.cursor_time_format,
+                slice_duration=self.slice_duration,
+                slice_step=self.slice_step,
+            ):
+                if chunk:
+                    chunk["customer_id"] = customer.id
+                    chunk["login_customer_id"] = customer.login_customer_id
+                yield chunk
+
     def read_records(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: MutableMapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
@@ -668,18 +689,33 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
         """
         If state exists read updates from parent stream otherwise return slices with only customer id to sync all records for stream
         """
-        if stream_state:
-            slices_generator = self.read_parent_stream(SyncMode.incremental, self.parent_cursor_field, stream_state)
-            yield from slices_generator
-        else:
-            for customer in self.customers:
-                yield {
-                    "customer_id": customer.id,
-                    "login_customer_id": customer.login_customer_id,
-                    "updated_ids": set(),
-                    "deleted_ids": set(),
-                    "record_changed_time_map": dict(),
-                }
+        stream_state = stream_state or {}
+        for parent_slice in self.parent_stream.stream_slices(
+            sync_mode=SyncMode.incremental,
+            cursor_field=self.parent_cursor_field,
+            stream_state=stream_state.get(self.parent_stream_name, {}),
+        ):
+            customer_id = parent_slice.get("customer_id")
+            child_slice = {
+                "customer_id": customer_id,
+                "updated_ids": set(),
+                "deleted_ids": set(),
+                "record_changed_time_map": dict(),
+                "login_customer_id": parent_slice.get("login_customer_id"),
+            }
+            if not self.get_current_state(customer_id):
+                yield child_slice
+                continue
+
+            parent_slice["resource_type"] = self.resource_type
+            for parent_record in self.parent_stream.read_records(
+                sync_mode=SyncMode.incremental, cursor_field=self.parent_cursor_field, stream_slice=parent_slice
+            ):
+                self._process_parent_record(parent_record, child_slice)
+
+            # yield child slice if any records where read
+            if child_slice["record_changed_time_map"]:
+                yield child_slice
 
     def _process_parent_record(self, parent_record: MutableMapping[str, Any], child_slice: MutableMapping[str, Any]) -> bool:
         """Process a single parent_record and update the child_slice."""
@@ -695,32 +731,6 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
         child_slice[slice_id_list].add(substream_id)
 
         return True
-
-    def read_parent_stream(
-        self, sync_mode: SyncMode, cursor_field: Optional[str], stream_state: Mapping[str, Any]
-    ) -> Iterable[Mapping[str, Any]]:
-        for parent_slice in self.parent_stream.stream_slices(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state.get(self.parent_stream_name)
-        ):
-            customer_id = parent_slice.get("customer_id")
-            child_slice = {
-                "customer_id": customer_id,
-                "updated_ids": set(),
-                "deleted_ids": set(),
-                "record_changed_time_map": dict(),
-                "login_customer_id": parent_slice.get("login_customer_id"),
-            }
-            if not self.get_current_state(customer_id):
-                yield child_slice
-                continue
-
-            parent_slice["resource_type"] = self.resource_type
-            for parent_record in self.parent_stream.read_records(sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=parent_slice):
-                self._process_parent_record(parent_record, child_slice)
-
-            # yield child slice if any records where read
-            if child_slice["record_changed_time_map"]:
-                yield child_slice
 
     def parse_response(self, response: SearchPager, stream_slice: MutableMapping[str, Any] = None) -> Iterable[Mapping]:
         # update records with time obtained from parent stream

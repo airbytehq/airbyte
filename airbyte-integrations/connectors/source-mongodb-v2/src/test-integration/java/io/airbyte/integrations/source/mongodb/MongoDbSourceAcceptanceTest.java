@@ -37,10 +37,12 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.AirbyteTraceMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
@@ -238,7 +240,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final List<AirbyteStateMessage> stateMessages = filterStateMessages(messages);
 
     assertEquals(0, recordMessages.size());
-    assertEquals(1, stateMessages.size());
+    // Expect 1 state message from initial load and 1 from incremental load.
+    assertEquals(2, stateMessages.size());
 
     final AirbyteStateMessage lastStateMessage = Iterables.getLast(stateMessages);
     assertNotNull(lastStateMessage.getGlobal().getSharedState());
@@ -508,14 +511,14 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     stateMessage.getGlobal().setSharedState(Jsons.jsonNode(cdcState));
     final JsonNode state = Jsons.jsonNode(List.of(stateMessage));
 
-    // Re-run the sync to prove that an initial snapshot is initiated due to invalid resume token
-    final List<AirbyteMessage> messages2 = runRead(configuredCatalog, state);
-
-    final List<AirbyteRecordMessage> recordMessages2 = filterRecords(messages2);
-    final List<AirbyteStateMessage> stateMessages2 = filterStateMessages(messages2);
-
-    assertEquals(recordCount, recordMessages2.size());
-    assertEquals(recordCount + 1, stateMessages2.size());
+    // Re-run the sync to prove that a config error is thrown due to invalid resume token
+    List<AirbyteMessage> messages1 = runRead(configuredCatalog, state);
+    List<AirbyteMessage> records = messages1.stream().filter(r -> r.getType() == Type.RECORD).toList();
+    // In this sync, there should be no records expected - only error trace messages indicating that the
+    // offset is not valid.
+    assertEquals(0, records.size());
+    List<AirbyteMessage> traceMessages = messages1.stream().filter(r -> r.getType() == Type.TRACE).toList();
+    assertOplogErrorTracePresent(traceMessages);
   }
 
   @Test
@@ -656,6 +659,14 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     } else {
       assertNull(data.get(CDC_DELETED_AT));
     }
+  }
+
+  private void assertOplogErrorTracePresent(List<AirbyteMessage> traceMessages) {
+    final boolean oplogTracePresent = traceMessages
+        .stream()
+        .anyMatch(trace -> trace.getTrace().getType().equals(AirbyteTraceMessage.Type.ERROR)
+            && trace.getTrace().getError().getMessage().contains("Saved offset is not valid"));
+    assertTrue(oplogTracePresent);
   }
 
 }

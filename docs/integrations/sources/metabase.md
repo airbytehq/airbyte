@@ -4,9 +4,9 @@ This page contains the setup guide and reference information for the Metabase so
 ## Prerequisites
 
 To set up Metabase you need:
-  * `username` and `password` - Credential pairs to authenticate with Metabase instance. This may be used to generate a new `session_token` if necessary. An email from Metabase may be sent to the owner's account everytime this is being used to open a new session.
-  * `session_token` - Credential token to authenticate requests sent to Metabase API. Usually expires after 14 days.   
-  * `instance_api_url` - URL to interact with metabase instance API, that uses https.
+  * `username` and `password` - Credential pairs to authenticate with Metabase instance. This may be used to generate a new `session_token` if necessary. An email from Metabase may be sent to the owner's account every time this is being used to open a new session.
+  * `session_token` - Credential token to authenticate requests sent to Metabase API. Usually expires after 14 days.
+  * `instance_api_url` - URL to interact with Metabase instance API, that uses https.
 
 ## Setup guide
 
@@ -28,10 +28,10 @@ If you’re working with a remote server, you’ll need to replace localhost:300
 You can use this id value as your `session_token` when configuring the connector.
 Note that these credentials tokens may expire after 14 days by default, and you might need to update your connector configuration with a new value when that happens (The connector should throw exceptions about Invalid and expired session tokens and return a 401 (Unauthorized) status code in that scenario).
 
-If you are hosting your own metabase instance, you can configure this session duration on your metabase server by setting the environment variable MAX_SESSION_AGE (value is in minutes).
+If you are hosting your own Metabase instance, you can configure this session duration on your Metabase server by setting the environment variable MAX_SESSION_AGE (value is in minutes).
 
-If the connector is supplied with only username and password, a session_token will be generated everytime an
-authenticated query is running, which might trigger security alerts on the user's metabase account.
+If the connector is supplied with only username and password, a session_token will be generated every time an
+authenticated query is running, which might trigger security alerts on the user's Metabase account.
 
 ## Supported sync modes
 
@@ -44,6 +44,8 @@ The Metabase source connector supports the following [sync modes](https://docs.a
 * [Collections](https://www.metabase.com/docs/latest/api/collection.html#get-apicollection)
 * [Dashboard](https://www.metabase.com/docs/latest/api/dashboard.html#get-apidashboard)
 * [User](https://www.metabase.com/docs/latest/api/user.html#get-apiuser)
+* [Databases](https://www.metabase.com/docs/latest/api/user.html#get-apiuser)
+* [Native Query Snippet](https://www.metabase.com/docs/latest/api/native-query-snippet#get-apinative-query-snippetid)
 
 ## Tutorials
 
@@ -62,7 +64,7 @@ The Metabase source connector supports the following [sync modes](https://docs.a
 |:------------------|:---------------------|:------|
 | Full Refresh Sync | Yes                  |       |
 | Incremental Sync  | No                   |       |
-| SSL connection    | Yes                  |
+| SSL connection    | Yes                  |       |
 | Namespaces        | No                   |       |
 
 
@@ -70,6 +72,7 @@ The Metabase source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------|
+| 2.0.0   | 2024-03-01 | [35680](https://github.com/airbytehq/airbyte/pull/35680) | Updates `dashboards` stream, Base image migration: remove Dockerfile and use the python-connector-base image, migrated to poetry       |
 | 1.1.0   | 2023-10-31 | [31909](https://github.com/airbytehq/airbyte/pull/31909) | Add `databases` and `native_query_snippets` streams       |
 | 1.0.1   | 2023-07-20 | [28470](https://github.com/airbytehq/airbyte/pull/27777) | Update CDK to 0.47.0       |
 | 1.0.0   | 2023-06-27 | [27777](https://github.com/airbytehq/airbyte/pull/27777) | Remove Activity Stream     |

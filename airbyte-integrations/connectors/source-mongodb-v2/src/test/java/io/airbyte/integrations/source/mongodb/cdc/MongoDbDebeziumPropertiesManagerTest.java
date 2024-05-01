@@ -50,7 +50,7 @@ class MongoDbDebeziumPropertiesManagerTest {
 
   private static final String DATABASE_NAME = "test_database";
   private static final Path PATH = Path.of(".");
-  public static final String EXPECTED_CONNECTION_STRING = "mongodb://localhost:27017/?retryWrites=false&provider=airbyte&tls=true";
+  public static final String EXPECTED_CONNECTION_STRING = "mongodb://localhost:27017/";
 
   @Test
   void testDebeziumProperties() {
@@ -185,7 +185,7 @@ class MongoDbDebeziumPropertiesManagerTest {
   @Test
   void testCreateConnectionString() {
     final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
-    final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config, false);
+    final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config);
     assertNotNull(connectionString);
     assertEquals(EXPECTED_CONNECTION_STRING, connectionString);
   }
@@ -193,18 +193,10 @@ class MongoDbDebeziumPropertiesManagerTest {
   @Test
   void testCreateConnectionStringQuotedString() {
     final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
-    final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config, false);
+    final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config);
     ((ObjectNode) config).put(CONNECTION_STRING_CONFIGURATION_KEY, "\"" + config.get(CONNECTION_STRING_CONFIGURATION_KEY) + "\"");
     assertNotNull(connectionString);
     assertEquals(EXPECTED_CONNECTION_STRING, connectionString);
-  }
-
-  @Test
-  void testCreateConnectionStringUseSecondary() {
-    final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
-    final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config, true);
-    assertNotNull(connectionString);
-    assertEquals("mongodb://localhost:27017/?retryWrites=false&provider=airbyte&tls=true&readPreference=secondary", connectionString);
   }
 
   @Test
@@ -212,7 +204,7 @@ class MongoDbDebeziumPropertiesManagerTest {
     final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
     ((ObjectNode) config).put(CONNECTION_STRING_CONFIGURATION_KEY, config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText()
         .replaceAll("mongodb://", "mongodb://" + CREDENTIALS_PLACEHOLDER));
-    final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config, false);
+    final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config);
     assertNotNull(connectionString);
     assertEquals(EXPECTED_CONNECTION_STRING, connectionString);
   }

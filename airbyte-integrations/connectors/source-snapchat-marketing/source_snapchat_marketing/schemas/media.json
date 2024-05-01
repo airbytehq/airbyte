@@ -19,6 +19,12 @@
     "media_status": {
       "type": ["null", "string"]
     },
+    "media_usages": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
     "file_name": {
       "type": ["null", "string"]
     },

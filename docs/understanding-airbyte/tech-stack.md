@@ -2,7 +2,7 @@
 
 ## Airbyte Core Backend
 
-* [Java 17](https://jdk.java.net/archive/)
+* [Java 21](https://jdk.java.net/archive/)
 * Framework: [Micronaut](https://micronaut.io/)
 * API: [OAS3](https://www.openapis.org/)
 * Databases: [PostgreSQL](https://www.postgresql.org/)
@@ -14,7 +14,7 @@
 Connectors can be written in any language. However the most common languages are:
 
 * Python 3.9 or higher
-* [Java 17](https://jdk.java.net/archive/)
+* [Java 21](https://jdk.java.net/archive/)
 
 ## **Frontend**
 

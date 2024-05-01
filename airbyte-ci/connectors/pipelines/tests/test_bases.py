@@ -39,7 +39,7 @@ class TestStep:
         assert step_result.status == timed_out_step_result.status
         assert step_result.stdout == timed_out_step_result.stdout
         assert step_result.stderr == timed_out_step_result.stderr
-        assert step_result.output_artifact == timed_out_step_result.output_artifact
+        assert step_result.output == timed_out_step_result.output
         assert step.retry_count == step.max_retries + 1
 
     @pytest.mark.parametrize(
