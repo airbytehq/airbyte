@@ -349,7 +349,7 @@ public class MongoUtilTest {
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
     when(aggregateIterable.allowDiskUse(anyBoolean())).thenReturn(aggregateIterable);
 
-    final Optional<MongoUtil.CollectionStatistics> statistics = MongoUtil.getCollectionStatistics(mongoClient, configuredAirbyteStream);
+    final Optional<MongoUtil.CollectionStatistics> statistics = MongoUtil.getCollectionStatistics(mongoDatabase, configuredAirbyteStream);
 
     assertTrue(statistics.isPresent());
     assertEquals(746, statistics.get().count());
@@ -375,7 +375,7 @@ public class MongoUtilTest {
     when(mongoDatabase.getCollection(collectionName)).thenReturn(mongoCollection);
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
 
-    final Optional<MongoUtil.CollectionStatistics> statistics = MongoUtil.getCollectionStatistics(mongoClient, configuredAirbyteStream);
+    final Optional<MongoUtil.CollectionStatistics> statistics = MongoUtil.getCollectionStatistics(mongoDatabase, configuredAirbyteStream);
 
     assertFalse(statistics.isPresent());
   }
@@ -401,7 +401,7 @@ public class MongoUtilTest {
     when(mongoDatabase.getCollection(collectionName)).thenReturn(mongoCollection);
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
 
-    final Optional<MongoUtil.CollectionStatistics> statistics = MongoUtil.getCollectionStatistics(mongoClient, configuredAirbyteStream);
+    final Optional<MongoUtil.CollectionStatistics> statistics = MongoUtil.getCollectionStatistics(mongoDatabase, configuredAirbyteStream);
 
     assertFalse(statistics.isPresent());
   }
@@ -410,14 +410,14 @@ public class MongoUtilTest {
   void testGetCollectionStatisticsException() {
     final String collectionName = "test-collection";
     final String databaseName = "test-database";
-    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
 
     final AirbyteStream stream = new AirbyteStream().withName(collectionName).withNamespace(databaseName);
     final ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream().withStream(stream);
 
-    when(mongoClient.getDatabase(databaseName)).thenThrow(new IllegalArgumentException("test"));
+    when(mongoDatabase.getCollection(collectionName)).thenThrow(new IllegalArgumentException("test"));
 
-    final Optional<MongoUtil.CollectionStatistics> statistics = MongoUtil.getCollectionStatistics(mongoClient, configuredAirbyteStream);
+    final Optional<MongoUtil.CollectionStatistics> statistics = MongoUtil.getCollectionStatistics(mongoDatabase, configuredAirbyteStream);
 
     assertFalse(statistics.isPresent());
 
