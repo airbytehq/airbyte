@@ -110,7 +110,7 @@
       "description": "Any discounts applied to the invoice",
       "type": ["null", "array"],
       "items": {
-        "type": ["null", "string"]
+        "type": ["null", "object"]
       }
     },
     "discount": {

@@ -54,7 +54,6 @@ STRIPE_TEST_ACCOUNT_PREFIX = "sk_test_"
 
 
 class SourceStripe(ConcurrentSourceAdapter):
-
     message_repository = InMemoryMessageRepository(entrypoint_logger.level)
     _SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION = {
         Events: ("created[gte]", "created[lte]"),
@@ -235,6 +234,7 @@ class SourceStripe(ConcurrentSourceAdapter):
             name="invoices",
             path="invoices",
             use_cache=USE_CACHE,
+            expand_items=["data.discounts"],
             event_types=[
                 "invoice.created",
                 "invoice.finalization_failed",
