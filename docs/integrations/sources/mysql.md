@@ -223,6 +223,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.23  | 2024-04-23 | [37507](https://github.com/airbytehq/airbyte/pull/37507)                                                          | Better errors when user switches from CDC to non-CDC mode.                                                                                           |
 | 3.3.22  | 2024-04-22 | [37541](https://github.com/airbytehq/airbyte/pull/37541)   | Adopt latest CDK. reduce excessive logs.                                                                                                        |
 | 3.3.21  | 2024-04-22 | [37476](https://github.com/airbytehq/airbyte/pull/37476)   | Adopt latest CDK.                                                                                                                               |
 | 3.3.20  | 2024-04-16 | [37111](https://github.com/airbytehq/airbyte/pull/37111)   | Populate null values in record message.                                                                                                         |
