@@ -8,8 +8,7 @@ from typing import Any, Mapping, Optional, Tuple
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.availability_strategy import \
-    HttpAvailabilityStrategy
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from requests import HTTPError
 
 from .stream_helpers import get_first_record_for_slice, get_first_stream_slice
@@ -52,9 +51,7 @@ class StripeAvailabilityStrategy(HttpAvailabilityStrategy):
             get_first_record_for_slice(stream, sync_mode, stream_slice, stream_state)
             return True, None
         except StopIteration:
-            logger.info(
-                f"Successfully connected to stream {stream.name}, but got 0 records."
-            )
+            logger.info(f"Successfully connected to stream {stream.name}, but got 0 records.")
             return True, None
         except HTTPError as error:
             is_available, reason = self.handle_http_error(stream, logger, source, error)
@@ -62,9 +59,7 @@ class StripeAvailabilityStrategy(HttpAvailabilityStrategy):
                 reason = f"Unable to read {stream.name} stream. {reason}"
             return is_available, reason
 
-    def check_availability(
-        self, stream: Stream, logger: logging.Logger, source: Optional["Source"]
-    ) -> Tuple[bool, Optional[str]]:
+    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> Tuple[bool, Optional[str]]:
         """
         Check stream availability by attempting to read the first record of the
         stream.
@@ -77,14 +72,10 @@ class StripeAvailabilityStrategy(HttpAvailabilityStrategy):
           for some reason and the str should describe what went wrong and how to
           resolve the unavailability, if possible.
         """
-        is_available, reason = self._check_availability_for_sync_mode(
-            stream, SyncMode.full_refresh, logger, source, None
-        )
+        is_available, reason = self._check_availability_for_sync_mode(stream, SyncMode.full_refresh, logger, source, None)
         if not is_available or not stream.supports_incremental:
             return is_available, reason
-        return self._check_availability_for_sync_mode(
-            stream, SyncMode.incremental, logger, source, {stream.cursor_field: 0}
-        )
+        return self._check_availability_for_sync_mode(stream, SyncMode.incremental, logger, source, {stream.cursor_field: 0})
 
     def handle_http_error(
         self,
@@ -98,9 +89,7 @@ class StripeAvailabilityStrategy(HttpAvailabilityStrategy):
             raise error
         parsed_error = error.response.json()
         error_code = parsed_error.get("error", {}).get("code")
-        error_message = STRIPE_ERROR_CODES.get(
-            error_code, parsed_error.get("error", {}).get("message")
-        )
+        error_message = STRIPE_ERROR_CODES.get(error_code, parsed_error.get("error", {}).get("message"))
         if not error_message:
             raise error
         doc_ref = self._visit_docs_message(logger, source)
@@ -112,9 +101,7 @@ class StripeAvailabilityStrategy(HttpAvailabilityStrategy):
 
 
 class StripeSubStreamAvailabilityStrategy(StripeAvailabilityStrategy):
-    def check_availability(
-        self, stream: Stream, logger: logging.Logger, source: Optional[Source]
-    ) -> Tuple[bool, Optional[str]]:
+    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
         """Traverse through all the parents of a given stream and run availability strategy on each of them"""
         try:
             current_stream, parent_stream = stream, getattr(stream, "parent")
@@ -125,9 +112,7 @@ class StripeSubStreamAvailabilityStrategy(StripeAvailabilityStrategy):
             # Accessing the `availability_strategy` property will instantiate AvailabilityStrategy under the hood
             availability_strategy = parent_stream_instance.availability_strategy
             if availability_strategy:
-                is_available, reason = availability_strategy.check_availability(
-                    parent_stream_instance, logger, source
-                )
+                is_available, reason = availability_strategy.check_availability(parent_stream_instance, logger, source)
                 if not is_available:
                     return is_available, reason
         return super().check_availability(stream, logger, source)

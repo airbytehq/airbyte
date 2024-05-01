@@ -8,9 +8,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 
 
-def get_first_stream_slice(
-    stream, sync_mode, stream_state
-) -> Optional[Mapping[str, Any]]:
+def get_first_stream_slice(stream, sync_mode, stream_state) -> Optional[Mapping[str, Any]]:
     """
     Gets the first stream_slice from a given stream's stream_slices.
     :param stream: stream
@@ -48,9 +46,5 @@ def get_first_record_for_slice(
     """
     # We wrap the return output of read_records() because some implementations return types that are iterable,
     # but not iterators such as lists or tuples
-    records_for_slice = iter(
-        stream.read_records(
-            sync_mode=sync_mode, stream_slice=stream_slice, stream_state=stream_state
-        )
-    )
+    records_for_slice = iter(stream.read_records(sync_mode=sync_mode, stream_slice=stream_slice, stream_state=stream_state))
     return next(records_for_slice)
