@@ -25,14 +25,18 @@ public record DynamodbConfig(
 ) {
 
   public static DynamodbConfig createDynamodbConfig(JsonNode jsonNode) {
+    JsonNode credentials = jsonNode.get("credentials");
+    JsonNode accessKeyId = credentials.get("access_key_id");
+    JsonNode secretAccessKey = credentials.get("secret_access_key");
+
     JsonNode endpoint = jsonNode.get("endpoint");
     JsonNode region = jsonNode.get("region");
     JsonNode attributeNames = jsonNode.get("reserved_attribute_names");
     return new DynamodbConfig(
         endpoint != null && !endpoint.asText().isBlank() ? URI.create(endpoint.asText()) : null,
         region != null && !region.asText().isBlank() ? Region.of(region.asText()) : null,
-        jsonNode.get("access_key_id").asText(),
-        jsonNode.get("secret_access_key").asText(),
+        accessKeyId != null && !accessKeyId.asText().isBlank() ? accessKeyId.asText() : null,
+        secretAccessKey != null && !secretAccessKey.asText().isBlank() ? secretAccessKey.asText() : null,
         attributeNames != null ? Arrays.asList(attributeNames.asText().split("\\s*,\\s*")) : List.of());
   }
 
