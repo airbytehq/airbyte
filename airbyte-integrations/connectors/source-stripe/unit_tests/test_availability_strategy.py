@@ -6,11 +6,8 @@ import logging
 import urllib.parse
 
 import pytest
-from airbyte_cdk.sources.streams.http.availability_strategy import \
-    HttpAvailabilityStrategy
-
-from source_stripe.availability_strategy import (
-    STRIPE_ERROR_CODES, StripeSubStreamAvailabilityStrategy)
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from source_stripe.availability_strategy import STRIPE_ERROR_CODES, StripeSubStreamAvailabilityStrategy
 from source_stripe.streams import IncrementalStripeStream, StripeLazySubStream
 
 
