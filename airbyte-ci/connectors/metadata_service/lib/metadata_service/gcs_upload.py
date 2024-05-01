@@ -192,6 +192,7 @@ def _apply_prerelease_overrides(metadata_dict: dict, validator_opts: ValidatorOp
 
     return metadata_dict
 
+
 def _commit_to_git_info(commit: git.Commit) -> GitInfo:
     return GitInfo(
         commit_sha=commit.hexsha,
