@@ -8,33 +8,50 @@ import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.DISABL
 import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_MODE;
 import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_SSL;
 import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
-import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.obtainConnectionOptions;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
+import io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
+import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresDataTransformer;
+import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresDestinationHandler;
+import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresRawTableAirbyteMetaMigration;
 import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresSqlGenerator;
-import java.io.UnsupportedEncodingException;
+import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresState;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PostgresDestination extends AbstractJdbcDestination implements Destination {
+public class PostgresDestination extends AbstractJdbcDestination<PostgresState> implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDestination.class);
 
   public static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
+
+  private static final String DROP_CASCADE_OPTION = "drop_cascade";
 
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new PostgresDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
@@ -52,18 +69,21 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     // This avoids issues with creating the same function concurrently (e.g. if multiple syncs run
     // at the same time).
     // Function definition copied from https://dba.stackexchange.com/a/203986
-    return builder.withConnectionInitSql("""
-                                         CREATE FUNCTION pg_temp.airbyte_safe_cast(_in text, INOUT _out ANYELEMENT)
-                                           LANGUAGE plpgsql AS
-                                         $func$
-                                         BEGIN
-                                           EXECUTE format('SELECT %L::%s', $1, pg_typeof(_out))
-                                           INTO  _out;
-                                         EXCEPTION WHEN others THEN
-                                           -- do nothing: _out already carries default
-                                         END
-                                         $func$;
-                                         """);
+
+    // Adding 60 seconds to connection timeout, for ssl connections, default 10 seconds is not enough
+    return builder.withConnectionTimeout(Duration.ofSeconds(60))
+        .withConnectionInitSql("""
+                               CREATE FUNCTION pg_temp.airbyte_safe_cast(_in text, INOUT _out ANYELEMENT)
+                                 LANGUAGE plpgsql AS
+                               $func$
+                               BEGIN
+                                 EXECUTE format('SELECT %L::%s', $1, pg_typeof(_out))
+                                 INTO  _out;
+                               EXCEPTION WHEN others THEN
+                                 -- do nothing: _out already carries default
+                               END
+                               $func$;
+                               """);
   }
 
   @Override
@@ -74,7 +94,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
         if (DISABLE.equals(config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText())) {
           additionalParameters.put("sslmode", DISABLE);
         } else {
-          additionalParameters.putAll(obtainConnectionOptions(config.get(PARAM_SSL_MODE)));
+          additionalParameters.putAll(PostgresSslConnectionUtils.obtainConnectionOptions(config.get(PARAM_SSL_MODE)));
         }
       } else {
         additionalParameters.put(JdbcUtils.SSL_KEY, "true");
@@ -90,12 +110,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
 
     String encodedDatabase = config.get(JdbcUtils.DATABASE_KEY).asText();
     if (encodedDatabase != null) {
-      try {
-        encodedDatabase = URLEncoder.encode(encodedDatabase, "UTF-8");
-      } catch (final UnsupportedEncodingException e) {
-        // Should never happen
-        e.printStackTrace();
-      }
+      encodedDatabase = URLEncoder.encode(encodedDatabase, StandardCharsets.UTF_8);
     }
     final String jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s?",
         config.get(JdbcUtils.HOST_KEY).asText(),
@@ -119,11 +134,37 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   }
 
   @Override
-  protected JdbcSqlGenerator getSqlGenerator() {
-    return new PostgresSqlGenerator(new PostgresSQLNameTransformer());
+  protected JdbcSqlGenerator getSqlGenerator(final JsonNode config) {
+    final JsonNode dropCascadeNode = config.get(DROP_CASCADE_OPTION);
+    final boolean dropCascade = dropCascadeNode != null && dropCascadeNode.asBoolean();
+    return new PostgresSqlGenerator(new PostgresSQLNameTransformer(), dropCascade);
+  }
+
+  @Override
+  protected JdbcDestinationHandler<PostgresState> getDestinationHandler(String databaseName, JdbcDatabase database, String rawTableSchema) {
+    return new PostgresDestinationHandler(databaseName, database, rawTableSchema);
+  }
+
+  @Override
+  protected List<Migration<PostgresState>> getMigrations(JdbcDatabase database,
+                                                         String databaseName,
+                                                         SqlGenerator sqlGenerator,
+                                                         DestinationHandler<PostgresState> destinationHandler) {
+    return List.of(new PostgresRawTableAirbyteMetaMigration(database, databaseName));
+  }
+
+  @Override
+  protected StreamAwareDataTransformer getDataTransformer(ParsedCatalog parsedCatalog, String defaultNamespace) {
+    return new PostgresDataTransformer();
+  }
+
+  @Override
+  public boolean isV2Destination() {
+    return true;
   }
 
   public static void main(final String[] args) throws Exception {
+    AirbyteExceptionHandler.addThrowableForDeinterpolation(PSQLException.class);
     final Destination destination = PostgresDestination.sshWrappedDestination();
     LOGGER.info("starting destination: {}", PostgresDestination.class);
     new IntegrationRunner(destination).run(args);

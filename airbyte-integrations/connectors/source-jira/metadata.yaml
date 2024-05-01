@@ -10,14 +10,18 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.2.2
   dockerRepository: airbyte/source-jira
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
   githubIssueLabel: source-jira
   icon: jira.svg
   license: MIT
-  maxSecondsBetweenMessages: 21600
+  maxSecondsBetweenMessages: 5400
   name: Jira
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-jira
   registries:
     cloud:
       enabled: true
@@ -27,7 +31,10 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: "Stream state will be saved for every board in stream `Boards Issues`. Customers who use stream `Board Issues` in Incremental Sync mode must take action with their connections."
+        message:
+          "Stream state will be saved for every board in stream `Boards Issues`.
+          Customers who use stream `Board Issues` in Incremental Sync mode must take
+          action with their connections."
         upgradeDeadline: "2024-01-25"
         scopedImpact:
           - scopeType: stream
@@ -41,4 +48,5 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:python
 metadataSpecVersion: "1.0"

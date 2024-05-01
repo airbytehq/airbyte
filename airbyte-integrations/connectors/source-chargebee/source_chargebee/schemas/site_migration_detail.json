@@ -4,38 +4,28 @@
   "type": "object",
   "properties": {
     "entity_id": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "type": ["string", "null"]
     },
     "other_site_name": {
-      "type": ["string", "null"],
-      "minLength": 4,
-      "maxLength": 100
+      "type": ["string", "null"]
     },
     "entity_id_at_other_site": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "type": ["string", "null"]
     },
     "migrated_at": {
       "type": ["integer", "null"]
     },
     "entity_type": {
-      "type": ["string", "null"],
-      "enum": [
-        "customer",
-        "subscription",
-        "invoice",
-        "credit_note",
-        "transaction",
-        "order"
-      ]
+      "type": ["string", "null"]
     },
     "status": {
-      "type": ["string", "null"],
-      "enum": ["moved_in", "moved_out", "moving_out"]
+      "type": ["string", "null"]
     },
     "object": {
       "type": ["string", "null"]
+    },
+    "custom_fields": {
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }

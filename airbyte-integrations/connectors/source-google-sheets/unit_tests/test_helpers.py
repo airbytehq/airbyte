@@ -279,6 +279,7 @@ class TestHelpers(unittest.TestCase):
 
         # names_conversion = False, with null header cell
         sheet1_first_row = ["1", "2", "3", "4", None]
+        expected = {sheet1: {0: "1", 1: "2", 2: "3", 3: "4", 4: None}}
         actual = Helpers.get_available_sheets_to_column_index_to_name(
             client=sheet_client,
             spreadsheet_id=spreadsheet_id,
@@ -288,7 +289,7 @@ class TestHelpers(unittest.TestCase):
 
         # names_conversion = True, with null header cell
         sheet1_first_row = ["AB", "Some Header", "Header", "4", "1MyName", None]
-        expected = {sheet1: {0: "ab", 1: "some_header", 2: "header", 3: "_4", 4: "_1_my_name"}}
+        expected = {sheet1: {0: "ab", 1: "some_header", 2: "header", 3: "_4", 4: "_1_my_name", 5: None}}
         actual = Helpers.get_available_sheets_to_column_index_to_name(
             client=sheet_client,
             spreadsheet_id=spreadsheet_id,

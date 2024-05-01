@@ -190,7 +190,12 @@ Expand to see details about Google Search Console connector limitations and trou
 ### Connector limitations
 
 #### Rate limiting
+
 This connector attempts to back off gracefully when it hits Reports API's rate limits. To find more information about limits, see [Usage Limits](https://developers.google.com/webmaster-tools/limits) documentation.
+
+#### Data retention
+
+Google Search Console only retains data for websites from the last 16 months. Any data prior to this cutoff point will not be accessible. [Please see this article for more information](https://seotesting.com/google-search-console/how-long-does-gsc-keep-my-data/#:~:text=Google%20Search%20Console%20holds%20relevant,October%2C%202022%2C%20until%20today.).
 
 ### Troubleshooting
 
@@ -202,6 +207,8 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 
 | Version  | Date       | Pull Request                                                                                                  | Subject                                                                                                                        |
 |:---------|:-----------|:--------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|
+| `1.4.0`  | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267)                                                      | Pin airbyte-cdk version to `^0`                                                                                                |
+| `1.3.7`  | 2024-02-12 | [35163](https://github.com/airbytehq/airbyte/pull/35163)                                                      | Manage dependencies with Poetry.                                                                                               |
 | `1.3.6`  | 2023-10-26 | [31863](https://github.com/airbytehq/airbyte/pull/31863)                                                      | Base image migration: remove Dockerfile and use the python-connector-base image                                                |
 | `1.3.5`  | 2023-09-28 | [30822](https://github.com/airbytehq/airbyte/pull/30822)                                                      | Fix primary key for custom reports                                                                                             |
 | `1.3.4`  | 2023-09-27 | [30785](https://github.com/airbytehq/airbyte/pull/30785)                                                      | Do not migrate config for the newly created connections                                                                        |

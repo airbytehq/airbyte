@@ -1,340 +1,423 @@
 {
   "properties": {
     "account_currency": {
+      "description": "Currency used for the account",
       "type": ["null", "string"]
     },
     "account_id": {
+      "description": "ID of the account",
       "type": ["null", "string"]
     },
     "account_name": {
+      "description": "Name of the account",
       "type": ["null", "string"]
     },
     "action_values": {
+      "description": "Action values taken on the ad",
       "$ref": "ads_action_stats.json"
     },
     "actions": {
+      "description": "Total number of actions taken",
       "$ref": "ads_action_stats.json"
     },
     "ad_click_actions": {
+      "description": "Actions taken that are clicks on the ad",
       "$ref": "ads_action_stats.json"
     },
     "ad_id": {
+      "description": "ID of the ad",
       "type": ["null", "string"]
     },
     "ad_impression_actions": {
+      "description": "Actions triggered by ad impressions",
       "$ref": "ads_action_stats.json"
     },
     "ad_name": {
+      "description": "Name of the ad",
       "type": ["null", "string"]
     },
     "adset_id": {
+      "description": "ID of the ad set",
       "type": ["null", "string"]
     },
     "adset_name": {
-      "type": ["null", "string"]
-    },
-    "age_targeting": {
+      "description": "Name of the ad set",
       "type": ["null", "string"]
     },
     "attribution_setting": {
+      "description": "How conversions are attributed",
       "type": ["null", "string"]
     },
     "auction_bid": {
+      "description": "Bid amount in the auction",
       "type": ["null", "number"]
     },
     "auction_competitiveness": {
+      "description": "Competitiveness level in the auction",
       "type": ["null", "number"]
     },
     "auction_max_competitor_bid": {
+      "description": "Maximum bid among the competitors in the auction",
       "type": ["null", "number"]
     },
     "buying_type": {
+      "description": "Type of buying",
       "type": ["null", "string"]
     },
     "campaign_id": {
+      "description": "ID of the campaign",
       "type": ["null", "string"]
     },
     "campaign_name": {
+      "description": "Name of the campaign",
       "type": ["null", "string"]
     },
     "canvas_avg_view_percent": {
+      "description": "Average percentage of the canvas viewed",
       "type": ["null", "number"]
     },
     "canvas_avg_view_time": {
+      "description": "Average time spent viewing the canvas",
       "type": ["null", "number"]
     },
     "catalog_segment_actions": {
+      "description": "Actions on specific catalog segments",
       "$ref": "ads_action_stats.json"
     },
     "catalog_segment_value": {
+      "description": "Value attributed to catalog segments",
       "$ref": "ads_action_stats.json"
     },
     "catalog_segment_value_mobile_purchase_roas": {
+      "description": "Mobile purchase return on ad spend for catalog segments",
       "$ref": "ads_action_stats.json"
     },
     "catalog_segment_value_omni_purchase_roas": {
+      "description": "Omni-channel purchase return on ad spend for catalog segments",
       "$ref": "ads_action_stats.json"
     },
     "catalog_segment_value_website_purchase_roas": {
+      "description": "Website purchase return on ad spend for catalog segments",
       "$ref": "ads_action_stats.json"
     },
     "clicks": {
+      "description": "Total number of clicks",
       "type": ["null", "integer"]
     },
+    "conversion_lead_rate": {
+      "description": "Rate of leads generated from conversions",
+      "type": ["null", "number"]
+    },
     "conversion_rate_ranking": {
+      "description": "Ranking based on conversion rates",
       "type": ["null", "string"]
     },
     "conversion_values": {
+      "description": "Values from conversions",
       "$ref": "ads_action_stats.json"
     },
     "conversions": {
+      "description": "Total number of conversions",
       "$ref": "ads_action_stats.json"
     },
     "converted_product_quantity": {
+      "description": "Quantity of products converted",
       "$ref": "ads_action_stats.json"
     },
     "converted_product_value": {
+      "description": "Value of products converted",
       "$ref": "ads_action_stats.json"
     },
     "cost_per_15_sec_video_view": {
+      "description": "Cost per 15-second video view",
       "$ref": "ads_action_stats.json"
     },
     "cost_per_2_sec_continuous_video_view": {
+      "description": "Cost per 2-second continuous video view",
       "$ref": "ads_action_stats.json"
     },
     "cost_per_action_type": {
+      "description": "Cost per specific action type",
       "$ref": "ads_action_stats.json"
     },
     "cost_per_ad_click": {
+      "description": "Cost per ad click",
       "$ref": "ads_action_stats.json"
     },
     "cost_per_conversion": {
+      "description": "Cost per conversion",
       "$ref": "ads_action_stats.json"
     },
+    "cost_per_conversion_lead": {
+      "description": "Cost per conversion lead",
+      "type": ["null", "number"]
+    },
     "cost_per_estimated_ad_recallers": {
+      "description": "Cost per estimated ad recallers",
       "type": ["null", "number"]
     },
     "cost_per_inline_link_click": {
+      "description": "Cost per inline link click",
       "type": ["null", "number"]
     },
     "cost_per_inline_post_engagement": {
+      "description": "Cost per inline post engagement",
       "type": ["null", "number"]
     },
     "cost_per_outbound_click": {
+      "description": "Cost per outbound click",
       "$ref": "ads_action_stats.json"
     },
     "cost_per_thruplay": {
+      "description": "Cost per thruplay",
       "$ref": "ads_action_stats.json"
     },
     "cost_per_unique_action_type": {
+      "description": "Cost per unique action type",
       "$ref": "ads_action_stats.json"
     },
     "cost_per_unique_click": {
+      "description": "Cost per unique click",
       "type": ["null", "number"]
     },
     "cost_per_unique_inline_link_click": {
+      "description": "Cost per unique inline link click",
       "type": ["null", "number"]
     },
     "cost_per_unique_outbound_click": {
+      "description": "Cost per unique outbound click",
       "$ref": "ads_action_stats.json"
     },
     "cpc": {
+      "description": "Cost per click",
       "type": ["null", "number"]
     },
     "cpm": {
+      "description": "Cost per thousand impressions",
       "type": ["null", "number"]
     },
     "cpp": {
+      "description": "Cost per thousand people reached",
       "type": ["null", "number"]
     },
     "created_time": {
+      "description": "Time when the data was created",
       "format": "date",
       "type": ["null", "string"]
     },
     "ctr": {
+      "description": "Click-through rate",
       "type": ["null", "number"]
     },
     "date_start": {
+      "description": "Start date of the data",
       "format": "date",
       "type": ["null", "string"]
     },
     "date_stop": {
+      "description": "End date of the data",
       "format": "date",
       "type": ["null", "string"]
     },
     "engagement_rate_ranking": {
+      "description": "Ranking based on engagement rate",
       "type": ["null", "string"]
     },
-    "estimated_ad_recall_rate": {
-      "type": ["null", "number"]
-    },
-    "estimated_ad_recall_rate_lower_bound": {
-      "type": ["null", "number"]
-    },
-    "estimated_ad_recall_rate_upper_bound": {
-      "type": ["null", "number"]
-    },
     "estimated_ad_recallers": {
-      "type": ["null", "number"]
-    },
-    "estimated_ad_recallers_lower_bound": {
-      "type": ["null", "number"]
-    },
-    "estimated_ad_recallers_upper_bound": {
+      "description": "Estimated ad recallers",
       "type": ["null", "number"]
     },
     "frequency": {
+      "description": "Average number of times each person saw the ad",
       "type": ["null", "number"]
     },
     "full_view_impressions": {
+      "description": "Impressions when the ad is fully viewed",
       "type": ["null", "number"]
     },
     "full_view_reach": {
+      "description": "Reach when the ad is fully viewed",
       "type": ["null", "number"]
     },
-    "gender_targeting": {
-      "type": ["null", "string"]
-    },
     "impressions": {
+      "description": "Total number of impressions",
       "type": ["null", "integer"]
     },
     "inline_link_click_ctr": {
+      "description": "Click-through rate for inline link clicks",
       "type": ["null", "number"]
     },
     "inline_link_clicks": {
+      "description": "Total number of inline link clicks",
       "type": ["null", "integer"]
     },
     "inline_post_engagement": {
+      "description": "Engagement on inline posts",
       "type": ["null", "integer"]
     },
     "instant_experience_clicks_to_open": {
+      "description": "Clicks to open instant experience",
       "type": ["null", "number"]
     },
     "instant_experience_clicks_to_start": {
+      "description": "Clicks to start instant experience",
       "type": ["null", "number"]
     },
     "instant_experience_outbound_clicks": {
+      "description": "Outbound clicks from instant experiences",
       "$ref": "ads_action_stats.json"
     },
-    "labels": {
-      "type": ["null", "string"]
-    },
-    "location": {
-      "type": ["null", "string"]
-    },
     "mobile_app_purchase_roas": {
+      "description": "Return on ad spend for mobile app purchases",
       "$ref": "ads_action_stats.json"
     },
     "objective": {
+      "description": "Marketing objective",
       "type": ["null", "string"]
     },
     "optimization_goal": {
+      "description": "Goal for optimization",
       "type": ["null", "string"]
     },
     "outbound_clicks": {
+      "description": "Total outbound clicks",
       "$ref": "ads_action_stats.json"
     },
     "outbound_clicks_ctr": {
+      "description": "Click-through rate for outbound clicks",
       "$ref": "ads_action_stats.json"
     },
     "purchase_roas": {
+      "description": "Return on ad spend for purchases",
       "$ref": "ads_action_stats.json"
     },
     "qualifying_question_qualify_answer_rate": {
+      "description": "Rate of qualifying question answer qualification",
       "type": ["null", "number"]
     },
     "quality_ranking": {
+      "description": "Ranking based on quality",
       "type": ["null", "string"]
     },
     "reach": {
+      "description": "Number of people who saw the ad",
       "type": ["null", "integer"]
     },
     "social_spend": {
+      "description": "Spend in social channels",
       "type": ["null", "number"]
     },
     "spend": {
+      "description": "Total amount spent",
       "type": ["null", "number"]
     },
     "unique_actions": {
+      "description": "Total number of unique actions taken",
       "$ref": "ads_action_stats.json"
     },
     "unique_clicks": {
+      "description": "Total number of unique clicks",
       "type": ["null", "integer"]
     },
     "unique_ctr": {
+      "description": "Unique click-through rate",
       "type": ["null", "number"]
     },
     "unique_inline_link_click_ctr": {
+      "description": "Unique click-through rate for inline link clicks",
       "type": ["null", "number"]
     },
     "unique_inline_link_clicks": {
+      "description": "Total number of unique inline link clicks",
       "type": ["null", "integer"]
     },
     "unique_link_clicks_ctr": {
+      "description": "Unique click-through rate for link clicks",
       "type": ["null", "number"]
     },
     "unique_outbound_clicks": {
+      "description": "Total number of unique outbound clicks",
       "$ref": "ads_action_stats.json"
     },
     "unique_outbound_clicks_ctr": {
+      "description": "Unique click-through rate for outbound clicks",
       "$ref": "ads_action_stats.json"
     },
     "updated_time": {
+      "description": "Time when the data was updated",
       "format": "date",
       "type": ["null", "string"]
     },
     "video_15_sec_watched_actions": {
+      "description": "Actions where 15 seconds of the video were watched",
       "$ref": "ads_action_stats.json"
     },
     "video_30_sec_watched_actions": {
+      "description": "Actions where 30 seconds of the video were watched",
       "$ref": "ads_action_stats.json"
     },
     "video_avg_time_watched_actions": {
+      "description": "Average time video was watched",
       "$ref": "ads_action_stats.json"
     },
     "video_continuous_2_sec_watched_actions": {
+      "description": "Actions where video was continuously watched for 2 seconds",
       "$ref": "ads_action_stats.json"
     },
     "video_p100_watched_actions": {
+      "description": "Actions where 100% of the video was watched",
       "$ref": "ads_action_stats.json"
     },
     "video_p25_watched_actions": {
+      "description": "Actions where 25% of the video was watched",
       "$ref": "ads_action_stats.json"
     },
     "video_p50_watched_actions": {
+      "description": "Actions where 50% of the video was watched",
       "$ref": "ads_action_stats.json"
     },
     "video_p75_watched_actions": {
+      "description": "Actions where 75% of the video was watched",
       "$ref": "ads_action_stats.json"
     },
     "video_p95_watched_actions": {
+      "description": "Actions where 95% of the video was watched",
       "$ref": "ads_action_stats.json"
     },
     "video_play_actions": {
+      "description": "Actions where the video was played",
       "$ref": "ads_action_stats.json"
     },
     "video_play_curve_actions": {
+      "description": "Actions on the video play curve",
       "$ref": "ads_histogram_stats.json"
     },
     "video_play_retention_0_to_15s_actions": {
+      "description": "Actions on the video retention curve (0-15 seconds)",
       "$ref": "ads_histogram_stats.json"
     },
     "video_play_retention_20_to_60s_actions": {
+      "description": "Actions on the video retention curve (20-60 seconds)",
       "$ref": "ads_histogram_stats.json"
     },
     "video_play_retention_graph_actions": {
+      "description": "Actions on the video retention graph",
       "$ref": "ads_histogram_stats.json"
     },
     "video_time_watched_actions": {
+      "description": "Actions where time was spent watching the video",
       "$ref": "ads_action_stats.json"
     },
     "website_ctr": {
+      "description": "Click-through rate for the website",
       "$ref": "ads_action_stats.json"
     },
     "website_purchase_roas": {
+      "description": "Return on ad spend for website purchases",
       "$ref": "ads_action_stats.json"
     },
     "wish_bid": {
+      "description": "Bid based on the wish to achieve certain results",
       "type": ["null", "number"]
     }
   },

@@ -10,14 +10,22 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.5.1
   dockerRepository: airbyte/source-sentry
   documentationUrl: https://docs.airbyte.com/integrations/sources/sentry
   githubIssueLabel: source-sentry
   icon: sentry.svg
   license: MIT
-  maxSecondsBetweenMessages: 64800
+  # Rate limit windows are returned in the response headers of the API requests.
+  # Senty docs (https://docs.sentry.io/api/ratelimits/) state a per-second rate limit,
+  # but the `x-rate-limit-reset` header has been observed to return a value of up to the next full minute from a request
+  # (e.g. request sent: 12:00:15, `x-rate-limit-reset` header value: 12:01:00).
+  maxSecondsBetweenMessages: 60
   name: Sentry
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-sentry
   registries:
     cloud:
       enabled: true
@@ -26,6 +34,6 @@ data:
   releaseStage: generally_available
   supportLevel: certified
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

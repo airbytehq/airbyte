@@ -12,6 +12,10 @@ data:
   icon: outreach.svg
   license: MIT
   name: Outreach
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-outreach
   registries:
     cloud:
       enabled: true
@@ -21,4 +25,5 @@ data:
   supportLevel: community
   tags:
     - language:python
+    - cdk:python
 metadataSpecVersion: "1.0"

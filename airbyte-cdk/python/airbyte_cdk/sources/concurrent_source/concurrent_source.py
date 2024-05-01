@@ -9,6 +9,7 @@ from typing import Iterable, Iterator, List
 from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.sources.concurrent_source.concurrent_read_processor import ConcurrentReadProcessor
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
+from airbyte_cdk.sources.concurrent_source.stream_thread_exception import StreamThreadException
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
@@ -16,7 +17,6 @@ from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionE
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_cdk.sources.streams.concurrent.partitions.throttled_queue import ThrottledQueue
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger, SliceLogger
 
@@ -26,7 +26,7 @@ class ConcurrentSource:
     A Source that reads data from multiple AbstractStreams concurrently.
     It does so by submitting partition generation, and partition read tasks to a thread pool.
     The tasks asynchronously add their output to a shared queue.
-    The read is done when all partitions for all streams were generated and read.
+    The read is done when all partitions for all streams w ere generated and read.
     """
 
     DEFAULT_TIMEOUT_SECONDS = 900
@@ -40,6 +40,9 @@ class ConcurrentSource:
         message_repository: MessageRepository,
         timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
     ) -> "ConcurrentSource":
+        is_single_threaded = initial_number_of_partitions_to_generate == 1 and num_workers == 1
+        too_many_generator = not is_single_threaded and initial_number_of_partitions_to_generate >= num_workers
+        assert not too_many_generator, "It is required to have more workers than threads generating partitions"
         threadpool = ThreadPoolManager(
             concurrent.futures.ThreadPoolExecutor(max_workers=num_workers, thread_name_prefix="workerpool"),
             logger,
@@ -83,10 +86,14 @@ class ConcurrentSource:
         if not stream_instances_to_read_from:
             return
 
-        queue: ThrottledQueue = ThrottledQueue(Queue(), self._threadpool.get_throttler(), self._timeout_seconds)
+        # We set a maxsize to for the main thread to process record items when the queue size grows. This assumes that there are less
+        # threads generating partitions that than are max number of workers. If it weren't the case, we could have threads only generating
+        # partitions which would fill the queue. This number is arbitrarily set to 10_000 but will probably need to be changed given more
+        # information and might even need to be configurable depending on the source
+        queue: Queue[QueueItem] = Queue(maxsize=10_000)
         concurrent_stream_processor = ConcurrentReadProcessor(
             stream_instances_to_read_from,
-            PartitionEnqueuer(queue),
+            PartitionEnqueuer(queue, self._threadpool),
             self._threadpool,
             self._logger,
             self._slice_logger,
@@ -113,7 +120,7 @@ class ConcurrentSource:
 
     def _consume_from_queue(
         self,
-        queue: ThrottledQueue,
+        queue: Queue[QueueItem],
         concurrent_stream_processor: ConcurrentReadProcessor,
     ) -> Iterable[AirbyteMessage]:
         while airbyte_message_or_record_or_exception := queue.get():
@@ -131,12 +138,10 @@ class ConcurrentSource:
         concurrent_stream_processor: ConcurrentReadProcessor,
     ) -> Iterable[AirbyteMessage]:
         # handle queue item and call the appropriate handler depending on the type of the queue item
-        if isinstance(queue_item, Exception):
+        if isinstance(queue_item, StreamThreadException):
             yield from concurrent_stream_processor.on_exception(queue_item)
-
         elif isinstance(queue_item, PartitionGenerationCompletedSentinel):
             yield from concurrent_stream_processor.on_partition_generation_completed(queue_item)
-
         elif isinstance(queue_item, Partition):
             concurrent_stream_processor.on_partition(queue_item)
         elif isinstance(queue_item, PartitionCompleteSentinel):

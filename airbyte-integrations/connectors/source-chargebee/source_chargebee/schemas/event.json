@@ -4,8 +4,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["string", "null"],
-      "maxLength": 40
+      "type": ["string", "null"]
     },
     "occurred_at": {
       "type": ["integer", "null"]
@@ -14,8 +13,7 @@
       "type": ["string", "null"]
     },
     "user": {
-      "type": ["string", "null"],
-      "maxLength": 150
+      "type": ["string", "null"]
     },
     "event_type": {
       "type": ["string", "null"]
@@ -38,8 +36,7 @@
         "type": ["object", "null"],
         "properties": {
           "id": {
-            "type": ["string", "null"],
-            "maxLength": 40
+            "type": ["string", "null"]
           },
           "webhook_status": {
             "type": ["string", "null"]
@@ -48,18 +45,7 @@
       }
     },
     "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
-          },
-          "value": {
-            "type": ["null", "string"]
-          }
-        }
-      }
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }

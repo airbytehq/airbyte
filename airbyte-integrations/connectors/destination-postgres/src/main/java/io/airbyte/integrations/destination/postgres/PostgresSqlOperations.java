@@ -4,10 +4,12 @@
 
 package io.airbyte.integrations.destination.postgres;
 
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.*;
+
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage;
 import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -17,14 +19,13 @@ import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
 
 public class PostgresSqlOperations extends JdbcSqlOperations {
 
-  public PostgresSqlOperations() {
-    super(new PostgresDataAdapter());
-  }
+  public PostgresSqlOperations() {}
 
   @Override
   protected List<String> postCreateTableQueries(final String schemaName, final String tableName) {
@@ -49,8 +50,12 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
                                          final String schemaName,
                                          final String tableName)
       throws Exception {
-    // idk apparently this just works
-    insertRecordsInternal(database, records, schemaName, tableName);
+    insertRecordsInternal(database, records, schemaName, tableName,
+        COLUMN_NAME_AB_RAW_ID,
+        COLUMN_NAME_DATA,
+        COLUMN_NAME_AB_EXTRACTED_AT,
+        COLUMN_NAME_AB_LOADED_AT,
+        COLUMN_NAME_AB_META);
   }
 
   @Override
@@ -59,10 +64,20 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
                                     final String schemaName,
                                     final String tmpTableName)
       throws SQLException {
+    insertRecordsInternal(database, records, schemaName, tmpTableName, COLUMN_NAME_AB_ID, COLUMN_NAME_DATA, COLUMN_NAME_EMITTED_AT);
+  }
+
+  private void insertRecordsInternal(final JdbcDatabase database,
+                                     final List<PartialAirbyteMessage> records,
+                                     final String schemaName,
+                                     final String tmpTableName,
+                                     final String... columnNames)
+      throws SQLException {
     if (records.isEmpty()) {
       return;
     }
-
+    // Explicitly passing column order to avoid order mismatches between CREATE TABLE and COPY statement
+    final String orderedColumnNames = StringUtils.join(columnNames, ", ");
     database.execute(connection -> {
       File tmpFile = null;
       try {
@@ -70,7 +85,7 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
         writeBatchToFile(tmpFile, records);
 
         final var copyManager = new CopyManager(connection.unwrap(BaseConnection.class));
-        final var sql = String.format("COPY %s.%s FROM stdin DELIMITER ',' CSV", schemaName, tmpTableName);
+        final var sql = String.format("COPY %s.%s (%s) FROM stdin DELIMITER ',' CSV", schemaName, tmpTableName, orderedColumnNames);
         final var bufferedReader = new BufferedReader(new FileReader(tmpFile, StandardCharsets.UTF_8));
         copyManager.copyIn(sql, bufferedReader);
       } catch (final Exception e) {

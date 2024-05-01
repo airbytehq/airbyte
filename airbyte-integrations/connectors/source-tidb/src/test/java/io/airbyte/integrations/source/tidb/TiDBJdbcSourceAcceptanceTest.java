@@ -7,12 +7,11 @@ package io.airbyte.integrations.source.tidb;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.commons.json.Jsons;
-import org.junit.jupiter.api.Disabled;
 import org.testcontainers.tidb.TiDBContainer;
-import org.testcontainers.utility.DockerImageName;
 
-@Disabled
 class TiDBJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<TiDBSource, TiDBTestDatabase> {
+
+  private final TiDBContainer container = TiDBTestDatabase.container();
 
   @Override
   public boolean supportsSchemas() {
@@ -21,7 +20,7 @@ class TiDBJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<TiDBSource, 
 
   @Override
   public JsonNode config() {
-    return Jsons.clone(testdb.configBuilder().build());
+    return Jsons.clone(testdb.testConfigBuilder().build());
   }
 
   @Override
@@ -31,9 +30,6 @@ class TiDBJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<TiDBSource, 
 
   @Override
   protected TiDBTestDatabase createTestDatabase() {
-    final TiDBContainer container = new TiDBContainer(DockerImageName.parse("pingcap/tidb:nightly"))
-        .withExposedPorts(4000);
-    container.start();
     return new TiDBTestDatabase(container).initialized();
   }
 

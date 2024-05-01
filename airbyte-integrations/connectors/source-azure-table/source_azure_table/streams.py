@@ -24,7 +24,7 @@ class AzureTableStream(Stream):
         return self.stream_name
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        return {self.cursor_field[0]: latest_record.record.data.get(self.cursor_field[0])}
+        return {self.cursor_field[0]: latest_record.data.get(self.cursor_field[0])}
 
     def _update_state(self, latest_cursor):
         self._state = latest_cursor

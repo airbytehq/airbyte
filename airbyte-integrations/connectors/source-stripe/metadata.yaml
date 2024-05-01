@@ -10,13 +10,18 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e094cb9a-26de-4645-8761-65c0c425d1de
-  dockerImageTag: 5.2.0
+  dockerImageTag: 5.3.7
   dockerRepository: airbyte/source-stripe
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   githubIssueLabel: source-stripe
   icon: stripe.svg
   license: ELv2
+  maxSecondsBetweenMessages: 1
   name: Stripe
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-stripe
   registries:
     cloud:
       enabled: true
@@ -35,8 +40,11 @@ data:
         upgradeDeadline: "2023-09-14"
       5.0.0:
         message:
-          Version 5.0.0 introduces fixes for the `CheckoutSessions`, `CheckoutSessionsLineItems` and `Refunds` streams. The cursor field is changed for the `CheckoutSessionsLineItems` and `Refunds` streams. This will prevent data loss during incremental syncs.
-          Also, the `Invoices`, `Subscriptions` and `SubscriptionSchedule` stream schemas have been updated.
+          Version 5.0.0 introduces fixes for the `CheckoutSessions`, `CheckoutSessionsLineItems`
+          and `Refunds` streams. The cursor field is changed for the `CheckoutSessionsLineItems`
+          and `Refunds` streams. This will prevent data loss during incremental syncs.
+          Also, the `Invoices`, `Subscriptions` and `SubscriptionSchedule` stream
+          schemas have been updated.
         upgradeDeadline: "2023-12-11"
   suggestedStreams:
     streams:
@@ -48,4 +56,5 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:python
 metadataSpecVersion: "1.0"

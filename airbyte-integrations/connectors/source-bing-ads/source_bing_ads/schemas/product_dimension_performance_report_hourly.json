@@ -1,0 +1,260 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "AccountId": {
+      "type": ["null", "integer"]
+    },
+    "TimePeriod": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "AccountName": {
+      "type": ["null", "string"]
+    },
+    "AccountNumber": {
+      "type": ["null", "string"]
+    },
+    "AdGroupName": {
+      "type": ["null", "string"]
+    },
+    "AdGroupId": {
+      "type": ["null", "integer"]
+    },
+    "CampaignStatus": {
+      "type": ["null", "string"]
+    },
+    "AccountStatus": {
+      "type": ["null", "string"]
+    },
+    "AdGroupStatus": {
+      "type": ["null", "string"]
+    },
+    "Network": {
+      "type": ["null", "string"]
+    },
+    "AdId": {
+      "type": ["null", "integer"]
+    },
+    "CampaignId": {
+      "type": ["null", "integer"]
+    },
+    "CampaignName": {
+      "type": ["null", "string"]
+    },
+    "CurrencyCode": {
+      "type": ["null", "string"]
+    },
+    "DeviceType": {
+      "type": ["null", "string"]
+    },
+    "Language": {
+      "type": ["null", "string"]
+    },
+    "MerchantProductId": {
+      "type": ["null", "string"]
+    },
+    "Title": {
+      "type": ["null", "string"]
+    },
+    "Condition": {
+      "type": ["null", "string"]
+    },
+    "Brand": {
+      "type": ["null", "string"]
+    },
+    "Price": {
+      "type": ["null", "number"]
+    },
+    "Impressions": {
+      "type": ["null", "integer"]
+    },
+    "Clicks": {
+      "type": ["null", "integer"]
+    },
+    "Ctr": {
+      "type": ["null", "number"]
+    },
+    "AverageCpc": {
+      "type": ["null", "number"]
+    },
+    "Spend": {
+      "type": ["null", "number"]
+    },
+    "Conversions": {
+      "type": ["null", "integer"]
+    },
+    "ConversionRate": {
+      "type": ["null", "number"]
+    },
+    "Revenue": {
+      "type": ["null", "number"]
+    },
+    "RevenuePerConversion": {
+      "type": ["null", "number"]
+    },
+    "SellerName": {
+      "type": ["null", "string"]
+    },
+    "OfferLanguage": {
+      "type": ["null", "string"]
+    },
+    "CountryOfSale": {
+      "type": ["null", "string"]
+    },
+    "AdStatus": {
+      "type": ["null", "string"]
+    },
+    "AdDistribution": {
+      "type": ["null", "string"]
+    },
+    "ClickTypeId": {
+      "type": ["null", "string"]
+    },
+    "TotalClicksOnAdElements": {
+      "type": ["null", "number"]
+    },
+    "ClickType": {
+      "type": ["null", "string"]
+    },
+    "ReturnOnAdSpend": {
+      "type": ["null", "number"]
+    },
+    "BidStrategyType": {
+      "type": ["null", "string"]
+    },
+    "LocalStoreCode": {
+      "type": ["null", "string"]
+    },
+    "StoreId": {
+      "type": ["null", "string"]
+    },
+    "AssistedClicks": {
+      "type": ["null", "string"]
+    },
+    "AssistedConversions": {
+      "type": ["null", "string"]
+    },
+    "AllConversions": {
+      "type": ["null", "integer"]
+    },
+    "AllRevenue": {
+      "type": ["null", "number"]
+    },
+    "AllConversionRate": {
+      "type": ["null", "number"]
+    },
+    "AllCostPerConversion": {
+      "type": ["null", "number"]
+    },
+    "AllReturnOnAdSpend": {
+      "type": ["null", "number"]
+    },
+    "AllRevenuePerConversion": {
+      "type": ["null", "number"]
+    },
+    "CostPerConversion": {
+      "type": ["null", "number"]
+    },
+    "ViewThroughConversions": {
+      "type": ["null", "integer"]
+    },
+    "Goal": {
+      "type": ["null", "string"]
+    },
+    "GoalType": {
+      "type": ["null", "string"]
+    },
+    "ProductBought": {
+      "type": ["null", "string"]
+    },
+    "QuantityBought": {
+      "type": ["null", "string"]
+    },
+    "AverageCpm": {
+      "type": ["null", "number"]
+    },
+    "ConversionsQualified": {
+      "type": ["null", "number"]
+    },
+    "AssistedConversionsQualified": {
+      "type": ["null", "string"]
+    },
+    "ViewThroughConversionsQualified": {
+      "type": ["null", "number"]
+    },
+    "ProductBoughtTitle": {
+      "type": ["null", "string"]
+    },
+    "GTIN": {
+      "type": ["null", "string"]
+    },
+    "MPN": {
+      "type": ["null", "string"]
+    },
+    "ViewThroughRevenue": {
+      "type": ["null", "number"]
+    },
+    "Sales": {
+      "type": ["null", "integer"]
+    },
+    "CostPerSale": {
+      "type": ["null", "number"]
+    },
+    "RevenuePerSale": {
+      "type": ["null", "number"]
+    },
+    "Installs": {
+      "type": ["null", "integer"]
+    },
+    "CostPerInstall": {
+      "type": ["null", "number"]
+    },
+    "RevenuePerInstall": {
+      "type": ["null", "number"]
+    },
+    "CampaignType": {
+      "type": ["null", "string"]
+    },
+    "AssetGroupId": {
+      "type": ["null", "string"]
+    },
+    "AssetGroupName": {
+      "type": ["null", "string"]
+    },
+    "AssetGroupStatus": {
+      "type": ["null", "string"]
+    },
+    "CustomLabel0": {
+      "type": ["null", "string"]
+    },
+    "CustomLabel1": {
+      "type": ["null", "string"]
+    },
+    "CustomLabel2": {
+      "type": ["null", "string"]
+    },
+    "CustomLabel3": {
+      "type": ["null", "string"]
+    },
+    "CustomLabel4": {
+      "type": ["null", "string"]
+    },
+    "ProductType1": {
+      "type": ["null", "string"]
+    },
+    "ProductType2": {
+      "type": ["null", "string"]
+    },
+    "ProductType3": {
+      "type": ["null", "string"]
+    },
+    "ProductType4": {
+      "type": ["null", "string"]
+    },
+    "ProductType5": {
+      "type": ["null", "string"]
+    }
+  }
+}

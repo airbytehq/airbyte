@@ -4,13 +4,14 @@
 
 package io.airbyte.integrations.source.mongodb.cdc;
 
+import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
 import static io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType.GLOBAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
+import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
 import io.airbyte.protocol.models.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -24,11 +25,17 @@ class MongoDbCdcStateHandlerTest {
   private static final String REPLICA_SET = "test-replica-set";
   private static final String RESUME_TOKEN = "8264BEB9F3000000012B0229296E04";
 
+  final MongoDbSourceConfig CONFIG = new MongoDbSourceConfig(io.airbyte.commons.json.Jsons.jsonNode(
+      Map.of(DATABASE_CONFIG_CONFIGURATION_KEY,
+          Map.of(
+              MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
+              MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE))));
+
   private MongoDbCdcStateHandler mongoDbCdcStateHandler;
 
   @BeforeEach
   void setup() {
-    final MongoDbStateManager mongoDbStateManager = MongoDbStateManager.createStateManager(null);
+    final MongoDbStateManager mongoDbStateManager = MongoDbStateManager.createStateManager(null, CONFIG);
     mongoDbCdcStateHandler = new MongoDbCdcStateHandler(mongoDbStateManager);
   }
 

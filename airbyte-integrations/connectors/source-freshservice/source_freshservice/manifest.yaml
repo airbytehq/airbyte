@@ -89,11 +89,20 @@ definitions:
         $ref: "#/definitions/requester"
         path: "tickets/{{ stream_slice.parent_id }}/requested_items"
         error_handler:
-          type: DefaultErrorHandler
-          response_filters:
-            - http_codes: [404]
-              action: IGNORE
-              error_message: No data collected
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [404]
+                  action: IGNORE
+                  error_message: No data collected
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [429]
+                  action: RETRY
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: "Retry-After"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
