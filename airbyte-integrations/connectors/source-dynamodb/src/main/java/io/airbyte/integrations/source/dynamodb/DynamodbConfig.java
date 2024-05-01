@@ -12,20 +12,19 @@ import software.amazon.awssdk.regions.Region;
 
 public record DynamodbConfig(
 
-    URI endpoint,
+                             URI endpoint,
 
-    Region region,
+                             Region region,
 
-    String accessKey,
+                             String accessKey,
 
-    String secretKey,
+                             String secretKey,
 
-    List<String> reservedAttributeNames,
+                             List<String> reservedAttributeNames,
 
-    boolean ignoreMissingPermissions
+                             boolean ignoreMissingPermissions
 
-
-    ) {
+) {
 
   public static DynamodbConfig createDynamodbConfig(JsonNode jsonNode) {
     JsonNode credentials = jsonNode.get("credentials");
@@ -41,8 +40,8 @@ public record DynamodbConfig(
         region != null && !region.asText().isBlank() ? Region.of(region.asText()) : null,
         accessKeyId != null && !accessKeyId.asText().isBlank() ? accessKeyId.asText() : null,
         secretAccessKey != null && !secretAccessKey.asText().isBlank() ? secretAccessKey.asText() : null,
-        attributeNames != null ? Arrays.asList(attributeNames.asText().split("\\s*,\\s*")) : List.of()),
-        missingPermissions != null && missingPermissions.asBoolean());
+        attributeNames != null ? Arrays.asList(attributeNames.asText().split("\\s*,\\s*")) : List.of(),
+        missingPermissions != null ? missingPermissions.asBoolean() : false);
   }
 
 }
