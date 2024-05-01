@@ -52,7 +52,6 @@ class PineconeIndexer(Indexer):
             raise ValueError("Unknown index specification type.")
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
-        index_description = self.pc.describe_index(self.config.index)
         self._pod_type = self.determine_spec_type(self.config.index)
         
         for stream in catalog.streams:
@@ -150,7 +149,6 @@ class PineconeIndexer(Indexer):
         try:
             list = self.pc.list_indexes()
             index_names = [index['name'] for index in list.indexes]
-
             if self.config.index not in index_names:
                 return f"Index {self.config.index} does not exist in environment {self.config.pinecone_environment}."
 
@@ -163,7 +161,7 @@ class PineconeIndexer(Indexer):
                 if f"Failed to resolve 'controller.{self.config.pinecone_environment}.pinecone.io'" in str(e.reason):
                     return f"Failed to resolve environment, please check whether {self.config.pinecone_environment} is correct."
 
-            if isinstance(e, self.pc.exceptions.UnauthorizedException):
+            if isinstance(e, PineconeException):
                 if e.body:
                     return e.body
 
