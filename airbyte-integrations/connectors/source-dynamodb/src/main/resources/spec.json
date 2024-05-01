@@ -110,6 +110,12 @@
         "description": "Comma separated reserved attribute names present in your tables",
         "airbyte_secret": true,
         "examples": ["name, field_name, field-name"]
+      },
+      "ignore_missing_read_permissions_tables": {
+        "title": "Ignore missing read permissions tables",
+        "type": "boolean",
+        "description": "Ignore tables with missing scan/read permissions",
+        "default": false
       }
     }
   }
