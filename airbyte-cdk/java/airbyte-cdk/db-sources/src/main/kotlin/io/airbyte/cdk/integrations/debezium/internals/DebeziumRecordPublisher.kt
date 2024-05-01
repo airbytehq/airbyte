@@ -74,7 +74,7 @@ class DebeziumRecordPublisher(private val debeziumPropertiesManager: DebeziumPro
                     }
                     engineLatch.countDown()
                 }
-                .using (
+                .using(
                     object : DebeziumEngine.ConnectorCallback {
                         override fun connectorStarted() {
                             LOGGER.info("DebeziumEngine notify: connector started")
