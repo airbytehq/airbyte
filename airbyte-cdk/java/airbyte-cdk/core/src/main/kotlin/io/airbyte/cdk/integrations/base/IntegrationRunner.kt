@@ -25,13 +25,13 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.validation.json.JsonSchemaValidator
 import java.io.*
+import java.lang.reflect.Method
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
+import java.time.Instant
 import java.util.*
 import java.util.concurrent.*
 import java.util.function.Consumer
-import java.util.function.Predicate
-import java.util.stream.Collectors
 import org.apache.commons.lang3.ThreadUtils
 import org.apache.commons.lang3.concurrent.BasicThreadFactory
 import org.slf4j.Logger
@@ -84,6 +84,7 @@ internal constructor(
             (destination != null) xor (source != null),
             "can only pass in a destination or a source"
         )
+        threadCreationStack.set(ThreadCreationInfo())
         this.cliParser = cliParser
         this.outputRecordCollector = outputRecordCollector
         // integration iface covers the commands that are the same for both source and destination.
@@ -189,17 +190,20 @@ internal constructor(
                     }
                 }
                 Command.WRITE -> {
-                    val config = parseConfig(parsed.getConfigPath())
-                    validateConfig(integration.spec().connectionSpecification, config, "WRITE")
-                    // save config to singleton
-                    DestinationConfig.Companion.initialize(
-                        config,
-                        (integration as Destination).isV2Destination
-                    )
-                    val catalog =
-                        parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog::class.java)!!
-
                     try {
+                        val config = parseConfig(parsed.getConfigPath())
+                        validateConfig(integration.spec().connectionSpecification, config, "WRITE")
+                        // save config to singleton
+                        DestinationConfig.Companion.initialize(
+                            config,
+                            (integration as Destination).isV2Destination
+                        )
+                        val catalog =
+                            parseConfig(
+                                parsed.getCatalogPath(),
+                                ConfiguredAirbyteCatalog::class.java
+                            )!!
+
                         destination!!
                             .getSerializedMessageConsumer(config, catalog, outputRecordCollector)
                             .use { consumer -> consumeWriteStream(consumer!!) }
@@ -339,8 +343,22 @@ internal constructor(
         }
     }
 
+    class ThreadCreationInfo {
+        val stack: List<StackTraceElement> = Thread.currentThread().stackTrace.asList()
+        val time: Instant = Instant.now()
+        override fun toString(): String {
+            return "creationStack=${stack.joinToString("\n  ")}\ncreationTime=$time"
+        }
+    }
+
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(IntegrationRunner::class.java)
+        private val threadCreationStack: InheritableThreadLocal<ThreadCreationInfo> =
+            object : InheritableThreadLocal<ThreadCreationInfo>() {
+                override fun childValue(parentValue: ThreadCreationInfo): ThreadCreationInfo {
+                    return ThreadCreationInfo()
+                }
+            }
 
         const val TYPE_AND_DEDUPE_THREAD_NAME: String = "type-and-dedupe"
 
@@ -353,11 +371,12 @@ internal constructor(
          * active so long as the database connection pool is open.
          */
         @VisibleForTesting
-        val ORPHANED_THREAD_FILTER: Predicate<Thread> = Predicate { runningThread: Thread ->
-            (runningThread.name != Thread.currentThread().name &&
-                !runningThread.isDaemon &&
-                TYPE_AND_DEDUPE_THREAD_NAME != runningThread.name)
-        }
+        private val orphanedThreadPredicates: MutableList<(Thread) -> Boolean> =
+            mutableListOf({ runningThread: Thread ->
+                (runningThread.name != Thread.currentThread().name &&
+                    !runningThread.isDaemon &&
+                    TYPE_AND_DEDUPE_THREAD_NAME != runningThread.name)
+            })
 
         const val INTERRUPT_THREAD_DELAY_MINUTES: Int = 1
         const val EXIT_THREAD_DELAY_MINUTES: Int = 2
@@ -398,6 +417,15 @@ internal constructor(
             LOGGER.info("Finished buffered read of input stream")
         }
 
+        @JvmStatic
+        fun addOrphanedThreadFilter(predicate: (Thread) -> (Boolean)) {
+            orphanedThreadPredicates.add(predicate)
+        }
+
+        fun filterOrphanedThread(thread: Thread): Boolean {
+            return orphanedThreadPredicates.all { it(thread) }
+        }
+
         /**
          * Stops any non-daemon threads that could block the JVM from exiting when the main thread
          * is done.
@@ -425,11 +453,7 @@ internal constructor(
         ) {
             val currentThread = Thread.currentThread()
 
-            val runningThreads =
-                ThreadUtils.getAllThreads()
-                    .stream()
-                    .filter(ORPHANED_THREAD_FILTER)
-                    .collect(Collectors.toList())
+            val runningThreads = ThreadUtils.getAllThreads().filter(::filterOrphanedThread).toList()
             if (runningThreads.isNotEmpty()) {
                 LOGGER.warn(
                     """
@@ -449,8 +473,14 @@ internal constructor(
                             .daemon(true)
                             .build()
                     )
+                // ThreadLocal.get(Thread) is private. So we open it and keep a reference to the opened method
+                val getMethod: Method =
+                    ThreadLocal::class.java.getDeclaredMethod("get", Thread::class.java).also{it.isAccessible = true }
                 for (runningThread in runningThreads) {
-                    val str = "Active non-daemon thread: " + dumpThread(runningThread)
+                    val str =
+                        "Active non-daemon thread: " +
+                            dumpThread(runningThread) +
+                            "\ncreationStack=${getMethod.invoke(threadCreationStack, runningThread)}"
                     LOGGER.warn(str)
                     // even though the main thread is already shutting down, we still leave some
                     // chances to the children
