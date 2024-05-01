@@ -9,6 +9,7 @@ from os import getenv
 from typing import Iterable, List, Optional, Set
 
 import boto3.session
+import pendulum
 import pytz
 import smart_open
 from airbyte_cdk.models import FailureType
@@ -55,6 +56,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             # We shouldn't hit this; config should always get set before attempting to
             # list or read files.
             raise ValueError("Source config is missing; cannot create the S3 client.")
+
         if self._s3_client is None:
             client_kv_args = _get_s3_compatible_client_args(self.config) if self.config.endpoint else {}
 
@@ -205,7 +207,11 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                         continue
 
                     for remote_file in self._handle_file(file):
-                        if self.file_matches_globs(remote_file, globs) and remote_file.uri not in seen:
+                        if (
+                            self.file_matches_globs(remote_file, globs)
+                            and self.is_modified_after_start_date(remote_file.last_modified)
+                            and remote_file.uri not in seen
+                        ):
                             seen.add(remote_file.uri)
                             yield remote_file
             else:
@@ -216,6 +222,12 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             else:
                 logger.info(f"Finished listing objects from S3 for prefix={prefix}. Found {total_n_keys_for_prefix} objects.")
                 break
+
+    def is_modified_after_start_date(self, last_modified_date: Optional[datetime]) -> bool:
+        """Returns True if given date higher or equal than start date or something is missing"""
+        if not (self.config.start_date and last_modified_date):
+            return True
+        return last_modified_date >= pendulum.parse(self.config.start_date).naive()
 
     def _handle_file(self, file):
         if file["Key"].endswith(".zip"):

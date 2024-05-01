@@ -11,7 +11,7 @@ Destinations are the data warehouses, data lakes, databases and analytics tools 
 
 Once you've signed up for Airbyte Cloud or logged in to your Airbyte Open Source deployment, click on the **Destinations** tab in the navigation bar found on the left side of the dashboard. This will take you to the list of available destinations.
 
-![Destination List](./assets/getting-started-destination-list.png)
+![Destination List](./assets/getting-started-destination-catalog.png)
 
 You can use the provided search bar at the top of the page, or scroll down the list to find the destination you want to replicate data from.
 

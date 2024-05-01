@@ -213,9 +213,11 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             }
         )
 
-        # change the type of `conversions:purchase` metric from int to float: https://github.com/airbytehq/oncall/issues/4130
-        if self.config.get("convert_conversions_purchase", False) and "conversions:purchase" in schema["properties"]:
-            schema["properties"]["conversions:purchase"]["type"] = ["null", "float"]
+        # change the type of `conversions:*` metrics from int to float: https://github.com/airbytehq/oncall/issues/4130
+        if self.config.get("convert_conversions_event", False):
+            for schema_field in schema["properties"]:
+                if schema_field.startswith("conversions:"):
+                    schema["properties"][schema_field]["type"] = ["null", "float"]
 
         return schema
 
@@ -255,9 +257,11 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         metrics = [h.get("name") for h in r.get("metricHeaders", [{}])]
         metrics_type_map = {h.get("name"): h.get("type") for h in r.get("metricHeaders", [{}]) if "name" in h}
 
-        # change the type of `conversions:purchase` metric from int to float: https://github.com/airbytehq/oncall/issues/4130
-        if self.config.get("convert_conversions_purchase", False) and "conversions:purchase" in metrics_type_map:
-            metrics_type_map["conversions:purchase"] = "TYPE_FLOAT"
+        # change the type of `conversions:*` metrics from int to float: https://github.com/airbytehq/oncall/issues/4130
+        if self.config.get("convert_conversions_event", False):
+            for schema_field in metrics_type_map:
+                if schema_field.startswith("conversions:"):
+                    metrics_type_map[schema_field] = "TYPE_FLOAT"
 
         for row in r.get("rows", []):
             record = {
@@ -279,7 +283,15 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
                 record["endDate"] = stream_slice["endDate"]
             yield record
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def get_updated_state(
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+    ) -> MutableMapping[str, Any]:
+        if not self.cursor_field:
+            # Some implementations of the GoogleAnalyticsDataApiBaseStream might not have a cursor because it's
+            # based on the `dimensions` config setting. This results in a full_refresh only stream that implements
+            # get_updated_state(), but does not define a cursor. For this scenario, there is no state value to extract
+            return {}
+
         updated_state = (
             utils.string_to_date(latest_record[self.cursor_field], self._record_date_format)
             if self.cursor_field == "date"

@@ -24,9 +24,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
         empty_streams:
           - name: "bank_transfers"
             bypass_reason: "Empty stream, further investigation is required"
@@ -43,15 +41,6 @@ acceptance_tests:
           - name: "tracking_categories"
             bypass_reason: "Empty stream, further investigation is required"
         fail_on_extra_columns: false
-        ignored_fields:
-          accounts:
-            - name: "TaxType"
-              bypass_reason: "empty may change from empty string to none"
-          items:
-            - name: "SalesDetails"
-              bypass_reason: "empty may change from empty string to none"
-            - name: "PurchaseDetails"
-              bypass_reason: "empty may change from empty string to none"
   incremental:
     tests:
       - config_path: "secrets/config.json"

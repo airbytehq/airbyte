@@ -77,6 +77,13 @@ class MondayGraphqlRequester(HttpRequester):
 
         arguments = self._get_object_arguments(**object_arguments)
         arguments = f"({arguments})" if arguments else ""
+
+        if object_name == "column_values":
+            fields.remove("display_value")
+            fields.extend(
+                ["... on MirrorValue{display_value}", "... on BoardRelationValue{display_value}", "... on DependencyValue{display_value}"]
+            )
+
         fields = ",".join(fields)
 
         if object_name in ["items_page", "next_items_page"]:

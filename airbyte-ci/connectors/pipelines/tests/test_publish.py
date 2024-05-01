@@ -278,12 +278,12 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
         name="check_connector_image_does_not_exist_result", status=StepStatus.SUCCESS
     )
 
-    # have output_artifact.values return []
+    # have output.values return []
     built_connector_platform = mocker.Mock()
     built_connector_platform.values.return_value = ["linux/amd64"]
 
     publish_pipeline.steps.run_connector_build.return_value = mocker.Mock(
-        name="build_connector_for_publish_result", status=build_step_status, output_artifact=built_connector_platform
+        name="build_connector_for_publish_result", status=build_step_status, output=built_connector_platform
     )
 
     publish_pipeline.PushConnectorImageToRegistry.return_value.run.return_value = mocker.Mock(
