@@ -93,7 +93,15 @@
             }
           },
           "compare_at_price": {
-            "type": ["null", "number"]
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "type": ["null", "number"]
+              },
+              "currency_code": {
+                "type": ["null", "string"]
+              }
+            }
           }
         }
       }
