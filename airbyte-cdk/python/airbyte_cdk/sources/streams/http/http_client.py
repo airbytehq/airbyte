@@ -41,6 +41,7 @@ class HttpClient:
         raise_on_http_errors: bool = True,
         api_budget: Optional[APIBudget] = None,
         session: Optional[requests.Session] = None,
+        authenticator: Optional[AuthBase] = None,
         http_error_handler: Optional[ErrorHandler] = None,
         backoff_strategy: Optional[BackoffStrategy] = DefaultBackoffStrategy(),
         response_decoder: Optional[Decoder] = JsonDecoder(),
@@ -55,6 +56,8 @@ class HttpClient:
             self._session.mount(
                 "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
             )
+        if isinstance(authenticator, AuthBase):
+            self._session.auth = authenticator
         self._logger = logger
         self._http_error_handler = http_error_handler or HttpStatusErrorHandler(logger)
         self._backoff_strategy = backoff_strategy
@@ -225,7 +228,7 @@ class HttpClient:
                 else f"Ignoring response for request to {request.url} with error {exc}"
             )
 
-        # TODO: Consider dynamic retry count depending on subsequent differing error codes
+        # TODO: Consider dynamic retry count depending on subsequent error codes
         if response_action == ResponseAction.RETRY:
             custom_backoff_time = self._backoff_strategy.backoff_time(response)
             error_message = response_error_message

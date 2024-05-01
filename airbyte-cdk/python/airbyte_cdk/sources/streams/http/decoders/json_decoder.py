@@ -19,13 +19,6 @@ class JsonDecoder(Decoder):
         except requests.exceptions.JSONDecodeError:
             return {}
 
-    def is_valid_response(self, response: requests.Response) -> bool:
-        try:
-            response.json()
-            return True
-        except Exception:
-            return False
-
     def validate_response(self, response: requests.Response) -> None:
         try:
             response.json()

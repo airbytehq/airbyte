@@ -22,15 +22,6 @@ class Decoder(ABC):
         pass
 
     @abstractmethod
-    def is_valid_response(self, response: requests.Response) -> bool:
-        """
-        Validates the response to determine if it is valid
-        :param response: the response to validate
-        :return: True if the response is valid, False otherwise
-        """
-        pass
-
-    @abstractmethod
     def validate_response(self, response: requests.Response) -> None:
         """
         Validates the response to determine if it is valid

@@ -20,7 +20,7 @@ class HttpStatusErrorHandler(ErrorHandler):
         },
         401: {"action": ResponseAction.FAIL, "failure_type": FailureType.config_error},
         403: {"action": ResponseAction.FAIL, "failure_type": FailureType.config_error},
-        404: {"action": ResponseAction.FAIL, "failure_type": FailureType.system_error, "error_message": "404 - Never found the url"},
+        404: {"action": ResponseAction.FAIL, "failure_type": FailureType.system_error},
         408: {"action": ResponseAction.FAIL, "failure_type": FailureType.transient_error},
         429: {"action": ResponseAction.FAIL, "failure_type": FailureType.transient_error},
         500: {"action": ResponseAction.RETRY, "failure_type": FailureType.transient_error},
