@@ -68,11 +68,10 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
 
       if (listTablesResponse.lastEvaluatedTableName() == null) {
         completed = true;
-      }
-      else {
+      } else {
         listTablesRequest = listTablesRequest.toBuilder()
-                .exclusiveStartTableName(listTablesResponse.lastEvaluatedTableName())
-                .build();
+            .exclusiveStartTableName(listTablesResponse.lastEvaluatedTableName())
+            .build();
       }
     }
 

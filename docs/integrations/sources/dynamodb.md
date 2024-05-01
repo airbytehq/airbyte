@@ -75,6 +75,7 @@ the underlying role executing the container workload in AWS.
 
 | Version | Date       | Pull Request                                              | Subject                                                                |
 |:--------| :--------- | :-------------------------------------------------------- |:-----------------------------------------------------------------------|
+| 0.3.1   | 2024-05-01 | [31935](https://github.com/airbytehq/airbyte/pull/31935) | Fix list more than 100 tables |
 | 0.3.0   | 2024-04-24 | [37530](https://github.com/airbytehq/airbyte/pull/37530) | Allow role based access                                                |
 | 0.2.3   | 2024-02-13 | [35232](https://github.com/airbytehq/airbyte/pull/35232) | Adopt CDK 0.20.4                                                       |
 | 0.2.2   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version                                                       |
