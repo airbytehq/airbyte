@@ -51,6 +51,7 @@ public class CtidGlobalStateManager extends CtidStateManager {
     this.savedOffsetAfterReplicationSlotLSN = savedOffsetAfterReplicationSlotLSN;
     this.defaultCdcState = defaultCdcState;
     initStream(ctidStreams, catalog);
+    this.fileNodeHandler = fileNodeHandler;
   }
 
   private void initStream(final CtidStreams ctidStreams,

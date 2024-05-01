@@ -99,8 +99,6 @@ public class CtidUtils {
         CtidUtils.isTidRangeScanCapableDBServer(database) ? null
             : PostgresQueryUtils.getTableMaxTupleForStreams(database, finalListOfStreamsToBeSyncedViaCtid, quoteString);
 
-    ctidStateManager.setFileNodeHandler(fileNodeHandler);
-
     return new PostgresCtidHandler(sourceConfig,
         database,
         new CtidPostgresSourceOperations(optionalMetadataInjector),

@@ -31,7 +31,7 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
   protected Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
 
   protected String lastCtid;
-  private FileNodeHandler fileNodeHandler;
+  protected FileNodeHandler fileNodeHandler;
 
   protected CtidStateManager(final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus) {
     this.pairToCtidStatus = pairToCtidStatus;
@@ -120,8 +120,6 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
 
   private JsonNode getStreamState(final AirbyteStreamNameNamespacePair pair) {
     final CtidStatus currentCtidStatus = getCtidStatus(pair);
-    System.out.println("stream state fetch: " + currentCtidStatus + " pair: " + pair);
-    System.out.println("if null, return this: " + streamStateForIncrementalRunSupplier.apply(pair));
 
     return (currentCtidStatus == null || currentCtidStatus.getIncrementalState() == null) ? streamStateForIncrementalRunSupplier.apply(pair)
         : currentCtidStatus.getIncrementalState();

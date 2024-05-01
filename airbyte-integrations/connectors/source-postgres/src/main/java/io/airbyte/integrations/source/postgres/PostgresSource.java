@@ -498,6 +498,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
               getQuoteString());
 
       ctidStateManager.setStreamStateIteratorFields(namespacePair -> Jsons.jsonNode(xminStatus));
+      ctidStateManager.setFileNodeHandler(fileNodeHandler);
       final PostgresCtidHandler ctidHandler =
           createInitialLoader(database, finalListOfStreamsToBeSyncedViaCtid, fileNodeHandler, getQuoteString(), ctidStateManager,
               Optional.empty());
@@ -560,6 +561,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       }
 
       ctidStateManager.setStreamStateIteratorFields(namespacePair -> Jsons.jsonNode(cursorBasedStatusMap.get(namespacePair)));
+      ctidStateManager.setFileNodeHandler(fileNodeHandler);
       final PostgresCtidHandler cursorBasedCtidHandler =
           createInitialLoader(database, finalListOfStreamsToBeSyncedViaCtid, fileNodeHandler, getQuoteString(), ctidStateManager, Optional.empty());
 
