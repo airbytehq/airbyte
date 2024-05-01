@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.0"
+version = "0.2.0"
 name = "source-rd-station-marketing"
 description = "Source implementation for RD Station Marketing."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -19,7 +19,7 @@ python = "^3.9,<3.12"
 airbyte-cdk = "^0"
 
 [tool.poetry.scripts]
-source-bamboo-hr = "source_rd_station_marketing.run:run"
+source-rd-station-marketing = "source_rd_station_marketing.run:run"
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.9.3"
