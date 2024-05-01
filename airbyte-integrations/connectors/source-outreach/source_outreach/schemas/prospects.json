@@ -809,30 +809,38 @@
       "type": ["null", "string"]
     },
     "touchedAt": {
+      "description": "Date and time when the prospect was last contacted",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "trashedAt": {
+      "description": "Date and time when the prospect was moved to trash",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "trashedByAccount": {
+      "description": "Details of the account that moved the prospect to trash",
       "type": ["null", "array"]
     },
     "twitterUrl": {
+      "description": "URL of the prospect's Twitter profile",
       "type": ["null", "string"]
     },
     "twitterUsername": {
+      "description": "Username of the prospect on Twitter",
       "type": ["null", "string"]
     },
     "updatedAt": {
+      "description": "Date and time when the prospect data was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updaterId": {
+      "description": "ID of the user who last updated the prospect information",
       "type": ["null", "integer"]
     },
     "updaterType": {
+      "description": "Type of user who last updated the prospect information",
       "type": ["null", "string"]
     },
     "voipPhones": {
@@ -842,12 +850,15 @@
       }
     },
     "websiteUrl1": {
+      "description": "First website URL associated with the prospect",
       "type": ["null", "string"]
     },
     "websiteUrl2": {
+      "description": "Second website URL associated with the prospect",
       "type": ["null", "string"]
     },
     "websiteUrl3": {
+      "description": "Third website URL associated with the prospect",
       "type": ["null", "string"]
     },
     "workPhones": {
