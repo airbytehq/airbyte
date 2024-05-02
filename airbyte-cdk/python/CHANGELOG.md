@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.86.0
+Expose airbyte_cdk.__version__ and pin airbyte-protocol-models dependency to 
+
+## 0.85.0
+Connector builder: read input state if it exists
+
+## 0.84.0
+Remove  package which was deprecated 2021 or earlier
+
 ## 0.83.1
 Concurrent CDK: if exception is AirbyteTracedException, raise this and not StreamThreadException
 

@@ -34,7 +34,7 @@ To create a dedicated read only Salesforce user:
 3. In the left navigation bar, under Administration, click **Users** > **Profiles**. The Profiles page is displayed. Click **New profile**.
 4. For Existing Profile, select **Read only**. For Profile Name, enter **Airbyte Read Only User**.
 5. Click **Save**. The Profiles page is displayed. Click **Edit**.
-6. Scroll down to the **Standard Object Permissions** and **Custom Object Permissions** and enable the **Read** checkbox for objects that you want to replicate via Airbyte.
+6. Scroll down to the **Standard Object Permissions** and **Custom Object Permissions** and ensure the user has the **View All Data** permissions for objects that you want to replicate via Airbyte.
 7. Scroll to the top and click **Save**.
 8. On the left side, under Administration, click **Users** > **Users**. The All Users page is displayed. Click **New User**.
 9. Fill out the required fields:
@@ -193,6 +193,8 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.8   | 2024-04-16 | [37340](https://github.com/airbytehq/airbyte/pull/37340) | Source Salesforce: reduce info logs                                                      |
+| 2.5.7   | 2024-04-24 | [36657](https://github.com/airbytehq/airbyte/pull/36657) | Schema descriptions                                                                                                                  |
 | 2.5.6   | 2024-04-19 | [37448](https://github.com/airbytehq/airbyte/pull/37448) | Ensure AirbyteTracedException in concurrent CDK are emitted with the right type                                                      |
 | 2.5.5   | 2024-04-18 | [37392](https://github.com/airbytehq/airbyte/pull/37419) | Ensure python return code != 0 in case of error                                                                                      |
 | 2.5.4   | 2024-04-18 | [37392](https://github.com/airbytehq/airbyte/pull/37392) | Update CDK version to have partitioned state fix                                                                                     |

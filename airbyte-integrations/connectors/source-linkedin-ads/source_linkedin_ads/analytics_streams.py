@@ -127,7 +127,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
 
     endpoint = "adAnalytics"
     # For Analytics streams, the primary_key is the entity of the pivot [Campaign URN, Creative URN, etc.] + `end_date`
-    primary_key = ["pivotValues", "end_date"]
+    primary_key = ["string_of_pivot_values", "end_date"]
     cursor_field = "end_date"
     records_limit = 15000
     FIELDS_CHUNK_SIZE = 18
