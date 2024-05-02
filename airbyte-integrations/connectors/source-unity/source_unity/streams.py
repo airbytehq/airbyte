@@ -27,7 +27,7 @@ class UnityStream(HttpStream, ABC):
         if not self.is_paginated:
             return None
 
-        if response.json().get("results") and len(response.json().get("results")) == 0:
+        if not response.json().get("results"):
             return None
 
         total = response.json().get("total")
