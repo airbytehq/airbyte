@@ -103,6 +103,8 @@ jobs:
           git_branch: ${{ github.head_ref }}
           git_revision: ${{ github.event.pull_request.head.sha }}
           github_token: ${{ github.token }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
       - name: Upload pipeline reports
         id: upload-artifact
         uses: actions/upload-artifact@v4

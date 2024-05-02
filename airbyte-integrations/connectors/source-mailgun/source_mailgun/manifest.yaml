@@ -1,4 +1,4 @@
-version: "0.29.0"
+version: "0.86.0"
 
 definitions:
   selector:
@@ -39,7 +39,8 @@ definitions:
     type: "DefaultPaginator"
     pagination_strategy:
       type: "CursorPagination"
-      cursor_value: "{{ last_records['paging', 'next'] }}"
+      cursor_value: "{{ response['paging']['next'] if response['items'] }}"
+      stop_condition: "{{ not response.get('items', []) }}"
     page_token_option:
       type: "RequestPath"
       field_name: "from"
