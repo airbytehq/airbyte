@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "campaigns",
+        "name": "apps",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -11,7 +11,7 @@
     },
     {
       "stream": {
-        "name": "apps",
+        "name": "campaigns",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
