@@ -73,13 +73,14 @@ def config(basic_config) -> dict:
         (MetafieldProductVariants, None, "graphql.json"),
         (MetafieldLocations, None, "graphql.json"),
         (MetafieldCollections, None, "graphql.json"),
+        (ProductImages, None, "graphql.json"),
+        (ProductVariants, None, "graphql.json"),
         # 
         (MetafieldSmartCollections, {"id": 123}, "smart_collections/123/metafields.json"),
         (MetafieldPages, {"id": 123}, "pages/123/metafields.json"),
         (MetafieldShops, None, "metafields.json"),
         # Nested Substreams
-        (ProductImages, None, ""),
-        (ProductVariants, None, ""),
+        (OrderRefunds, None, ""),
         # 
         (Customers, None, "customers.json"),
         (Orders, None, "orders.json"),
@@ -131,13 +132,13 @@ def test_path_with_stream_slice_param(stream, stream_slice, expected_path, confi
     "stream, parent_records, state_checkpoint_interval",
     [
         (
-            ProductImages, 
+            OrderRefunds, 
             [
-                {"id": 1, "images": [{"updated_at": "2021-01-01T00:00:00+00:00"}]},
-                {"id": 2, "images": [{"updated_at": "2021-02-01T00:00:00+00:00"}]},
-                {"id": 3, "images": [{"updated_at": "2021-03-01T00:00:00+00:00"}]},
-                {"id": 4, "images": [{"updated_at": "2021-04-01T00:00:00+00:00"}]},
-                {"id": 5, "images": [{"updated_at": "2021-05-01T00:00:00+00:00"}]},
+                {"id": 1, "refunds": [{"created_at": "2021-01-01T00:00:00+00:00"}]},
+                {"id": 2, "refunds": [{"created_at": "2021-02-01T00:00:00+00:00"}]},
+                {"id": 3, "refunds": [{"created_at": "2021-03-01T00:00:00+00:00"}]},
+                {"id": 4, "refunds": [{"created_at": "2021-04-01T00:00:00+00:00"}]},
+                {"id": 5, "refunds": [{"created_at": "2021-05-01T00:00:00+00:00"}]},
             ],
             2,
         ),
@@ -211,17 +212,17 @@ def test_request_params(config, stream, expected) -> None:
     "last_record, current_state, expected",
     [
         # no init state
-        ({"created_at": "2022-10-10T06:21:53-07:00"}, {}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": None}),
+        ({"created_at": "2022-10-10T06:21:53-07:00"}, {}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
         # state is empty str
-        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": ""}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": None}),
+        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": ""}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
         # state is None
-        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": None}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": None}),
+        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": None}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
         # last rec cursor is None
-        ({"created_at": None}, {"created_at": None}, {"created_at": "", "orders": None}),
+        ({"created_at": None}, {"created_at": None}, {"created_at": "", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
         # last rec cursor is empty str
-        ({"created_at": ""}, {"created_at": "null"}, {"created_at": "null", "orders": None}),
+        ({"created_at": ""}, {"created_at": "null"}, {"created_at": "null", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
         # no values at all
-        ({}, {}, {"created_at": "", "orders": None}),
+        ({}, {}, {"created_at": "", "orders": {"updated_at": "", "deleted": {"deleted_at": ""}}}),
     ],
     ids=[
         "no init state",

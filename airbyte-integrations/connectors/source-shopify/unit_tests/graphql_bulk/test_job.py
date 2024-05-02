@@ -15,6 +15,8 @@ from source_shopify.streams.streams import (
     InventoryItems,
     InventoryLevels,
     MetafieldOrders,
+    ProductImages,
+    ProductVariants,
     TransactionsGraphql,
 )
 
@@ -251,6 +253,8 @@ def test_job_read_file_invalid_filename(mocker, auth_config) -> None:
         (TransactionsGraphql, "transactions_jsonl_content_example", "transactions_response_expected_result"),
         (InventoryItems, "inventory_items_jsonl_content_example", "inventory_items_response_expected_result"),
         (InventoryLevels, "inventory_levels_jsonl_content_example", "inventory_levels_response_expected_result"),
+        (ProductImages, "product_images_jsonl_content_example", "product_images_response_expected_result"),
+        (ProductVariants, "product_variants_jsonl_content_example", "product_variants_response_expected_result"),
     ],
     ids=[
         "CustomerAddress",
@@ -261,6 +265,8 @@ def test_job_read_file_invalid_filename(mocker, auth_config) -> None:
         "TransactionsGraphql",
         "InventoryItems",
         "InventoryLevels",
+        "ProductImages",
+        "ProductVariants",
     ],
 )
 def test_bulk_stream_parse_response(
