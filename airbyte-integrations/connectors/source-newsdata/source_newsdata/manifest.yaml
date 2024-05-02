@@ -52,6 +52,91 @@ definitions:
           domain: "{{ ','.join(config['domain']) }}"
       paginator:
         $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          title:
+            description: The title or headline of the news article
+            type:
+              - "null"
+              - string
+          link:
+            description: URL link to the full news article
+            type:
+              - "null"
+              - string
+          source_id:
+            description: Unique identifier of the news source
+            type:
+              - "null"
+              - string
+          keywords:
+            description: Keywords or tags associated with the news article
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          creator:
+            description: The creator or author of the news article
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          image_url:
+            description: URL of the image associated with the news article
+            type:
+              - "null"
+              - string
+          video_url:
+            description: URL of any video associated with the news article
+            type:
+              - "null"
+              - string
+          description:
+            description: A brief summary or description of the news article
+            type:
+              - "null"
+              - string
+          pubDate:
+            description: The publication date of the news article
+            type:
+              - "null"
+              - string
+          content:
+            description: The main content or text of the news article
+            type:
+              - "null"
+              - string
+          country:
+            description: The country where the news article originated
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          category:
+            description: The category or topic of the news article
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          language:
+            description: The language in which the news article is written
+            type:
+              - "null"
+              - string
   sources_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -67,6 +152,58 @@ definitions:
           language: "{{ config['language'][0] }}"
           category: "{{ config['category'][0] }}"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the news source.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the news source.
+            type:
+              - "null"
+              - string
+          url:
+            description: The URL of the news source.
+            type:
+              - "null"
+              - string
+          category:
+            description:
+              The category of the news source, e.g., business, entertainment,
+              general, health, science, sports, technology, etc.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          language:
+            description:
+              The language in which the news source publishes its content,
+              e.g., en, fr, de, es, etc.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          country:
+            description: The country in which the news source is based or covers primarily.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
 streams:
   - "#/definitions/latest_stream"
   - "#/definitions/sources_stream"

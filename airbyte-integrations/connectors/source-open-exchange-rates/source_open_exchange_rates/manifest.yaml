@@ -44,10 +44,906 @@ definitions:
     $parameters:
       name: "open_exchange_rates"
       incremental_cursor: "timestamp"
-      path: "historical/{{ format_datetime( config['start_date'] if not stream_state else stream_state['timestamp'], '%Y-%m-%d' ) }}.json"
+      path:
+        "historical/{{ format_datetime( config['start_date'] if not stream_state
+        else stream_state['timestamp'], '%Y-%m-%d' ) }}.json"
     incremental_sync:
       $ref: "#/definitions/incremental_sync_base"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Generated schema for Root
+        type:
+          - "null"
+          - object
+        required:
+          - base
+          - rates
+        properties:
+          base:
+            description: The base currency against which exchange rates are provided.
+            type:
+              - "null"
+              - string
+          disclaimer:
+            description:
+              Information about the usage rights or restrictions related
+              to the provided data.
+            type:
+              - "null"
+              - string
+          license:
+            description:
+              The type of license under which the exchange rate data is
+              made available.
+            type:
+              - "null"
+              - string
+          timestamp:
+            description:
+              The UNIX timestamp indicating when the exchange rates were
+              last updated.
+            type:
+              - "null"
+              - integer
+          rates:
+            description: Contains exchange rates data
+            type:
+              - "null"
+              - object
+            properties:
+              AED:
+                description: United Arab Emirates Dirham
+                type:
+                  - "null"
+                  - number
+              AFN:
+                description: Afghan Afghani
+                type:
+                  - "null"
+                  - number
+              ALL:
+                description: Albanian Lek
+                type:
+                  - "null"
+                  - number
+              AMD:
+                description: Armenian Dram
+                type:
+                  - "null"
+                  - number
+              ANG:
+                description: Netherlands Antillean Guilder
+                type:
+                  - "null"
+                  - number
+              AOA:
+                description: Angolan Kwanza
+                type:
+                  - "null"
+                  - number
+              ARS:
+                description: Argentine Peso
+                type:
+                  - "null"
+                  - number
+              AUD:
+                description: Australian Dollar
+                type:
+                  - "null"
+                  - number
+              AWG:
+                description: Aruban Florin
+                type:
+                  - "null"
+                  - number
+              AZN:
+                description: Azerbaijani Manat
+                type:
+                  - "null"
+                  - number
+              BAM:
+                description: Bosnia-Herzegovina Convertible Mark
+                type:
+                  - "null"
+                  - number
+              BBD:
+                description: Barbadian Dollar
+                type:
+                  - "null"
+                  - number
+              BDT:
+                description: Bangladeshi Taka
+                type:
+                  - "null"
+                  - number
+              BGN:
+                description: Bulgarian Lev
+                type:
+                  - "null"
+                  - number
+              BHD:
+                description: Bahraini Dinar
+                type:
+                  - "null"
+                  - number
+              BIF:
+                description: Burundian Franc
+                type:
+                  - "null"
+                  - number
+              BMD:
+                description: Bermudian Dollar
+                type:
+                  - "null"
+                  - number
+              BND:
+                description: Brunei Dollar
+                type:
+                  - "null"
+                  - number
+              BOB:
+                description: Bolivian Boliviano
+                type:
+                  - "null"
+                  - number
+              BRL:
+                description: Brazilian Real
+                type:
+                  - "null"
+                  - number
+              BSD:
+                description: Bahamian Dollar
+                type:
+                  - "null"
+                  - number
+              BTC:
+                description: Bitcoin
+                type:
+                  - "null"
+                  - number
+              BTN:
+                description: Bhutanese Ngultrum
+                type:
+                  - "null"
+                  - number
+              BWP:
+                description: Botswana Pula
+                type:
+                  - "null"
+                  - number
+              BYN:
+                description: Belarusian Ruble
+                type:
+                  - "null"
+                  - number
+              BZD:
+                description: Belize Dollar
+                type:
+                  - "null"
+                  - number
+              CAD:
+                description: Canadian Dollar
+                type:
+                  - "null"
+                  - number
+              CDF:
+                description: Congolese Franc
+                type:
+                  - "null"
+                  - number
+              CHF:
+                description: Swiss Franc
+                type:
+                  - "null"
+                  - number
+              CLF:
+                description: Chilean Unit of Account (UF)
+                type:
+                  - "null"
+                  - number
+              CLP:
+                description: Chilean Peso
+                type:
+                  - "null"
+                  - number
+              CNH:
+                description: Chinese Yuan (offshore)
+                type:
+                  - "null"
+                  - number
+              CNY:
+                description: Chinese Yuan
+                type:
+                  - "null"
+                  - number
+              COP:
+                description: Colombian Peso
+                type:
+                  - "null"
+                  - number
+              CRC:
+                description: Costa Rican Colón
+                type:
+                  - "null"
+                  - number
+              CUC:
+                description: Cuban Convertible Peso
+                type:
+                  - "null"
+                  - number
+              CUP:
+                description: Cuban Peso
+                type:
+                  - "null"
+                  - number
+              CVE:
+                description: Cape Verdean Escudo
+                type:
+                  - "null"
+                  - number
+              CZK:
+                description: Czech Koruna
+                type:
+                  - "null"
+                  - number
+              DJF:
+                description: Djiboutian Franc
+                type:
+                  - "null"
+                  - number
+              DKK:
+                description: Danish Krone
+                type:
+                  - "null"
+                  - number
+              DOP:
+                description: Dominican Peso
+                type:
+                  - "null"
+                  - number
+              DZD:
+                description: Algerian Dinar
+                type:
+                  - "null"
+                  - number
+              EGP:
+                description: Egyptian Pound
+                type:
+                  - "null"
+                  - number
+              ERN:
+                description: Eritrean Nakfa
+                type:
+                  - "null"
+                  - number
+              ETB:
+                description: Ethiopian Birr
+                type:
+                  - "null"
+                  - number
+              EUR:
+                description: Euro
+                type:
+                  - "null"
+                  - number
+              FJD:
+                description: Fijian Dollar
+                type:
+                  - "null"
+                  - number
+              FKP:
+                description: Falkland Islands Pound
+                type:
+                  - "null"
+                  - number
+              GBP:
+                description: British Pound Sterling
+                type:
+                  - "null"
+                  - number
+              GEL:
+                description: Georgian Lari
+                type:
+                  - "null"
+                  - number
+              GGP:
+                description: Guernsey Pound
+                type:
+                  - "null"
+                  - number
+              GHS:
+                description: Ghanaian Cedi
+                type:
+                  - "null"
+                  - number
+              GIP:
+                description: Gibraltar Pound
+                type:
+                  - "null"
+                  - number
+              GMD:
+                description: Gambian Dalasi
+                type:
+                  - "null"
+                  - number
+              GNF:
+                description: Guinean Franc
+                type:
+                  - "null"
+                  - number
+              GTQ:
+                description: Guatemalan Quetzal
+                type:
+                  - "null"
+                  - number
+              GYD:
+                description: Guyanese Dollar
+                type:
+                  - "null"
+                  - number
+              HKD:
+                description: Hong Kong Dollar
+                type:
+                  - "null"
+                  - number
+              HNL:
+                description: Honduran Lempira
+                type:
+                  - "null"
+                  - number
+              HRK:
+                description: Croatian Kuna
+                type:
+                  - "null"
+                  - number
+              HTG:
+                description: Haitian Gourde
+                type:
+                  - "null"
+                  - number
+              HUF:
+                description: Hungarian Forint
+                type:
+                  - "null"
+                  - number
+              IDR:
+                description: Indonesian Rupiah
+                type:
+                  - "null"
+                  - number
+              ILS:
+                description: Israeli New Sheqel
+                type:
+                  - "null"
+                  - number
+              IMP:
+                description: Isle of Man Pound
+                type:
+                  - "null"
+                  - number
+              INR:
+                description: Indian Rupee
+                type:
+                  - "null"
+                  - number
+              IQD:
+                description: Iraqi Dinar
+                type:
+                  - "null"
+                  - number
+              IRR:
+                description: Iranian Rial
+                type:
+                  - "null"
+                  - number
+              ISK:
+                description: Icelandic Króna
+                type:
+                  - "null"
+                  - number
+              JEP:
+                description: Jersey Pound
+                type:
+                  - "null"
+                  - number
+              JMD:
+                description: Jamaican Dollar
+                type:
+                  - "null"
+                  - number
+              JOD:
+                description: Jordanian Dinar
+                type:
+                  - "null"
+                  - number
+              JPY:
+                description: Japanese Yen
+                type:
+                  - "null"
+                  - number
+              KES:
+                description: Kenyan Shilling
+                type:
+                  - "null"
+                  - number
+              KGS:
+                description: Kyrgyzstani Som
+                type:
+                  - "null"
+                  - number
+              KHR:
+                description: Cambodian Riel
+                type:
+                  - "null"
+                  - number
+              KMF:
+                description: Comorian Franc
+                type:
+                  - "null"
+                  - number
+              KPW:
+                description: North Korean Won
+                type:
+                  - "null"
+                  - number
+              KRW:
+                description: South Korean Won
+                type:
+                  - "null"
+                  - number
+              KWD:
+                description: Kuwaiti Dinar
+                type:
+                  - "null"
+                  - number
+              KYD:
+                description: Cayman Islands Dollar
+                type:
+                  - "null"
+                  - number
+              KZT:
+                description: Kazakhstani Tenge
+                type:
+                  - "null"
+                  - number
+              LAK:
+                description: Lao Kip
+                type:
+                  - "null"
+                  - number
+              LBP:
+                description: Lebanese Pound
+                type:
+                  - "null"
+                  - number
+              LKR:
+                description: Sri Lankan Rupee
+                type:
+                  - "null"
+                  - number
+              LRD:
+                description: Liberian Dollar
+                type:
+                  - "null"
+                  - number
+              LSL:
+                description: Lesotho Loti
+                type:
+                  - "null"
+                  - number
+              LYD:
+                description: Libyan Dinar
+                type:
+                  - "null"
+                  - number
+              MAD:
+                description: Moroccan Dirham
+                type:
+                  - "null"
+                  - number
+              MDL:
+                description: Moldovan Leu
+                type:
+                  - "null"
+                  - number
+              MGA:
+                description: Malagasy Ariary
+                type:
+                  - "null"
+                  - number
+              MKD:
+                description: Macedonian Denar
+                type:
+                  - "null"
+                  - number
+              MMK:
+                description: Myanmar Kyat
+                type:
+                  - "null"
+                  - number
+              MNT:
+                description: Mongolian Tugrik
+                type:
+                  - "null"
+                  - number
+              MOP:
+                description: Macanese Pataca
+                type:
+                  - "null"
+                  - number
+              MRO:
+                description: Mauritanian Ouguiya
+                type:
+                  - "null"
+                  - number
+              MRU:
+                description: Mauritanian Ouguiya
+                type:
+                  - "null"
+                  - number
+              MUR:
+                description: Mauritian Rupee
+                type:
+                  - "null"
+                  - number
+              MVR:
+                description: Maldivian Rufiyaa
+                type:
+                  - "null"
+                  - number
+              MWK:
+                description: Malawian Kwacha
+                type:
+                  - "null"
+                  - number
+              MXN:
+                description: Mexican Peso
+                type:
+                  - "null"
+                  - number
+              MYR:
+                description: Malaysian Ringgit
+                type:
+                  - "null"
+                  - number
+              MZN:
+                description: Mozambican Metical
+                type:
+                  - "null"
+                  - number
+              NAD:
+                description: Namibian Dollar
+                type:
+                  - "null"
+                  - number
+              NGN:
+                description: Nigerian Naira
+                type:
+                  - "null"
+                  - number
+              NIO:
+                description: Nicaraguan Córdoba
+                type:
+                  - "null"
+                  - number
+              NOK:
+                description: Norwegian Krone
+                type:
+                  - "null"
+                  - number
+              NPR:
+                description: Nepalese Rupee
+                type:
+                  - "null"
+                  - number
+              NZD:
+                description: New Zealand Dollar
+                type:
+                  - "null"
+                  - number
+              OMR:
+                description: Omani Rial
+                type:
+                  - "null"
+                  - number
+              PAB:
+                description: Panamanian Balboa
+                type:
+                  - "null"
+                  - number
+              PEN:
+                description: Peruvian Nuevo Sol
+                type:
+                  - "null"
+                  - number
+              PGK:
+                description: Papua New Guinean Kina
+                type:
+                  - "null"
+                  - number
+              PHP:
+                description: Philippine Peso
+                type:
+                  - "null"
+                  - number
+              PKR:
+                description: Pakistani Rupee
+                type:
+                  - "null"
+                  - number
+              PLN:
+                description: Polish Zloty
+                type:
+                  - "null"
+                  - number
+              PYG:
+                description: Paraguayan Guarani
+                type:
+                  - "null"
+                  - number
+              QAR:
+                description: Qatari Riyal
+                type:
+                  - "null"
+                  - number
+              RON:
+                description: Romanian Leu
+                type:
+                  - "null"
+                  - number
+              RSD:
+                description: Serbian Dinar
+                type:
+                  - "null"
+                  - number
+              RUB:
+                description: Russian Ruble
+                type:
+                  - "null"
+                  - number
+              RWF:
+                description: Rwandan Franc
+                type:
+                  - "null"
+                  - number
+              SAR:
+                description: Saudi Riyal
+                type:
+                  - "null"
+                  - number
+              SBD:
+                description: Solomon Islands Dollar
+                type:
+                  - "null"
+                  - number
+              SCR:
+                description: Seychellois Rupee
+                type:
+                  - "null"
+                  - number
+              SDG:
+                description: Sudanese Pound
+                type:
+                  - "null"
+                  - number
+              SEK:
+                description: Swedish Krona
+                type:
+                  - "null"
+                  - number
+              SGD:
+                description: Singapore Dollar
+                type:
+                  - "null"
+                  - number
+              SHP:
+                description: Saint Helena Pound
+                type:
+                  - "null"
+                  - number
+              SLL:
+                description: Sierra Leonean Leone
+                type:
+                  - "null"
+                  - number
+              SOS:
+                description: Somali Shilling
+                type:
+                  - "null"
+                  - number
+              SRD:
+                description: Surinamese Dollar
+                type:
+                  - "null"
+                  - number
+              SSP:
+                description: South Sudanese Pound
+                type:
+                  - "null"
+                  - number
+              STD:
+                description: São Tomé and Príncipe Dobra
+                type:
+                  - "null"
+                  - number
+              STN:
+                description: São Tomé and Príncipe Dobra
+                type:
+                  - "null"
+                  - number
+              SVC:
+                description: Salvadoran Colón
+                type:
+                  - "null"
+                  - number
+              SYP:
+                description: Syrian Pound
+                type:
+                  - "null"
+                  - number
+              SZL:
+                description: Swazi Lilangeni
+                type:
+                  - "null"
+                  - number
+              THB:
+                description: Thai Baht
+                type:
+                  - "null"
+                  - number
+              TJS:
+                description: Tajikistani Somoni
+                type:
+                  - "null"
+                  - number
+              TMT:
+                description: Turkmenistan Manat
+                type:
+                  - "null"
+                  - number
+              TND:
+                description: Tunisian Dinar
+                type:
+                  - "null"
+                  - number
+              TOP:
+                description: Tongan Pa'anga
+                type:
+                  - "null"
+                  - number
+              TRY:
+                description: Turkish Lira
+                type:
+                  - "null"
+                  - number
+              TTD:
+                description: Trinidad and Tobago Dollar
+                type:
+                  - "null"
+                  - number
+              TWD:
+                description: New Taiwan Dollar
+                type:
+                  - "null"
+                  - number
+              TZS:
+                description: Tanzanian Shilling
+                type:
+                  - "null"
+                  - number
+              UAH:
+                description: Ukrainian Hryvnia
+                type:
+                  - "null"
+                  - number
+              UGX:
+                description: Ugandan Shilling
+                type:
+                  - "null"
+                  - number
+              USD:
+                description: United States Dollar
+                type:
+                  - "null"
+                  - number
+              UYU:
+                description: Uruguayan Peso
+                type:
+                  - "null"
+                  - number
+              UZS:
+                description: Uzbekistan Som
+                type:
+                  - "null"
+                  - number
+              VES:
+                description: Venezuelan Bolívar
+                type:
+                  - "null"
+                  - number
+              VND:
+                description: Vietnamese Dong
+                type:
+                  - "null"
+                  - number
+              VUV:
+                description: Vanuatu Vatu
+                type:
+                  - "null"
+                  - number
+              WST:
+                description: Samoan Tala
+                type:
+                  - "null"
+                  - number
+              XAF:
+                description: Central African CFA Franc
+                type:
+                  - "null"
+                  - number
+              XAG:
+                description: Silver (ounce)
+                type:
+                  - "null"
+                  - number
+              XAU:
+                description: Gold (ounce)
+                type:
+                  - "null"
+                  - number
+              XCD:
+                description: East Caribbean Dollar
+                type:
+                  - "null"
+                  - number
+              XDR:
+                description: Special Drawing Rights (International Monetary Fund)
+                type:
+                  - "null"
+                  - number
+              XOF:
+                description: West African CFA Franc
+                type:
+                  - "null"
+                  - number
+              XPD:
+                description: Palladium (ounce)
+                type:
+                  - "null"
+                  - number
+              XPF:
+                description: CFP Franc
+                type:
+                  - "null"
+                  - number
+              XPT:
+                description: Platinum (ounce)
+                type:
+                  - "null"
+                  - number
+              YER:
+                description: Yemeni Rial
+                type:
+                  - "null"
+                  - number
+              ZAR:
+                description: South African Rand
+                type:
+                  - "null"
+                  - number
+              ZMW:
+                description: Zambian Kwacha
+                type:
+                  - "null"
+                  - number
+              ZWL:
+                description: Zimbabwean Dollar
+                type:
+                  - "null"
+                  - number
 streams:
   - "#/definitions/open_exchange_rates_stream"
 
