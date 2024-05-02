@@ -160,17 +160,21 @@ def test_job_check_for_completion(mocker, request, requests_mock, job_response, 
 
     
 @pytest.mark.parametrize(
-    "job_response, error_type, expected",
+    "job_response, error_type, max_retry, expected_msg, call_count_expected",
     [
         (
             "bulk_successful_response_with_errors", 
-            ShopifyBulkExceptions.BulkJobUnknownError, 
+            ShopifyBulkExceptions.BulkJobUnknownError,
+            2,
             "Could not validate the status of the BULK Job",
+            3,
         ),
         (
-            "bulk_successful_response_with_errors", 
-            ShopifyBulkExceptions.BulkJobBadResponse, 
+            None,
+            ShopifyBulkExceptions.BulkJobBadResponse,
+            1,
             "Couldn't check the `response` for `errors`",
+            2,
         ),
     ],
     ids=[
@@ -178,24 +182,24 @@ def test_job_check_for_completion(mocker, request, requests_mock, job_response, 
         "BulkJobBadResponse",
     ],
 )
-def test_retry_on_job_exception(mocker, request, requests_mock, job_response, auth_config, error_type, expected) -> None:
+def test_retry_on_job_exception(mocker, request, requests_mock, job_response, auth_config, error_type, max_retry, call_count_expected, expected_msg) -> None:
     stream = MetafieldOrders(auth_config)
-    # patching the method to get the right ID checks
-    stream.job_manager._job_id = request.getfixturevalue(job_response).get("data", {}).get("node", {}).get("id")
     stream.job_manager._job_backoff_time = 0
-    stream.job_manager._job_max_retries = 2
-    # making the check method to raise the specific error
-    mocker.patch(
-        "source_shopify.shopify_graphql.bulk.job.ShopifyBulkManager._job_check_for_errors", 
-        side_effect=error_type(expected),
-    )
+    stream.job_manager._job_max_retries = max_retry
+    # patching the method to get the right ID checks
+    if job_response:
+        stream.job_manager._job_id = request.getfixturevalue(job_response).get("data", {}).get("node", {}).get("id")
+        
     # mocking the response for STATUS CHECKS
-    requests_mock.post(stream.job_manager.base_url, json=request.getfixturevalue(job_response))
+    json_mock_response = request.getfixturevalue(job_response) if job_response else None
+    requests_mock.post(stream.job_manager.base_url, json=json_mock_response)
+    
     # testing raised exception and backoff
     with pytest.raises(error_type) as error:
         stream.job_manager._job_check_state()
-    
-    assert expected in repr(error.value) and requests_mock.call_count == 3
+        
+    # we expect different call_count, because we set the different max_retries
+    assert expected_msg in repr(error.value) and requests_mock.call_count == call_count_expected
 
 
 @pytest.mark.parametrize(
