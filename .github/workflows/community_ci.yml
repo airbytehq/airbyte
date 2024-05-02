@@ -135,6 +135,7 @@ jobs:
         # This will sync the .github folder of the main repo with the fork
         # This allows us to use up to date actions and internal packages logic from the main repo
         # It will also prevent forks from changing CI logic      - name: Pull .github folder from main repository
+      - name: Pull .github folder from main repository
         id: pull_github_folder
         run: |
           git remote add main https://github.com/airbytehq/airbyte.git
