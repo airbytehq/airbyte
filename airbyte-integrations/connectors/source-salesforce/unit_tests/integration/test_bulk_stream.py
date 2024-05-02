@@ -12,6 +12,7 @@ from airbyte_protocol.models import SyncMode
 from config_builder import ConfigBuilder
 from integration.utils import create_base_url, given_authentication, given_stream, read
 from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
+from salesforce_job_response_builder import SalesforceJobResponseBuilder
 from source_salesforce.streams import LOOKBACK_SECONDS
 
 _A_FIELD_NAME = "a_field"
@@ -69,7 +70,7 @@ class BulkStreamTest(TestCase):
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}"),
-            HttpResponse(json.dumps({"state": "JobComplete"})),
+            SalesforceJobResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}/results"),
@@ -118,7 +119,7 @@ class BulkStreamTest(TestCase):
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{job_id}"),
-            HttpResponse(json.dumps({"state": "JobComplete"})),
+            SalesforceJobResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{job_id}/results"),
