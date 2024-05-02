@@ -152,7 +152,7 @@ def traced_exception(fb_exception: FacebookRequestError):
     Please see ../unit_tests/test_errors.py for full error examples
     Please add new errors to the tests
     """
-    msg = fb_exception.api_error_message() if fb_exception.api_error_message() is not None else fb_exception.get_message()
+    msg = fb_exception.api_error_message() if fb_exception.api_error_message() else fb_exception.get_message()
 
     if "Error validating access token" in msg:
         failure_type = FailureType.config_error
@@ -200,7 +200,8 @@ def traced_exception(fb_exception: FacebookRequestError):
 
     else:
         failure_type = FailureType.system_error
-        friendly_msg = f"Error: {fb_exception.api_error_code()}, {fb_exception.api_error_message()}."
+        error_code = fb_exception.api_error_code() if fb_exception.api_error_code() else fb_exception.http_status()
+        friendly_msg = f"Error: {error_code}, {msg}."
 
     return AirbyteTracedException(
         message=friendly_msg or msg,
