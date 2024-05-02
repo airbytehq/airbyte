@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
-  dockerImageTag: 2.1.5
+  dockerImageTag: 2.1.7
   dockerRepository: airbyte/source-facebook-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   githubIssueLabel: source-facebook-marketing
@@ -31,7 +31,12 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: "All Ads-Insights-* streams now have updated schemas. Users will need to retest source configuration, refresh the source schema and reset affected streams after upgrading. Please pay attention that data older than 37 months will become unavailable due to FaceBook limitations. For more information [visit](https://docs.airbyte.com/integrations/sources/facebook-marketing-migrations)"
+        message:
+          "All Ads-Insights-* streams now have updated schemas. Users will
+          need to retest source configuration, refresh the source schema and reset
+          affected streams after upgrading. Please pay attention that data older than
+          37 months will become unavailable due to FaceBook limitations. For more
+          information [visit](https://docs.airbyte.com/integrations/sources/facebook-marketing-migrations)"
         upgradeDeadline: "2024-03-17"
         scopedImpact:
           - scopeType: stream
