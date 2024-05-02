@@ -33,6 +33,7 @@ The Wrike source connector supports the following streams:
 * [Comments](https://developers.wrike.com/api/v4/comments/)\(Full Refresh\)
 * [Contacts](https://developers.wrike.com/api/v4/contacts/)\(Full Refresh\)
 * [Folders](https://developers.wrike.com/api/v4/folders-projects/)\(Full Refresh\)
+* [Workflows](https://developers.wrike.com/api/v4/workflows/)\(Full Refresh\)
 
 ### Data type mapping
 
@@ -44,8 +45,9 @@ The Wrike connector should not run into Wrike API limitations under normal usage
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                                                |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.2.0   | 2023-10-10 | [31058](https://github.com/airbytehq/airbyte/pull/31058) | Migrate to low code.
-| 0.1.0   | 2022-08-16 | [15638](https://github.com/airbytehq/airbyte/pull/15638) | Initial version/release of the connector.
+| Version | Date       | Pull Request                                             | Subject                                                                |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------|
+| 0.2.1   | 2024-04-30 | [31058](https://github.com/airbytehq/airbyte/pull/31058) | Changed last_records to last_record. Fix schema for stream `workflows` |
+| 0.2.0   | 2023-10-10 | [31058](https://github.com/airbytehq/airbyte/pull/31058) | Migrate to low code.                                                   |
+| 0.1.0   | 2022-08-16 | [15638](https://github.com/airbytehq/airbyte/pull/15638) | Initial version/release of the connector.                              |
 
