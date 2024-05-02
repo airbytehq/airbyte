@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, Any, Callable, Dict, Generator, Iterable, List, Optional
+from collections.abc import Callable, Generator, Iterable
+from typing import TYPE_CHECKING, Any, Optional
 
 import pytest
 from airbyte_protocol.models import AirbyteMessage  # type: ignore
@@ -38,7 +39,7 @@ class TestDataIntegrity:
         request: SubRequest,
         record_property: Callable,
         configured_streams: Iterable[str],
-        primary_keys_per_stream: Dict[str, Optional[List[str]]],
+        primary_keys_per_stream: dict[str, Optional[list[str]]],
         read_with_state_control_execution_result: ExecutionResult,
         read_with_state_target_execution_result: ExecutionResult,
     ) -> None:
@@ -105,7 +106,7 @@ class TestDataIntegrity:
         read_control_execution_result: ExecutionResult,
         read_target_execution_result: ExecutionResult,
     ) -> None:
-        record_count_difference_per_stream: Dict[str, Dict[str, int]] = {}
+        record_count_difference_per_stream: dict[str, dict[str, int]] = {}
         for stream_name in configured_streams:
             control_records_count = sum(1 for _ in read_control_execution_result.get_records_per_stream(stream_name))
             target_records_count = sum(1 for _ in read_target_execution_result.get_records_per_stream(stream_name))
@@ -137,7 +138,7 @@ class TestDataIntegrity:
         request: SubRequest,
         record_property: Callable,
         configured_streams: Iterable[str],
-        primary_keys_per_stream: Dict[str, Optional[List[str]]],
+        primary_keys_per_stream: dict[str, Optional[list[str]]],
         read_control_execution_result: ExecutionResult,
         read_target_execution_result: ExecutionResult,
     ) -> None:
@@ -237,7 +238,7 @@ class TestDataIntegrity:
         if mismatches_count > 0:
             pytest.fail(f"{mismatches_count} streams have mismatching schemas between control and target versions.")
 
-    @pytest.mark.with_state
+    @pytest.mark.with_state()
     async def test_record_count_with_state(
         self,
         record_property: Callable,
@@ -268,7 +269,7 @@ class TestDataIntegrity:
             read_with_state_target_execution_result,
         )
 
-    @pytest.mark.without_state
+    @pytest.mark.without_state()
     async def test_record_count_without_state(
         self,
         record_property: Callable,
@@ -299,13 +300,13 @@ class TestDataIntegrity:
             read_target_execution_result,
         )
 
-    @pytest.mark.with_state
+    @pytest.mark.with_state()
     async def test_all_pks_are_produced_in_target_version_with_state(
         self,
         request: SubRequest,
         record_property: Callable,
         configured_streams: Iterable[str],
-        primary_keys_per_stream: Dict[str, Optional[List[str]]],
+        primary_keys_per_stream: dict[str, Optional[list[str]]],
         read_with_state_control_execution_result: ExecutionResult,
         read_with_state_target_execution_result: ExecutionResult,
     ) -> None:
@@ -329,13 +330,13 @@ class TestDataIntegrity:
             read_with_state_target_execution_result,
         )
 
-    @pytest.mark.without_state
+    @pytest.mark.without_state()
     async def test_all_pks_are_produced_in_target_version_without_state(
         self,
         request: SubRequest,
         record_property: Callable,
         configured_streams: Iterable[str],
-        primary_keys_per_stream: Dict[str, Optional[List[str]]],
+        primary_keys_per_stream: dict[str, Optional[list[str]]],
         read_control_execution_result: ExecutionResult,
         read_target_execution_result: ExecutionResult,
     ) -> None:
@@ -359,7 +360,7 @@ class TestDataIntegrity:
             read_target_execution_result,
         )
 
-    @pytest.mark.with_state
+    @pytest.mark.with_state()
     async def test_record_schema_match_with_state(
         self,
         request: SubRequest,
@@ -379,7 +380,7 @@ class TestDataIntegrity:
             read_with_state_target_execution_result,
         )
 
-    @pytest.mark.without_state
+    @pytest.mark.without_state()
     async def test_record_schema_match_without_state(
         self,
         request: SubRequest,
@@ -399,13 +400,13 @@ class TestDataIntegrity:
             read_target_execution_result,
         )
 
-    @pytest.mark.with_state
+    @pytest.mark.with_state()
     async def test_all_records_are_the_same_with_state(
         self,
         request: SubRequest,
         record_property: Callable,
         configured_streams: Iterable[str],
-        primary_keys_per_stream: Dict[str, Optional[List[str]]],
+        primary_keys_per_stream: dict[str, Optional[list[str]]],
         read_with_state_control_execution_result: ExecutionResult,
         read_with_state_target_execution_result: ExecutionResult,
     ) -> None:
@@ -430,13 +431,13 @@ class TestDataIntegrity:
             read_with_state_target_execution_result,
         )
 
-    @pytest.mark.without_state
+    @pytest.mark.without_state()
     async def test_all_records_are_the_same_without_state(
         self,
         request: SubRequest,
         record_property: Callable,
         configured_streams: Iterable[str],
-        primary_keys_per_stream: Dict[str, Optional[List[str]]],
+        primary_keys_per_stream: dict[str, Optional[list[str]]],
         read_control_execution_result: ExecutionResult,
         read_target_execution_result: ExecutionResult,
     ) -> None:
@@ -466,9 +467,9 @@ class TestDataIntegrity:
         request: SubRequest,
         record_property: Callable,
         stream: str,
-        control_records: List[AirbyteMessage],
-        target_records: List[AirbyteMessage],
-        primary_key: List[str],
+        control_records: list[AirbyteMessage],
+        target_records: list[AirbyteMessage],
+        primary_key: list[str],
     ) -> Optional[Iterable[str]]:
         control_pks = {r.record.data[primary_key[0]] for r in control_records}
         target_pks = {r.record.data[primary_key[0]] for r in target_records}
@@ -528,8 +529,8 @@ class TestDataIntegrity:
         request: SubRequest,
         record_property: Callable,
         stream: str,
-        control_records: List[AirbyteMessage],
-        target_records: List[AirbyteMessage],
+        control_records: list[AirbyteMessage],
+        target_records: list[AirbyteMessage],
     ) -> Optional[Iterable[str]]:
         diff = get_and_write_diff(
             request,
@@ -546,11 +547,11 @@ class TestDataIntegrity:
 
 
 def _get_filtered_sorted_records(
-    records: List[AirbyteMessage],
+    records: list[AirbyteMessage],
     primary_key_set: set[Generator[Any, Any, None]],
     include_target: bool,
-    primary_key: List[str],
-) -> List[Dict]:
+    primary_key: list[str],
+) -> list[dict]:
     """
     Get a list of records sorted by primary key, and filtered as specified.
 

@@ -29,9 +29,6 @@ definitions:
     requester:
       $ref: "#/definitions/requester"
   base_stream:
-    schema_loader:
-      type: JsonFileSchemaLoader
-      file_path: "./source_survey_sparrow/schemas/{{ parameters['name'] }}.json"
     retriever:
       $ref: "#/definitions/retriever"
   contacts_stream:
@@ -40,6 +37,62 @@ definitions:
       name: "contacts"
       primary_key: "id"
       path: "/contacts"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the contact.
+            type:
+              - "null"
+              - integer
+          email:
+            description: The email address of the contact.
+            type:
+              - "null"
+              - string
+          mobile:
+            description: The mobile phone number of the contact.
+            type:
+              - "null"
+              - string
+          job_title:
+            description: The job title of the contact.
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates whether the contact is currently active or not.
+            type:
+              - "null"
+              - boolean
+          unsubscribed:
+            description: Indicates whether the contact has unsubscribed from communications.
+            type:
+              - "null"
+              - boolean
+          name:
+            description: The full name of the contact.
+            type:
+              - "null"
+              - string
+          last_name:
+            description: The last name of the contact.
+            type:
+              - "null"
+              - string
+          first_name:
+            description: The first name of the contact.
+            type:
+              - "null"
+              - string
+          createddate:
+            description: The date when the contact was created.
+            type:
+              - "null"
+              - string
   contact_lists_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -48,6 +101,33 @@ definitions:
       path: "/contact_lists"
     paginator:
       type: "NoPagination"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the contact list.
+            type:
+              - "null"
+              - integer
+          name:
+            description: The name or title of the contact list.
+            type:
+              - "null"
+              - string
+          description:
+            description: The description or details about the contact list.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the contact list was created.
+            type:
+              - "null"
+              - string
+            format: date-time
   questions_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -63,6 +143,100 @@ definitions:
         request_option:
           field_name: "survey_id"
           inject_into: "request_parameter"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the question
+            type:
+              - "null"
+              - integer
+          rtxt:
+            description: Text input for the question
+            type:
+              - "null"
+              - string
+          type:
+            description: Type of question such as multiple choice, text, etc.
+            type:
+              - "null"
+              - string
+          multiple_answers:
+            description: Allows multiple answers to the question
+            type:
+              - "null"
+              - boolean
+          is_required:
+            description: Indicates if the question is required to be answered
+            type:
+              - "null"
+              - boolean
+          properties:
+            description: Additional properties related to the question
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                description: Custom data associated with the question
+                type:
+                  - "null"
+                  - object
+              clone:
+                description: Indicates if the question is a clone of another question
+                type:
+                  - "null"
+                  - object
+          parent_question_id:
+            description: ID of the parent question in case of a dependent question
+            type:
+              - "null"
+              - integer
+          position:
+            description: Order in which the question appears in the survey
+            type:
+              - "null"
+              - string
+          created_at:
+            description: Date and time when the question was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            description: Date and time when the question was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+          section:
+            description: Section to which the question belongs
+            type:
+              - "null"
+              - object
+          tags:
+            description: Keywords or tags associated with the question
+            type:
+              - "null"
+              - array
+          annotations:
+            description: Additional information or notes related to the question
+            type:
+              - "null"
+              - array
+          scale_points:
+            description: Points on a scale used for the question
+            type:
+              - "null"
+              - array
+          choices:
+            description: Options that can be selected for the question
+            type:
+              - "null"
+              - array
   responses_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -78,24 +252,218 @@ definitions:
         request_option:
           field_name: "survey_id"
           inject_into: "request_parameter"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the response data.
+            type:
+              - "null"
+              - integer
+          completed_time:
+            description: Timestamp indicating when the respondent completed the survey.
+            type:
+              - "null"
+              - string
+            format: date-time
+          survey_id:
+            description: ID of the survey to which the response data belongs.
+            type:
+              - "null"
+              - integer
+          state:
+            description: Current state of the response data (e.g., in progress, completed).
+            type:
+              - "null"
+              - string
+          channel_id:
+            description: ID of the channel used for conducting the survey.
+            type:
+              - "null"
+              - integer
+          language:
+            description: Language used in the survey responses.
+            type:
+              - "null"
+              - string
+          start_time:
+            description: Timestamp indicating when the respondent started the survey.
+            type:
+              - "null"
+              - string
+            format: date-time
+          contact:
+            description: Contact information of the respondent who took the survey.
+            type:
+              - "null"
+              - string
+          channel:
+            description: Name of the channel through which the survey was conducted.
+            type:
+              - "null"
+              - object
+          answers:
+            description: Responses provided by the respondent for the survey questions.
+            type:
+              - "null"
+              - array
+          variables:
+            description: Any additional variables or data associated with the response.
+            type:
+              - "null"
+              - array
+          expressions:
+            description:
+              Emotions or sentiments expressed by the respondent while
+              answering the survey.
+            type:
+              - "null"
+              - array
   roles_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "roles"
       primary_key: "id"
       path: "/roles"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the role.
+            type:
+              - "null"
+              - integer
+          name:
+            description: The name of the role.
+            type:
+              - "null"
+              - string
+          label:
+            description: The label or name used to identify the role.
+            type:
+              - "null"
+              - string
+          description:
+            description: A brief description of the role and its responsibilities.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the role was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            description: The date and time when the role was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+          deleted_at:
+            description: The date and time when the role was deleted.
+            type:
+              - "null"
+              - string
+            format: date-time
+          account_id:
+            description: The unique identifier for the account to which the role belongs.
+            type:
+              - "null"
+              - integer
   surveys_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "surveys"
       primary_key: "id"
       path: "/surveys"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the survey.
+            type:
+              - "null"
+              - integer
+          name:
+            description: Name or title of the survey.
+            type:
+              - "null"
+              - string
+          archived:
+            description: Flag indicating if the survey is archived or active.
+            type:
+              - "null"
+              - boolean
+          survey_type:
+            description: Type of survey such as customer satisfaction, feedback, etc.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: DateTime when the survey was created.
+            type:
+              - "null"
+              - string
+            format: date-time
   survey_folders_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "survey_folders"
       primary_key: "id"
       path: "/survey_folders"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the survey folder.
+            type:
+              - "null"
+              - integer
+          name:
+            description: Name or title of the survey folder.
+            type:
+              - "null"
+              - string
+          description:
+            description: A text description or summary of the survey folder content.
+            type:
+              - "null"
+              - string
+          auto_created:
+            description:
+              Indicates if the survey folder was auto-created by the system
+              or manually created by a user.
+            type:
+              - "null"
+              - boolean
+          visibility:
+            description:
+              Defines the visibility settings for the survey folder, such
+              as public, private, or shared.
+            type:
+              - "null"
+              - string
+          created_at:
+            description:
+              Timestamp indicating the date and time when the survey folder
+              was created.
+            type:
+              - "null"
+              - string
+            format: date-time
   users_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -103,6 +471,63 @@ definitions:
       primary_key: "id"
       path: "/users"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the user.
+            type:
+              - "null"
+              - integer
+          name:
+            description: The name of the user.
+            type:
+              - "null"
+              - string
+          email:
+            description: The email address of the user.
+            type:
+              - "null"
+              - string
+          phone:
+            description: The phone number of the user.
+            type:
+              - "null"
+              - string
+          admin:
+            description: Indicates if the user is an admin or not.
+            type:
+              - "null"
+              - boolean
+          owner:
+            description: Indicates if the user is an owner.
+            type:
+              - "null"
+              - boolean
+          agency_owner:
+            description: Indicates if the user is an agency owner.
+            type:
+              - "null"
+              - boolean
+          verified:
+            description: Indicates if the user account is verified.
+            type:
+              - "null"
+              - boolean
+          role_id:
+            description: The role identifier associated with the user.
+            type:
+              - "null"
+              - integer
+          created_at:
+            description: The timestamp when the user account was created.
+            type:
+              - "null"
+              - string
+            format: date-time
 streams:
   - "#/definitions/contacts_stream"
   - "#/definitions/contact_lists_stream"
