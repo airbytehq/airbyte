@@ -34,7 +34,7 @@ In addition to our database source improvements, we also released a few notable 
 
 - Added support for [JWT authentication](https://github.com/airbytehq/airbyte/pull/37005) in the low-code CDK, which opens up access to connectors that require this type of authentication.
 
-- Improved the [connector builder](/connector-development/connector-builder-ui/overview) experience around user inputs. Auto-created inputs now always use a unique ID, IDs and titles can now be edited independently to avoid breaking changes. Extra validations on user inputs are now enforced when loading a YAML manifest into the UI to ensure that all of the desired properties for auto-created inputs are properly set on the imported spec. The UI also now supports importing user input references using dot-notation, e.g. {{ config.id }}, instead of only supporting bracket notation like {{ config['id'] }}
+- Improved the [connector builder](/connector-development/connector-builder-ui/overview) experience around user inputs. Auto-created inputs now always use a unique ID, IDs and titles can now be edited independently to avoid breaking changes. Extra validations on user inputs are now enforced when loading a YAML manifest into the UI to ensure that all of the desired properties for auto-created inputs are properly set on the imported spec. The UI also now supports importing user input references using dot-notation, e.g. `{{ config.id }}`, instead of only supporting bracket notation like`{{ config['id'] }}`
 
 - Improved the performance of destination [DuckDB](https://github.com/airbytehq/airbyte/pull/36715) to move data 100x faster. Thanks to DuckDB for contributing the enhancement!
 
