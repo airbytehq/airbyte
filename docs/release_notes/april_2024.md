@@ -28,7 +28,7 @@ Read more in our [Clear documentation](/operator-guides/reset).
 
 ## Connector Improvements
 
-We released a few notable Connector improvements:
+In addition to our database source improvements, we also released a few notable connector improvements:
 
 - Migrated [Iterable](https://github.com/airbytehq/airbyte/pull/36231), [Slack](https://github.com/airbytehq/airbyte/pull/35477), [Notion](https://github.com/airbytehq/airbyte/pull/35974), [Harvest](https://github.com/airbytehq/airbyte/pull/35863), [Sendgrid](https://github.com/airbytehq/airbyte/pull/35776), [Klaviyo](https://github.com/airbytehq/airbyte/pull/36264), and [My Hours](https://github.com/airbytehq/airbyte/pull/36947) to low-code to make enhancements and maintenance faster.
 
