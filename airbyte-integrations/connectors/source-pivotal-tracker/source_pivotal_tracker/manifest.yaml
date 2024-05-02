@@ -186,18 +186,14 @@ definitions:
             type: DpathExtractor
             field_path: []
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
+          type: "DefaultPaginator"
+          pagination_strategy:
+            class_name: "source_pivotal_tracker.components.CustomPaging"
+            page_size: 10
           page_size_option:
             type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 10
+            inject_into: "request_parameter"
+            field_name: "offset"
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
