@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 version = "0.3.0"
 name = "source-bamboo-hr"
-description = "Source implementation for bamboo-hr."
+description = "Source implementation for Bamboo Hr."
 authors = [ "Airbyte <contact@airbyte.io>",]
 license = "MIT"
 readme = "README.md"

@@ -26,7 +26,6 @@ import java.util.HashMap
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
 import java.util.function.Predicate
-import lombok.extern.slf4j.Slf4j
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
@@ -39,7 +38,6 @@ import org.jooq.impl.SQLDataType
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-@Slf4j
 abstract class JdbcDestinationHandler<DestinationState>(
     protected val databaseName: String,
     protected val jdbcDatabase: JdbcDatabase,
@@ -59,7 +57,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
         return !jdbcDatabase.queryBoolean(
             dslContext
                 .select(
-                    DSL.field(
+                    field(
                         DSL.exists(
                             DSL.selectOne().from(DSL.name(id.finalNamespace, id.finalName)).limit(1)
                         )
@@ -100,7 +98,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                 CheckedFunction { conn: Connection ->
                     conn.prepareStatement(
                         dslContext
-                            .select(DSL.field("MIN(_airbyte_extracted_at)").`as`("min_timestamp"))
+                            .select(field("MIN(_airbyte_extracted_at)").`as`("min_timestamp"))
                             .from(DSL.name(id.rawNamespace, id.rawName))
                             .where(DSL.condition("_airbyte_loaded_at IS NULL"))
                             .sql
@@ -129,7 +127,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                 CheckedFunction { conn: Connection ->
                     conn.prepareStatement(
                         dslContext
-                            .select(DSL.field("MAX(_airbyte_extracted_at)").`as`("min_timestamp"))
+                            .select(field("MAX(_airbyte_extracted_at)").`as`("min_timestamp"))
                             .from(DSL.name(id.rawNamespace, id.rawName))
                             .sql
                     )

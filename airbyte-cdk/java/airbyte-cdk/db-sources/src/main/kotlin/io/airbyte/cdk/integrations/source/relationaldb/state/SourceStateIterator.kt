@@ -24,7 +24,7 @@ open class SourceStateIterator<T>(
     private var lastCheckpoint: Instant = Instant.now()
 
     override fun computeNext(): AirbyteMessage? {
-        var iteratorHasNextValue = false
+        var iteratorHasNextValue: Boolean
         try {
             iteratorHasNextValue = messageIterator.hasNext()
         } catch (ex: Exception) {

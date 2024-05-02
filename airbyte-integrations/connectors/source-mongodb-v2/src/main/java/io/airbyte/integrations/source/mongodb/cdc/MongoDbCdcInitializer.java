@@ -116,7 +116,9 @@ public class MongoDbCdcInitializer {
     }
 
     final boolean savedOffsetIsValid =
-        optSavedOffset.filter(savedOffset -> mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset, mongoClient)).isPresent();
+        optSavedOffset
+            .filter(savedOffset -> mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset, mongoClient, databaseName, incrementalOnlyStreamsCatalog))
+            .isPresent();
 
     if (!savedOffsetIsValid) {
       AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcCursorInvalidMessage());
@@ -147,7 +149,7 @@ public class MongoDbCdcInitializer {
             config);
 
     final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.getDatabaseConfig(),
-        new MongoDbCdcTargetPosition(initialResumeToken), false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize, false);
+        new MongoDbCdcTargetPosition(initialResumeToken), false, firstRecordWaitTime, queueSize, false);
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
     final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(stateToBeUsed);
     final var propertiesManager =

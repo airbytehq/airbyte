@@ -44,18 +44,18 @@ internal class JdbcSourceStressTest : JdbcStressTest() {
         config =
             Jsons.jsonNode(
                 ImmutableMap.builder<Any, Any>()
-                    .put(JdbcUtils.HOST_KEY, PSQL_DB!!.host)
-                    .put(JdbcUtils.PORT_KEY, PSQL_DB!!.firstMappedPort)
+                    .put(JdbcUtils.HOST_KEY, PSQL_DB.host)
+                    .put(JdbcUtils.PORT_KEY, PSQL_DB.firstMappedPort)
                     .put(JdbcUtils.DATABASE_KEY, schemaName)
-                    .put(JdbcUtils.USERNAME_KEY, PSQL_DB!!.username)
-                    .put(JdbcUtils.PASSWORD_KEY, PSQL_DB!!.password)
+                    .put(JdbcUtils.USERNAME_KEY, PSQL_DB.username)
+                    .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.password)
                     .build()
             )
 
         val initScriptName = "init_$schemaName.sql"
         val tmpFilePath =
             IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE $schemaName;")
-        runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB!!)
+        runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB)
 
         super.setup()
     }
@@ -126,13 +126,13 @@ internal class JdbcSourceStressTest : JdbcStressTest() {
         @JvmStatic
         fun init() {
             PSQL_DB = PostgreSQLContainer("postgres:13-alpine")
-            PSQL_DB!!.start()
+            PSQL_DB.start()
         }
 
         @AfterAll
         @JvmStatic
         fun cleanUp() {
-            PSQL_DB!!.close()
+            PSQL_DB.close()
         }
     }
 }
