@@ -34,52 +34,6 @@ def test_check_connection(requests_mock, check_connection_url, config_raw, respo
     requests_mock.get("https://eu.mixpanel.com/api/2.0/cohorts/list", status_code=response_code, json=response_json)
     ok, error = SourceMixpanel().check_connection(logger, config_raw)
     assert ok == expect_success
-    # expected_error = response_json.get("error")
-    # if expected_error:
-    #     assert error == expected_error
-
-#
-# def test_check_connection_all_streams_402_error(requests_mock, check_connection_url, config_raw, config):
-#     auth = TokenAuthenticatorBase64(token=config["credentials"]["api_secret"])
-#     requests_mock.register_uri(
-#         "GET", get_url_to_mock(Cohorts(authenticator=auth, **config)), setup_response(402, {"error": "Payment required"})
-#     )
-#     requests_mock.register_uri(
-#         "GET", get_url_to_mock(Annotations(authenticator=auth, **config)), setup_response(402, {"error": "Payment required"})
-#     )
-#     requests_mock.register_uri(
-#         "POST", get_url_to_mock(Engage(authenticator=auth, **config)), setup_response(402, {"error": "Payment required"})
-#     )
-#     requests_mock.register_uri(
-#         "GET", get_url_to_mock(Export(authenticator=auth, **config)), setup_response(402, {"error": "Payment required"})
-#     )
-#     requests_mock.register_uri(
-#         "GET", get_url_to_mock(Revenue(authenticator=auth, **config)), setup_response(402, {"error": "Payment required"})
-#     )
-#     requests_mock.register_uri(
-#         "GET", get_url_to_mock(Funnels(authenticator=auth, **config)), setup_response(402, {"error": "Payment required"})
-#     )
-#     requests_mock.register_uri(
-#         "GET", get_url_to_mock(FunnelsList(authenticator=auth, **config)), setup_response(402, {"error": "Payment required"})
-#     )
-#     requests_mock.register_uri(
-#         "GET", get_url_to_mock(CohortMembers(authenticator=auth, **config)), setup_response(402, {"error": "Payment required"})
-#     )
-#
-#     ok, error = SourceMixpanel().check_connection(logger, config_raw)
-#     assert ok is False and error == "Payment required"
-
-#
-# def test_check_connection_402_error_on_first_stream(requests_mock, check_connection_url, config, config_raw):
-#     auth = TokenAuthenticatorBase64(token=config["credentials"]["api_secret"])
-#     requests_mock.register_uri("GET", get_url_to_mock(Cohorts(authenticator=auth, **config)), setup_response(200, {}))
-#     requests_mock.register_uri(
-#         "GET", get_url_to_mock(Annotations(authenticator=auth, **config)), setup_response(402, {"error": "Payment required"})
-#     )
-#
-#     ok, error = SourceMixpanel().check_connection(logger, config_raw)
-#     # assert ok is True
-#     assert error is None
 
 
 def test_check_connection_bad_config():
@@ -135,23 +89,6 @@ def test_streams_string_date(requests_mock, config_raw):
     streams = SourceMixpanel().streams(config)
     assert len(streams) == 7
 
-#
-# def test_streams_disabled_402(requests_mock, config_raw):
-#     json_response = {"error": "Your plan does not allow API calls. Upgrade at mixpanel.com/pricing"}
-#     requests_mock.register_uri("POST", "https://mixpanel.com/api/2.0/engage?page_size=1000", setup_response(200, {}))
-#     requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/properties", setup_response(200, {}))
-#     requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", setup_response(200, {}))
-#     requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", setup_response(200, {}))
-#     requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/annotations", setup_response(200, {}))
-#     requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/cohorts/list", setup_response(402, json_response))
-#     requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/revenue", setup_response(200, {}))
-#     requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/funnels/list", setup_response(402, json_response))
-#     requests_mock.register_uri(
-#         "GET", "https://data.mixpanel.com/api/2.0/export?from_date=2017-01-20&to_date=2017-02-18", setup_response(402, json_response)
-#     )
-#     streams = SourceMixpanel().streams(config_raw)
-#     assert {s.name for s in streams} == {"annotations", "engage", "revenue"}
-#
 
 @pytest.mark.parametrize(
     "config, success, expected_error_message",
