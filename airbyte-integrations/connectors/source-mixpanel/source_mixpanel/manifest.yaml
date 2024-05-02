@@ -187,6 +187,11 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     transformations:
       - class_name: "source_mixpanel.components.EngageTransformation"
+      - type: AddFields
+        fields:
+          - path:
+              - browser_version
+            value: "{{ record.browser_version | string }}"
     schema_loader:
       type: CustomSchemaLoader
       class_name: "source_mixpanel.components.EngageJsonFileSchemaLoader"
@@ -223,6 +228,11 @@ definitions:
           - path:
               - cohort_id
             value: "{{ stream_partition.get('id') }}"
+      - type: AddFields
+        fields:
+          - path:
+              - browser_version
+            value: "{{ record.browser_version | string }}"
 
   # No API docs! build based on singer source
   revenue_stream:
