@@ -17,10 +17,10 @@ from airbyte_protocol.models import (
     AirbyteRecordMessage,
     AirbyteStateBlob,
     AirbyteStateMessage,
+    AirbyteStateStats,
     AirbyteStateType,
     AirbyteStream,
     AirbyteStreamState,
-    AirbyteStateStats,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
@@ -28,7 +28,14 @@ from airbyte_protocol.models import (
     SyncMode,
     Type,
 )
-from connector_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig, CheckpointingStrategyConfiguration, CheckpointingStrategies, CheckpointingStrategyPerStreamConfiguration
+from connector_acceptance_test.config import (
+    CheckpointingStrategies,
+    CheckpointingStrategyConfiguration,
+    CheckpointingStrategyPerStreamConfiguration,
+    Config,
+    EmptyStreamConfiguration,
+    IncrementalConfig,
+)
 from connector_acceptance_test.tests import test_incremental
 from connector_acceptance_test.tests.test_incremental import TestIncremental as _TestIncremental
 from connector_acceptance_test.tests.test_incremental import future_state_configuration_fixture, future_state_fixture

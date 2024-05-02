@@ -5,7 +5,7 @@
 import json
 import operator
 from pathlib import Path
-from typing import Any, Dict, List, Iterator, Mapping, MutableMapping, Tuple, Union
+from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Tuple, Union
 
 import pytest
 from airbyte_protocol.models import AirbyteMessage, AirbyteStateMessage, AirbyteStateType, ConfiguredAirbyteCatalog, SyncMode, Type
@@ -236,7 +236,9 @@ class TestIncremental(BaseTest):
                     if is_last_state_message:
                         continue
 
-                state_input, mutating_stream_name_to_per_stream_state = self.get_next_state_input(state_message, mutating_stream_name_to_per_stream_state)
+                state_input, mutating_stream_name_to_per_stream_state = self.get_next_state_input(
+                    state_message, mutating_stream_name_to_per_stream_state
+                )
 
                 output_N = await docker_runner.call_read_with_state(
                     connector_config, configured_catalog_for_incremental_per_stream, state=state_input
@@ -268,9 +270,7 @@ class TestIncremental(BaseTest):
         assert states, "The sync should produce at least one STATE message"
 
     def get_next_state_input(
-        self,
-        state_message: AirbyteStateMessage,
-        stream_name_to_per_stream_state: MutableMapping
+        self, state_message: AirbyteStateMessage, stream_name_to_per_stream_state: MutableMapping
     ) -> Tuple[Union[List[MutableMapping], MutableMapping], MutableMapping]:
         # Including all the latest state values from previous batches, update the combined stream state
         # with the current batch's stream state and then use it in the following read() request
@@ -330,7 +330,4 @@ class TestIncremental(BaseTest):
         total_count = sum(map(get_record_count, states))
 
         # Zip the StateMessage objects with their expected record counts
-        return zip(
-            states,
-            [total_count - sum(map(get_record_count, states[:idx + 1])) for idx in range(len(states))]
-        )
+        return zip(states, [total_count - sum(map(get_record_count, states[: idx + 1])) for idx in range(len(states))])
