@@ -7,13 +7,14 @@ from typing import Any, Mapping, Optional
 
 from airbyte_cdk.models import AdvancedAuth, ConfiguredAirbyteCatalog, ConnectorSpecification, OAuthConfigSpecification
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
-from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedConcurrentCursor
 from airbyte_cdk.sources.source import TState
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 from source_microsoft_sharepoint.stream_reader import SourceMicrosoftSharePointStreamReader
 
 
 class SourceMicrosoftSharePoint(FileBasedSource):
+    _concurrency_level = 1
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: Optional[TState]):
         super().__init__(
             stream_reader=SourceMicrosoftSharePointStreamReader(),
@@ -21,7 +22,7 @@ class SourceMicrosoftSharePoint(FileBasedSource):
             catalog=catalog,
             config=config,
             state=state,
-            cursor_cls=DefaultFileBasedCursor,
+            cursor_cls=FileBasedConcurrentCursor,
         )
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:

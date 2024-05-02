@@ -6,10 +6,10 @@ import logging
 from datetime import datetime
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedConcurrentCursor
 
 
-class Cursor(DefaultFileBasedCursor):
+class Cursor(FileBasedConcurrentCursor):
     @staticmethod
     def get_file_uri(file: RemoteFile) -> str:
         return file.uri.split("?")[0]
