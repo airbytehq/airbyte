@@ -642,7 +642,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         # define BULK Manager instance
         self.job_manager: ShopifyBulkManager = ShopifyBulkManager(
             session=self._session,
-            base_url=f"{self.url_base}/{self.path()}",
+            base_url=f"{self.url_base}{self.path()}",
             stream_name=self.name,
         )
         # overide the default job slice size, if provided (it's auto-adjusted, later on)
@@ -748,7 +748,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             return self.config.get("start_date")
 
     def emit_slice_message(self, slice_start: datetime, slice_end: datetime) -> None:
-        slice_size_message = f"Slice size: `P{round(self.job_manager.job_size, 1)}D`"
+        slice_size_message = f"Slice size: `P{round(self.job_manager._job_size, 1)}D`"
         self.logger.info(f"Stream: `{self.name}` requesting BULK Job for period: {slice_start} -- {slice_end}. {slice_size_message}")
 
     @stream_state_cache.cache_stream_state
@@ -773,8 +773,10 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         response: requests.Response,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        # get results fetched from COMPLETED BULK Job or `None`
-        filename = self.job_manager.job_check(response)
+        # process the CREATED Job prior to other actions
+        self.job_manager.job_process_created(response)
+        # get results fetched from COMPLETED BULK Job
+        filename = self.job_manager.job_check_for_completion()
         # the `filename` could be `None`, meaning there are no data available for the slice period.
         if filename:
             # add `shop_url` field to each record produced

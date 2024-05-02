@@ -425,9 +425,9 @@ class BigQueryDestinationTest {
     initBigQuery(config);
     final StreamId streamId =
         new BigQuerySqlGenerator(projectId, null).buildStreamId(datasetId, USERS_STREAM_NAME, JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE);
-    final Dataset dataset = BigQueryDestinationTestUtils.initDataSet(config, bigquery, streamId.rawNamespace());
-    createUnpartitionedTable(bigquery, dataset, streamId.rawName());
-    assertFalse(isTablePartitioned(bigquery, dataset, streamId.rawName()));
+    final Dataset dataset = BigQueryDestinationTestUtils.initDataSet(config, bigquery, streamId.getRawNamespace());
+    createUnpartitionedTable(bigquery, dataset, streamId.getRawName());
+    assertFalse(isTablePartitioned(bigquery, dataset, streamId.getRawName()));
     final BigQueryDestination destination = new BigQueryDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector);
 
@@ -454,7 +454,7 @@ class BigQueryDestinationTest {
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStream::getName)
         .collect(Collectors.toList()));
-    assertTrue(isTablePartitioned(bigquery, dataset, streamId.rawName()));
+    assertTrue(isTablePartitioned(bigquery, dataset, streamId.getRawName()));
   }
 
   private void createUnpartitionedTable(final BigQuery bigquery, final Dataset dataset, final String tableName) {
