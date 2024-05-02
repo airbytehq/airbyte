@@ -24,7 +24,7 @@ Read more in our [Clear documentation](/operator-guides/reset).
 
 - A new OSS [Quickstart](/deploying-airbyte/local-deployment) that automatically manages all install steps for you. Mac users can also use Brew to install the `abctl` command.
 
-- (Self-Managed Enterprise only) Improvements to connection migrations. Any changes to authentication or ingress URL configurations can be saved without deleting state and includes a backwards-compatible alternative to setting the webapp-url property through the airbyte.yml file. 
+- (Self-Managed Enterprise only) Improvements to connection migrations. Any changes to authentication or ingress URL configurations can be saved without deleting state. The improvement also includes a backwards-compatible alternative to setting the webapp-url property through the airbyte.yml file. 
 
 ## Connector Improvements
 
