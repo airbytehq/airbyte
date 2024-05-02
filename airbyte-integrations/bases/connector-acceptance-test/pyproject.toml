@@ -13,8 +13,7 @@ homepage = "https://github.com/airbytehq/airbyte"
 [tool.poetry.dependencies]
 python = "^3.10"
 airbyte-protocol-models = "<1.0.0"
-dagger-io = "==0.9.6"
-beartype = "<0.17.2" # dagger 0.9.6 doesn't pin this but doesn't play well with it. We should probably upgrade dagger
+dagger-io = "==0.11.2"
 PyYAML = "~=6.0"
 icdiff = "~=1.9"
 inflection = "~=0.5"

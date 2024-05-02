@@ -18,7 +18,7 @@ packages = [
 python = "^3.10,<3.12"
 airbyte-protocol-models = "<1.0.0"
 cachetools = "~=5.3.3"
-dagger-io = "==0.9.6"
+dagger-io = "==0.11.2"
 deepdiff = "6.7.1"
 pydantic = "*"
 pytest-asyncio = "~=0.23.5"
