@@ -180,7 +180,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   @Override
-  public boolean supportResumableFullRefresh(final ConfiguredAirbyteStream airbyteStream) {
+  public boolean supportResumableFullRefresh(final JdbcDatabase database, final ConfiguredAirbyteStream airbyteStream) {
     // for CDC, primary key is stored in stream.sourceDefinedPrimaryKey.
     if (airbyteStream.getStream() != null && airbyteStream.getStream().getSourceDefinedPrimaryKey() != null
         && !airbyteStream.getStream().getSourceDefinedPrimaryKey().isEmpty()) {
