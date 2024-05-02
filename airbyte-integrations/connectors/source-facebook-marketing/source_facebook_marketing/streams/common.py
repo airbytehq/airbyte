@@ -201,7 +201,7 @@ def traced_exception(fb_exception: FacebookRequestError):
     else:
         failure_type = FailureType.system_error
         error_code = fb_exception.api_error_code() if fb_exception.api_error_code() else fb_exception.http_status()
-        friendly_msg = f"Error: {error_code}, {msg}."
+        friendly_msg = f"Error code {error_code}: {msg}."
 
     return AirbyteTracedException(
         message=friendly_msg or msg,
