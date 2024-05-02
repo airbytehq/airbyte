@@ -85,14 +85,15 @@ When using [multi-tenancy](https://weaviate.io/developers/weaviate/manage-data/m
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                          |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
-| 0.2.16 | 2024-03-22 | [35911](https://github.com/airbytehq/airbyte/pull/35911) | Fix tests and move to Poetry |
-| 0.2.15 | 2023-01-25 | [34529](https://github.com/airbytehq/airbyte/pull/34529) | Fix tests |
-| 0.2.14 | 2023-01-15 | [34229](https://github.com/airbytehq/airbyte/pull/34229) | Allow configuring tenant id |
-| 0.2.13 | 2023-12-11 | [33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens |
-| 0.2.12 | 2023-12-07 | [33218](https://github.com/airbytehq/airbyte/pull/33218) | Normalize metadata field names |
-| 0.2.11 | 2023-12-01 | [32697](https://github.com/airbytehq/airbyte/pull/32697) | Allow omitting raw text |
-| 0.2.10 | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Support deleting records for CDC sources |
-| 0.2.9 | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
+| 0.2.17 | 2024-04-15 | [#37333](https://github.com/airbytehq/airbyte/pull/37333)  | Update CDK & pytest version to fix security vulnerabilities.
+| 0.2.16 | 2024-03-22 | [#35911](https://github.com/airbytehq/airbyte/pull/35911) | Fix tests and move to Poetry |
+| 0.2.15 | 2023-01-25 | [#34529](https://github.com/airbytehq/airbyte/pull/34529) | Fix tests |
+| 0.2.14 | 2023-01-15 | [#34229](https://github.com/airbytehq/airbyte/pull/34229) | Allow configuring tenant id |
+| 0.2.13 | 2023-12-11 | [#33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens |
+| 0.2.12 | 2023-12-07 | [#33218](https://github.com/airbytehq/airbyte/pull/33218) | Normalize metadata field names |
+| 0.2.11 | 2023-12-01 | [#32697](https://github.com/airbytehq/airbyte/pull/32697) | Allow omitting raw text |
+| 0.2.10 | 2023-11-16 | [#32608](https://github.com/airbytehq/airbyte/pull/32608) | Support deleting records for CDC sources |
+| 0.2.9 | 2023-11-13 | [#32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
 | 0.2.8   | 2023-11-03 | [#32134](https://github.com/airbytehq/airbyte/pull/32134) | Improve test coverage |
 | 0.2.7   | 2023-11-03 | [#32134](https://github.com/airbytehq/airbyte/pull/32134) | Upgrade weaviate client library |
 | 0.2.6   | 2023-11-01 | [#32038](https://github.com/airbytehq/airbyte/pull/32038) | Retry failed object loads |

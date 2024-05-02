@@ -33,7 +33,7 @@ class SamplingSizeEstimator(
         }
 
         counter = 0
-        val rowByteSize: Long = BaseSizeEstimator.Companion.getEstimatedByteSize(row)
+        val rowByteSize: Long = getEstimatedByteSize(row)
         if (this.maxRowByteSize < rowByteSize) {
             this.maxRowByteSize = rowByteSize.toDouble()
             hasNewEstimation = true

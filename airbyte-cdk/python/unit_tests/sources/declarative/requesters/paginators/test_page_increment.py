@@ -33,8 +33,8 @@ def test_page_increment_paginator_strategy(page_size, start_from, last_records, 
     response._content = json.dumps(response_body).encode("utf-8")
 
     next_page_token = paginator_strategy.next_page_token(response, last_records)
-    assert expected_next_page_token == next_page_token
-    assert expected_offset == paginator_strategy._page
+    assert next_page_token == expected_next_page_token
+    assert paginator_strategy._page == expected_offset
 
     paginator_strategy.reset()
     assert start_from == paginator_strategy._page
