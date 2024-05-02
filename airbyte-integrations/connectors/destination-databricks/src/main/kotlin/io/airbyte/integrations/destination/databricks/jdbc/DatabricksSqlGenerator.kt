@@ -30,6 +30,12 @@ class DatabricksSqlGenerator(
 
     private val log = KotlinLogging.logger {}
     private val cdcDeletedColumn = buildColumnId(CDC_DELETED_COLUMN_NAME)
+    private val metaColumnTypeMap =
+        mapOf(
+            buildColumnId(AB_RAW_ID) to AirbyteProtocolType.STRING,
+            buildColumnId(AB_EXTRACTED_AT) to AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE,
+            buildColumnId(AB_META) to AirbyteProtocolType.STRING
+        )
 
     companion object {
         const val QUOTE = "`"
@@ -66,7 +72,7 @@ class DatabricksSqlGenerator(
                 AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE -> "TIMESTAMP_NTZ"
                 AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE -> "TIMESTAMP"
                 AirbyteProtocolType.NUMBER -> "DECIMAL(38, 10)"
-                AirbyteProtocolType.INTEGER -> "BIGINT"
+                AirbyteProtocolType.INTEGER -> "LONG"
                 AirbyteProtocolType.BOOLEAN -> "BOOLEAN"
             }
         }
@@ -95,7 +101,7 @@ class DatabricksSqlGenerator(
         )
     }
 
-    // Only Functions needed from SqlOperations for reuse across code + tests
+    // Start: Functions scattered over other classes needed for T+D
     fun createRawTable(streamId: StreamId): Sql {
         return Sql.of(
             """
@@ -116,12 +122,26 @@ class DatabricksSqlGenerator(
         )
     }
 
-    // End of - Only Functions needed from SqlOperations for reuse across code + tests
+    private fun checkpointRawTable(streamId: StreamId, minRawTimestamp: Optional<Instant>): Sql {
+        val extractedAtCondition =
+            minRawTimestamp.map { " AND `$AB_EXTRACTED_AT` > '$it'" }.orElse("")
+
+        return Sql.of(
+            """
+            | UPDATE $unityCatalogName.${streamId.rawTableId(QUOTE)}
+            | SET ${constants.COLUMN_NAME_AB_LOADED_AT} = CURRENT_TIMESTAMP
+            | WHERE ${constants.COLUMN_NAME_AB_LOADED_AT} IS NULL
+            | $extractedAtCondition
+            | """.trimMargin()
+        )
+    }
+
+    // End: Functions
 
     override fun createTable(stream: StreamConfig, suffix: String, force: Boolean): Sql {
         val columnNameTypeMapping =
-            stream.columns!!
-                .asSequence()
+            sequenceOf(metaColumnTypeMap.asSequence(), stream.columns!!.asSequence())
+                .flatten()
                 .map { it -> "${it.key.name(QUOTE)} ${toDialectType(it.value)}" }
                 .toList()
                 .joinToString(", \n")
@@ -129,9 +149,6 @@ class DatabricksSqlGenerator(
         return Sql.of(
             """
             CREATE ${if (force) "OR REPLACE" else ""} TABLE $unityCatalogName.`${stream.id.finalNamespace}`.`$finalTableIdentifier`(
-                $AB_RAW_ID STRING,
-                $AB_EXTRACTED_AT TIMESTAMP,
-                $AB_META STRING,
                 $columnNameTypeMapping
             )
         """.trimIndent(),
@@ -170,7 +187,13 @@ class DatabricksSqlGenerator(
         minRawTimestamp: Optional<Instant>,
         safeCast: Boolean
     ): Sql {
-        val finalColumnNames = stream.columns!!.keys.map { it.name(QUOTE) }.joinToString(", \n")
+        val finalColumnNames =
+            sequenceOf(
+                    stream.columns!!.keys.asSequence(),
+                    metaColumnTypeMap.keys.filter { it.name != AB_META }.asSequence(),
+                )
+                .flatten()
+                .joinToString(", \n") { it.name(QUOTE) }
 
         val pkEqualityMatch =
             stream.primaryKey!!
@@ -228,13 +251,18 @@ class DatabricksSqlGenerator(
         safeCast: Boolean
     ): Sql {
 
-        val finalColumnNames = stream.columns!!.keys.map { it.name(QUOTE) }.joinToString(", \n")
+        val finalColumnNames =
+            sequenceOf(
+                    stream.columns!!.keys.asSequence(),
+                    metaColumnTypeMap.keys.filter { it.name != AB_META }.asSequence(),
+                )
+                .flatten()
+                .joinToString(", \n") { it.name(QUOTE) }
+
         val insertSql =
             """INSERT INTO $unityCatalogName.${stream.id.finalTableId(QUOTE, finalSuffix)}
                            |(
                            |${finalColumnNames.replaceIndent("    ")},
-                           |    $AB_RAW_ID,
-                           |    $AB_EXTRACTED_AT,
                            |    $AB_META
                            |)
                            |${selectTypedRecordsFromRawTable(stream, minRawTimestamp, finalColumnNames, safeCast, false)}""".trimMargin()
@@ -244,9 +272,17 @@ class DatabricksSqlGenerator(
 
     private fun cast(columnName: String, columnType: AirbyteType, safeCast: Boolean): String {
         if (!safeCast) {
-            return "`$AB_DATA`:${columnName}::${toDialectType(columnType)}"
+            return "${jsonPath(columnName)}::${toDialectType(columnType)}"
         }
-        return "`try_cast($AB_DATA`:${columnName} AS ${toDialectType(columnType)})"
+        return "try_cast(${jsonPath(columnName)} AS ${toDialectType(columnType)})"
+    }
+
+    private fun jsonPath(originalColumnName: String): String {
+        // get_json_object seems safer to do which doesn't crash on special chars in json
+        return "get_json_object(`$AB_DATA`, '$[\"${
+            originalColumnName.replace("\\", "\\\\").replace("'", "\\'")
+        }\"]')"
+        // return "`$AB_DATA`:`${originalColumnName.replace("`", "``")}`"
     }
 
     private fun selectTypedRecordsFromRawTable(
@@ -259,12 +295,17 @@ class DatabricksSqlGenerator(
 
         // JsonPath queried projection columns from raw Table.
         val projectionColumns =
-            stream.columns!!
-                .entries
-                .joinToString(
-                    separator = ", \n",
-                    transform = { cast(it.key.name(QUOTE), it.value, safeCast) },
+            sequenceOf(
+                    stream.columns!!.entries.asSequence().map {
+                        "${cast(it.key.originalName, it.value, safeCast)} as `${it.key.name}`"
+                    },
+                    metaColumnTypeMap
+                        .asSequence()
+                        .filter { it.key.name != AB_META }
+                        .map { it.key.name },
                 )
+                .flatten()
+                .joinToString(", \n")
 
         // Condition to avoid resurrecting phantom data from out of order deletes/updates
         val excludeCdcDeletedCondition =
@@ -295,8 +336,8 @@ class DatabricksSqlGenerator(
                     transform = {
                         """
                     |CASE
-                    |   WHEN `$AB_DATA`:${it.key.name(QUOTE)} IS NOT NULL
-                    |   AND ${cast(it.key.name(QUOTE), it.value, false)} IS NULL THEN named_struct(
+                    |   WHEN ${jsonPath(it.key.originalName)} IS NOT NULL
+                    |   AND ${cast(it.key.originalName, it.value, false)} IS NULL THEN named_struct(
                     |       'field',
                     |       '${it.key.name}',
                     |       'change',
@@ -335,8 +376,6 @@ class DatabricksSqlGenerator(
         val selectFromRawTable =
             """SELECT
             |${projectionColumns.replaceIndent("   ")},
-            |   $AB_RAW_ID,
-            |   $AB_EXTRACTED_AT,
             |   from_json($AB_META, 'STRUCT<`changes` : ARRAY<STRUCT<`field`: STRING, `change`: STRING, `reason`: STRING>>>') as `_airbyte_meta`,
             |${typeCastErrorsArray.replaceIndent("   ")} as `_airbyte_type_errors`
             |FROM
@@ -350,8 +389,6 @@ class DatabricksSqlGenerator(
             |)
             |SELECT 
             |${finalColumnNames.replaceIndent("     ")},
-            |     $AB_RAW_ID,
-            |     $AB_EXTRACTED_AT,
             |${airbyteMetaField.replaceIndent("     ")} as $AB_META
             |FROM
             |     intermediate_data""".trimMargin()
@@ -369,8 +406,6 @@ class DatabricksSqlGenerator(
             |), new_records AS (
             |   SELECT
             |${finalColumnNames.replaceIndent("       ")},
-            |       $AB_RAW_ID,
-            |       $AB_EXTRACTED_AT,
             |${airbyteMetaField.replaceIndent("       ")} as $AB_META
             |   FROM
             |       intermediate_data
@@ -383,8 +418,6 @@ class DatabricksSqlGenerator(
             |)
             |SELECT
             |${finalColumnNames.replaceIndent("   ")},
-            |   $AB_RAW_ID,
-            |   $AB_EXTRACTED_AT,
             |   $AB_META
             |FROM
             |   numbered_rows
@@ -393,20 +426,6 @@ class DatabricksSqlGenerator(
         """.trimMargin()
 
         return selectCTEDedupe
-    }
-
-    private fun checkpointRawTable(streamId: StreamId, minRawTimestamp: Optional<Instant>): Sql {
-        val extractedAtCondition =
-            minRawTimestamp.map { " AND `$AB_EXTRACTED_AT` > '$it'" }.orElse("")
-
-        return Sql.of(
-            """
-            | UPDATE $unityCatalogName.${streamId.rawTableId(QUOTE)}
-            | SET ${constants.COLUMN_NAME_AB_LOADED_AT} = CURRENT_TIMESTAMP
-            | WHERE ${constants.COLUMN_NAME_AB_LOADED_AT} IS NULL
-            | $extractedAtCondition
-        """.trimMargin()
-        )
     }
 
     override fun overwriteFinalTable(stream: StreamId, finalSuffix: String): Sql {

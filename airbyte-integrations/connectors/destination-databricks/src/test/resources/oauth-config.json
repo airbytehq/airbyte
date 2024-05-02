@@ -4,9 +4,8 @@
   "http_path": "test_http_path",
   "database": "test",
   "authentication": {
-    "auth_type": "BASIC",
-    "personal_access_token": "deadbeef00001111",
-    "username": "goose",
-    "password": "maverick"
+    "auth_type": "OAUTH",
+    "client_id": "dummy-client",
+    "secret": "Hunter2"
   }
 }

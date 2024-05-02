@@ -73,7 +73,7 @@ class DatabricksDestination : BaseConnector(), Destination {
         val workspaceClient =
             ConnectorClientsFactory.createWorkspaceClient(
                 connectorConfig.hostname,
-                connectorConfig.apiAuthentication
+                connectorConfig.authentication
             )
         val datasource = ConnectorClientsFactory.createDataSource(connectorConfig)
         val jdbcDatabase = DefaultJdbcDatabase(datasource)

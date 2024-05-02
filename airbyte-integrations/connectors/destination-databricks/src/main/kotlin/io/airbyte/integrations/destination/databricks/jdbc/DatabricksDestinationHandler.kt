@@ -21,7 +21,9 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
-import java.sql.Timestamp
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.*
 import kotlin.collections.LinkedHashMap
 import kotlin.streams.asSequence
@@ -178,7 +180,7 @@ class DatabricksDestinationHandler(
             }
         val actualColumns =
             tableDefinition.columns.entries
-                .filter { (it.key != abRawId || it.key != abExtractedAt || it.key != abMeta) }
+                .filter { (it.key != abRawId && it.key != abExtractedAt && it.key != abMeta) }
                 .associate {
                     it.key!! to if (it.value.type != "DECIMAL") it.value.type else "DECIMAL(38, 10)"
                 }
@@ -195,15 +197,22 @@ class DatabricksDestinationHandler(
         )
     }
 
-    private fun findLastLoadedTs(query: String): Optional<Timestamp> {
+    private fun findLastLoadedTs(query: String): Optional<Instant> {
         return jdbcDatabase
             .bufferedResultSetQuery(
                 { connection: Connection -> connection.createStatement().executeQuery(query) },
-                { resultSet: ResultSet -> resultSet.getTimestamp("last_loaded_at") },
+                { resultSet: ResultSet ->
+                    resultSet.getObject("last_loaded_at", LocalDateTime::class.java)
+                },
             )
             .stream()
-            .filter { ts: Timestamp? -> Objects.nonNull(ts) }
+            .filter { ts: LocalDateTime? -> Objects.nonNull(ts) }
             .findFirst()
+            .map {
+                // Databricks doesn't have offset stored, so we always use UTC as the supposed
+                // timezone
+                it.toInstant(ZoneOffset.UTC)
+            }
     }
 
     private fun getInitialRawTableState(id: StreamId): InitialRawTableStatus {
@@ -243,7 +252,6 @@ class DatabricksDestinationHandler(
         """.trimMargin()
 
         findLastLoadedTs(minExtractedAtLoadedNotNullQuery)
-            .map { it.toInstant() }
             .map { it.minusSeconds(1) }
             .let {
                 if (it.isPresent)
@@ -253,15 +261,13 @@ class DatabricksDestinationHandler(
                         maxProcessedTimestamp = it,
                     )
             }
-        findLastLoadedTs(maxExtractedAtQuery)
-            .map { it.toInstant() }
-            .let {
-                return InitialRawTableStatus(
-                    rawTableExists = true,
-                    hasUnprocessedRecords = false,
-                    maxProcessedTimestamp = it,
-                )
-            }
+        findLastLoadedTs(maxExtractedAtQuery).let {
+            return InitialRawTableStatus(
+                rawTableExists = true,
+                hasUnprocessedRecords = false,
+                maxProcessedTimestamp = it,
+            )
+        }
     }
 
     override fun commitDestinationStates(

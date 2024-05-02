@@ -27,7 +27,16 @@ class DatabricksNamingTransformer : NamingConventionTransformer {
     }
 
     override fun convertStreamName(input: String): String {
-        return applyDefaultCase(Names.toAlphanumericAndUnderscore(input))
+        var convertedIdentifier = Names.toAlphanumericAndUnderscore(input)
+        // Databricks has max identifier length of 255 chars
+        convertedIdentifier =
+            if (convertedIdentifier.length > 255)
+                convertedIdentifier.substring(
+                    0,
+                    254,
+                )
+            else convertedIdentifier
+        return applyDefaultCase(convertedIdentifier)
     }
 
     override fun applyDefaultCase(input: String): String {

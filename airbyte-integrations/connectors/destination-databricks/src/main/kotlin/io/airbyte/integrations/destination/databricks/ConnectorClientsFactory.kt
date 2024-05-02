@@ -7,28 +7,32 @@ package io.airbyte.integrations.destination.databricks
 import com.databricks.client.jdbc.Driver
 import com.databricks.sdk.WorkspaceClient
 import com.databricks.sdk.core.DatabricksConfig
-import io.airbyte.integrations.destination.databricks.model.ApiAuthentication
+import io.airbyte.integrations.destination.databricks.model.Authentication
+import io.airbyte.integrations.destination.databricks.model.BasicAuthentication
 import io.airbyte.integrations.destination.databricks.model.DatabricksConnectorConfig
-import io.airbyte.integrations.destination.databricks.model.JdbcAuthentication
+import io.airbyte.integrations.destination.databricks.model.OAuth2Authentication
 import javax.sql.DataSource
 
 object ConnectorClientsFactory {
 
-    fun createWorkspaceClient(
-        hostName: String,
-        apiAuthentication: ApiAuthentication
-    ): WorkspaceClient {
-        return when (apiAuthentication) {
-            is ApiAuthentication.PersonalAccessToken -> {
-                val config =
+    fun createWorkspaceClient(hostName: String, authentication: Authentication): WorkspaceClient {
+        val config =
+            when (authentication) {
+                is BasicAuthentication -> {
                     DatabricksConfig()
                         .setAuthType("pat")
                         .setHost("https://$hostName")
-                        .setToken(apiAuthentication.token)
-                WorkspaceClient(config)
+                        .setToken(authentication.personalAccessToken)
+                }
+                is OAuth2Authentication -> {
+                    DatabricksConfig()
+                        .setAuthType("oauth-m2m")
+                        .setHost("https://$hostName")
+                        .setClientId(authentication.clientId)
+                        .setClientSecret(authentication.secret)
+                }
             }
-            is ApiAuthentication.OAuthToken -> TODO("Not yet supported")
-        }
+        return WorkspaceClient(config)
     }
 
     fun createDataSource(config: DatabricksConnectorConfig): DataSource {
@@ -42,13 +46,17 @@ object ConnectorClientsFactory {
         // we don't need it to be optimized.
         val jdbcUrl =
             "jdbc:databricks://${config.hostname}:${config.port}/${config.database};transportMode=http;httpPath=${config.httpPath};EnableArrow=0"
-        when (config.jdbcAuthentication) {
-            is JdbcAuthentication.BasicAuthentication -> {
-                datasource.userID = config.jdbcAuthentication.username
-                datasource.password = config.jdbcAuthentication.password
+        when (config.authentication) {
+            is BasicAuthentication -> {
+                datasource.userID = config.authentication.username
+                datasource.password = config.authentication.password
                 datasource.setURL("$jdbcUrl;AuthMech=3")
             }
-            is JdbcAuthentication.OIDCAuthentication -> TODO("Not yet supported")
+            is OAuth2Authentication -> {
+                datasource.setURL(
+                    "$jdbcUrl;AuthMech=11;Auth_Flow=1;OAuth2ClientId=${config.authentication.clientId};OAuth2Secret=${config.authentication.secret}"
+                )
+            }
         }
         return datasource
     }

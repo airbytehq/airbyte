@@ -34,7 +34,9 @@ airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.destination.databricks.DatabricksDestinationKt'
-    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
+                                 '-XX:NativeMemoryTracking=detail', '-XX:+UnlockDiagnosticVMOptions',
+                                 '-XX:GCLockerRetryAllocationCount=100', '-XX:+UseZGC', '-XX:+ZGenerational']
 }
 
 dependencies {

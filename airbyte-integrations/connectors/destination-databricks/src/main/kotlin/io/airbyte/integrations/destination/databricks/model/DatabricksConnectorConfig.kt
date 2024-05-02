@@ -13,15 +13,15 @@ import io.airbyte.commons.jackson.MoreMappers
 
 data class DatabricksConnectorConfig(
     @JsonProperty("accept_terms") val termsAccepted: Boolean,
-    @JsonProperty("hostname") val hostname: String,
-    @JsonProperty("port") val port: Int = 443,
+    val hostname: String,
+    val port: Int = 443,
     @JsonProperty("http_path") val httpPath: String,
     val database: String,
     val schema: String = "default",
     val rawSchemaOverride: String = "airbyte_internal",
     val enableSchemaEvolution: Boolean = false,
-    @JsonProperty("api_authentication") val apiAuthentication: ApiAuthentication,
-    @JsonProperty("jdbc_authentication") val jdbcAuthentication: JdbcAuthentication
+    @JsonProperty("authentication") val authentication: Authentication,
+    @JsonProperty("purge_staging_data") val purgeStagingData: Boolean = true,
 ) {
     companion object {
         fun deserialize(jsonNode: JsonNode): DatabricksConnectorConfig {
@@ -32,20 +32,17 @@ data class DatabricksConnectorConfig(
     }
 }
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "auth_type")
-sealed interface ApiAuthentication {
-    @JsonTypeName("PERSONAL_ACCESS_TOKEN")
-    data class PersonalAccessToken(val token: String) : ApiAuthentication
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "auth_type") sealed interface Authentication
 
-    @JsonTypeName("OAUTH_TOKEN") data class OAuthToken(val token: String) : ApiAuthentication
-}
+@JsonTypeName("BASIC")
+data class BasicAuthentication(
+    @JsonProperty("personal_access_token") val personalAccessToken: String,
+    val username: String,
+    val password: String
+) : Authentication
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "auth_type")
-sealed interface JdbcAuthentication {
-
-    @JsonTypeName("BASIC")
-    data class BasicAuthentication(val username: String, val password: String) : JdbcAuthentication
-
-    @JsonTypeName("OAUTH")
-    data class OIDCAuthentication(val oauthToken: String) : JdbcAuthentication
-}
+@JsonTypeName("OAUTH")
+data class OAuth2Authentication(
+    @JsonProperty("client_id") val clientId: String,
+    val secret: String
+) : Authentication

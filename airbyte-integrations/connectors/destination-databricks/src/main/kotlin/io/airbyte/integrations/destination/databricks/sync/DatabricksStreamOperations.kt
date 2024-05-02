@@ -159,7 +159,12 @@ class DatabricksStreamOperations(
         // For overwrite, its wasteful to do T+D so we don't do soft-reset in prepare. Instead we do
         // type-dedupe
         // on a suffixed table and do a swap here when we have to for schema mismatches
-        storageOperations.overwriteFinalTable(streamConfig, finalTableSuffix)
+        if (
+            streamConfig.destinationSyncMode == DestinationSyncMode.OVERWRITE &&
+                finalTableSuffix.isNotBlank()
+        ) {
+            storageOperations.overwriteFinalTable(streamConfig, finalTableSuffix)
+        }
     }
 
     private fun getFinalTableSuffix(): String {

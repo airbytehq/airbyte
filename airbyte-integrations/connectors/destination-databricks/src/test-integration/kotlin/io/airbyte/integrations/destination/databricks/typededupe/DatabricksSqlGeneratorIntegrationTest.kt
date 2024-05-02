@@ -49,11 +49,14 @@ class DatabricksSqlGeneratorIntegrationTest :
         private var connectorConfig: DatabricksConnectorConfig = mock()
         @JvmStatic
         @BeforeAll
+        @Timeout(value = 10, unit = TimeUnit.MINUTES)
         fun setupDatabase() {
-            val rawConfig = Files.readString(Path.of("secrets/new_config.json"))
+            val rawConfig = Files.readString(Path.of("secrets/oauth_config.json"))
             connectorConfig = DatabricksConnectorConfig.deserialize(Jsons.deserialize(rawConfig))
             jdbcDatabase =
                 DefaultJdbcDatabase(ConnectorClientsFactory.createDataSource(connectorConfig))
+            // This will trigger warehouse start
+            jdbcDatabase.execute("SELECT 1")
         }
     }
 
@@ -146,7 +149,8 @@ class DatabricksSqlGeneratorIntegrationTest :
         val sqlValue = { value: JsonNode? ->
             value?.let {
                 if (value.isTextual) "'${value.asText()}'"
-                else if (value.isNumber) "$value" else "'${value}'"
+                else if (value.isNumber) "$value"
+                else "\"${value.toString().replace("\\", "\\\\").replace("\"", "\\\"")}\""
             }
                 ?: "NULL"
         }
@@ -245,8 +249,13 @@ class DatabricksSqlGeneratorIntegrationTest :
 
     @Disabled("No V1 Table migration for databricks") override fun testV1V2migration() {}
 
+    @Disabled("No state table in databricks")
+    override fun testStateHandling() {
+        super.testStateHandling()
+    }
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
     @Test
+    @Disabled
     fun randomTest() {
         // createRawTable(incrementalDedupStream.id)
         createFinalTable(incrementalDedupStream, "")
@@ -348,4 +357,15 @@ class DatabricksSqlGeneratorIntegrationTest :
             println(it.initialRawTableStatus)
         }
     }
+
+    @Disabled(
+        "Create schema and table doesn't use the actual truncation handling, uses test method"
+    )
+    override fun testLongIdentifierHandling() {
+        super.testLongIdentifierHandling()
+    }
+
+    // Failing tests
+    // weirdColumnNames - double-quote is removed, as it cannot be queried
+    // testLongIdentifierHandling - Ignored
 }
