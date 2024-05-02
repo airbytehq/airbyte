@@ -47,8 +47,8 @@ The Sentry source connector supports the following [sync modes](https://docs.air
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
-| 0.4.4 | 2024-04-19 | [36659](https://github.com/airbytehq/airbyte/pull/36659) | Updating to 0.80.0 CDK |
-| 0.4.3 | 2024-04-12 | [36659](https://github.com/airbytehq/airbyte/pull/36659) | schema descriptions |
+| 0.5.1   | 2024-04-01 | [36731](https://github.com/airbytehq/airbyte/pull/36731) | Add `%Y-%m-%dT%H:%M:%S%z` to date time formats.                         |
+| 0.5.0   | 2024-03-27 | [35755](https://github.com/airbytehq/airbyte/pull/35755) | Migrate to low-code.                                                    |
 | 0.4.2   | 2024-03-25 | [36448](https://github.com/airbytehq/airbyte/pull/36448) | Unpin CDK version                                                       |
 | 0.4.1   | 2024-02-12 | [35145](https://github.com/airbytehq/airbyte/pull/35145) | Manage dependencies with Poetry                                         |
 | 0.4.0   | 2024-01-05 | [32957](https://github.com/airbytehq/airbyte/pull/32957) | Added undeclared fields to schema and migrated to base image            |

@@ -5,7 +5,7 @@ package io.airbyte.cdk.integrations.destination.gcs
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectReader
-import io.airbyte.cdk.integrations.destination.s3.S3Format
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants
 import io.airbyte.cdk.integrations.destination.s3.util.AvroRecordHelper.getFieldNameUpdater
 import io.airbyte.cdk.integrations.destination.s3.util.AvroRecordHelper.pruneAirbyteJson
@@ -20,7 +20,7 @@ import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericDatumReader
 
 abstract class GcsBaseAvroDestinationAcceptanceTest :
-    GcsAvroParquetDestinationAcceptanceTest(S3Format.AVRO) {
+    GcsAvroParquetDestinationAcceptanceTest(FileUploadFormat.AVRO) {
     override val formatConfig: JsonNode?
         get() =
             Jsons.deserialize(
@@ -35,17 +35,17 @@ abstract class GcsBaseAvroDestinationAcceptanceTest :
     @Throws(Exception::class)
     override fun retrieveRecords(
         testEnv: TestDestinationEnv?,
-        streamName: String?,
-        namespace: String?,
+        streamName: String,
+        namespace: String,
         streamSchema: JsonNode
     ): List<JsonNode> {
-        val nameUpdater = getFieldNameUpdater(streamName!!, namespace, streamSchema)
+        val nameUpdater = getFieldNameUpdater(streamName, namespace, streamSchema)
 
-        val objectSummaries = getAllSyncedObjects(streamName, namespace)
+        val objectSummaries = getAllSyncedObjects(streamName, namespace!!)
         val jsonRecords: MutableList<JsonNode> = LinkedList()
 
-        for (objectSummary in objectSummaries!!) {
-            val `object` = s3Client!!.getObject(objectSummary!!.bucketName, objectSummary.key)
+        for (objectSummary in objectSummaries) {
+            val `object` = s3Client.getObject(objectSummary.bucketName, objectSummary.key)
             DataFileReader<GenericData.Record>(
                     SeekableByteArrayInput(`object`.objectContent.readAllBytes()),
                     GenericDatumReader<GenericData.Record>()
@@ -67,8 +67,8 @@ abstract class GcsBaseAvroDestinationAcceptanceTest :
 
     @Throws(Exception::class)
     override fun retrieveDataTypesFromPersistedFiles(
-        streamName: String?,
-        namespace: String?
+        streamName: String,
+        namespace: String
     ): Map<String?, Set<Schema.Type?>?> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val resultDataTypes: MutableMap<String?, Set<Schema.Type?>?> = HashMap()
