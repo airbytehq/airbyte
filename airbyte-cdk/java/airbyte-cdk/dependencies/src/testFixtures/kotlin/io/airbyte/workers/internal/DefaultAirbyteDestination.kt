@@ -51,24 +51,18 @@ constructor(
     private var messageIterator: Iterator<AirbyteMessage?>? = null
 
     private var exitValueIsSet = false
-    private var exitValue: Int = 0
-    override fun getExitValue(): Int {
-        Preconditions.checkState(
-            destinationProcess != null,
-            "Destination process is null, cannot retrieve exit value."
-        )
-        Preconditions.checkState(
-            !destinationProcess!!.isAlive,
-            "Destination process is still alive, cannot retrieve exit value."
-        )
-
-        if (!exitValueIsSet) {
-            exitValueIsSet = true
-            exitValue = destinationProcess!!.exitValue()
+    override val exitValue: Int
+        get() {
+            Preconditions.checkState(
+                destinationProcess != null,
+                "Destination process is null, cannot retrieve exit value."
+            )
+            Preconditions.checkState(
+                !destinationProcess!!.isAlive,
+                "Destination process is still alive, cannot retrieve exit value."
+            )
+            return destinationProcess!!.exitValue()
         }
-
-        return exitValue
-    }
 
     @Throws(IOException::class, TestHarnessException::class)
     override fun start(

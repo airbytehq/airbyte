@@ -46,6 +46,7 @@ The OSS and Cloud variants have the same version number starting from version `0
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------| :------------------------------------------------------- |:----------------------------------------------------------|
+| 0.3.5   | 2024-04-29 | [37366](https://github.com/airbytehq/airbyte/pull/37366) | Support refreshes                                         |
 | 0.3.4   | 2024-04-16 | [37366](https://github.com/airbytehq/airbyte/pull/37366) | Fix NPE                                                   |
 | 0.3.3   | 2024-04-16 | [37366](https://github.com/airbytehq/airbyte/pull/37366) | Fix Log trace messages                                    |
 | 0.3.2   | 2024-02-14 | [36812](https://github.com/airbytehq/airbyte/pull/36812) | Log trace messages                                        |
