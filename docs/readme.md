@@ -18,17 +18,17 @@ Airbyte is suitable for a wide range of data integration use cases, including AI
 
 <Arcade id="0k75Pa9c9EvrJb8zFsuU" title="Airbyte Demo" />
 
-## Getting Started with Airbyte
+## For Airbyte Cloud users
 
-There are four Airbyte products:
+Browse the [connector catalog](/integrations/) to find the connector you want. In case the connector is not yet supported on Airbyte Cloud, consider using [Airbyte Open Source](#for-airbyte-open-source-users).
 
-1. [Airbyte Open-Source](/category/deploy-airbyte): Check out our [quickstart](/using-airbyte/getting-started) to [deploy](/deploying-airbyte/local-deployment) and [manage](/operator-guides/upgrading-airbyte) Airbyte Open Source in your infrastructure.
+Next, check out the [step-by-step tutorial](/using-airbyte/getting-started) to sign up for Airbyte Cloud, understand Airbyte [concepts](/using-airbyte/core-concepts), and run your first sync.
 
-2. [Airbyte Cloud](http://cloud.airbyte.com/signup): Start syncing your data in minutes with our hosted solution.
+## For Airbyte Open Source users
 
-3. [Airbyte Enterprise](/enterprise-setup): Own your data infrastructure with advanced security features and premium support.
+Browse the [connector catalog](/integrations/) to find the connector you want. If the connector is not yet supported on Airbyte Open Source, [build your own connector](/connector-development/).
 
-4. [Powered by Airbyte](https://reference.airbyte.com/reference/powered-by-airbyte): White-label Airbyte to offer data integration features for your end users.
+Next, check out the [Airbyte Open Source QuickStart](/deploying-airbyte/local-deployment). Then learn how to [deploy](/deploying-airbyte/local-deployment) and [manage](/operator-guides/upgrading-airbyte) Airbyte Open Source in your cloud infrastructure. 
 
 ## For Airbyte contributors
 
