@@ -123,6 +123,7 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------|
+| 2.0.3 | 2024-05-02 | [36649](https://github.com/airbytehq/airbyte/pull/36649) | Schema descriptions |
 | 2.0.2   | 2024-04-25 | [37572](https://github.com/airbytehq/airbyte/pull/37572) | Fixed `start_date` format issue for the `email_activity` stream                          |
 | 2.0.1   | 2024-04-19 | [37434](https://github.com/airbytehq/airbyte/pull/37434) | Fixed cursor format for the `email_activity` stream                          |
 | 2.0.0   | 2024-04-01 | [35281](https://github.com/airbytehq/airbyte/pull/35281) | Migrate to Low-Code                                                        |
