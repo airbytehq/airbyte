@@ -20,6 +20,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 object DebugUtil {
     @Suppress("deprecation")
     @Throws(Exception::class)
+    @JvmStatic
     fun debug(debugSource: Source) {
         val debugConfig = config
         val configuredAirbyteCatalog = catalog

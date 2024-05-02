@@ -93,6 +93,12 @@
     },
     "emailTemplateName": {
       "type": ["null", "string"]
+    },
+    "sequenceTested": {
+      "type": ["null", "string"]
+    },
+    "stepTested": {
+      "type": ["null", "string"]
     }
   }
 }

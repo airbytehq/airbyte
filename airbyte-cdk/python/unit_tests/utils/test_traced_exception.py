@@ -15,6 +15,11 @@ from airbyte_cdk.models.airbyte_protocol import (
 )
 from airbyte_cdk.models.airbyte_protocol import Type as MessageType
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_protocol.models import StreamDescriptor
+
+_AN_EXCEPTION = ValueError("An exception")
+_A_STREAM_DESCRIPTOR = StreamDescriptor(name="a_stream")
+_ANOTHER_STREAM_DESCRIPTOR = StreamDescriptor(name="another_stream")
 
 
 @pytest.fixture
@@ -105,3 +110,27 @@ def test_emit_message(capsys):
     printed_message.trace.emitted_at = 0.0
 
     assert printed_message == expected_message
+
+
+def test_given_both_init_and_as_message_with_stream_descriptor_when_as_airbyte_message_use_init_stream_descriptor() -> None:
+    traced_exc = AirbyteTracedException(stream_descriptor=_A_STREAM_DESCRIPTOR)
+    message = traced_exc.as_airbyte_message(stream_descriptor=_ANOTHER_STREAM_DESCRIPTOR)
+    assert message.trace.error.stream_descriptor == _A_STREAM_DESCRIPTOR
+
+
+def test_given_both_init_and_as_sanitized_airbyte_message_with_stream_descriptor_when_as_airbyte_message_use_init_stream_descriptor() -> None:
+    traced_exc = AirbyteTracedException(stream_descriptor=_A_STREAM_DESCRIPTOR)
+    message = traced_exc.as_sanitized_airbyte_message(stream_descriptor=_ANOTHER_STREAM_DESCRIPTOR)
+    assert message.trace.error.stream_descriptor == _A_STREAM_DESCRIPTOR
+
+
+def test_given_both_from_exception_and_as_message_with_stream_descriptor_when_as_airbyte_message_use_init_stream_descriptor() -> None:
+    traced_exc = AirbyteTracedException.from_exception(_AN_EXCEPTION, stream_descriptor=_A_STREAM_DESCRIPTOR)
+    message = traced_exc.as_airbyte_message(stream_descriptor=_ANOTHER_STREAM_DESCRIPTOR)
+    assert message.trace.error.stream_descriptor == _A_STREAM_DESCRIPTOR
+
+
+def test_given_both_from_exception_and_as_sanitized_airbyte_message_with_stream_descriptor_when_as_airbyte_message_use_init_stream_descriptor() -> None:
+    traced_exc = AirbyteTracedException.from_exception(_AN_EXCEPTION, stream_descriptor=_A_STREAM_DESCRIPTOR)
+    message = traced_exc.as_sanitized_airbyte_message(stream_descriptor=_ANOTHER_STREAM_DESCRIPTOR)
+    assert message.trace.error.stream_descriptor == _A_STREAM_DESCRIPTOR

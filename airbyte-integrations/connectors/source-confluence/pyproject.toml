@@ -3,10 +3,10 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.1"
+version = "0.2.3"
 name = "source-confluence"
 description = "Source implementation for Confluence."
-authors = [ "Airbyte <hey@airbyte.io>",]
+authors = [ "Airbyte <contact@airbyte.io>",]
 license = "MIT"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/confluence"
@@ -17,8 +17,7 @@ include = "source_confluence"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^0.73.0"
-
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-confluence = "source_confluence.run:run"
@@ -26,5 +25,5 @@ source-confluence = "source_confluence.run:run"
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
-pytest = "^6.2"
+pytest = "^6.1"
 responses = "^0.13.3"

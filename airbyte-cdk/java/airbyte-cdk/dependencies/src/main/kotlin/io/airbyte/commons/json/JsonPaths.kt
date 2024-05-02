@@ -259,7 +259,7 @@ object JsonPaths {
      * @param replacement
      * - a string value to replace the current value at the jsonPath
      */
-    fun replaceAtString(json: JsonNode, jsonPath: String, replacement: String): JsonNode? {
+    fun replaceAtString(json: JsonNode, jsonPath: String, replacement: String): JsonNode {
         return replaceAtJsonNode(json, jsonPath, Jsons.jsonNode(replacement))
     }
 
@@ -315,7 +315,7 @@ object JsonPaths {
         json: JsonNode,
         jsonPath: String,
         replacementFunction: BiFunction<JsonNode, String, JsonNode>
-    ): JsonNode? {
+    ): JsonNode {
         var clone = Jsons.clone(json)
         assertIsJsonPath(jsonPath)
         val foundPaths = getPaths(clone, jsonPath)

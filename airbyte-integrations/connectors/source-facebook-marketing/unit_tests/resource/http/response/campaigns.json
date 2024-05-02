@@ -1,0 +1,22 @@
+{
+  "data": [
+    {
+      "id": "0000000000000000",
+      "account_id": "111111111111111",
+      "budget_rebalance_flag": false,
+      "budget_remaining": 0.0,
+      "buying_type": "AUCTION",
+      "created_time": "2024-03-12T15:02:47-0700",
+      "configured_status": "ACTIVE",
+      "effective_status": "ACTIVE",
+      "name": "New Test Campaign",
+      "objective": "OUTCOME_AWARENESS",
+      "smart_promotion_type": "GUIDED_CREATION",
+      "source_campaign_id": 0.0,
+      "special_ad_category": "NONE",
+      "start_time": "2024-03-12T15:02:47-0700",
+      "status": "ARCHIVED",
+      "updated_time": "2024-03-12T15:02:47-0700"
+    }
+  ]
+}

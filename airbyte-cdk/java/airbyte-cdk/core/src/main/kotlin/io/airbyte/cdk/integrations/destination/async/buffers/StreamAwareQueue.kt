@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.integrations.destination.async.buffers
 
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import java.time.Instant
 import java.util.Optional
 import java.util.concurrent.TimeUnit

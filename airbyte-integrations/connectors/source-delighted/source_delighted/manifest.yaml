@@ -81,6 +81,50 @@ definitions:
       name: "people"
       path: "people.json"
       cursor_field: "created_at"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the person record
+            type: string
+          name:
+            description: Full name of the person
+            type:
+              - "null"
+              - string
+          email:
+            description: Email address of the person
+            type:
+              - "null"
+              - string
+          phone_number:
+            description: Phone number of the person
+            type:
+              - "null"
+              - string
+          created_at:
+            description: Date and time when the person was created in the system
+            type: integer
+          last_sent_at:
+            description: Date and time when the last survey was sent to the person
+            type:
+              - integer
+              - "null"
+          last_responded_at:
+            description: Date and time when the person last responded to a survey
+            type:
+              - integer
+              - "null"
+          next_survey_scheduled_at:
+            description:
+              Date and time when the next survey is scheduled to be sent
+              to the person
+            type:
+              - integer
+              - "null"
   bounces:
     $ref: "#/definitions/base_stream"
     primary_key: "person_id"
@@ -88,6 +132,28 @@ definitions:
       cursor_field: "bounced_at"
       name: "bounces"
       path: "bounces.json"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          person_id:
+            description:
+              The unique identifier of the person related to the bounced
+              email.
+            type: string
+          email:
+            description: The email address that experienced the bounce.
+            type: string
+          name:
+            description: The name associated with the bounced email, if available.
+            type:
+              - "null"
+              - string
+          bounced_at:
+            description: The timestamp when the email bounced.
+            type: integer
   unsubscribes:
     $ref: "#/definitions/base_stream"
     primary_key: "person_id"
@@ -95,6 +161,26 @@ definitions:
       cursor_field: "unsubscribed_at"
       name: "unsubscribes"
       path: "unsubscribes.json"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          person_id:
+            description: An identifier for the subscriber in the system.
+            type: string
+          email:
+            description: The email address of the subscriber who unsubscribed.
+            type: string
+          name:
+            description: The name of the subscriber who unsubscribed, if available.
+            type:
+              - "null"
+              - string
+          unsubscribed_at:
+            description: The date and time when the subscriber unsubscribed.
+            type: integer
   survey_responses:
     $ref: "#/definitions/base_stream"
     incremental_sync:
@@ -112,6 +198,141 @@ definitions:
       name: "survey_responses"
       path: "survey_responses.json"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the survey response
+            type: string
+          person:
+            description: Information about the person who responded to the survey
+            type: string
+          survey_type:
+            description: Type of survey conducted
+            type: string
+          score:
+            description: Score associated with the survey response
+            type: integer
+          comment:
+            description: Additional comments provided in the survey response
+            type:
+              - "null"
+              - string
+          permalink:
+            description: Permanent link to access the survey response
+            type: string
+          created_at:
+            description: Timestamp of when the survey response was created
+            type: integer
+          updated_at:
+            description: Timestamp of when the survey response was last updated
+            type:
+              - "null"
+              - integer
+          person_properties:
+            description: Additional properties associated with the person
+            type:
+              - object
+              - "null"
+            properties:
+              Delighted Source:
+                description: Source from where the survey was accessed
+                type:
+                  - "null"
+                  - string
+              Delighted Device Type:
+                description: Type of device used by the person
+                type:
+                  - "null"
+                  - string
+              Delighted Operating System:
+                description: Operating system of the device used by the person
+                type:
+                  - "null"
+                  - string
+              Delighted Browser:
+                description: Browser used by the person
+                type:
+                  - "null"
+                  - string
+          notes:
+            description: Additional notes associated with the survey response
+            type: array
+            items:
+              description: Individual note for the survey response
+          tags:
+            description: Tags associated with the survey response
+            type: array
+            items:
+              description: Individual tag for the survey response
+          additional_answers:
+            description: Information on additional answers provided in the survey
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              properties:
+                id:
+                  description: Unique identifier for the additional answer
+                  type: string
+                value:
+                  description: Value provided for the question
+                  type: object
+                  properties:
+                    free_response:
+                      description: Free response answer
+                      type:
+                        - "null"
+                        - string
+                    scale:
+                      description: Scale response value
+                      type:
+                        - "null"
+                        - integer
+                    select_one:
+                      description: Select single choice response
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        id:
+                          description: Unique identifier for the choice
+                          type: string
+                        text:
+                          description: Text of the choice
+                          type: string
+                    select_many:
+                      description: Select multiple choice response
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            description: Unique identifier for the choice
+                            type: string
+                          text:
+                            description: Text of the choice
+                            type: string
+                question:
+                  type: object
+                  properties:
+                    id:
+                      description: Unique identifier for the question
+                      type: string
+                    type:
+                      description:
+                        Type of question (free response, scale, select
+                        many, select one)
+                      type: string
+                    text:
+                      description: Text of the question
+                      type: string
 streams:
   - "#/definitions/people"
   - "#/definitions/unsubscribes"
