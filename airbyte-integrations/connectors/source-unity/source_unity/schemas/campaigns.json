@@ -23,6 +23,12 @@
     "attributionViewUrl": {
       "type": ["string", "null"]
     },
+    "organisation_id": {
+      "type": ["string", "null"]
+    },
+    "campaign_set_id": {
+      "type": ["string", "null"]
+    },
     "scheduleStart": {
       "type": ["string", "null"]
     },

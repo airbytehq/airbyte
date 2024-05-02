@@ -14,6 +14,12 @@
     "type": {
       "type": ["string", "null"]
     },
+    "organisation_id": {
+      "type": ["string", "null"]
+    },
+    "campaign_set_id": {
+      "type": ["string", "null"]
+    },
     "media_info_list" : {
       "type" : "array",
       "items" : {

@@ -20,6 +20,12 @@
     "gameId": {
       "type": ["integer", "null"]
     },
+    "organisation_id": {
+      "type": ["string", "null"]
+    },
+    "campaign_set_id": {
+      "type": ["string", "null"]
+    },
     "createdAt": {
       "type": ["string", "null"]
     },
