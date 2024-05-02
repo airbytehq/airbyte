@@ -88,33 +88,3 @@ def log_by_prefix(msg: str, default_level: str) -> Tuple[int, str]:
         rendered_message = msg
 
     return log_level, rendered_message
-
-
-@deprecated(version="0.1.47", reason="Use logging.getLogger('airbyte') instead")
-class AirbyteLogger:
-    def log(self, level, message):
-        log_record = AirbyteLogMessage(level=level, message=message)
-        log_message = AirbyteMessage(type="LOG", log=log_record)
-        print(log_message.json(exclude_unset=True))
-
-    def fatal(self, message):
-        self.log("FATAL", message)
-
-    def exception(self, message):
-        message = f"{message}\n{traceback.format_exc()}"
-        self.error(message)
-
-    def error(self, message):
-        self.log("ERROR", message)
-
-    def warn(self, message):
-        self.log("WARN", message)
-
-    def info(self, message):
-        self.log("INFO", message)
-
-    def debug(self, message):
-        self.log("DEBUG", message)
-
-    def trace(self, message):
-        self.log("TRACE", message)

@@ -22,17 +22,6 @@ def load_optional_package_file(package: str, filename: str) -> Optional[bytes]:
         return None
 
 
-class AirbyteSpec(object):
-    @staticmethod
-    def from_file(file_name: str):
-        with open(file_name) as file:
-            spec_text = file.read()
-        return AirbyteSpec(spec_text)
-
-    def __init__(self, spec_string):
-        self.spec_string = spec_string
-
-
 TConfig = TypeVar("TConfig", bound=Mapping[str, Any])
 
 
