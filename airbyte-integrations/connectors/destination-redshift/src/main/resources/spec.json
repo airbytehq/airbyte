@@ -241,7 +241,7 @@
       },
       "raw_data_schema": {
         "type": "string",
-        "description": "The schema to write raw tables into",
+        "description": "The schema to write raw tables into (default: airbyte_internal).",
         "title": "Destinations V2 Raw Table Schema",
         "order": 9,
         "group": "connection"
