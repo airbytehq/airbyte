@@ -178,11 +178,11 @@ public class MssqlInitialReadUtil {
     final boolean savedOffsetStillPresentOnServer = isSavedOffsetStillPresentOnServer(database, catalog, stateManager);
     final InitialLoadStreams initialLoadStreams =
         cdcStreamsForInitialOrderedColumnLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
-    final CdcState stateToBeUsed = getCdcState(database, catalog, stateManager, savedOffsetStillPresentOnServer);
+    final CdcState initialStateToBeUsed = getCdcState(database, catalog, stateManager, savedOffsetStillPresentOnServer);
 
     return new MssqlInitialLoadGlobalStateManager(initialLoadStreams,
         initPairToOrderedColumnInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
-        stateManager, catalog, stateToBeUsed);
+        stateManager, catalog, initialStateToBeUsed);
   }
 
   public static List<AutoCloseableIterator<AirbyteMessage>> getCdcReadIterators(final JdbcDatabase database,

@@ -23,7 +23,7 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
 @TestInstance(Lifecycle.PER_METHOD)
-@Execution(ExecutionMode.SAME_THREAD)
+@Execution(ExecutionMode.CONCURRENT)
 @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH")
 public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
 
