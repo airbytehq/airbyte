@@ -6,7 +6,7 @@
 import pytest
 import requests
 from source_shopify.shopify_graphql.bulk.exceptions import ShopifyBulkExceptions
-from source_shopify.shopify_graphql.bulk.job import ShopifyBulkStatus
+from source_shopify.shopify_graphql.bulk.status import ShopifyBulkJobStatus
 from source_shopify.streams.streams import (
     Collections,
     CustomerAddress,
@@ -31,7 +31,7 @@ def test_check_for_errors(request, requests_mock, bulk_job_response, expected_le
     stream = MetafieldOrders(auth_config)
     requests_mock.get(stream.job_manager.base_url, json=request.getfixturevalue(bulk_job_response))
     test_response = requests.get(stream.job_manager.base_url)
-    test_errors = stream.job_manager.job_check_for_errors(test_response)
+    test_errors = stream.job_manager._job_check_for_errors(test_response)
     assert len(test_errors) == expected_len
 
 
@@ -42,7 +42,7 @@ def test_get_errors_from_response_invalid_response(auth_config) -> None:
     response.status_code = 404
     response.url = "https://example.com/invalid"
     with pytest.raises(ShopifyBulkExceptions.BulkJobBadResponse) as error:
-        stream.job_manager.job_check_for_errors(response)
+        stream.job_manager._job_check_for_errors(response)
     assert expected in repr(error.value)
 
 
@@ -58,29 +58,30 @@ def test_has_running_concurrent_job(request, requests_mock, bulk_job_response, a
     stream = MetafieldOrders(auth_config)
     requests_mock.get(stream.job_manager.base_url, json=request.getfixturevalue(bulk_job_response))
     test_response = requests.get(stream.job_manager.base_url)
-    test_errors = stream.job_manager.job_check_for_errors(test_response)
-    assert stream.job_manager.has_running_concurrent_job(test_errors) == expected
+    test_errors = stream.job_manager._job_check_for_errors(test_response)
+    assert stream.job_manager._has_running_concurrent_job(test_errors) == expected
 
 
 @pytest.mark.parametrize(
     "bulk_job_response, expected",
     [
         ("bulk_successful_response", "gid://shopify/BulkOperation/4046733967549"),
-        ("bulk_error", None),
         ("bulk_successful_response_with_no_id", None),
     ],
 )
-def test_job_get_id(request, requests_mock, bulk_job_response, auth_config, expected) -> None:
+def test_job_process_created(request, requests_mock, bulk_job_response, auth_config, expected) -> None:
     stream = MetafieldOrders(auth_config)
     requests_mock.get(stream.job_manager.base_url, json=request.getfixturevalue(bulk_job_response))
     test_response = requests.get(stream.job_manager.base_url)
-    assert stream.job_manager.job_get_id(test_response) == expected
+    # process the job with id (typically CREATED one)
+    stream.job_manager.job_process_created(test_response)
+    assert stream.job_manager._job_id == expected
 
 
 def test_job_state_completed(auth_config) -> None:
     stream = MetafieldOrders(auth_config)
-    stream.job_manager.job_state = ShopifyBulkStatus.COMPLETED.value
-    assert stream.job_manager.job_completed() == True
+    stream.job_manager._job_state = ShopifyBulkJobStatus.COMPLETED.value
+    assert stream.job_manager._job_completed() == True
 
 
 @pytest.mark.parametrize(
@@ -104,17 +105,21 @@ def test_job_state_completed(auth_config) -> None:
 def test_job_retry_on_concurrency(request, requests_mock, bulk_job_response, concurrent_max_retry, error_type, auth_config, expected) -> None:
     stream = MetafieldOrders(auth_config)
     # patching concurent settings
-    stream.job_manager.concurrent_max_retry = concurrent_max_retry
-    stream.job_manager.concurrent_interval_sec = 1
+    stream.job_manager._concurrent_max_retry = concurrent_max_retry
+    stream.job_manager._concurrent_interval = 1
+    
     requests_mock.get(stream.job_manager.base_url, json=request.getfixturevalue(bulk_job_response))
+    stream.job_manager._request = requests.get(stream.job_manager.base_url).request
+    
     if error_type:
         with pytest.raises(error_type) as error:
-            stream.job_manager.job_retry_on_concurrency(requests.get(stream.job_manager.base_url).request)
-        assert expected in repr(error.value)
+            stream.job_manager._job_retry_on_concurrency()
+        assert expected in repr(error.value) and requests_mock.call_count == 2
     else:
-        result = stream.job_manager.job_retry_on_concurrency(requests.get(stream.job_manager.base_url).request)
-        assert stream.job_manager.job_get_id(result) == expected
-
+        # simulate the real job_id from created job
+        stream.job_manager._job_id = expected
+        stream.job_manager._job_retry_on_concurrency()
+        assert requests_mock.call_count == 2
 
 
 @pytest.mark.parametrize(
@@ -132,73 +137,77 @@ def test_job_retry_on_concurrency(request, requests_mock, bulk_job_response, con
         "access_denied",
     ],
 )
-def test_job_check(mocker, request, requests_mock, job_response, auth_config, error_type, expected) -> None:
+def test_job_check_for_completion(mocker, request, requests_mock, job_response, auth_config, error_type, expected) -> None:
     stream = MetafieldOrders(auth_config)
     # modify the sleep time for the test
-    stream.job_manager.concurrent_max_retry = 1
-    stream.job_manager.concurrent_interval_sec = 1
-    stream.job_manager.job_check_interval_sec = 1
-    # get job_id from FIXTURE
-    job_id = request.getfixturevalue(job_response).get("data", {}).get("node", {}).get("id")
-    # patching the method to get the right ID checks
-    if job_id:
-        mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkManager.job_get_id", value=job_id)
+    stream.job_manager._concurrent_max_retry = 1
+    stream.job_manager._concurrent_interval = 1
+    stream.job_manager._job_check_interval = 1
     # mocking the response for STATUS CHECKS
     requests_mock.post(stream.job_manager.base_url, json=request.getfixturevalue(job_response))
     test_job_status_response = requests.post(stream.job_manager.base_url)
     job_result_url = test_job_status_response.json().get("data", {}).get("node", {}).get("url")
     if error_type:
         with pytest.raises(error_type) as error:
-            stream.job_manager.job_check(test_job_status_response)
+            stream.job_manager.job_check_for_completion()
         assert expected in repr(error.value)
     else:
         if job_result_url:
             # mocking the nested request call to retrieve the data from result URL
             requests_mock.get(job_result_url, json=request.getfixturevalue(job_response))
-        result = stream.job_manager.job_check(test_job_status_response)
+        result = stream.job_manager.job_check_for_completion()
         assert expected == result
-        
 
+    
 @pytest.mark.parametrize(
-    "job_response, error_type, expected",
+    "job_response, error_type, max_retry, expected_msg, call_count_expected",
     [
         (
             "bulk_successful_response_with_errors", 
-            ShopifyBulkExceptions.BulkJobUnknownError, 
+            ShopifyBulkExceptions.BulkJobUnknownError,
+            2,
             "Could not validate the status of the BULK Job",
+            3,
+        ),
+        (
+            None,
+            ShopifyBulkExceptions.BulkJobBadResponse,
+            1,
+            "Couldn't check the `response` for `errors`",
+            2,
         ),
     ],
     ids=[
-        "success with errors (edge)",
+        "BulkJobUnknownError",
+        "BulkJobBadResponse",
     ],
 )
-def test_one_time_retry_job_check(mocker, request, requests_mock, job_response, auth_config, error_type, expected) -> None:
+def test_retry_on_job_exception(mocker, request, requests_mock, job_response, auth_config, error_type, max_retry, call_count_expected, expected_msg) -> None:
     stream = MetafieldOrders(auth_config)
-    # modify the sleep time for the test
-    stream.job_manager.concurrent_max_retry = 1
-    stream.job_manager.concurrent_interval_sec = 1
-    stream.job_manager.job_check_interval_sec = 1
-    # get job_id from FIXTURE
-    job_id = request.getfixturevalue(job_response).get("data", {}).get("node", {}).get("id")
+    stream.job_manager._job_backoff_time = 0
+    stream.job_manager._job_max_retries = max_retry
     # patching the method to get the right ID checks
-    if job_id:
-        mocker.patch("source_shopify.shopify_graphql.bulk.job.ShopifyBulkManager.job_get_id", value=job_id)
+    if job_response:
+        stream.job_manager._job_id = request.getfixturevalue(job_response).get("data", {}).get("node", {}).get("id")
+        
     # mocking the response for STATUS CHECKS
-    requests_mock.post(stream.job_manager.base_url, json=request.getfixturevalue(job_response))
-    test_job_status_response = requests.post(stream.job_manager.base_url)
+    json_mock_response = request.getfixturevalue(job_response) if job_response else None
+    requests_mock.post(stream.job_manager.base_url, json=json_mock_response)
+    
+    # testing raised exception and backoff
     with pytest.raises(error_type) as error:
-        stream.job_manager.job_check(test_job_status_response)
-    # The retried request should FAIL here, because we stil want to see the Exception raised
-    # We expect the call count to be 4 due to the status checks, the non-retried request would take 2 calls.
-    assert expected in repr(error.value) and requests_mock.call_count == 4
+        stream.job_manager._job_check_state()
+        
+    # we expect different call_count, because we set the different max_retries
+    assert expected_msg in repr(error.value) and requests_mock.call_count == call_count_expected
 
 
 @pytest.mark.parametrize(
     "job_response, expected",
     [
-        ("bulk_job_created_response", ShopifyBulkStatus.CREATED.value),
-        ("bulk_job_running_response", ShopifyBulkStatus.RUNNING.value),
-        ("bulk_job_running_response_without_id", ShopifyBulkStatus.RUNNING.value),
+        ("bulk_job_created_response", ShopifyBulkJobStatus.CREATED.value),
+        ("bulk_job_running_response", ShopifyBulkJobStatus.RUNNING.value),
+        ("bulk_job_running_response_without_id", ShopifyBulkJobStatus.RUNNING.value),
     ],
     ids=[
         "created",
@@ -209,7 +218,7 @@ def test_one_time_retry_job_check(mocker, request, requests_mock, job_response, 
 def test_job_check_with_running_scenario(request, requests_mock, job_response, auth_config, expected) -> None:
     stream = MetafieldOrders(auth_config)
     # modify the sleep time for the test
-    stream.job_manager.job_check_interval_sec = 0
+    stream.job_manager._job_check_interval = 0
     # get job_id from FIXTURE
     job_id = request.getfixturevalue(job_response).get("data", {}).get("node", {}).get("id")
     # mocking the response for STATUS CHECKS
@@ -217,15 +226,15 @@ def test_job_check_with_running_scenario(request, requests_mock, job_response, a
     test_job_status_response = requests.post(stream.job_manager.base_url)
     job_result_url = test_job_status_response.json().get("data", {}).get("node", {}).get("url")
     # test the state of the job isn't assigned
-    assert stream.job_manager.job_state == None
+    assert stream.job_manager._job_state == None
     
     # mocking the nested request call to retrieve the data from result URL
-    stream.job_manager.job_id = job_id
+    stream.job_manager._job_id = job_id
     requests_mock.get(job_result_url, json=request.getfixturevalue(job_response))
     
     # calling the sceario processing
-    stream.job_manager.job_track_running()
-    assert stream.job_manager.job_state == expected
+    stream.job_manager._job_track_running()
+    assert stream.job_manager._job_state == expected
 
 
 
@@ -318,7 +327,7 @@ def test_stream_slices(
         auth_config["start_date"] = "2020-01-01"
 
     stream = stream(auth_config)
-    stream.job_manager.job_size = 1000
+    stream.job_manager._job_size = 1000
     test_result = list(stream.stream_slices(stream_state=stream_state))
     test_query_from_slice = test_result[0].get("query")
     assert expected in test_query_from_slice
@@ -357,11 +366,11 @@ def test_expand_stream_slices_job_size(
 
     # for the sake of simplicity we fake some parts to simulate the `current_job_time_elapsed`
     # fake current slice interval value
-    stream.job_manager.job_size = previous_slice_size
+    stream.job_manager._job_size = previous_slice_size
     # fake `last job elapsed time` 
     if last_job_elapsed_time:
-        stream.job_manager.job_last_elapsed_time = last_job_elapsed_time
+        stream.job_manager._job_last_elapsed_time = last_job_elapsed_time
     # parsing result from completed job
     list(stream.parse_response(test_bulk_response))
     # check the next slice
-    assert stream.job_manager.job_size == adjusted_slice_size
+    assert stream.job_manager._job_size == adjusted_slice_size

@@ -1,4 +1,4 @@
-version: 0.50.0
+version: 0.85.0
 type: DeclarativeSource
 check:
   type: CheckStream
@@ -107,9 +107,12 @@ definitions:
     primary_key: response_id
     retriever:
       type: SimpleRetriever
+      ignore_stream_slicer_parameters_on_paginated_requests: true
       requester:
         $ref: "#/definitions/requester"
         path: forms/{{ stream_partition.form_id }}/responses
+        request_parameters:
+          sort: "{{'submitted_at,asc' if not next_page_token else '' }}"
       record_selector:
         $ref: "#/definitions/items_selector"
       paginator:
@@ -124,8 +127,8 @@ definitions:
           inject_into: request_parameter
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ last_records[-1]['token'] }}"
-          stop_condition: "{{ not last_records }}"
+          cursor_value: "{{ last_record['token'] }}"
+          stop_condition: "{{ not last_record }}"
           page_size: 1000
       partition_router:
         $ref: "#/definitions/form_id_partition_router"
