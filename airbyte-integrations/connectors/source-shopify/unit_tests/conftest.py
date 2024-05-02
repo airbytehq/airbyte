@@ -715,7 +715,7 @@ def product_variants_response_expected_result():
         {
             "id": 123,
             "title": "Test 234",
-            "price": "59.00",
+            "price": 59.00,
             "sku": "",
             "position": 3,
             "inventory_policy": "DENY",
@@ -752,7 +752,7 @@ def product_variants_response_expected_result():
         {
             "id": 456,
             "title": "Test Variant",
-            "price": "113.00",
+            "price": 113.00,
             "sku": "123",
             "position": 4,
             "inventory_policy": "CONTINUE",

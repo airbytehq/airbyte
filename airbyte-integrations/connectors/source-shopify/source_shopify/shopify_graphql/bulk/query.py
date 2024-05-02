@@ -1832,11 +1832,15 @@ class ProductVariant(ShopifyBulkQuery):
         if record_components:
             record["presentment_prices"] = self._process_presentment_prices(record_components.get("ProductVariantPricePair", []))
             record.pop("record_components")
+
         # unnest mandatory fields from their placeholders
         record["product_id"] = self.tools.resolve_str_id(record.get("product", {}).get("product_id"))
         record["fulfillment_service"] = record.get("fulfillmentService", {}).get("fulfillment_service")
         record["inventory_item_id"] = self.tools.resolve_str_id(record.get("inventoryItem", {}).get("inventory_item_id"))
         record["grams"] = int(record.get("grams", 0))
+        # cast the the `price` to number, could be literally `None`
+        price = record.get("price")
+        record["price"] = float(price) if price else None
         # convert date-time cursors
         record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
         record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
