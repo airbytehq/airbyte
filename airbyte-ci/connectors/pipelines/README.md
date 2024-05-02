@@ -676,6 +676,7 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                |
 |---------| ---------------------------------------------------------- |----------------------------------------------------------------------------------------------------------------------------|
+| 4.12.1  | [#37765](https://github.com/airbytehq/airbyte/pull/37765)  | Relax the required env var to run in CI and handle their absence gracefully.                                                                               |
 | 4.12.0  | [#37690](https://github.com/airbytehq/airbyte/pull/37690)  | Pass custom CI status name in `connectors test`                                                                               |
 | 4.11.0  | [#37641](https://github.com/airbytehq/airbyte/pull/37641)  | Updates to run regression tests in GitHub Actions.                                                                               |
 | 4.10.5  | [#37641](https://github.com/airbytehq/airbyte/pull/37641)  | Reintroduce changes from 4.10.0 with a fix.                                                                               |
