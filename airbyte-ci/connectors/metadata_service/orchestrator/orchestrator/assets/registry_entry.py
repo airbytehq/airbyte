@@ -367,8 +367,8 @@ def safe_get_slack_user_identifier(airbyte_slack_users: pd.DataFrame, metadata_d
     if airbyte_slack_users is None or airbyte_slack_users.empty:
         return None
 
-    commit_author = get(metadata_dict, "data.ab_internal.git.commit_author")
-    commit_author_email = get(metadata_dict, "data.ab_internal.git.commit_author_email")
+    commit_author = get(metadata_dict, "data.generated.git.commit_author")
+    commit_author_email = get(metadata_dict, "data.generated.git.commit_author_email")
 
     # if the commit author email is not present, return author name or none
     if not commit_author_email:
@@ -397,7 +397,7 @@ def safe_get_commit_sha(metadata_dict: Union[dict, BaseModel]) -> Optional[str]:
         metadata_dict = to_json_sanitized_dict(metadata_dict)
 
     # if the git commit sha is not present, return none
-    commit_sha = get(metadata_dict, "data.ab_internal.git.commit_sha")
+    commit_sha = get(metadata_dict, "data.generated.git.commit_sha")
     if not commit_sha:
         return None
 
