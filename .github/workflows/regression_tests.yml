@@ -16,13 +16,13 @@ on:
     inputs:
       connector_name:
         description: "Connector name (e.g. source-faker)"
-        default: "source-s3"
+        required: true
       connection_id:
         description: "ID of the connection to test"
-        default: "06c4ea16-b57d-4ca5-8adb-36414e350be0"
+        required: true
       pr_url:
         description: "URL of the PR containing the code change"
-        default: "none"
+        required: true
 
 jobs:
   regression_tests:

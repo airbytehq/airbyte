@@ -1,4 +1,9 @@
 data:
+  allowedHosts:
+    hosts:
+      - "${azure_blob_storage_account_name}.blob.core.windows.net"
+      - "${azure_blob_storage_endpoint}"
+      - "login.microsoftonline.com/${credentials.tenant_id}/oauth2/v2.0/token"
   ab_internal:
     ql: 400
     sl: 200
