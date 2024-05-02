@@ -45,7 +45,7 @@ class UnityStream(HttpStream, ABC):
         for record in records:
             record['organisation_id'] = self.config["organisation_id"]
             record['campaign_set_id'] = self.config["campaign_set_id"]
-            yield
+            yield record
 
     def request_params(
             self,
