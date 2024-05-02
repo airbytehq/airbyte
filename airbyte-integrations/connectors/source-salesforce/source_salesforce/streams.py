@@ -463,6 +463,9 @@ class BulkSalesforceStream(SalesforceStream):
                     raise AirbyteTracedException(message=message, failure_type=FailureType.config_error, exception=error)
                 else:
                     raise error
+            job_id = job_info["id"]
+            if job_status != job_info["state"]:
+                self.logger.info(f"Job {self.name}/{job_id} status changed from {job_status} to {job_info['state']}")
             job_status = job_info["state"]
             if job_status in ["JobComplete", "Aborted", "Failed"]:
                 if job_status != "JobComplete":
@@ -471,8 +474,11 @@ class BulkSalesforceStream(SalesforceStream):
                     if not error_message:
                         # not all failed response can have "errorMessage" and we need to show full response body
                         error_message = job_info
-                    self.logger.error(f"JobStatus: {job_status}, sobject options: {self.sobject_options}, error message: '{error_message}'")
-
+                    self.logger.error(
+                        f"Job: {self.name}/{job_id}, JobStatus: {job_status}, sobject options: {self.sobject_options}, error message: '{error_message}'"
+                    )
+                else:
+                    self.logger.info(f"Job: {self.name}/{job_id}, JobStatus: {job_status}")
                 return job_status
 
             if delay_timeout < self.MAX_CHECK_INTERVAL_SECONDS:
@@ -480,8 +486,7 @@ class BulkSalesforceStream(SalesforceStream):
                 delay_cnt += 1
 
             time.sleep(delay_timeout)
-            job_id = job_info["id"]
-            self.logger.info(
+            self.logger.debug(
                 f"Sleeping {delay_timeout} seconds while waiting for Job: {self.name}/{job_id} to complete. Current state: {job_status}"
             )
 
@@ -508,6 +513,7 @@ class BulkSalesforceStream(SalesforceStream):
             if not job_id:
                 return None, job_status
             job_full_url = f"{url}/{job_id}"
+            self.logger.info(f"Job: {self.name}/{job_id} created, Job Full Url: {job_full_url}")
             job_status = self.wait_for_job(url=job_full_url)
             if job_status not in ["UploadComplete", "InProgress"]:
                 break

@@ -104,7 +104,9 @@ def merge_schemas(schema1: SchemaType, schema2: SchemaType) -> SchemaType:
         t1 = merged_schema.get(k2)
         if t1 is None:
             merged_schema[k2] = t2
-        elif t1 == t2:
+        # do not pass fields with null values to the _choose_wider_type method if their keys are already
+        # in the merged schema due to issue observed in https://github.com/airbytehq/oncall/issues/4948
+        elif t1 == t2 or t2["type"] == "null":
             continue
         else:
             merged_schema[k2] = _choose_wider_type(k2, t1, t2)

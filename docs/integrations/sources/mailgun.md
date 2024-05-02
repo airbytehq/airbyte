@@ -41,7 +41,7 @@ Just pass the generated API key for establishing the connection.
 The MailGun source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
-| :---------------------------- | :--------- |
+|:------------------------------|:-----------|
 | Full Refresh Sync             | Yes        |
 | Incremental Sync              | Yes        |
 | Replicate Incremental Deletes | No         |
@@ -63,9 +63,14 @@ MailGun's [API reference](https://documentation.mailgun.com/en/latest/api_refere
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                              |
-| :------ | :--------- | :------------------------------------------------------  | :--------------------------------------------------- |
-| 0.2.1   | 2023-10-16 | [31405](https://github.com/airbytehq/airbyte/pull/31405) | Fixed test connection failure if date field is empty |
-| 0.2.0   | 2023-08-05 | [29122](https://github.com/airbytehq/airbyte/pull/29122) | Migrate to Low Code                                  |
-| 0.1.1   | 2023-02-13 | [22939](https://github.com/airbytehq/airbyte/pull/22939) | Specified date formatting in specification           |
-| 0.1.0   | 2021-11-09 | [8056](https://github.com/airbytehq/airbyte/pull/8056)   | New Source: Mailgun                                  |
+| Version | Date       | Pull Request                                             | Subject                                                                         |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------|
+| 0.2.6   | 2024-05-02 | [37594](https://github.com/airbytehq/airbyte/pull/37594) | Change `last_recrods` to `last_record`                                          |
+| 0.2.5   | 2024-04-19 | [37193](https://github.com/airbytehq/airbyte/pull/37193) | Updating to 0.80.0 CDK                                                          |
+| 0.2.4   | 2024-04-18 | [37193](https://github.com/airbytehq/airbyte/pull/37193) | Manage dependencies with Poetry.                                                |
+| 0.2.3   | 2024-04-15 | [37193](https://github.com/airbytehq/airbyte/pull/37193) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.2.2   | 2024-04-12 | [37193](https://github.com/airbytehq/airbyte/pull/37193) | schema descriptions                                                             |
+| 0.2.1   | 2023-10-16 | [31405](https://github.com/airbytehq/airbyte/pull/31405) | Fixed test connection failure if date field is empty                            |
+| 0.2.0   | 2023-08-05 | [29122](https://github.com/airbytehq/airbyte/pull/29122) | Migrate to Low Code                                                             |
+| 0.1.1   | 2023-02-13 | [22939](https://github.com/airbytehq/airbyte/pull/22939) | Specified date formatting in specification                                      |
+| 0.1.0   | 2021-11-09 | [8056](https://github.com/airbytehq/airbyte/pull/8056)   | New Source: Mailgun                                                             |
