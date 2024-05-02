@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "schema-generator"
+version = "0.1.0"
+description = "Util to create catalog schemas for an Airbyte Connector."
+authors = ["Airbyte <contact@airbyte.io>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/airbytehq/airbyte"
+repository = "https://github.com/airbytehq/airbyte"
+documentation = "https://docs.airbyte.io/"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.8",
+]
+keywords = ["airbyte", "connector-development-kit", "cdk"]
+
+[tool.poetry.dependencies]
+python = ">=3.9, <3.12"
+airbyte-cdk = "^0.83.1"
+genson = "^1.2.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.1.1"
+
+[tool.poetry.scripts]
+schema_generator = "schema_generator.main:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[[tool.poetry.packages]]
+include = "schema_generator"

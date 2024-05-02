@@ -161,7 +161,6 @@ public class MssqlInitialReadUtil {
         targetPosition,
         true,
         firstRecordWaitTime,
-        subsequentRecordWaitTime,
         queueSize,
         false);
 

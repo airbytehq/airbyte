@@ -6,7 +6,7 @@ products: all
 
 Namespaces are used to generally organize data, separate tests and production data, and enforce permissions. In most cases, namespaces are schemas in the database you're replicating to.
 
-As a part of connection setup, you select where in the destination you want to write your data. Note: The default configuration is **Destination default**.
+As a part of connection setup, you select where in the destination you want to write your data. Note: The default configuration is **Destination-defined**.
 
 | Destination Namespace | Description                |
 | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
