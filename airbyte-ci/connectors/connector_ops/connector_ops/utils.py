@@ -57,6 +57,9 @@ def download_catalog(catalog_url):
 
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
 METADATA_FILE_NAME = "metadata.yaml"
+MANIFEST_FILE_NAME = "manifest.yaml"
+DOCKERFILE_FILE_NAME = "Dockerfile"
+PYPROJECT_FILE_NAME = "pyproject.toml"
 ICON_FILE_NAME = "icon.svg"
 
 STRATEGIC_CONNECTOR_THRESHOLDS = {
@@ -348,8 +351,24 @@ class Connector:
         return Path(f"./{CONNECTOR_PATH_PREFIX}/{self.relative_connector_path}")
 
     @property
+    def python_source_dir_path(self) -> Path:
+        return self.code_directory / self.technical_name.replace("-", "_")
+
+    @property
+    def manifest_path(self) -> Path:
+        return self.python_source_dir_path / MANIFEST_FILE_NAME
+
+    @property
     def has_dockerfile(self) -> bool:
-        return (self.code_directory / "Dockerfile").is_file()
+        return self.dockerfile_file_path.is_file()
+
+    @property
+    def dockerfile_file_path(self) -> Path:
+        return self.code_directory / DOCKERFILE_FILE_NAME
+
+    @property
+    def pyproject_file_path(self) -> Path:
+        return self.code_directory / PYPROJECT_FILE_NAME
 
     @property
     def metadata_file_path(self) -> Path:

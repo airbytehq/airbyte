@@ -67,6 +67,8 @@ class PipelineContext:
         is_local: bool,
         git_branch: str,
         git_revision: str,
+        diffed_branch: str,
+        git_repo_url: str,
         report_output_prefix: str,
         gha_workflow_run_url: Optional[str] = None,
         dagger_logs_url: Optional[str] = None,
@@ -90,6 +92,8 @@ class PipelineContext:
             is_local (bool): Whether the context is for a local run or a CI run.
             git_branch (str): The current git branch name.
             git_revision (str): The current git revision, commit hash.
+            diffed_branch (str): The branch to diff against.
+            git_repo_url (str): The git repository URL.
             report_output_prefix (str): The prefix to use for the report output.
             gha_workflow_run_url (Optional[str], optional): URL to the github action workflow run. Only valid for CI run. Defaults to None.
             dagger_logs_url (Optional[str], optional): URL to the dagger logs. Only valid for CI run. Defaults to None.
@@ -104,6 +108,8 @@ class PipelineContext:
         self.is_local = is_local
         self.git_branch = git_branch
         self.git_revision = git_revision
+        self.diffed_branch = diffed_branch
+        self.git_repo_url = git_repo_url
         self.report_output_prefix = report_output_prefix
         self.gha_workflow_run_url = gha_workflow_run_url
         self.dagger_logs_url = dagger_logs_url

@@ -33,6 +33,8 @@ class TestLoadContainerToLocalDockerHost:
             connector=faker_connector,
             host_image_export_dir_path=tmp_path,
             git_revision="test-revision",
+            diffed_branch="test-branch",
+            git_repo_url="test-repo-url",
         )
 
     @pytest.fixture

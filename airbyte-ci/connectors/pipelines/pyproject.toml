@@ -33,6 +33,7 @@ tomli = "^2.0.1"
 tomli-w = "^1.0.0"
 dpath = "^2.1.6"
 xmltodict = "^0.13.0"
+ruamel-yaml = "^0.18.6"
 
 [tool.poetry.group.dev.dependencies]
 freezegun = "^1.2.2"
