@@ -121,7 +121,7 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 - [Campaign Groups](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaign-groups?tabs=http&view=li-lms-2023-05#search-for-campaign-groups)
 - [Campaigns](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaigns?tabs=http&view=li-lms-2023-05#search-for-campaigns)
 - [Creatives](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives?tabs=http%2Chttp-update-a-creative&view=li-lms-2023-05#search-for-creatives)
-- [Ad Direct Sponsored Contents](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/advertising-targeting/create-and-manage-video?tabs=http#finders)
+- [Ad Direct Sponsored Contents](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/advertising-targeting/create-and-manage-video-legacy?view=li-lms-unversioned&viewFallbackFrom=li-lms-2024-04&tabs=http#create-an-addirectsponsoredcontent). 
 - [Conversions](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversion-tracking?view=li-lms-2023-05&tabs=curl#find-conversions-by-ad-account)
 - [Ad Analytics by Campaign](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Creative](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
@@ -136,7 +136,11 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 
 :::info
 
-For Ad Analytics Streams such as `Ad Analytics by Campaign` and `Ad Analytics by Creative`, the `pivot` column name is renamed to `pivotValue` to handle the data normalization correctly and avoid name conflicts with certain destinations. This field contains the ID of the associated entity as a [URN](https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts/urns). Please refer to the [LinkedIn documentation](https://learn.microsoft.com/en-us/linkedin/marketing/urn-resolution?view=li-lms-2023-05) for the format of the URN value for the Ad Analytics streams.
+**Ad Analytics Streams**: For Ad Analytics Streams such as `Ad Analytics by Campaign` and `Ad Analytics by Creative`, the `pivot` column name is renamed to `pivotValue` to handle the data normalization correctly and avoid name conflicts with certain destinations. This field contains the ID of the associated entity as a [URN](https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts/urns). Please refer to the [LinkedIn documentation](https://learn.microsoft.com/en-us/linkedin/marketing/urn-resolution?view=li-lms-2023-05) for the format of the URN value for the Ad Analytics streams.
+
+**Ad Direct Sponsored Contents**: Essentially, Linkedin adverts are obtained through the endpoint Linkedin Creatives. Creatives, reference some sort of content, like videos through a field called reference (more information on this on the creatives endpoint [documentation](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives?view=li-lms-2024-03&tabs=http%2Chttp-update-a-creative)). This is the field we use to make a join with the adSponsoredContent object, field content_reference. We need to make this join in order to obtain the name of the video that is associated to the Linkedin Creative we are analyzing. The adSponsoredContent is currently the only endpoint we could find that can give us the information necessary to make this join / connection.
+
+The documentation of this Ad Sponsored Content object is available [here](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives?view=li-lms-2024-03&tabs=http%2Chttp-update-a-creative).
 
 :::
 
