@@ -1,4 +1,4 @@
-version: 0.79.1
+version: 0.85.0
 
 type: DeclarativeSource
 
@@ -8,6 +8,12 @@ check:
     - accounts
 
 definitions:
+  record_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - data
   streams:
     accounts:
       type: DeclarativeStream
@@ -28,10 +34,7 @@ definitions:
             Accept: application/vnd.recurly.v2021-02-25
             Content-Type: application/json
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
+          $ref: "#/definitions/record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -50,10 +53,10 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%s'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''begin_time''] }}'
+          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
@@ -65,12 +68,8 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''end_time''] }}'
+          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: '#/schemas/accounts'
     account_coupon_redemptions:
       type: DeclarativeStream
       name: account_coupon_redemptions
@@ -90,10 +89,7 @@ definitions:
             Accept: application/vnd.recurly.v2021-02-25
             Content-Type: application/json
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
+          $ref: "#/definitions/record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -120,10 +116,10 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%s'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''begin_time''] }}'
+          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
@@ -135,12 +131,8 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''end_time''] }}'
+          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: '#/schemas/account_coupon_redemptions'
     account_notes:
       type: DeclarativeStream
       name: account_notes
@@ -160,10 +152,7 @@ definitions:
             Accept: application/vnd.recurly.v2021-02-25
             Content-Type: application/json
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
+          $ref: "#/definitions/record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -190,10 +179,10 @@ definitions:
         cursor_field: created_at
         cursor_datetime_formats:
           - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%s'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''begin_time''] }}'
+          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
@@ -205,12 +194,8 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''end_time''] }}'
+          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: '#/schemas/account_notes'
     add_ons:
       type: DeclarativeStream
       name: add_ons
@@ -230,10 +215,7 @@ definitions:
             Accept: application/vnd.recurly.v2021-02-25
             Content-Type: application/json
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
+          $ref: "#/definitions/record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -252,10 +234,10 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%s'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''begin_time''] }}'
+          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
@@ -267,12 +249,8 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''end_time''] }}'
+          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: '#/schemas/add_ons'
     billing_infos:
       type: DeclarativeStream
       name: billing_infos
@@ -292,10 +270,7 @@ definitions:
             Accept: application/vnd.recurly.v2021-02-25
             Content-Type: application/json
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
+          $ref: "#/definitions/record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -322,10 +297,10 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%s'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''begin_time''] }}'
+          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
@@ -337,12 +312,8 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''end_time''] }}'
+          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: '#/schemas/billing_infos'
     coupons:
       type: DeclarativeStream
       name: coupons
@@ -362,10 +333,7 @@ definitions:
             Accept: application/vnd.recurly.v2021-02-25
             Content-Type: application/json
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
+          $ref: "#/definitions/record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -384,10 +352,10 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%s'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''begin_time''] }}'
+          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
@@ -399,12 +367,8 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''end_time''] }}'
+          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: '#/schemas/coupons'
     credit_payments:
       type: DeclarativeStream
       name: credit_payments
@@ -424,10 +388,7 @@ definitions:
             Accept: application/vnd.recurly.v2021-02-25
             Content-Type: application/json
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
+          $ref: "#/definitions/record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -446,10 +407,10 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%s'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''begin_time''] }}'
+          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
@@ -461,12 +422,8 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''end_time''] }}'
+          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: '#/schemas/credit_payments'
     export_dates:
       type: DeclarativeStream
       name: export_dates
@@ -484,11 +441,7 @@ definitions:
             Accept: application/vnd.recurly.v2021-02-25
             Content-Type: application/json
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - dates
+          $ref: "#/definitions/record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -502,10 +455,6 @@ definitions:
             page_size: 200
             cursor_value: next
             stop_condition: '{{ response.has_more is false }}'
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: '#/schemas/export_dates'
     invoices:
       type: DeclarativeStream
       name: invoices
@@ -525,10 +474,7 @@ definitions:
             Accept: application/vnd.recurly.v2021-02-25
             Content-Type: application/json
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
+          $ref: "#/definitions/record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -547,10 +493,10 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%s'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''begin_time''] }}'
+          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
@@ -562,12 +508,8 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''end_time''] }}'
+          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: '#/schemas/invoices'
     line_items:
       type: DeclarativeStream
       name: line_items
@@ -587,10 +529,7 @@ definitions:
             Accept: application/vnd.recurly.v2021-02-25
             Content-Type: application/json
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
+          $ref: "#/definitions/record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -609,10 +548,10 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%s'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''begin_time''] }}'
+          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
@@ -624,12 +563,8 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''end_time''] }}'
+          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: '#/schemas/line_items'
     measured_units:
       type: DeclarativeStream
       name: measured_units
@@ -649,10 +584,7 @@ definitions:
             Accept: application/vnd.recurly.v2021-02-25
             Content-Type: application/json
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
+          $ref: "#/definitions/record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -671,10 +603,10 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%s'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''begin_time''] }}'
+          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
@@ -686,12 +618,8 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''end_time''] }}'
+          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: '#/schemas/measured_units'
     plans:
       type: DeclarativeStream
       name: plans
@@ -711,10 +639,7 @@ definitions:
             Accept: application/vnd.recurly.v2021-02-25
             Content-Type: application/json
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
+          $ref: "#/definitions/record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -733,10 +658,10 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%s'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''begin_time''] }}'
+          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
@@ -748,12 +673,8 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''end_time''] }}'
+          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: '#/schemas/plans'
     shipping_addresses:
       type: DeclarativeStream
       name: shipping_addresses
@@ -773,10 +694,7 @@ definitions:
             Accept: application/vnd.recurly.v2021-02-25
             Content-Type: application/json
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
+          $ref: "#/definitions/record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -803,10 +721,10 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%s'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''begin_time''] }}'
+          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
@@ -818,12 +736,8 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''end_time''] }}'
+          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: '#/schemas/shipping_addresses'
     shipping_methods:
       type: DeclarativeStream
       name: shipping_methods
@@ -843,10 +757,7 @@ definitions:
             Accept: application/vnd.recurly.v2021-02-25
             Content-Type: application/json
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
+          $ref: "#/definitions/record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -865,10 +776,10 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%s'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''begin_time''] }}'
+          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
@@ -880,12 +791,8 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''end_time''] }}'
+          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: '#/schemas/shipping_methods'
     subscriptions:
       type: DeclarativeStream
       name: subscriptions
@@ -905,10 +812,7 @@ definitions:
             Accept: application/vnd.recurly.v2021-02-25
             Content-Type: application/json
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
+          $ref: "#/definitions/record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -927,10 +831,10 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%s'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''begin_time''] }}'
+          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
@@ -942,12 +846,8 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''end_time''] }}'
+          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: '#/schemas/subscriptions'
     transactions:
       type: DeclarativeStream
       name: transactions
@@ -967,10 +867,7 @@ definitions:
             Accept: application/vnd.recurly.v2021-02-25
             Content-Type: application/json
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
+          $ref: "#/definitions/record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -989,10 +886,10 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%s'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''begin_time''] }}'
+          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
@@ -1004,12 +901,8 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''end_time''] }}'
+          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: '#/schemas/transactions'
     unique_coupons:
       type: DeclarativeStream
       name: unique_coupons
@@ -1029,10 +922,7 @@ definitions:
             Accept: application/vnd.recurly.v2021-02-25
             Content-Type: application/json
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
+          $ref: "#/definitions/record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -1059,10 +949,10 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%s'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''begin_time''] }}'
+          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         start_time_option:
           type: RequestOption
@@ -1074,19 +964,15 @@ definitions:
           field_name: end_time
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''end_time''] }}'
+          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: '#/schemas/unique_coupons'
   base_requester:
     type: HttpRequester
     url_base: https://v3.recurly.com
     authenticator:
       type: BasicHttpAuthenticator
       username: '{{ config[''api_key''] }}'
-      password: '{{ config[''api_key''] }}'
+      password: ''
 
 streams:
   - $ref: '#/definitions/streams/accounts'
@@ -1112,6 +998,7 @@ spec:
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
     required:
       - api_key
     properties:
@@ -1142,91 +1029,3 @@ spec:
           - '2021-12-01T00:00:00'
         pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
         order: 2
-    additionalProperties: true
-
-schemas:
-  accounts:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
-  account_coupon_redemptions:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
-  account_notes:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
-  add_ons:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
-  billing_infos:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
-  coupons:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
-  credit_payments:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
-  export_dates:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
-  invoices:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
-  line_items:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
-  measured_units:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
-  plans:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
-  shipping_addresses:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
-  shipping_methods:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
-  subscriptions:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
-  transactions:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
-  unique_coupons:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}

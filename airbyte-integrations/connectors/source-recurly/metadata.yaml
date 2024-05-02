@@ -34,6 +34,6 @@ data:
       packageName: airbyte-source-recurly
   supportLevel: community
   tags:
-    - language:lowcode
-    - cdk:lowcode
+    - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"
