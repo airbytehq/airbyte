@@ -34,7 +34,7 @@ pendulum = "<3.0.0"
 
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.2.2"
+pytest = "^8"
 ptpython = "^3.0.23"
 pdbpp = "^0.10.3"
 

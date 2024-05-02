@@ -22,8 +22,9 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
 
-abstract class S3AvroParquetDestinationAcceptanceTest protected constructor(s3Format: S3Format) :
-    S3DestinationAcceptanceTest(s3Format) {
+abstract class S3AvroParquetDestinationAcceptanceTest
+protected constructor(fileUploadFormat: FileUploadFormat) :
+    S3DestinationAcceptanceTest(fileUploadFormat) {
     @ParameterizedTest
     @ArgumentsSource(NumberDataTypeTestArgumentProvider::class)
     @Throws(Exception::class)
@@ -32,7 +33,7 @@ abstract class S3AvroParquetDestinationAcceptanceTest protected constructor(s3Fo
         val messages = readMessagesFromFile(messagesFileName)
 
         val config = this.getConfig()
-        val defaultSchema = getDefaultSchema(config!!)
+        val defaultSchema = getDefaultSchema(config)
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
         runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
 
@@ -108,6 +109,7 @@ abstract class S3AvroParquetDestinationAcceptanceTest protected constructor(s3Fo
     @Throws(IOException::class)
     private fun readMessagesFromFile(messagesFilename: String): List<AirbyteMessage> {
         return MoreResources.readResource(messagesFilename)
+            .trim()
             .lines()
             .map { record -> Jsons.deserialize(record, AirbyteMessage::class.java) }
             .toList()
@@ -115,9 +117,9 @@ abstract class S3AvroParquetDestinationAcceptanceTest protected constructor(s3Fo
 
     @Throws(Exception::class)
     protected abstract fun retrieveDataTypesFromPersistedFiles(
-        streamName: String?,
-        namespace: String?
-    ): Map<String?, Set<Schema.Type?>?>
+        streamName: String,
+        namespace: String
+    ): Map<String, Set<Schema.Type>>
 
     protected fun getTypes(record: GenericData.Record): Map<String, Set<Schema.Type>> {
         val fieldList =

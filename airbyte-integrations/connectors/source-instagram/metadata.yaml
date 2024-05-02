@@ -12,6 +12,7 @@ data:
   githubIssueLabel: source-instagram
   icon: instagram.svg
   license: MIT
+  maxSecondsBetweenMessages: 86400
   name: Instagram
   remoteRegistries:
     pypi:
