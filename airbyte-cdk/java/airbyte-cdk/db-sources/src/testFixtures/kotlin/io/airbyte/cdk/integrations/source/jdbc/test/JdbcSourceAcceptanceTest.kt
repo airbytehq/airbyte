@@ -9,7 +9,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.factory.DatabaseDriver
 import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.integrations.base.Source
-import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbState
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState
@@ -400,10 +399,9 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             actualRecordMessages,
             Matchers.containsInAnyOrder<Any>(*expectedMessagesResult.toTypedArray())
         )
-        val stateMessages = extractStateMessage(actualMessages)
-        validateFullRefreshStateMessageReadSuccess(stateMessages)
-
     }
+
+    // This validation only applies to resumable full refresh syncs.
     protected open fun validateFullRefreshStateMessageReadSuccess(
         stateMessages: List<AirbyteStateMessage>
     ) {}
@@ -521,6 +519,32 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         Assertions.assertEquals(expectedMessages.size, actualRecordMessages.size)
         Assertions.assertTrue(expectedMessages.containsAll(actualRecordMessages))
         Assertions.assertTrue(actualRecordMessages.containsAll(expectedMessages))
+    }
+
+    @Test
+    @Throws(Exception::class)
+    protected fun testTablesWithResumableFullRefreshStates() {
+
+        val catalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    java.util.List.of(
+                        getConfiguredCatalogWithOneStream(defaultNamespace).streams[0],
+                    )
+                )
+        val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
+        val actualRecordMessages = filterRecords(actualMessages)
+
+        setEmittedAtToNull(actualMessages)
+
+        val expectedMessages: MutableList<AirbyteMessage> = ArrayList(testMessages)
+
+        Assertions.assertEquals(expectedMessages.size, actualRecordMessages.size)
+        Assertions.assertTrue(expectedMessages.containsAll(actualRecordMessages))
+        Assertions.assertTrue(actualRecordMessages.containsAll(expectedMessages))
+
+        val stateMessages = extractStateMessage(actualMessages)
+        validateFullRefreshStateMessageReadSuccess(stateMessages)
     }
 
     protected open fun getAirbyteMessagesForTablesWithQuoting(

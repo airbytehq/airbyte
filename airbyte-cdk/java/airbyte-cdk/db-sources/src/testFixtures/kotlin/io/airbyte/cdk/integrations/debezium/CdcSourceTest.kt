@@ -710,7 +710,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         }
     }
 
-    @Test // When both incremental CDC and non resumable full refresh are configured for different streams in a
+    @Test // When both incremental CDC and non resumable full refresh are configured for different
+    // streams in a
     // sync, the
     // data is replicated as expected.
     @Throws(Exception::class)
@@ -751,12 +752,12 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             ConfiguredAirbyteStream()
                 .withStream(
                     CatalogHelpers.createAirbyteStream(
-                        MODELS_STREAM_NAME_2,
-                        modelsSchema(),
-                        Field.of(COL_ID, JsonSchemaType.INTEGER),
-                        Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
-                        Field.of(COL_MODEL, JsonSchemaType.STRING),
-                    )
+                            MODELS_STREAM_NAME_2,
+                            modelsSchema(),
+                            Field.of(COL_ID, JsonSchemaType.INTEGER),
+                            Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
+                            Field.of(COL_MODEL, JsonSchemaType.STRING),
+                        )
                         .withSupportedSyncModes(
                             Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
                         ),
@@ -779,7 +780,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             Jsons.jsonNode(ImmutableMap.of(COL_ID, 100, COL_MAKE_ID, 3, COL_MODEL, "Punto"))
         writeModelRecord(puntoRecord)
         waitForCdcRecords(modelsSchema(), MODELS_STREAM_NAME, 1)
-
 
         // assertExpectedStateMessages(stateMessages1)
         // Non resumeable full refresh does not get any state messages.
@@ -810,7 +810,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             names,
             modelsSchema(),
         )
-
     }
 
     protected fun removeStreamState(streamName: String, streamStates: ArrayNode) {
