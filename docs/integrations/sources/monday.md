@@ -74,6 +74,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version | Date       | Pull Request                                              | Subject                                                                                           |
 |:--------|:-----------|:----------------------------------------------------------|:--------------------------------------------------------------------------------------------------|
+| 2.1.3 | 2024-05-02 | [36652](https://github.com/airbytehq/airbyte/pull/36652) | Schema descriptions |
 | 2.1.2   | 2024-04-30 | [37722](https://github.com/airbytehq/airbyte/pull/37722)  | Fetch `display_value` field for column values of `Mirror`, `Dependency` and `Connect Board` types |
 | 2.1.1   | 2024-04-05 | [36717](https://github.com/airbytehq/airbyte/pull/36717)  | Add handling of complexityBudgetExhausted error.                                                  |
 | 2.1.0   | 2024-04-03 | [36746](https://github.com/airbytehq/airbyte/pull/36746)  | Pin airbyte-cdk version to `^0`                                                                   |
