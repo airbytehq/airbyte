@@ -1,4 +1,4 @@
-version: "0.29.0"
+version: "0.86.0"
 
 definitions:
   selector:
@@ -39,7 +39,8 @@ definitions:
     type: "DefaultPaginator"
     pagination_strategy:
       type: "CursorPagination"
-      cursor_value: "{{ last_records['paging', 'next'] }}"
+      cursor_value: "{{ response['paging']['next'] if response['items'] }}"
+      stop_condition: "{{ not response.get('items', []) }}"
     page_token_option:
       type: "RequestPath"
       field_name: "from"
@@ -52,7 +53,9 @@ definitions:
     cursor_granularity: "PT0.000001S"
     lookback_window: "P31D"
     start_datetime:
-      datetime: "{{ config.get('start_date', day_delta(-90, format='%Y-%m-%dT%H:%M:%SZ')) }}"
+      datetime:
+        "{{ config.get('start_date', day_delta(-90, format='%Y-%m-%dT%H:%M:%SZ'))
+        }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     end_datetime:
       datetime: "{{ today_utc() }}"
@@ -70,6 +73,108 @@ definitions:
       paginator:
         $ref: "#/definitions/base_paginator"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          dkim_key_size:
+            description: The size of the DKIM key associated with the domain.
+            type:
+              - "null"
+              - integer
+          force_dkim_authority:
+            description: Indicates whether DKIM authority needs to be enforced.
+            type:
+              - "null"
+              - boolean
+          ips:
+            description: List of IP addresses associated with the domain.
+            type:
+              - "null"
+              - array
+            items:
+              description: IP address
+              type:
+                - "null"
+                - string
+          name:
+            description: The name of the domain.
+            type:
+              - "null"
+              - string
+          pool:
+            description: The pool to which the domain belongs.
+            type:
+              - "null"
+              - string
+          smtp_password:
+            description: SMTP password associated with the domain.
+            type:
+              - "null"
+              - string
+          spam_action:
+            description: Action to take for emails marked as spam.
+            type:
+              - "null"
+              - string
+          web_scheme:
+            description: The scheme for webhook URLs (e.g., https).
+            type:
+              - "null"
+              - string
+          wildcard:
+            description: Indicates if the domain allows wildcard addresses.
+            type:
+              - "null"
+              - boolean
+          state:
+            description: The current state of the domain.
+            type:
+              - "null"
+              - string
+          skip_verification:
+            description: Indicates whether email verification should be skipped.
+            type:
+              - "null"
+              - boolean
+          type:
+            description: Type of the domain (e.g., custom, sandbox).
+            type:
+              - "null"
+              - string
+          id:
+            description: The unique identifier for the domain.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the domain was created.
+            type:
+              - "null"
+              - string
+          require_tls:
+            description: Specifies if TLS is required for emails sent from this domain.
+            type:
+              - "null"
+              - boolean
+          is_disabled:
+            description: Specifies if the domain is disabled.
+            type:
+              - "null"
+              - boolean
+          smtp_login:
+            description: SMTP login credentials for the domain.
+            type:
+              - "null"
+              - string
+          web_prefix:
+            description: Prefix for webhooks related to the domain.
+            type:
+              - "null"
+              - string
   events_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -84,6 +189,356 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/incremental_sync_base"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          campaigns:
+            description: List of campaigns that the email is associated with
+            type:
+              - "null"
+              - array
+          client-info:
+            description: Information about the client device used to open the email
+            type:
+              - "null"
+              - object
+            properties:
+              client-name:
+                description: Name of the client device
+                type:
+                  - "null"
+                  - string
+              client-os:
+                description: Operating system of the client device
+                type:
+                  - "null"
+                  - string
+              client-type:
+                description: Type of the client device
+                type:
+                  - "null"
+                  - string
+              device-type:
+                description: Type of the device (e.g., desktop, mobile)
+                type:
+                  - "null"
+                  - string
+              user-agent:
+                description: User agent string of the client device
+                type:
+                  - "null"
+                  - string
+          delivery-status:
+            description: Delivery status of the email
+            type:
+              - "null"
+              - object
+            properties:
+              attempt-no:
+                description: Number of delivery attempts
+                type:
+                  - "null"
+                  - number
+              certificate-verified:
+                description: Whether the certificate is verified
+                type:
+                  - "null"
+                  - boolean
+              code:
+                description: Delivery status code
+                type:
+                  - "null"
+                  - number
+                  - string
+              description:
+                description: Description of the delivery status
+                type:
+                  - "null"
+                  - string
+              message:
+                description: Delivery message
+                type:
+                  - "null"
+                  - string
+              mx-host:
+                description: MX host information
+                type:
+                  - "null"
+                  - string
+              retry-seconds:
+                description: Number of seconds before retrying delivery
+                type:
+                  - "null"
+                  - number
+              session-seconds:
+                description: Duration of the delivery session in seconds
+                type:
+                  - "null"
+                  - number
+              tls:
+                description: TLS information
+                type:
+                  - "null"
+                  - boolean
+              utf8:
+                description: Whether UTF-8 encoding is used
+                type:
+                  - "null"
+                  - boolean
+          envelop:
+            description: Envelop information of the email
+            type:
+              - "null"
+              - object
+            properties:
+              sender:
+                description: Email address of the sender
+                type:
+                  - "null"
+                  - string
+              sending-ip:
+                description: IP address used for sending
+                type:
+                  - "null"
+                  - string
+              targets:
+                description: List of target email addresses
+                type:
+                  - "null"
+                  - string
+              transport:
+                description: Transport information
+                type:
+                  - "null"
+                  - string
+          event:
+            description: Type of event (e.g., opened, clicked)
+            type: string
+          flags:
+            description: Flags associated with the email
+            type:
+              - "null"
+              - object
+            properties:
+              is-authenticated:
+                description: Whether the email is authenticated
+                type:
+                  - "null"
+                  - boolean
+              is-delayed-bounce:
+                description: Flag for delayed bounce
+                type:
+                  - "null"
+                  - boolean
+              is-routed:
+                description: Flag for routed email
+                type:
+                  - "null"
+                  - boolean
+              is-system-test:
+                description: Flag for system test email
+                type:
+                  - "null"
+                  - boolean
+              is-test-mode:
+                description: Flag for test mode email
+                type:
+                  - "null"
+                  - boolean
+          geolocation:
+            description: Geolocation information of the recipient
+            type:
+              - "null"
+              - object
+            properties:
+              city:
+                description: City of the recipient
+                type:
+                  - "null"
+                  - string
+              country:
+                description: Country of the recipient
+                type:
+                  - "null"
+                  - string
+              region:
+                description: Region of the recipient
+                type:
+                  - "null"
+                  - string
+          id:
+            description: ID of the email event
+            type: string
+          ip:
+            description: IP address of the recipient
+            type:
+              - "null"
+              - string
+          log-level:
+            description: Log level information
+            type:
+              - "null"
+              - string
+          message:
+            description: Message details of the email event
+            type:
+              - "null"
+              - object
+            properties:
+              attachments:
+                description: List of attachments in the email
+                type:
+                  - "null"
+                  - array
+              headers:
+                description: Email headers information
+                type:
+                  - "null"
+                  - object
+                properties:
+                  from:
+                    description: Sender's email address
+                    type:
+                      - "null"
+                      - string
+                  message-id:
+                    description: Message ID of the email
+                    type:
+                      - "null"
+                      - string
+                  subject:
+                    description: Subject of the email
+                    type:
+                      - "null"
+                      - string
+                  to:
+                    description: Recipient's email address
+                    type:
+                      - "null"
+                      - string
+              recipients:
+                description: List of recipient email addresses
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+              size:
+                description: Size of the email message
+                type:
+                  - "null"
+                  - number
+          method:
+            description: Method used for the event (e.g., POST, GET)
+            type:
+              - "null"
+              - string
+          routes:
+            description: List of routes for the email event
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                expression:
+                  description: Expression used for routing
+                  type:
+                    - "null"
+                    - string
+                id:
+                  description: ID of the route
+                  type:
+                    - "null"
+                    - string
+                match:
+                  description: Matching criteria
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    recipient:
+                      description: Recipient email address
+                      type:
+                        - "null"
+                        - string
+          storage:
+            description: Storage details of the email event
+            type:
+              - "null"
+              - object
+            properties:
+              key:
+                description: Key identifier for storage
+                type:
+                  - "null"
+                  - string
+              url:
+                description: URL for accessing stored email
+                type:
+                  - "null"
+                  - string
+          reason:
+            description: Reason for the event
+            type:
+              - "null"
+              - string
+          reject:
+            description: Details when the email is rejected
+            type:
+              - "null"
+              - object
+            properties:
+              description:
+                description: Description of rejection
+                type:
+                  - "null"
+                  - string
+              reason:
+                description: Reason for rejection
+                type:
+                  - "null"
+                  - string
+          recipient:
+            description: Email address of the recipient
+            type:
+              - "null"
+              - string
+          recipient-domain:
+            description: Recipient's domain name
+            type:
+              - "null"
+              - string
+          severity:
+            description: Severity of the event
+            type:
+              - "null"
+              - string
+          tags:
+            description: Tags associated with the email event
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          timestamp:
+            description: Timestamp of the event
+            type: number
+          user-variables:
+            description: User-defined variables associated with the event
+            type:
+              - "null"
+              - object
 streams:
   - "#/definitions/domains_stream"
   - "#/definitions/events_stream"

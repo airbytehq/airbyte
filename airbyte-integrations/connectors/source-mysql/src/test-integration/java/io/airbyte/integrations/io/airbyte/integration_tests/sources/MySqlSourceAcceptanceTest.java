@@ -7,7 +7,6 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 import static io.airbyte.protocol.models.v0.SyncMode.INCREMENTAL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -138,8 +137,8 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     assertFalse(stateMessages.isEmpty(), "Reason");
     ObjectMapper mapper = new ObjectMapper();
 
-    assertTrue(recordMessages.get(0).getData().equals(
-        mapper.readTree("{\"id\":4, \"name\":\"voyager\"}")));
+    assertEquals(recordMessages.get(0).getData(),
+        mapper.readTree("{\"id\":4, \"name\":\"voyager\", \"userid\":null}"));
 
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
@@ -154,8 +153,8 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     assertFalse(
         secondSyncRecords.isEmpty(),
         "Expected the second incremental sync to produce records.");
-    assertTrue(secondSyncRecords.get(0).getData().equals(
-        mapper.readTree("{\"id\":5, \"name\":\"deep space nine\"}")));
+    assertEquals(secondSyncRecords.get(0).getData(),
+        mapper.readTree("{\"id\":5, \"name\":\"deep space nine\", \"userid\":null}"));
 
   }
 

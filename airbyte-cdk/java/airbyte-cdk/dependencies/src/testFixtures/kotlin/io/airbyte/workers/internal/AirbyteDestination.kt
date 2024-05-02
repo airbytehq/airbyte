@@ -72,7 +72,7 @@ interface AirbyteDestination : CheckedConsumer<AirbyteMessage, Exception>, AutoC
      * @return exit code of the destination process
      * @throws IllegalStateException if the destination process has not exited
      */
-    fun getExitValue(): Int
+    abstract val exitValue: Int
 
     /**
      * Attempts to read an AirbyteMessage from the Destination.
