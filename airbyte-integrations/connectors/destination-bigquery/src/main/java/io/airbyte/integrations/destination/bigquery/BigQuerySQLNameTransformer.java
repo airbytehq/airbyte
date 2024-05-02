@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import org.jetbrains.annotations.NotNull;
 
 public class BigQuerySQLNameTransformer extends StandardNameTransformer {
 
@@ -29,7 +30,7 @@ public class BigQuerySQLNameTransformer extends StandardNameTransformer {
    * https://cloud.google.com/bigquery/docs/datasets#dataset-naming
    */
   @Override
-  public String getNamespace(final String input) {
+  public String getNamespace(@NotNull final String input) {
     if (input == null) {
       return null;
     }
