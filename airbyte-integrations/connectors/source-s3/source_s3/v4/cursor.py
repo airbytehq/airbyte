@@ -4,7 +4,7 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import Any, MutableMapping
+from typing import Any, MutableMapping, Optional
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -20,8 +20,8 @@ class Cursor(FileBasedConcurrentCursor):
     _V4_MIGRATION_BUFFER = timedelta(hours=1)
     _V3_MIN_SYNC_DATE_FIELD = "v3_min_sync_date"
 
-    def __init__(self, stream_config: FileBasedStreamConfig, **_: Any):
-        super().__init__(stream_config)
+    def __init__(self, *args) -> None:
+        super().__init__(*args)
         self._running_migration = False
         self._v3_migration_start_datetime = None
 
@@ -51,6 +51,17 @@ class Cursor(FileBasedConcurrentCursor):
             }
         else:
             return state
+
+    def _get_cursor(self) -> Optional[str]:
+        """
+        Returns the cursor value.
+        Files are synced in order of last-modified with secondary sort on filename, so the cursor value is
+        a string joining the last-modified timestamp of the last synced file and the name of the file.
+        """
+        if self._file_to_datetime_history.items():
+            filename, timestamp = max(self._file_to_datetime_history.items(), key=lambda x: (x[1], x[0]))
+            return f"{timestamp}_{filename}"
+        return None
 
     def _should_sync_file(self, file: RemoteFile, logger: logging.Logger) -> bool:
         """
