@@ -1,15 +1,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 from dataclasses import dataclass
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, List, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-from airbyte_cdk.sources.streams.core import StreamData
 
 
 @dataclass
@@ -73,58 +71,3 @@ class ZendeskSupportAttributeDefinitionsExtractor(RecordExtractor):
         except requests.exceptions.JSONDecodeError:
             records = []
         return records
-
-
-class TicketAuditsRetriever(SimpleRetriever):
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        super().__post_init__(parameters)
-
-        self.record_selector.transformations = []
-        self._start_date = self.config["start_date"]
-        self.response_list_name = self._parameters["data_path"]
-        self._cursor_field = self._parameters["cursor_field"]
-        self._start_date = self.config["start_date"]
-
-        self.cursor = DatetimeBasedCursor(
-            config=self.config,
-            parameters=self._parameters,
-            cursor_datetime_formats=[
-                "%Y-%m-%dT%H:%M:%SZ",
-            ],
-            datetime_format="%Y-%m-%dT%H:%M:%SZ",
-            cursor_field=self._cursor_field,
-            start_datetime=self._start_date,
-        )
-        self.stream_slicer = self.cursor
-
-    def _validate_response(self, response: requests.Response, stream_state: Mapping[str, Any]) -> bool:
-        """
-        Ticket Audits endpoint doesn't allow filtering by date, but all data sorted by descending.
-        This method used to stop making requests once we receive a response with cursor value greater than actual cursor.
-        This action decreases sync time as we don't filter extra records in parse response.
-        """
-        data = response.json().get(self.response_list_name, [{}])
-        created_at = data[0].get(self._cursor_field, "")
-        cursor_date = (stream_state or {}).get(self._cursor_field) or self._start_date
-        return created_at >= cursor_date
-
-    def _read_pages(
-        self,
-        records_generator_fn: Callable[[Optional[requests.Response]], Iterable[StreamData]],
-        stream_state: Mapping[str, Any],
-        stream_slice: StreamSlice,
-    ) -> Iterable[StreamData]:
-        pagination_complete = False
-        next_page_token = None
-        while not pagination_complete:
-            response = self._fetch_next_page(stream_state, stream_slice, next_page_token)
-            yield from records_generator_fn(response)
-
-            if not response:
-                pagination_complete = True
-            elif not self._validate_response(response, stream_state):
-                pagination_complete = True
-            else:
-                next_page_token = self._next_page_token(response)
-                if not next_page_token:
-                    pagination_complete = True

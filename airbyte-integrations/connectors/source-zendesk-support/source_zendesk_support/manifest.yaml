@@ -389,7 +389,7 @@ definitions:
   ticket_audits_stream:
     $ref: "#/definitions/semi_incremental_stream"
     retriever:
-      class_name: "source_zendesk_support.components.TicketAuditsRetriever"
+      $ref: "#/definitions/semi_incremental_stream/retriever"
       requester:
         $ref: "#/definitions/retriever/requester"
         request_parameters:
@@ -408,21 +408,8 @@ definitions:
                 - http_codes: [403, 404]
                   action: IGNORE
                   error_message: "Skipping stream {{ parameters.get('name') }}, error message: {{ response.get('error') }}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            ["{{ parameters.get('data_path') or parameters.get('name') }}"]
-        schema_normalization: Default
-        record_filter:
-          condition: "{{ record[parameters['cursor_field']] >= stream_state.get(parameters['cursor_field'], config.get('start_date')) }}"
-        $parameters:
-          transformations: [[]]
       paginator:
         type: DefaultPaginator
-        $parameters:
-          url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/
         page_size_option:
           type: RequestOption
           field_name: "limit"
@@ -431,7 +418,7 @@ definitions:
           type: CursorPagination
           page_size: 200
           cursor_value: "{{ response.get('before_url') }}"
-          stop_condition: "{{ config.get('ignore_pagination') or 'before_url' not in response }}"
+          stop_condition: "{{ config.get('ignore_pagination') or 'before_url' not in response or not last_record }}"
         page_token_option:
           type: RequestPath
     incremental_sync:
