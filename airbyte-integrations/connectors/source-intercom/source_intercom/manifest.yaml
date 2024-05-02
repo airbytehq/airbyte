@@ -607,7 +607,7 @@ definitions:
             type:
               - "null"
               - number
-            multipleOf: 1e-08
+            multipleOf: 0.00000001
           session_count:
             description: The number of sessions related to the company
             type:
