@@ -6,8 +6,8 @@ package io.airbyte.integrations.destination.bigquery;
 
 import com.google.cloud.bigquery.BigQuery;
 import com.google.common.util.concurrent.RateLimiter;
-import io.airbyte.cdk.integrations.destination_async.DestinationFlushFunction;
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction;
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.StreamDescriptor;

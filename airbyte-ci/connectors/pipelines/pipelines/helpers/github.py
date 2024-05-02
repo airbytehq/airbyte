@@ -19,8 +19,6 @@ if TYPE_CHECKING:
 from github import Github, PullRequest
 
 AIRBYTE_GITHUB_REPO = "airbytehq/airbyte"
-GITHUB_GLOBAL_CONTEXT_FOR_TESTS = "Connectors CI tests"
-GITHUB_GLOBAL_DESCRIPTION_FOR_TESTS = "Running connectors tests"
 
 
 def safe_log(logger: Optional[Logger], message: str, level: str = "info") -> None:
@@ -104,8 +102,8 @@ def update_global_commit_status_check_for_tests(click_context: dict, github_stat
         click_context["git_revision"],
         github_state,
         click_context["gha_workflow_run_url"],
-        GITHUB_GLOBAL_DESCRIPTION_FOR_TESTS,
-        GITHUB_GLOBAL_CONTEXT_FOR_TESTS,
+        click_context["global_status_check_description"],
+        click_context["global_status_check_context"],
         should_send=click_context.get("ci_context") == CIContext.PULL_REQUEST,
         logger=logger,
     )

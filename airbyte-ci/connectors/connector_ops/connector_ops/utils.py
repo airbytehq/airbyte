@@ -81,18 +81,6 @@ def get_connector_name_from_path(path):
     return path.split("/")[2]
 
 
-def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[str]:
-    """Retrieve the set of connectors for which the acceptance_test_config file was changed in the current branch (compared to master).
-
-    Args:
-        diff_regex (str): Find the edited files that contain the following regex in their change.
-
-    Returns:
-        Set[Connector]: Set of connectors that were changed
-    """
-    return get_changed_file(ACCEPTANCE_TEST_CONFIG_FILE_NAME, diff_regex)
-
-
 def get_changed_metadata(diff_regex: Optional[str] = None) -> Set[str]:
     """Retrieve the set of connectors for which the metadata file was changed in the current branch (compared to master).
 
@@ -380,7 +368,7 @@ class Connector:
             return ConnectorLanguage.LOW_CODE
         if Path(self.code_directory / "setup.py").is_file() or Path(self.code_directory / "pyproject.toml").is_file():
             return ConnectorLanguage.PYTHON
-        if Path(self.code_directory / "src" / "main" / "java").exists():
+        if Path(self.code_directory / "src" / "main" / "java").exists() or Path(self.code_directory / "src" / "main" / "kotlin").exists():
             return ConnectorLanguage.JAVA
         return None
 

@@ -15,10 +15,10 @@ object TypingAndDedupingFlag {
     @JvmStatic
     fun getRawNamespaceOverride(option: String?): Optional<String> {
         val rawOverride: String = DestinationConfig.Companion.instance!!.getTextValue(option)
-        return if (rawOverride == null || rawOverride.isEmpty()) {
+        return if (rawOverride.isEmpty()) {
             Optional.empty()
         } else {
-            Optional.of(rawOverride)
+            Optional.ofNullable(rawOverride)
         }
     }
 }

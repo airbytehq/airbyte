@@ -112,6 +112,7 @@ The connector is restricted by Notion [request limits](https://developers.notion
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
+| 3.0.0   | 2024-04-12 | [35794](https://github.com/airbytehq/airbyte/pull/35974) | Migrate to low-code CDK (python CDK for Blocks stream)                                               |
 | 2.2.0   | 2024-04-08 | [36890](https://github.com/airbytehq/airbyte/pull/36890) | Unpin CDK version                                                                                    |
 | 2.1.0   | 2024-02-19 | [35409](https://github.com/airbytehq/airbyte/pull/35409) | Update users stream schema with bot type info fields and block schema with mention type info fields. |
 | 2.0.9   | 2024-02-12 | [35155](https://github.com/airbytehq/airbyte/pull/35155) | Manage dependencies with Poetry.                                                                     |
