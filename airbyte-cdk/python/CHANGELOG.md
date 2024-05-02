@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.86.1
+Fix schemas merge for nullable object types
+
 ## 0.86.0
 Expose airbyte_cdk.__version__ and pin airbyte-protocol-models dependency to 
 

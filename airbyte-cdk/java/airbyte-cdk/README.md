@@ -174,6 +174,7 @@ corresponds to that version.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------| :--------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.31.5  | 2024-04-30 | [\#37758](https://github.com/airbytehq/airbyte/pull/37758) | Set debezium max retries to zero                                                                                                                               |
 | 0.31.4  | 2024-04-30 | [\#37754](https://github.com/airbytehq/airbyte/pull/37754) | Add DebeziumEngine notification log                                                                                                                            |
 | 0.31.3  | 2024-04-30 | [\#37726](https://github.com/airbytehq/airbyte/pull/37726) | Remove debezium retries                                                                                                                                        |
 | 0.31.2  | 2024-04-30 | [\#37507](https://github.com/airbytehq/airbyte/pull/37507) | Better error messages when switching between global/per-stream modes.                                                                                          |
