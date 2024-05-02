@@ -4,38 +4,47 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the stage.",
       "type": "integer"
     },
     "name": {
+      "description": "The name of the stage.",
       "type": ["null", "string"]
     },
     "order": {
+      "description": "The order or sequence of the stage in the workflow.",
       "type": ["null", "integer"]
     },
     "color": {
+      "description": "The color associated with the stage.",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "The date and time when the stage was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "The date and time when the stage was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "creator": {
+      "description": "Information about the user who created the stage.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "prospects": {
+      "description": "Information about the prospects associated with this stage.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "updater": {
+      "description": "Information about the user who last updated the stage.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
