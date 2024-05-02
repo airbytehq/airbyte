@@ -55,8 +55,6 @@ periodically:
 
 - Running the build process will **check for broken links**, please read the output and address any
   broken links that you are able to do.
-- [This GitHub Action](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/doc-link-check.yml)
-  checks all links on Airbyte production docs site, and tells us if any of them are broken.
 
 > [!NOTE] Docusaurus links checker only checks _relative_ links, and assumes that absolute links are
 > fine. For that reason, if you're linking to another Airbyte documentation page, make it a relative

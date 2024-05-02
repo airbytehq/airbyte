@@ -1,0 +1,27 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.5.2"
+name = "source-auth0"
+description = "Source implementation for Auth0."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/auth0"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_auth0"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "^0"
+
+[tool.poetry.scripts]
+source-auth0 = "source_auth0.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^6.2"
+pytest-mock = "^3.6.1"
