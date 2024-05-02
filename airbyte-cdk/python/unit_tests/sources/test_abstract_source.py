@@ -160,7 +160,7 @@ def test_raising_check(mocker):
         MockSource(check_lambda=check_lambda).check(logger, {})
 
 
-class MockStream(Stream):
+class MockStream(Stream, IncrementalMixin):
     def __init__(
         self,
         inputs_and_mocked_outputs: List[Tuple[Mapping[str, Any], Iterable[Mapping[str, Any]]]] = None,
@@ -168,10 +168,19 @@ class MockStream(Stream):
     ):
         self._inputs_and_mocked_outputs = inputs_and_mocked_outputs
         self._name = name
+        self._state = {}
 
     @property
     def name(self):
         return self._name
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]) -> None:
+        self._state = value
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:  # type: ignore
         # Remove None values
@@ -205,7 +214,7 @@ class MockStreamWithState(MockStream):
 
     @state.setter
     def state(self, value):
-        pass
+        self._state = value
 
 
 class MockStreamEmittingAirbyteMessages(MockStreamWithState):
@@ -215,6 +224,8 @@ class MockStreamEmittingAirbyteMessages(MockStreamWithState):
         super().__init__(inputs_and_mocked_outputs, name, state)
         self._inputs_and_mocked_outputs = inputs_and_mocked_outputs
         self._name = name
+        self._state = {}
+        self._cursor_value = None
 
     @property
     def name(self):
@@ -230,7 +241,7 @@ class MockStreamEmittingAirbyteMessages(MockStreamWithState):
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
-        self._cursor_value = value.get(self.cursor_field, self.start_date)
+        self._cursor_value = value.get(self.cursor_field)
 
 
 def test_discover(mocker):
@@ -647,7 +658,7 @@ class TestIncrementalRead:
             [({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)],
             name="s2",
         )
-        mocker.patch.object(MockStreamWithState, "get_updated_state", return_value={})
+        mocker.patch.object(MockStreamWithState, "state", return_value={})
         state_property = mocker.patch.object(
             MockStreamWithState,
             "state",
@@ -714,7 +725,8 @@ class TestIncrementalRead:
             name="s2",
         )
         state = {"cursor": "value"}
-        mocker.patch.object(MockStream, "get_updated_state", return_value=state)
+        stream_1.state = state
+        stream_2.state = state
         mocker.patch.object(MockStream, "supports_incremental", return_value=True)
         mocker.patch.object(MockStream, "get_json_schema", return_value={})
         # Tell the source to output one state message per record
@@ -783,7 +795,8 @@ class TestIncrementalRead:
             name="s2",
         )
         state = {"cursor": "value"}
-        mocker.patch.object(MockStream, "get_updated_state", return_value=state)
+        stream_1.state = state
+        stream_2.state = state
         mocker.patch.object(MockStream, "supports_incremental", return_value=True)
         mocker.patch.object(MockStream, "get_json_schema", return_value={})
 
@@ -859,7 +872,8 @@ class TestIncrementalRead:
             name="s2",
         )
         state = {"cursor": "value"}
-        mocker.patch.object(MockStream, "get_updated_state", return_value=state)
+        stream_1.state = state
+        stream_2.state = state
         mocker.patch.object(MockStream, "supports_incremental", return_value=True)
         mocker.patch.object(MockStream, "get_json_schema", return_value={})
         mocker.patch.object(MockStream, "stream_slices", return_value=slices)
@@ -1032,7 +1046,8 @@ class TestIncrementalRead:
             name="s2",
         )
         state = {"cursor": "value"}
-        mocker.patch.object(MockStream, "get_updated_state", return_value=state)
+        stream_1.state = state
+        stream_2.state = state
         mocker.patch.object(MockStream, "supports_incremental", return_value=True)
         mocker.patch.object(MockStream, "get_json_schema", return_value={})
         mocker.patch.object(MockStream, "stream_slices", return_value=slices)
@@ -1139,7 +1154,8 @@ class TestIncrementalRead:
             state=copy.deepcopy(input_state),
         )
         state = {"cursor": "value"}
-        mocker.patch.object(MockStream, "get_updated_state", return_value=state)
+        stream_1.state = state
+        stream_2.state = state
         mocker.patch.object(MockStream, "supports_incremental", return_value=True)
         mocker.patch.object(MockStream, "get_json_schema", return_value={})
         mocker.patch.object(MockStream, "stream_slices", return_value=slices)
@@ -1206,7 +1222,6 @@ class TestIncrementalRead:
 
 def test_checkpoint_state_from_stream_instance():
     teams_stream = MockStreamOverridesStateMethod()
-    managers_stream = StreamNoStateMethod()
     state_manager = ConnectorStateManager(
         {
             "teams": AirbyteStream(
@@ -1219,14 +1234,10 @@ def test_checkpoint_state_from_stream_instance():
         [],
     )
 
-    # The stream_state passed to checkpoint_state() should be ignored since stream implements state function
     teams_stream.state = {"updated_at": "2022-09-11"}
-    actual_message = teams_stream._checkpoint_state({"ignored": "state"}, state_manager)
-    assert actual_message == _as_state("teams", {"updated_at": "2022-09-11"})
 
-    # The stream_state passed to checkpoint_state() should be used since the stream does not implement state function
-    actual_message = managers_stream._checkpoint_state({"updated": "expected_here"}, state_manager)
-    assert actual_message == _as_state("managers", {"updated": "expected_here"})
+    actual_message = teams_stream._checkpoint_state(state_manager)
+    assert actual_message == _as_state("teams", {"updated_at": "2022-09-11"})
 
 
 @pytest.mark.parametrize(

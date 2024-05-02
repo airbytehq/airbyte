@@ -7,5 +7,5 @@ from .entrypoint import AirbyteEntrypoint
 from .logger import AirbyteLogger
 from importlib import metadata
 
-__all__ = ["AirbyteEntrypoint", "AirbyteLogger", "AirbyteSpec", "Connector"]
+__all__ = ["AirbyteEntrypoint", "AirbyteLogger", "AirbyteSpec"]
 __version__ = metadata.version("airbyte_cdk")

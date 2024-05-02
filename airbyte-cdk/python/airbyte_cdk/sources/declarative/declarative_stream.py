@@ -84,11 +84,6 @@ class DeclarativeStream(Stream):
                     state = migration.migrate(state)
         self.retriever.state = state
 
-    def get_updated_state(
-        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
-    ) -> MutableMapping[str, Any]:
-        return self.state
-
     @property
     def cursor_field(self) -> Union[str, List[str]]:
         """

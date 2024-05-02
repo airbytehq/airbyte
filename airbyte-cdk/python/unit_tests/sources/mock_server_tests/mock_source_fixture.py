@@ -176,90 +176,6 @@ class Planets(IncrementalIntegrationStream):
         return date_slices
 
 
-class Legacies(IntegrationStream):
-    """
-    Incremental stream that uses the legacy method get_updated_state() to manage stream state. New connectors use the state
-    property and setter methods.
-    """
-
-    cursor_field = "created_at"
-
-    def path(self, **kwargs) -> str:
-        return "legacies"
-
-    def get_json_schema(self) -> Mapping[str, Any]:
-        return {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "additionalProperties": True,
-            "properties": {
-                "type": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string",
-                    "format": "date-time"
-                },
-                "quote": {
-                    "type": "string"
-                }
-            }
-        }
-
-    def get_updated_state(
-        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
-    ) -> MutableMapping[str, Any]:
-        latest_state = latest_record.get(self.cursor_field)
-        current_state = current_stream_state.get(self.cursor_field) or latest_state
-        if current_state:
-            return {self.cursor_field: max(latest_state, current_state)}
-        return {}
-
-    def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: Optional[List[str]] = None,
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            stream_state: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[StreamData]:
-        yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
-
-    def request_params(
-        self,
-        stream_state: Optional[Mapping[str, Any]],
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
-        return {
-            "start_date": stream_slice.get("start_date"),
-            "end_date": stream_slice.get("end_date")
-        }
-
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        start_date = pendulum.parse(self.start_date)
-
-        if stream_state:
-            start_date = pendulum.parse(stream_state.get(self.cursor_field))
-
-        date_slices = []
-
-        end_date = datetime.now(timezone.utc).replace(microsecond=0)
-        while start_date < end_date:
-            end_date_slice = min(start_date.add(days=7), end_date)
-
-            date_slice = {"start_date": start_date.strftime("%Y-%m-%dT%H:%M:%SZ"), "end_date": end_date_slice.strftime("%Y-%m-%dT%H:%M:%SZ")}
-
-            date_slices.append(date_slice)
-            start_date = end_date_slice
-
-        return date_slices
-
-
 class Dividers(IntegrationStream):
     def path(self, **kwargs) -> str:
         return "dividers"
@@ -305,7 +221,7 @@ class SourceFixture(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [Dividers(config=config), Legacies(config=config), Planets(config=config), Users(config=config)]
+        return [Dividers(config=config), Planets(config=config), Users(config=config)]
 
     def spec(self, logger: logging.Logger) -> ConnectorSpecification:
         return ConnectorSpecification(

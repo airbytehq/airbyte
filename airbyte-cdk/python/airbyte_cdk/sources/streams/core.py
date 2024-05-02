@@ -148,17 +148,13 @@ class Stream(ABC):
                     hasattr(record_data_or_message, "type") and record_data_or_message.type == MessageType.RECORD
                 ):
                     record_data = record_data_or_message if isinstance(record_data_or_message, Mapping) else record_data_or_message.record
-                    if self.cursor_field:
-                        # Some connectors have streams that implement get_updated_state(), but do not define a cursor_field. This
-                        # should be fixed on the stream implementation, but we should also protect against this in the CDK as well
-                        stream_state = self.get_updated_state(stream_state, record_data)
                     record_counter += 1
 
                     if sync_mode == SyncMode.incremental:
                         # Checkpoint intervals are a bit controversial, but see below comment about why we're gating it right now
                         checkpoint_interval = self.state_checkpoint_interval
                         if checkpoint_interval and record_counter % checkpoint_interval == 0:
-                            airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
+                            airbyte_state_message = self._checkpoint_state(state_manager)
                             yield airbyte_state_message
 
                     if internal_config.is_limit_reached(record_counter):
@@ -168,17 +164,18 @@ class Stream(ABC):
                 # Even though right now, only incremental streams running as incremental mode will emit periodic checkpoints. Rather than
                 # overhaul how refresh interacts with the platform, this positions the code so that once we want to start emitting
                 # periodic checkpoints in full refresh mode it can be done here
-                airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
+                airbyte_state_message = self._checkpoint_state(state_manager)
                 yield airbyte_state_message
 
         if not has_slices or sync_mode == SyncMode.full_refresh:
             if sync_mode == SyncMode.full_refresh:
                 # We use a dummy state if there is no suitable value provided by full_refresh streams that do not have a valid cursor.
                 # Incremental streams running full_refresh mode emit a meaningful state
-                stream_state = stream_state or {FULL_REFRESH_SENTINEL_STATE_KEY: True}
+                if hasattr(self, "state"):
+                    self.state = stream_state or {FULL_REFRESH_SENTINEL_STATE_KEY: True}
 
             # We should always emit a final state message for full refresh sync or streams that do not have any slices
-            airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
+            airbyte_state_message = self._checkpoint_state(state_manager)
             yield airbyte_state_message
 
     @abstractmethod
@@ -311,23 +308,6 @@ class Stream(ABC):
         """
         return None
 
-    @deprecated(version="0.1.49", reason="You should use explicit state property instead, see IncrementalMixin docs.")
-    def get_updated_state(
-        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
-    ) -> MutableMapping[str, Any]:
-        """Override to extract state from the latest record. Needed to implement incremental sync.
-
-        Inspects the latest record extracted from the data source and the current state object and return an updated state object.
-
-        For example: if the state object is based on created_at timestamp, and the current state is {'created_at': 10}, and the latest_record is
-        {'name': 'octavia', 'created_at': 20 } then this method would return {'created_at': 20} to indicate state should be updated to this object.
-
-        :param current_stream_state: The stream's current state object
-        :param latest_record: The latest record extracted from the stream
-        :return: An updated state object
-        """
-        return {}
-
     def log_stream_sync_configuration(self) -> None:
         """
         Logs the configuration of this stream.
@@ -365,17 +345,13 @@ class Stream(ABC):
 
     def _checkpoint_state(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
         self,
-        stream_state: Mapping[str, Any],
         state_manager,
     ) -> AirbyteMessage:
-        # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
-        # property is not implemented by the stream instance and as a fallback, use the stream_state retrieved from the stream
-        # instance's deprecated get_updated_state() method.
         try:
             state_manager.update_state_for_stream(
                 self.name, self.namespace, self.state  # type: ignore # we know the field might not exist...
             )
+            return state_manager.create_state_message(self.name, self.namespace)
 
         except AttributeError:
-            state_manager.update_state_for_stream(self.name, self.namespace, stream_state)
-        return state_manager.create_state_message(self.name, self.namespace)
+            raise ValueError(f"Tried to checkpoint stream {self.name} which does not have a state. Checkpointable streams must implement the Incremental property.")
