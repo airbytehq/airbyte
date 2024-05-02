@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
-  dockerImageTag: 2.0.6
+  dockerImageTag: 2.0.8
   dockerRepository: airbyte/source-shopify
   documentationUrl: https://docs.airbyte.com/integrations/sources/shopify
   githubIssueLabel: source-shopify
@@ -37,7 +37,9 @@ data:
           Shopify API version `2023-07`, more details in this PR: https://github.com/airbytehq/airbyte/pull/29361."
         upgradeDeadline: "2023-09-17"
       2.0.0:
-        message: "This upgrade brings perfomance impovements and stream schema changes. Details are available here: https://github.com/airbytehq/airbyte/pull/32345#issue-1985556333."
+        message:
+          "This upgrade brings perfomance impovements and stream schema changes.
+          Details are available here: https://github.com/airbytehq/airbyte/pull/32345#issue-1985556333."
         upgradeDeadline: "2024-03-18"
         scopedImpact:
           - scopeType: stream
