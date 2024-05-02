@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "4.5.12"
+version = "4.5.13"
 name = "source-s3"
 description = "Source implementation for S3."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -23,6 +23,7 @@ python-snappy = "==0.6.1"
 dill = "==0.3.4"
 # override transitive dependency that had a vulnerability https://nvd.nist.gov/vuln/detail/CVE-2023-6730
 transformers = "4.38.2"
+urllib3 = "<2"
 
 [tool.poetry.scripts]
 source-s3 = "source_s3.run:run"
