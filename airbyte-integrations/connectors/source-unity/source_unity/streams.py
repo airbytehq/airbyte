@@ -23,13 +23,6 @@ class UnityStream(HttpStream, ABC):
         self.offset = 0
         super().__init__(authenticator=authenticator)
 
-    @property
-    def logger(self) -> logging.Logger:
-        # Create a logger with a high log level to suppress nearly all logging
-        logger = logging.getLogger(f"airbyte.streams.{self.name}")
-        logger.setLevel(logging.ERROR)
-        return logger
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if not self.is_paginated:
             return None
