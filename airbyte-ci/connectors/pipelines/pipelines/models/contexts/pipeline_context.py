@@ -160,9 +160,10 @@ class PipelineContext:
         self._report = report
 
     @property
-    def ci_gcs_credentials_secret(self) -> Secret:
-        assert self.ci_gcs_credentials is not None, "The ci_gcs_credentials was not set on this PipelineContext."
-        return self.dagger_client.set_secret("ci_gcs_credentials", self.ci_gcs_credentials)
+    def ci_gcs_credentials_secret(self) -> Secret | None:
+        if self.ci_gcs_credentials is not None:
+            return self.dagger_client.set_secret("ci_gcs_credentials", self.ci_gcs_credentials)
+        return None
 
     @property
     def ci_github_access_token_secret(self) -> Secret:
@@ -209,6 +210,10 @@ class PipelineContext:
             return None
 
         return f"https://alpha.dagger.cloud/changeByPipelines?filter=dagger.io/git.ref:{self.git_revision}"
+
+    @property
+    def remote_storage_enabled(self) -> bool:
+        return self.is_ci is True and self.ci_report_bucket is not None and self.ci_gcs_credentials_secret is not None
 
     def get_repo_file(self, file_path: str) -> File:
         """Get a file from the current repository.

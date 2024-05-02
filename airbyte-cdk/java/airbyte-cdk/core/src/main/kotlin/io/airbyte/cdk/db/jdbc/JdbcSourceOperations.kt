@@ -33,30 +33,30 @@ open class JdbcSourceOperations :
 
         when (columnType) {
             JDBCType.BIT,
-            JDBCType.BOOLEAN -> putBoolean(json!!, columnName, resultSet, colIndex)
+            JDBCType.BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex)
             JDBCType.TINYINT,
-            JDBCType.SMALLINT -> putShortInt(json!!, columnName, resultSet, colIndex)
-            JDBCType.INTEGER -> putInteger(json!!, columnName, resultSet, colIndex)
-            JDBCType.BIGINT -> putBigInt(json!!, columnName, resultSet, colIndex)
+            JDBCType.SMALLINT -> putShortInt(json, columnName, resultSet, colIndex)
+            JDBCType.INTEGER -> putInteger(json, columnName, resultSet, colIndex)
+            JDBCType.BIGINT -> putBigInt(json, columnName, resultSet, colIndex)
             JDBCType.FLOAT,
-            JDBCType.DOUBLE -> putDouble(json!!, columnName, resultSet, colIndex)
-            JDBCType.REAL -> putFloat(json!!, columnName, resultSet, colIndex)
+            JDBCType.DOUBLE -> putDouble(json, columnName, resultSet, colIndex)
+            JDBCType.REAL -> putFloat(json, columnName, resultSet, colIndex)
             JDBCType.NUMERIC,
-            JDBCType.DECIMAL -> putBigDecimal(json!!, columnName, resultSet, colIndex)
+            JDBCType.DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex)
             JDBCType.CHAR,
             JDBCType.VARCHAR,
-            JDBCType.LONGVARCHAR -> putString(json!!, columnName, resultSet, colIndex)
-            JDBCType.DATE -> putDate(json!!, columnName, resultSet, colIndex)
-            JDBCType.TIME -> putTime(json!!, columnName, resultSet, colIndex)
-            JDBCType.TIMESTAMP -> putTimestamp(json!!, columnName, resultSet, colIndex)
+            JDBCType.LONGVARCHAR -> putString(json, columnName, resultSet, colIndex)
+            JDBCType.DATE -> putDate(json, columnName, resultSet, colIndex)
+            JDBCType.TIME -> putTime(json, columnName, resultSet, colIndex)
+            JDBCType.TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex)
             JDBCType.TIMESTAMP_WITH_TIMEZONE ->
-                putTimestampWithTimezone(json!!, columnName, resultSet, colIndex)
+                putTimestampWithTimezone(json, columnName, resultSet, colIndex)
             JDBCType.BLOB,
             JDBCType.BINARY,
             JDBCType.VARBINARY,
-            JDBCType.LONGVARBINARY -> putBinary(json!!, columnName, resultSet, colIndex)
-            JDBCType.ARRAY -> putArray(json!!, columnName, resultSet, colIndex)
-            else -> putDefault(json!!, columnName, resultSet, colIndex)
+            JDBCType.LONGVARBINARY -> putBinary(json, columnName, resultSet, colIndex)
+            JDBCType.ARRAY -> putArray(json, columnName, resultSet, colIndex)
+            else -> putDefault(json, columnName, resultSet, colIndex)
         }
     }
 
@@ -147,8 +147,8 @@ open class JdbcSourceOperations :
         return JdbcUtils.ALLOWED_CURSOR_TYPES.contains(type)
     }
 
-    override fun getAirbyteType(jdbcType: JDBCType): JsonSchemaType {
-        return when (jdbcType) {
+    override fun getAirbyteType(sourceType: JDBCType): JsonSchemaType {
+        return when (sourceType) {
             JDBCType.BIT,
             JDBCType.BOOLEAN -> JsonSchemaType.BOOLEAN
             JDBCType.TINYINT,

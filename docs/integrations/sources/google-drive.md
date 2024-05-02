@@ -243,6 +243,10 @@ One record will be emitted for each document. Keep in mind that large files can 
 
 Before parsing each document, the connector exports Google Document files to Docx format internally. Google Sheets, Google Slides, and drawings are internally exported and parsed by the connector as PDFs.
 
+#### Parsing via Unstructured.io Python Library
+
+This connector utilizes the open source [Unstructured](https://unstructured-io.github.io/unstructured/introduction.html#product-offerings) library to perform OCR and text extraction from PDFs and MS Word files, as well as from embedded tables and images. You can read more about the parsing logic in the [Unstructured docs](https://unstructured-io.github.io/unstructured/core/partition.html) and you can learn about other Unstructured tools and services at [www.unstructured.io](https://www.unstructured.io).
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
