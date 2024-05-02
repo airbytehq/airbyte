@@ -7,6 +7,7 @@ from unittest.mock import ANY, MagicMock, Mock, call, patch
 from typing import cast
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from destination_snowflake_cortex.config import SnowflakeCortexIndexingModel
+from airbyte.strategies import WriteStrategy
 from destination_snowflake_cortex.indexer import (
     SnowflakeCortexIndexer,
     EMBEDDING_COLUMN,
@@ -127,6 +128,38 @@ def test_create_state_message():
     assert stream_state.stream_descriptor.name == "example_stream"
     assert stream_state.stream_descriptor.namespace == "ns1"
     
+def test_get_write_strategy():
+    indexer = _create_snowflake_cortex_indexer(generate_catalog())
+    assert(indexer.get_write_strategy('example_stream') == WriteStrategy.MERGE)
+    assert(indexer.get_write_strategy('example_stream2') == WriteStrategy.REPLACE)
+    assert(indexer.get_write_strategy('example_stream3') == WriteStrategy.AUTO)
+
+def test_get_document_id():
+    indexer = _create_snowflake_cortex_indexer(generate_catalog())
+    message = AirbyteMessage(
+        type=Type.RECORD,
+        record=AirbyteRecordMessage(
+            stream="example_stream",
+            data={
+                'str_col': "Dogs are number 1",
+                'int_col': 5,
+                'page_content': "str_col: Dogs are number 1",
+                'metadata': {"int_col": 5, "_ab_stream": "myteststream"},
+                'embedding': [1, 2, 3, 4]
+            },
+            emitted_at=0,
+        )
+    )
+    assert(indexer._create_document_id(message) == "Stream_example_stream_Key_5")
+
+    catalog = generate_catalog()    
+    catalog.streams[0].primary_key = None
+    indexer = _create_snowflake_cortex_indexer(catalog)
+    assert(indexer._create_document_id(message) != "Stream_example_stream_Key_5")
+
+    catalog.streams[0].primary_key = [["int_col"], ["str_col"]]
+    indexer = _create_snowflake_cortex_indexer(catalog)
+    assert(indexer._create_document_id(message) == "Stream_example_stream_Key_5_Dogs are number 1")
 
 def generate_catalog():
     return ConfiguredAirbyteCatalog.parse_obj(

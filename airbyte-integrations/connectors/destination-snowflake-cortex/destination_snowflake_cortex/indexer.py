@@ -8,10 +8,11 @@ import uuid
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from destination_snowflake_cortex.config import SnowflakeCortexIndexingModel
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode
 
 from airbyte.caches import SnowflakeCache
-from airbyte._processors.sql.snowflake import SnowflakeSqlProcessor
+from airbyte._processors.sql.snowflakecortex import SnowflakeSqlProcessor, SnowflakeCortexSqlProcessor
+from airbyte.strategies import WriteStrategy
 
 from typing import Iterable, Any
 import dpath.util
@@ -49,9 +50,8 @@ class SnowflakeCortexIndexer(Indexer):
         database = config.database
         warehouse = config.warehouse
         role = config.role
-        cache = SnowflakeCache(account=account, username=username, password=password, database=database, warehouse=warehouse, role=role)
-        self.processor = SnowflakeSqlProcessor(cache=cache)
-
+        self.cache = SnowflakeCache(account=account, username=username, password=password, database=database, warehouse=warehouse, role=role)
+        self.defaut_processor = SnowflakeSqlProcessor(cache=self.cache)
 
     def _get_airbyte_messsages_from_chunks(
             self, 
@@ -140,23 +140,41 @@ class SnowflakeCortexIndexer(Indexer):
             state=AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=stream, data=data),
         )
     
+    def get_write_strategy(self, stream_name: str) -> WriteStrategy:        
+        for stream in self.catalog.streams:
+            if stream.stream.name == stream_name:
+                if stream.destination_sync_mode == DestinationSyncMode.overwrite:
+                    return WriteStrategy.REPLACE
+                if stream.destination_sync_mode == DestinationSyncMode.append:
+                    return WriteStrategy.APPEND
+                if stream.destination_sync_mode == DestinationSyncMode.append_dedup:
+                    return WriteStrategy.MERGE
+        return WriteStrategy.AUTO
 
     def index(self, document_chunks, namespace, stream):
         # get list of airbyte messages from the document chunks
         airbyte_messages = self._get_airbyte_messsages_from_chunks(document_chunks)
         # assuming it's per stream, let's add a stream specific state message to the list
-        airbyte_messages.append(self._create_state_message(namespace, stream, namespace, {}))
+        # todo: remove state messages and see if things still work
+        airbyte_messages.append(self._create_state_message(stream, namespace, {}))
 
         # update catalog to match all columns in the airbyte messages
         if airbyte_messages is not None and len(airbyte_messages) > 0:
-            self.catalog = self._get_updated_catalog()
-
-            # TODO: call PyAirbyte SQL processor to process the airbyte messages
-
+            updated_catalog = self._get_updated_catalog()
+            print(f"\nUpdated catalog------------------------------\n: {updated_catalog}")
+            cortex_processor = SnowflakeCortexSqlProcessor(
+                cache=self.cache,
+                catalog=updated_catalog,
+                vector_length=self.embedding_dimensions,
+                source_name="vector_db_based",
+                stream_names=[stream],
+            )
+            cortex_processor.process_airbyte_messages(airbyte_messages, self.get_write_strategy(stream))
+            
 
     def delete(self, delete_ids, namespace, stream):
         # TODO: Confirm PyAirbyte SQL processor will handle deletes when needed. 
         pass 
 
     def check(self) -> Optional[str]:
-        self.processor._get_tables_list()
+        self.defaut_processor._get_tables_list()

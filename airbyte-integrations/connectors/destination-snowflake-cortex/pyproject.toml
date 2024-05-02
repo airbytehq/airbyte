@@ -18,8 +18,9 @@ include = "destination_snowflake_cortex"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = {version = "^0.73.0", extras = ["vector-db-based"]}
-airbyte = "^0.8.0"
+airbyte-cdk = {version = "^0.81.6", extras = ["vector-db-based"]}
+airbyte = { git = "https://github.com/airbytehq/PyAirbyte.git", branch = "bindi/snowflake_processor_for_cortex" }
+
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2"
