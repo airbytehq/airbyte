@@ -535,10 +535,8 @@ def test_traced_exception_with_api_error():
     )
     error.api_error_message = MagicMock(return_value="Error validating access token")
     
-    # Call function
     result = traced_exception(error)
     
-    # Asserts
     assert isinstance(result, AirbyteTracedException)
     assert result.message == "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions"
     assert result.failure_type == FailureType.config_error
@@ -553,10 +551,8 @@ def test_traced_exception_without_api_error():
     )
     error.api_error_message = MagicMock(return_value=None)
 
-    # Call function
     result = traced_exception(error)
 
-    # Asserts
     assert isinstance(result, AirbyteTracedException)
     assert result.message == "Error code 408: Call was unsuccessful. The Facebook API has imploded."
     assert result.failure_type == FailureType.system_error
