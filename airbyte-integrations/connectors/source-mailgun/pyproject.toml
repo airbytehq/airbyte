@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.2"
+version = "0.2.6"
 name = "source-mailgun"
 description = "Source implementation for Mailgun."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -23,6 +23,5 @@ airbyte-cdk = "^0"
 source-mailgun = "source_mailgun.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest-mock = "^3.6"
-pytest = "^6.1"
-
+pytest-mock = "^3.6.1"
+pytest = "^6.2"
