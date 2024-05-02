@@ -53,6 +53,10 @@ List of available streams:
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 0.5.4 | 2024-04-19 | [37215](https://github.com/airbytehq/airbyte/pull/37215) | Updating to 0.80.0 CDK |
+| 0.5.3 | 2024-04-18 | [37215](https://github.com/airbytehq/airbyte/pull/37215) | Manage dependencies with Poetry. |
+| 0.5.2 | 2024-04-15 | [37215](https://github.com/airbytehq/airbyte/pull/37215) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.5.1 | 2024-04-12 | [37215](https://github.com/airbytehq/airbyte/pull/37215) | schema descriptions |
 | 0.5.0 | 2023-09-20 | [30639](https://github.com/airbytehq/airbyte/pull/30639) | Add Call Purposes and Call Dispositions streams
 | 0.4.0 | 2023-06-14 | [27343](https://github.com/airbytehq/airbyte/pull/27343) | Add Users, Tasks, Templates, Snippets streams
 | 0.3.0 | 2023-05-17 | [26211](https://github.com/airbytehq/airbyte/pull/26211) | Add SequenceStates Stream

@@ -10,7 +10,6 @@ import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility
 import io.airbyte.cdk.integrations.base.Destination
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.commons.concurrency.VoidCallable
-import io.airbyte.commons.functional.CheckedFunction
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.resources.MoreResources
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
@@ -50,7 +49,7 @@ class SshWrappedDestination : Destination {
     override fun spec(): ConnectorSpecification {
         // inject the standard ssh configuration into the spec.
         val originalSpec = delegate.spec()
-        val propNode = originalSpec!!.connectionSpecification["properties"] as ObjectNode
+        val propNode = originalSpec.connectionSpecification["properties"] as ObjectNode
         propNode.set<JsonNode>(
             "tunnel_method",
             Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json"))
@@ -62,24 +61,9 @@ class SshWrappedDestination : Destination {
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
         try {
             return if ((endPointKey != null))
-                SshTunnel.Companion.sshWrap<AirbyteConnectionStatus?>(
-                    config,
-                    endPointKey,
-                    CheckedFunction<JsonNode, AirbyteConnectionStatus?, Exception?> {
-                        config: JsonNode ->
-                        delegate.check(config)
-                    }
-                )
+                SshTunnel.sshWrap(config, endPointKey) { c: JsonNode -> delegate.check(c) }
             else
-                SshTunnel.Companion.sshWrap<AirbyteConnectionStatus?>(
-                    config,
-                    hostKey!!,
-                    portKey!!,
-                    CheckedFunction<JsonNode, AirbyteConnectionStatus?, Exception?> {
-                        config: JsonNode ->
-                        delegate.check(config)
-                    }
-                )
+                SshTunnel.sshWrap(config, hostKey!!, portKey!!) { c: JsonNode -> delegate.check(c) }
         } catch (e: RuntimeException) {
             val sshErrorMessage =
                 "Could not connect with provided SSH configuration. Error: " + e.message

@@ -43,6 +43,89 @@ definitions:
       path: "/v1/Workspaces"
       primary_key: "sid"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          timeout_actvity_name:
+            description: The name of the activity that tasks are routed to on timeout.
+            type:
+              - "null"
+              - string
+          events_filter:
+            description:
+              Filter for specifying which events should be sent to the
+              callback URL.
+            type:
+              - "null"
+              - string
+          date_updated:
+            description: The date and time when the workspace was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+          friendly_name:
+            description: A user-friendly name for the workspace.
+            type:
+              - "null"
+              - string
+          timeout_activity_sid:
+            description:
+              The unique identifier for the activity that tasks are routed
+              to on timeout.
+            type:
+              - "null"
+              - string
+          account_sid:
+            description:
+              The unique identifier for the account associated with the
+              workspace.
+            type:
+              - "null"
+              - string
+          default_acitvity_name:
+            description: The name of the default activity for the workspace.
+            type:
+              - "null"
+              - string
+          multi_task_enabled:
+            description: Indicates whether multitasking is enabled for the workspace.
+            type:
+              - "null"
+              - boolean
+          event_callback_url:
+            description: The URL to which taskrouter events will be sent.
+            type:
+              - "null"
+              - string
+          sid:
+            description: The unique identifier for the workspace.
+            type:
+              - "null"
+              - string
+          url:
+            description: The URL of the workspace.
+            type:
+              - "null"
+              - string
+          date_created:
+            description: The date and time when the workspace was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+          default_activity_sid:
+            description: The unique identifier for the default activity of the workspace.
+            type:
+              - "null"
+              - string
+          links:
+            description: Links related to the workspace.
+            type:
+              - "null"
+              - object
   workspace_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -65,6 +148,83 @@ definitions:
       partition_router:
         $ref: "#/definitions/workspace_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          account_sid:
+            description:
+              The unique identifier for the account that this worker belongs
+              to.
+            type:
+              - "null"
+              - string
+          date_created:
+            description: The date and time when the worker was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+          date_updated:
+            description: The date and time when the worker was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+          workspace_sid:
+            description:
+              The unique identifier for the workspace that this worker
+              belongs to.
+            type:
+              - "null"
+              - string
+          attributes:
+            description: Custom attributes or metadata associated with the worker.
+            type:
+              - "null"
+              - string
+          date_status_changed:
+            description: The date and time when the worker's status was last changed.
+            type:
+              - "null"
+              - string
+            format: date-time
+          friendly_name:
+            description: A friendly name or label for the worker.
+            type:
+              - "null"
+              - string
+          available:
+            description: Indicates if the worker is available for tasks.
+            type:
+              - "null"
+              - boolean
+          sid:
+            description: The unique identifier for the worker.
+            type:
+              - "null"
+              - string
+          actvity_name:
+            description: The name of the current activity of the worker.
+            type:
+              - "null"
+              - string
+          activity_sid:
+            description: The unique identifier of the current activity of the worker.
+            type:
+              - "null"
+              - string
+          url:
+            description: The resource URL for accessing details of the worker.
+            type:
+              - "null"
+              - string
+          links:
+            description: Related resource URIs for the worker.
+            type:
+              - "null"
+              - object
 streams:
   - "#/definitions/workspaces_stream"
   - "#/definitions/workers_stream"
