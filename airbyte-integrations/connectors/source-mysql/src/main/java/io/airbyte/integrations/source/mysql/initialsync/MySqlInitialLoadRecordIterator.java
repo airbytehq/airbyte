@@ -4,10 +4,10 @@
 
 package io.airbyte.integrations.source.mysql.initialsync;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
 import com.mysql.cj.MysqlType;
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
+import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -37,8 +37,8 @@ import org.slf4j.LoggerFactory;
  * records processed here.
  */
 @SuppressWarnings("try")
-public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
-    implements AutoCloseableIterator<JsonNode> {
+public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteRecordData>
+    implements AutoCloseableIterator<AirbyteRecordData> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlInitialLoadRecordIterator.class);
 
@@ -54,7 +54,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
   private final PrimaryKeyInfo pkInfo;
   private final boolean isCompositeKeyLoad;
   private int numSubqueries = 0;
-  private AutoCloseableIterator<JsonNode> currentIterator;
+  private AutoCloseableIterator<AirbyteRecordData> currentIterator;
 
   MySqlInitialLoadRecordIterator(
                                  final JdbcDatabase database,
@@ -78,7 +78,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
 
   @CheckForNull
   @Override
-  protected JsonNode computeNext() {
+  protected AirbyteRecordData computeNext() {
     if (shouldBuildNextSubquery()) {
       try {
         // We will only issue one query for a composite key load. If we have already processed all the data
@@ -93,8 +93,8 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
         }
 
         LOGGER.info("Subquery number : {}", numSubqueries);
-        final Stream<JsonNode> stream = database.unsafeQuery(
-            this::getPkPreparedStatement, sourceOperations::rowToJson);
+        final Stream<AirbyteRecordData> stream = database.unsafeQuery(
+            this::getPkPreparedStatement, sourceOperations::convertDatabaseRowToAirbyteRecordData);
 
         currentIterator = AutoCloseableIterators.fromStream(stream, pair);
         numSubqueries++;

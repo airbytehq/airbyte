@@ -43,18 +43,10 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
             val columnName = queryContext.metaData.getColumnName(i)
             val columnTypeName = queryContext.metaData.getColumnTypeName(i)
             try {
-                // attempt to access the column. this allows us to know if it is null before we do
-                // type-specific
-                // parsing. if it is null, we can move on. while awkward, this seems to be the
-                // agreed upon way of checking for null values with jdbc.
-                queryContext.getObject(i)
-                if (queryContext.wasNull()) {
-                    continue
-                }
-
                 // convert to java types that will convert into reasonable json.
                 copyToJsonField(queryContext, i, jsonNode)
             } catch (e: java.lang.Exception) {
+                jsonNode.putNull(columnName)
                 LOGGER.info(
                     "Failed to serialize column: {}, of type {}, with error {}",
                     columnName,
@@ -76,9 +68,9 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
         return AirbyteRecordData(jsonNode, AirbyteRecordMessageMeta().withChanges(metaChanges))
     }
     @Throws(SQLException::class)
-    override fun rowToJson(queryContext: ResultSet): JsonNode {
+    override fun rowToJson(queryResult: ResultSet): JsonNode {
         // the first call communicates with the database. after that the result is cached.
-        val columnCount = queryContext.metaData.columnCount
+        val columnCount = queryResult.metaData.columnCount
         val jsonNode = Jsons.jsonNode(emptyMap<Any, Any>()) as ObjectNode
 
         for (i in 1..columnCount) {
@@ -87,13 +79,13 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
             // parsing. if it is null, we can move on. while awkward, this seems to be the agreed
             // upon way of
             // checking for null values with jdbc.
-            queryContext.getObject(i)
-            if (queryContext.wasNull()) {
+            queryResult.getObject(i)
+            if (queryResult.wasNull()) {
                 continue
             }
 
             // convert to java types that will convert into reasonable json.
-            copyToJsonField(queryContext, i, jsonNode)
+            copyToJsonField(queryResult, i, jsonNode)
         }
 
         return jsonNode
@@ -342,7 +334,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
-    protected fun setBit(
+    protected open fun setBit(
         preparedStatement: PreparedStatement?,
         parameterIndex: Int,
         value: String?

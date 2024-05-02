@@ -794,7 +794,7 @@ class Stream(HttpStream, ABC):
     @property
     @lru_cache()
     def properties(self) -> Mapping[str, Any]:
-        """Some entities has dynamic set of properties, so we trying to resolve those at runtime"""
+        """Some entities have dynamic set of properties, so we're trying to resolve those at runtime"""
         props = {}
         if not self.entity:
             return props

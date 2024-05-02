@@ -4,6 +4,7 @@
 package io.airbyte.cdk.integrations.destination.staging
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
+import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig
@@ -39,17 +40,17 @@ internal class AsyncFlush(
     // the batch size, the AsyncFlusher will flush in smaller batches which allows for memory to be
     // freed earlier similar to a sliding window effect
     override val optimalBatchSizeBytes: Long,
-    private val useDestinationsV2Columns: Boolean
+    private val destinationColumns: JavaBaseConstants.DestinationColumns
 ) : DestinationFlushFunction {
 
     @Throws(Exception::class)
-    override fun flush(decs: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
+    override fun flush(streamDescriptor: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
         val writer: CsvSerializedBuffer
         try {
             writer =
                 CsvSerializedBuffer(
                     FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX),
-                    StagingDatabaseCsvSheetGenerator(useDestinationsV2Columns),
+                    StagingDatabaseCsvSheetGenerator(destinationColumns),
                     true
                 )
 
@@ -76,16 +77,16 @@ internal class AsyncFlush(
 
         writer.flush()
         logger.info {
-            "Flushing CSV buffer for stream ${decs.name} (${FileUtils.byteCountToDisplaySize(writer.byteCount)}) to staging"
+            "Flushing CSV buffer for stream ${streamDescriptor.name} (${FileUtils.byteCountToDisplaySize(writer.byteCount)}) to staging"
         }
-        require(streamDescToWriteConfig.containsKey(decs)) {
+        require(streamDescToWriteConfig.containsKey(streamDescriptor)) {
             String.format(
                 "Message contained record from a stream that was not in the catalog. \ncatalog: %s",
                 Jsons.serialize(catalog)
             )
         }
 
-        val writeConfig: WriteConfig = streamDescToWriteConfig.getValue(decs)
+        val writeConfig: WriteConfig = streamDescToWriteConfig.getValue(streamDescriptor)
         val schemaName: String = writeConfig.outputSchemaName
         val stageName = stagingOperations!!.getStageName(schemaName, writeConfig.outputTableName)
         val stagingPath =
