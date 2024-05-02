@@ -66,12 +66,12 @@ data:
               ]
       2.1.0:
         message:
-          "This upgrade changes the `Product Images` and `Product Variants` streams to use `Shopify GraphQL BULK`.
+          "This upgrade changes the `Products`, `Product Images` and `Product Variants` streams to use `Shopify GraphQL BULK`.
           More details here: https://github.com/airbytehq/airbyte/pull/37767."
         upgradeDeadline: "2024-06-10"
         scopedImpact:
           - scopeType: stream
-            impactedScopes: ["product_images", "product_variants"]
+            impactedScopes: ["product_variants"]
   suggestedStreams:
     streams:
       - customers

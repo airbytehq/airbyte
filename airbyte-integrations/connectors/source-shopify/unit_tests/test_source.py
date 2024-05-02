@@ -73,19 +73,18 @@ def config(basic_config) -> dict:
         (MetafieldProductVariants, None, "graphql.json"),
         (MetafieldLocations, None, "graphql.json"),
         (MetafieldCollections, None, "graphql.json"),
+        (Products, None, "graphql.json"),
         (ProductImages, None, "graphql.json"),
         (ProductVariants, None, "graphql.json"),
-        # 
+        # Nested Substreams
+        (OrderRefunds, None, ""),
+        # regular streams
         (MetafieldSmartCollections, {"id": 123}, "smart_collections/123/metafields.json"),
         (MetafieldPages, {"id": 123}, "pages/123/metafields.json"),
         (MetafieldShops, None, "metafields.json"),
-        # Nested Substreams
-        (OrderRefunds, None, ""),
-        # 
         (Customers, None, "customers.json"),
         (Orders, None, "orders.json"),
         (DraftOrders, None, "draft_orders.json"),
-        (Products, None, "products.json"),
         (AbandonedCheckouts, None, "checkouts.json"),
         (Collects, None, "collects.json"),
         (TenderTransactions, None, "tender_transactions.json"),

@@ -2,8 +2,9 @@
 
 ## Upgrading to 2.1.0
 This version implements `Shopify GraphQL BULK Operations` to speed up the following streams:
+ - `Products`
  - `Product Images`
- - `Product Variants`
+ - `Product Variants`*
 
 * The `Product Variants` stream now has the cursor field `updated_at`, instead of the `id`.
  

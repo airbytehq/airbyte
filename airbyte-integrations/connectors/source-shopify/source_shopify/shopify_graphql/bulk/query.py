@@ -1506,6 +1506,126 @@ class Transaction(ShopifyBulkQuery):
                     yield self.process_transaction(transaction)
 
 
+class Product(ShopifyBulkQuery):
+    """
+    {
+        products(query: "updated_at:>='2020-01-20T00:00:00+00:00' AND updated_at:<'2024-04-25T00:00:00+00:00'", sortKey:UPDATED_AT) {
+            edges {
+                node {
+                    __typename
+                    id
+                    publishedAt
+                    createdAt
+                    status
+                    vendor
+                    updatedAt
+                    bodyHtml
+                    productType
+                    tags
+                    options {
+                        __typename
+                        id
+                        values
+                        position
+                    }
+                    handle
+                    images {
+                        edges {
+                            node {
+                                __typename
+                                id
+                            }
+                        }
+
+                    }
+                    templateSuffix
+                    title
+                    variants {
+                        edges {
+                            node {
+                                __typename
+                                id
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    query_name = "products"
+    sort_key = "UPDATED_AT"
+    # images property fields
+    images_fields: List[Field] = [Field(name="edges", fields=[Field(name="node", fields=["__typename", "id"])])]
+    # variants property fields, we re-use the same field names as for the `images` property
+    variants_fields: List[Field] = images_fields
+    # main query
+    query_nodes: List[Field] = [
+        "__typename",
+        "id",
+        "publishedAt",
+        "createdAt",
+        "status",
+        "vendor",
+        "updatedAt",
+        "bodyHtml",
+        "productType",
+        "tags",
+        "handle",
+        "templateSuffix",
+        "title",
+        Field(name="options", fields=["id", "name", "values", "position"]),
+        Field(name="images", fields=images_fields),
+        Field(name="variants", fields=variants_fields),
+    ]
+
+    record_composition = {
+        "new_record": "Product",
+        # each product could have `Image` and `ProductVariant` associated with the product
+        "record_components": ["Image", "ProductVariant"],
+    }
+
+    def _process_component(self, entity: List[dict]) -> List[dict]:
+        for item in entity:
+            # remove the `__parentId` from the object
+            if BULK_PARENT_KEY in item:
+                item.pop(BULK_PARENT_KEY)
+            # resolve the id from string
+            item["id"] = self.tools.resolve_str_id(item.get("id"))
+        return entity
+
+    def _process_options(self, options: List[dict], product_id: Optional[int] = None) -> List[dict]:
+        for option in options:
+            # add product_id to each option
+            option["product_id"] = product_id if product_id else None
+        return options
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
+        """
+        Defines how to process collected components.
+        """
+        # get the joined record components collected for the record
+        record_components = record.get("record_components", {})
+
+        # process record components
+        if record_components:
+            record["images"] = self._process_component(record_components.get("Image", []))
+            record["variants"] = self._process_component(record_components.get("ProductVariant", []))
+            record["options"] = self._process_component(record.get("options", []))
+            # add the product_id to the `options`
+            product_id = record.get("id")
+            record["options"] = self._process_options(record.get("options", []), product_id)
+            record.pop("record_components")
+
+        # convert dates from ISO-8601 to RFC-3339
+        record["published_at"] = self.tools.from_iso8601_to_rfc3339(record, "publishedAt")
+        record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+        record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
+
+        yield record
+
+
 class ProductImage(ShopifyBulkQuery):
     """
     {

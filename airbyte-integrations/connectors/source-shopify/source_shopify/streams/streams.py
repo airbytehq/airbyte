@@ -24,6 +24,7 @@ from source_shopify.shopify_graphql.bulk.query import (
     MetafieldProduct,
     MetafieldProductImage,
     MetafieldProductVariant,
+    Product,
     ProductImage,
     ProductVariant,
     Transaction,
@@ -110,10 +111,8 @@ class MetafieldDraftOrders(IncrementalShopifyGraphQlBulkStream):
     bulk_query: MetafieldDraftOrder = MetafieldDraftOrder
 
 
-class Products(IncrementalShopifyStreamWithDeletedEvents):
-    use_cache = True
-    data_field = "products"
-    deleted_events_api_name = "Product"
+class Products(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: Product = Product
 
 
 class ProductsGraphQl(IncrementalShopifyStream):

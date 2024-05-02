@@ -511,6 +511,14 @@ def filfillment_order_jsonl_content_example():
 
 
 @pytest.fixture
+def products_jsonl_content_example():
+    return """{"__typename":"Product","id":"gid:\/\/shopify\/Product\/123","publishedAt":"2021-06-23T01:09:29Z","createdAt":"2021-06-23T01:09:29Z","status":"ACTIVE","vendor":"Blanda, O'Kon and Bartell","updatedAt":"2023-04-20T11:12:26Z","bodyHtml":"Gold and silver glitter iPhone 7 cases with geometric line patterns, stacked","productType":"Music","tags":["developer-tools-generator"],"handle":"gold-silver-iphone-7-case","templateSuffix":null,"title":"Gold Silver iPhone 7 Case","options":[{"id":"gid:\/\/shopify\/ProductOption\/444","name":"Title","values":["Plastic","indigo"],"position":1}]}
+{"__typename":"Image","id":"gid:\/\/shopify\/ProductImage\/111","__parentId":"gid:\/\/shopify\/Product\/123"}
+{"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/111","__parentId":"gid:\/\/shopify\/Product\/123"}
+{"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/222","__parentId":"gid:\/\/shopify\/Product\/123"}\n"""
+
+
+@pytest.fixture
 def product_images_jsonl_content_example():
     return """{"__typename":"Product","id":"gid:\/\/shopify\/Product\/123"}
 {"__typename":"MediaImage","createdAt":"2023-01-06T18:29:17Z","updatedAt":"2023-01-06T18:29:19Z","image":{"url":"https:\/\/cdn.shopify.com\/s\/files\/1\/0580\/3317\/6765\/products\/white-t-shirt.jpg?v=1673029759"},"__parentId":"gid:\/\/shopify\/Product\/123"}
@@ -677,6 +685,53 @@ def fulfillment_orders_response_expected_result():
         "admin_graphql_api_id": "gid://shopify/FulfillmentOrder/2",
         "shop_url": "test_shop",
     }
+
+
+@pytest.fixture
+def products_response_expected_result():
+    return {
+            "id": 123,
+            "published_at": "2021-06-23T01:09:29+00:00",
+            "created_at": "2021-06-23T01:09:29+00:00",
+            "status": "ACTIVE",
+            "vendor": "Blanda, O'Kon and Bartell",
+            "updated_at": "2023-04-20T11:12:26+00:00",
+            "body_html": "Gold and silver glitter iPhone 7 cases with geometric line patterns, stacked",
+            "product_type": "Music",
+            "tags": [
+                "developer-tools-generator"
+            ],
+            "handle": "gold-silver-iphone-7-case",
+            "template_suffix": None,
+            "title": "Gold Silver iPhone 7 Case",
+            "options": [
+                {
+                    "id": 444,
+                    "name": "Title",
+                    "values": [
+                        "Plastic",
+                        "indigo"
+                    ],
+                    "position": 1,
+                    "product_id": 123
+                }
+            ],
+            "admin_graphql_api_id": "gid://shopify/Product/123",
+            "images": [
+                {
+                    "id": 111
+                }
+            ],
+            "variants": [
+                {
+                    "id": 111
+                },
+                {
+                    "id": 222
+                }
+            ],
+            "shop_url": "test_shop"
+        }
 
 
 @pytest.fixture
