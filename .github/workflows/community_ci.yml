@@ -99,6 +99,10 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           subcommand: "connectors --modified test --only-step=qa_checks --only-step=version_inc_check --global-status-check-context='Connectors early CI checks' --global-status-check-description='Running early CI checks on connectors'"
           is_fork: "true"
+          git_repo_url: ${{ github.event.pull_request.head.repo.clone_url }}
+          git_branch: ${{ github.head_ref }}
+          git_revision: ${{ github.event.pull_request.head.sha }}
+          github_token: ${{ github.token }}
       - name: Upload pipeline reports
         id: upload-artifact
         uses: actions/upload-artifact@v4
