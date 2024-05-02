@@ -4,14 +4,12 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Dict
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Dict
 
 import requests
-from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http import HttpStream
+import logging
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from airbyte_protocol.models import SyncMode
 
 
 class UnityStream(HttpStream, ABC):
@@ -22,10 +20,13 @@ class UnityStream(HttpStream, ABC):
     def __init__(self, authenticator, config, **kwargs):
         self.config = config
         self.url_base = self.url_base.replace("%organisation_id%", self.config["organisation_id"])
-        self.offset = None
+        self.offset = 0
         super().__init__(authenticator=authenticator)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if not self.is_paginated:
+            return None
+
         total = response.json().get("total")
         offset = response.json().get("offset")
         limit = response.json().get("limit")
@@ -74,49 +75,46 @@ class Apps(UnityStream):
         return ""
 
 
-class AppsSubStream(UnityStream):
+class AppsSubStream(HttpSubStream, UnityStream):
+    backoff = 120
+    # raise_on_http_errors = False
+    use_cache = False
+    path_suffix = None
+
+    def __init__(self, authenticator: TokenAuthenticator, config, **kwargs):
+        self.config = config
+        super().__init__(
+            authenticator=authenticator,
+            config=config,
+            parent=Apps(authenticator=authenticator, config=config),
+        )
+
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Dict[str, Any]]:
         records = super().parse_response(response, stream_slice, **kwargs)
         for record in records:
             record['organisation_id'] = self.config["organisation_id"]
-            record['campaign_set_id'] = stream_slice["campaign_set_id"]
+            record['campaign_set_id'] = stream_slice["parent"]["id"]
             yield record
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        apps_stream = Apps(authenticator=self._session.auth, config=self.config)
-        apps = list(apps_stream.read_records(sync_mode=SyncMode.full_refresh))
-        for app in apps:
-            yield {"campaign_set_id": app["id"]}
-            continue
-
-
-class Campaigns(AppsSubStream):
-    primary_key = "id"
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        campaign_set_id = stream_slice["campaign_set_id"]
-        return f"{campaign_set_id}/campaigns"
+        campaign_set_id = stream_slice["parent"]["id"]
+        return f"{campaign_set_id}/{self.path_suffix}"
+
+
+class Campaigns(AppsSubStream):
+    primary_key = "id"
+    path_suffix = "campaigns"
 
 
 class Creatives(AppsSubStream):
     primary_key = "id"
     is_paginated = True
-
-    def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        campaign_set_id = stream_slice["campaign_set_id"]
-        return f"{campaign_set_id}/creatives"
+    path_suffix = "creatives"
 
 
 class CreativePacks(AppsSubStream):
     primary_key = "id"
     is_paginated = True
-
-    def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        campaign_set_id = stream_slice["campaign_set_id"]
-        return f"{campaign_set_id}/creative-packs"
+    path_suffix = "creative-packs"
