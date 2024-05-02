@@ -223,6 +223,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.25  | 2024-05-02 | [37781](https://github.com/airbytehq/airbyte/pull/37781)   | Adopt latest CDK.
 | 3.3.24  | 2024-05-01 | [37742](https://github.com/airbytehq/airbyte/pull/37742)   | Adopt latest CDK. Remove Debezium retries.                                                                                                      |
 | 3.3.23  | 2024-04-23 | [37507](https://github.com/airbytehq/airbyte/pull/37507)                                                          | Better errors when user switches from CDC to non-CDC mode.                                                                                           |
 | 3.3.22  | 2024-04-22 | [37541](https://github.com/airbytehq/airbyte/pull/37541)   | Adopt latest CDK. reduce excessive logs.                                                                                                        |
