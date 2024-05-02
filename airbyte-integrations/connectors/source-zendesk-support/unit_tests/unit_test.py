@@ -16,6 +16,7 @@ import pytest
 import pytz
 import requests
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_protocol.models import SyncMode
 from source_zendesk_support.source import BasicApiTokenAuthenticator, SourceZendeskSupport
 from source_zendesk_support.streams import (
@@ -1115,6 +1116,14 @@ class TestTicketSubstream:
         assert stream.should_retry(mocked_response) == should_retry
 
 
+def get_stream_by_name(stream_name, config):
+    streams = SourceZendeskSupport().streams(config=config)
+    for stream in streams:
+        if stream.name == stream_name:
+            return stream
+    raise ValueError(f"Stream {stream_name} not found")
+
+
 def test_read_ticket_audits_504_error(requests_mock, caplog):
     requests_mock.get("https://subdomain.zendesk.com/api/v2/ticket_audits", status_code=504, text="upstream request timeout")
     stream = TicketAudits(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
@@ -1133,10 +1142,16 @@ def test_read_ticket_audits_504_error(requests_mock, caplog):
     ],
 )
 def test_validate_response_ticket_audits(start_date, stream_state, audits_response, expected):
-    stream = TicketAudits(subdomain="subdomain", start_date=start_date)
+    stream = get_stream_by_name(
+        "ticket_audits",
+        {"subdomain": "subdomain", "start_date": "2020-01-01T00:00:00Z", "credentials": {
+            "credentials": "api_token",
+            "email": "email",
+            "api_token": "token"
+        }})
     response_mock = Mock()
     response_mock.json.return_value = {"audits": audits_response}
-    assert stream._validate_response(response_mock, stream_state) == expected
+    assert stream.retriever._validate_response(response_mock, stream_state) == expected
 
 
 @pytest.mark.parametrize(
@@ -1147,7 +1162,43 @@ def test_validate_response_ticket_audits(start_date, stream_state, audits_respon
     ],
 )
 def test_validate_response_ticket_audits_handle_empty_response(audits_response, expected):
-    stream = TicketAudits(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    stream = get_stream_by_name(
+        "ticket_audits",
+        {"subdomain": "subdomain", "start_date": "2020-01-01T00:00:00Z", "credentials": {
+            "credentials": "api_token",
+            "email": "email",
+            "api_token": "token"
+        }})
     response_mock = Mock()
     response_mock.json.return_value = audits_response
-    assert stream._validate_response(response_mock, {}) == expected
+    assert stream.retriever._validate_response(response_mock, {}) == expected
+
+
+def test_ticket_audits_read_stream(requests_mock):
+    stream = get_stream_by_name(
+        "ticket_audits",
+        {"subdomain": "subdomain", "start_date": "2020-01-01T00:00:00Z", "credentials": {
+            "credentials": "api_token",
+            "email": "email",
+            "api_token": "token"
+        }})
+    requests_mock.get(
+        "https://subdomain.zendesk.com/api/v2/ticket_audits?sort_by=created_at&sort_order=desc&limit=200",
+        json={"audits": [{"id": 1, "created_at": "2020-01-02T00:00:00Z"}, {"id": 2, "created_at": "2020-01-02T00:00:00Z"}], "before_url": "before_url"}
+    )
+    # next response with cursor values not in needed range
+    requests_mock.get(
+        "https://subdomain.zendesk.com/api/v2/before_url?sort_by=created_at&sort_order=desc&limit=200",
+        json={"audits": [{"id": 3, "created_at": "1999-01-02T00:00:00Z"}, {"id": 4, "created_at": "1999-01-02T00:00:00Z"}], "before_url": "before_url2"}
+    )
+    response_mock = requests_mock.get(
+        "https://subdomain.zendesk.com/api/v2/before_url2?sort_by=created_at&sort_order=desc&limit=200",
+        json={"audits": [{"id": 5, "created_at": "1999-01-02T00:00:00Z"}, {"id": 6, "created_at": "1999-01-02T00:00:00Z"}], "before_url": "before_url3"}
+    )
+    stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2020-01-01T00:00:00Z", "end_time": "2021-01-01T00:00:00Z"})
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
+    records = [dict(r) for r in records]
+    assert records == [{"id": 1, "created_at": "2020-01-02T00:00:00Z"}, {"id": 2, "created_at": "2020-01-02T00:00:00Z"}]
+    assert len(records) == 2
+    # ensure that fetching next pages was stopped as source received old records
+    assert response_mock.call_count == 0

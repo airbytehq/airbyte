@@ -386,7 +386,7 @@ definitions:
   ticket_audits_stream:
     $ref: "#/definitions/semi_incremental_stream"
     retriever:
-      $ref: "#/definitions/semi_incremental_stream/retriever"
+      class_name: "source_zendesk_support.components.TicketAuditsRetriever"
       requester:
         $ref: "#/definitions/retriever/requester"
         request_parameters:
@@ -405,8 +405,21 @@ definitions:
                 - http_codes: [403, 404]
                   action: FAIL
                   error_message: "Skipping stream {{ parameters.get('name') }}, error message: {{ response.get('error') }}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            ["{{ parameters.get('data_path') or parameters.get('name') }}"]
+        schema_normalization: Default
+        record_filter:
+          condition: "{{ record[parameters['cursor_field']] >= stream_state.get(parameters['cursor_field'], config.get('start_date')) }}"
+        $parameters:
+          transformations: [[]]
       paginator:
         type: DefaultPaginator
+        $parameters:
+          url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/
         page_size_option:
           type: RequestOption
           field_name: "limit"
@@ -453,7 +466,7 @@ definitions:
           type: RequestPath
     $parameters:
       name: "ticket_comments"
-      path: "incremental/ticket_events.jsopn"
+      path: "incremental/ticket_events.json"
       cursor_field: "created_at"
       cursor_filter: "start_time"
       primary_key: "id"
