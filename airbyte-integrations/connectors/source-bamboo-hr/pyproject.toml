@@ -22,6 +22,6 @@ airbyte-cdk = "^0"
 source-bamboo-hr = "source_bamboo_hr.run:run"
 
 [tool.poetry.group.dev.dependencies]
-requests-mock = "^1.9.3"
-pytest-mock = "^3.6.1"
-pytest = "^8.0"
+requests-mock = "*"
+pytest-mock = "*"
+pytest = "*"
