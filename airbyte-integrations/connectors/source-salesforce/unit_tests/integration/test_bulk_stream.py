@@ -8,15 +8,14 @@ from unittest import TestCase
 
 import freezegun
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-
-from airbyte_protocol.models import SyncMode, FailureType, AirbyteStreamStatus
+from airbyte_protocol.models import AirbyteStreamStatus, FailureType, SyncMode
 from config_builder import ConfigBuilder
+from integration.test_rest_stream import create_http_request as create_standard_http_request
+from integration.test_rest_stream import create_http_response as create_standard_http_response
 from integration.utils import create_base_url, given_authentication, given_stream, read
-from integration.test_rest_stream import create_http_request as create_standard_http_request, create_http_response as create_standard_http_response
 from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
 from salesforce_job_response_builder import SalesforceJobResponseBuilder
 from source_salesforce.streams import LOOKBACK_SECONDS
-
 
 _A_FIELD_NAME = "a_field"
 _ACCESS_TOKEN = "an_access_token"
@@ -72,7 +71,7 @@ class BulkStreamTest(TestCase):
     def test_when_read_then_create_job_and_extract_records_from_result(self) -> None:
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         self._http_mocker.post(
-            self._create_full_job_creation_request([_A_FIELD_NAME]),
+            self._make_full_job_request([_A_FIELD_NAME]),
             HttpResponse(json.dumps({"id": _JOB_ID})),
         )
         self._http_mocker.get(
@@ -96,7 +95,7 @@ class BulkStreamTest(TestCase):
     def test_given_locator_when_read_then_extract_records_from_both_pages(self):
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         self._http_mocker.post(
-            self._create_full_job_creation_request([_A_FIELD_NAME]),
+            self._make_full_job_request([_A_FIELD_NAME]),
             HttpResponse(json.dumps({"id": _JOB_ID})),
         )
         self._http_mocker.get(
@@ -120,7 +119,7 @@ class BulkStreamTest(TestCase):
     def test_given_job_creation_have_transient_error_when_read_then_sync_properly(self):
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         self._http_mocker.post(
-            self._create_full_job_creation_request([_A_FIELD_NAME]),
+            self._make_full_job_request([_A_FIELD_NAME]),
             [
                 _RETRYABLE_RESPONSE,
                 HttpResponse(json.dumps({"id": _JOB_ID})),
@@ -144,7 +143,7 @@ class BulkStreamTest(TestCase):
     def test_given_bulk_restrictions_when_read_then_switch_to_standard(self):
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         self._http_mocker.post(
-            self._create_full_job_creation_request([_A_FIELD_NAME]),
+            self._make_full_job_request([_A_FIELD_NAME]),
             [
                 HttpResponse("[{}]", 403),
                 HttpResponse(json.dumps({"id": _JOB_ID})),
@@ -162,7 +161,7 @@ class BulkStreamTest(TestCase):
     def test_given_non_transient_error_on_job_creation_when_read_then_fail_sync(self):
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         self._http_mocker.post(
-            self._create_full_job_creation_request([_A_FIELD_NAME]),
+            self._make_full_job_request([_A_FIELD_NAME]),
             HttpResponse(json.dumps([{"errorCode": "API_ERROR", "message": "Implementation restriction... <can't complete the error message as I can't reproduce this issue>"}]), 400),
         )
 
@@ -173,7 +172,7 @@ class BulkStreamTest(TestCase):
     def test_given_job_is_aborted_when_read_then_fail_sync(self):
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         self._http_mocker.post(
-            self._create_full_job_creation_request([_A_FIELD_NAME]),
+            self._make_full_job_request([_A_FIELD_NAME]),
             HttpResponse(json.dumps({"id": _JOB_ID})),
         )
         self._http_mocker.get(
@@ -189,7 +188,7 @@ class BulkStreamTest(TestCase):
     def test_given_job_is_failed_when_read_then_switch_to_standard(self):
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         self._http_mocker.post(
-            self._create_full_job_creation_request([_A_FIELD_NAME]),
+            self._make_full_job_request([_A_FIELD_NAME]),
             HttpResponse(json.dumps({"id": _JOB_ID})),
         )
         self._http_mocker.get(
@@ -209,7 +208,7 @@ class BulkStreamTest(TestCase):
     def test_given_retryable_error_on_download_job_result_when_read_then_extract_records(self):
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         self._http_mocker.post(
-            self._create_full_job_creation_request([_A_FIELD_NAME]),
+            self._make_full_job_request([_A_FIELD_NAME]),
             HttpResponse(json.dumps({"id": _JOB_ID})),
         )
         self._http_mocker.get(
@@ -232,7 +231,7 @@ class BulkStreamTest(TestCase):
     def test_given_retryable_error_on_delete_job_result_when_read_then_do_not_break(self):
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         self._http_mocker.post(
-            self._create_full_job_creation_request([_A_FIELD_NAME]),
+            self._make_full_job_request([_A_FIELD_NAME]),
             HttpResponse(json.dumps({"id": _JOB_ID})),
         )
         self._http_mocker.get(
@@ -263,7 +262,7 @@ class BulkStreamTest(TestCase):
         """
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         self._http_mocker.post(
-            self._create_full_job_creation_request([_A_FIELD_NAME]),
+            self._make_full_job_request([_A_FIELD_NAME]),
             HttpResponse(json.dumps({"id": _JOB_ID})),
         )
         self._http_mocker.get(
@@ -305,7 +304,7 @@ class BulkStreamTest(TestCase):
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, _INCREMENTAL_SCHEMA_BUILDER)
         self._create_sliced_job(start_date, first_upper_boundary, _INCREMENTAL_FIELDS, "first_slice_job_id", record_count=2)
         self._http_mocker.post(
-            self._create_sliced_job_creation_request(first_upper_boundary, second_upper_boundary, _INCREMENTAL_FIELDS),
+            self._make_sliced_job_request(first_upper_boundary, second_upper_boundary, _INCREMENTAL_FIELDS),
             HttpResponse("", status_code=400),
         )
         self._create_sliced_job(second_upper_boundary, _NOW, _INCREMENTAL_FIELDS, "third_slice_job_id", record_count=1)
@@ -317,7 +316,7 @@ class BulkStreamTest(TestCase):
 
     def _create_sliced_job(self, lower_boundary: datetime, upper_boundary: datetime, fields: List[str], job_id: str, record_count: int) -> None:
         self._http_mocker.post(
-            self._create_sliced_job_creation_request(lower_boundary, upper_boundary, fields),
+            self._make_sliced_job_request(lower_boundary, upper_boundary, fields),
             HttpResponse(json.dumps({"id": job_id})),
         )
         self._http_mocker.get(
@@ -337,10 +336,10 @@ class BulkStreamTest(TestCase):
             HttpResponse(""),
         )
 
-    def _create_sliced_job_creation_request(self, lower_boundary: datetime, upper_boundary: datetime, fields: List[str]) -> HttpRequest:
+    def _make_sliced_job_request(self, lower_boundary: datetime, upper_boundary: datetime, fields: List[str]) -> HttpRequest:
         return self._build_job_creation_request(f"SELECT {', '.join(fields)} FROM a_stream_name WHERE SystemModstamp >= {lower_boundary.isoformat(timespec='milliseconds')} AND SystemModstamp < {upper_boundary.isoformat(timespec='milliseconds')}")
 
-    def _create_full_job_creation_request(self, fields: List[str]) -> HttpRequest:
+    def _make_full_job_request(self, fields: List[str]) -> HttpRequest:
         return self._build_job_creation_request(f"SELECT {', '.join(fields)} FROM a_stream_name")
 
     def _generate_csv(self, fields: List[str], count: int = 1) -> str:

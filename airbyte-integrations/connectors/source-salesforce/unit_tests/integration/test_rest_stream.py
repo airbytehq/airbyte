@@ -3,7 +3,7 @@
 import json
 import urllib.parse
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, List, Optional
 from unittest import TestCase
 
 import freezegun
