@@ -476,7 +476,21 @@ definitions:
   ticket_forms_stream:
     $ref: "#/definitions/semi_incremental_stream"
     retriever:
-      $ref: "#/definitions/semi_incremental_stream/retriever"
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [ 403 ]
+                  action: FAIL  # fail as this stream used to define enterprise plan
+                  error_message: "Skipping stream {{ parameters.get('name') }}, error message: {{ response.get('error') }}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
       paginator:
         type: DefaultPaginator
         pagination_strategy:

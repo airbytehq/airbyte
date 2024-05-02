@@ -16,7 +16,6 @@ import pytest
 import pytz
 import requests
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_protocol.models import SyncMode
 from source_zendesk_support.source import BasicApiTokenAuthenticator, SourceZendeskSupport
 from source_zendesk_support.streams import (
@@ -180,6 +179,41 @@ def test_check(response, start_date, check_passed):
         assert check_passed == ok
         if ok:
             mock_method.assert_called()
+
+
+@pytest.mark.parametrize(
+    "ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason",
+    [
+        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 35, [], None),
+        (
+            '{"error": "Not sufficient permissions"}',
+            403,
+            32,
+            [
+                "An exception occurred while trying to access TicketForms stream: Request to https://sandbox.zendesk.com/api/v2/ticket_forms failed with status code 403 and error message Not sufficient permissions. Skipping this stream."
+            ],
+            None,
+        ),
+        (
+            "",
+            404,
+            32,
+            [
+                "An exception occurred while trying to access TicketForms stream: Request to https://sandbox.zendesk.com/api/v2/ticket_forms failed with status code 404 and error message None. Skipping this stream."
+            ],
+            "Not Found",
+        ),
+    ],
+    ids=["forms_accessible", "forms_inaccessible", "forms_not_exists"],
+)
+def test_full_access_streams(caplog, requests_mock, ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason):
+    requests_mock.get("/api/v2/ticket_forms", status_code=status_code, text=ticket_forms_response, reason=reason)
+    result = SourceZendeskSupport().streams(config=TEST_CONFIG)
+    assert len(result) == expected_n_streams
+    logged_warnings = (record for record in caplog.records if record.levelname == "WARNING")
+    for msg in expected_warnings:
+        assert msg in next(logged_warnings).message
+
 
 @pytest.fixture(autouse=True)
 def time_sleep_mock(mocker):
@@ -1079,3 +1113,41 @@ class TestTicketSubstream:
         stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
         mocked_response = Mock(status_code=status_code)
         assert stream.should_retry(mocked_response) == should_retry
+
+
+def test_read_ticket_audits_504_error(requests_mock, caplog):
+    requests_mock.get("https://subdomain.zendesk.com/api/v2/ticket_audits", status_code=504, text="upstream request timeout")
+    stream = TicketAudits(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    expected_message = "Skipping stream `ticket_audits`. Timed out waiting for response: upstream request timeout..."
+    read_full_refresh(stream)
+    assert expected_message in (record.message for record in caplog.records if record.levelname == "ERROR")
+
+
+@pytest.mark.parametrize(
+    "start_date, stream_state, audits_response, expected",
+    [
+        ("2020-01-01T00:00:00Z", {}, [{"created_at": "2020-01-01T00:00:00Z"}], True),
+        ("2020-01-01T00:00:00Z", {}, [{"created_at": "1990-01-01T00:00:00Z"}], False),
+        ("2020-01-01T00:00:00Z", {"created_at": "2021-01-01T00:00:00Z"}, [{"created_at": "2022-01-01T00:00:00Z"}], True),
+        ("2020-01-01T00:00:00Z", {"created_at": "2021-01-01T00:00:00Z"}, [{"created_at": "1990-01-01T00:00:00Z"}], False),
+    ],
+)
+def test_validate_response_ticket_audits(start_date, stream_state, audits_response, expected):
+    stream = TicketAudits(subdomain="subdomain", start_date=start_date)
+    response_mock = Mock()
+    response_mock.json.return_value = {"audits": audits_response}
+    assert stream._validate_response(response_mock, stream_state) == expected
+
+
+@pytest.mark.parametrize(
+    "audits_response, expected",
+    [
+        ({"no_audits": []}, False),
+        ({}, False),
+    ],
+)
+def test_validate_response_ticket_audits_handle_empty_response(audits_response, expected):
+    stream = TicketAudits(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    response_mock = Mock()
+    response_mock.json.return_value = audits_response
+    assert stream._validate_response(response_mock, {}) == expected
