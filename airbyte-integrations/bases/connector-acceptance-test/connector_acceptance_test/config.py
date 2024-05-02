@@ -204,7 +204,7 @@ class FutureStateConfig(BaseConfig):
 
 
 class CheckpointingStrategies(str, Enum):
-    use_progression = "use_progression"
+    use_state_variation = "use_state_variation"
     use_latest_state = "use_latest_state"
 
 
@@ -217,7 +217,7 @@ class CheckpointingStrategyPerStreamConfiguration(BaseConfig):
 
 class CheckpointingStrategyConfiguration(BaseConfig):
     strategy: CheckpointingStrategies = Field(
-        default=CheckpointingStrategies.use_progression, description="Define what state to use during test checkpointing."
+        default=CheckpointingStrategies.use_state_variation, description="Define what state to use during test checkpointing."
     )
     streams: List[CheckpointingStrategyPerStreamConfiguration] = Field(
         default_factory=list, description="Define what state to use during test checkpointing per stream."
@@ -238,7 +238,7 @@ class IncrementalConfig(BaseConfig):
         description=(
             "Select a strategy for testing connector checkpointing. "
             "There are two available options: we can decide whether to use only the last state message or more. "
-            "When selecting `use_progression`, it's important to note that in order to prevent spamming APIs, "
+            "When selecting `use_state_variation`, it's important to note that in order to prevent spamming APIs, "
             "we test only a subset of batches, excluding the first and last states to mitigate potential corner cases."
         ),
     )

@@ -3,8 +3,9 @@
 #
 
 import json
+import operator
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, MutableMapping, Tuple, Union
+from typing import Any, Dict, List, Iterator, Mapping, MutableMapping, Tuple, Union
 
 import pytest
 from airbyte_protocol.models import AirbyteMessage, AirbyteStateMessage, AirbyteStateType, ConfiguredAirbyteCatalog, SyncMode, Type
@@ -185,7 +186,7 @@ class TestIncremental(BaseTest):
 
             states_1 = filter_output(output_1, type_=Type.STATE)
             # We sometimes have duplicate identical state messages in a stream which we can filter out to speed things up
-            unique_state_messages = [message for index, message in enumerate(states_1) if message not in states_1[:index]]
+            unique_state_messages = self.get_unique_state_messages(states_1)
             if checkpoint_testing_strategy == CheckpointingStrategies.use_latest_state:
                 unique_state_messages = unique_state_messages[-1:]
 
@@ -199,26 +200,24 @@ class TestIncremental(BaseTest):
             if len(unique_state_messages) == 0:
                 continue
 
-            if checkpoint_testing_strategy == CheckpointingStrategies.use_progression:
+            if checkpoint_testing_strategy == CheckpointingStrategies.use_state_variation:
                 if len(unique_state_messages) < 3:
                     continue
-
-            # For legacy state format, the final state message contains the final state of all streams. For per-stream state format,
-            # the complete final state of streams must be assembled by going through all prior state messages received
-            is_per_stream = is_per_stream_state(states_1[-1])
 
             # To avoid spamming APIs we only test a fraction of batches (4 or 5 states by default)
             min_batches_to_test = 5
             sample_rate = (len(unique_state_messages) // min_batches_to_test) or 1
 
             mutating_stream_name_to_per_stream_state = dict()
-            for idx, state_message in enumerate(unique_state_messages):
+            expected_record_count_per_state = self.get_expected_record_count_per_state(unique_state_messages)
+            for idx, state_message_data in enumerate(expected_record_count_per_state):
+                state_message, expected_records_count = state_message_data
                 assert state_message.type == Type.STATE
 
                 is_first_state_message = idx == 0
                 is_last_state_message = idx == len(unique_state_messages) - 1
 
-                if checkpoint_testing_strategy == CheckpointingStrategies.use_progression:
+                if checkpoint_testing_strategy == CheckpointingStrategies.use_state_variation:
                     # if first state message, skip
                     # this is because we cannot assert if the first state message will result in new records
                     # as in this case it is possible for a connector to return an empty state message when it first starts.
@@ -237,9 +236,7 @@ class TestIncremental(BaseTest):
                     if is_last_state_message:
                         continue
 
-                state_input, mutating_stream_name_to_per_stream_state = self.get_next_state_input(
-                    state_message, mutating_stream_name_to_per_stream_state, is_per_stream
-                )
+                state_input, mutating_stream_name_to_per_stream_state = self.get_next_state_input(state_message, mutating_stream_name_to_per_stream_state)
 
                 output_N = await docker_runner.call_read_with_state(
                     connector_config, configured_catalog_for_incremental_per_stream, state=state_input
@@ -248,14 +245,14 @@ class TestIncremental(BaseTest):
 
                 assert (
                     # We assume that the output may be empty when we read the latest state, or it must produce some data if we are in the middle of our progression
-                    records_N
+                    len(records_N) >= expected_records_count
                     or is_last_state_message
-                ), f"Read {idx + 2} of {len(unique_state_messages)} should produce at least one record.\n\n state: {state_input} \n\n records_{idx + 2}: {records_N}"
+                ), f"Read {idx + 1} of {len(unique_state_messages)} should produce at least one record.\n\n state: {state_input} \n\n records_{idx + 1}: {records_N}"
 
                 diff = naive_diff_records(records_1, records_N)
                 assert (
                     diff
-                ), f"Records for subsequent reads with new state should be different.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_{idx + 2}: {records_N} \n\n diff: {diff}"
+                ), f"Records for subsequent reads with new state should be different.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_{idx + 1}: {records_N} \n\n diff: {diff}"
 
     async def test_state_with_abnormally_large_values(
         self, connector_config, configured_catalog, future_state, docker_runner: ConnectorRunner
@@ -273,23 +270,67 @@ class TestIncremental(BaseTest):
     def get_next_state_input(
         self,
         state_message: AirbyteStateMessage,
-        stream_name_to_per_stream_state: MutableMapping,
-        is_per_stream,
+        stream_name_to_per_stream_state: MutableMapping
     ) -> Tuple[Union[List[MutableMapping], MutableMapping], MutableMapping]:
-        if is_per_stream:
-            # Including all the latest state values from previous batches, update the combined stream state
-            # with the current batch's stream state and then use it in the following read() request
-            current_state = state_message.state
-            if current_state and current_state.type == AirbyteStateType.STREAM:
-                per_stream = current_state.stream
-                if per_stream.stream_state:
-                    stream_name_to_per_stream_state[per_stream.stream_descriptor.name] = (
-                        per_stream.stream_state.dict() if per_stream.stream_state else {}
-                    )
-            state_input = [
-                {"type": "STREAM", "stream": {"stream_descriptor": {"name": stream_name}, "stream_state": stream_state}}
-                for stream_name, stream_state in stream_name_to_per_stream_state.items()
-            ]
-            return state_input, stream_name_to_per_stream_state
-        else:
-            return state_message.state.data, state_message.state.data
+        # Including all the latest state values from previous batches, update the combined stream state
+        # with the current batch's stream state and then use it in the following read() request
+        current_state = state_message.state
+        if current_state and current_state.type == AirbyteStateType.STREAM:
+            per_stream = current_state.stream
+            if per_stream.stream_state:
+                stream_name_to_per_stream_state[per_stream.stream_descriptor.name] = (
+                    per_stream.stream_state.dict() if per_stream.stream_state else {}
+                )
+        state_input = [
+            {"type": "STREAM", "stream": {"stream_descriptor": {"name": stream_name}, "stream_state": stream_state}}
+            for stream_name, stream_state in stream_name_to_per_stream_state.items()
+        ]
+        return state_input, stream_name_to_per_stream_state
+
+    def get_unique_state_messages(self, states: List[AirbyteStateMessage]) -> List[AirbyteStateMessage]:
+        """
+        Validates a list of state messages to ensure that consecutive messages with the same stream state are represented by only the first message, while subsequent duplicates are ignored.
+        """
+        # If there is only one state message or less, the list is considered to be unique
+        if len(states) <= 1:
+            return states
+
+        # Define a function to get the stream state attribute from an AirbyteStateMessage object
+        get_state = operator.attrgetter("state.stream.stream_state")
+
+        current_idx = 0
+        result = []
+
+        # Iterate through the list of state messages
+        while current_idx < len(states) - 1:
+            next_idx = current_idx + 1
+            # Check if consecutive messages have the same stream state
+            while get_state(states[current_idx]) == get_state(states[next_idx]) and next_idx < len(states) - 1:
+                next_idx += 1
+            # Append the first message with a unique stream state to the result list
+            result.append(states[current_idx])
+            # If the last message has a different stream state than the previous one, append it to the result list
+            if next_idx == len(states) - 1 and get_state(states[current_idx]) != get_state(states[next_idx]):
+                result.append(states[next_idx])
+            current_idx = next_idx
+
+        return result
+
+    def get_expected_record_count_per_state(self, states: List[AirbyteStateMessage]) -> Iterator[Tuple[AirbyteStateMessage, float]]:
+        """
+        Calculates the expected record count per state based on the total record count and distribution across states.
+        """
+        if not states:
+            raise Exception("`states` expected to be a non empty list.")
+
+        # Define a function to get the record count attribute from a AirbyteStateMessage object
+        get_record_count = operator.attrgetter("state.sourceStats.recordCount")
+
+        # Calculate the total record count across all states
+        total_count = sum(map(get_record_count, states))
+
+        # Zip the StateMessage objects with their expected record counts
+        return zip(
+            states,
+            [total_count - sum(map(get_record_count, states[:idx + 1])) for idx in range(len(states))]
+        )
