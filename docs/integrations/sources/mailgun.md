@@ -41,7 +41,7 @@ Just pass the generated API key for establishing the connection.
 The MailGun source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
-| :---------------------------- | :--------- |
+|:------------------------------|:-----------|
 | Full Refresh Sync             | Yes        |
 | Incremental Sync              | Yes        |
 | Replicate Incremental Deletes | No         |
