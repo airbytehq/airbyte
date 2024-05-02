@@ -182,13 +182,18 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   @Override
   public boolean supportResumableFullRefresh(final JdbcDatabase database, final ConfiguredAirbyteStream airbyteStream) {
     // for CDC, primary key is stored in stream.sourceDefinedPrimaryKey.
-    if (airbyteStream.getStream() != null && airbyteStream.getStream().getSourceDefinedPrimaryKey() != null
-        && !airbyteStream.getStream().getSourceDefinedPrimaryKey().isEmpty()) {
-      return true;
-    }
-    // for cursor based, primary key is stored in primary key under this stream.
-    if (airbyteStream.getPrimaryKey() != null && !airbyteStream.getPrimaryKey().isEmpty()) {
-      return true;
+    var sourceConfig = database.getSourceConfig();
+
+    if (isCdc(sourceConfig)) {
+      if (airbyteStream.getStream() != null && airbyteStream.getStream().getSourceDefinedPrimaryKey() != null
+          && !airbyteStream.getStream().getSourceDefinedPrimaryKey().isEmpty()) {
+        return true;
+      }
+    } else {
+      // for cursor based, primary key is stored in primary key under this stream.
+      if (airbyteStream.getPrimaryKey() != null && !airbyteStream.getPrimaryKey().isEmpty()) {
+        return true;
+      }
     }
     return false;
   }

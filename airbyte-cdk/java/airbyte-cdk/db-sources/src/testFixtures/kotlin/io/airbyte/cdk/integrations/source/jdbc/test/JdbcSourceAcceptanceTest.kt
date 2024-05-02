@@ -400,11 +400,9 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             actualRecordMessages,
             Matchers.containsInAnyOrder<Any>(*expectedMessagesResult.toTypedArray())
         )
+        val stateMessages = extractStateMessage(actualMessages)
+        validateFullRefreshStateMessageReadSuccess(stateMessages)
 
-        if ((source() as AbstractJdbcSource<*>).supportResumableFullRefresh(catalog.streams[0])) {
-            val stateMessages = extractStateMessage(actualMessages)
-            validateFullRefreshStateMessageReadSuccess(stateMessages)
-        }
     }
     protected open fun validateFullRefreshStateMessageReadSuccess(
         stateMessages: List<AirbyteStateMessage>

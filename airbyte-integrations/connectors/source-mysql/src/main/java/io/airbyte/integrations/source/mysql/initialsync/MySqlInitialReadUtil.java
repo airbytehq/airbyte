@@ -406,17 +406,19 @@ public class MySqlInitialReadUtil {
     initialLoadStreams.streamsForInitialLoad().forEach(stream -> {
       final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair =
           new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
-      final PrimaryKeyInfo pkInfo = getPrimaryKeyInfo(database, stream, tableNameToTable, quoteString);
-      pairToPkInfoMap.put(pair, pkInfo);
+      final Optional<PrimaryKeyInfo> pkInfo = getPrimaryKeyInfo(database, stream, tableNameToTable, quoteString);
+      if (pkInfo.isPresent()) {
+        pairToPkInfoMap.put(pair, pkInfo.get());
+      }
     });
     return pairToPkInfoMap;
   }
 
   // Returns the primary key info associated with the stream.
-  private static PrimaryKeyInfo getPrimaryKeyInfo(final JdbcDatabase database,
-                                                  final ConfiguredAirbyteStream stream,
-                                                  final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
-                                                  final String quoteString) {
+  private static Optional<PrimaryKeyInfo> getPrimaryKeyInfo(final JdbcDatabase database,
+                                                            final ConfiguredAirbyteStream stream,
+                                                            final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
+                                                            final String quoteString) {
     final String fullyQualifiedTableName =
         DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.getStream().getNamespace(), (stream.getStream().getName()));
     final TableInfo<CommonField<MysqlType>> table = tableNameToTable
@@ -424,23 +426,27 @@ public class MySqlInitialReadUtil {
     return getPrimaryKeyInfo(database, stream, table, quoteString);
   }
 
-  private static PrimaryKeyInfo getPrimaryKeyInfo(final JdbcDatabase database,
-                                                  final ConfiguredAirbyteStream stream,
-                                                  final TableInfo<CommonField<MysqlType>> table,
-                                                  final String quoteString) {
+  private static Optional<PrimaryKeyInfo> getPrimaryKeyInfo(final JdbcDatabase database,
+                                                            final ConfiguredAirbyteStream stream,
+                                                            final TableInfo<CommonField<MysqlType>> table,
+                                                            final String quoteString) {
     // For cursor-based syncs, we cannot always assume a primary key field exists. We need to handle the
     // case where it does not exist when we support
     // cursor-based syncs.
     if (stream.getStream().getSourceDefinedPrimaryKey().size() > 1) {
       LOGGER.info("Composite primary key detected for {namespace, stream} : {}, {}", stream.getStream().getNamespace(), stream.getStream().getName());
     }
+    if (stream.getStream().getSourceDefinedPrimaryKey().isEmpty()) {
+      return Optional.empty();
+    }
+
     final String pkFieldName = stream.getStream().getSourceDefinedPrimaryKey().get(0).get(0);
     final MysqlType pkFieldType = table.getFields().stream()
         .filter(field -> field.getName().equals(pkFieldName))
         .findFirst().get().getType();
 
     final String pkMaxValue = MySqlQueryUtils.getMaxPkValueForStream(database, stream, pkFieldName, quoteString);
-    return new PrimaryKeyInfo(pkFieldName, pkFieldType, pkMaxValue);
+    return Optional.of(new PrimaryKeyInfo(pkFieldName, pkFieldType, pkMaxValue));
   }
 
   public record InitialLoadStreams(List<ConfiguredAirbyteStream> streamsForInitialLoad,
