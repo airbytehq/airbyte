@@ -444,8 +444,7 @@ definitions:
       paginator:
         $ref: "#/definitions/paginator"
         pagination_strategy:
-          class_name: "source_jira.components.paginators.UrlPaginationStrategy"
-          cursor_field_name: "startAt"
+          type: OffsetIncrement
           page_size: 50
     $parameters:
       path: "users/search"

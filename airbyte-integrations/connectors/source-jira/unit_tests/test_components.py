@@ -4,9 +4,8 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice
+from airbyte_cdk.sources.declarative.types import StreamSlice
 from source_jira.components.extractors import LabelsRecordExtractor
-from source_jira.components.paginators import UrlPaginationStrategy
 from source_jira.components.partition_routers import SprintIssuesSubstreamPartitionRouter, SubstreamPartitionRouterWithContext
 
 
@@ -30,36 +29,6 @@ def test_labels_record_extractor(json_response, expected_output):
 
     # Assert to check if the output matches the expected result
     assert extracted == expected_output, "The extracted records do not match the expected output"
-
-
-@pytest.mark.parametrize(
-    "current_page, last_records, expected_next_token",
-    [
-        (1, [], None),  # No records
-        (1, [1, 2, 3], None),  # Fewer records than page size
-        (3, [1, 2, 3, 4], 7),  # Page size records
-        (
-            8,
-            [{"updated_at": "2022-01-01"}, {"updated_at": "2022-01-02"}, {"updated_at": "2022-01-03"}, {"updated_at": "2022-01-03"}],
-            12,
-        ),  # Page limit is hit
-    ],
-)
-def test_url_pagination_strategy(current_page, last_records, expected_next_token):
-    # Initialize the pagination strategy within the test
-    strategy = UrlPaginationStrategy(config={}, parameters={}, cursor_field_name="page", page_size=4)
-
-    # Create a mock response object
-    response_mock = MagicMock(spec=requests.Response)
-    response_mock.headers = {"Content-Type": "application/json"}
-    response_mock.url = f"https://api.example.com/data?page={current_page}"
-    response_mock.links = {"next": {"url": f"https://api.example.com/data?page={current_page + 1}"}}
-    response_mock.json = MagicMock(return_value={"data": last_records})
-
-    # Execute the next_page_token to get the next page's start position
-    next_token = strategy.next_page_token(response=response_mock, last_records=last_records)
-
-    assert next_token == expected_next_token, f"Expected next page token to be {expected_next_token}, but got {next_token}"
 
 
 @pytest.mark.parametrize(

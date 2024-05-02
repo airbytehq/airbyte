@@ -273,6 +273,9 @@ class Issues(IncrementalJiraStream):
 class IssueFields(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
+
+    This stream is a dependency for the Issue stream, which in turn is a dependency for both the IssueComments and IssueWorklogs streams.
+    These latter streams cannot be migrated at the moment: https://github.com/airbytehq/airbyte-internal-issues/issues/7522
     """
 
     use_cache = True
@@ -290,6 +293,9 @@ class IssueFields(JiraStream):
 class Projects(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-search-get
+
+    This stream is a dependency for the Issue stream, which in turn is a dependency for both the IssueComments and IssueWorklogs streams.
+    These latter streams cannot be migrated at the moment: https://github.com/airbytehq/airbyte-internal-issues/issues/7522
     """
 
     extract_field = "values"
@@ -313,6 +319,8 @@ class Projects(JiraStream):
 class IssueWorklogs(IncrementalJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get
+
+    Cannot be migrated at the moment: https://github.com/airbytehq/airbyte-internal-issues/issues/7522
     """
 
     extract_field = "worklogs"
@@ -341,6 +349,8 @@ class IssueWorklogs(IncrementalJiraStream):
 class IssueComments(IncrementalJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-get
+
+    Cannot be migrated at the moment: https://github.com/airbytehq/airbyte-internal-issues/issues/7522
     """
 
     extract_field = "comments"
