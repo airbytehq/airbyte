@@ -3,7 +3,7 @@
 ## CDK Speedrun \(HTTP API Source Creation Any Route\)
 
 This is a blazing fast guide to building an HTTP source connector. Think of it as the TL;DR version
-of [this tutorial.](cdk-tutorial-python-http/getting-started.md)
+of [this tutorial.](custom-python-connector/0-getting-started.md)
 
 If you are a visual learner and want to see a video version of this guide going over each part in
 detail, check it out below.

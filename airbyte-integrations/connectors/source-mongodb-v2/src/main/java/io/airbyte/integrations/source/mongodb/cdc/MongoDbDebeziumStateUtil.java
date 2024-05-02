@@ -9,6 +9,8 @@ import com.mongodb.MongoChangeStreamException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateUtil;
@@ -23,6 +25,7 @@ import io.debezium.connector.mongodb.ReplicaSetDiscovery;
 import io.debezium.connector.mongodb.ReplicaSets;
 import io.debezium.connector.mongodb.ResumeTokens;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,6 +38,7 @@ import org.apache.kafka.connect.storage.OffsetStorageReaderImpl;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.bson.BsonTimestamp;
+import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,25 +107,38 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
    *
    * @param savedOffset The resume token from the saved offset.
    * @param mongoClient The {@link MongoClient} used to validate the saved offset.
+   *
    * @return {@code true} if the saved offset value is valid Otherwise, {@code false} is returned to
    *         indicate that an initial snapshot should be performed.
    */
-  public boolean isValidResumeToken(final BsonDocument savedOffset, final MongoClient mongoClient) {
+  public boolean isValidResumeToken(final BsonDocument savedOffset,
+                                    final MongoClient mongoClient,
+                                    final String databaseName,
+                                    final ConfiguredAirbyteCatalog catalog) {
     if (Objects.isNull(savedOffset) || savedOffset.isEmpty()) {
       return true;
     }
 
-    final ChangeStreamIterable<BsonDocument> stream = mongoClient.watch(BsonDocument.class);
-    stream.resumeAfter(savedOffset);
-    try (final var ignored = stream.cursor()) {
+    // Scope the change stream to the collections & database of interest - this mirrors the logic while
+    // getting the most recent resume token.
+    final List<String> collectionsList = catalog.getStreams().stream()
+        .map(s -> s.getStream().getName())
+        .toList();
+    final List<Bson> pipeline = Collections.singletonList(Aggregates.match(
+        Filters.in("ns.coll", collectionsList)));
+    final ChangeStreamIterable<BsonDocument> eventStream = mongoClient.getDatabase(databaseName).watch(pipeline, BsonDocument.class);
+
+    // Attempt to start the stream after the saved offset.
+    eventStream.resumeAfter(savedOffset);
+    try (final var ignored = eventStream.cursor()) {
       LOGGER.info("Valid resume token '{}' present, corresponding to timestamp (seconds after epoch) : {}.  Incremental sync will be performed for "
           + "up-to-date streams.",
           ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime());
       return true;
     } catch (final MongoCommandException | MongoChangeStreamException e) {
-      LOGGER.info("Invalid resume token '{}' present, corresponding to timestamp (seconds after epoch) : {}.  Initial snapshot will be performed for "
-          + "all streams.",
-          ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime());
+      LOGGER.info("Exception : {}", e.getMessage());
+      LOGGER.info("Invalid resume token '{}' present, corresponding to timestamp (seconds after epoch) : {}, due to reason {}",
+          ResumeTokens.getData(savedOffset).asString().getValue(), ResumeTokens.getTimestamp(savedOffset).getTime(), e.getMessage());
       return false;
     }
   }

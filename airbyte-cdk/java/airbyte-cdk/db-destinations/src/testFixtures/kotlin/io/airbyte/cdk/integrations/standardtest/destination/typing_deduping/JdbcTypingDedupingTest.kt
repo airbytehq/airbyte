@@ -76,19 +76,13 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
     }
 
     @Throws(Exception::class)
-    override fun dumpRawTableRecords(
-        streamNamespace: String?,
-        streamName: String?
-    ): List<JsonNode> {
+    override fun dumpRawTableRecords(streamNamespace: String?, streamName: String): List<JsonNode> {
         var streamNamespace = streamNamespace
         if (streamNamespace == null) {
             streamNamespace = getDefaultSchema(config!!)
         }
         val tableName =
-            concatenateRawTableName(
-                streamNamespace,
-                Names.toAlphanumericAndUnderscore(streamName!!)
-            )
+            concatenateRawTableName(streamNamespace, Names.toAlphanumericAndUnderscore(streamName))
         val schema = rawSchema
         return database!!.queryJsons(DSL.selectFrom(DSL.name(schema, tableName)).sql)
     }
@@ -109,14 +103,14 @@ abstract class JdbcTypingDedupingTest : BaseTypingDedupingTest() {
     }
 
     @Throws(Exception::class)
-    override fun teardownStreamAndNamespace(streamNamespace: String?, streamName: String?) {
+    override fun teardownStreamAndNamespace(streamNamespace: String?, streamName: String) {
         var streamNamespace = streamNamespace
         if (streamNamespace == null) {
             streamNamespace = getDefaultSchema(config!!)
         }
         database!!.execute(
             DSL.dropTableIfExists(
-                    DSL.name(rawSchema, concatenateRawTableName(streamNamespace, streamName!!))
+                    DSL.name(rawSchema, concatenateRawTableName(streamNamespace, streamName))
                 )
                 .sql
         )

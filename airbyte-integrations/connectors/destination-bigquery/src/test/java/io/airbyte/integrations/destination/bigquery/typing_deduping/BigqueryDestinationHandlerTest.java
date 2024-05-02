@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 import com.google.cloud.bigquery.Clustering;
 import com.google.cloud.bigquery.StandardSQLTypeName;
@@ -52,7 +53,7 @@ public class BigqueryDestinationHandlerTest {
 
   @Test
   public void testClusteringMatches() {
-    StreamConfig stream = new StreamConfig(null,
+    StreamConfig stream = new StreamConfig(mock(),
         null,
         DestinationSyncMode.APPEND_DEDUP,
         List.of(new ColumnId("foo", "bar", "fizz")),
@@ -60,7 +61,7 @@ public class BigqueryDestinationHandlerTest {
         null);
 
     // Clustering is null
-    final StandardTableDefinition existingTable = Mockito.mock(StandardTableDefinition.class);
+    final StandardTableDefinition existingTable = mock(StandardTableDefinition.class);
     Mockito.when(existingTable.getClustering()).thenReturn(null);
     Assertions.assertFalse(BigQueryDestinationHandler.clusteringMatches(stream, existingTable));
 
@@ -70,7 +71,7 @@ public class BigqueryDestinationHandlerTest {
     Assertions.assertFalse(BigQueryDestinationHandler.clusteringMatches(stream, existingTable));
 
     // Clustering matches
-    stream = new StreamConfig(null,
+    stream = new StreamConfig(mock(),
         null,
         DestinationSyncMode.OVERWRITE,
         null,
@@ -85,7 +86,7 @@ public class BigqueryDestinationHandlerTest {
             Stream.concat(expectedStreamColumnNames.stream(), Stream.of("_airbyte_extracted_at"))
                 .collect(Collectors.toList()))
             .build());
-    stream = new StreamConfig(null,
+    stream = new StreamConfig(mock(),
         null,
         DestinationSyncMode.APPEND_DEDUP,
         Stream.concat(expectedStreamColumnNames.stream(), Stream.of("d", "e"))
@@ -98,7 +99,7 @@ public class BigqueryDestinationHandlerTest {
 
   @Test
   public void testPartitioningMatches() {
-    final StandardTableDefinition existingTable = Mockito.mock(StandardTableDefinition.class);
+    final StandardTableDefinition existingTable = mock(StandardTableDefinition.class);
     // Partitioning is null
     Mockito.when(existingTable.getTimePartitioning()).thenReturn(null);
     Assertions.assertFalse(BigQueryDestinationHandler.partitioningMatches(existingTable));

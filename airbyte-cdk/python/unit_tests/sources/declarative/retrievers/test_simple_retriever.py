@@ -219,7 +219,7 @@ def test_get_request_options_from_pagination(test_name, paginator_mapping, strea
     for _, method in request_option_type_to_method.items():
         if expected_mapping is not None:
             actual_mapping = method(None, None, None)
-            assert expected_mapping == actual_mapping
+            assert actual_mapping == expected_mapping
         else:
             try:
                 method(None, None, None)
@@ -264,7 +264,7 @@ def test_get_request_headers(test_name, paginator_mapping, expected_mapping):
     for _, method in request_option_type_to_method.items():
         if expected_mapping:
             actual_mapping = method(None, None, None)
-            assert expected_mapping == actual_mapping
+            assert actual_mapping == expected_mapping
         else:
             try:
                 method(None, None, None)
@@ -310,7 +310,7 @@ def test_ignore_stream_slicer_parameters_on_paginated_requests(test_name, pagina
 
     for _, method in request_option_type_to_method.items():
         actual_mapping = method(None, None, next_page_token={"next_page_token": "1000"})
-        assert expected_mapping == actual_mapping
+        assert actual_mapping == expected_mapping
 
 
 @pytest.mark.parametrize(
@@ -345,7 +345,7 @@ def test_request_body_data(test_name, slicer_body_data, paginator_body_data, exp
 
     if expected_body_data:
         actual_body_data = retriever._request_body_data(None, None, None)
-        assert expected_body_data == actual_body_data
+        assert actual_body_data == expected_body_data
     else:
         try:
             retriever._request_body_data(None, None, None)
@@ -380,7 +380,7 @@ def test_path(test_name, requester_path, paginator_path, expected_path):
     )
 
     actual_path = retriever._paginator_path()
-    assert expected_path == actual_path
+    assert actual_path == expected_path
 
 
 def test_limit_stream_slices():

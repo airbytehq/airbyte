@@ -48,6 +48,8 @@ allprojects {
     // Common java configurations
 
     java {
+        withSourcesJar()
+        withJavadocJar()
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
         compileJava {
@@ -62,6 +64,10 @@ allprojects {
             //rawtypes and unchecked are necessary for mockito
             options.compilerArgs += ["-Werror", "-Xlint:all,-serial,-processing,-rawtypes,-unchecked"]
         }
+    }
+
+    tasks.named('sourcesJar').configure {
+        dependsOn tasks.matching { it.name == 'generate' }
     }
 
     compileKotlin {
@@ -182,15 +188,6 @@ allprojects {
     }
 
     dependencies {
-        // Lombok dependencies.
-        def lombok = "org.projectlombok:lombok:1.18.30"
-        compileOnly lombok
-        annotationProcessor lombok
-        testCompileOnly lombok
-        testAnnotationProcessor lombok
-        testFixturesCompileOnly lombok
-        testFixturesAnnotationProcessor lombok
-
         // JUnit dependencies.
         def vAssertJ = "3.25.3"
         def vJUnit = "5.10.2"
@@ -217,9 +214,6 @@ allprojects {
     }
 
     tasks.withType(SpotBugsTask).configureEach {
-        if (name != "spotbugsMain" && System.getProperty('skipSlowTests', 'false') != 'false') {
-            enabled = false
-        }
         // Reports can be found under each subproject in build/spotbugs/
         reports {
             xml.required = false

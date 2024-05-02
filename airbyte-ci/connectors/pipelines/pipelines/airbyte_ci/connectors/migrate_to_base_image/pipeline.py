@@ -6,15 +6,15 @@ import textwrap
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
+import yaml  # type: ignore
 from base_images import version_registry  # type: ignore
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from dagger import Directory
 from jinja2 import Template
-from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, BumpDockerImageTagInMetadata, get_bumped_version
+from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, SetConnectorVersion, get_bumped_version
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.helpers import git
-from pipelines.helpers.connectors import metadata_change_helpers
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 if TYPE_CHECKING:
@@ -68,7 +68,7 @@ class UpgradeBaseImageMetadata(Step):
             )
 
         metadata_path = self.context.connector.metadata_file_path
-        current_metadata = await metadata_change_helpers.get_current_metadata(self.repo_dir, metadata_path)
+        current_metadata = yaml.safe_load(await self.repo_dir.file(str(metadata_path)).contents())
         current_base_image_address = current_metadata.get("data", {}).get("connectorBuildOptions", {}).get("baseImage")
 
         if current_base_image_address is None and not self.set_if_not_exists:
@@ -87,7 +87,7 @@ class UpgradeBaseImageMetadata(Step):
                 output=self.repo_dir,
             )
         updated_metadata = self.update_base_image_in_metadata(current_metadata, latest_base_image_address)
-        updated_repo_dir = metadata_change_helpers.get_repo_dir_with_updated_metadata(self.repo_dir, metadata_path, updated_metadata)
+        updated_repo_dir = self.repo_dir.with_new_file(str(metadata_path), contents=yaml.safe_dump(updated_metadata))
 
         return StepResult(
             step=self,
@@ -307,10 +307,13 @@ async def run_connector_migration_to_base_image_pipeline(
 
             og_repo_dir = await context.get_repo_dir()
 
+            # latest_repo_dir_state gets mutated by each step
+            latest_repo_dir_state = og_repo_dir
+
             # UPDATE BASE IMAGE IN METADATA
             update_base_image_in_metadata = UpgradeBaseImageMetadata(
                 context,
-                og_repo_dir,
+                latest_repo_dir_state,
                 set_if_not_exists=True,
             )
             update_base_image_in_metadata_result = await update_base_image_in_metadata.run()
@@ -319,39 +322,39 @@ async def run_connector_migration_to_base_image_pipeline(
                 context.report = ConnectorReport(context, steps_results, name="BASE IMAGE UPGRADE RESULTS")
                 return context.report
 
+            latest_repo_dir_state = update_base_image_in_metadata_result.output
             # BUMP CONNECTOR VERSION IN METADATA
             new_version = get_bumped_version(context.connector.version, "patch")
-            bump_version_in_metadata = BumpDockerImageTagInMetadata(
-                context,
-                update_base_image_in_metadata_result.output,
-                new_version,
-            )
+            bump_version_in_metadata = SetConnectorVersion(context, new_version, latest_repo_dir_state, False)
             bump_version_in_metadata_result = await bump_version_in_metadata.run()
             steps_results.append(bump_version_in_metadata_result)
 
+            latest_repo_dir_state = bump_version_in_metadata_result.output
             # ADD CHANGELOG ENTRY only if the PR number is provided.
             if pull_request_number is not None:
                 add_changelog_entry = AddChangelogEntry(
                     context,
-                    bump_version_in_metadata_result.output,
                     new_version,
                     "Base image migration: remove Dockerfile and use the python-connector-base image",
                     pull_request_number,
+                    latest_repo_dir_state,
+                    False,
                 )
                 add_changelog_entry_result = await add_changelog_entry.run()
                 steps_results.append(add_changelog_entry_result)
+                latest_repo_dir_state = add_changelog_entry_result.output
 
             # UPDATE DOC
             add_build_instructions_to_doc = AddBuildInstructionsToReadme(
                 context,
-                add_changelog_entry_result.output,
+                latest_repo_dir_state,
             )
             add_build_instructions_to_doc_results = await add_build_instructions_to_doc.run()
             steps_results.append(add_build_instructions_to_doc_results)
+            latest_repo_dir_state = add_build_instructions_to_doc_results.output
 
             # EXPORT MODIFIED FILES BACK TO HOST
-            final_repo_dir = add_build_instructions_to_doc_results.output
-            await og_repo_dir.diff(final_repo_dir).export(str(git.get_git_repo_path()))
+            await og_repo_dir.diff(latest_repo_dir_state).export(str(git.get_git_repo_path()))
             report = ConnectorReport(context, steps_results, name="MIGRATE TO BASE IMAGE RESULTS")
             context.report = report
     return report

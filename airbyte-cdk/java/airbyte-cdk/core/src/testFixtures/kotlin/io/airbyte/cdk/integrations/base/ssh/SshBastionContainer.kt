@@ -51,10 +51,10 @@ class SshBastionContainer : AutoCloseable {
     }
 
     @Throws(IOException::class, InterruptedException::class)
-    fun getTunnelMethod(tunnelMethod: SshTunnel.TunnelMethod?, innerAddress: Boolean): JsonNode? {
+    fun getTunnelMethod(tunnelMethod: SshTunnel.TunnelMethod, innerAddress: Boolean): JsonNode? {
         val containerAddress =
-            if (innerAddress) getInnerContainerAddress(container)
-            else getOuterContainerAddress(container)
+            if (innerAddress) getInnerContainerAddress(container!!)
+            else getOuterContainerAddress(container!!)
         return Jsons.jsonNode(
             ImmutableMap.builder<Any?, Any?>()
                 .put("tunnel_host", Objects.requireNonNull(containerAddress!!.left))
@@ -78,45 +78,45 @@ class SshBastionContainer : AutoCloseable {
 
     @Throws(IOException::class, InterruptedException::class)
     fun getTunnelConfig(
-        tunnelMethod: SshTunnel.TunnelMethod?,
-        builderWithSchema: ImmutableMap.Builder<Any?, Any?>?,
+        tunnelMethod: SshTunnel.TunnelMethod,
+        builderWithSchema: ImmutableMap.Builder<Any, Any>,
         innerAddress: Boolean
     ): JsonNode? {
         return Jsons.jsonNode(
-            builderWithSchema!!
+            builderWithSchema
                 .put("tunnel_method", getTunnelMethod(tunnelMethod, innerAddress))
                 .build()
         )
     }
 
-    fun getBasicDbConfigBuider(db: JdbcDatabaseContainer<*>?): ImmutableMap.Builder<Any?, Any?>? {
-        return getBasicDbConfigBuider(db, db!!.databaseName)
+    fun getBasicDbConfigBuider(db: JdbcDatabaseContainer<*>): ImmutableMap.Builder<Any, Any> {
+        return getBasicDbConfigBuider(db, db.databaseName)
     }
 
     fun getBasicDbConfigBuider(
-        db: JdbcDatabaseContainer<*>?,
-        schemas: MutableList<String?>?
-    ): ImmutableMap.Builder<Any?, Any?>? {
-        return getBasicDbConfigBuider(db, db!!.databaseName)!!.put("schemas", schemas)
+        db: JdbcDatabaseContainer<*>,
+        schemas: MutableList<String>
+    ): ImmutableMap.Builder<Any, Any> {
+        return getBasicDbConfigBuider(db, db.databaseName).put("schemas", schemas)
     }
 
     fun getBasicDbConfigBuider(
-        db: JdbcDatabaseContainer<*>?,
-        schemaName: String?
-    ): ImmutableMap.Builder<Any?, Any?>? {
-        return ImmutableMap.builder<Any?, Any?>()
+        db: JdbcDatabaseContainer<*>,
+        schemaName: String
+    ): ImmutableMap.Builder<Any, Any> {
+        return ImmutableMap.builder<Any, Any>()
             .put("host", Objects.requireNonNull(HostPortResolver.resolveHost(db)))
-            .put("username", db!!.username)
+            .put("username", db.username)
             .put("password", db.password)
             .put("port", HostPortResolver.resolvePort(db))
             .put("database", schemaName)
             .put("ssl", false)
     }
 
-    fun stopAndCloseContainers(db: JdbcDatabaseContainer<*>?) {
+    fun stopAndCloseContainers(db: JdbcDatabaseContainer<*>) {
         container!!.stop()
         container!!.close()
-        db!!.stop()
+        db.stop()
         db.close()
     }
 
@@ -131,8 +131,8 @@ class SshBastionContainer : AutoCloseable {
     companion object {
         private val factory: SshBastionContainerFactory? = SshBastionContainerFactory()
 
-        private val SSH_USER: String? = "sshuser"
-        private val SSH_PASSWORD: String? = "secret"
+        private val SSH_USER: String = "sshuser"
+        private val SSH_PASSWORD: String = "secret"
 
         @JvmStatic
         /**
@@ -142,13 +142,9 @@ class SshBastionContainer : AutoCloseable {
          * @param container container
          * @return a pair of host and port
          */
-        fun getInnerContainerAddress(container: Container<*>?): ImmutablePair<String?, Int?>? {
+        fun getInnerContainerAddress(container: Container<*>): ImmutablePair<String, Int> {
             return ImmutablePair.of(
-                container!!
-                    .containerInfo
-                    .networkSettings
-                    .networks
-                    .entries
+                container.containerInfo.networkSettings.networks.entries
                     .stream()
                     .findFirst()
                     .get()
@@ -166,8 +162,8 @@ class SshBastionContainer : AutoCloseable {
          * @param container container
          * @return a pair of host and port
          */
-        fun getOuterContainerAddress(container: Container<*>?): ImmutablePair<String?, Int?>? {
-            return ImmutablePair.of(container!!.host, container.firstMappedPort)
+        fun getOuterContainerAddress(container: Container<*>): ImmutablePair<String, Int> {
+            return ImmutablePair.of(container.host, container.firstMappedPort)
         }
     }
 }

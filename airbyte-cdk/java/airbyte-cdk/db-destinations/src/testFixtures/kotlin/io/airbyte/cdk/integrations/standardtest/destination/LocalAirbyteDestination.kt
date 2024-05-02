@@ -33,14 +33,14 @@ class LocalAirbyteDestination(private val dest: Destination) : AirbyteDestinatio
                 Jsons.`object`(
                     Jsons.jsonNode(destinationConfig.catalog),
                     ConfiguredAirbyteCatalog::class.java
-                )
+                )!!
             ) { Destination::defaultOutputRecordCollector }
         consumer!!.start()
     }
 
     @Throws(Exception::class)
     override fun accept(message: io.airbyte.protocol.models.AirbyteMessage) {
-        consumer!!.accept(Jsons.`object`(Jsons.jsonNode(message), AirbyteMessage::class.java))
+        consumer!!.accept(Jsons.`object`(Jsons.jsonNode(message), AirbyteMessage::class.java)!!)
     }
 
     override fun notifyEndOfInput() {
@@ -61,9 +61,7 @@ class LocalAirbyteDestination(private val dest: Destination) : AirbyteDestinatio
         return isClosed
     }
 
-    override fun getExitValue(): Int {
-        return 0
-    }
+    override val exitValue = 0
 
     override fun attemptRead(): Optional<io.airbyte.protocol.models.AirbyteMessage> {
         return Optional.empty()

@@ -81,7 +81,7 @@ object S3BaseChecks {
             } else {
                 manager.abort()
             }
-            s3Client!!.deleteObject(bucketName, testFile)
+            s3Client.deleteObject(bucketName, testFile)
         }
         LOGGER.info("Finished verification for multipart upload mode")
     }
@@ -91,6 +91,7 @@ object S3BaseChecks {
      *
      * @param endpoint URL string representing an accessible S3 bucket
      */
+    @JvmStatic
     fun testCustomEndpointSecured(endpoint: String?): Boolean {
         // if user does not use a custom endpoint, do not fail
         return if (endpoint == null || endpoint.length == 0) {
