@@ -114,7 +114,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
                     connection_reset_error,
                     temporary_oauth_error,
                     server_error,
-                    service_unavailable_error
+                    service_unavailable_error,
                 )
             )
         return True
@@ -189,7 +189,7 @@ def traced_exception(fb_exception: FacebookRequestError):
             failure_type=FailureType.transient_error,
             exception=fb_exception,
         )
-    
+
     elif fb_exception.http_status() == 503:
         return AirbyteTracedException(
             message="The Facebook API service is temporarily unavailable. This issue should resolve itself, and does not require further action.",
