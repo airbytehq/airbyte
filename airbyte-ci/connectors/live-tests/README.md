@@ -63,7 +63,7 @@ poetry run live-tests debug read \
 --catalog-path=configured_catalog.json
 ```
 
-It will store the results in a `live_test_debug_reports` directory under the current working directory: 
+It will store the results in a `live_test_debug_reports` directory under the current working directory:
 
 ```
 live_tests_debug_reports
@@ -110,19 +110,26 @@ mitmweb --rfile=http_dump.mitm
 ```
 
 ## Regression tests
-We created a regression test suite to run tests to compare the outputs of connector commands on different versions of the same connector. 
+We created a regression test suite to run tests to compare the outputs of connector commands on different versions of the same connector.
+
+## Tutorial(s)
+* [Loom Walkthrough (Airbyte Only)](https://www.loom.com/share/97c49d7818664b119cff6911a8a211a2?sid=4570a5b6-9c81-4db3-ba33-c74dc5845c3c)
+* [Internal Docs (Airbyte Only)](https://docs.google.com/document/d/1pzTxJTsooc9iQDlALjvOWtnq6yRTvzVtbkJxY4R36_I/edit)
+
+### How to Use
+
+> ⚠️ **Note:** While you can use this tool without building a dev image, to achieve your goals you will likely need to have installed [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) and know how to build a dev image.
 
 You can run the existing test suites with the following command:
 
 #### With local connection objects (`config.json`, `catalog.json`, `state.json`)
 ```bash
-poetry run pytest src/live_tests/regression_tests \ 
+poetry run pytest src/live_tests/regression_tests \
  --connector-image=airbyte/source-faker \
- --connection-id=<CONNECTION-ID> \
  --config-path=<path-to-config-path> \
  --catalog-path=<path-to-catalog-path> \
  --target-version=dev \
- --control-version=latest
+ --control-version=latest \
  --pr-url=<PR-URL> # The URL of the PR you are testing
 ```
 
@@ -132,9 +139,8 @@ The live connection objects will be fetched.
 ```bash
  poetry run pytest src/live_tests/regression_tests \
  --connector-image=airbyte/source-faker \
- --connection-id=<CONNECTION-ID> \
  --target-version=dev \
- --control-version=latest 
+ --control-version=latest \
   --pr-url=<PR-URL> # The URL of the PR you are testing
  ```
 
@@ -235,7 +241,29 @@ The test suite run will produce test artifacts in the `/tmp/regression_tests_art
 We use a containerized `mitmproxy` to capture the HTTP traffic between the connector and the source. Connector command runs produce `http_dump.mitm` (can be consumed with `mitmproxy` (version `>=10`) for debugging) and `http_dump.har` (a JSON encoded version of the mitm dump) artifacts.
 The traffic recorded on the control connector is passed to the target connector proxy to cache the responses for requests with the same URL. This is useful to avoid hitting the source API multiple times when running the same command on different versions of the connector.
 
+### Custom CLI Arguments
+
+| Argument                   | Description                                                                                                               | Required/Optional |
+|----------------------------|---------------------------------------------------------------------------------------------------------------------------|-------------------|
+| `--connector-image`        | Docker image name of the connector to debug (e.g., `airbyte/source-faker:latest`, `airbyte/source-faker:dev`).            | Required          |
+| `--control-version`        | Version of the control connector for regression testing.                                                                  | Required          |
+| `--target-version`         | Version of the connector being tested. (Defaults to dev)                                                                  | Optional          |
+| `--pr-url`                 | URL of the pull request being tested.                                                                                     | Required          |
+| `--connection-id`          | ID of the connection for live testing. If not provided, a prompt will appear to choose.                                   | Optional          |
+| `--config-path`             | Path to the custom source configuration file.                                                                               | Optional          |
+| `--catalog-path`           | Path to the custom configured catalog file.                                                                                 | Optional          |
+| `--state-path`             | Path to the custom state file.                                                                                             | Optional          |
+| `--http-cache`             | Use the HTTP cache for the connector.                                                                                     | Optional          |
+| `--run-id`                 | Unique identifier for the test run. If not provided, a timestamp will be used.                                             | Optional          |
+| `--auto-select-connection` | Automatically select a connection for testing.                                                                            | Optional          |
+| `--stream`                 | Name of the stream to test. Can be specified multiple times to test multiple streams.                                      | Optional          |
+| `--should-read-with-state` | Specify whether to read with state. If not provided, a prompt will appear to choose.                                      | Optional          |
+
+
 ## Changelog
+
+### 0.17.0
+Enable running in GitHub actions.
 
 ### 0.16.0
 Enable running with airbyte-ci.
@@ -299,7 +327,7 @@ Modify diff output for `discover` and `read` tests.
 
 ### 0.5.1
 Handle connector command execution errors.
- 
+
 ### 0.5.0
 Add new tests and confirmation prompts.
 

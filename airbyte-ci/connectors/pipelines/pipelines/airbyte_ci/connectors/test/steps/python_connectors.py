@@ -279,8 +279,6 @@ def get_test_steps(context: ConnectorContext) -> STEP_TREE:
                 args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),
-        ],
-        [
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.CONNECTOR_REGRESSION_TESTS,
                 step=RegressionTests(context),
