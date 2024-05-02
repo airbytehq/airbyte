@@ -112,7 +112,7 @@ definitions:
         $ref: "#/definitions/requester"
         path: forms/{{ stream_partition.form_id }}/responses
         request_parameters:
-          sort: "submitted_at,asc"
+          sort: "{{'submitted_at,asc' if not next_page_token else '' }}"
       record_selector:
         $ref: "#/definitions/items_selector"
       paginator:
