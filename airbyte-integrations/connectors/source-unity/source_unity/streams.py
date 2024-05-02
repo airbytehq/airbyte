@@ -11,6 +11,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_protocol.models import SyncMode
 
 
 class UnityStream(HttpStream, ABC):
@@ -40,7 +41,11 @@ class UnityStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.text == "":
             return '{}'
-        yield from response.json()["results"]
+        records = response.json()["results"]
+        for record in records:
+            record['organisation_id'] = self.config["organisation_id"]
+            record['campaign_set_id'] = self.config["campaign_set_id"]
+            yield
 
     def request_params(
             self,
@@ -54,6 +59,7 @@ class UnityStream(HttpStream, ABC):
             }
         else:
             return {}
+
 
 class Campaigns(UnityStream):
     primary_key = "id"
