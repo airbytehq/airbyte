@@ -4,50 +4,62 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier of the snippet.",
       "type": "integer"
     },
     "bodyHtml": {
+      "description": "The HTML content body of the snippet.",
       "type": ["null", "string"]
     },
     "bodyText": {
+      "description": "The plain text content body of the snippet.",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "The date and time when the snippet was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "name": {
+      "description": "Name or title of the snippet.",
       "type": ["null", "string"]
     },
     "shareType": {
+      "description": "The share type of the snippet, such as public or private.",
       "type": ["null", "string"]
     },
     "tags": {
+      "description": "Tags associated with the snippet.",
       "type": ["null", "string"]
     },
     "updatedAt": {
+      "description": "The date and time when the snippet was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "contentCategoryMemberships": {
+      "description": "Categories that the snippet belongs to.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "creator": {
+      "description": "The creator of the snippet.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "owner": {
+      "description": "The owner of the snippet.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "updater": {
+      "description": "The user who last updated the snippet.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]

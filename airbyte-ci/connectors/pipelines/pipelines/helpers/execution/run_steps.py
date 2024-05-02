@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional
 
 import anyio
 import asyncer
+import dpath
 from pipelines import main_logger
 from pipelines.models.steps import StepStatus
 
@@ -98,6 +99,19 @@ class RunStepOptions:
                 step_ids_to_keep.update(_get_transitive_dependencies_for_step_id(dependency_graph, step_id))
             return list(all_step_ids - step_ids_to_keep)
         return []
+
+    @staticmethod
+    def get_item_or_default(options: Dict[str, List[Any]], key: str, default: Any) -> Any:  # noqa: ANN401
+        try:
+            item = dpath.util.get(options, key, separator="/")
+        except KeyError:
+            return default
+
+        if not isinstance(item, List):
+            return item
+        if len(item) > 1:
+            raise ValueError(f"Only one value for {key} is allowed. Got {len(item)}")
+        return item[0] if item else default
 
 
 @dataclass(frozen=True)
