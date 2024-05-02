@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.86.3
+File-based CDK: allow to merge schemas with nullable object values
+
 ## 0.86.2
 Fix schemas merge for nullable object types
 
