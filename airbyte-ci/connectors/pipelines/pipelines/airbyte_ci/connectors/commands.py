@@ -99,8 +99,6 @@ def validate_environment(is_local: bool) -> None:
             raise click.UsageError("You need to run this command from the repository root.")
     else:
         required_env_vars_for_ci = [
-            "GCP_GSM_CREDENTIALS",
-            "CI_REPORT_BUCKET_NAME",
             "CI_GITHUB_ACCESS_TOKEN",
             "DOCKER_HUB_USERNAME",
             "DOCKER_HUB_PASSWORD",
