@@ -1601,6 +1601,12 @@ class Product(ShopifyBulkQuery):
             option["product_id"] = product_id if product_id else None
         return options
 
+    def _unnest_tags(self, record: MutableMapping[str, Any]) -> str:
+        # we keep supporting 1 tag only, as it was for the REST stream,
+        # to avoid breaking change.
+        tags = record.get("tags", [])
+        return tags[0] if len(tags) > 0 else None
+
     def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
         """
         Defines how to process collected components.
@@ -1617,7 +1623,8 @@ class Product(ShopifyBulkQuery):
             product_id = record.get("id")
             record["options"] = self._process_options(record.get("options", []), product_id)
             record.pop("record_components")
-
+        # unnest the `tags` (the list of 1)
+        record["tags"] = self._unnest_tags(record)
         # convert dates from ISO-8601 to RFC-3339
         record["published_at"] = self.tools.from_iso8601_to_rfc3339(record, "publishedAt")
         record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")

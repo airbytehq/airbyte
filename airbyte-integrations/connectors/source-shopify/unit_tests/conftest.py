@@ -698,9 +698,7 @@ def products_response_expected_result():
             "updated_at": "2023-04-20T11:12:26+00:00",
             "body_html": "Gold and silver glitter iPhone 7 cases with geometric line patterns, stacked",
             "product_type": "Music",
-            "tags": [
-                "developer-tools-generator"
-            ],
+            "tags": "developer-tools-generator",
             "handle": "gold-silver-iphone-7-case",
             "template_suffix": None,
             "title": "Gold Silver iPhone 7 Case",
