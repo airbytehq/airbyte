@@ -303,7 +303,7 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         :return: the first date to sync
         """
-        today = pendulum.today().date()
+        today = pendulum.today(tz=pendulum.tz.UTC).date()
         oldest_date = today - self.INSIGHTS_RETENTION_PERIOD
 
         start_dates_for_account = {}

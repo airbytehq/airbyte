@@ -1,5 +1,44 @@
 # Changelog
 
+## 0.86.3
+File-based CDK: allow to merge schemas with nullable object values
+
+## 0.86.2
+Fix schemas merge for nullable object types
+
+## 0.86.1
+Fix schemas merge for nullable object types
+
+## 0.86.0
+Expose airbyte_cdk.__version__ and pin airbyte-protocol-models dependency to 
+
+## 0.85.0
+Connector builder: read input state if it exists
+
+## 0.84.0
+Remove  package which was deprecated 2021 or earlier
+
+## 0.83.1
+Concurrent CDK: if exception is AirbyteTracedException, raise this and not StreamThreadException
+
+## 0.83.0
+Low-code: Add JwtAuthenticator
+
+## 0.82.0
+Connector builder: emit state messages
+
+## 0.81.8
+Concurrent CDK: Break Python application with status 1 on exception
+
+## 0.81.7
+Concurrent CDK: Fix to update partitioned state only when partition is successful
+
+## 0.81.6
+Upgrade to recent version of langchain
+
+## 0.81.5
+Updated langchain version and add langchain_core as a dependency
+
 ## 0.81.4
 Adding stream_descriptor as part of AirbyteTracedException.__init__
 
