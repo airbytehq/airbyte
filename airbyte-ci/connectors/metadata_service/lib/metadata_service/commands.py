@@ -47,6 +47,8 @@ def validate(metadata_file_path: pathlib.Path, docs_path: pathlib.Path):
 @click.argument("bucket-name", type=click.STRING, required=True)
 @click.option("--prerelease", type=click.STRING, required=False, default=None, help="The prerelease tag of the connector.")
 def upload(metadata_file_path: pathlib.Path, docs_path: pathlib.Path, bucket_name: str, prerelease: str):
+    # Example command:
+    # poetry run metadata_service upload ./metadata.yaml ./docs dev-airbyte-cloud-connector-metadata-service --prerelease 1.0.0-beta
     metadata_file_path = metadata_file_path if not metadata_file_path.is_dir() else metadata_file_path / METADATA_FILE_NAME
     validator_opts = ValidatorOptions(docs_path=str(docs_path), prerelease_tag=prerelease)
     try:

@@ -88,6 +88,22 @@ class StreamBreakingChangeScope(BaseModel):
     impactedScopes: List[str] = Field(..., description="List of streams that are impacted by the breaking change.", min_items=1)
 
 
+class AirbyteInternal(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    sl: Optional[Literal[100, 200, 300]] = None
+    ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = None
+
+
+class PyPi(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    enabled: bool
+    packageName: str = Field(..., description="The name of the package on PyPi.")
+
+
 class GitInfo(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -110,14 +126,6 @@ class GitInfo(BaseModel):
     )
 
 
-class PyPi(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
-    enabled: bool
-    packageName: str = Field(..., description="The name of the package on PyPi.")
-
-
 class JobTypeResourceLimit(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -130,20 +138,15 @@ class BreakingChangeScope(BaseModel):
     __root__: StreamBreakingChangeScope = Field(..., description="A scope that can be used to limit the impact of a breaking change.")
 
 
-class AirbyteInternal(BaseModel):
-    class Config:
-        extra = Extra.allow
-
-    sl: Optional[Literal[100, 200, 300]] = None
-    ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = None
-    git: Optional[GitInfo] = None
-
-
 class RemoteRegistries(BaseModel):
     class Config:
         extra = Extra.forbid
 
     pypi: Optional[PyPi] = None
+
+
+class GeneratedFields(BaseModel):
+    git: Optional[GitInfo] = None
 
 
 class ActorDefinitionResourceRequirements(BaseModel):
@@ -256,6 +259,7 @@ class Data(BaseModel):
     ab_internal: Optional[AirbyteInternal] = None
     remoteRegistries: Optional[RemoteRegistries] = None
     supportsRefreshes: Optional[bool] = False
+    generated: Optional[GeneratedFields] = None
 
 
 class ConnectorMetadataDefinitionV0(BaseModel):

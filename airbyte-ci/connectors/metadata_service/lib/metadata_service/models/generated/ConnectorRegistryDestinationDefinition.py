@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
@@ -71,26 +71,12 @@ class StreamBreakingChangeScope(BaseModel):
     impactedScopes: List[str] = Field(..., description="List of streams that are impacted by the breaking change.", min_items=1)
 
 
-class GitInfo(BaseModel):
+class AirbyteInternal(BaseModel):
     class Config:
-        extra = Extra.forbid
+        extra = Extra.allow
 
-    commit_sha: Optional[str] = Field(
-        None,
-        description="The git commit sha of the last commit that modified this file. DO NOT DEFINE THIS FIELD IN YOUR SPEC. It will be overwritten by the CI.",
-    )
-    commit_timestamp: Optional[datetime] = Field(
-        None,
-        description="The git commit timestamp of the last commit that modified this file. DO NOT DEFINE THIS FIELD IN YOUR SPEC. It will be overwritten by the CI.",
-    )
-    commit_author: Optional[str] = Field(
-        None,
-        description="The git commit author of the last commit that modified this file. DO NOT DEFINE THIS FIELD IN YOUR SPEC. It will be overwritten by the CI.",
-    )
-    commit_author_email: Optional[str] = Field(
-        None,
-        description="The git commit author email of the last commit that modified this file. DO NOT DEFINE THIS FIELD IN YOUR SPEC. It will be overwritten by the CI.",
-    )
+    sl: Optional[Literal[100, 200, 300]] = None
+    ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = None
 
 
 class JobTypeResourceLimit(BaseModel):
@@ -103,15 +89,6 @@ class JobTypeResourceLimit(BaseModel):
 
 class BreakingChangeScope(BaseModel):
     __root__: StreamBreakingChangeScope = Field(..., description="A scope that can be used to limit the impact of a breaking change.")
-
-
-class AirbyteInternal(BaseModel):
-    class Config:
-        extra = Extra.allow
-
-    sl: Optional[Literal[100, 200, 300]] = None
-    ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = None
-    git: Optional[GitInfo] = None
 
 
 class ActorDefinitionResourceRequirements(BaseModel):

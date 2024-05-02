@@ -232,9 +232,9 @@ def _apply_author_info_to_metadata_file(metadata_dict: dict, original_metadata_f
     """Apply author info to the metadata file before uploading it to GCS."""
     git_info = _get_git_info_for_file(original_metadata_file_path)
     if git_info:
-        # Apply to the nested / optional field at metadata.data.ab_internal.git
+        # Apply to the nested / optional field at metadata.data.ab_internal.generated.git
         git_info_dict = to_json_sanitized_dict(git_info, exclude_none=True)
-        metadata_dict = set_(metadata_dict, "data.ab_internal.git", git_info_dict)
+        metadata_dict = set_(metadata_dict, "data.ab_internal.generated.git", git_info_dict)
     return metadata_dict
 
 

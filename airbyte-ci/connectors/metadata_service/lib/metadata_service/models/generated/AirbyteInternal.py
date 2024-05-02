@@ -3,33 +3,10 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, Extra, Field
+from pydantic import BaseModel, Extra
 from typing_extensions import Literal
-
-
-class GitInfo(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
-    commit_sha: Optional[str] = Field(
-        None,
-        description="The git commit sha of the last commit that modified this file. DO NOT DEFINE THIS FIELD IN YOUR SPEC. It will be overwritten by the CI.",
-    )
-    commit_timestamp: Optional[datetime] = Field(
-        None,
-        description="The git commit timestamp of the last commit that modified this file. DO NOT DEFINE THIS FIELD IN YOUR SPEC. It will be overwritten by the CI.",
-    )
-    commit_author: Optional[str] = Field(
-        None,
-        description="The git commit author of the last commit that modified this file. DO NOT DEFINE THIS FIELD IN YOUR SPEC. It will be overwritten by the CI.",
-    )
-    commit_author_email: Optional[str] = Field(
-        None,
-        description="The git commit author email of the last commit that modified this file. DO NOT DEFINE THIS FIELD IN YOUR SPEC. It will be overwritten by the CI.",
-    )
 
 
 class AirbyteInternal(BaseModel):
@@ -38,4 +15,3 @@ class AirbyteInternal(BaseModel):
 
     sl: Optional[Literal[100, 200, 300]] = None
     ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = None
-    git: Optional[GitInfo] = None
