@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.86.3
+File-based CDK: allow to merge schemas with nullable object values
+
+## 0.86.2
+Fix schemas merge for nullable object types
+
+## 0.86.1
+Fix schemas merge for nullable object types
+
+## 0.86.0
+Expose airbyte_cdk.__version__ and pin airbyte-protocol-models dependency to 
+
 ## 0.85.0
 Connector builder: read input state if it exists
 

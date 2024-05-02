@@ -229,7 +229,7 @@ public class MySqlInitialReadUtil {
     }
 
     // Build the incremental CDC iterators.
-    final AirbyteDebeziumHandler<MySqlCdcPosition> handler = new AirbyteDebeziumHandler<>(
+    final AirbyteDebeziumHandler<MySqlCdcPosition> handler = new AirbyteDebeziumHandler<MySqlCdcPosition>(
         sourceConfig,
         MySqlCdcTargetPosition.targetPosition(database),
         true,

@@ -21,7 +21,7 @@ async def checked_out_git_container(
     """
     current_git_branch = current_git_branch.removeprefix("origin/")
     diffed_branch = current_git_branch if diffed_branch is None else diffed_branch.removeprefix("origin/")
-    return await (
+    git_container = (
         dagger_client.container()
         .from_("alpine/git:latest")
         .with_workdir("/repo")
@@ -44,6 +44,7 @@ async def checked_out_git_container(
             ]
         )
         .with_exec(["fetch", "origin", diffed_branch])
-        .with_exec(["fetch", "target", current_git_branch])
-        .with_exec(["checkout", current_git_branch])
     )
+    if diffed_branch != current_git_branch:
+        git_container = git_container.with_exec(["fetch", "target", current_git_branch])
+    return await git_container.with_exec(["checkout", current_git_branch])

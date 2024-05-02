@@ -36,8 +36,10 @@ runs:
         if [[ "${{ github.ref }}" != "refs/heads/master" ]] && [[ "${{ steps.changes.outputs.pipelines_any_changed }}" == "true" ]]; then
           echo "Making changes to Airbyte CI on a non-master branch. Airbyte-CI will be installed from source."
           echo "install-mode=source" >> $GITHUB_OUTPUT
+          echo "SENTRY_ENVIRONMENT=dev" >> $GITHUB_ENV
         else
           echo "install-mode=binary" >> $GITHUB_OUTPUT
+          echo "SENTRY_ENVIRONMENT=production" >> $GITHUB_ENV
         fi
 
     - name: Install Airbyte CI from binary
