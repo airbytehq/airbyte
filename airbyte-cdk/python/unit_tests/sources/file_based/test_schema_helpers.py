@@ -264,12 +264,19 @@ def test_comparable_types() -> None:
             {"a": {"type": "object"}},
             {"a": {"type": "null"}},
             {"a": {"type": "object"}},
-            id="single-key-with-null-object-schema2"),
+            id="single-key-with-null-object-schema2",
+        ),
         pytest.param(
             {"a": {"type": "object"}},
             {"b": {"type": "null"}},
             {"a": {"type": "object"}, "b": {"type": "null"}},
             id="new-key-with-null-type",
+        ),
+        pytest.param(
+            {"a": {"type": "null"}},
+            {"a": {"type": "object"}},
+            {"a": {"type": "object"}},
+            id="single-key-with-null-object-schema1",
         ),
     ],
 )
