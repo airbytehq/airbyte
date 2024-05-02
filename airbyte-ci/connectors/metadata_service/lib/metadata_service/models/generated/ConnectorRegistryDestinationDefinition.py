@@ -194,3 +194,4 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
     allowedHosts: Optional[AllowedHosts] = None
     releases: Optional[ConnectorReleases] = None
     ab_internal: Optional[AirbyteInternal] = None
+    supportsRefreshes: Optional[bool] = False

@@ -21,6 +21,7 @@ data:
   githubIssueLabel: source-amazon-seller-partner
   icon: amazonsellerpartner.svg
   license: MIT
+  maxSecondsBetweenMessages: 5400
   name: Amazon Seller Partner
   remoteRegistries:
     pypi:

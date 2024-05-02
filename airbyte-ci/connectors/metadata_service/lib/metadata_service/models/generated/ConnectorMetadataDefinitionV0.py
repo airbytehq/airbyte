@@ -255,6 +255,7 @@ class Data(BaseModel):
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
     ab_internal: Optional[AirbyteInternal] = None
     remoteRegistries: Optional[RemoteRegistries] = None
+    supportsRefreshes: Optional[bool] = False
 
 
 class ConnectorMetadataDefinitionV0(BaseModel):

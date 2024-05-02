@@ -4,6 +4,7 @@
 package io.airbyte.cdk.integrations.source.relationaldb.state
 
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbState
+import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -95,8 +96,8 @@ object StateManagerFactory {
 
         when (airbyteStateMessage.type) {
             AirbyteStateMessage.AirbyteStateType.STREAM ->
-                throw IllegalArgumentException(
-                    "Unable to convert connector state from stream to global.  Please reset the connection to continue."
+                throw ConfigErrorException(
+                    "You've changed replication modes - please reset the streams in this connector"
                 )
             AirbyteStateMessage.AirbyteStateType.LEGACY -> {
                 globalStateMessage =
@@ -127,8 +128,8 @@ object StateManagerFactory {
         val streamStates: MutableList<AirbyteStateMessage> = ArrayList()
         when (airbyteStateMessage.type) {
             AirbyteStateMessage.AirbyteStateType.GLOBAL ->
-                throw IllegalArgumentException(
-                    "Unable to convert connector state from global to stream.  Please reset the connection to continue."
+                throw ConfigErrorException(
+                    "You've changed replication modes - please reset the streams in this connector"
                 )
             AirbyteStateMessage.AirbyteStateType.LEGACY ->
                 streamStates.addAll(

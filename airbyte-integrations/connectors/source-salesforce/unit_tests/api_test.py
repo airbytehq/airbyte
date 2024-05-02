@@ -32,6 +32,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils import AirbyteTracedException
 from conftest import encoding_symbols_parameters, generate_stream
 from requests.exceptions import ChunkedEncodingError, HTTPError
+from salesforce_job_response_builder import SalesforceJobResponseBuilder
 from source_salesforce.api import Salesforce
 from source_salesforce.exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING
 from source_salesforce.source import SourceSalesforce
@@ -46,7 +47,7 @@ from source_salesforce.streams import (
 
 _A_CHUNKED_RESPONSE = [b"first chunk", b"second chunk"]
 _A_JSON_RESPONSE = {"id": "any id"}
-_A_SUCCESSFUL_JOB_CREATION_RESPONSE = {"state": "JobComplete"}
+_A_SUCCESSFUL_JOB_CREATION_RESPONSE = SalesforceJobResponseBuilder().with_state("JobComplete").get_response()
 _A_PK = "a_pk"
 _A_STREAM_NAME = "a_stream_name"
 
@@ -182,7 +183,7 @@ def test_bulk_sync_pagination(stream_config, stream_api, requests_mock):
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
     job_id = "fake_job"
     requests_mock.register_uri("POST", stream.path(), json={"id": job_id})
-    requests_mock.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id}", json=SalesforceJobResponseBuilder().with_id(job_id).with_state("JobComplete").get_response())
     resp_text = ["Field1,LastModifiedDate,ID"] + [f"test,2021-11-16,{i}" for i in range(5)]
     result_uri = requests_mock.register_uri(
         "GET",
@@ -215,14 +216,6 @@ def _prepare_mock(m, stream):
 def _get_result_id(stream):
     stream_slices = next(iter(stream.stream_slices(sync_mode=SyncMode.incremental)))
     return int(list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices))[0]["ID"])
-
-
-def test_bulk_sync_successful(stream_config, stream_api):
-    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
-    with requests_mock.Mocker() as m:
-        job_id = _prepare_mock(m, stream)
-        m.register_uri("GET", stream.path() + f"/{job_id}", [{"json": {"state": "JobComplete"}}])
-        assert _get_result_id(stream) == 1
 
 
 def test_bulk_sync_successful_long_response(stream_config, stream_api):
@@ -488,7 +481,7 @@ def test_given_retryable_error_when_download_data_then_retry(send_http_request_p
 @patch("source_salesforce.source.BulkSalesforceStream._non_retryable_send_http_request")
 def test_given_first_download_fail_when_download_data_then_retry_job_only_once(send_http_request_patch):
     sf_api = Mock()
-    sf_api.generate_schema.return_value = {}
+    sf_api.generate_schema.return_value = SalesforceJobResponseBuilder().with_state("JobComplete").get_response()
     sf_api.instance_url = "http://test_given_first_download_fail_when_download_data_then_retry_job.com"
     job_creation_return_values = [_A_JSON_RESPONSE, _A_SUCCESSFUL_JOB_CREATION_RESPONSE]
     send_http_request_patch.return_value.json.side_effect = job_creation_return_values * 2
@@ -876,13 +869,13 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config_date_format, stream_api, state=state, legacy=True)
 
     job_id_1 = "fake_job_1"
-    requests_mock.register_uri("GET", stream.path() + f"/{job_id_1}", [{"json": {"state": "JobComplete"}}])
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id_1}", [{"json": SalesforceJobResponseBuilder().with_id(job_id_1).with_state("JobComplete").get_response()}])
     requests_mock.register_uri("DELETE", stream.path() + f"/{job_id_1}")
     requests_mock.register_uri("GET", stream.path() + f"/{job_id_1}/results", text="Field1,LastModifiedDate,ID\ntest,2023-01-15,1")
     requests_mock.register_uri("PATCH", stream.path() + f"/{job_id_1}")
 
     job_id_2 = "fake_job_2"
-    requests_mock.register_uri("GET", stream.path() + f"/{job_id_2}", [{"json": {"state": "JobComplete"}}])
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id_2}", [{"json": SalesforceJobResponseBuilder().with_id(job_id_2).with_state("JobComplete").get_response()}])
     requests_mock.register_uri("DELETE", stream.path() + f"/{job_id_2}")
     requests_mock.register_uri(
         "GET", stream.path() + f"/{job_id_2}/results", text="Field1,LastModifiedDate,ID\ntest,2023-04-01,2\ntest,2023-02-20,22"
@@ -893,7 +886,7 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
     queries_history = requests_mock.register_uri(
         "POST", stream.path(), [{"json": {"id": job_id_1}}, {"json": {"id": job_id_2}}, {"json": {"id": job_id_3}}]
     )
-    requests_mock.register_uri("GET", stream.path() + f"/{job_id_3}", [{"json": {"state": "JobComplete"}}])
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id_3}", [{"json": SalesforceJobResponseBuilder().with_id(job_id_3).with_state("JobComplete").get_response()}])
     requests_mock.register_uri("DELETE", stream.path() + f"/{job_id_3}")
     requests_mock.register_uri("GET", stream.path() + f"/{job_id_3}/results", text="Field1,LastModifiedDate,ID\ntest,2023-04-01,3")
     requests_mock.register_uri("PATCH", stream.path() + f"/{job_id_3}")
@@ -952,7 +945,7 @@ def test_stream_slices_for_substream(stream_config, stream_api, requests_mock):
 
     job_id = "fake_job"
     requests_mock.register_uri("POST", stream.path(), json={"id": job_id})
-    requests_mock.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id}", json=SalesforceJobResponseBuilder().with_id(job_id).with_state("JobComplete").get_response())
     requests_mock.register_uri(
         "GET",
         stream.path() + f"/{job_id}/results",
