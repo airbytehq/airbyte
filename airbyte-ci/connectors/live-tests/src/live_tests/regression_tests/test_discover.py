@@ -1,7 +1,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 import json
-from typing import Callable, Dict, Iterable, List
+from collections.abc import Callable, Iterable
 
 import pytest
 from _pytest.fixtures import SubRequest
@@ -99,7 +100,7 @@ async def test_catalog_are_the_same(
             )
 
 
-def _get_filtered_sorted_streams(streams: Dict[str, AirbyteStream], stream_set: Iterable[str], include_target: bool) -> List[Dict]:
+def _get_filtered_sorted_streams(streams: dict[str, AirbyteStream], stream_set: Iterable[str], include_target: bool) -> list[dict]:
     return sorted(
         filter(
             lambda x: (x["name"] in stream_set if include_target else x["name"] not in stream_set),
