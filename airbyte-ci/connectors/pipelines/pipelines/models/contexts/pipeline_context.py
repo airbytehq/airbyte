@@ -181,7 +181,11 @@ class PipelineContext:
         """Build a dictionary used as kwargs to the update_commit_status_check function."""
         target_url: Optional[str] = self.gha_workflow_run_url
 
-        if self.state not in [ContextState.RUNNING, ContextState.INITIALIZED] and isinstance(self.report, ConnectorReport):
+        if (
+            self.remote_storage_enabled
+            and self.state not in [ContextState.RUNNING, ContextState.INITIALIZED]
+            and isinstance(self.report, ConnectorReport)
+        ):
             target_url = self.report.html_report_url
 
         return {
