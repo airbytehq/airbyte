@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.86.2
+Fix schemas merge for nullable object types
+
 ## 0.86.1
 Fix schemas merge for nullable object types
 
