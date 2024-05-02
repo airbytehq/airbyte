@@ -27,7 +27,7 @@ jobs:
     if: github.event.pull_request.head.repo.fork == true
     environment: community-ci-auto
     runs-on: community-tooling-test-small
-    timeout-minutes: 30s
+    timeout-minutes: 30
     env:
       MAIN_BRANCH_NAME: "master"
     steps:

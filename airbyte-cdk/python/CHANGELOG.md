@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.86.0
+Expose airbyte_cdk.__version__ and pin airbyte-protocol-models dependency to 
+
 ## 0.85.0
 Connector builder: read input state if it exists
 
