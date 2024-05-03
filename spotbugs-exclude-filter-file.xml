@@ -19,4 +19,14 @@
     <Class name="io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore" />
     <Bug code="SECOBDES" />
   </Match>
+  <!-- Suppress warnings triggered because Spotbugs doesn't understand Kotlin. -->
+  <Match>
+    <Source name="~.*/kotlin/.*" />
+    <Bug pattern="NM_FUTURE_KEYWORD_USED_AS_MEMBER_IDENTIFIER" />
+  </Match>
+  <!-- Suppress warnings triggered because Spotbugs doesn't understand dependency injection. -->
+  <Match>
+    <Source name="~.*/airbyte-integrations/connectors/source-oracle-v2/.*" />
+    <Bug pattern="NP_NONNULL_RETURN_VIOLATION" />
+  </Match>
 </FindBugsFilter>
