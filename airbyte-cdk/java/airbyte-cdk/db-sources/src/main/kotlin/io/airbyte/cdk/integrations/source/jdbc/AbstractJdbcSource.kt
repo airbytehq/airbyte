@@ -42,6 +42,7 @@ import io.airbyte.cdk.integrations.base.Source
 import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto
 import io.airbyte.cdk.integrations.source.relationaldb.AbstractDbSource
 import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo
+import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo
@@ -54,6 +55,7 @@ import io.airbyte.commons.util.AutoCloseableIterator
 import io.airbyte.commons.util.AutoCloseableIterators
 import io.airbyte.protocol.models.CommonField
 import io.airbyte.protocol.models.JsonSchemaType
+import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
@@ -62,6 +64,7 @@ import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
+import java.time.Instant
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
@@ -84,7 +87,7 @@ import org.slf4j.LoggerFactory
 abstract class AbstractJdbcSource<Datatype>(
     driverClass: String,
     @JvmField val streamingQueryConfigProvider: Supplier<JdbcStreamingQueryConfig>,
-    sourceOperations: JdbcCompatibleSourceOperations<Datatype>
+    sourceOperations: JdbcCompatibleSourceOperations<Datatype>,
 ) : AbstractDbSource<Datatype, JdbcDatabase>(driverClass), Source {
     @JvmField val sourceOperations: JdbcCompatibleSourceOperations<Datatype>
 
@@ -93,6 +96,61 @@ abstract class AbstractJdbcSource<Datatype>(
 
     init {
         this.sourceOperations = sourceOperations
+    }
+
+    open fun supportResumableFullRefresh(
+        database: JdbcDatabase,
+        airbyteStream: ConfiguredAirbyteStream
+    ): Boolean {
+        return false
+    }
+
+    open fun getInitialLoadHandler(
+        database: JdbcDatabase,
+        airbyteStream: ConfiguredAirbyteStream,
+        catalog: ConfiguredAirbyteCatalog?,
+        stateManager: StateManager?
+    ): InitialLoadHandler<Datatype>? {
+        return null
+    }
+
+    override fun getFullRefreshStream(
+        database: JdbcDatabase,
+        airbyteStream: ConfiguredAirbyteStream,
+        catalog: ConfiguredAirbyteCatalog?,
+        stateManager: StateManager?,
+        namespace: String,
+        selectedDatabaseFields: List<String>,
+        table: TableInfo<CommonField<Datatype>>,
+        emittedAt: Instant,
+        syncMode: SyncMode,
+        cursorField: Optional<String>
+    ): AutoCloseableIterator<AirbyteMessage> {
+        if (
+            supportResumableFullRefresh(database, airbyteStream) &&
+                syncMode == SyncMode.FULL_REFRESH
+        ) {
+            val initialLoadHandler =
+                getInitialLoadHandler(database, airbyteStream, catalog, stateManager)
+                    ?: throw IllegalStateException(
+                        "Must provide initialLoadHandler for resumable full refresh."
+                    )
+            return initialLoadHandler.getIteratorForStream(airbyteStream, table, Instant.now())
+        }
+
+        // If flag is off, fall back to legacy non-resumable refresh
+        return super.getFullRefreshStream(
+            database,
+            airbyteStream,
+            catalog,
+            stateManager,
+            namespace,
+            selectedDatabaseFields,
+            table,
+            emittedAt,
+            syncMode,
+            cursorField,
+        )
     }
 
     override fun queryTableFullRefresh(

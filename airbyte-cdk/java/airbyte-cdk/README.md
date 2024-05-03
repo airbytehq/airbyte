@@ -174,6 +174,7 @@ corresponds to that version.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.31.8  | 2024-05-03 | [\#36932](https://github.com/airbytehq/airbyte/pull/36932) | CDK changes on resumable full refresh                                                                                                                          |
 | 0.31.7  | 2024-05-02 | [\#36910](https://github.com/airbytehq/airbyte/pull/36910) | changes for destination-snowflake                                                                                                                             |
 | 0.31.6  | 2024-05-02 | [\#37746](https://github.com/airbytehq/airbyte/pull/37746) | debuggability improvements.                                                                                                                                    |
 | 0.31.5  | 2024-04-30 | [\#37758](https://github.com/airbytehq/airbyte/pull/37758) | Set debezium max retries to zero                                                                                                                               |

@@ -7,6 +7,9 @@ Airbyte's certified MySQL connector offers the following features:
 
 The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping and changelogs).
 
+**Please note the minimum required platform version is v0.58.0 to run source-mysql 3.4.0.**
+
+
 ![Airbyte MySQL Connection](https://raw.githubusercontent.com/airbytehq/airbyte/3a9264666b7b9b9d10ef8d174b8454a6c7e57560/docs/integrations/sources/mysql/assets/airbyte_mysql_source.png)
 
 ## Quick Start
@@ -223,6 +226,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.0   | 2024-05-02 | [36932](https://github.com/airbytehq/airbyte/pull/36932)   | Resumeable full refresh. Note please upgrade your platform - minimum platform version is 0.58.0.                                                |
 | 3.3.25  | 2024-05-02 | [37781](https://github.com/airbytehq/airbyte/pull/37781)   | Adopt latest CDK.                                                                                                                               |
 | 3.3.24  | 2024-05-01 | [37742](https://github.com/airbytehq/airbyte/pull/37742)   | Adopt latest CDK. Remove Debezium retries.                                                                                                      |
 | 3.3.23  | 2024-04-23 | [37507](https://github.com/airbytehq/airbyte/pull/37507)   | Better errors when user switches from CDC to non-CDC mode.                                                                                      |
