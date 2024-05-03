@@ -21,7 +21,6 @@ import io.airbyte.integrations.destination.databricks.model.DatabricksConnectorC
 import java.nio.file.Path
 import java.sql.Connection
 import java.sql.ResultSet
-import java.util.*
 
 class DatabricksTypingDedupingTest : BaseTypingDedupingTest() {
     override val imageName: String
