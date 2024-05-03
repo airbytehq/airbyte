@@ -493,12 +493,13 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             .with("INSERT INTO %s(id, name) VALUES (2, 'crusher')", tableName)
             .with("INSERT INTO %s(id, name) VALUES (3, 'vash')", tableName)
 
-        val airbyteStream2 =CatalogHelpers.createConfiguredAirbyteStream(
-            streamName2,
-            defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.NUMBER),
-            Field.of(COL_NAME, JsonSchemaType.STRING)
-        )
+        val airbyteStream2 =
+            CatalogHelpers.createConfiguredAirbyteStream(
+                streamName2,
+                defaultNamespace,
+                Field.of(COL_ID, JsonSchemaType.NUMBER),
+                Field.of(COL_NAME, JsonSchemaType.STRING)
+            )
         airbyteStream2.syncMode = SyncMode.INCREMENTAL
         airbyteStream2.cursorField = java.util.List.of(COL_ID)
         airbyteStream2.destinationSyncMode = DestinationSyncMode.APPEND
@@ -506,7 +507,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         expectedMessages.addAll(getAirbyteMessagesSecondSync(streamName2))
 
-        System.out.println("catalog: " + catalog);
+        System.out.println("catalog: " + catalog)
 
         val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
         val actualRecordMessages = filterRecords(actualMessages)

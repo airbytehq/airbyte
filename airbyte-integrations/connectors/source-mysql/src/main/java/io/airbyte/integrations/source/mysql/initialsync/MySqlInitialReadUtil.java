@@ -370,7 +370,9 @@ public class MySqlInitialReadUtil {
   }
 
   public static InitialLoadStreams filterStreamInIncrementalMode(final InitialLoadStreams stream) {
-    return new InitialLoadStreams(stream.streamsForInitialLoad.stream().filter(airbyteStream -> airbyteStream.getSyncMode() == SyncMode.INCREMENTAL).collect(Collectors.toList()),
+    return new InitialLoadStreams(
+        stream.streamsForInitialLoad.stream().filter(airbyteStream -> airbyteStream.getSyncMode() == SyncMode.INCREMENTAL)
+            .collect(Collectors.toList()),
         stream.pairToInitialLoadStatus);
   }
 
