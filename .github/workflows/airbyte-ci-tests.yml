@@ -17,6 +17,7 @@ on:
       - synchronize
 jobs:
   changes:
+    name: Check for changes in internal poetry packages
     runs-on: ubuntu-latest
     outputs:
       internal_poetry_packages: ${{ steps.changes.outputs.internal_poetry_packages }}
@@ -25,7 +26,8 @@ jobs:
       - name: Checkout Airbyte
         if: github.event_name != 'pull_request'
         uses: actions/checkout@v4
-      - id: changes
+      - name: Check for changes in internal poetry packages
+        id: changes
         uses: dorny/paths-filter@v2
         with:
           # Note: expressions within a filter are OR'ed
@@ -43,12 +45,12 @@ jobs:
             - airbyte-integrations/bases/connector-acceptance-test/**
 
   run-tests:
+    name: Run Airbyte CI tests # This is a required check for the branch protection rule, do not change the job name
     needs: changes
     # We only run the Connectors CI job if there are changes to the connectors on a non-forked PR
     if: needs.changes.outputs.internal_poetry_packages == 'true'
     #name: Internal Poetry packages CI
     # To rename in a follow up PR
-    name: Run Airbyte CI tests
     runs-on: tooling-test-large
     permissions:
       pull-requests: read

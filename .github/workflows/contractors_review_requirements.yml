@@ -1,4 +1,4 @@
-name: Connector Ops CI - Check contractors review requirements
+name: Check contractors review requirements
 
 on:
   pull_request:

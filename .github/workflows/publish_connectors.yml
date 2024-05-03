@@ -1,4 +1,4 @@
-name: Connector Ops CI - Publish Connectors
+name: Publish Connectors
 
 on:
   push:

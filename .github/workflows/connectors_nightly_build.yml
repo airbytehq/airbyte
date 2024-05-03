@@ -1,4 +1,4 @@
-name: Connector Ops CI - Connectors Nightly Tests
+name: Connectors Nightly Tests
 
 on:
   schedule:

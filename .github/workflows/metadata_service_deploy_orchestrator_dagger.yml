@@ -1,4 +1,4 @@
-name: Connector Ops CI - Metadata Service Deploy Orchestrator
+name: Metadata Service Deploy Orchestrator
 
 on:
   workflow_dispatch:

@@ -10,8 +10,7 @@ on:
 
 jobs:
   format-check:
-    # IMPORTANT: This name must match the require check name on the branch protection settings
-    name: "Check for formatting errors"
+    name: "Check for formatting errors" # This is a required check for the branch protection rule, do not change the job name
     # Do not run this job on forks
     # Forked PRs are handled by the community_ci.yml workflow
     if: github.event.pull_request.head.repo.fork != true

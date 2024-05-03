@@ -1,4 +1,4 @@
-name: "Connector Ops CI - Upload Changed Metadata Files [Emergency Use!]"
+name: Upload Changed Metadata Files [Emergency Use!]
 
 on:
   workflow_dispatch:

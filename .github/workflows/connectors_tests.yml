@@ -1,4 +1,4 @@
-name: Connectors Tests
+name: Connector testing [Non Forked PRs]
 
 concurrency:
   # This is the name of the concurrency group. It is used to prevent concurrent runs of the same workflow.
@@ -23,6 +23,7 @@ on:
       - synchronize
 jobs:
   changes:
+    name: Check for changes in connectors
     runs-on: ubuntu-latest
     outputs:
       connectors: ${{ steps.changes.outputs.connectors }}
@@ -32,7 +33,8 @@ jobs:
       - name: Checkout Airbyte
         if: github.event_name != 'pull_request'
         uses: actions/checkout@v4
-      - id: changes
+      - name: Check for changes in connectors
+        id: changes
         uses: dorny/paths-filter@v2
         with:
           # Note: expressions within a filter are OR'ed
@@ -58,13 +60,13 @@ jobs:
             "target_url": "${{ github.event.workflow_run.html_url }}"
             }' \
 
-  connectors_ci:
+  airbyte_ci_connectors_tests:
     needs: changes
     # We only run the Connectors CI job if there are changes to the connectors on a non-forked PR
     # Forked PRs are handled by the community_ci.yml workflow
     # If the condition is not met the job will be skipped (it will not fail)
     if: (github.event_name == 'pull_request' && needs.changes.outputs.connectors == 'true' && github.event.pull_request.head.repo.fork != true) || github.event_name == 'workflow_dispatch'
-    name: Connectors CI
+    name: Run airbyte-ci connectors test
     runs-on: connector-test-large
     timeout-minutes: 360 # 6 hours
     steps:

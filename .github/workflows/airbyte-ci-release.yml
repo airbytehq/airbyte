@@ -1,4 +1,4 @@
-name: Connector Ops CI - Airbyte CI Release
+name: Airbyte CI Release
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

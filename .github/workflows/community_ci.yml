@@ -39,8 +39,7 @@ jobs:
           exit 1
 
   format_check:
-    # IMPORTANT: This name must match the require check name on the branch protection settings
-    name: "Check for formatting errors"
+    name: "Check for formatting errors" # This is a required check for the branch protection rule, do not change the job name
     if: github.event.pull_request.head.repo.fork == true
     environment: community-ci-auto
     runs-on: community-tooling-test-small
