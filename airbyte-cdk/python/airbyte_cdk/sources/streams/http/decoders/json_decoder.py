@@ -20,7 +20,9 @@ class JsonDecoder(Decoder):
             return {}
 
     def validate_response(self, response: requests.Response) -> None:
-        try:
-            response.json()
-        except requests.exceptions.JSONDecodeError:
-            raise
+        if response.ok:
+            try:
+                response.json()
+            except requests.exceptions.JSONDecodeError:
+                raise
+        return
