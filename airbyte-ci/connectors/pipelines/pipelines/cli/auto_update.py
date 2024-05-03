@@ -31,7 +31,11 @@ AUTO_UPDATE_AGREE_KEY = "yes_auto_update"
 def pre_confirm_auto_update_flag(f: Callable) -> Callable:
     """Decorator to add a --yes-auto-update flag to a command."""
     return click.option(
-        "--yes-auto-update", AUTO_UPDATE_AGREE_KEY, is_flag=True, default=False, help="Skip prompts and automatically upgrade pipelines"
+        "--yes-auto-update/--no-auto-update",
+        AUTO_UPDATE_AGREE_KEY,
+        is_flag=True,
+        default=True,
+        help="Skip prompts and automatically upgrade pipelines",
     )(f)
 
 
