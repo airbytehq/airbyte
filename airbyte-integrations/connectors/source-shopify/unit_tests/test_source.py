@@ -8,7 +8,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from airbyte_cdk.utils import AirbyteTracedException
-from conftest import records_per_slice
 from source_shopify.auth import ShopifyAuthenticator
 from source_shopify.source import ConnectionCheckTest, SourceShopify
 from source_shopify.streams.streams import (
@@ -49,6 +48,8 @@ from source_shopify.streams.streams import (
     Transactions,
     TransactionsGraphql,
 )
+
+from .conftest import records_per_slice
 
 
 @pytest.fixture
