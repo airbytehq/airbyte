@@ -8,13 +8,13 @@ from unittest import TestCase
 
 import freezegun
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-from airbyte_protocol.models import AirbyteStreamStatus, FailureType, SyncMode
+from airbyte_protocol.models import AirbyteStreamStatus, SyncMode
 from config_builder import ConfigBuilder
 from integration.test_rest_stream import create_http_request as create_standard_http_request
 from integration.test_rest_stream import create_http_response as create_standard_http_response
 from integration.utils import create_base_url, given_authentication, given_stream, read
 from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
-from salesforce_job_response_builder import SalesforceJobResponseBuilder
+from salesforce_job_response_builder import JobCreateResponseBuilder, JobInfoResponseBuilder
 from source_salesforce.streams import LOOKBACK_SECONDS
 
 _A_FIELD_NAME = "a_field"
@@ -72,14 +72,14 @@ class BulkStreamTest(TestCase):
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         self._http_mocker.post(
             self._make_full_job_request([_A_FIELD_NAME]),
-            HttpResponse(json.dumps({"id": _JOB_ID})),
+            JobCreateResponseBuilder().with_id(_JOB_ID).build(),
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}"),
             [
-                SalesforceJobResponseBuilder().with_id(_JOB_ID).with_state("InProgress").build(),
-                SalesforceJobResponseBuilder().with_id(_JOB_ID).with_state("UploadComplete").build(),
-                SalesforceJobResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
+                JobInfoResponseBuilder().with_id(_JOB_ID).with_state("InProgress").build(),
+                JobInfoResponseBuilder().with_id(_JOB_ID).with_state("UploadComplete").build(),
+                JobInfoResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
             ],
         )
         self._http_mocker.get(
@@ -96,11 +96,11 @@ class BulkStreamTest(TestCase):
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         self._http_mocker.post(
             self._make_full_job_request([_A_FIELD_NAME]),
-            HttpResponse(json.dumps({"id": _JOB_ID})),
+            JobCreateResponseBuilder().with_id(_JOB_ID).build(),
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}"),
-            SalesforceJobResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
+            JobInfoResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}/results"),
@@ -122,12 +122,12 @@ class BulkStreamTest(TestCase):
             self._make_full_job_request([_A_FIELD_NAME]),
             [
                 _RETRYABLE_RESPONSE,
-                HttpResponse(json.dumps({"id": _JOB_ID})),
+                JobCreateResponseBuilder().with_id(_JOB_ID).build(),
             ],
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}"),
-            SalesforceJobResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
+            JobInfoResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}/results"),
@@ -146,7 +146,7 @@ class BulkStreamTest(TestCase):
             self._make_full_job_request([_A_FIELD_NAME]),
             [
                 HttpResponse("[{}]", 403),
-                HttpResponse(json.dumps({"id": _JOB_ID})),
+                JobCreateResponseBuilder().with_id(_JOB_ID).build(),
             ],
         )
         self._http_mocker.get(
@@ -173,11 +173,11 @@ class BulkStreamTest(TestCase):
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         self._http_mocker.post(
             self._make_full_job_request([_A_FIELD_NAME]),
-            HttpResponse(json.dumps({"id": _JOB_ID})),
+            JobCreateResponseBuilder().with_id(_JOB_ID).build(),
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}"),
-            SalesforceJobResponseBuilder().with_id(_JOB_ID).with_state("Aborted").build(),
+            JobInfoResponseBuilder().with_id(_JOB_ID).with_state("Aborted").build(),
         )
         self._mock_delete_job(_JOB_ID)
 
@@ -189,11 +189,11 @@ class BulkStreamTest(TestCase):
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         self._http_mocker.post(
             self._make_full_job_request([_A_FIELD_NAME]),
-            HttpResponse(json.dumps({"id": _JOB_ID})),
+            JobCreateResponseBuilder().with_id(_JOB_ID).build(),
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}"),
-            SalesforceJobResponseBuilder().with_id(_JOB_ID).with_state("Failed").build(),
+            JobInfoResponseBuilder().with_id(_JOB_ID).with_state("Failed").build(),
         )
         self._http_mocker.get(
             create_standard_http_request(_STREAM_NAME, [_A_FIELD_NAME]),
@@ -209,11 +209,11 @@ class BulkStreamTest(TestCase):
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         self._http_mocker.post(
             self._make_full_job_request([_A_FIELD_NAME]),
-            HttpResponse(json.dumps({"id": _JOB_ID})),
+            JobCreateResponseBuilder().with_id(_JOB_ID).build(),
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}"),
-            SalesforceJobResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
+            JobInfoResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}/results"),
@@ -232,11 +232,11 @@ class BulkStreamTest(TestCase):
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         self._http_mocker.post(
             self._make_full_job_request([_A_FIELD_NAME]),
-            HttpResponse(json.dumps({"id": _JOB_ID})),
+            JobCreateResponseBuilder().with_id(_JOB_ID).build(),
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}"),
-            SalesforceJobResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
+            JobInfoResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}/results"),
@@ -263,11 +263,11 @@ class BulkStreamTest(TestCase):
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         self._http_mocker.post(
             self._make_full_job_request([_A_FIELD_NAME]),
-            HttpResponse(json.dumps({"id": _JOB_ID})),
+            JobCreateResponseBuilder().with_id(_JOB_ID).build(),
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}"),
-            SalesforceJobResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
+            JobInfoResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}/results"),
@@ -317,11 +317,11 @@ class BulkStreamTest(TestCase):
     def _create_sliced_job(self, lower_boundary: datetime, upper_boundary: datetime, fields: List[str], job_id: str, record_count: int) -> None:
         self._http_mocker.post(
             self._make_sliced_job_request(lower_boundary, upper_boundary, fields),
-            HttpResponse(json.dumps({"id": job_id})),
+            JobCreateResponseBuilder().with_id(job_id).build(),
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{job_id}"),
-            SalesforceJobResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
+            JobInfoResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{job_id}/results"),
