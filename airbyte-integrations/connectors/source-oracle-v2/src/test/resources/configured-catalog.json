@@ -1,0 +1,3320 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "FIBO_REF_SOURCE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "PREDECESSOR": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "N": {
+              "type": "number",
+              "airbyte_type": "integer"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["PREDECESSOR", "N"],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["PREDECESSOR", "N"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_BFILE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_BFILE": {
+              "type": "string",
+              "contentEncoding": "base64"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_BINARY_DOUBLE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_BINARY_DOUBLE": {
+              "type": "number"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_BINARY_DOUBLE"],
+        "source_defined_primary_key": [["COL_BINARY_DOUBLE"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_BINARY_DOUBLE"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_BINARY_DOUBLE"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_BINARY_FLOAT",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_BINARY_FLOAT": {
+              "type": "number"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_BINARY_FLOAT"],
+        "source_defined_primary_key": [["COL_BINARY_FLOAT"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_BINARY_FLOAT"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_BINARY_FLOAT"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_BLOB",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_BLOB": {
+              "type": "string",
+              "contentEncoding": "base64"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_BOOL",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_BOOL": {
+              "type": "boolean"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [["COL_BOOL"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_BOOL"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_BOOLEAN",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_BOOLEAN": {
+              "type": "boolean"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [["COL_BOOLEAN"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_BOOLEAN"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_CHAR",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_CHAR": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_CHAR"],
+        "source_defined_primary_key": [["COL_CHAR"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_CHAR"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_CHAR"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_CHARACTER_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_CHARACTER_10": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_CHARACTER_10"],
+        "source_defined_primary_key": [["COL_CHARACTER_10"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_CHARACTER_10"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_CHARACTER_10"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_CHARACTER_VARYING_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_CHARACTER_VARYING_10": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_CHARACTER_VARYING_10"],
+        "source_defined_primary_key": [["COL_CHARACTER_VARYING_10"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_CHARACTER_VARYING_10"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_CHARACTER_VARYING_10"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_CHAR_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_CHAR_10": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_CHAR_10"],
+        "source_defined_primary_key": [["COL_CHAR_10"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_CHAR_10"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_CHAR_10"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_CHAR_10_BYTE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_CHAR_10_BYTE": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_CHAR_10_BYTE"],
+        "source_defined_primary_key": [["COL_CHAR_10_BYTE"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_CHAR_10_BYTE"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_CHAR_10_BYTE"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_CHAR_10_CHAR",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_CHAR_10_CHAR": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_CHAR_10_CHAR"],
+        "source_defined_primary_key": [["COL_CHAR_10_CHAR"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_CHAR_10_CHAR"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_CHAR_10_CHAR"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_CHAR_VARYING_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_CHAR_VARYING_10": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_CHAR_VARYING_10"],
+        "source_defined_primary_key": [["COL_CHAR_VARYING_10"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_CHAR_VARYING_10"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_CHAR_VARYING_10"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_CLOB",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_CLOB": {
+              "type": "string",
+              "contentEncoding": "base64"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_DATE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_DATE": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_DATE"],
+        "source_defined_primary_key": [["COL_DATE"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_DATE"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_DATE"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_DEC",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_DEC": {
+              "type": "number",
+              "airbyte_type": "integer"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_DEC"],
+        "source_defined_primary_key": [["COL_DEC"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_DEC"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_DEC"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_DECIMAL",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_DECIMAL": {
+              "type": "number",
+              "airbyte_type": "integer"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_DECIMAL"],
+        "source_defined_primary_key": [["COL_DECIMAL"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_DECIMAL"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_DECIMAL"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_DECIMAL_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_DECIMAL_10": {
+              "type": "number",
+              "airbyte_type": "integer"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_DECIMAL_10"],
+        "source_defined_primary_key": [["COL_DECIMAL_10"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_DECIMAL_10"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_DECIMAL_10"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_DECIMAL_10_2",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_DECIMAL_10_2": {
+              "type": "number"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_DECIMAL_10_2"],
+        "source_defined_primary_key": [["COL_DECIMAL_10_2"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_DECIMAL_10_2"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_DECIMAL_10_2"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_DEC_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_DEC_10": {
+              "type": "number",
+              "airbyte_type": "integer"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_DEC_10"],
+        "source_defined_primary_key": [["COL_DEC_10"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_DEC_10"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_DEC_10"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_DEC_10_2",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_DEC_10_2": {
+              "type": "number"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_DEC_10_2"],
+        "source_defined_primary_key": [["COL_DEC_10_2"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_DEC_10_2"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_DEC_10_2"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_DOUBLE_PRECISION",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_DOUBLE_PRECISION": {
+              "type": "number"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_DOUBLE_PRECISION"],
+        "source_defined_primary_key": [["COL_DOUBLE_PRECISION"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_DOUBLE_PRECISION"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_DOUBLE_PRECISION"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_FIBO_OBJTYP",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_FIBO_OBJTYP": {
+              "type": "object",
+              "oneOf": [
+                {
+                  "type": "array"
+                },
+                {
+                  "type": "object"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "boolean"
+                }
+              ],
+              "airbyte_type": "json"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_FIBO_TBLTYP",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_FIBO_TBLTYP": {
+              "type": "object",
+              "oneOf": [
+                {
+                  "type": "array"
+                },
+                {
+                  "type": "object"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "boolean"
+                }
+              ],
+              "airbyte_type": "json"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_FLOAT",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_FLOAT": {
+              "type": "number"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_FLOAT"],
+        "source_defined_primary_key": [["COL_FLOAT"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_FLOAT"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_FLOAT"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_FLOAT_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_FLOAT_10": {
+              "type": "number"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_FLOAT_10"],
+        "source_defined_primary_key": [["COL_FLOAT_10"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_FLOAT_10"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_FLOAT_10"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_INT",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_INT": {
+              "type": "number",
+              "airbyte_type": "integer"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_INT"],
+        "source_defined_primary_key": [["COL_INT"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_INT"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_INT"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_INTEGER",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_INTEGER": {
+              "type": "number",
+              "airbyte_type": "integer"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_INTEGER"],
+        "source_defined_primary_key": [["COL_INTEGER"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_INTEGER"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_INTEGER"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_INTERVAL_DAY_1_TO_SECOND",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_INTERVAL_DAY_1_TO_SECOND": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_INTERVAL_DAY_1_TO_SECOND"],
+        "source_defined_primary_key": [["COL_INTERVAL_DAY_1_TO_SECOND"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_INTERVAL_DAY_1_TO_SECOND"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_INTERVAL_DAY_1_TO_SECOND"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_INTERVAL_DAY_1_TO_SECOND_2",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_INTERVAL_DAY_1_TO_SECOND_2": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_INTERVAL_DAY_1_TO_SECOND_2"],
+        "source_defined_primary_key": [["COL_INTERVAL_DAY_1_TO_SECOND_2"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_INTERVAL_DAY_1_TO_SECOND_2"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_INTERVAL_DAY_1_TO_SECOND_2"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_INTERVAL_DAY_TO_SECOND",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_INTERVAL_DAY_TO_SECOND": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_INTERVAL_DAY_TO_SECOND"],
+        "source_defined_primary_key": [["COL_INTERVAL_DAY_TO_SECOND"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_INTERVAL_DAY_TO_SECOND"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_INTERVAL_DAY_TO_SECOND"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_INTERVAL_DAY_TO_SECOND_2",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_INTERVAL_DAY_TO_SECOND_2": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_INTERVAL_DAY_TO_SECOND_2"],
+        "source_defined_primary_key": [["COL_INTERVAL_DAY_TO_SECOND_2"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_INTERVAL_DAY_TO_SECOND_2"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_INTERVAL_DAY_TO_SECOND_2"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_INTERVAL_YEAR_4_TO_MONTH",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_INTERVAL_YEAR_4_TO_MONTH": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_INTERVAL_YEAR_4_TO_MONTH"],
+        "source_defined_primary_key": [["COL_INTERVAL_YEAR_4_TO_MONTH"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_INTERVAL_YEAR_4_TO_MONTH"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_INTERVAL_YEAR_4_TO_MONTH"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_INTERVAL_YEAR_TO_MONTH",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_INTERVAL_YEAR_TO_MONTH": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_INTERVAL_YEAR_TO_MONTH"],
+        "source_defined_primary_key": [["COL_INTERVAL_YEAR_TO_MONTH"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_INTERVAL_YEAR_TO_MONTH"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_INTERVAL_YEAR_TO_MONTH"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_JSON",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_JSON": {
+              "type": "object",
+              "oneOf": [
+                {
+                  "type": "array"
+                },
+                {
+                  "type": "object"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "boolean"
+                }
+              ],
+              "airbyte_type": "json"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_LONG",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_LONG": {
+              "type": "string",
+              "contentEncoding": "base64"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_LONG_RAW",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_LONG_RAW": {
+              "type": "string",
+              "contentEncoding": "base64"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_NATIONAL_CHARACTER_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_NATIONAL_CHARACTER_10": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_NATIONAL_CHARACTER_10"],
+        "source_defined_primary_key": [["COL_NATIONAL_CHARACTER_10"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_NATIONAL_CHARACTER_10"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_NATIONAL_CHARACTER_10"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_NATIONAL_CHARACTER_VARYING_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_NATIONAL_CHARACTER_VARYING_10": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_NATIONAL_CHARACTER_VARYING_10"],
+        "source_defined_primary_key": [["COL_NATIONAL_CHARACTER_VARYING_10"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_NATIONAL_CHARACTER_VARYING_10"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_NATIONAL_CHARACTER_VARYING_10"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_NATIONAL_CHAR_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_NATIONAL_CHAR_10": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_NATIONAL_CHAR_10"],
+        "source_defined_primary_key": [["COL_NATIONAL_CHAR_10"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_NATIONAL_CHAR_10"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_NATIONAL_CHAR_10"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_NATIONAL_CHAR_VARYING_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_NATIONAL_CHAR_VARYING_10": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_NATIONAL_CHAR_VARYING_10"],
+        "source_defined_primary_key": [["COL_NATIONAL_CHAR_VARYING_10"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_NATIONAL_CHAR_VARYING_10"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_NATIONAL_CHAR_VARYING_10"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_NCHAR",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_NCHAR": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_NCHAR"],
+        "source_defined_primary_key": [["COL_NCHAR"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_NCHAR"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_NCHAR"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_NCHAR_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_NCHAR_10": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_NCHAR_10"],
+        "source_defined_primary_key": [["COL_NCHAR_10"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_NCHAR_10"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_NCHAR_10"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_NCHAR_VARYING_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_NCHAR_VARYING_10": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_NCHAR_VARYING_10"],
+        "source_defined_primary_key": [["COL_NCHAR_VARYING_10"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_NCHAR_VARYING_10"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_NCHAR_VARYING_10"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_NCLOB",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_NCLOB": {
+              "type": "string",
+              "contentEncoding": "base64"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_NUMBER",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_NUMBER": {
+              "type": "number"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_NUMBER"],
+        "source_defined_primary_key": [["COL_NUMBER"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_NUMBER"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_NUMBER"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_NUMBER_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_NUMBER_10": {
+              "type": "number",
+              "airbyte_type": "integer"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_NUMBER_10"],
+        "source_defined_primary_key": [["COL_NUMBER_10"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_NUMBER_10"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_NUMBER_10"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_NUMBER_10_2",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_NUMBER_10_2": {
+              "type": "number"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_NUMBER_10_2"],
+        "source_defined_primary_key": [["COL_NUMBER_10_2"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_NUMBER_10_2"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_NUMBER_10_2"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_NUMERIC",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_NUMERIC": {
+              "type": "number",
+              "airbyte_type": "integer"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_NUMERIC"],
+        "source_defined_primary_key": [["COL_NUMERIC"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_NUMERIC"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_NUMERIC"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_NUMERIC_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_NUMERIC_10": {
+              "type": "number",
+              "airbyte_type": "integer"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_NUMERIC_10"],
+        "source_defined_primary_key": [["COL_NUMERIC_10"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_NUMERIC_10"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_NUMERIC_10"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_NUMERIC_10_2",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_NUMERIC_10_2": {
+              "type": "number"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_NUMERIC_10_2"],
+        "source_defined_primary_key": [["COL_NUMERIC_10_2"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_NUMERIC_10_2"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_NUMERIC_10_2"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_NVARCHAR2_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_NVARCHAR2_10": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_NVARCHAR2_10"],
+        "source_defined_primary_key": [["COL_NVARCHAR2_10"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_NVARCHAR2_10"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_NVARCHAR2_10"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_RAW_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_RAW_10": {
+              "type": "string",
+              "contentEncoding": "base64"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [["COL_RAW_10"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_RAW_10"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_REAL",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_REAL": {
+              "type": "number"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_REAL"],
+        "source_defined_primary_key": [["COL_REAL"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_REAL"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_REAL"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_ROWID",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_ROWID": {
+              "type": "string",
+              "contentEncoding": "base64"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [["COL_ROWID"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_ROWID"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_SDO_GEOMETRY",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_SDO_GEOMETRY": {
+              "type": "object",
+              "oneOf": [
+                {
+                  "type": "array"
+                },
+                {
+                  "type": "object"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "boolean"
+                }
+              ],
+              "airbyte_type": "json"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_SDO_TOPO_GEOMETRY",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_SDO_TOPO_GEOMETRY": {
+              "type": "object",
+              "oneOf": [
+                {
+                  "type": "array"
+                },
+                {
+                  "type": "object"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "boolean"
+                }
+              ],
+              "airbyte_type": "json"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_SMALLINT",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_SMALLINT": {
+              "type": "number",
+              "airbyte_type": "integer"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_SMALLINT"],
+        "source_defined_primary_key": [["COL_SMALLINT"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_SMALLINT"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_SMALLINT"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_SYS_ANYDATA",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_SYS_ANYDATA": {
+              "type": "object",
+              "oneOf": [
+                {
+                  "type": "array"
+                },
+                {
+                  "type": "object"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "boolean"
+                }
+              ],
+              "airbyte_type": "json"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_SYS_ANYDATASET",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_SYS_ANYDATASET": {
+              "type": "object",
+              "oneOf": [
+                {
+                  "type": "array"
+                },
+                {
+                  "type": "object"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "boolean"
+                }
+              ],
+              "airbyte_type": "json"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_SYS_ANYTYPE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_SYS_ANYTYPE": {
+              "type": "object",
+              "oneOf": [
+                {
+                  "type": "array"
+                },
+                {
+                  "type": "object"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "boolean"
+                }
+              ],
+              "airbyte_type": "json"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_TIMESTAMP",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_TIMESTAMP": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_without_timezone"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_TIMESTAMP"],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_TIMESTAMP"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_TIMESTAMP_2",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_TIMESTAMP_2": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_without_timezone"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_TIMESTAMP_2"],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_TIMESTAMP_2"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_TIMESTAMP_2_WITH_LOCAL_TIME_ZONE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_TIMESTAMP_2_WITH_LOCAL_TIME_ZONE": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_TIMESTAMP_2_WITH_LOCAL_TIME_ZONE"],
+        "source_defined_primary_key": [
+          ["COL_TIMESTAMP_2_WITH_LOCAL_TIME_ZONE"]
+        ],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_TIMESTAMP_2_WITH_LOCAL_TIME_ZONE"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_TIMESTAMP_2_WITH_LOCAL_TIME_ZONE"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_TIMESTAMP_2_WITH_TIME_ZONE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_TIMESTAMP_2_WITH_TIME_ZONE": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_TIMESTAMP_2_WITH_TIME_ZONE"],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_TIMESTAMP_2_WITH_TIME_ZONE"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_TIMESTAMP_WITH_LOCAL_TIME_ZONE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_TIMESTAMP_WITH_LOCAL_TIME_ZONE": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_TIMESTAMP_WITH_LOCAL_TIME_ZONE"],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_TIMESTAMP_WITH_LOCAL_TIME_ZONE"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_TIMESTAMP_WITH_TIME_ZONE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_TIMESTAMP_WITH_TIME_ZONE": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_TIMESTAMP_WITH_TIME_ZONE"],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_TIMESTAMP_WITH_TIME_ZONE"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_URITYPE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_URITYPE": {
+              "type": "object",
+              "oneOf": [
+                {
+                  "type": "array"
+                },
+                {
+                  "type": "object"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "boolean"
+                }
+              ],
+              "airbyte_type": "json"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_UROWID",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_UROWID": {
+              "type": "string",
+              "contentEncoding": "base64"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [["COL_UROWID"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_UROWID"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_UROWID_100",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_UROWID_100": {
+              "type": "string",
+              "contentEncoding": "base64"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [["COL_UROWID_100"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_UROWID_100"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_VARCHAR2_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARCHAR2_10": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_VARCHAR2_10"],
+        "source_defined_primary_key": [["COL_VARCHAR2_10"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_VARCHAR2_10"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_VARCHAR2_10"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_VARCHAR2_10_BYTE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARCHAR2_10_BYTE": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_VARCHAR2_10_BYTE"],
+        "source_defined_primary_key": [["COL_VARCHAR2_10_BYTE"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_VARCHAR2_10_BYTE"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_VARCHAR2_10_BYTE"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_VARCHAR2_10_CHAR",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARCHAR2_10_CHAR": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_VARCHAR2_10_CHAR"],
+        "source_defined_primary_key": [["COL_VARCHAR2_10_CHAR"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_VARCHAR2_10_CHAR"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_VARCHAR2_10_CHAR"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_VARCHAR_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARCHAR_10": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["COL_VARCHAR_10"],
+        "source_defined_primary_key": [["COL_VARCHAR_10"]],
+        "namespace": "FOO"
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["COL_VARCHAR_10"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["COL_VARCHAR_10"]]
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_BFILE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_BFILE": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "contentEncoding": "base64"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_BINARY_DOUBLE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_BINARY_DOUBLE": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_BINARY_FLOAT",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_BINARY_FLOAT": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_BOOL",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_BOOL": {
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_BOOLEAN",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_BOOLEAN": {
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_CHAR",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_CHAR": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_CHARACTER_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_CHARACTER_10": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_CHARACTER_VARYING_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_CHARACTER_VARYING_10": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_CHAR_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_CHAR_10": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_CHAR_10_BYTE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_CHAR_10_BYTE": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_CHAR_10_CHAR",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_CHAR_10_CHAR": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_CHAR_VARYING_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_CHAR_VARYING_10": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_DATE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_DATE": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_DEC",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_DEC": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_DECIMAL",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_DECIMAL": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_DECIMAL_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_DECIMAL_10": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_DECIMAL_10_2",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_DECIMAL_10_2": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_DEC_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_DEC_10": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_DEC_10_2",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_DEC_10_2": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_DOUBLE_PRECISION",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_DOUBLE_PRECISION": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_FIBO_OBJTYP",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_FIBO_OBJTYP": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "oneOf": [
+                  {
+                    "type": "array"
+                  },
+                  {
+                    "type": "object"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ],
+                "airbyte_type": "json"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_FLOAT",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_FLOAT": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_FLOAT_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_FLOAT_10": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_INT",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_INT": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "airbyte_type": "integer"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_INTEGER",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_INTEGER": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "airbyte_type": "integer"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_INTERVAL_DAY_1_TO_SECOND",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_INTERVAL_DAY_1_TO_SECOND": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_INTERVAL_DAY_1_TO_SECOND_2",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_INTERVAL_DAY_1_TO_SECOND_2": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_INTERVAL_DAY_TO_SECOND",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_INTERVAL_DAY_TO_SECOND": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_INTERVAL_DAY_TO_SECOND_2",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_INTERVAL_DAY_TO_SECOND_2": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_INTERVAL_YEAR_4_TO_MONTH",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_INTERVAL_YEAR_4_TO_MONTH": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_INTERVAL_YEAR_TO_MONTH",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_INTERVAL_YEAR_TO_MONTH": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_NATIONAL_CHARACTER_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_NATIONAL_CHARACTER_10": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_NATIONAL_CHARACTER_VARYING_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_NATIONAL_CHARACTER_VARYING_10": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_NATIONAL_CHAR_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_NATIONAL_CHAR_10": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_NATIONAL_CHAR_VARYING_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_NATIONAL_CHAR_VARYING_10": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_NCHAR",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_NCHAR": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_NCHAR_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_NCHAR_10": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_NCHAR_VARYING_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_NCHAR_VARYING_10": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_NUMBER",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_NUMBER": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_NUMBER_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_NUMBER_10": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_NUMBER_10_2",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_NUMBER_10_2": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_NUMERIC",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_NUMERIC": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_NUMERIC_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_NUMERIC_10": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_NUMERIC_10_2",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_NUMERIC_10_2": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_NVARCHAR2_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_NVARCHAR2_10": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_RAW_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_RAW_10": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "contentEncoding": "base64"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_REAL",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_REAL": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_SDO_GEOMETRY",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_SDO_GEOMETRY": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_SDO_TOPO_GEOMETRY",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_SDO_TOPO_GEOMETRY": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_SMALLINT",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_SMALLINT": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "airbyte_type": "integer"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_TIMESTAMP",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_TIMESTAMP": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date-time",
+                "airbyte_type": "timestamp_without_timezone"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_TIMESTAMP_2",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_TIMESTAMP_2": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date-time",
+                "airbyte_type": "timestamp_without_timezone"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_TIMESTAMP_2_WITH_LOCAL_TIME_ZONE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_TIMESTAMP_2_WITH_LOCAL_TIME_ZONE": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date-time",
+                "airbyte_type": "timestamp_with_timezone"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_TIMESTAMP_2_WITH_TIME_ZONE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_TIMESTAMP_2_WITH_TIME_ZONE": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date-time",
+                "airbyte_type": "timestamp_with_timezone"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_TIMESTAMP_WITH_LOCAL_TIME_ZONE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_TIMESTAMP_WITH_LOCAL_TIME_ZONE": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date-time",
+                "airbyte_type": "timestamp_with_timezone"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_TIMESTAMP_WITH_TIME_ZONE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_TIMESTAMP_WITH_TIME_ZONE": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date-time",
+                "airbyte_type": "timestamp_with_timezone"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_URITYPE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_URITYPE": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_VARCHAR2_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_VARCHAR2_10": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_VARCHAR2_10_BYTE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_VARCHAR2_10_BYTE": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_VARCHAR2_10_CHAR",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_VARCHAR2_10_CHAR": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_VARRAY_VARCHAR_10",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_VARRAY_VARCHAR_10": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "TBL_XMLTYPE",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "COL_XMLTYPE": {
+              "type": "object",
+              "oneOf": [
+                {
+                  "type": "array"
+                },
+                {
+                  "type": "object"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "boolean"
+                }
+              ],
+              "airbyte_type": "json"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "FOO"
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    }
+  ]
+}
