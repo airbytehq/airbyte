@@ -354,4 +354,6 @@ class Stream(ABC):
             return state_manager.create_state_message(self.name, self.namespace)
 
         except AttributeError:
-            raise ValueError(f"Tried to checkpoint stream {self.name} which does not have a state. Checkpointable streams must implement the Incremental property.")
+            raise ValueError(
+                f"Tried to checkpoint stream {self.name} which does not have a state. Checkpointable streams must implement the Incremental property."
+            )
