@@ -25,11 +25,11 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
     def tearDown(self):
         pass
 
-    def _test_check_valid_config(self):
+    def test_check_valid_config(self):
         outcome = DestinationSnowflakeCortex().check(logging.getLogger("airbyte"), self.config)
         assert outcome.status == Status.SUCCEEDED
 
-    def _test_check_invalid_config(self):
+    def test_check_invalid_config(self):
         outcome = DestinationSnowflakeCortex().check(
             logging.getLogger("airbyte"),
             {
@@ -74,7 +74,7 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         conn.commit()
         conn.close()
 
-    def _test_cortex_functions_available(self):
+    def test_cortex_functions_available(self):
         # Create a cursor object
         conn = self._get_db_connection()
         cursor = conn.cursor()
@@ -93,6 +93,32 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         cursor.close()
         conn.close()
 
+    def test_get_embeddings_from_documents(self):
+        conn = self._get_db_connection()
+        cur = conn.cursor()
+        page_content_list = ["dogs are number 1", "dogs are number 2", "cats are nummber 1"]
+
+        # Create a temporary table
+        cur.execute("""
+        CREATE TEMPORARY TABLE temp_page_content (
+            page_content STRING
+        )
+        """)
+        # Insert data into the temporary table
+        cur.executemany("INSERT INTO temp_page_content (page_content) VALUES (%s)", page_content_list)
+
+        # Process the data (for example, call a UDF or perform calculations)
+        # Here we're just selecting the processed data as an example
+        cur.execute("""
+        SELECT snowflake.cortex.embed_text('e5-base-v2', page_content) AS embedding
+        FROM temp_page_content
+        """)
+        processed_data = cur.fetchall()
+        #for row in processed_data:
+        #    print(row[0])
+        cur.execute("DROP TABLE temp_page_content")
+        cur.close()
+        conn.close()
 
     def _run_cosine_similarity(self, query_vector, table_name):
        # Create a cursor object
@@ -132,19 +158,9 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         assert(self._get_record_count("mystream") == 6)
 
         # todo: test merge once merge works in PyAirbyte 
-        #list(destination.write(self.config, incremental_catalog, [self._record("mystream", "Cats are nice", 2), first_state_message]))
-        #result = self.pinecone_index.query(
-        #    vector=[0] * OPEN_AI_VECTOR_SIZE, top_k=10, filter={"_ab_record_id": "mystream_2"}, include_metadata=True
-        #)
-        #assert len(result.matches) == 1
-        #assert (
-        #    result.matches[0].metadata["text"] == "str_col: Cats are nice"
-        #), 'Ensure that "str_col" is included in the "text_fields" array under the "processing" section of /secrets/config.json.'
-
         # perform a query using OpenAI embedding 
         embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
         result = self._run_cosine_similarity(embeddings.embed_query("feline animals"), "mystream")
         assert(len(result) == 1)
         result[0] == "str_col: Cats are nice"
 
-        # to-do: perform a query using cortex's embed query function
