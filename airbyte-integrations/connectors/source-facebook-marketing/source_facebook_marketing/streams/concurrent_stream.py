@@ -13,7 +13,7 @@ from airbyte_cdk.models import Type as MessageType
 from source_facebook_marketing.streams.concurrent_stream_reader import ConcurrentStreamReader
 
 
-class AsyncStream(Stream, ABC):
+class ConcurrentStream(Stream, ABC):
 
     def __init__(self, max_workers: int = 1, **kwargs):
         super().__init__(**kwargs)

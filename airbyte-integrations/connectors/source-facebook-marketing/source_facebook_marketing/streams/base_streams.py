@@ -14,7 +14,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from facebook_business.adobjects.abstractobject import AbstractObject
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.streams.common import traced_exception
-from source_facebook_marketing.streams.async_stream import AsyncStream
+from source_facebook_marketing.streams.concurrent_stream import ConcurrentStream
 
 from .common import deep_merge
 
@@ -24,7 +24,7 @@ if TYPE_CHECKING:  # pragma: no cover
 logger = logging.getLogger("airbyte")
 
 
-class FBMarketingStream(AsyncStream, ABC):
+class FBMarketingStream(ConcurrentStream, ABC):
     """Base stream class"""
 
     primary_key = "id"
