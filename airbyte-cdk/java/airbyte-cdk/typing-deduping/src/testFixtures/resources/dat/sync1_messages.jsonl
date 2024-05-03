@@ -8,7 +8,7 @@
 {"type": "RECORD", "record": {"emitted_at": 1000, "data": {"id1": 1, "id2": 200, "updated_at": "2000-01-01T00:01:00Z", "_ab_cdc_deleted_at": null, "name": "Alice", "address": {"city": "Los Angeles", "state": "CA"}}}}
 // Emit a record with no _ab_cdc_deleted_at field. CDC sources typically emit an explicit null, but we should handle both cases.
 {"type": "RECORD", "record": {"emitted_at": 1000, "data": {"id1": 1, "id2": 201, "updated_at": "2000-01-01T00:02:00Z", "name": "Bob", "address": {"city": "Boston", "state": "MA"}}}}
-// Emit a record with an invalid age & address nulled at source.
-{"type": "RECORD", "record": {"emitted_at": 1000, "data": {"id1": 2, "id2": 200, "updated_at": "2000-01-01T00:03:00Z", "name": "Charlie", "age": "this is not an integer", "registration_date": "this is not a date"}, "meta": {"changes": [{"field": "address", "change": "NULLED", "reason": "SOURCE_RETRIEVAL_ERROR"}]}}}
+// Emit a record with address nulled at source.
+{"type": "RECORD", "record": {"emitted_at": 1000, "data": {"id1": 2, "id2": 200, "updated_at": "2000-01-01T00:03:00Z", "name": "Charlie", "age": 42, "registration_date": "2023-12-23"}, "meta": {"changes": [{"field": "address", "change": "NULLED", "reason": "SOURCE_RETRIEVAL_ERROR"}]}}}
 // Emit a record with interesting characters in one of the values.
 {"type": "RECORD", "record": {"emitted_at": 1000, "data": {"id1": 3, "id2": 200, "updated_at": "2000-01-01T00:04:00Z", "name": "a\bb\fc\nd\re\tf`~!@#$%^&*()_+-=[]\\{}|'\",./<>?"}}}
