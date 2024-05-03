@@ -72,6 +72,19 @@ class SprintIssuesSubstreamPartitionRouter(SubstreamPartitionRouter):
 
 
 class SubstreamOrSinglePartitionRouter(SubstreamPartitionRouter):
+    """
+    Depending on the configuration option, we may or may not need to iterate over the parent stream.
+    By default, if no projects are set, the child stream should produce records as a normal stream without the parent stream.
+    
+    If we do not specify a project in a child stream, it means we are requesting information for all of them,
+    so there is no need to slice by all the projects and request data as many times as we have projects one by one.
+    That's why an empty slice is returned.
+    
+    If projects are defined in the configuration,
+    we need to iterate over the given projects and provide a child stream with a slice per project so that it can make a query per project.
+
+    Therefore, if the option is not set, it does not necessarily mean there is no data.
+    """
     def stream_slices(self) -> Iterable[StreamSlice]:
         if self.config.get("projects"):
             yield from super().stream_slices()
