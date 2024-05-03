@@ -479,6 +479,46 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         Assertions.assertTrue(actualRecordMessages.containsAll(expectedMessages))
     }
 
+    @Test
+    @Throws(Exception::class)
+    protected fun testReadBothIncrementalAndFullRefreshStreams() {
+        val catalog = getConfiguredCatalogWithOneStream(defaultNamespace)
+        val expectedMessages: MutableList<AirbyteMessage> = ArrayList(testMessages)
+
+        val streamName2 = streamName() + 2
+        val tableName = getFullyQualifiedTableName(TABLE_NAME + 2)
+        testdb!!
+            .with(createTableQuery(tableName, "id INTEGER, name VARCHAR(200)", ""))
+            .with("INSERT INTO %s(id, name) VALUES (1,'picard')", tableName)
+            .with("INSERT INTO %s(id, name) VALUES (2, 'crusher')", tableName)
+            .with("INSERT INTO %s(id, name) VALUES (3, 'vash')", tableName)
+
+        val airbyteStream2 =
+            CatalogHelpers.createConfiguredAirbyteStream(
+                streamName2,
+                defaultNamespace,
+                Field.of(COL_ID, JsonSchemaType.NUMBER),
+                Field.of(COL_NAME, JsonSchemaType.STRING)
+            )
+        airbyteStream2.syncMode = SyncMode.INCREMENTAL
+        airbyteStream2.cursorField = java.util.List.of(COL_ID)
+        airbyteStream2.destinationSyncMode = DestinationSyncMode.APPEND
+        catalog.streams.add(airbyteStream2)
+
+        expectedMessages.addAll(getAirbyteMessagesSecondSync(streamName2))
+
+        System.out.println("catalog: " + catalog)
+
+        val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
+        val actualRecordMessages = filterRecords(actualMessages)
+
+        setEmittedAtToNull(actualMessages)
+
+        Assertions.assertEquals(expectedMessages.size, actualRecordMessages.size)
+        Assertions.assertTrue(expectedMessages.containsAll(actualRecordMessages))
+        Assertions.assertTrue(actualRecordMessages.containsAll(expectedMessages))
+    }
+
     protected open fun getAirbyteMessagesSecondSync(streamName: String?): List<AirbyteMessage> {
         return testMessages
             .stream()
