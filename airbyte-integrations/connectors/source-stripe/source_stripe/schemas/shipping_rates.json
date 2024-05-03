@@ -5,55 +5,71 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the shipping rate",
       "type": ["null", "string"]
     },
     "object": {
+      "description": "Type of object, in this case, it will always be 'shipping_rate'",
       "type": ["null", "string"]
     },
     "active": {
+      "description": "Specifies if the shipping rate is currently active or not",
       "type": ["null", "boolean"]
     },
     "created": {
+      "description": "Timestamp indicating when the shipping rate was created",
       "type": ["null", "integer"]
     },
     "delivery_estimate": {
+      "description": "Estimated delivery time for the shipping rate",
       "type": ["null", "string"]
     },
     "display_name": {
+      "description": "Name displayed for the shipping rate",
       "type": ["null", "string"]
     },
     "fixed_amount": {
+      "description": "Details about the fixed shipping amount associated with a shipping rate.",
       "type": ["null", "object"],
       "properties": {
         "amount": {
+          "description": "Fixed amount for the shipping rate",
           "type": ["null", "integer"]
         },
         "currency": {
+          "description": "Currency of the fixed amount",
           "type": ["null", "string"]
         }
       }
     },
     "livemode": {
+      "description": "Indicates if the shipping rate is in live mode",
       "type": ["null", "boolean"]
     },
     "metadata": {
+      "description": "Any additional data related to the shipping rate that is not directly represented by other fields.",
       "type": ["null", "object"],
       "properties": {
         "amount": {
+          "description": "Metadata amount associated with the shipping rate",
           "type": ["null", "integer"]
         },
         "currency": {
+          "description": "Currency of the metadata amount",
           "type": ["null", "string"]
         }
       }
     },
     "tax_behavior": {
+      "description": "Specifies tax behavior for the shipping rate",
       "type": ["null", "string"]
     },
     "tax_code": {
+      "description": "Tax code related to the shipping rate",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "Type of shipping rate, e.g., international, domestic, etc.",
       "type": ["null", "string"]
     }
   }

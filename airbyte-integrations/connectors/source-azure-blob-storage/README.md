@@ -11,6 +11,26 @@ For information about how to use this connector within Airbyte, see [the documen
 * Poetry (~=1.7) - installation instructions [here](https://python-poetry.org/docs/#installation)
 
 
+### Generate new oauth token
+
+Tenant id should be provided by user, reason:
+https://learn.microsoft.com/en-us/answers/questions/1531138/which-tenant-id-do-i-have-to-use-to-get-tokens-and
+
+1. GET https://login.microsoftonline.com/<tenant_id>/oauth2/v2.0/authorize
+    ?response_type=code
+    &client_id=<client_id>
+    &scope=offline_access https://storage.azure.com/.default
+    &redirect_uri=http://localhost:8000/auth_flow
+    &response_mode=query
+    &state=1234
+
+2. POST https://login.microsoftonline.com/<tenant_id>/oauth2/v2.0/token
+client_id:<client_id>
+code:<code obtained from previous request>
+redirect_uri:http://localhost:8000/auth_flow
+grant_type:authorization_code
+client_secret:<client_secret>
+
 ### Installing the connector
 From this connector directory, run:
 ```bash

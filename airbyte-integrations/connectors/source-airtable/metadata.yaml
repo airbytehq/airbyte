@@ -17,7 +17,7 @@ data:
   githubIssueLabel: source-airtable
   icon: airtable.svg
   license: MIT
-  maxSecondsBetweenMessages: 2592000
+  maxSecondsBetweenMessages: 5400
   name: Airtable
   remoteRegistries:
     pypi:

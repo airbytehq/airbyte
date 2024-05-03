@@ -15,6 +15,8 @@ import java.util.function.Consumer
 import java.util.function.Function
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /** Database object for interacting with a JDBC connection. */
 abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSourceOperations<*>?) :
@@ -111,7 +113,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
      * close the returned stream to release the database connection. Otherwise, there will be a
      * connection leak.
      *
-     * @param statementCreator create a [PreparedStatement] from a [Connection].
+     * @paramstatementCreator create a [PreparedStatement] from a [Connection].
      * @param recordTransform transform each record of that result set into the desired type. do NOT
      * just pass the [ResultSet] through. it is a stateful object will not be accessible if returned
      * from recordTransform.
@@ -195,10 +197,10 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     }
 
     @Throws(SQLException::class)
-    fun queryMetadata(sql: String, vararg params: String): ResultSetMetaData {
+    fun queryMetadata(sql: String, vararg params: String): ResultSetMetaData? {
         unsafeQuery(
                 { c: Connection -> getPreparedStatement(sql, params, c) },
-                { obj: ResultSet -> obj.metaData }
+                { obj: ResultSet -> obj.metaData },
             )
             .use { q ->
                 return q.findFirst().orElse(null)
@@ -211,6 +213,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     abstract fun <T> executeMetadataQuery(query: Function<DatabaseMetaData?, T>): T
 
     companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(JdbcDatabase::class.java)
         /**
          * Map records returned in a result set. It is an "unsafe" stream because the stream must be
          * manually closed. Otherwise, there will be a database connection leak.
