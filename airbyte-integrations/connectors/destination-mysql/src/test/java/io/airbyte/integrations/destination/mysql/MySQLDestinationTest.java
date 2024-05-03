@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 
 public class MySQLDestinationTest {
 
-  public static final String JDBC_URL = "jdbc:mysql://localhost:1337/db";
+  public static final String JDBC_URL = "jdbc:mysql://localhost:1337";
 
   private JsonNode buildConfigNoJdbcParameters() {
     return Jsons.jsonNode(ImmutableMap.of(

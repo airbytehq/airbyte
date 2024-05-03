@@ -4,7 +4,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.30.2'
+    cdkVersionRequired = '0.33.0'
     features = ['db-destinations', 'typing-deduping']
     useLocalCdk = false
 }
@@ -30,10 +30,4 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-mysql')
     integrationTestJavaImplementation libs.testcontainers.mysql
-}
-
-configurations.all {
-    resolutionStrategy {
-        force libs.jooq
-    }
 }

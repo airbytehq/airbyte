@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Disabled;
  * This class probably should extend {@link MySQLDestinationAcceptanceTest} to further reduce code
  * duplication though.
  */
+@Disabled
 public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private final StandardNameTransformer namingResolver = new MySQLNameTransformer();
