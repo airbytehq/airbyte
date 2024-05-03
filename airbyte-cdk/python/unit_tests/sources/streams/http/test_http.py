@@ -623,5 +623,5 @@ def test_duplicate_request_params_are_deduped(deduplicate_query_params, path, pa
 
 
 def test_connection_pool():
-    stream = StubBasicReadHttpStream(authenticator=HttpTokenAuthenticator("test-token"))
+    stream = StubBasicReadHttpStream(authenticator=TokenAuthenticator("test-token"))
     assert stream._session.adapters["https://"]._pool_connections == 20
