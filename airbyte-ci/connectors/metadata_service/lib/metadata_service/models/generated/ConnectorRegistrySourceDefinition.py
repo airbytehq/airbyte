@@ -93,6 +93,10 @@ class SourceFileInfo(BaseModel):
     registry_entry_generated_at: Optional[str] = None
 
 
+class ConnectorPackageInfo(BaseModel):
+    cdk_version: Optional[str] = None
+
+
 class JobTypeResourceLimit(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -188,3 +192,4 @@ class ConnectorRegistrySourceDefinition(BaseModel):
     releases: Optional[ConnectorReleases] = None
     ab_internal: Optional[AirbyteInternal] = None
     generated: Optional[GeneratedFields] = None
+    packageInfo: Optional[ConnectorPackageInfo] = None

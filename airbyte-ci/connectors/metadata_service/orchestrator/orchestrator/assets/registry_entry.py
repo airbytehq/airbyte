@@ -20,6 +20,7 @@ from metadata_service.models.generated.ConnectorRegistrySourceDefinition import 
 from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.spec_cache import SpecCache
 from orchestrator.config import MAX_METADATA_PARTITION_RUN_REQUEST, VALID_REGISTRIES, get_public_url_for_gcs_file
+from orchestrator.fetcher.connector_cdk_version import get_cdk_version
 from orchestrator.logging import sentry
 from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
 from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition
@@ -172,6 +173,22 @@ def apply_generated_fields(metadata_data: dict, metadata_entry: LatestMetadataEn
 
 
 @deep_copy_params
+def apply_package_info_fields(metadata_data: dict, metadata_entry: LatestMetadataEntry) -> dict:
+    """Apply package info fields to the metadata data field.
+
+    Args:
+        metadata_data (dict): The metadata data field.
+
+    Returns:
+        dict: The metadata data field with the package info fields applied.
+    """
+    package_info_fields = metadata_data.get("packageInfo") or {}
+    package_info_fields = set_with(package_info_fields, "cdk_version", get_cdk_version(metadata_entry), default_none_to_dict)
+
+    return package_info_fields
+
+
+@deep_copy_params
 @sentry_sdk.trace
 def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_registry_key: str) -> dict:
     """Convert the metadata definition to a registry entry.
@@ -213,6 +230,9 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
 
     # Add generated fields for source file metadata and git
     overridden_metadata_data["generated"] = apply_generated_fields(overridden_metadata_data, metadata_entry)
+
+    # Add Dependency information
+    overridden_metadata_data["packageInfo"] = apply_package_info_fields(overridden_metadata_data, metadata_entry)
 
     # if there is no supportLevel, set it to "community"
     if not overridden_metadata_data.get("supportLevel"):
