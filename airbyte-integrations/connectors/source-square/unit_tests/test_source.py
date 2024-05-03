@@ -3,6 +3,7 @@
 #
 
 import logging
+
 import pytest
 import requests_mock
 from source_square.source import SourceSquare

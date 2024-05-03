@@ -24,7 +24,7 @@ definitions:
     http_method: "GET"
     authenticator:
       type: SelectiveAuthenticator
-      authenticator_selection_path: [ "credentials", "auth_type" ]
+      authenticator_selection_path: ["credentials", "auth_type"]
       authenticators:
         API Key: "#/definitions/bearer_authenticator"
         OAuth: "#/definitions/oauth_authenticator"
