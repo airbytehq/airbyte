@@ -156,13 +156,14 @@ class DatabricksStreamOperations(
             initialRawTableStatus.get().maxProcessedTimestamp,
             finalTableSuffix
         )
+
+        // Delete staging directory, implementation will handle if it has to do it or not or a No-OP
+        storageOperations.deleteStagingDirectory(streamConfig.id)
+
         // For overwrite, its wasteful to do T+D so we don't do soft-reset in prepare. Instead we do
         // type-dedupe
         // on a suffixed table and do a swap here when we have to for schema mismatches
-        if (
-            streamConfig.destinationSyncMode == DestinationSyncMode.OVERWRITE &&
-                finalTableSuffix.isNotBlank()
-        ) {
+        if (streamConfig.destinationSyncMode == DestinationSyncMode.OVERWRITE) {
             storageOperations.overwriteFinalTable(streamConfig, finalTableSuffix)
         }
     }

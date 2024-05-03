@@ -8,7 +8,8 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType.*
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType.STRING
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus
 import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableStatus
@@ -25,7 +26,6 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
-import kotlin.collections.LinkedHashMap
 import kotlin.streams.asSequence
 
 class DatabricksDestinationHandler(

@@ -86,7 +86,8 @@ class DatabricksDestination : BaseConnector(), Destination {
                 sqlGenerator,
                 destinationHandler,
                 workspaceClient,
-                connectorConfig.database
+                connectorConfig.database,
+                connectorConfig.purgeStagingData
             )
         val streamOperations = DatabricksStreamOperations(storageOperations, FileUploadFormat.CSV)
         val syncOperations =

@@ -40,7 +40,7 @@ class DatabricksStorageOperations(
         destinationHandler.execute(
             Sql.of(
                 """
-                        COPY INTO $database.${streamConfig.id.rawNamespace}.${streamConfig.id.rawName}
+                        COPY INTO `$database`.`${streamConfig.id.rawNamespace}`.`${streamConfig.id.rawName}`
                         FROM '$stagedFile'
                         FILEFORMAT = CSV
                         FORMAT_OPTIONS ('header'='true', 'inferSchema'='true', 'escape'='"');
@@ -56,7 +56,17 @@ class DatabricksStorageOperations(
         // contents
         // recursively.
         if (purgeStagedFiles) {
-            Sql.of("REMOVE ${stagingDirectory(streamConfig.id, database)}/${buffer.filename}")
+            log.info {
+                "Removing staged file ${stagingDirectory(streamConfig.id, database)}/${buffer.filename}"
+            }
+            // Using Jdbc for PUT 'file' and REMOVE 'file' just returns a presigned S3 url and the
+            // HTTP method to call as
+            // in sql row data. Using workspace client instead.
+            // destinationHandler.execute(Sql.of("REMOVE '${stagingDirectory(streamConfig.id,
+            // database)}/${buffer.filename}'"))
+            workspaceClient
+                .files()
+                .delete("${stagingDirectory(streamConfig.id, database)}/${buffer.filename}")
         }
     }
 
@@ -75,15 +85,18 @@ class DatabricksStorageOperations(
     }
 
     fun overwriteFinalTable(streamConfig: StreamConfig, suffix: String) {
-        log.info {
-            "Overwriting table ${streamConfig.id.finalTableId(DatabricksSqlGenerator.QUOTE)} with ${
-                streamConfig.id.finalTableId(
-                    DatabricksSqlGenerator.QUOTE,
-                    suffix,
-                )
-            }"
+        // Guard to not accidentally overwrite existing table or DROP it.
+        if (suffix.isNotBlank()) {
+            log.info {
+                "Overwriting table ${streamConfig.id.finalTableId(DatabricksSqlGenerator.QUOTE)} with ${
+                    streamConfig.id.finalTableId(
+                        DatabricksSqlGenerator.QUOTE,
+                        suffix,
+                    )
+                }"
+            }
+            destinationHandler.execute(sqlGenerator.overwriteFinalTable(streamConfig.id, suffix))
         }
-        destinationHandler.execute(sqlGenerator.overwriteFinalTable(streamConfig.id, suffix))
     }
 
     fun prepareStagingTable(streamId: StreamId, destinationSyncMode: DestinationSyncMode) {
@@ -123,9 +136,18 @@ class DatabricksStorageOperations(
 
     fun prepareStagingVolume(streamId: StreamId) {
         destinationHandler.execute(
-            Sql.of("CREATE VOLUME $database.`${streamId.rawNamespace}`.${volumeName(streamId)}")
+            Sql.of(
+                "CREATE VOLUME IF NOT EXISTS `$database`.`${streamId.rawNamespace}`.`${volumeName(streamId)}`"
+            )
         )
         workspaceClient.files().createDirectory(stagingDirectory(streamId, database))
+    }
+
+    fun deleteStagingDirectory(streamId: StreamId) {
+        if (purgeStagedFiles) {
+            // This operation might fail if there are files left over for any reason from COPY step
+            workspaceClient.files().deleteDirectory(stagingDirectory(streamId, database))
+        }
     }
 
     companion object {
