@@ -1,0 +1,18 @@
+[
+  {
+    "key": {
+      "catalog": "TESTDB",
+      "schema": "PUBLIC",
+      "name": "EVENTS",
+      "type": "BASE TABLE"
+    }
+  },
+  {
+    "key": {
+      "catalog": "TESTDB",
+      "schema": "PUBLIC",
+      "name": "KV",
+      "type": "BASE TABLE"
+    }
+  }
+]

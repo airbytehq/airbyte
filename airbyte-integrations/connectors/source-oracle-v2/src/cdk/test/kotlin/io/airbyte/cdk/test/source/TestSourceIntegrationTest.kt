@@ -42,5 +42,4 @@ class TestSourceIntegrationTest {
             MoreResources.readResource("test/source/expected-spec.json"),
             ConnectorSpecification::class.java
         )
-
 }
