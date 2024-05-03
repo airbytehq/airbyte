@@ -75,3 +75,5 @@ properties:
   supportsRefreshes:
     type: boolean
     default: false
+  generated:
+    "$ref": GeneratedFields.yaml

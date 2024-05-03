@@ -7,3 +7,5 @@ type: object
 properties:
   git:
     "$ref": GitInfo.yaml
+  source_file_info:
+    "$ref": SourceFileInfo.yaml

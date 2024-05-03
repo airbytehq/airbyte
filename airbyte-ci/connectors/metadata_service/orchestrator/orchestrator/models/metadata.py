@@ -52,6 +52,7 @@ class LatestMetadataEntry(BaseModel):
     bucket_name: Optional[str] = None
     file_path: Optional[str] = None
     etag: Optional[str] = None
+    last_modified: Optional[str] = None
 
     @property
     def is_latest_version_path(self) -> bool:
