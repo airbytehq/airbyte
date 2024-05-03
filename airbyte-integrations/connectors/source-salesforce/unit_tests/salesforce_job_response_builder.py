@@ -53,7 +53,7 @@ class JobInfoResponseBuilder:
         self._status_code = status_code
         return self
     
-    def with_error_message(self, error_message: int) -> "JobInfoResponseBuilder":
+    def with_error_message(self, error_message: str) -> "JobInfoResponseBuilder":
         self._response["errorMessage"] = error_message
         return self
     

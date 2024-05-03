@@ -17,6 +17,7 @@ from salesforce_describe_response_builder import SalesforceDescribeResponseBuild
 from salesforce_job_response_builder import JobCreateResponseBuilder, JobInfoResponseBuilder
 from source_salesforce.streams import LOOKBACK_SECONDS
 
+
 _A_FIELD_NAME = "a_field"
 _ACCESS_TOKEN = "an_access_token"
 _CLIENT_ID = "a_client_id"
@@ -29,7 +30,8 @@ _JOB_ID = "a-job-id"
 _LOOKBACK_WINDOW = timedelta(seconds=LOOKBACK_SECONDS)
 _NOW = datetime.now(timezone.utc)
 _REFRESH_TOKEN = "a_refresh_token"
-_RETRYABLE_RESPONSE = HttpResponse("{}", 420)  # TODO: document what the body actually is on 420 errors
+_METHOD_FAILURE_HTTP_STATUS = 420
+_RETRYABLE_RESPONSE = HttpResponse("{}", _METHOD_FAILURE_HTTP_STATUS)  # TODO: document what the body actually is on 420 errors
 _SECOND_PAGE_LOCATOR = "second-page-locator"
 _STREAM_NAME = "a_stream_name"
 
