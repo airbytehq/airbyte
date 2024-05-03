@@ -480,3 +480,4 @@ public class BigQueryUtils {
   }
 
 }
+// TO REVERT
