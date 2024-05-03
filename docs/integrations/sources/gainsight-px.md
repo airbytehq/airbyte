@@ -69,6 +69,7 @@ Gainsight-PX-API's [API reference](https://gainsightpx.docs.apiary.io/) has v1 a
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject        |
-| :------ | :--------- | :----------------------------------------------------- | :------------- |
-| 0.1.0   | 2023-05-10 | [Init](https://github.com/airbytehq/airbyte/pull/26998)| Initial PR     |
+| Version | Date       | Pull Request                                             | Subject                                 |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------|
+| 0.1.1   | 2024-05-03 | [37593](https://github.com/airbytehq/airbyte/pull/37593) | Changed `last_records` to `last_record` |
+| 0.1.0   | 2023-05-10 | [26998](https://github.com/airbytehq/airbyte/pull/26998) | Initial PR                              |

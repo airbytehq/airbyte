@@ -28,7 +28,7 @@ definitions:
       type: "DefaultPaginator"
       pagination_strategy:
         type: "CursorPagination"
-        cursor_value: "{{ last_records[-1]['scrollId'] }}"
+        cursor_value: "{{ last_record['scrollId'] }}"
         page_size: 5
       page_token_option:
         type: "RequestPath"
