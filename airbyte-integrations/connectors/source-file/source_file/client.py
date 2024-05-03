@@ -362,6 +362,9 @@ class Client:
             elif self._reader_format == "excel_binary":
                 reader_options["engine"] = "pyxlsb"
                 yield reader(fp, **reader_options)
+            elif self._reader_format == "parquet":
+                reader_options["engine"] = "fastparquet"
+                yield reader(fp, **reader_options)
             elif self._reader_format == "excel":
                 # Use openpyxl to read new-style Excel (xlsx) file; return to pandas for others
                 try:
