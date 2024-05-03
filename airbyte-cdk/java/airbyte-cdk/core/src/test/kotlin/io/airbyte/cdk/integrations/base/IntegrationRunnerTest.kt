@@ -477,7 +477,7 @@ ${Jsons.serialize(message2)}""".toByteArray(
         val runningThreads =
             ThreadUtils.getAllThreads()
                 .stream()
-                .filter(IntegrationRunner.ORPHANED_THREAD_FILTER)
+                .filter(IntegrationRunner::filterOrphanedThread)
                 .collect(Collectors.toList())
         // all threads should be interrupted
         Assertions.assertEquals(listOf<Any>(), runningThreads)
@@ -505,7 +505,7 @@ ${Jsons.serialize(message2)}""".toByteArray(
         val runningThreads =
             ThreadUtils.getAllThreads()
                 .stream()
-                .filter(IntegrationRunner.ORPHANED_THREAD_FILTER)
+                .filter(IntegrationRunner::filterOrphanedThread)
                 .collect(Collectors.toList())
         // a thread that refuses to be interrupted should remain
         Assertions.assertEquals(1, runningThreads.size)
