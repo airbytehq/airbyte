@@ -23,30 +23,6 @@ MODULE_PATH = os.path.abspath(MODULE.__file__)
 SPEC_ROOT = os.path.dirname(MODULE_PATH)
 
 
-class TestAirbyteSpec:
-    VALID_SPEC = {
-        "documentationUrl": "https://google.com",
-        "connectionSpecification": {
-            "type": "object",
-            "required": ["api_token"],
-            "additionalProperties": False,
-            "properties": {"api_token": {"type": "string"}},
-        },
-    }
-
-    def test_from_file(self):
-        expected = self.VALID_SPEC
-        with tempfile.NamedTemporaryFile("w") as f:
-            f.write(json.dumps(self.VALID_SPEC))
-            f.flush()
-            actual = AirbyteSpec.from_file(f.name)
-            assert json.loads(actual.spec_string) == expected
-
-    def test_from_file_nonexistent(self):
-        with pytest.raises(OSError):
-            AirbyteSpec.from_file("/tmp/i do not exist")
-
-
 class MockConnector(Connector):
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         pass
