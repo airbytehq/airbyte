@@ -1104,6 +1104,23 @@ security = ["itsdangerous (>=2.0)"]
 yaml = ["pyyaml (>=6.0.1)"]
 
 [[package]]
+name = "requests-mock"
+version = "1.12.1"
+description = "Mock out responses from the requests package"
+optional = false
+python-versions = ">=3.5"
+files = [
+    {file = "requests-mock-1.12.1.tar.gz", hash = "sha256:e9e12e333b525156e82a3c852f22016b9158220d2f47454de9cae8a77d371401"},
+    {file = "requests_mock-1.12.1-py2.py3-none-any.whl", hash = "sha256:b1e37054004cdd5e56c84454cc7df12b25f90f382159087f4b6915aaeef39563"},
+]
+
+[package.dependencies]
+requests = ">=2.22,<3"
+
+[package.extras]
+fixture = ["fixtures"]
+
+[[package]]
 name = "setuptools"
 version = "69.5.1"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
@@ -1293,4 +1310,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,<3.12"
-content-hash = "b45c7da2b07fd3a9a79c2ffac21f4db7af48b0884a6e1c9f41f17035161a5fab"
+content-hash = "dedee3fe65d06e7ceb8403980b7cb1fadb463183c7c25b2cda747e60bcd7be03"
