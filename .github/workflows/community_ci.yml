@@ -44,7 +44,7 @@ jobs:
     if: github.event.pull_request.head.repo.fork == true
     environment: community-ci-auto
     runs-on: community-tooling-test-small
-    needs: fail_if_github_workflow_changes
+    needs: fail_on_protected_path_changes
     timeout-minutes: 30
     env:
       MAIN_BRANCH_NAME: "master"
@@ -80,7 +80,7 @@ jobs:
   connectors_early_ci:
     name: Run connectors early CI on fork
     if: github.event.pull_request.head.repo.fork == true
-    needs: fail_if_github_workflow_changes
+    needs: fail_on_protected_path_changes
     environment: community-ci-auto
     runs-on: community-tooling-test-small
     timeout-minutes: 10
@@ -139,7 +139,7 @@ jobs:
     # This is something we set up in the GitHub environment settings:
     # https://github.com/airbytehq/airbyte/settings/environments/2091483613/edit
     # This is a safety measure to make sure the code running on our infrastructure has been reviewed before running on it
-    needs: fail_if_github_workflow_changes
+    needs: fail_on_protected_path_changes
     environment: community-ci
     runs-on: community-connector-test-large
     timeout-minutes: 180 # 3 hours
