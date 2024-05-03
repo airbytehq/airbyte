@@ -69,9 +69,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     protected var namespace: String = "dummy_holder"
 
     protected var streamId: StreamId = mock()
-    private lateinit var primaryKey: List<ColumnId>
-    private lateinit var cursor: ColumnId
-    private var COLUMNS: LinkedHashMap<ColumnId, AirbyteType> = mock()
+    protected lateinit var primaryKey: List<ColumnId>
+    protected lateinit var cursor: ColumnId
+    protected var COLUMNS: LinkedHashMap<ColumnId, AirbyteType> = mock()
 
     protected abstract val sqlGenerator: SqlGenerator
     protected abstract val supportsSafeCast: Boolean
@@ -353,7 +353,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     /** Test that T+D supports streams whose name and namespace are the same. */
     @Test
     @Throws(Exception::class)
-    fun incrementalDedupSameNameNamespace() {
+    open fun incrementalDedupSameNameNamespace() {
         val streamId = buildStreamId(namespace, namespace, namespace + "_raw")
         val stream =
             StreamConfig(
@@ -568,7 +568,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     }
 
     @Throws(Exception::class)
-    private fun getInitialRawTableState(streamConfig: StreamConfig?): InitialRawTableStatus {
+    protected fun getInitialRawTableState(streamConfig: StreamConfig?): InitialRawTableStatus {
         val initialStates = destinationHandler.gatherInitialState(java.util.List.of(streamConfig!!))
         Assertions.assertEquals(1, initialStates.size)
         return initialStates.first().initialRawTableStatus
@@ -580,7 +580,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      */
     @Test
     @Throws(Exception::class)
-    fun minTimestampBehavesCorrectly() {
+    open fun minTimestampBehavesCorrectly() {
         // When the raw table doesn't exist, there are no unprocessed records and no timestamp
         Assertions.assertEquals(
             InitialRawTableStatus(false, false, Optional.empty()),
@@ -964,7 +964,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      */
     @Test
     @Throws(Exception::class)
-    fun incrementalDedupNoCursor() {
+    open fun incrementalDedupNoCursor() {
         val streamConfig =
             StreamConfig(
                 streamId,
@@ -1065,7 +1065,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      */
     @Test
     @Throws(Exception::class)
-    fun overwriteFinalTable() {
+    open fun overwriteFinalTable() {
         createFinalTable(incrementalAppendStream, "_tmp")
         val records =
             listOf(
@@ -1090,7 +1090,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
     @Test
     @Throws(Exception::class)
-    fun cdcImmediateDeletion() {
+    open fun cdcImmediateDeletion() {
         createRawTable(streamId)
         createFinalTable(cdcIncrementalDedupStream, "")
         insertRawTableRecords(
@@ -1131,7 +1131,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      */
     @Test
     @Throws(Exception::class)
-    fun cdcIdempotent() {
+    open fun cdcIdempotent() {
         createRawTable(streamId)
         createFinalTable(cdcIncrementalAppendStream, "")
         insertRawTableRecords(
@@ -1304,7 +1304,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      */
     @Test
     @Throws(Exception::class)
-    fun softReset() {
+    open fun softReset() {
         createRawTable(streamId)
         createFinalTable(cdcIncrementalAppendStream, "")
         insertRawTableRecords(
@@ -1520,7 +1520,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      */
     @Test
     @Throws(Exception::class)
-    fun noColumns() {
+    open fun noColumns() {
         createRawTable(streamId)
         insertRawTableRecords(
             streamId,
@@ -1861,7 +1861,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         destinationHandler.execute(createTable)
     }
 
-    private fun verifyRecords(
+    protected fun verifyRecords(
         expectedRawRecordsFile: String,
         actualRawRecords: List<JsonNode>,
         expectedFinalRecordsFile: String,
@@ -1891,7 +1891,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         )
     }
 
-    private fun verifyRecordCounts(
+    protected fun verifyRecordCounts(
         expectedRawRecords: Int,
         actualRawRecords: List<JsonNode>,
         expectedFinalRecords: Int,

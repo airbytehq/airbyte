@@ -66,6 +66,10 @@ abstract class BaseTypingDedupingTest {
         /** @return the docker image to run, e.g. `"airbyte/destination-bigquery:dev"`. */
         get
 
+    protected open fun sortColumnKey(): String {
+        return "_airbyte_raw_id"
+    }
+
     /**
      * Get the destination connector config. Subclasses may use this method for other setup work,
      * e.g. opening a connection to the destination.
@@ -188,11 +192,15 @@ abstract class BaseTypingDedupingTest {
         return false
     }
 
+    protected open fun generateStreamNamespace(): String {
+        return "tdtest_$uniqueSuffix"
+    }
+
     @BeforeEach
     @Throws(Exception::class)
     fun setup() {
         config = generateConfig()
-        streamNamespace = "tdtest_$uniqueSuffix"
+        streamNamespace = generateStreamNamespace()
         streamName = "test_$uniqueSuffix"
         streamsToTearDown = ArrayList()
 
@@ -205,7 +213,8 @@ abstract class BaseTypingDedupingTest {
                 generator.buildColumnId("id2") to AirbyteProtocolType.INTEGER,
                 generator.buildColumnId("updated_at") to
                     AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE,
-                generator.buildColumnId("old_cursor") to AirbyteProtocolType.INTEGER
+                generator.buildColumnId("old_cursor") to AirbyteProtocolType.INTEGER,
+                sortColumnKey = sortColumnKey()
             )
 
         LOGGER.info("Using stream namespace {} and name {}", streamNamespace, streamName)
@@ -641,9 +650,9 @@ abstract class BaseTypingDedupingTest {
      */
     @Test
     @Throws(Exception::class)
-    fun incrementalDedupIdenticalName() {
-        val namespace1 = streamNamespace + "_1"
-        val namespace2 = streamNamespace + "_2"
+    open fun incrementalDedupIdenticalName() {
+        val namespace1 = streamNamespace + "_a"
+        val namespace2 = streamNamespace + "_b"
         val catalog =
             io.airbyte.protocol.models.v0
                 .ConfiguredAirbyteCatalog()
@@ -739,7 +748,7 @@ abstract class BaseTypingDedupingTest {
     @Timeout(value = 15, unit = TimeUnit.MINUTES)
     @Throws(Exception::class)
     open fun identicalNameSimultaneousSync() {
-        val namespace1 = streamNamespace + "_1"
+        val namespace1 = streamNamespace + "_a"
         val catalog1 =
             io.airbyte.protocol.models.v0
                 .ConfiguredAirbyteCatalog()
@@ -762,7 +771,7 @@ abstract class BaseTypingDedupingTest {
                     )
                 )
 
-        val namespace2 = streamNamespace + "_2"
+        val namespace2 = streamNamespace + "_b"
         val catalog2 =
             io.airbyte.protocol.models.v0
                 .ConfiguredAirbyteCatalog()

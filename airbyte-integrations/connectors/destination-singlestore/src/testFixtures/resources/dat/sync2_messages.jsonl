@@ -1,0 +1,2 @@
+{"type": "RECORD", "record": {"emitted_at": 2000, "data": {"id1": 1, "id2": 200, "updated_at": "2000-01-02 00:00:00", "name": "Alice", "address": {"city": "Seattle", "state": "WA"}}}}
+{"type": "RECORD", "record": {"emitted_at": 2000, "data": {"id1": 1, "id2": 201, "updated_at": "2000-01-02 00:00:00", "name": "Bob", "address": {"city": "New York", "state": "NY"}}}}

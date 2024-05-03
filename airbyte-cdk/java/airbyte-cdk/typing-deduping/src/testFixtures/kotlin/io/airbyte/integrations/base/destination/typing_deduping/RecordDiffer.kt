@@ -29,7 +29,8 @@ class RecordDiffer
 constructor(
     private val rawRecordColumnNames: Map<String, String>,
     private val finalRecordColumnNames: Map<String, String>,
-    vararg identifyingColumns: Pair<ColumnId, AirbyteType>
+    vararg identifyingColumns: Pair<ColumnId, AirbyteType>,
+    private val sortColumnKey: String = "_airbyte_raw_id"
 ) {
     private val rawRecordIdentityComparator: Comparator<JsonNode>
     private val rawRecordSortComparator: Comparator<JsonNode>
@@ -53,7 +54,7 @@ constructor(
             buildIdentityComparator(rawTableIdentifyingColumns, rawRecordColumnNames)
         this.rawRecordSortComparator =
             rawRecordIdentityComparator.thenComparing { record: JsonNode ->
-                asString(record[getMetadataColumnName(rawRecordColumnNames, "_airbyte_raw_id")])
+                asString(record[getMetadataColumnName(rawRecordColumnNames, sortColumnKey)])
             }
         this.rawRecordIdentityExtractor =
             buildIdentityExtractor(rawTableIdentifyingColumns, rawRecordColumnNames)
@@ -64,7 +65,7 @@ constructor(
             buildIdentityComparator(finalTableIdentifyingColumns, finalRecordColumnNames)
         this.finalRecordSortComparator =
             finalRecordIdentityComparator.thenComparing { record: JsonNode ->
-                asString(record[getMetadataColumnName(finalRecordColumnNames, "_airbyte_raw_id")])
+                asString(record[getMetadataColumnName(finalRecordColumnNames, sortColumnKey)])
             }
         this.finalRecordIdentityExtractor =
             buildIdentityExtractor(finalTableIdentifyingColumns, finalRecordColumnNames)

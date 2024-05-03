@@ -31,7 +31,7 @@ import org.jooq.impl.DSL.name
 abstract class JdbcTypingDedupingTest(dialect: SQLDialect = SQLDialect.DEFAULT) :
     BaseTypingDedupingTest() {
     protected var database: JdbcDatabase? = null
-    private var dataSource: DataSource? = null
+    protected var dataSource: DataSource? = null
     protected val dslContext: DSLContext = DSL.using(dialect)
     protected open val nameTransformer: NamingConventionTransformer = StandardNameTransformer()
 
