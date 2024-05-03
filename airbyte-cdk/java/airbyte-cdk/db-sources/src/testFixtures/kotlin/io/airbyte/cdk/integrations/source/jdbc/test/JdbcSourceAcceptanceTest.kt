@@ -384,7 +384,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     @Test
     @Throws(Exception::class)
-    protected open fun testReadSuccess() {
+    fun testReadSuccess() {
         val catalog = getConfiguredCatalogWithOneStream(defaultNamespace)
         val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
 
@@ -407,9 +407,11 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         }
     }
 
+    // This validation only applies to resumable full refresh syncs.
     protected open fun validateFullRefreshStateMessageReadSuccess(
         stateMessages: List<AirbyteStateMessage>
     ) {}
+
     @Test
     @Throws(Exception::class)
     protected fun testReadOneColumn() {
@@ -523,6 +525,32 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         Assertions.assertEquals(expectedMessages.size, actualRecordMessages.size)
         Assertions.assertTrue(expectedMessages.containsAll(actualRecordMessages))
         Assertions.assertTrue(actualRecordMessages.containsAll(expectedMessages))
+    }
+
+    @Test
+    @Throws(Exception::class)
+    protected fun testTablesWithResumableFullRefreshStates() {
+
+        val catalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    java.util.List.of(
+                        getConfiguredCatalogWithOneStream(defaultNamespace).streams[0],
+                    )
+                )
+        val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
+        val actualRecordMessages = filterRecords(actualMessages)
+
+        setEmittedAtToNull(actualMessages)
+
+        val expectedMessages: MutableList<AirbyteMessage> = ArrayList(testMessages)
+
+        Assertions.assertEquals(expectedMessages.size, actualRecordMessages.size)
+        Assertions.assertTrue(expectedMessages.containsAll(actualRecordMessages))
+        Assertions.assertTrue(actualRecordMessages.containsAll(expectedMessages))
+
+        val stateMessages = extractStateMessage(actualMessages)
+        validateFullRefreshStateMessageReadSuccess(stateMessages)
     }
 
     protected open fun getAirbyteMessagesForTablesWithQuoting(

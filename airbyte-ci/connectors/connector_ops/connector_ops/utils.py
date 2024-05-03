@@ -57,6 +57,9 @@ def download_catalog(catalog_url):
 
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
 METADATA_FILE_NAME = "metadata.yaml"
+MANIFEST_FILE_NAME = "manifest.yaml"
+DOCKERFILE_FILE_NAME = "Dockerfile"
+PYPROJECT_FILE_NAME = "pyproject.toml"
 ICON_FILE_NAME = "icon.svg"
 
 STRATEGIC_CONNECTOR_THRESHOLDS = {
@@ -79,18 +82,6 @@ class ConnectorVersionNotFound(Exception):
 
 def get_connector_name_from_path(path):
     return path.split("/")[2]
-
-
-def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[str]:
-    """Retrieve the set of connectors for which the acceptance_test_config file was changed in the current branch (compared to master).
-
-    Args:
-        diff_regex (str): Find the edited files that contain the following regex in their change.
-
-    Returns:
-        Set[Connector]: Set of connectors that were changed
-    """
-    return get_changed_file(ACCEPTANCE_TEST_CONFIG_FILE_NAME, diff_regex)
 
 
 def get_changed_metadata(diff_regex: Optional[str] = None) -> Set[str]:
@@ -360,8 +351,24 @@ class Connector:
         return Path(f"./{CONNECTOR_PATH_PREFIX}/{self.relative_connector_path}")
 
     @property
+    def python_source_dir_path(self) -> Path:
+        return self.code_directory / self.technical_name.replace("-", "_")
+
+    @property
+    def manifest_path(self) -> Path:
+        return self.python_source_dir_path / MANIFEST_FILE_NAME
+
+    @property
     def has_dockerfile(self) -> bool:
-        return (self.code_directory / "Dockerfile").is_file()
+        return self.dockerfile_file_path.is_file()
+
+    @property
+    def dockerfile_file_path(self) -> Path:
+        return self.code_directory / DOCKERFILE_FILE_NAME
+
+    @property
+    def pyproject_file_path(self) -> Path:
+        return self.code_directory / PYPROJECT_FILE_NAME
 
     @property
     def metadata_file_path(self) -> Path:

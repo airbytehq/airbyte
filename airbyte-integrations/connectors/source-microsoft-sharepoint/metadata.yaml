@@ -25,6 +25,7 @@ data:
   githubIssueLabel: source-microsoft-sharepoint
   icon: microsoft-sharepoint.svg
   license: MIT
+  maxSecondsBetweenMessages: 5400
   name: Microsoft SharePoint
   supportLevel: certified
   releaseStage: alpha

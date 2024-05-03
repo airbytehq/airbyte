@@ -5,27 +5,35 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the fraud warning.",
       "type": ["null", "string"]
     },
     "object": {
+      "description": "Defines the object type as 'early_fraud_warning'.",
       "type": ["null", "string"]
     },
     "actionable": {
+      "description": "Boolean indicating if action is required based on the fraud warning.",
       "type": ["null", "boolean"]
     },
     "charge": {
+      "description": "ID of the charge associated with the fraud warning.",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "Timestamp when the fraud warning was created.",
       "type": ["null", "number"]
     },
     "updated": {
+      "description": "Timestamp when the fraud warning was last updated.",
       "type": ["null", "integer"]
     },
     "fraud_type": {
+      "description": "Type of fraud warning detected.",
       "type": ["null", "string"]
     },
     "livemode": {
+      "description": "Boolean indicating if the fraud warning is in live mode.",
       "type": ["null", "boolean"]
     }
   }
