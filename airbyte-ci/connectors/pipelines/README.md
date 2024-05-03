@@ -180,7 +180,7 @@ options to the `airbyte-ci` command group.**
 | Option                                         | Default value                   | Mapped environment variable   | Description                                                                                 |
 | ---------------------------------------------- | ------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------- |
 | `--yes/--y`                                    | False                           |                               | Agrees to all prompts.                                                                      |
-| `--yes-auto-update`                            | False                           |                               | Agrees to the auto update prompts.                                                          |
+| `--yes-auto-update/--no-auto-update`           | True                            |                               | Agrees to the auto update prompts.                                                          |
 | `--enable-update-check/--disable-update-check` | True                            |                               | Turns on the update check feature                                                           |
 | `--enable-dagger-run/--disable-dagger-run`     | `--enable-dagger-run`           |                               | Disables the Dagger terminal UI.                                                            |
 | `--is-local/--is-ci`                           | `--is-local`                    |                               | Determines the environment in which the CLI runs: local environment or CI environment.      |
@@ -745,6 +745,7 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.12.5  | [#37785](https://github.com/airbytehq/airbyte/pull/37785)  | Set the `--yes-auto-update` flag to `True` by default.                                                                       |
 | 4.12.4  | [#37786](https://github.com/airbytehq/airbyte/pull/37786)  | (fixed 4.12.2): Do not upload dagger log to GCP when no credentials are available.                                           |
 | 4.12.3  | [#37783](https://github.com/airbytehq/airbyte/pull/37783)  | Revert 4.12.2                                                                                                                |
 | 4.12.2  | [#37778](https://github.com/airbytehq/airbyte/pull/37778)  | Do not upload dagger log to GCP when no credentials are available.                                                           |
