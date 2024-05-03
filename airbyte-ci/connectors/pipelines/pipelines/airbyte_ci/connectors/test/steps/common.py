@@ -10,6 +10,7 @@ import time
 from abc import ABC, abstractmethod
 from functools import cached_property
 from pathlib import Path
+from textwrap import dedent
 from typing import ClassVar, List, Optional
 
 import requests  # type: ignore
@@ -22,7 +23,7 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
 from pipelines.consts import INTERNAL_TOOL_PATHS, CIContext
 from pipelines.dagger.actions import secrets
-from pipelines.dagger.containers.python import with_python_base
+from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
 from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, StepStatus
 
@@ -315,6 +316,8 @@ class RegressionTests(Step):
     accept_extra_params = True
     regression_tests_artifacts_dir = Path("/tmp/regression_tests_artifacts")
     working_directory = "/app"
+    github_user = "octavia-squidington-iii"
+    platform_repo_url = "airbytehq/airbyte-platform-internal"
 
     @property
     def default_params(self) -> STEP_PARAMS:
@@ -330,26 +333,54 @@ class RegressionTests(Step):
         }
 
     def regression_tests_command(self) -> List[str]:
-        return [
-            "poetry",
-            "run",
-            "pytest",
-            "src/live_tests/regression_tests",
-            "--connector-image",
-            self.connector_image,
-            "--connection-id",
-            self.connection_id or "",
-            "--control-version",
-            self.control_version or "",
-            "--target-version",
-            self.target_version or "",
-            "--pr-url",
-            self.pr_url or "",
-            "--run-id",
-            self.run_id or "",
-            "--should-read-with-state",
-            str(self.should_read_with_state),
-        ]
+        """
+        This command:
+
+        1. Starts a Google Cloud SQL proxy running on localhost, which is used by the connection-retriever to connect to postgres.
+        2. Gets the PID of the proxy so it can be killed once done.
+        3. Runs the regression tests.
+        4. Kills the proxy, and waits for it to exit.
+        5. Exits with the regression tests' exit code.
+        We need to explicitly kill the proxy in order to allow the GitHub Action to exit.
+        An alternative that we can consider is to run the proxy as a separate service.
+
+        (See https://docs.dagger.io/manuals/developer/python/328492/services/ and https://cloud.google.com/sql/docs/postgres/sql-proxy#cloud-sql-auth-proxy-docker-image)
+        """
+        run_proxy = "./cloud-sql-proxy prod-ab-cloud-proj:us-west3:prod-pgsql-replica --credentials-file /tmp/credentials.json"
+        run_pytest = " ".join(
+            [
+                "poetry",
+                "run",
+                "pytest",
+                "src/live_tests/regression_tests",
+                "--connector-image",
+                self.connector_image,
+                "--connection-id",
+                self.connection_id or "",
+                "--control-version",
+                self.control_version or "",
+                "--target-version",
+                self.target_version or "",
+                "--pr-url",
+                self.pr_url or "",
+                "--run-id",
+                self.run_id or "",
+                "--should-read-with-state",
+                str(self.should_read_with_state),
+            ]
+        )
+        run_pytest_with_proxy = dedent(
+            f"""
+        {run_proxy} &
+        proxy_pid=$!
+        {run_pytest}
+        pytest_exit=$?
+        kill $proxy_pid
+        wait $proxy_pid
+        exit $pytest_exit
+        """
+        )
+        return ["bash", "-c", f"'{run_pytest_with_proxy}'"]
 
     def __init__(self, context: ConnectorContext) -> None:
         """Create a step to run regression tests for a connector.
@@ -386,6 +417,7 @@ class RegressionTests(Step):
         regression_tests_artifacts_dir = str(self.regression_tests_artifacts_dir)
         path_to_report = f"{regression_tests_artifacts_dir}/session_{self.run_id}/report.html"
         await container.file(path_to_report).export(path_to_report)
+
         exit_code, stdout, stderr = await get_exec_result(container)
 
         with open(path_to_report, "r") as fp:
@@ -402,30 +434,90 @@ class RegressionTests(Step):
 
     async def _build_regression_test_container(self, target_container_id: str) -> Container:
         """Create a container to run regression tests."""
-        container = with_python_base(self.context)
-
+        container = with_poetry(self.context)
+        container_requirements = ["apt-get", "install", "-y", "git", "curl", "docker.io"]
+        if not self.context.is_ci:
+            # Outside of CI we use ssh to get the connection-retriever package from airbyte-platform-internal
+            container_requirements += ["openssh-client"]
         container = (
-            (
-                container.with_exec(["apt-get", "update"])
-                .with_exec(["apt-get", "install", "-y", "git", "openssh-client", "curl", "docker.io"])
-                .with_exec(["bash", "-c", "curl https://sdk.cloud.google.com | bash"])
-                .with_env_variable("PATH", "/root/google-cloud-sdk/bin:$PATH", expand=True)
-                .with_mounted_file("/root/.ssh/id_rsa", self.dagger_client.host().file(str(Path("~/.ssh/id_rsa").expanduser())))  # TODO
-                .with_mounted_file(
-                    "/root/.ssh/known_hosts", self.dagger_client.host().file(str(Path("~/.ssh/known_hosts").expanduser()))  # TODO
-                )
-                .with_mounted_file(
-                    "/root/.config/gcloud/application_default_credentials.json",
-                    self.dagger_client.host().file(str(Path("~/.config/gcloud/application_default_credentials.json").expanduser())),  # TODO
-                )
-                .with_mounted_directory("/app", self.context.live_tests_dir)
-                .with_workdir("/app")
-                .with_exec(["pip", "install", "poetry"])
-                .with_exec(["poetry", "lock", "--no-update"])
-                .with_exec(["poetry", "install"])
-            )
+            container.with_exec(["apt-get", "update"])
+            .with_exec(container_requirements)
+            .with_exec(["bash", "-c", "curl https://sdk.cloud.google.com | bash"])
+            .with_env_variable("PATH", "/root/google-cloud-sdk/bin:$PATH", expand=True)
+            .with_mounted_directory("/app", self.context.live_tests_dir)
+            .with_workdir("/app")
+            # Enable dagger-in-dagger
             .with_unix_socket("/var/run/docker.sock", self.dagger_client.host().unix_socket("/var/run/docker.sock"))
             .with_env_variable("RUN_IN_AIRBYTE_CI", "1")
+            # The connector being tested is already built and is stored in a location accessible to an inner dagger kicked off by
+            # regression tests. The connector can be found if you know the container ID, so we write the container ID to a file and put
+            # it in the regression test container. This way regression tests will use the already-built connector instead of trying to
+            # build their own.
             .with_new_file("/tmp/container_id.txt", contents=str(target_container_id))
         )
+
+        if self.context.is_ci:
+            container = (
+                container
+                # In CI, use https to get the connection-retriever package from airbyte-platform-internal instead of ssh
+                .with_exec(
+                    [
+                        "sed",
+                        "-i",
+                        "-E",
+                        rf"s,git@github\.com:{self.platform_repo_url},https://github.com/{self.platform_repo_url}.git,",
+                        "pyproject.toml",
+                    ]
+                )
+                .with_exec(
+                    [
+                        "poetry",
+                        "source",
+                        "add",
+                        "--priority=supplemental",
+                        "airbyte-platform-internal-source",
+                        "https://github.com/airbytehq/airbyte-platform-internal.git",
+                    ]
+                )
+                .with_exec(
+                    [
+                        "poetry",
+                        "config",
+                        "http-basic.airbyte-platform-internal-source",
+                        self.github_user,
+                        self.context.ci_github_access_token or "",
+                    ]
+                )
+                # Add GCP credentials from the environment and point google to their location (also required for connection-retriever)
+                .with_new_file("/tmp/credentials.json", contents=os.getenv("GCP_INTEGRATION_TESTER_CREDENTIALS"))
+                .with_env_variable("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/credentials.json")
+                .with_exec(
+                    [
+                        "curl",
+                        "-o",
+                        "cloud-sql-proxy",
+                        "https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.11.0/cloud-sql-proxy.linux.amd64",
+                    ]
+                )
+                .with_exec(
+                    [
+                        "chmod",
+                        "+x",
+                        "cloud-sql-proxy",
+                    ]
+                )
+                .with_env_variable("CI", "1")
+            )
+
+        else:
+            container = (
+                container.with_mounted_file("/root/.ssh/id_rsa", self.dagger_client.host().file(str(Path("~/.ssh/id_rsa").expanduser())))
+                .with_mounted_file("/root/.ssh/known_hosts", self.dagger_client.host().file(str(Path("~/.ssh/known_hosts").expanduser())))
+                .with_mounted_file(
+                    "/root/.config/gcloud/application_default_credentials.json",
+                    self.dagger_client.host().file(str(Path("~/.config/gcloud/application_default_credentials.json").expanduser())),
+                )
+            )
+
+        container = container.with_exec(["poetry", "lock", "--no-update"]).with_exec(["poetry", "install"])
         return container
