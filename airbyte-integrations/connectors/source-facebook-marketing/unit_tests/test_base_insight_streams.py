@@ -293,6 +293,28 @@ class TestBaseInsightsStream:
 
         assert actual_state == result_state
 
+    @freeze_time("2010-09-01")
+    def test_cursor(self, api, some_config):
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+        )
+        stream._completed_slices[some_config["account_ids"][0]].add(datetime(2010, 1, 2).date())
+        stream._advance_cursor(some_config["account_ids"][0])
+
+        assert len(stream.state[some_config["account_ids"][0]]["slices"]) == 1
+
+        stream._completed_slices[some_config["account_ids"][0]].add(datetime(2010, 1, 1).date())
+
+        assert len(stream.state[some_config["account_ids"][0]]["slices"]) == 2
+
+        stream._advance_cursor(some_config["account_ids"][0])
+
+        assert len(stream.state[some_config["account_ids"][0]]["slices"]) == 0
+
     def test_stream_slices_no_state(self, api, async_manager_mock, start_date, some_config):
         """Stream will use start_date when there is not state"""
         end_date = start_date + duration(weeks=2)

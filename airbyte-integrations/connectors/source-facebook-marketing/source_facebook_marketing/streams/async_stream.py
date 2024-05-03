@@ -67,4 +67,3 @@ class AsyncStream(Stream, ABC):
             # We should always emit a final state message for full refresh sync or streams that do not have any slices
             airbyte_state_message = self._checkpoint_state(stream_state, state_manager)
             yield airbyte_state_message
-

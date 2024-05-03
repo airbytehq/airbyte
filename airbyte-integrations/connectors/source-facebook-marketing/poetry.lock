@@ -439,19 +439,6 @@ files = [
 ]
 
 [[package]]
-name = "enum34"
-version = "1.1.10"
-description = "Python 3.4 Enum backported to 3.3, 3.2, 3.1, 2.7, 2.6, 2.5, and 2.4"
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "enum34-1.1.10-py2-none-any.whl", hash = "sha256:a98a201d6de3f2ab3db284e70a33b0f896fbf35f8086594e8c9e74b909058d53"},
-    {file = "enum34-1.1.10-py3-none-any.whl", hash = "sha256:c3858660960c984d6ab0ebad691265180da2b43f07e061c0f8dca9ef3cffd328"},
-    {file = "enum34-1.1.10.tar.gz", hash = "sha256:cce6a7477ed816bd2542d03d53db9f0db935dd013b70f336a95c73979289f248"},
-]
-
-[[package]]
 name = "exceptiongroup"
 version = "1.2.0"
 description = "Backport of PEP 654 (exception groups)"
@@ -468,20 +455,19 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "facebook-business"
-version = "19.0.0"
+version = "19.0.3"
 description = "Facebook Business SDK"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "facebook_business-19.0.0-py3-none-any.whl", hash = "sha256:591deedc010cefeb49151bbfadf72659cf262056072b437ca3dbf0ba37b3fa43"},
-    {file = "facebook_business-19.0.0.tar.gz", hash = "sha256:e12ea2a13d1703922d1b5d3921bc67bd10176596770ce154f287019738775800"},
+    {file = "facebook_business-19.0.3-py3-none-any.whl", hash = "sha256:43613bdee5da5a86418f2858cd45cdaf1aa2c45597fc1d8a6da001c7702eec08"},
+    {file = "facebook_business-19.0.3.tar.gz", hash = "sha256:a2bfb4a22237a53abd923505edb1d96a5f81d565e8e27d6b3bb66a158d4b4d13"},
 ]
 
 [package.dependencies]
 aiohttp = {version = "*", markers = "python_version >= \"3.5.3\""}
 curlify = ">=2.1.0"
-enum34 = {version = "*", markers = "python_version >= \"3\""}
 pycountry = ">=19.8.18"
 requests = ">=2.3.0"
 six = ">=1.7.3"
@@ -1566,4 +1552,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,<3.12"
-content-hash = "00156ce83bdcc35d14585aa88c884f416521ac3195c9c55553d6880644e14d4b"
+content-hash = "513b73484b08da3755bd85b40e4f219f7148f747a20e5bb38a76630c00ddfe8d"
