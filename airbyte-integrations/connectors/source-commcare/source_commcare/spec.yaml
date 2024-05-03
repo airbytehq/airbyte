@@ -11,9 +11,9 @@ connectionSpecification:
   properties:
     api_key:
       type: string
-      title: API Key
+      title: "Username:API Key"
       description: >-
-        Commcare API Key
+        Commcare username with API Key, colon-separated
       airbyte_secret: true
       order: 0
     project_space:
