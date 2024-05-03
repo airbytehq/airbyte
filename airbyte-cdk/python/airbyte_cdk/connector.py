@@ -46,7 +46,7 @@ class BaseConnector(ABC, Generic[TConfig]):
             )
 
     @staticmethod
-    def _read_json_file(file_path: str) -> Union[None, bool, float, int, str, List[Any], Mapping[str, Any]]:
+    def _read_json_file(file_path: str) -> Any:
         with open(file_path, "r") as file:
             contents = file.read()
 
@@ -56,7 +56,7 @@ class BaseConnector(ABC, Generic[TConfig]):
             raise ValueError(f"Could not read json file {file_path}: {error}. Please ensure that it is a valid JSON.")
 
     @staticmethod
-    def write_config(config: TConfig, config_path: str):
+    def write_config(config: TConfig, config_path: str) -> None:
         with open(config_path, "w") as fh:
             fh.write(json.dumps(config))
 
@@ -96,7 +96,7 @@ class BaseConnector(ABC, Generic[TConfig]):
 
 class _WriteConfigProtocol(Protocol):
     @staticmethod
-    def write_config(config: Mapping[str, Any], config_path: str):
+    def write_config(config: Mapping[str, Any], config_path: str) -> None:
         ...
 
 

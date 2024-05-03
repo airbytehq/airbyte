@@ -5,12 +5,10 @@
 import json
 import logging
 import logging.config
-import traceback
-from typing import Tuple
+from typing import Any, Mapping, Optional, Tuple
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
-from deprecated import deprecated
 
 LOGGING_CONFIG = {
     "version": 1,
@@ -31,7 +29,7 @@ LOGGING_CONFIG = {
 }
 
 
-def init_logger(name: str = None):
+def init_logger(name: Optional[str] = None) -> logging.Logger:
     """Initial set up of logger"""
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
@@ -62,10 +60,10 @@ class AirbyteLogFormatter(logging.Formatter):
             message = super().format(record)
             message = filter_secrets(message)
             log_message = AirbyteMessage(type="LOG", log=AirbyteLogMessage(level=airbyte_level, message=message))
-            return log_message.json(exclude_unset=True)
+            return json.dumps(log_message.json(exclude_unset=True))
 
     @staticmethod
-    def extract_extra_args_from_record(record: logging.LogRecord):
+    def extract_extra_args_from_record(record: logging.LogRecord) -> Mapping[str, Any]:
         """
         The python logger conflates default args with extra args. We use an empty log record and set operations
         to isolate fields passed to the log record via extra by the developer.
