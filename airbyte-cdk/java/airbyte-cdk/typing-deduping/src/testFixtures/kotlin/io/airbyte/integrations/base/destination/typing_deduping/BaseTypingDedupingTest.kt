@@ -152,7 +152,7 @@ abstract class BaseTypingDedupingTest {
         /** Conceptually identical to [.getFinalMetadataColumnNames], but for the raw table. */
         get() = HashMap()
 
-    val finalMetadataColumnNames: Map<String, String>
+    open val finalMetadataColumnNames: Map<String, String>
         /**
          * If the destination connector uses a nonstandard schema for the final table, override this
          * method. For example, destination-snowflake upcases all column names in the final tables.
@@ -1033,16 +1033,17 @@ abstract class BaseTypingDedupingTest {
 
         val destination: AirbyteDestination =
             DefaultAirbyteDestination(
-                AirbyteIntegrationLauncher(
-                    "0",
-                    0,
-                    imageName,
-                    processFactory,
-                    null,
-                    null,
-                    false,
-                    EnvVariableFeatureFlags()
-                )
+                integrationLauncher =
+                    AirbyteIntegrationLauncher(
+                        "0",
+                        0,
+                        imageName,
+                        processFactory,
+                        null,
+                        null,
+                        false,
+                        EnvVariableFeatureFlags()
+                    )
             )
 
         destination.start(destinationConfig, jobRoot, emptyMap())
@@ -1075,7 +1076,7 @@ abstract class BaseTypingDedupingTest {
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(BaseTypingDedupingTest::class.java)
-        protected val SCHEMA: JsonNode
+        @JvmField protected val SCHEMA: JsonNode
 
         init {
             try {
