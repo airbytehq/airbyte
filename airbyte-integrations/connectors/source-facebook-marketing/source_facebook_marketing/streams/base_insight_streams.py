@@ -223,7 +223,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         :param params:
         :return:
         """
-
+        jobs = []
         self._next_cursor_values = self._get_start_date()
         for ts_start in self._date_intervals(account_id):
             if (
@@ -233,13 +233,14 @@ class AdsInsights(FBMarketingIncrementalStream):
                 continue
             ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
             interval = pendulum.Period(ts_start, ts_end)
-            yield InsightAsyncJob(
+            jobs.append(InsightAsyncJob(
                 api=self._api.api,
                 edge_object=self._api.get_account(account_id=account_id),
                 interval=interval,
                 params=params,
                 job_timeout=self.insights_job_timeout,
-            )
+            ))
+        return jobs
 
     def check_breakdowns(self, account_id: str):
         """
@@ -280,6 +281,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         if stream_state:
             self.state = stream_state
 
+        slices = []
         for account_id in self._account_ids:
             try:
                 manager = InsightAsyncJobManager(
@@ -287,9 +289,10 @@ class AdsInsights(FBMarketingIncrementalStream):
                     jobs=self._generate_async_jobs(params=self.request_params(), account_id=account_id),
                     account_id=account_id,
                 )
-                yield {"insight_job_manager": manager, "account_id": account_id}
+                slices.append({"insight_job_manager": manager, "account_id": account_id})
             except FacebookRequestError as exc:
                 raise traced_exception(exc)
+        return slices
 
     def _get_start_date(self) -> Mapping[str, pendulum.Date]:
         """Get start date to begin sync with. It is not that trivial as it might seem.
