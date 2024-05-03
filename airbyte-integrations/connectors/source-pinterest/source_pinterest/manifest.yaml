@@ -1,10 +1,11 @@
-version: 0.78.6
+version: 0.86.3
 type: DeclarativeSource
 
 definitions:
   # Authenticator
   authenticator:
-    type: OAuthAuthenticator
+    type: CustomAuthenticator
+    class_name: source_pinterest.components.auth.PinterestOauthAuthenticator
     client_id: "{{ config['credentials']['client_id'] }}"
     client_secret: "{{ config['credentials']['client_secret'] }}"
     refresh_token: "{{ config['credentials']['refresh_token'] }}"
@@ -35,12 +36,32 @@ definitions:
       field_name: bookmark
       inject_into: request_parameter
 
-  # Retriever
+  # Retrievers
   retriever:
     type: SimpleRetriever
     record_selector: "#/definitions/selector"
     requester: "#/definitions/requester"
     paginator: "#/definitions/paginator"
+
+  board_based_retriever:
+    $ref: "#/definitions/retriever"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: "id"
+          stream: "#/definitions/boards_stream"
+          partition_field: "id"
+
+  ad_account_based_retriever:
+    $ref: "#/definitions/retriever"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: "id"
+          stream: "#/definitions/ad_accounts_stream"
+          partition_field: "id"
 
   # Base stream
   base_stream:
@@ -66,7 +87,8 @@ definitions:
     $ref: "#/definitions/base_stream"
     transformations:
       - type: RemoveFields
-        field_pointers: ["credentials"]
+        field_pointers:
+          - ["credentials"]
     $parameters:
       path: "catalogs/feeds"
 
@@ -82,12 +104,52 @@ definitions:
     $parameters:
       path: "ad_accounts"
 
+  board_sections_stream:
+    name: "board_sections"
+    $ref: "#/definitions/base_stream"
+    retriever: "#/definitions/board_based_retriever"
+    $parameters:
+      path: "boards/{{ stream_slice.id }}/sections"
+
+  board_pins_stream:
+    name: "board_pins"
+    $ref: "#/definitions/base_stream"
+    retriever: "#/definitions/board_based_retriever"
+    $parameters:
+      path: "boards/{{ stream_slice.id }}/pins"
+
+  audiences_stream:
+    name: "audiences"
+    $ref: "#/definitions/base_stream"
+    retriever: "#/definitions/ad_account_based_retriever"
+    $parameters:
+      path: "ad_accounts/{{ stream_slice.id }}/audiences"
+
+  conversion_tags_stream:
+    name: "conversion_tags"
+    $ref: "#/definitions/base_stream"
+    retriever: "#/definitions/ad_account_based_retriever"
+    $parameters:
+      path: "ad_accounts/{{ stream_slice.id }}/conversion_tags"
+
+  customer_lists_stream:
+    name: "customer_lists"
+    $ref: "#/definitions/base_stream"
+    retriever: "#/definitions/ad_account_based_retriever"
+    $parameters:
+      path: "ad_accounts/{{ stream_slice.id }}/customer_lists"
+
 streams:
   - "#/definitions/boards_stream"
   - "#/definitions/catalogs_stream"
   - "#/definitions/catalogs_feeds_stream"
   - "#/definitions/catalogs_product_groups_stream"
   - "#/definitions/ad_accounts_stream"
+  - "#/definitions/board_sections_stream"
+  - "#/definitions/board_pins_stream"
+  - "#/definitions/audiences_stream"
+  - "#/definitions/conversion_tags_stream"
+  - "#/definitions/customer_lists_stream"
 
 check:
   type: CheckStream
