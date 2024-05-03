@@ -110,6 +110,64 @@ def test_pinecone_index_upsert_and_delete_starter(mock_describe_index, mock_dete
         show_progress=False,
     )
 
+def test_pinecone_index_upsert_and_delete_pod(mock_describe_index, mock_determine_spec_type):
+    indexer = create_pinecone_indexer()
+    indexer._pod_type = "pod"
+    indexer.pinecone_index.query.side_effect = [
+        MagicMock(matches=[MagicMock(id="doc_id1"), MagicMock(id="doc_id2")]),
+        MagicMock(matches=[MagicMock(id="doc_id3")]),
+        MagicMock(matches=[]),
+    ]
+    indexer.index(
+        [
+            Mock(page_content="test", metadata={"_ab_stream": "abc"}, embedding=[1, 2, 3]),
+            Mock(page_content="test2", metadata={"_ab_stream": "abc"}, embedding=[4, 5, 6]),
+        ],
+        "ns1",
+        "some_stream",
+    )
+    indexer.delete(["delete_id1", "delete_id2"], "ns1", "some_stram")
+    indexer.pinecone_index.delete.assert_has_calls(
+        [call(filter={'_ab_record_id': {'$in': ['delete_id1', 'delete_id2']}}, namespace='ns1')]
+    )
+    indexer.pinecone_index.upsert.assert_called_with(
+        vectors=(
+            (ANY, [1, 2, 3], {"_ab_stream": "abc", "text": "test"}),
+            (ANY, [4, 5, 6], {"_ab_stream": "abc", "text": "test2"}),
+        ),
+        async_req=True,
+        show_progress=False,
+    )
+
+def test_pinecone_index_upsert_and_delete_serverless(mock_describe_index, mock_determine_spec_type):
+    indexer = create_pinecone_indexer()
+    indexer._pod_type = "serverless"
+    indexer.pinecone_index.query.side_effect = [
+        MagicMock(matches=[MagicMock(id="doc_id1"), MagicMock(id="doc_id2")]),
+        MagicMock(matches=[MagicMock(id="doc_id3")]),
+        MagicMock(matches=[]),
+    ]
+    indexer.index(
+        [
+            Mock(page_content="test", metadata={"_ab_stream": "abc"}, embedding=[1, 2, 3]),
+            Mock(page_content="test2", metadata={"_ab_stream": "abc"}, embedding=[4, 5, 6]),
+        ],
+        "ns1",
+        "some_stream",
+    )
+    indexer.delete(["delete_id1", "delete_id2"], "ns1", "some_stram")
+    indexer.pinecone_index.delete.assert_has_calls(
+        [call(ids=['delete_id1', 'delete_id2'], namespace='ns1')]
+    )
+    indexer.pinecone_index.upsert.assert_called_with(
+        vectors=(
+            (ANY, [1, 2, 3], {"_ab_stream": "abc", "text": "test"}),
+            (ANY, [4, 5, 6], {"_ab_stream": "abc", "text": "test2"}),
+        ),
+        async_req=True,
+        show_progress=False,
+    )
+
 
 def test_pinecone_index_delete_1k_limit(mock_describe_index):
     indexer = create_pinecone_indexer()
