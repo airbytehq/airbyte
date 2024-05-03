@@ -14,8 +14,4 @@ data class ColumnMetadata(
     val searchable: Boolean? = null,
     val currency: Boolean? = null,
     val nullable: Boolean? = null,
-    val signed: Boolean? = null,
-    val displaySize: Int? = null,
-    val precision: Int? = null,
-    val scale: Int? = null,
 )

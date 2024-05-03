@@ -73,7 +73,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
                 "testcontainer %s (%s[%s]):".formatted(
                     containerId!!.incrementAndGet(),
                     imageName,
-                    StringUtils.join(containerModifiers, ",")
+                    StringUtils.join(containerModifiers.map { it.name() }, ",")
                 )
             )
             .setPrefixColor(LoggingHelper.Color.RED_BACKGROUND)

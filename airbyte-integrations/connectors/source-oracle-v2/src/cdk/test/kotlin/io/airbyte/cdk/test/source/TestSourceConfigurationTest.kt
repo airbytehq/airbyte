@@ -5,6 +5,7 @@
 package io.airbyte.cdk.test.source
 
 import io.airbyte.cdk.command.SourceConfiguration
+import io.airbyte.cdk.read.LimitState
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
 import io.micronaut.context.annotation.Property
@@ -49,6 +50,7 @@ class TestSourceConfigurationTest {
                 resumablePreferred = true,
                 workerConcurrency = 1,
                 workUnitSoftTimeout = java.time.Duration.ZERO,
+                initialLimit = LimitState.minimum,
             )
         Assertions.assertEquals(expected, actual)
     }

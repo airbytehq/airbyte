@@ -8,6 +8,10 @@
           "MSG": {
             "type": "string"
           },
+          "_ROWID_": {
+            "type": "number",
+            "airbyte_type": "integer"
+          },
           "ID": {
             "type": "string",
             "contentEncoding": "base64"
@@ -43,6 +47,10 @@
       "json_schema": {
         "type": "object",
         "properties": {
+          "_ROWID_": {
+            "type": "number",
+            "airbyte_type": "integer"
+          },
           "V": {
             "type": "string"
           },

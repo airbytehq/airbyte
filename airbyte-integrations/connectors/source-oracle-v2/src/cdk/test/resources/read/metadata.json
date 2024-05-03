@@ -1,0 +1,128 @@
+[
+  {
+    "key": {
+      "catalog": "TESTDB",
+      "schema": "PUBLIC",
+      "name": "EVENTS",
+      "type": "BASE TABLE"
+    },
+    "value": {
+      "columns": [
+        {
+          "name": "ID",
+          "label": "ID",
+          "type": {
+            "@class": "io.airbyte.cdk.discover.SystemType",
+            "type": "BINARY",
+            "typeName": "UUID",
+            "klazz": "java.util.UUID",
+            "typeCode": -2,
+            "displaySize": 36,
+            "precision": 16,
+            "scale": 0,
+            "signed": false
+          },
+          "caseSensitive": true,
+          "autoIncrement": false,
+          "currency": false,
+          "searchable": true,
+          "nullable": false
+        },
+        {
+          "name": "TS",
+          "label": "TS",
+          "type": {
+            "@class": "io.airbyte.cdk.discover.SystemType",
+            "type": "TIMESTAMP_WITH_TIMEZONE",
+            "typeName": "TIMESTAMP WITH TIME ZONE",
+            "klazz": "java.time.OffsetDateTime",
+            "typeCode": 2014,
+            "displaySize": 32,
+            "precision": 32,
+            "scale": 6,
+            "signed": false
+          },
+          "caseSensitive": true,
+          "autoIncrement": false,
+          "currency": false,
+          "searchable": true,
+          "nullable": false
+        },
+        {
+          "name": "MSG",
+          "label": "MSG",
+          "type": {
+            "@class": "io.airbyte.cdk.discover.SystemType",
+            "type": "VARCHAR",
+            "typeName": "CHARACTER VARYING",
+            "klazz": "java.lang.String",
+            "typeCode": 12,
+            "displaySize": 60,
+            "precision": 60,
+            "scale": 0,
+            "signed": false
+          },
+          "caseSensitive": true,
+          "autoIncrement": false,
+          "currency": false,
+          "searchable": true,
+          "nullable": true
+        }
+      ],
+      "primaryKeys": [["ID"]]
+    }
+  },
+  {
+    "key": {
+      "catalog": "TESTDB",
+      "schema": "PUBLIC",
+      "name": "KV",
+      "type": "BASE TABLE"
+    },
+    "value": {
+      "columns": [
+        {
+          "name": "K",
+          "label": "K",
+          "type": {
+            "@class": "io.airbyte.cdk.discover.SystemType",
+            "type": "INTEGER",
+            "typeName": "INTEGER",
+            "klazz": "java.lang.Integer",
+            "typeCode": 4,
+            "displaySize": 11,
+            "precision": 32,
+            "scale": 0,
+            "signed": true
+          },
+          "caseSensitive": true,
+          "autoIncrement": false,
+          "currency": false,
+          "searchable": true,
+          "nullable": false
+        },
+        {
+          "name": "V",
+          "label": "V",
+          "type": {
+            "@class": "io.airbyte.cdk.discover.SystemType",
+            "type": "VARCHAR",
+            "typeName": "CHARACTER VARYING",
+            "klazz": "java.lang.String",
+            "typeCode": 12,
+            "displaySize": 60,
+            "precision": 60,
+            "scale": 0,
+            "signed": false
+          },
+          "caseSensitive": true,
+          "autoIncrement": false,
+          "currency": false,
+          "searchable": true,
+          "nullable": true
+        }
+      ],
+      "primaryKeys": [["K"]]
+    }
+  }
+]

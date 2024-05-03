@@ -8,10 +8,10 @@ import io.airbyte.cdk.discover.ColumnMetadata
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.discover.SystemType
 import io.airbyte.cdk.discover.TableName
-import io.airbyte.cdk.test.source.TestDiscoverMapper
 import io.airbyte.cdk.test.source.TestSourceConfiguration
 import io.airbyte.cdk.test.source.TestSourceConfigurationFactory
 import io.airbyte.cdk.test.source.TestSourceConfigurationJsonObject
+import io.airbyte.cdk.test.source.TestSourceOperations
 import java.sql.JDBCType
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -24,7 +24,7 @@ class JdbcMetadataQuerierTest {
         h2.execute("CREATE TABLE kv (k INT PRIMARY KEY, v VARCHAR(60))")
     }
 
-    val factory = JdbcMetadataQuerier.Factory(TestDiscoverMapper())
+    val factory = JdbcMetadataQuerier.Factory(TestSourceOperations())
 
     @Test
     fun test() {
@@ -45,6 +45,25 @@ class JdbcMetadataQuerierTest {
             val expectedColumnMetadata: List<ColumnMetadata> =
                 listOf(
                     ColumnMetadata(
+                        name = "_ROWID_",
+                        label = "_ROWID_",
+                        type =
+                            SystemType(
+                                typeName = "BIGINT",
+                                klazz = java.lang.Long::class.java,
+                                typeCode = JDBCType.BIGINT.vendorTypeNumber,
+                                signed = true,
+                                displaySize = 20,
+                                precision = 64,
+                                scale = 0
+                            ),
+                        autoIncrement = false,
+                        caseSensitive = true,
+                        searchable = true,
+                        currency = false,
+                        nullable = false,
+                    ),
+                    ColumnMetadata(
                         name = "K",
                         label = "K",
                         type =
@@ -52,16 +71,16 @@ class JdbcMetadataQuerierTest {
                                 typeName = "INTEGER",
                                 klazz = java.lang.Integer::class.java,
                                 typeCode = JDBCType.INTEGER.vendorTypeNumber,
+                                signed = true,
+                                displaySize = 11,
+                                precision = 32,
+                                scale = 0
                             ),
                         autoIncrement = false,
                         caseSensitive = true,
                         searchable = true,
                         currency = false,
                         nullable = false,
-                        signed = true,
-                        displaySize = 11,
-                        precision = 32,
-                        scale = 0
                     ),
                     ColumnMetadata(
                         name = "V",
@@ -71,16 +90,16 @@ class JdbcMetadataQuerierTest {
                                 typeName = "CHARACTER VARYING",
                                 klazz = java.lang.String::class.java,
                                 typeCode = JDBCType.VARCHAR.vendorTypeNumber,
+                                signed = false,
+                                displaySize = 60,
+                                precision = 60,
+                                scale = 0
                             ),
                         autoIncrement = false,
                         caseSensitive = true,
                         searchable = true,
                         currency = false,
                         nullable = true,
-                        signed = false,
-                        displaySize = 60,
-                        precision = 60,
-                        scale = 0
                     )
                 )
             Assertions.assertEquals(expectedColumnMetadata, mdq.columnMetadata(tableName))

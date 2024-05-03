@@ -9,7 +9,7 @@
             "name": "bar",
             "namespace": "foo"
           },
-          "stream_state": { "primary_key": { "k1": "1", "k2": "2" } }
+          "stream_state": { "primary_key": { "k1": 1, "k2": 2 } }
         }
       ]
     }
@@ -21,7 +21,7 @@
         "name": "baz",
         "namespace": "foo"
       },
-      "stream_state": { "primary_key": { "k": "1" } }
+      "stream_state": { "primary_key": { "k": 1 } }
     }
   },
   {
@@ -31,7 +31,7 @@
         "name": "baz",
         "namespace": "foo"
       },
-      "stream_state": { "primary_key": { "k": "10" } }
+      "stream_state": { "primary_key": { "k": 10 } }
     }
   },
   {
@@ -44,7 +44,7 @@
             "name": "bar",
             "namespace": "foo"
           },
-          "stream_state": { "primary_key": { "k1": "10", "k2": "20" } }
+          "stream_state": { "primary_key": { "k1": 10, "k2": 20 } }
         }
       ]
     }

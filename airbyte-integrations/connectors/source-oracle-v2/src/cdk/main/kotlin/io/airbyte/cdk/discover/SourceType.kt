@@ -30,6 +30,10 @@ data class SystemType(
     override val typeName: String? = null,
     override val klazz: Class<*>? = null,
     override val typeCode: Int,
+    val signed: Boolean? = null,
+    val displaySize: Int? = null,
+    val precision: Int? = null,
+    val scale: Int? = null,
 ) : SourceType {
     override val catalog: String?
         get() = null

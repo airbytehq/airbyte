@@ -36,7 +36,7 @@ class TestSourceDiscoverTest {
                 .withNamespace("PUBLIC")
                 .withJsonSchema(Jsons.deserialize(EVENTS_SCHEMA))
                 .withSupportedSyncModes(listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                .withDefaultCursorField(listOf("TS"))
+                .withDefaultCursorField(listOf("ID", "TS", "MSG"))
                 .withSourceDefinedPrimaryKey(listOf(listOf("ID")))
         val kv =
             AirbyteStream()
@@ -44,7 +44,7 @@ class TestSourceDiscoverTest {
                 .withNamespace("PUBLIC")
                 .withJsonSchema(Jsons.deserialize(KV_SCHEMA))
                 .withSupportedSyncModes(listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                .withDefaultCursorField(listOf("K"))
+                .withDefaultCursorField(listOf("K", "V"))
                 .withSourceDefinedPrimaryKey(listOf(listOf("K")))
         val expected = AirbyteCatalog().withStreams(listOf(events, kv))
         discoverOperation.execute()
@@ -57,14 +57,13 @@ class TestSourceDiscoverTest {
     @Property(name = "airbyte.connector.config.cursor", value = "cdc")
     @Property(name = "metadata.resource", value = "test/source/metadata-valid.json")
     fun testCdcIncremental() {
-        // TODO: check that this is indeed the expected behaviour.
         val events =
             AirbyteStream()
                 .withName("EVENTS")
                 .withNamespace("PUBLIC")
                 .withJsonSchema(Jsons.deserialize(EVENTS_SCHEMA))
                 .withSupportedSyncModes(listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                .withDefaultCursorField(listOf("TS"))
+                .withDefaultCursorField(listOf("ID", "TS", "MSG"))
                 .withSourceDefinedPrimaryKey(listOf(listOf("ID")))
         val kv =
             AirbyteStream()
@@ -72,7 +71,7 @@ class TestSourceDiscoverTest {
                 .withNamespace("PUBLIC")
                 .withJsonSchema(Jsons.deserialize(KV_SCHEMA))
                 .withSupportedSyncModes(listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                .withDefaultCursorField(listOf("K"))
+                .withDefaultCursorField(listOf("K", "V"))
                 .withSourceDefinedPrimaryKey(listOf(listOf("K")))
         val expected = AirbyteCatalog().withStreams(listOf(events, kv))
         discoverOperation.execute()

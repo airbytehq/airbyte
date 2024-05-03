@@ -37,7 +37,7 @@ data class OracleSourceConfiguration(
     override val schemas: Set<String>,
     val cursorConfiguration: CursorConfiguration,
     override val workerConcurrency: Int = 1,
-    override val workUnitSoftTimeout: Duration = Duration.ZERO,
+    override val workUnitSoftTimeout: Duration = Duration.ofMinutes(5),
 ) : SourceConfiguration {
 
     override val resumablePreferred: Boolean = true

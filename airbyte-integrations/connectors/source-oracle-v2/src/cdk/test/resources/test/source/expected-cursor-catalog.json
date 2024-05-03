@@ -8,6 +8,10 @@
           "MSG": {
             "type": "string"
           },
+          "_ROWID_": {
+            "type": "number",
+            "airbyte_type": "integer"
+          },
           "ID": {
             "type": "string",
             "contentEncoding": "base64"
@@ -20,7 +24,7 @@
         }
       },
       "supported_sync_modes": ["full_refresh", "incremental"],
-      "default_cursor_field": ["TS"],
+      "default_cursor_field": ["_ROWID_", "ID", "TS", "MSG"],
       "source_defined_primary_key": [["ID"]],
       "namespace": "PUBLIC"
     },
@@ -29,6 +33,10 @@
       "json_schema": {
         "type": "object",
         "properties": {
+          "_ROWID_": {
+            "type": "number",
+            "airbyte_type": "integer"
+          },
           "V": {
             "type": "string"
           },
@@ -39,7 +47,7 @@
         }
       },
       "supported_sync_modes": ["full_refresh", "incremental"],
-      "default_cursor_field": ["K"],
+      "default_cursor_field": ["_ROWID_", "K", "V"],
       "source_defined_primary_key": [["K"]],
       "namespace": "PUBLIC"
     }

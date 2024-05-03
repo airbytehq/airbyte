@@ -152,9 +152,12 @@ class OracleSourceMetadataQuerier(val base: JdbcMetadataQuerier) : MetadataQueri
                                 when (row.scale) {
                                     null -> systemTypeMap[row.elemTypeName]?.typeCode
                                             ?: Types.JAVA_OBJECT
-                                    0 -> Types.BIGINT
                                     else -> Types.NUMERIC
-                                }
+                                },
+                            signed = null,
+                            displaySize = row.displaySize,
+                            precision = row.precision,
+                            scale = row.scale,
                         )
                 recurse(leaf, row)
             }
@@ -172,6 +175,8 @@ class OracleSourceMetadataQuerier(val base: JdbcMetadataQuerier) : MetadataQueri
                                 rs.getString("TYPE_NAME"),
                                 rs.getString("ELEM_TYPE_OWNER").takeUnless { rs.wasNull() },
                                 rs.getString("ELEM_TYPE_NAME").takeUnless { rs.wasNull() },
+                                rs.getInt("LENGTH").takeUnless { rs.wasNull() },
+                                rs.getInt("PRECISION").takeUnless { rs.wasNull() },
                                 rs.getInt("SCALE").takeUnless { rs.wasNull() }
                             )
                         )
@@ -189,13 +194,15 @@ class OracleSourceMetadataQuerier(val base: JdbcMetadataQuerier) : MetadataQueri
         val typeName: String,
         val elemTypeOwner: String?,
         val elemTypeName: String?,
+        val displaySize: Int?,
+        val precision: Int?,
         val scale: Int?,
     )
 
     companion object {
         const val VARRAY_QUERY =
             """
-SELECT OWNER, TYPE_NAME, ELEM_TYPE_OWNER, ELEM_TYPE_NAME, SCALE
+SELECT OWNER, TYPE_NAME, ELEM_TYPE_OWNER, ELEM_TYPE_NAME, LENGTH, PRECISION, SCALE
 FROM ALL_COLL_TYPES
 WHERE COLL_TYPE = 'VARYING ARRAY'
         """

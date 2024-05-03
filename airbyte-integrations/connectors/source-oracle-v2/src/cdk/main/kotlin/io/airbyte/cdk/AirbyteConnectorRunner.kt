@@ -57,7 +57,7 @@ sealed class AirbyteConnectorRunner(
     inline fun <reified R : Runnable> run() {
         val picocliCommandLineFactory = PicocliCommandLineFactory(this)
         val micronautCommandLine: MicronautCommandLine = MicronautCommandLine.parse(*args)
-        val configPropertySource =
+        val airbytePropertySource =
             ConnectorCommandLinePropertySource(
                 micronautCommandLine,
                 picocliCommandLineFactory.commands.options().map { it.longestName() }
@@ -65,7 +65,7 @@ sealed class AirbyteConnectorRunner(
         val commandLinePropertySource = CommandLinePropertySource(micronautCommandLine)
         val ctx: ApplicationContext =
             ApplicationContext.builder(R::class.java, *envs)
-                .propertySources(configPropertySource, commandLinePropertySource)
+                .propertySources(airbytePropertySource, commandLinePropertySource)
                 .start()
         val isTest: Boolean = ctx.environment.activeNames.contains(Environment.TEST)
         val picocliFactory: CommandLine.IFactory = MicronautFactory(ctx)

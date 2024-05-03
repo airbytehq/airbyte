@@ -6,6 +6,7 @@ package io.airbyte.cdk.test.source
 
 import io.airbyte.cdk.command.ConfigurationFactory
 import io.airbyte.cdk.command.SourceConfiguration
+import io.airbyte.cdk.read.LimitState
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.micronaut.context.annotation.Requires
@@ -26,6 +27,7 @@ data class TestSourceConfiguration(
     override val resumablePreferred: Boolean,
     override val workerConcurrency: Int,
     override val workUnitSoftTimeout: Duration,
+    override val initialLimit: LimitState,
 ) : SourceConfiguration {
 
     override val global: Boolean = cursor is CdcCursor
@@ -55,6 +57,7 @@ class TestSourceConfigurationFactory :
             resumablePreferred = pojo.resumablePreferred != false,
             workerConcurrency = 1,
             workUnitSoftTimeout = Duration.parse(pojo.timeout),
+            initialLimit = LimitState(1L, 1L)
         )
     }
 }

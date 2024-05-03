@@ -71,6 +71,7 @@ data object SyncsTestFixture {
 
     fun testDiscover(configPojo: ConfigurationJsonObjectBase, expectedCatalog: AirbyteCatalog) {
         val discoverOutput: BufferingOutputConsumer = CliRunner.runSource("discover", configPojo)
+        println(Jsons.jsonNode(discoverOutput.catalogs()))
         Assertions.assertEquals(listOf(expectedCatalog), discoverOutput.catalogs())
     }
 
@@ -80,6 +81,40 @@ data object SyncsTestFixture {
 
     fun catalogFromResource(catalogResource: String): AirbyteCatalog =
         Jsons.deserialize(MoreResources.readResource(catalogResource), AirbyteCatalog::class.java)
+
+    fun <T : ConfigurationJsonObjectBase> testReads(
+        configPojo: T,
+        connectionSupplier: Supplier<Connection>,
+        prelude: (Connection) -> Unit,
+        configuredCatalog: ConfiguredAirbyteCatalog,
+        vararg afterRead: AfterRead,
+    ) {
+        connectionSupplier.get().use(prelude)
+        var state: List<AirbyteStateMessage> = listOf()
+        for (step in afterRead) {
+            val readOutput: BufferingOutputConsumer =
+                CliRunner.runSource("read", configPojo, configuredCatalog, state)
+            step.assert(readOutput)
+            connectionSupplier.get().use(step::update)
+            state = readOutput.states()
+        }
+    }
+
+    fun <T : ConfigurationJsonObjectBase> testReads(
+        configPojo: T,
+        connectionSupplier: Supplier<Connection>,
+        prelude: (Connection) -> Unit,
+        configuredCatalogResource: String,
+        vararg afterRead: AfterRead,
+    ) {
+        testReads(
+            configPojo,
+            connectionSupplier,
+            prelude,
+            configuredCatalogFromResource(configuredCatalogResource),
+            *afterRead
+        )
+    }
 
     fun <T : ConfigurationJsonObjectBase> testSyncs(
         configPojo: T,

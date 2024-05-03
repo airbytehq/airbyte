@@ -45,32 +45,27 @@ class JdbcMetadataQuerier(
 
     val memoizedTableNames: List<TableName> by lazy {
         log.info { "Querying table names for catalog discovery." }
-        val schemaSet: Set<String> = config.schemas.map { it.uppercase() }.toSet()
         try {
-            val allTables = mutableListOf<TableName>()
+            val allTables = mutableSetOf<TableName>()
             val dbmd: DatabaseMetaData = conn.metaData
-            dbmd.getTables(null, null, null, null).use { rs: ResultSet ->
-                while (rs.next()) {
-                    allTables.add(
-                        TableName(
-                            catalog = rs.getString("TABLE_CAT"),
-                            schema = rs.getString("TABLE_SCHEM"),
-                            name = rs.getString("TABLE_NAME"),
-                            type = rs.getString("TABLE_TYPE") ?: ""
+            for (schema in config.schemas + config.schemas.map { it.uppercase() }) {
+                dbmd.getTables(null, schema, null, null).use { rs: ResultSet ->
+                    while (rs.next()) {
+                        allTables.add(
+                            TableName(
+                                catalog = rs.getString("TABLE_CAT"),
+                                schema = rs.getString("TABLE_SCHEM"),
+                                name = rs.getString("TABLE_NAME"),
+                                type = rs.getString("TABLE_TYPE") ?: ""
+                            )
                         )
-                    )
+                    }
                 }
             }
-            log.info { "Discovered ${allTables.size} table(s)." }
-            if (allTables.isEmpty()) {
-                return@lazy listOf()
+            log.info { "Discovered ${allTables.size} table(s) in schemas ${config.schemas}." }
+            return@lazy allTables.toList().sortedBy {
+                "${it.catalog ?: ""}.${it.schema!!}.${it.name}.${it.type}"
             }
-            return@lazy allTables
-                .filter { schemaSet.contains(it.schema?.uppercase()) }
-                .sortedBy { "${it.catalog ?: ""}.${it.schema!!}.${it.name}.${it.type}" }
-                .also {
-                    log.info { "Discovered ${it.size} table(s) in schemas ${config.schemas}." }
-                }
         } catch (e: Exception) {
             throw RuntimeException("Table name discovery query failed: ${e.message}", e)
         }
@@ -83,22 +78,39 @@ class JdbcMetadataQuerier(
         log.info { "Querying column names for catalog discovery." }
         try {
             val dbmd: DatabaseMetaData = conn.metaData
-            dbmd.getColumns(null, null, null, null).use { rs: ResultSet ->
-                while (rs.next()) {
-                    val tableName: TableName =
-                        joinMap[
-                            TableName(
-                                catalog = rs.getString("TABLE_CAT"),
-                                schema = rs.getString("TABLE_SCHEM"),
-                                name = rs.getString("TABLE_NAME"),
-                                type = ""
-                            )
-                        ]
-                            ?: continue
-                    results.add(tableName to rs.getString("COLUMN_NAME"))
+            memoizedTableNames
+                .filter { it.catalog != null || it.schema != null }
+                .map { it.catalog to it.schema }
+                .distinct()
+                .forEach { (catalog: String?, schema: String?) ->
+                    dbmd.getPseudoColumns(catalog, schema, null, null).use { rs: ResultSet ->
+                        while (rs.next()) {
+                            val tableName =
+                                TableName(
+                                    catalog = rs.getString("TABLE_CAT"),
+                                    schema = rs.getString("TABLE_SCHEM"),
+                                    name = rs.getString("TABLE_NAME"),
+                                    type = ""
+                                )
+                            val joinedTableName: TableName = joinMap[tableName] ?: continue
+                            results.add(joinedTableName to rs.getString("COLUMN_NAME"))
+                        }
+                    }
+                    dbmd.getColumns(catalog, schema, null, null).use { rs: ResultSet ->
+                        while (rs.next()) {
+                            val tableName =
+                                TableName(
+                                    catalog = rs.getString("TABLE_CAT"),
+                                    schema = rs.getString("TABLE_SCHEM"),
+                                    name = rs.getString("TABLE_NAME"),
+                                    type = ""
+                                )
+                            val joinedTableName: TableName = joinMap[tableName] ?: continue
+                            results.add(joinedTableName to rs.getString("COLUMN_NAME"))
+                        }
+                    }
                 }
-            }
-            log.info { "Discovered ${results.size} column(s)." }
+            log.info { "Discovered ${results.size} column(s) and pseudo-column(s)." }
             return@lazy results.groupBy({ it.first }, { it.second })
         } catch (e: Exception) {
             throw RuntimeException("Column name discovery query failed: ${e.message}", e)
@@ -166,6 +178,10 @@ class JdbcMetadataQuerier(
                                     swallow {
                                         meta.getColumnClassName(it)?.let { Class.forName(it) }
                                     },
+                                signed = swallow { meta.isSigned(it) },
+                                displaySize = swallow { meta.getColumnDisplaySize(it) },
+                                precision = swallow { meta.getPrecision(it) },
+                                scale = swallow { meta.getScale(it) },
                             )
                         ColumnMetadata(
                             name = meta.getColumnName(it),
@@ -181,10 +197,6 @@ class JdbcMetadataQuerier(
                                     ResultSetMetaData.columnNullable -> true
                                     else -> null
                                 },
-                            signed = swallow { meta.isSigned(it) },
-                            displaySize = swallow { meta.getColumnDisplaySize(it) },
-                            precision = swallow { meta.getPrecision(it) },
-                            scale = swallow { meta.getScale(it) },
                         )
                     }
                 }

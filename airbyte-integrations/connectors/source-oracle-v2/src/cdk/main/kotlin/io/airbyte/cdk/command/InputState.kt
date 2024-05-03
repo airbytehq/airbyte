@@ -26,8 +26,8 @@ data class StreamInputState(
 
 /** State value for a STATE message of type STREAM. */
 data class StreamStateValue(
-    @JsonProperty("primary_key") val primaryKey: Map<String, String> = mapOf(),
-    @JsonProperty("cursors") val cursors: Map<String, String> = mapOf(),
+    @JsonProperty("primary_key") val primaryKey: Map<String, JsonNode> = mapOf(),
+    @JsonProperty("cursors") val cursors: Map<String, JsonNode> = mapOf(),
 )
 
 /** State value for a STATE message of type GLOBAL. */

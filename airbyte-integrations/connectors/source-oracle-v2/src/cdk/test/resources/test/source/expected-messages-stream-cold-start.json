@@ -1,0 +1,169 @@
+[
+  {
+    "type": "RECORD",
+    "record": {
+      "namespace": "PUBLIC",
+      "stream": "EVENTS",
+      "data": {
+        "ID": "zESZAjDaXqjE0wJzLlv86Q==",
+        "TS": "2024-04-29T00:00:00.000000-04:00",
+        "MSG": "bar"
+      },
+      "emitted_at": 3133641600000
+    }
+  },
+  {
+    "type": "STATE",
+    "state": {
+      "type": "STREAM",
+      "stream": {
+        "stream_descriptor": {
+          "name": "EVENTS",
+          "namespace": "PUBLIC"
+        },
+        "stream_state": {
+          "cursors": {
+            "TS": "2024-04-30 00:00:00-04"
+          },
+          "primaryKey": {
+            "ID": "cc449902-30da-5ea8-c4d3-02732e5bfce9"
+          }
+        }
+      },
+      "sourceStats": {
+        "recordCount": 1.0
+      }
+    }
+  },
+  {
+    "type": "RECORD",
+    "record": {
+      "namespace": "PUBLIC",
+      "stream": "EVENTS",
+      "data": {
+        "ID": "3VWqE0Hrb7TV5BOEP2wN+g==",
+        "TS": "2024-04-30T00:00:00.000000-04:00",
+        "MSG": null
+      },
+      "emitted_at": 3133641600000
+    }
+  },
+  {
+    "type": "STATE",
+    "state": {
+      "type": "STREAM",
+      "stream": {
+        "stream_descriptor": {
+          "name": "EVENTS",
+          "namespace": "PUBLIC"
+        },
+        "stream_state": {
+          "cursors": {
+            "TS": "2024-04-30 00:00:00-04"
+          },
+          "primaryKey": {}
+        }
+      },
+      "sourceStats": {
+        "recordCount": 1.0
+      }
+    }
+  },
+  {
+    "type": "RECORD",
+    "record": {
+      "namespace": "PUBLIC",
+      "stream": "KV",
+      "data": {
+        "K": 1,
+        "V": "foo"
+      },
+      "emitted_at": 3133641600000
+    }
+  },
+  {
+    "type": "STATE",
+    "state": {
+      "type": "STREAM",
+      "stream": {
+        "stream_descriptor": {
+          "name": "KV",
+          "namespace": "PUBLIC"
+        },
+        "stream_state": {
+          "cursors": {},
+          "primaryKey": {
+            "K": "1"
+          }
+        }
+      },
+      "sourceStats": {
+        "recordCount": 1.0
+      }
+    }
+  },
+  {
+    "type": "RECORD",
+    "record": {
+      "namespace": "PUBLIC",
+      "stream": "KV",
+      "data": {
+        "K": 2,
+        "V": "bar"
+      },
+      "emitted_at": 3133641600000
+    }
+  },
+  {
+    "type": "RECORD",
+    "record": {
+      "namespace": "PUBLIC",
+      "stream": "KV",
+      "data": {
+        "K": 3,
+        "V": null
+      },
+      "emitted_at": 3133641600000
+    }
+  },
+  {
+    "type": "STATE",
+    "state": {
+      "type": "STREAM",
+      "stream": {
+        "stream_descriptor": {
+          "name": "KV",
+          "namespace": "PUBLIC"
+        },
+        "stream_state": {
+          "cursors": {},
+          "primaryKey": {
+            "K": "3"
+          }
+        }
+      },
+      "sourceStats": {
+        "recordCount": 2.0
+      }
+    }
+  },
+  {
+    "type": "STATE",
+    "state": {
+      "type": "STREAM",
+      "stream": {
+        "stream_descriptor": {
+          "name": "KV",
+          "namespace": "PUBLIC"
+        },
+        "stream_state": {
+          "cursors": {},
+          "primaryKey": {}
+        }
+      },
+      "sourceStats": {
+        "recordCount": 0.0
+      }
+    }
+  }
+]

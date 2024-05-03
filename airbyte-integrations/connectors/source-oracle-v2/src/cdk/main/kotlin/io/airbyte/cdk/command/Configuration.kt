@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.command
 
+import io.airbyte.cdk.read.LimitState
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import java.time.Duration
@@ -33,6 +34,10 @@ interface SourceConfiguration : Configuration {
 
     /** Are resumable backfills preferred to non-resumable backfills? */
     val resumablePreferred: Boolean
+
+    /** How many rows to query in the first batch. */
+    val initialLimit: LimitState
+        get() = LimitState.defaultProductionInitialValue
 
     /**
      * JDBC URL format string with placeholders for the host and port. These are dynamically

@@ -10,7 +10,7 @@ import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil
 import io.airbyte.protocol.models.JsonSchemaType
 
 /** Union type which models the Airbyte field schema. */
-sealed interface ColumnType {
+sealed interface AirbyteType {
 
     /** Unwraps the underlying Airbyte protocol type object. */
     fun asJsonSchemaType(): JsonSchemaType
@@ -19,7 +19,7 @@ sealed interface ColumnType {
     fun asJsonSchema(): JsonNode = Jsons.jsonNode(asJsonSchemaType().jsonSchemaTypeMap)
 }
 
-data class ArrayColumnType(val item: ColumnType) : ColumnType {
+data class ArrayAirbyteType(val item: AirbyteType) : AirbyteType {
 
     override fun asJsonSchemaType(): JsonSchemaType =
         JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
@@ -27,7 +27,7 @@ data class ArrayColumnType(val item: ColumnType) : ColumnType {
             .build()
 }
 
-enum class LeafType(private val jsonSchemaType: JsonSchemaType) : ColumnType {
+enum class LeafAirbyteType(private val jsonSchemaType: JsonSchemaType) : AirbyteType {
     BOOLEAN(JsonSchemaType.BOOLEAN),
     STRING(JsonSchemaType.STRING),
     BINARY(JsonSchemaType.STRING_BASE_64),

@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.discover
 
+import io.airbyte.cdk.read.stream.SelectQuery
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.CatalogHelpers
@@ -18,11 +19,18 @@ interface DiscoverMapper {
     /** Crafts a SQL query for a table which, if possible, doesn't return any rows. */
     fun selectFromTableLimit0(table: TableName, columns: List<String>): String
 
-    /** Maps a [ColumnMetadata] to a [ColumnType] in a many-to-one relationship. */
-    fun columnType(c: ColumnMetadata): ColumnType
+    /** Maps a [ColumnMetadata] to a [SelectQuery.ValueType] in a many-to-one relationship. */
+    fun columnValueType(c: ColumnMetadata): ValueType<*>
+
+    /** Can the column be used as part of a primary key ? */
+    fun isPossiblePrimaryKeyElement(c: ColumnMetadata): Boolean =
+        columnValueType(c) is ReversibleValueType<*, *>
 
     /** Can the column be used as a cursor? */
-    fun isPossibleCursor(c: ColumnMetadata): Boolean
+    fun isPossibleCursor(c: ColumnMetadata): Boolean {
+        val type: ValueType<*> = columnValueType(c)
+        return (type is ReversibleValueType<*, *> && type.airbyteType != LeafAirbyteType.BOOLEAN)
+    }
 
     /** Maps a [DiscoveredStream] to an [AirbyteStream] when the state is to be of type GLOBAL. */
     fun globalAirbyteStream(stream: DiscoveredStream): AirbyteStream
@@ -39,7 +47,8 @@ interface DiscoverMapper {
         fun basicAirbyteStream(mapper: DiscoverMapper, stream: DiscoveredStream): AirbyteStream {
             val fields: List<Field> =
                 stream.columnMetadata.map {
-                    Field.of(it.label, mapper.columnType(it).asJsonSchemaType())
+                    val valueType: ValueType<*> = mapper.columnValueType(it)
+                    Field.of(it.label, valueType.airbyteType.asJsonSchemaType())
                 }
             val airbyteStream: AirbyteStream =
                 CatalogHelpers.createAirbyteStream(
@@ -47,12 +56,15 @@ interface DiscoverMapper {
                     null, // Don't know how to map namespace yet, fill in later
                     fields
                 )
-            val nameToLabel: Map<String, String> =
-                stream.columnMetadata.associate { it.name to it.label }
+            val metadataByName: Map<String, ColumnMetadata> =
+                stream.columnMetadata.associateBy { it.name }
             val pkColumnNames: List<List<String>> =
-                stream.primaryKeyColumnNames.map { pk: List<String> ->
-                    pk.map { nameToLabel[it]!! }
-                }
+                stream.primaryKeyColumnNames
+                    .map { pk: List<String> -> pk.map { metadataByName[it]!! } }
+                    .filter { pk: List<ColumnMetadata> ->
+                        pk.all { mapper.isPossiblePrimaryKeyElement(it) }
+                    }
+                    .map { pk: List<ColumnMetadata> -> pk.map { it.name } }
             airbyteStream.withSourceDefinedPrimaryKey(pkColumnNames)
             val cursorColumnLabels: List<String> =
                 stream.columnMetadata.filter { mapper.isPossibleCursor(it) }.map { it.label }
