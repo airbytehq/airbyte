@@ -50,6 +50,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -366,6 +367,13 @@ public class MySqlInitialReadUtil {
 
   private static boolean streamHasPrimaryKey(final ConfiguredAirbyteStream stream) {
     return stream.getStream().getSourceDefinedPrimaryKey().size() > 0;
+  }
+
+  public static InitialLoadStreams filterStreamInIncrementalMode(final InitialLoadStreams stream) {
+    return new InitialLoadStreams(
+        stream.streamsForInitialLoad.stream().filter(airbyteStream -> airbyteStream.getSyncMode() == SyncMode.INCREMENTAL)
+            .collect(Collectors.toList()),
+        stream.pairToInitialLoadStatus);
   }
 
   public static List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog,
