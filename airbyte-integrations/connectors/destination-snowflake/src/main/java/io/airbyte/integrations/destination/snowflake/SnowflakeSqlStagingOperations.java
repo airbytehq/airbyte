@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.DestinationColumns;
 import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.cdk.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.cdk.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
@@ -18,6 +19,7 @@ public abstract class SnowflakeSqlStagingOperations extends SnowflakeSqlOperatio
   /**
    * This method is used in Check connection method to make sure that user has the Write permission
    */
+  @SuppressWarnings("deprecation")
   protected void attemptWriteToStage(final String outputSchema,
                                      final String stageName,
                                      final JdbcDatabase database)
@@ -25,7 +27,7 @@ public abstract class SnowflakeSqlStagingOperations extends SnowflakeSqlOperatio
 
     final CsvSerializedBuffer csvSerializedBuffer = new CsvSerializedBuffer(
         new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX),
-        new StagingDatabaseCsvSheetGenerator(true),
+        new StagingDatabaseCsvSheetGenerator(DestinationColumns.V2_WITHOUT_META),
         true);
 
     // create a dummy stream\records that will bed used to test uploading

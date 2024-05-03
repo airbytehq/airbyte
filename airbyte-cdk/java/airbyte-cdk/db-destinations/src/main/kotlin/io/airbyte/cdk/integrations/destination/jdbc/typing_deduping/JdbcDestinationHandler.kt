@@ -356,7 +356,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                 existingTable.columns[JavaBaseConstants.COLUMN_NAME_AB_META]!!.type
     }
 
-    private fun existingSchemaMatchesStreamConfig(
+    open protected fun existingSchemaMatchesStreamConfig(
         stream: StreamConfig?,
         existingTable: TableDefinition
     ): Boolean {
@@ -400,6 +400,29 @@ abstract class JdbcDestinationHandler<DestinationState>(
         return actualColumns == intendedColumns
     }
 
+    protected open fun getDeleteStatesSql(
+        destinationStates: Map<StreamId, DestinationState>
+    ): String {
+        return dslContext
+            .deleteFrom(table(quotedName(rawTableSchemaName, DESTINATION_STATE_TABLE_NAME)))
+            .where(
+                destinationStates.keys
+                    .stream()
+                    .map { streamId: StreamId ->
+                        field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME))
+                            .eq(streamId.originalName)
+                            .and(
+                                field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE))
+                                    .eq(streamId.originalNamespace)
+                            )
+                    }
+                    .reduce(DSL.falseCondition()) { obj: Condition, arg2: Condition? ->
+                        obj.or(arg2)
+                    }
+            )
+            .getSQL(ParamType.INLINED)
+    }
+
     @Throws(Exception::class)
     override fun commitDestinationStates(destinationStates: Map<StreamId, DestinationState>) {
         try {
@@ -408,25 +431,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
             }
 
             // Delete all state records where the stream name+namespace match one of our states
-            val deleteStates =
-                dslContext
-                    .deleteFrom(table(quotedName(rawTableSchemaName, DESTINATION_STATE_TABLE_NAME)))
-                    .where(
-                        destinationStates.keys
-                            .stream()
-                            .map { streamId: StreamId ->
-                                field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME))
-                                    .eq(streamId.originalName)
-                                    .and(
-                                        field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAMESPACE))
-                                            .eq(streamId.originalNamespace)
-                                    )
-                            }
-                            .reduce(DSL.falseCondition()) { obj: Condition, arg2: Condition? ->
-                                obj.or(arg2)
-                            }
-                    )
-                    .getSQL(ParamType.INLINED)
+            var deleteStates = getDeleteStatesSql(destinationStates)
 
             // Reinsert all of our states
             var insertStatesStep =
@@ -461,10 +466,15 @@ abstract class JdbcDestinationHandler<DestinationState>(
             }
             val insertStates = insertStatesStep.getSQL(ParamType.INLINED)
 
-            jdbcDatabase.executeWithinTransaction(listOf(deleteStates, insertStates))
+            executeWithinTransaction(listOf(deleteStates, insertStates))
         } catch (e: Exception) {
             LOGGER.warn("Failed to commit destination states", e)
         }
+    }
+
+    @Throws(Exception::class)
+    protected open fun executeWithinTransaction(statements: List<String>) {
+        jdbcDatabase.executeWithinTransaction(statements)
     }
 
     /**
@@ -479,9 +489,9 @@ abstract class JdbcDestinationHandler<DestinationState>(
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(JdbcDestinationHandler::class.java)
-        private const val DESTINATION_STATE_TABLE_NAME = "_airbyte_destination_state"
-        private const val DESTINATION_STATE_TABLE_COLUMN_NAME = "name"
-        private const val DESTINATION_STATE_TABLE_COLUMN_NAMESPACE = "namespace"
+        protected const val DESTINATION_STATE_TABLE_NAME = "_airbyte_destination_state"
+        protected const val DESTINATION_STATE_TABLE_COLUMN_NAME = "name"
+        protected const val DESTINATION_STATE_TABLE_COLUMN_NAMESPACE = "namespace"
         private const val DESTINATION_STATE_TABLE_COLUMN_STATE = "destination_state"
         private const val DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT = "updated_at"
 
@@ -542,6 +552,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
             return Optional.of(TableDefinition(retrievedColumnDefns))
         }
 
+        @JvmStatic
         fun fromIsNullableIsoString(isNullable: String?): Boolean {
             return "YES".equals(isNullable, ignoreCase = true)
         }

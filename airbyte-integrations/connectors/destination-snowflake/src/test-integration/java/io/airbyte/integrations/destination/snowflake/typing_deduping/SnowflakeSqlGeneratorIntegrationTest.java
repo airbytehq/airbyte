@@ -28,7 +28,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeTransaction;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase;
-import io.airbyte.integrations.destination.snowflake.SnowflakeTestSourceOperations;
+import io.airbyte.integrations.destination.snowflake.SnowflakeSourceOperations;
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.migrations.SnowflakeState;
 import java.nio.file.Path;
@@ -74,7 +74,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
   @Override
   protected SnowflakeDestinationHandler getDestinationHandler() {
-    return new SnowflakeDestinationHandler(databaseName, database, namespace.toUpperCase());
+    return new SnowflakeDestinationHandler(databaseName, database, getNamespace().toUpperCase());
   }
 
   @Override
@@ -111,8 +111,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
     return SnowflakeTestUtils.dumpFinalTable(
         database,
         databaseName,
-        streamId.finalNamespace(),
-        streamId.finalName() + suffix.toUpperCase());
+        streamId.getFinalNamespace(),
+        streamId.getFinalName() + suffix.toUpperCase());
   }
 
   @Override
@@ -124,7 +124,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   protected void insertFinalTableRecords(final boolean includeCdcDeletedAt,
                                          final StreamId streamId,
                                          final String suffix,
-                                         final List<JsonNode> records)
+                                         final List<? extends JsonNode> records)
       throws Exception {
     final List<String> columnNames = includeCdcDeletedAt ? FINAL_TABLE_COLUMN_NAMES_CDC : FINAL_TABLE_COLUMN_NAMES;
     final String cdcDeletedAtName = includeCdcDeletedAt ? ",\"_AB_CDC_DELETED_AT\"" : "";
@@ -205,7 +205,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   }
 
   @Override
-  protected void insertRawTableRecords(final StreamId streamId, final List<JsonNode> records) throws Exception {
+  protected void insertRawTableRecords(final StreamId streamId, final List<? extends JsonNode> records) throws Exception {
     final String recordsText = records.stream()
         // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
         .map(record -> JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES
@@ -248,13 +248,13 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   @Override
   @Test
   public void testCreateTableIncremental() throws Exception {
-    final Sql sql = generator.createTable(incrementalDedupStream, "", false);
-    destinationHandler.execute(sql);
+    final Sql sql = getGenerator().createTable(getIncrementalDedupStream(), "", false);
+    getDestinationHandler().execute(sql);
 
     // Note that USERS_FINAL is uppercased here. This is intentional, because snowflake upcases unquoted
     // identifiers.
     final Optional<String> tableKind =
-        database.queryJsons(String.format("SHOW TABLES LIKE '%s' IN SCHEMA \"%s\";", "USERS_FINAL", namespace.toUpperCase()))
+        database.queryJsons(String.format("SHOW TABLES LIKE '%s' IN SCHEMA \"%s\";", "USERS_FINAL", getNamespace().toUpperCase()))
             .stream().map(record -> record.get("kind").asText())
             .findFirst();
     final Map<String, String> columns = database.queryJsons(
@@ -267,7 +267,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         ORDER BY ordinal_position;
         """,
         databaseName,
-        namespace.toUpperCase(),
+        getNamespace().toUpperCase(),
         "USERS_FINAL").stream()
         .collect(toMap(
             record -> record.get("COLUMN_NAME").asText(),
@@ -316,16 +316,16 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
               %s TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()
             ) data_retention_time_in_days = 0;
         """,
-        v1RawTable.rawNamespace(),
-        v1RawTable.rawNamespace(),
-        v1RawTable.rawName(),
+        v1RawTable.getRawNamespace(),
+        v1RawTable.getRawNamespace(),
+        v1RawTable.getRawName(),
         JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
   }
 
   @Override
-  protected void insertV1RawTableRecords(final StreamId streamId, final List<JsonNode> records) throws Exception {
+  protected void insertV1RawTableRecords(final StreamId streamId, final List<? extends JsonNode> records) throws Exception {
     final var recordsText = records
         .stream()
         .map(record -> JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS
@@ -337,7 +337,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         .map(row -> "(%s)".formatted(row))
         .collect(joining(","));
     final var insert = new StringSubstitutor(Map.of(
-        "v1_raw_table_id", String.join(".", streamId.rawNamespace(), streamId.rawName()),
+        "v1_raw_table_id", String.join(".", streamId.getRawNamespace(), streamId.getRawName()),
         "records", recordsText),
         // Use different delimiters because we're using dollar quotes in the query.
         "#{",
@@ -358,15 +358,15 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         JavaBaseConstants.COLUMN_NAME_DATA).collect(joining(","));
     return database.bufferedResultSetQuery(connection -> connection.createStatement().executeQuery(new StringSubstitutor(Map.of(
         "columns", columns,
-        "table", String.join(".", streamId.rawNamespace(), streamId.rawName()))).replace(
+        "table", String.join(".", streamId.getRawNamespace(), streamId.getRawName()))).replace(
             """
             SELECT ${columns} FROM ${table} ORDER BY _airbyte_emitted_at ASC
             """)),
-        new SnowflakeTestSourceOperations()::rowToJson);
+        new SnowflakeSourceOperations()::rowToJson);
   }
 
   @Override
-  protected void migrationAssertions(final List<JsonNode> v1RawRecords, final List<JsonNode> v2RawRecords) {
+  protected void migrationAssertions(final List<? extends JsonNode> v1RawRecords, final List<? extends JsonNode> v2RawRecords) {
     final var v2RecordMap = v2RawRecords.stream().collect(Collectors.toMap(
         record -> record.get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID).asText(),
         Function.identity()));
@@ -386,7 +386,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
       originalData = originalData.isTextual() ? Jsons.deserializeExact(migratedData.asText()) : originalData;
       // hacky thing because we only care about the data contents.
       // diffRawTableRecords makes some assumptions about the structure of the blob.
-      DIFFER.diffFinalTableRecords(List.of(originalData), List.of(migratedData));
+      getDIFFER().diffFinalTableRecords(List.of(originalData), List.of(migratedData));
     });
   }
 
@@ -403,9 +403,9 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
    */
   @Test
   public void ensurePKsAreIndexedUnique() throws Exception {
-    createRawTable(streamId);
+    createRawTable(getStreamId());
     insertRawTableRecords(
-        streamId,
+        getStreamId(),
         List.of(Jsons.deserialize(
             """
             {
@@ -418,14 +418,14 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             }
             """)));
 
-    final Sql createTable = generator.createTable(incrementalDedupStream, "", false);
+    final Sql createTable = getGenerator().createTable(getIncrementalDedupStream(), "", false);
 
     // should be OK with new tables
-    destinationHandler.execute(createTable);
-    List<DestinationInitialStatus<SnowflakeState>> initialStates = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
+    getDestinationHandler().execute(createTable);
+    List<DestinationInitialStatus<SnowflakeState>> initialStates = getDestinationHandler().gatherInitialState(List.of(getIncrementalDedupStream()));
     assertEquals(1, initialStates.size());
     assertFalse(initialStates.getFirst().isSchemaMismatch());
-    destinationHandler.execute(Sql.of("DROP TABLE " + streamId.finalTableId("")));
+    getDestinationHandler().execute(Sql.of("DROP TABLE " + getStreamId().finalTableId("")));
 
     // Hack the create query to add NOT NULLs to emulate the old behavior
     List<List<String>> createTableModified = createTable.transactions().stream().map(transaction -> transaction.stream()
@@ -435,17 +435,17 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                 : line)
             .collect(joining("\r\n")))
         .toList()).toList();
-    destinationHandler.execute(new Sql(createTableModified));
-    initialStates = destinationHandler.gatherInitialState(List.of(incrementalDedupStream));
+    getDestinationHandler().execute(new Sql(createTableModified));
+    initialStates = getDestinationHandler().gatherInitialState(List.of(getIncrementalDedupStream()));
     assertEquals(1, initialStates.size());
     assertTrue(initialStates.get(0).isSchemaMismatch());
   }
 
   @Test
   public void dst_test_oldSyncRunsThroughTransition_thenNewSyncRuns_dedup() throws Exception {
-    this.createRawTable(this.streamId);
-    this.createFinalTable(this.incrementalDedupStream, "");
-    this.insertRawTableRecords(this.streamId, List.of(
+    this.createRawTable(this.getStreamId());
+    this.createFinalTable(this.getIncrementalDedupStream(), "");
+    this.insertRawTableRecords(this.getStreamId(), List.of(
         // 2 records written by a sync running on the old version of snowflake
         Jsons.deserialize("""
                           {
@@ -494,7 +494,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                             }
                           }
                           """)));
-    this.insertFinalTableRecords(false, this.streamId, "", List.of(
+    this.insertFinalTableRecords(false, this.getStreamId(), "", List.of(
         Jsons.deserialize("""
                           {
                             "_airbyte_raw_id": "pre-dst local tz 3",
@@ -517,8 +517,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                           """)));
     // Gather initial state at the start of our updated sync
     DestinationInitialStatus<SnowflakeState> initialState =
-        this.destinationHandler.gatherInitialState(List.of(this.incrementalDedupStream)).getFirst();
-    this.insertRawTableRecords(this.streamId, List.of(
+        this.getDestinationHandler().gatherInitialState(List.of(this.getIncrementalDedupStream())).getFirst();
+    this.insertRawTableRecords(this.getStreamId(), List.of(
         // insert raw records with updates
         Jsons.deserialize("""
                           {
@@ -565,10 +565,10 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                           }
                           """)));
 
-    TypeAndDedupeTransaction.executeTypeAndDedupe(this.generator, this.destinationHandler, this.incrementalDedupStream,
-        initialState.initialRawTableStatus().maxProcessedTimestamp(), "");
+    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalDedupStream(),
+        initialState.initialRawTableStatus().getMaxProcessedTimestamp(), "");
 
-    DIFFER.diffFinalTableRecords(
+    getDIFFER().diffFinalTableRecords(
         List.of(
             Jsons.deserialize("""
                               {
@@ -610,14 +610,14 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                                 "STRING": "Dave01"
                               }
                               """)),
-        this.dumpFinalTableRecords(this.streamId, ""));
+        this.dumpFinalTableRecords(this.getStreamId(), ""));
   }
 
   @Test
   public void dst_test_oldSyncRunsBeforeTransition_thenNewSyncRunsThroughTransition_dedup() throws Exception {
-    this.createRawTable(this.streamId);
-    this.createFinalTable(this.incrementalDedupStream, "");
-    this.insertRawTableRecords(this.streamId, List.of(
+    this.createRawTable(this.getStreamId());
+    this.createFinalTable(this.getIncrementalDedupStream(), "");
+    this.insertRawTableRecords(this.getStreamId(), List.of(
         // record written by a sync running on the old version of snowflake
         Jsons.deserialize("""
                           {
@@ -632,8 +632,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                           """)));
     // Gather initial state at the start of our updated sync
     DestinationInitialStatus<SnowflakeState> initialState =
-        this.destinationHandler.gatherInitialState(List.of(this.incrementalDedupStream)).getFirst();
-    this.insertRawTableRecords(this.streamId, List.of(
+        this.getDestinationHandler().gatherInitialState(List.of(this.getIncrementalDedupStream())).getFirst();
+    this.insertRawTableRecords(this.getStreamId(), List.of(
         // update the record twice
         // this never really happens, but verify that it works
         Jsons.deserialize("""
@@ -659,10 +659,10 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                           }
                           """)));
 
-    TypeAndDedupeTransaction.executeTypeAndDedupe(this.generator, this.destinationHandler, this.incrementalDedupStream,
-        initialState.initialRawTableStatus().maxProcessedTimestamp(), "");
+    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalDedupStream(),
+        initialState.initialRawTableStatus().getMaxProcessedTimestamp(), "");
 
-    DIFFER.diffFinalTableRecords(
+    getDIFFER().diffFinalTableRecords(
         List.of(
             Jsons.deserialize("""
                               {
@@ -674,14 +674,14 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                                 "STRING": "Alice02"
                               }
                               """)),
-        this.dumpFinalTableRecords(this.streamId, ""));
+        this.dumpFinalTableRecords(this.getStreamId(), ""));
   }
 
   @Test
   public void dst_test_oldSyncRunsBeforeTransition_thenNewSyncRunsBeforeTransition_thenNewSyncRunsThroughTransition_dedup() throws Exception {
-    this.createRawTable(this.streamId);
-    this.createFinalTable(this.incrementalDedupStream, "");
-    this.insertRawTableRecords(this.streamId, List.of(
+    this.createRawTable(this.getStreamId());
+    this.createFinalTable(this.getIncrementalDedupStream(), "");
+    this.insertRawTableRecords(this.getStreamId(), List.of(
         // records written by a sync running on the old version of snowflake
         Jsons.deserialize("""
                           {
@@ -708,8 +708,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
     // Gather initial state at the start of our first new sync
     DestinationInitialStatus<SnowflakeState> initialState =
-        this.destinationHandler.gatherInitialState(List.of(this.incrementalDedupStream)).getFirst();
-    this.insertRawTableRecords(this.streamId, List.of(
+        this.getDestinationHandler().gatherInitialState(List.of(this.getIncrementalDedupStream())).getFirst();
+    this.insertRawTableRecords(this.getStreamId(), List.of(
         // update the records
         Jsons.deserialize("""
                           {
@@ -734,10 +734,10 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                           }
                           """)));
 
-    TypeAndDedupeTransaction.executeTypeAndDedupe(this.generator, this.destinationHandler, this.incrementalDedupStream,
-        initialState.initialRawTableStatus().maxProcessedTimestamp(), "");
+    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalDedupStream(),
+        initialState.initialRawTableStatus().getMaxProcessedTimestamp(), "");
 
-    DIFFER.diffFinalTableRecords(
+    getDIFFER().diffFinalTableRecords(
         List.of(
             Jsons.deserialize("""
                               {
@@ -759,12 +759,12 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                                 "STRING": "Bob01"
                               }
                               """)),
-        this.dumpFinalTableRecords(this.streamId, ""));
+        this.dumpFinalTableRecords(this.getStreamId(), ""));
 
     // Gather initial state at the start of our second new sync
     DestinationInitialStatus<SnowflakeState> initialState2 =
-        this.destinationHandler.gatherInitialState(List.of(this.incrementalDedupStream)).getFirst();
-    this.insertRawTableRecords(this.streamId, List.of(
+        this.getDestinationHandler().gatherInitialState(List.of(this.getIncrementalDedupStream())).getFirst();
+    this.insertRawTableRecords(this.getStreamId(), List.of(
         // update the records again
         Jsons.deserialize("""
                           {
@@ -789,10 +789,10 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                           }
                           """)));
 
-    TypeAndDedupeTransaction.executeTypeAndDedupe(this.generator, this.destinationHandler, this.incrementalDedupStream,
-        initialState2.initialRawTableStatus().maxProcessedTimestamp(), "");
+    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalDedupStream(),
+        initialState2.initialRawTableStatus().getMaxProcessedTimestamp(), "");
 
-    DIFFER.diffFinalTableRecords(
+    getDIFFER().diffFinalTableRecords(
         List.of(
             Jsons.deserialize("""
                               {
@@ -814,14 +814,14 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                                 "STRING": "Bob02"
                               }
                               """)),
-        this.dumpFinalTableRecords(this.streamId, ""));
+        this.dumpFinalTableRecords(this.getStreamId(), ""));
   }
 
   @Test
   public void dst_test_oldSyncRunsThroughTransition_thenNewSyncRuns_append() throws Exception {
-    this.createRawTable(this.streamId);
-    this.createFinalTable(this.incrementalAppendStream, "");
-    this.insertRawTableRecords(this.streamId, List.of(
+    this.createRawTable(this.getStreamId());
+    this.createFinalTable(this.getIncrementalAppendStream(), "");
+    this.insertRawTableRecords(this.getStreamId(), List.of(
         // 2 records written by a sync running on the old version of snowflake
         Jsons.deserialize("""
                           {
@@ -870,7 +870,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                             }
                           }
                           """)));
-    this.insertFinalTableRecords(false, this.streamId, "", List.of(
+    this.insertFinalTableRecords(false, this.getStreamId(), "", List.of(
         Jsons.deserialize("""
                           {
                             "_airbyte_raw_id": "pre-dst local tz 3",
@@ -893,8 +893,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                           """)));
     // Gather initial state at the start of our updated sync
     DestinationInitialStatus<SnowflakeState> initialState =
-        this.destinationHandler.gatherInitialState(List.of(this.incrementalAppendStream)).getFirst();
-    this.insertRawTableRecords(this.streamId, List.of(
+        this.getDestinationHandler().gatherInitialState(List.of(this.getIncrementalAppendStream())).getFirst();
+    this.insertRawTableRecords(this.getStreamId(), List.of(
         // insert raw records with updates
         Jsons.deserialize("""
                           {
@@ -941,10 +941,10 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                           }
                           """)));
 
-    TypeAndDedupeTransaction.executeTypeAndDedupe(this.generator, this.destinationHandler, this.incrementalAppendStream,
-        initialState.initialRawTableStatus().maxProcessedTimestamp(), "");
+    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalAppendStream(),
+        initialState.initialRawTableStatus().getMaxProcessedTimestamp(), "");
 
-    DIFFER.diffFinalTableRecords(
+    getDIFFER().diffFinalTableRecords(
         List.of(
             Jsons.deserialize("""
                               {
@@ -1031,14 +1031,14 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                                 "STRING": "Dave01"
                               }
                               """)),
-        this.dumpFinalTableRecords(this.streamId, ""));
+        this.dumpFinalTableRecords(this.getStreamId(), ""));
   }
 
   @Test
   public void dst_test_oldSyncRunsBeforeTransition_thenNewSyncRunsThroughTransition_append() throws Exception {
-    this.createRawTable(this.streamId);
-    this.createFinalTable(this.incrementalAppendStream, "");
-    this.insertRawTableRecords(this.streamId, List.of(
+    this.createRawTable(this.getStreamId());
+    this.createFinalTable(this.getIncrementalAppendStream(), "");
+    this.insertRawTableRecords(this.getStreamId(), List.of(
         // record written by a sync running on the old version of snowflake
         Jsons.deserialize("""
                           {
@@ -1053,8 +1053,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                           """)));
     // Gather initial state at the start of our updated sync
     DestinationInitialStatus<SnowflakeState> initialState =
-        this.destinationHandler.gatherInitialState(List.of(this.incrementalAppendStream)).getFirst();
-    this.insertRawTableRecords(this.streamId, List.of(
+        this.getDestinationHandler().gatherInitialState(List.of(this.getIncrementalAppendStream())).getFirst();
+    this.insertRawTableRecords(this.getStreamId(), List.of(
         // update the record twice
         // this never really happens, but verify that it works
         Jsons.deserialize("""
@@ -1080,10 +1080,10 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                           }
                           """)));
 
-    TypeAndDedupeTransaction.executeTypeAndDedupe(this.generator, this.destinationHandler, this.incrementalAppendStream,
-        initialState.initialRawTableStatus().maxProcessedTimestamp(), "");
+    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalAppendStream(),
+        initialState.initialRawTableStatus().getMaxProcessedTimestamp(), "");
 
-    DIFFER.diffFinalTableRecords(
+    getDIFFER().diffFinalTableRecords(
         List.of(
             Jsons.deserialize("""
                               {
@@ -1117,14 +1117,14 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                                 "STRING": "Alice02"
                               }
                               """)),
-        this.dumpFinalTableRecords(this.streamId, ""));
+        this.dumpFinalTableRecords(this.getStreamId(), ""));
   }
 
   @Test
   public void dst_test_oldSyncRunsBeforeTransition_thenNewSyncRunsBeforeTransition_thenNewSyncRunsThroughTransition_append() throws Exception {
-    this.createRawTable(this.streamId);
-    this.createFinalTable(this.incrementalAppendStream, "");
-    this.insertRawTableRecords(this.streamId, List.of(
+    this.createRawTable(this.getStreamId());
+    this.createFinalTable(this.getIncrementalAppendStream(), "");
+    this.insertRawTableRecords(this.getStreamId(), List.of(
         // records written by a sync running on the old version of snowflake
         Jsons.deserialize("""
                           {
@@ -1151,8 +1151,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
     // Gather initial state at the start of our first new sync
     DestinationInitialStatus<SnowflakeState> initialState =
-        this.destinationHandler.gatherInitialState(List.of(this.incrementalAppendStream)).getFirst();
-    this.insertRawTableRecords(this.streamId, List.of(
+        this.getDestinationHandler().gatherInitialState(List.of(this.getIncrementalAppendStream())).getFirst();
+    this.insertRawTableRecords(this.getStreamId(), List.of(
         // update the records
         Jsons.deserialize("""
                           {
@@ -1177,10 +1177,10 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                           }
                           """)));
 
-    TypeAndDedupeTransaction.executeTypeAndDedupe(this.generator, this.destinationHandler, this.incrementalAppendStream,
-        initialState.initialRawTableStatus().maxProcessedTimestamp(), "");
+    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalAppendStream(),
+        initialState.initialRawTableStatus().getMaxProcessedTimestamp(), "");
 
-    DIFFER.diffFinalTableRecords(
+    getDIFFER().diffFinalTableRecords(
         List.of(
             Jsons.deserialize("""
                               {
@@ -1224,12 +1224,12 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                                 "STRING": "Bob01"
                               }
                               """)),
-        this.dumpFinalTableRecords(this.streamId, ""));
+        this.dumpFinalTableRecords(this.getStreamId(), ""));
 
     // Gather initial state at the start of our second new sync
     DestinationInitialStatus<SnowflakeState> initialState2 =
-        this.destinationHandler.gatherInitialState(List.of(this.incrementalAppendStream)).getFirst();
-    this.insertRawTableRecords(this.streamId, List.of(
+        this.getDestinationHandler().gatherInitialState(List.of(this.getIncrementalAppendStream())).getFirst();
+    this.insertRawTableRecords(this.getStreamId(), List.of(
         // update the records again
         Jsons.deserialize("""
                           {
@@ -1254,10 +1254,10 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                           }
                           """)));
 
-    TypeAndDedupeTransaction.executeTypeAndDedupe(this.generator, this.destinationHandler, this.incrementalAppendStream,
-        initialState2.initialRawTableStatus().maxProcessedTimestamp(), "");
+    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalAppendStream(),
+        initialState2.initialRawTableStatus().getMaxProcessedTimestamp(), "");
 
-    DIFFER.diffFinalTableRecords(
+    getDIFFER().diffFinalTableRecords(
         List.of(
             Jsons.deserialize("""
                               {
@@ -1323,7 +1323,13 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                                 "STRING": "Bob02"
                               }
                               """)),
-        this.dumpFinalTableRecords(this.streamId, ""));
+        this.dumpFinalTableRecords(this.getStreamId(), ""));
+  }
+
+  // This is disabled because snowflake doesn't transform long identifiers
+  @Disabled
+  public void testLongIdentifierHandling() {
+    super.testLongIdentifierHandling();
   }
 
 }

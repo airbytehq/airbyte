@@ -85,7 +85,7 @@ public class SnowflakeTestUtils {
             """
             SELECT ${columns} FROM ${table} ORDER BY ${extracted_at} ASC
             """)),
-        new SnowflakeTestSourceOperations()::rowToJson);
+        new SnowflakeSourceOperations()::rowToJson);
   }
 
   private static String quote(final String name) {

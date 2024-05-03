@@ -15,6 +15,8 @@ import java.util.function.Consumer
 import java.util.function.Function
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /** Database object for interacting with a JDBC connection. */
 abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSourceOperations<*>?) :
@@ -211,6 +213,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     abstract fun <T> executeMetadataQuery(query: Function<DatabaseMetaData?, T>): T
 
     companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(JdbcDatabase::class.java)
         /**
          * Map records returned in a result set. It is an "unsafe" stream because the stream must be
          * manually closed. Otherwise, there will be a database connection leak.

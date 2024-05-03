@@ -171,7 +171,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
      * @return whether it exists and is in the correct format
      */
     @Throws(Exception::class)
-    protected fun doesValidV1RawTableExist(namespace: String?, tableName: String?): Boolean {
+    protected open fun doesValidV1RawTableExist(namespace: String?, tableName: String?): Boolean {
         val existingV1RawTable = getTableIfExists(namespace, tableName)
         return existingV1RawTable.isPresent &&
             doesV1RawTableMatchExpectedSchema(existingV1RawTable.get())

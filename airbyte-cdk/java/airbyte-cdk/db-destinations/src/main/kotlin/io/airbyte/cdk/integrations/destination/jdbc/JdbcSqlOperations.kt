@@ -204,7 +204,7 @@ abstract class JdbcSqlOperations : SqlOperations {
         }
     }
 
-    fun dropTableIfExistsQuery(schemaName: String?, tableName: String?): String {
+    open fun dropTableIfExistsQuery(schemaName: String?, tableName: String?): String {
         return String.format("DROP TABLE IF EXISTS %s.%s;\n", schemaName, tableName)
     }
 

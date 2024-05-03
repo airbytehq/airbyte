@@ -276,6 +276,7 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                                 | Subject                                                                                                                                                         |
 |:----------------|:-----------|:-------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.7.1           | 2024-04-30 | [\#36910](https://github.com/airbytehq/airbyte/pull/36910)   | Bump CDK version                                                                                                                                                |
 | 3.7.0           | 2024-04-08 | [\#35754](https://github.com/airbytehq/airbyte/pull/35754)   | Allow configuring `data_retention_time_in_days`; apply to both raw and final tables. *Note*: Existing tables will not be affected; you must manually alter them.|
 | 3.6.6           | 2024-03-26 | [\#36466](https://github.com/airbytehq/airbyte/pull/36466)   | Correctly hhandle instances with `QUOTED_IDENTIFIERS_IGNORE_CASE` enabled globally                                                                              |
 | 3.6.5           | 2024-03-25 | [\#36461](https://github.com/airbytehq/airbyte/pull/36461)   | Internal code change (use published CDK artifact instead of source dependency)                                                                                  |

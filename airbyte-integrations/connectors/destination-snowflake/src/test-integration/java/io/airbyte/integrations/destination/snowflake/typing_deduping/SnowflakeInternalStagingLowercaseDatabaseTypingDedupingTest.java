@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.snowflake.typing_deduping;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import java.sql.SQLException;
 
 public class SnowflakeInternalStagingLowercaseDatabaseTypingDedupingTest extends AbstractSnowflakeTypingDedupingTest {
 
@@ -21,7 +22,7 @@ public class SnowflakeInternalStagingLowercaseDatabaseTypingDedupingTest extends
    * when checking for an existing final table.
    */
   @Override
-  protected JsonNode generateConfig() {
+  protected JsonNode generateConfig() throws SQLException {
     final JsonNode config = super.generateConfig();
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, config.get(JdbcUtils.DATABASE_KEY).asText().toLowerCase());
     return config;

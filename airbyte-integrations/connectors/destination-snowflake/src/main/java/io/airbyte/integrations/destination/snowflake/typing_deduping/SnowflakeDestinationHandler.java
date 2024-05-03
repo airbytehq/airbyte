@@ -42,6 +42,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import net.snowflake.client.jdbc.SnowflakeSQLException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
@@ -70,8 +71,8 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
     final LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> existingTables = new LinkedHashMap<>();
     final String paramHolder = String.join(",", Collections.nCopies(streamIds.size(), "?"));
     // convert list stream to array
-    final String[] namespaces = streamIds.stream().map(StreamId::finalNamespace).toArray(String[]::new);
-    final String[] names = streamIds.stream().map(StreamId::finalName).toArray(String[]::new);
+    final String[] namespaces = streamIds.stream().map(StreamId::getFinalNamespace).toArray(String[]::new);
+    final String[] names = streamIds.stream().map(StreamId::getFinalName).toArray(String[]::new);
     final String query = """
                          SELECT table_schema, table_name, column_name, data_type, is_nullable
                          FROM information_schema.columns
@@ -103,8 +104,8 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
     final LinkedHashMap<String, LinkedHashMap<String, Integer>> tableRowCounts = new LinkedHashMap<>();
     final String paramHolder = String.join(",", Collections.nCopies(streamIds.size(), "?"));
     // convert list stream to array
-    final String[] namespaces = streamIds.stream().map(StreamId::finalNamespace).toArray(String[]::new);
-    final String[] names = streamIds.stream().map(StreamId::finalName).toArray(String[]::new);
+    final String[] namespaces = streamIds.stream().map(StreamId::getFinalNamespace).toArray(String[]::new);
+    final String[] names = streamIds.stream().map(StreamId::getFinalName).toArray(String[]::new);
     final String query = """
                          SELECT table_schema, table_name, row_count
                          FROM information_schema.tables
@@ -133,8 +134,8 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
     }
     final ResultSet tables = database.getMetaData().getTables(
         databaseName,
-        id.rawNamespace(),
-        id.rawName(),
+        id.getRawNamespace(),
+        id.getRawName(),
         null);
     if (!tables.next()) {
       return new InitialRawTableStatus(false, false, Optional.empty());
@@ -227,25 +228,26 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
   }
 
   private Set<String> getPks(final StreamConfig stream) {
-    return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).collect(Collectors.toSet()) : Collections.emptySet();
+    return stream.getPrimaryKey() != null ? stream.getPrimaryKey().stream().map(ColumnId::getName).collect(Collectors.toSet())
+        : Collections.emptySet();
   }
 
   private boolean isAirbyteRawIdColumnMatch(final TableDefinition existingTable) {
     final String abRawIdColumnName = COLUMN_NAME_AB_RAW_ID.toUpperCase();
     return existingTable.columns().containsKey(abRawIdColumnName) &&
-        toJdbcTypeName(AirbyteProtocolType.STRING).equals(existingTable.columns().get(abRawIdColumnName).type());
+        toJdbcTypeName(AirbyteProtocolType.STRING).equals(existingTable.columns().get(abRawIdColumnName).getType());
   }
 
   private boolean isAirbyteExtractedAtColumnMatch(final TableDefinition existingTable) {
     final String abExtractedAtColumnName = COLUMN_NAME_AB_EXTRACTED_AT.toUpperCase();
     return existingTable.columns().containsKey(abExtractedAtColumnName) &&
-        toJdbcTypeName(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE).equals(existingTable.columns().get(abExtractedAtColumnName).type());
+        toJdbcTypeName(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE).equals(existingTable.columns().get(abExtractedAtColumnName).getType());
   }
 
   private boolean isAirbyteMetaColumnMatch(TableDefinition existingTable) {
     final String abMetaColumnName = COLUMN_NAME_AB_META.toUpperCase();
     return existingTable.columns().containsKey(abMetaColumnName) &&
-        "VARIANT".equals(existingTable.columns().get(abMetaColumnName).type());
+        "VARIANT".equals(existingTable.columns().get(abMetaColumnName).getType());
   }
 
   protected boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final TableDefinition existingTable) {
@@ -259,9 +261,9 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
       // Missing AB meta columns from final table, we need them to do proper T+D so trigger soft-reset
       return false;
     }
-    final LinkedHashMap<String, String> intendedColumns = stream.columns().entrySet().stream()
+    final LinkedHashMap<String, String> intendedColumns = stream.getColumns().entrySet().stream()
         .collect(LinkedHashMap::new,
-            (map, column) -> map.put(column.getKey().name(), toJdbcTypeName(column.getValue())),
+            (map, column) -> map.put(column.getKey().getName(), toJdbcTypeName(column.getValue())),
             LinkedHashMap::putAll);
 
     // Filter out Meta columns since they don't exist in stream config.
@@ -269,7 +271,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
         .filter(column -> V2_FINAL_TABLE_METADATA_COLUMNS.stream().map(String::toUpperCase)
             .noneMatch(airbyteColumnName -> airbyteColumnName.equals(column.getKey())))
         .collect(LinkedHashMap::new,
-            (map, column) -> map.put(column.getKey(), column.getValue().type()),
+            (map, column) -> map.put(column.getKey(), column.getValue().getType()),
             LinkedHashMap::putAll);
     // soft-resetting https://github.com/airbytehq/airbyte/pull/31082
     @SuppressWarnings("deprecation")
@@ -285,13 +287,13 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
   public List<DestinationInitialStatus<SnowflakeState>> gatherInitialState(List<StreamConfig> streamConfigs) throws Exception {
     final Map<AirbyteStreamNameNamespacePair, SnowflakeState> destinationStates = super.getAllDestinationStates();
 
-    List<StreamId> streamIds = streamConfigs.stream().map(StreamConfig::id).toList();
+    List<StreamId> streamIds = streamConfigs.stream().map(StreamConfig::getId).toList();
     final LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> existingTables = findExistingTables(database, databaseName, streamIds);
     final LinkedHashMap<String, LinkedHashMap<String, Integer>> tableRowCounts = getFinalTableRowCount(streamIds);
     return streamConfigs.stream().map(streamConfig -> {
       try {
-        final String namespace = streamConfig.id().finalNamespace().toUpperCase();
-        final String name = streamConfig.id().finalName().toUpperCase();
+        final String namespace = streamConfig.getId().getFinalNamespace().toUpperCase();
+        final String name = streamConfig.getId().getFinalName().toUpperCase();
         boolean isSchemaMismatch = false;
         boolean isFinalTableEmpty = true;
         boolean isFinalTablePresent = existingTables.containsKey(namespace) && existingTables.get(namespace).containsKey(name);
@@ -301,8 +303,9 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
           isSchemaMismatch = !existingSchemaMatchesStreamConfig(streamConfig, existingTable);
           isFinalTableEmpty = hasRowCount && tableRowCounts.get(namespace).get(name) == 0;
         }
-        final InitialRawTableStatus initialRawTableState = getInitialRawTableState(streamConfig.id(), streamConfig.destinationSyncMode());
-        final SnowflakeState destinationState = destinationStates.getOrDefault(streamConfig.id().asPair(), toDestinationState(Jsons.emptyObject()));
+        final InitialRawTableStatus initialRawTableState = getInitialRawTableState(streamConfig.getId(), streamConfig.getDestinationSyncMode());
+        final SnowflakeState destinationState =
+            destinationStates.getOrDefault(streamConfig.getId().asPair(), toDestinationState(Jsons.emptyObject()));
         return new DestinationInitialStatus<>(
             streamConfig,
             isFinalTablePresent,
@@ -351,6 +354,32 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
       case DATE -> "DATE";
       case UNKNOWN -> "VARIANT";
     };
+  }
+
+  protected String getDeleteStatesSql(Map<StreamId, ? extends SnowflakeState> destinationStates) {
+    // only doing the DELETE where there's rows to delete allows us to avoid taking a lock on the table
+    // when there's nothing to delete
+    // This is particularly relevant in the context of tests, where many instance of the snowflake
+    // destination could be run in parallel
+    String deleteStatesSql = super.getDeleteStatesSql(destinationStates);
+    StringBuilder sql = new StringBuilder();
+    // sql.append("BEGIN\n");
+    sql.append("  IF (EXISTS (").append(deleteStatesSql.replace("delete from", "SELECT 1 FROM ")).append(")) THEN\n");
+    sql.append("    ").append(deleteStatesSql).append(";\n");
+    sql.append("  END IF\n");
+    // sql.append("END;\n");
+    return sql.toString();
+  }
+
+  protected void executeWithinTransaction(List<String> statements) throws SQLException {
+    StringBuilder sb = new StringBuilder();
+    sb.append("BEGIN\n");
+    sb.append("  BEGIN TRANSACTION;\n    ");
+    sb.append(StringUtils.join(statements, ";\n    "));
+    sb.append(";\n  COMMIT;\n");
+    sb.append("END;");
+    LOGGER.info("executing SQL:" + sb);
+    getJdbcDatabase().execute(sb.toString());
   }
 
 }

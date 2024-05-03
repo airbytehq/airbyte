@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.DestinationConfig;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
-import io.airbyte.cdk.integrations.destination.async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage;
 import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.cdk.integrations.destination.jdbc.SqlOperationsUtils;
@@ -37,10 +37,10 @@ public class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOper
   @Override
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
     try {
-      if (!schemaSet.contains(schemaName) && !isSchemaExists(database, schemaName)) {
+      if (!getSchemaSet().contains(schemaName) && !isSchemaExists(database, schemaName)) {
         // 1s1t is assuming a lowercase airbyte_internal schema name, so we need to quote it
         database.execute(String.format("CREATE SCHEMA IF NOT EXISTS \"%s\";", schemaName));
-        schemaSet.add(schemaName);
+        getSchemaSet().add(schemaName);
       }
     } catch (final Exception e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
