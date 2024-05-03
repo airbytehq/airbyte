@@ -40,15 +40,14 @@ jobs:
             - airbyte-ci/connectors/ci_credentials/**
             - airbyte-ci/connectors/metadata_service/lib/**
             - airbyte-ci/connectors/metadata_service/orchestrator/**
+            - airbyte-cdk/python/**
             - airbyte-integrations/bases/connector-acceptance-test/**
 
   run-tests:
     needs: changes
-    # We only run the Connectors CI job if there are changes to the connectors on a non-forked PR
+    # We only run the Internal Poetry packages CI job if there are changes to the packages on a non-forked PR
     if: needs.changes.outputs.internal_poetry_packages == 'true'
-    #name: Internal Poetry packages CI
-    # To rename in a follow up PR
-    name: Run Airbyte CI tests
+    name: Internal Poetry packages CI
     runs-on: tooling-test-large
     permissions:
       pull-requests: read
