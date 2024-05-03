@@ -1,4 +1,4 @@
-version: "0.29.0"
+version: "0.86.0"
 
 definitions:
   selector:
@@ -31,7 +31,7 @@ definitions:
     type: "DefaultPaginator"
     pagination_strategy:
       type: "CursorPagination"
-      cursor_value: "{{ last_records['nextPageToken'] }}"
+      cursor_value: "{{ response['nextPageToken'] }}"
     page_token_option:
       type: "RequestPath"
       field_name: "pageToken"
@@ -63,14 +63,14 @@ definitions:
     type: DatetimeBasedCursor
     cursor_field: "updatedAt"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-    cursor_granularity: "PT0.000001S"
+    cursor_granularity: "PT0.001S"
     lookback_window: "P31D"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
     end_datetime:
-      datetime: "{{ today_utc() }}"
-      datetime_format: "%Y-%m-%d"
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%f%z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
     step: "P1M"
     end_time_option:
       field_name: "beforeDate"
