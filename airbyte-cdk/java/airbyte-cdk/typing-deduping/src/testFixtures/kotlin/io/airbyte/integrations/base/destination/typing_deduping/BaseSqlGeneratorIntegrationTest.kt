@@ -1741,7 +1741,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         destinationHandler.execute(createTable)
     }
 
-    fun verifyRecords(
+    private fun verifyRecords(
         expectedRawRecordsFile: String,
         actualRawRecords: List<JsonNode>,
         expectedFinalRecordsFile: String,
