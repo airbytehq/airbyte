@@ -289,8 +289,8 @@ private constructor(
                     JavaBaseConstants.DestinationColumns.V2_WITH_META,
                     JavaBaseConstants.DestinationColumns.V2_WITHOUT_META -> {
                         val streamId = parsedCatalog!!.getStream(abStream.namespace, streamName).id
-                        outputSchema = streamId.rawNamespace!!
-                        tableName = streamId.rawName!!
+                        outputSchema = streamId.rawNamespace
+                        tableName = streamId.rawName
                     }
                     JavaBaseConstants.DestinationColumns.LEGACY -> {
                         outputSchema =

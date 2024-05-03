@@ -29,22 +29,14 @@ import org.jooq.impl.SQLDataType
 abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestinationState> :
     BaseSqlGeneratorIntegrationTest<DestinationState>() {
     protected abstract val database: JdbcDatabase
-        get
-
     protected abstract val structType: DataType<*>
-        get
-
     private val timestampWithTimeZoneType: DataType<*>
         // TODO - can we move this class into db_destinations/testFixtures?
-        get() = sqlGenerator!!.toDialectType(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE)
-
+        get() = sqlGenerator.toDialectType(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE)
     abstract override val sqlGenerator: JdbcSqlGenerator
-        get
-
     protected abstract val sqlDialect: SQLDialect?
-        get
 
-    private val dslContext: DSLContext
+    val dslContext: DSLContext
         get() = DSL.using(sqlDialect)
 
     /**
@@ -98,7 +90,7 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     }
 
     @Throws(Exception::class)
-    override fun createNamespace(namespace: String?) {
+    override fun createNamespace(namespace: String) {
         database.execute(dslContext.createSchemaIfNotExists(namespace).getSQL(ParamType.INLINED))
     }
 
@@ -188,7 +180,7 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     }
 
     @Throws(Exception::class)
-    override fun teardownNamespace(namespace: String?) {
+    override fun teardownNamespace(namespace: String) {
         database.execute(dslContext.dropSchema(namespace).cascade().getSQL(ParamType.INLINED))
     }
 }

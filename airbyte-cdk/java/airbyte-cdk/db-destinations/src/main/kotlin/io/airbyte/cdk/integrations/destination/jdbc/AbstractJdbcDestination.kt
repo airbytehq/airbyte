@@ -65,8 +65,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         namingResolver,
         sqlOperations
     )
-    protected val configSchemaKey: String
-        get() = "schema"
+    protected open val configSchemaKey: String = "schema"
 
     /**
      * If the destination should always disable type dedupe, override this method to return true. We
@@ -196,6 +195,11 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         rawTableSchema: String
     ): JdbcDestinationHandler<DestinationState>
 
+    protected open fun getV1V2Migrator(
+        database: JdbcDatabase,
+        databaseName: String
+    ): DestinationV1V2Migrator = JdbcV1V2Migrator(namingResolver, database, databaseName)
+
     /**
      * Provide any migrations that the destination needs to run. Most destinations will need to
      * provide an instande of
@@ -306,6 +310,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
             typerDeduper,
             getDataTransformer(parsedCatalog, defaultNamespace),
             optimalBatchSizeBytes,
+            parsedCatalog,
         )
     }
 
@@ -317,7 +322,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         val sqlGenerator = getSqlGenerator(config)
         val databaseName = getDatabaseName(config)
         val v2TableMigrator = NoopV2TableMigrator()
-        val migrator = JdbcV1V2Migrator(namingResolver, database, databaseName)
+        val migrator = getV1V2Migrator(database, databaseName)
         val destinationHandler: DestinationHandler<DestinationState> =
             getDestinationHandler(
                 databaseName,
@@ -434,7 +439,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                     if (attemptInsert) {
                         sqlOps.insertRecords(
                             database,
-                            java.util.List.of(dummyRecord),
+                            listOf(dummyRecord),
                             outputSchema,
                             outputTableName,
                         )

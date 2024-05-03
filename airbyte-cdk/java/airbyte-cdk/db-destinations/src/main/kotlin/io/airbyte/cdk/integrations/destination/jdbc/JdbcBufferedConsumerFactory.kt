@@ -24,6 +24,8 @@ import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseF
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.RecordWriter
 import io.airbyte.commons.json.Jsons
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId.Companion.concatenateRawTableName
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
 import io.airbyte.protocol.models.v0.*
@@ -54,6 +56,7 @@ object JdbcBufferedConsumerFactory {
 
     const val DEFAULT_OPTIMAL_BATCH_SIZE_FOR_FLUSH = 25 * 1024 * 1024L
 
+    /** @param parsedCatalog Nullable for v1 destinations. Required for v2 destinations. */
     fun createAsync(
         outputRecordCollector: Consumer<AirbyteMessage>,
         database: JdbcDatabase,
@@ -65,9 +68,16 @@ object JdbcBufferedConsumerFactory {
         typerDeduper: TyperDeduper,
         dataTransformer: StreamAwareDataTransformer = IdentityDataTransformer(),
         optimalBatchSizeBytes: Long = DEFAULT_OPTIMAL_BATCH_SIZE_FOR_FLUSH,
+        parsedCatalog: ParsedCatalog? = null
     ): SerializedAirbyteMessageConsumer {
         val writeConfigs =
-            createWriteConfigs(namingResolver, config, catalog, sqlOperations.isSchemaRequired)
+            createWriteConfigs(
+                namingResolver,
+                config,
+                catalog,
+                sqlOperations.isSchemaRequired,
+                parsedCatalog
+            )
         return AsyncStreamConsumer(
             outputRecordCollector,
             onStartFunction(database, sqlOperations, writeConfigs, typerDeduper),
@@ -89,7 +99,8 @@ object JdbcBufferedConsumerFactory {
         namingResolver: NamingConventionTransformer,
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog?,
-        schemaRequired: Boolean
+        schemaRequired: Boolean,
+        parsedCatalog: ParsedCatalog?
     ): List<WriteConfig> {
         if (schemaRequired) {
             Preconditions.checkState(
@@ -97,11 +108,19 @@ object JdbcBufferedConsumerFactory {
                 "jdbc destinations must specify a schema."
             )
         }
-        return catalog!!
-            .streams
-            .stream()
-            .map(toWriteConfig(namingResolver, config, schemaRequired))
-            .collect(Collectors.toList())
+        return if (parsedCatalog == null) {
+            catalog!!
+                .streams
+                .stream()
+                .map(toWriteConfig(namingResolver, config, schemaRequired))
+                .collect(Collectors.toList())
+        } else {
+            // we should switch this to kotlin-style list processing, but meh for now
+            parsedCatalog.streams
+                .stream()
+                .map(parsedStreamToWriteConfig(namingResolver))
+                .collect(Collectors.toList())
+        }
     }
 
     private fun toWriteConfig(
@@ -150,6 +169,27 @@ object JdbcBufferedConsumerFactory {
         }
     }
 
+    private fun parsedStreamToWriteConfig(
+        namingResolver: NamingConventionTransformer
+    ): Function<StreamConfig, WriteConfig> {
+        return Function { streamConfig: StreamConfig ->
+            // TODO We should probably replace WriteConfig with StreamConfig?
+            // The only thing I'm not sure about is the tmpTableName thing,
+            // but otherwise it's a strict improvement (avoids people accidentally
+            // recomputing the table names, instead of just treating the output of
+            // CatalogParser as canonical).
+            WriteConfig(
+                streamConfig.id.originalName,
+                streamConfig.id.originalNamespace,
+                streamConfig.id.rawNamespace,
+                @Suppress("deprecation")
+                namingResolver.getTmpTableName(streamConfig.id.rawNamespace),
+                streamConfig.id.rawName,
+                streamConfig.destinationSyncMode,
+            )
+        }
+    }
+
     /**
      * Defer to the [AirbyteStream]'s namespace. If this is not set, use the destination's default
      * schema. This namespace is source-provided, and can be potentially empty.
@@ -160,7 +200,7 @@ object JdbcBufferedConsumerFactory {
     private fun getOutputSchema(
         stream: AirbyteStream,
         defaultDestSchema: String,
-        namingResolver: NamingConventionTransformer
+        namingResolver: NamingConventionTransformer,
     ): String {
         return if (isDestinationV2) {
             namingResolver.getNamespace(
@@ -252,8 +292,10 @@ object JdbcBufferedConsumerFactory {
             records: List<PartialAirbyteMessage> ->
             require(pairToWriteConfig.containsKey(pair)) {
                 String.format(
-                    "Message contained record from a stream that was not in the catalog. \ncatalog: %s",
-                    Jsons.serialize(catalog)
+                    "Message contained record from a stream that was not in the catalog. \ncatalog: %s, \nstream identifier: %s\nkeys: %s",
+                    Jsons.serialize(catalog),
+                    pair,
+                    pairToWriteConfig.keys
                 )
             }
             val writeConfig = pairToWriteConfig.getValue(pair)

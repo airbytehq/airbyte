@@ -99,7 +99,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      * Do any setup work to create a namespace for this test run. For example, this might create a
      * BigQuery dataset, or a Snowflake schema.
      */
-    @Throws(Exception::class) protected abstract fun createNamespace(namespace: String?)
+    @Throws(Exception::class) protected abstract fun createNamespace(namespace: String)
 
     /** Create a raw table using the StreamId's rawTableId. */
     @Throws(Exception::class) protected abstract fun createRawTable(streamId: StreamId)
@@ -143,7 +143,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      * Clean up all resources in the namespace. For example, this might delete the BigQuery dataset
      * created in [.createNamespace].
      */
-    @Throws(Exception::class) protected abstract fun teardownNamespace(namespace: String?)
+    @Throws(Exception::class) protected abstract fun teardownNamespace(namespace: String)
 
     protected val rawMetadataColumnNames: Map<String, String>
         /** Identical to [BaseTypingDedupingTest.getRawMetadataColumnNames]. */
@@ -368,7 +368,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
               "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
               "_airbyte_data": {"id1": 1, "id2": 100}
             }
-            
+
             """.trimIndent()
                 )
             )
@@ -522,7 +522,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                   "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
                   "_airbyte_data": {}
                 }
-                
+
                 """.trimIndent()
                 ),
                 Jsons.deserialize(
@@ -532,7 +532,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                   "_airbyte_extracted_at": "2023-01-02T00:00:00Z",
                   "_airbyte_data": {}
                 }
-                
+
                 """.trimIndent()
                 )
             )
@@ -582,7 +582,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
               "_airbyte_extracted_at": "2023-01-01T12:00:00Z",
               "_airbyte_data": {}
             }
-            
+
             """.trimIndent()
                 )
             )
@@ -743,7 +743,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                     "string": "foo"
                   }
                 }
-                
+
                 """.trimIndent()
                 ),
                 Jsons.deserialize(
@@ -755,7 +755,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                     "string": "bar"
                   }
                 }
-                
+
                 """.trimIndent()
                 )
             )
@@ -911,7 +911,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                     "string": "foo"
                   }
                 }
-                
+
                 """.trimIndent()
                 ),
                 Jsons.deserialize(
@@ -925,7 +925,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                     "string": "bar"
                   }
                 }
-                
+
                 """.trimIndent()
                 )
             )
@@ -982,7 +982,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
           "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
           "_airbyte_meta": {}
         }
-        
+
         """.trimIndent()
                 )
             )
@@ -1014,7 +1014,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
               }
             }
-            
+
             """.trimIndent()
                 )
             )
@@ -1055,7 +1055,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
               }
             }
-            
+
             """.trimIndent()
                 )
             )
@@ -1220,7 +1220,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
               }
             }
-            
+
             """.trimIndent()
                 )
             )
@@ -1240,7 +1240,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
               "id2": 100,
               "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
             }
-            
+
             """.trimIndent()
                 )
             )
@@ -1423,7 +1423,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
               "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
               "_airbyte_data": {}
             }
-            
+
             """.trimIndent()
                 )
             )
@@ -1462,7 +1462,14 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             AirbyteProtocolType.STRING
         )
         val v1RawTableStreamId =
-            StreamId(null, null, streamId.finalNamespace, "v1_" + streamId.rawName, null, null)
+            StreamId(
+                "fake",
+                "fake",
+                streamId.finalNamespace,
+                "v1_" + streamId.rawName,
+                "fake",
+                "fake"
+            )
         createV1RawTable(v1RawTableStreamId)
         insertV1RawTableRecords(
             v1RawTableStreamId,
@@ -1627,7 +1634,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         // Commit a state belonging to a different stream
         destinationHandler.commitDestinationStates(
             java.util.Map.of(
-                StreamId(null, null, null, null, null, "some_other_stream"),
+                StreamId("fake", "fake", "fake", "fake", "fake", "some_other_stream"),
                 initialState.destinationState.withSoftReset(true)
             )
         )
@@ -1647,7 +1654,10 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     @Test
     open fun testLongIdentifierHandling() {
         val randomSuffix = Strings.addRandomSuffix("", "_", 5)
-        val rawNamespace = "a".repeat(512) + randomSuffix
+        // Hardcode this value.
+        // This comes directly from the config, and currently we don't validate/mangle it.
+        // TODO we should eventually switch this to be "a".repeat(512) + randomSuffix
+        val rawNamespace = "some_namespace$randomSuffix"
         val finalNamespace = "b".repeat(512) + randomSuffix
         val streamName = "c".repeat(512) + randomSuffix
         // Limiting to total 127 column length for redshift. Postgres is 63.

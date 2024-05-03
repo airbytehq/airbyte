@@ -14,6 +14,8 @@ import io.airbyte.protocol.models.v0.ConnectorSpecification
 import java.util.function.Consumer
 
 abstract class SpecModifyingDestination(private val destination: Destination) : Destination {
+    override val isV2Destination: Boolean = destination.isV2Destination
+
     @Throws(Exception::class)
     abstract fun modifySpec(originalSpec: ConnectorSpecification): ConnectorSpecification
 

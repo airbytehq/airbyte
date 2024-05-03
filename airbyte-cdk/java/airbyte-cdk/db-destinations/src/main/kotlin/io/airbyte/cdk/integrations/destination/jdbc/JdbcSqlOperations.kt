@@ -144,7 +144,12 @@ abstract class JdbcSqlOperations : SqlOperations {
                     val uuid = UUID.randomUUID().toString()
 
                     val jsonData = record.serialized
-                    val airbyteMeta = Jsons.serialize(record.record!!.meta)
+                    val airbyteMeta =
+                        if (record.record!!.meta == null) {
+                            "{\"changes\":[]}"
+                        } else {
+                            Jsons.serialize(record.record!!.meta)
+                        }
                     val extractedAt =
                         Timestamp.from(Instant.ofEpochMilli(record.record!!.emittedAt))
                     if (isDestinationV2) {

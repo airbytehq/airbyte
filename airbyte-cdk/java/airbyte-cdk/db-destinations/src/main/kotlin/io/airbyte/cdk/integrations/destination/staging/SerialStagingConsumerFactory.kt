@@ -150,7 +150,7 @@ open class SerialStagingConsumerFactory {
                 val tableName: String?
                 if (useDestinationsV2Columns) {
                     val streamId = parsedCatalog.getStream(abStream.namespace, streamName).id
-                    outputSchema = streamId.rawNamespace!!
+                    outputSchema = streamId.rawNamespace
                     tableName = streamId.rawName
                 } else {
                     outputSchema =
