@@ -18,7 +18,7 @@ import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import Source
-from airbyte_cdk.sources.streams import IncrementalMixin, StateMixin, Stream
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
@@ -1361,7 +1361,7 @@ class ContactLists(IncrementalStream):
     unnest_fields = ["metaData"]
 
 
-class ContactsAllBase(Stream, StateMixin):
+class ContactsAllBase(Stream, IncrementalMixin):
     url = "/contacts/v1/lists/all/contacts/all"
     updated_at_field = "timestamp"
     more_key = "has-more"
