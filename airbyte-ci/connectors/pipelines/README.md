@@ -745,6 +745,7 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.12.4  | [#37786](https://github.com/airbytehq/airbyte/pull/37786)  | (fixed 4.12.2): Do not upload dagger log to GCP when no credentials are available.                                           |
 | 4.12.3  | [#37783](https://github.com/airbytehq/airbyte/pull/37783)  | Revert 4.12.2                                                                                                                |
 | 4.12.2  | [#37778](https://github.com/airbytehq/airbyte/pull/37778)  | Do not upload dagger log to GCP when no credentials are available.                                                           |
 | 4.12.1  | [#37765](https://github.com/airbytehq/airbyte/pull/37765)  | Relax the required env var to run in CI and handle their absence gracefully.                                                 |
