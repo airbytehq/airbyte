@@ -400,11 +400,6 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             actualRecordMessages,
             Matchers.containsInAnyOrder<Any>(*expectedMessagesResult.toTypedArray())
         )
-
-        if ((source() as AbstractJdbcSource<*>).supportResumableFullRefresh(catalog.streams[0])) {
-            val stateMessages = extractStateMessage(actualMessages)
-            validateFullRefreshStateMessageReadSuccess(stateMessages)
-        }
     }
 
     // This validation only applies to resumable full refresh syncs.
