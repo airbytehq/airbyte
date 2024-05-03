@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pipelines"
-version = "4.10.5"
+version = "4.12.6"
 description = "Packaged maintained by the connector operations team to perform CI for connectors' pipelines"
 authors = ["Airbyte <contact@airbyte.io>"]
 
@@ -33,6 +33,7 @@ tomli = "^2.0.1"
 tomli-w = "^1.0.0"
 dpath = "^2.1.6"
 xmltodict = "^0.13.0"
+ruamel-yaml = "^0.18.6"
 
 [tool.poetry.group.dev.dependencies]
 freezegun = "^1.2.2"
