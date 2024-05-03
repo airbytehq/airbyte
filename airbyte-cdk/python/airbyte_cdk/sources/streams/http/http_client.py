@@ -19,10 +19,7 @@ from requests.auth import AuthBase
 
 from .decoders import Decoder, JsonDecoder
 from .error_handlers import (
-    BackoffStrategy,
     DefaultBackoffStrategy,
-    ErrorHandler,
-    ErrorMessageParser,
     HttpStatusErrorHandler,
     JsonErrorMessageParser,
     ResponseAction,
@@ -38,16 +35,11 @@ class HttpClient:
         self,
         stream_name: str,
         logger: logging.Logger,
-        raise_on_http_errors: bool = True,
         api_budget: Optional[APIBudget] = None,
         session: Optional[requests.Session] = None,
         authenticator: Optional[AuthBase] = None,
-        http_error_handler: Optional[ErrorHandler] = None,
-        backoff_strategy: Optional[BackoffStrategy] = DefaultBackoffStrategy(),
-        response_decoder: Optional[Decoder] = JsonDecoder(),
-        error_message_parser: Optional[ErrorMessageParser] = JsonErrorMessageParser(),
     ):
-        self._name = stream_name
+        self._stream_name = stream_name
         self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
         if session:
             self._session = session
@@ -59,11 +51,10 @@ class HttpClient:
         if isinstance(authenticator, AuthBase):
             self._session.auth = authenticator
         self._logger = logger
-        self._http_error_handler = http_error_handler or HttpStatusErrorHandler(logger)
-        self._backoff_strategy = backoff_strategy
-        self._response_decoder = response_decoder
-        self._error_message_parser = error_message_parser
-        self._raise_on_http_errors = raise_on_http_errors
+        self._error_handler = HttpStatusErrorHandler(logger)
+        self._backoff_strategy = DefaultBackoffStrategy()
+        self._response_decoder = JsonDecoder()
+        self._error_message_parser = JsonErrorMessageParser()
 
     # property moved from HttpStream
     @property
@@ -72,7 +63,7 @@ class HttpClient:
         Override if needed. Return the name of cache file
         Note that if the environment variable REQUEST_CACHE_PATH is not set, the cache will be in-memory only.
         """
-        return f"{self._name}.sqlite"
+        return f"{self._stream_name}.sqlite"
 
     # property moved from HttpStream
     @property
@@ -82,10 +73,6 @@ class HttpClient:
         Note that if the environment variable REQUEST_CACHE_PATH is not set, the cache will be in-memory only.
         """
         return False
-
-    @property
-    def raise_on_http_errors(self) -> bool:
-        return self._raise_on_http_errors
 
     # public moved method from HttpStream
     def request_session(self) -> requests.Session:
@@ -134,15 +121,12 @@ class HttpClient:
         self,
         http_method: str,
         url: str,
-        dedupe_query_params: bool,
+        dedupe_query_params: bool = True,
         headers: Optional[Mapping[str, str]] = None,
         params: Optional[Mapping[str, str]] = None,
         json: Optional[Mapping[str, Any]] = None,
         data: Optional[Union[str, Mapping[str, Any]]] = None,
     ):
-        # creates and returns a prepared request
-
-        # Public method from HttpStream --> should it be re-implemented here? No guarantee that it's not overridden in existing connectors
         if dedupe_query_params:
             query_params = self._dedupe_query_params(url, params)
         else:
@@ -187,6 +171,9 @@ class HttpClient:
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
 
+        if request_kwargs is None:
+            request_kwargs = {}
+
         try:
             response: requests.Response = self._session.send(request, **request_kwargs)
             self._response_decoder.validate_response(response)
@@ -196,37 +183,39 @@ class HttpClient:
             response_error_message = f"Request to {request.url} failed with exception: {exc}"
             self._logger.debug(response_error_message)
             exc = exc
+            response = None
         else:
-            response_action, failure_type, response_error_message = self._http_error_handler.interpret_response(response=response)
+            response_action, failure_type, response_error_message = self._error_handler.interpret_response(response=response)
             exc = None
 
         # Evaluation of response.text can be heavy, for example, if streaming a large response
         # Do it only in debug mode
-        if self._logger.isEnabledFor(logging.DEBUG):
-            self._logger.debug(
-                "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
-            )
+        if response is not None:
+            if self._logger.isEnabledFor(logging.DEBUG):
+                self._logger.debug(
+                    "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
+                )
 
-        if response_action == ResponseAction.FAIL:
-            error_message = (
-                f"Request failed to {request.url} with error {exc}"
-                if exc
-                else response_error_message
-                or f"Request to {response.request.url} failed with status code {response.status_code} and error message {self._error_message_parser.parse_response_error_message(response)}"
-            )
-            # TODO: Provide better internal/external error messaging
-            raise AirbyteTracedException(
-                internal_message=error_message,
-                message=error_message,
-                failure_type=failure_type,
-            )
+            if response_action == ResponseAction.FAIL:
+                error_message = (
+                    f"Request failed to {request.url} with error {exc}"
+                    if exc
+                    else response_error_message
+                    or f"Request to {response.request.url} failed with status code {response.status_code} and error message {self._error_message_parser.parse_response_error_message(response)}"
+                )
+                # TODO: Provide better internal/external error messaging
+                raise AirbyteTracedException(
+                    internal_message=error_message,
+                    message=error_message,
+                    failure_type=failure_type,
+                )
 
-        if response_action == ResponseAction.IGNORE:
-            self._logger.info(
-                f"Ignoring response with status code {response.status_code} for request to {response.request.url}"
-                if response
-                else f"Ignoring response for request to {request.url} with error {exc}"
-            )
+            if response_action == ResponseAction.IGNORE:
+                self._logger.info(
+                    f"Ignoring response with status code {response.status_code} for request to {request.url}"
+                    if response
+                    else f"Ignoring response for request to {request.url} with error {exc}"
+                )
 
         # TODO: Consider dynamic retry count depending on subsequent error codes
         if response_action == ResponseAction.RETRY:
@@ -238,7 +227,8 @@ class HttpClient:
                 )
             else:
                 raise DefaultBackoffException(request=request, response=response, error_message=error_message)
-        elif self.raise_on_http_errors:
+
+        if not response_action:
             # Raise any HTTP exceptions that happened in case there were unexpected ones
             try:
                 response.raise_for_status()
@@ -264,9 +254,15 @@ class HttpClient:
         """
 
         request: requests.PreparedRequest = self._create_prepared_request(
-            http_method=http_method, url=url, dedupe_query_params=dedupe_query_params, headers=headers, params=params, json=json, data=data
+            http_method=http_method,
+            url=url,
+            dedupe_query_params=dedupe_query_params,
+            headers=headers,
+            params=params,
+            json=json,
+            data=data
         )
 
-        response: requests.Response = self._send_with_retry(request=request, request_kwargs=request_kwargs)
+        response: requests.Response = self._send_with_retry(request=request,request_kwargs=request_kwargs)
 
         return request, response

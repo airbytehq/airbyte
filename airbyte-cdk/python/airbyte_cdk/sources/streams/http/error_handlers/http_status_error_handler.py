@@ -12,7 +12,7 @@ from .response_action import ResponseAction
 
 class HttpStatusErrorHandler(ErrorHandler):
 
-    _DEFAULT_ERROR_MAPPING: Mapping[Union[int, str], Mapping[str, Any]] = {
+    _DEFAULT_ERROR_MAPPING: Mapping[Union[int, str, Exception], Mapping[str, Any]] = {
         400: {
             "action": ResponseAction.FAIL,
             "failure_type": FailureType.config_error,
@@ -42,7 +42,7 @@ class HttpStatusErrorHandler(ErrorHandler):
         self._error_mapping = error_mapping or self._DEFAULT_ERROR_MAPPING
 
     def interpret_response(
-        self, response: Optional[Union[requests.Response, Exception]]
+        self, response: Optional[Union[requests.Response, Exception]] = None
     ) -> Tuple[Optional[ResponseAction], Optional[FailureType], Optional[str]]:
         """
         Interpret the response and return the corresponding response action, failure type, and error message.
@@ -51,16 +51,20 @@ class HttpStatusErrorHandler(ErrorHandler):
         :return: A tuple containing the response action, failure type, and error message.
         """
 
-        if response.ok:
-            return None, None, None
+        if response is None:
+            return ResponseAction.RETRY, FailureType.transient_error, None
 
-        error_key = response.status_code
+        if isinstance(response, requests.Response):
+            if response.ok:
+                return None, None, None
+            error_key = response.status_code
+
         mapped_error = self._error_mapping.get(error_key, None)
 
         if mapped_error is not None:
-            response_action = mapped_error.get("action", ResponseAction.RETRY)
-            response_failure_type = mapped_error.get("failure_type", FailureType.transient_error)
-            error_message = mapped_error.get("error_message", None)
+            response_action = mapped_error.get("action")
+            response_failure_type = mapped_error.get("failure_type")
+            error_message = mapped_error.get("error_message")
         else:
             self._logger.debug(f"Unexpected 'HTTP Status Code' in error handler: {error_key}")
             response_action = ResponseAction.RETRY
