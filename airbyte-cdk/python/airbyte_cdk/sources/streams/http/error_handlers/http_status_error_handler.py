@@ -16,16 +16,48 @@ class HttpStatusErrorHandler(ErrorHandler):
         400: {
             "action": ResponseAction.FAIL,
             "failure_type": FailureType.config_error,
-            "error_message": "Placeholder error message for 400 -- TBD",
+            "error_message": "Bad request. Please check your request parameters."
         },
-        401: {"action": ResponseAction.FAIL, "failure_type": FailureType.config_error},
-        403: {"action": ResponseAction.FAIL, "failure_type": FailureType.config_error},
-        404: {"action": ResponseAction.FAIL, "failure_type": FailureType.system_error},
-        408: {"action": ResponseAction.FAIL, "failure_type": FailureType.transient_error},
-        429: {"action": ResponseAction.FAIL, "failure_type": FailureType.transient_error},
-        500: {"action": ResponseAction.RETRY, "failure_type": FailureType.transient_error},
-        502: {"action": ResponseAction.RETRY, "failure_type": FailureType.transient_error},
-        503: {"action": ResponseAction.RETRY, "failure_type": FailureType.transient_error},
+        401: {
+            "action": ResponseAction.FAIL,
+            "failure_type": FailureType.config_error,
+            "error_message": "Unauthorized. Please ensure you are authenticated correctly."
+        },
+        403: {
+            "action": ResponseAction.FAIL,
+            "failure_type": FailureType.config_error,
+            "error_message": "Forbidden. You don't have permission to access this resource."
+        },
+        404: {
+            "action": ResponseAction.FAIL,
+            "failure_type": FailureType.system_error,
+            "error_message": "Not found. The requested resource was not found on the server."
+        },
+        408: {
+            "action": ResponseAction.FAIL,
+            "failure_type": FailureType.transient_error,
+            "error_message": "Request timeout. Please try again later."
+        },
+        429: {
+            "action": ResponseAction.FAIL,
+            "failure_type": FailureType.transient_error,
+            "error_message": "Too many requests. Please wait and try again later."
+        },
+        500: {
+            "action": ResponseAction.RETRY,
+            "failure_type": FailureType.transient_error,
+            "error_message": "Internal server error. Please try again later."
+        },
+        502: {
+            "action": ResponseAction.RETRY,
+            "failure_type": FailureType.transient_error,
+            "error_message": "Bad gateway. Please try again later."
+        },
+        503: {
+            "action": ResponseAction.RETRY,
+            "failure_type": FailureType.transient_error,
+            "error_message": "Service unavailable. Please try again later."
+        },
     }
 
     def __init__(
@@ -55,20 +87,30 @@ class HttpStatusErrorHandler(ErrorHandler):
             return ResponseAction.RETRY, FailureType.transient_error, None
 
         if isinstance(response, requests.Response):
+            if response.status_code is None:
+                self._logger.debug("Response does not include an HTTP status code.")
+                return ResponseAction.RETRY, FailureType.transient_error, "Response does not include an HTTP status code."
+
             if response.ok:
                 return None, None, None
-            error_key = response.status_code
 
-        mapped_error = self._error_mapping.get(error_key, None)
+            error_key = response.status_code
+        else:
+            self._logger.debug(f"Received unexpected response type: {type(response)}")
+            return ResponseAction.RETRY, FailureType.transient_error, f"Received unexpected response type: {type(response)}"
+
+        mapped_error = self._error_mapping.get(error_key)
 
         if mapped_error is not None:
-            response_action = mapped_error.get("action")
-            response_failure_type = mapped_error.get("failure_type")
-            error_message = mapped_error.get("error_message")
+            return (
+                mapped_error.get("action"),
+                mapped_error.get("failure_type"),
+                mapped_error.get("error_message")
+            )
         else:
             self._logger.debug(f"Unexpected 'HTTP Status Code' in error handler: {error_key}")
-            response_action = ResponseAction.RETRY
-            response_failure_type = FailureType.transient_error
-            error_message = f"Unexpected 'HTTP Status Code' in error handler: {error_key}"
-
-        return response_action, response_failure_type, error_message
+            return (
+                ResponseAction.RETRY,
+                FailureType.transient_error,
+                f"Unexpected 'HTTP Status Code' in error handler: {error_key}"
+            )
