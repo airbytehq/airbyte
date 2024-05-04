@@ -83,7 +83,7 @@ Use caching to cover more data from this source.
 
 | Version | Date       | Pull Request                                             | Subject                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------|
-| 0.3.1   | 2024-05-04 | [123](https://github.com/airbytehq/airbyte/pull/xyz)   | Apply editorial review.                                                            |
+| 0.3.1   | 2024-05-04 | [37831](https://github.com/airbytehq/airbyte/pull/37831) | Apply editorial review.                                                          |
 | 0.3.0   | 2024-02-22 | [35561](https://github.com/airbytehq/airbyte/pull/35561) | Migrate connector to low-code.                                                   |
 | 0.2.4   | 2024-02-12 | [35168](https://github.com/airbytehq/airbyte/pull/35168) | Manage dependencies with Poetry.                                                 |
 | 0.2.3   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove the Dockerfile and use the python-connector-base image. |
