@@ -36,7 +36,7 @@ class HttpClient:
         stream_name: str,
         logger: logging.Logger,
         api_budget: Optional[APIBudget] = None,
-        session: Optional[requests.Session] = None,
+        session: Optional[Union[requests.Session, requests_cache.CachedSession]] = None,
         authenticator: Optional[AuthBase] = None,
     ):
         self._stream_name = stream_name
@@ -97,7 +97,7 @@ class HttpClient:
         """
         Clear cached requests for current session, can be called any time
         """
-        if isinstance(self._session, requests_cache.CachedSession):
+        if isinstance(self._session, CachedLimiterSession):
             self._session.cache.clear()  # type: ignore # cache.clear is not typed
 
     # private method moved from HttpStream

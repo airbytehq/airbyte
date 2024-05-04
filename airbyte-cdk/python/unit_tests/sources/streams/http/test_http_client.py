@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
+from requests_cache import CachedSession, CachedResponse, CachedRequest
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.error_handlers import DefaultBackoffStrategy, ResponseAction
@@ -12,16 +13,14 @@ from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSessio
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
-from requests.auth import AuthBase
+
 
 def test_http_client():
     return HttpClient(stream_name="StubHttpClient", logger=MagicMock())
 
-class TrueStubHttpClient(HttpClient):
+class CacheHttpClient(HttpClient):
 
-    @property
-    def use_cache(self) -> bool:
-        return True
+    use_cache = True
 
 def test_cache_filename():
     http_client = test_http_client()
@@ -30,7 +29,7 @@ def test_cache_filename():
 @pytest.mark.parametrize(
     "client, expected_session",
     [
-        (TrueStubHttpClient, CachedLimiterSession),
+        (CacheHttpClient, CachedLimiterSession),
         (HttpClient, LimiterSession),
     ],
 )
@@ -266,3 +265,49 @@ def test_session_request_exception_raises_backoff_exception():
     with patch.object(http_client._session, "send", side_effect=requests.exceptions.RequestException):
         with pytest.raises(DefaultBackoffException):
             http_client._send(prepared_request, {})
+
+def test_that_response_was_cached(requests_mock):
+    cached_http_client = CacheHttpClient(stream_name="test", logger=MagicMock(), session=CachedLimiterSession("file::memory:?cache=shared", backend="sqlite", api_budget=APIBudget(policies=[])))
+
+    assert isinstance(cached_http_client._session, CachedLimiterSession)
+
+    cached_http_client.clear_cache()
+
+    prepared_request = cached_http_client._create_prepared_request(http_method="GET", url="https://google.com/")
+
+    requests_mock.register_uri("GET", "https://google.com/", json='{"test": "response"}')
+
+    cached_http_client._send(prepared_request, {})
+
+    assert requests_mock.called
+    requests_mock.reset_mock()
+
+    second_response = cached_http_client._send(prepared_request, {})
+
+    assert isinstance(second_response.request, CachedRequest)
+    assert not requests_mock.called
+
+def test_clear_cache(requests_mock):
+    cached_http_client = CacheHttpClient(stream_name="test", logger=MagicMock())
+
+    assert isinstance(cached_http_client._session, CachedLimiterSession)
+
+    cached_http_client.clear_cache()
+
+    prepared_request = cached_http_client._create_prepared_request(http_method="GET", url="https://airbyte.io/")
+
+    requests_mock.register_uri("GET", "https://airbyte.io/", json='{"test": "response"}')
+
+    first_response = cached_http_client._send(prepared_request, {})
+
+    assert not isinstance(first_response, CachedResponse)
+
+    assert requests_mock.called
+    cached_http_client.clear_cache()
+    # cached_http_client._session.cache.clear()
+    requests_mock.reset_mock()
+
+    second_response = cached_http_client._send(prepared_request, {})
+
+    assert not isinstance(second_response, CachedResponse)
+    assert requests_mock.called
