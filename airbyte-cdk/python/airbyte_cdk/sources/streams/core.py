@@ -83,7 +83,7 @@ class StateMixin(ABC):  # Rename to CheckpointMixin?
         """State setter, accept state serialized by state getter."""
 
 
-@deprecated(version="0.x.x", reason="Deprecated in favor of the StateMixin which offers similar functionality")
+@deprecated(version="0.87.0", reason="Deprecated in favor of the StateMixin which offers similar functionality")
 class IncrementalMixin(StateMixin, ABC):
     """Mixin to make stream incremental.
 

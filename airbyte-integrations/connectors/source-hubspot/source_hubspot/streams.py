@@ -1232,7 +1232,7 @@ class CRMSearchStream(IncrementalStream, ABC):
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         self.set_sync(sync_mode, stream_state)
-        return [{}]  # I changed this from [None] since this is a more accurate depiction of what is actually being done. Sync one slice
+        return [None]
 
     def set_sync(self, sync_mode: SyncMode, stream_state):
         self._sync_mode = sync_mode
@@ -1361,7 +1361,7 @@ class ContactLists(IncrementalStream):
     unnest_fields = ["metaData"]
 
 
-class ContactsAllBase(Stream, IncrementalMixin):
+class ContactsAllBase(Stream):
     url = "/contacts/v1/lists/all/contacts/all"
     updated_at_field = "timestamp"
     more_key = "has-more"
@@ -1374,65 +1374,6 @@ class ContactsAllBase(Stream, IncrementalMixin):
     records_field = None
     filter_field = None
     filter_value = None
-    _state = {}
-    limit_field = "count"
-    limit = 100
-
-    @property
-    def state(self) -> MutableMapping[str, Any]:
-        return self._state
-
-    @state.setter
-    def state(self, value: MutableMapping[str, Any]) -> None:
-        self._state = value
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        """
-        This is a specialized read_records for resumable full refresh that only attempts to read a single page of records
-        at a time and updates the state w/ a synthetic cursor based on the Hubspot cursor pagination value `vidOffset`
-        """
-
-        next_page_token = stream_slice
-        logger.info(f"Read in self.state and setting next_page_token to: f{next_page_token}")
-        try:
-            properties = self._property_wrapper
-            if properties and properties.too_many_properties:
-                records, response = self._read_stream_records(
-                    stream_slice=stream_slice,
-                    stream_state=stream_state,
-                    next_page_token=next_page_token,
-                )
-            else:
-                response = self.handle_request(
-                    stream_slice=stream_slice,
-                    stream_state=stream_state,
-                    next_page_token=next_page_token,
-                    properties=properties,
-                )
-                records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
-
-            if self.filter_old_records:
-                records = self._filter_old_records(records)
-            yield from self.record_unnester.unnest(records)
-
-            # todo blai: This is how the gotcha mentioned in the RFR checkpoint reader manifests that the developer must know to
-            #  set state as the empty. Although the state setter expects a real value so maybe this isn't the worst interface
-            self.state = self.next_page_token(response) or {}
-
-            # Always return an empty generator just in case no records were ever yielded
-            yield from []
-        except requests.exceptions.HTTPError as e:
-            response = e.response
-            if response.status_code == HTTPStatus.UNAUTHORIZED:
-                raise AirbyteTracedException("The authentication to HubSpot has expired. Re-authenticate to restore access to HubSpot.")
-            else:
-                raise e
 
     def _transform(self, records: Iterable) -> Iterable:
         for record in super()._transform(records):

@@ -1,9 +1,0 @@
-[
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "vidOffset": 5345144171 },
-      "stream_descriptor": { "name": "contacts_form_submissions" }
-    }
-  }
-]
