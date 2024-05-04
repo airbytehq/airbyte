@@ -6,6 +6,7 @@ import pytest
 import requests
 from airbyte_cdk.sources.streams.http.decoders.json_decoder import JsonDecoder
 
+
 def test_json_decoder_with_valid_repsonse():
     response = requests.Response()
     response._content = b'{ "test": "all good" }'

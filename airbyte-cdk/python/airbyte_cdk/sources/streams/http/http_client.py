@@ -18,12 +18,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.auth import AuthBase
 
 from .decoders import Decoder, JsonDecoder
-from .error_handlers import (
-    DefaultBackoffStrategy,
-    HttpStatusErrorHandler,
-    JsonErrorMessageParser,
-    ResponseAction,
-)
+from .error_handlers import DefaultBackoffStrategy, HttpStatusErrorHandler, JsonErrorMessageParser, ResponseAction
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 
@@ -254,15 +249,9 @@ class HttpClient:
         """
 
         request: requests.PreparedRequest = self._create_prepared_request(
-            http_method=http_method,
-            url=url,
-            dedupe_query_params=dedupe_query_params,
-            headers=headers,
-            params=params,
-            json=json,
-            data=data
+            http_method=http_method, url=url, dedupe_query_params=dedupe_query_params, headers=headers, params=params, json=json, data=data
         )
 
-        response: requests.Response = self._send_with_retry(request=request,request_kwargs=request_kwargs)
+        response: requests.Response = self._send_with_retry(request=request, request_kwargs=request_kwargs)
 
         return request, response

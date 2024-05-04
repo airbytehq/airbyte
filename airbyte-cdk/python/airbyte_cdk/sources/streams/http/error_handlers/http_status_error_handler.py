@@ -16,47 +16,47 @@ class HttpStatusErrorHandler(ErrorHandler):
         400: {
             "action": ResponseAction.FAIL,
             "failure_type": FailureType.config_error,
-            "error_message": "Bad request. Please check your request parameters."
+            "error_message": "Bad request. Please check your request parameters.",
         },
         401: {
             "action": ResponseAction.FAIL,
             "failure_type": FailureType.config_error,
-            "error_message": "Unauthorized. Please ensure you are authenticated correctly."
+            "error_message": "Unauthorized. Please ensure you are authenticated correctly.",
         },
         403: {
             "action": ResponseAction.FAIL,
             "failure_type": FailureType.config_error,
-            "error_message": "Forbidden. You don't have permission to access this resource."
+            "error_message": "Forbidden. You don't have permission to access this resource.",
         },
         404: {
             "action": ResponseAction.FAIL,
             "failure_type": FailureType.system_error,
-            "error_message": "Not found. The requested resource was not found on the server."
+            "error_message": "Not found. The requested resource was not found on the server.",
         },
         408: {
             "action": ResponseAction.FAIL,
             "failure_type": FailureType.transient_error,
-            "error_message": "Request timeout. Please try again later."
+            "error_message": "Request timeout. Please try again later.",
         },
         429: {
             "action": ResponseAction.FAIL,
             "failure_type": FailureType.transient_error,
-            "error_message": "Too many requests. Please wait and try again later."
+            "error_message": "Too many requests. Please wait and try again later.",
         },
         500: {
             "action": ResponseAction.RETRY,
             "failure_type": FailureType.transient_error,
-            "error_message": "Internal server error. Please try again later."
+            "error_message": "Internal server error. Please try again later.",
         },
         502: {
             "action": ResponseAction.RETRY,
             "failure_type": FailureType.transient_error,
-            "error_message": "Bad gateway. Please try again later."
+            "error_message": "Bad gateway. Please try again later.",
         },
         503: {
             "action": ResponseAction.RETRY,
             "failure_type": FailureType.transient_error,
-            "error_message": "Service unavailable. Please try again later."
+            "error_message": "Service unavailable. Please try again later.",
         },
     }
 
@@ -102,15 +102,7 @@ class HttpStatusErrorHandler(ErrorHandler):
         mapped_error = self._error_mapping.get(error_key)
 
         if mapped_error is not None:
-            return (
-                mapped_error.get("action"),
-                mapped_error.get("failure_type"),
-                mapped_error.get("error_message")
-            )
+            return (mapped_error.get("action"), mapped_error.get("failure_type"), mapped_error.get("error_message"))
         else:
             self._logger.debug(f"Unexpected 'HTTP Status Code' in error handler: {error_key}")
-            return (
-                ResponseAction.RETRY,
-                FailureType.transient_error,
-                f"Unexpected 'HTTP Status Code' in error handler: {error_key}"
-            )
+            return (ResponseAction.RETRY, FailureType.transient_error, f"Unexpected 'HTTP Status Code' in error handler: {error_key}")

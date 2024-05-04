@@ -6,6 +6,7 @@ import pytest
 import requests
 from airbyte_cdk.sources.streams.http.error_handlers import JsonErrorMessageParser
 
+
 @pytest.mark.parametrize(
         "response_body,expected_error_message",
         [

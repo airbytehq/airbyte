@@ -1,8 +1,9 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 import requests
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler, ResponseAction

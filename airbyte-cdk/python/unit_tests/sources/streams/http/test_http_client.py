@@ -5,14 +5,14 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
-from requests_cache import CachedSession, CachedResponse, CachedRequest
 from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
 from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.error_handlers import DefaultBackoffStrategy, ResponseAction
-from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
+from requests_cache import CachedRequest, CachedResponse, CachedSession
 
 
 def test_http_client():
