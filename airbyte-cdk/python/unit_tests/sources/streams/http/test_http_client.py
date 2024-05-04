@@ -267,7 +267,7 @@ def test_session_request_exception_raises_backoff_exception():
             http_client._send(prepared_request, {})
 
 def test_that_response_was_cached(requests_mock):
-    cached_http_client = CacheHttpClient(stream_name="test", logger=MagicMock(), session=CachedLimiterSession("file::memory:?cache=shared", backend="sqlite", api_budget=APIBudget(policies=[])))
+    cached_http_client = CacheHttpClient(stream_name="test", logger=MagicMock())
 
     assert isinstance(cached_http_client._session, CachedLimiterSession)
 
@@ -304,7 +304,6 @@ def test_clear_cache(requests_mock):
 
     assert requests_mock.called
     cached_http_client.clear_cache()
-    # cached_http_client._session.cache.clear()
     requests_mock.reset_mock()
 
     second_response = cached_http_client._send(prepared_request, {})
