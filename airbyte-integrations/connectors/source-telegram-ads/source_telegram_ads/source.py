@@ -12,9 +12,14 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException
-from source_telegram_ads.utils import DEFAULT_USER_AGENT
-from source_telegram_ads.parser import test_logged_in, parse_all_ads, parse_ad_details, parse_ad_stats
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from source_telegram_ads.parser import (
+    parse_ad_details,
+    parse_ad_stats,
+    parse_all_ads,
+    test_logged_in,
+)
+from source_telegram_ads.utils import DEFAULT_USER_AGENT
 
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
@@ -30,7 +35,10 @@ class TelegramAdsStream(HttpStream, ABC):
         self._organization_token = organization_token
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         return {
             "user-agent": DEFAULT_USER_AGENT,
@@ -65,15 +73,34 @@ class TelegramAdsStream(HttpStream, ABC):
         return self._session.prepare_request(requests.Request(**args))
 
     def _fetch_next_page(
-        self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request = self._create_prepared_request(
-            path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            path=self.path(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+            ),
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
-            params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            params=self.request_params(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+            ),
+            json=self.request_body_json(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+            ),
+            data=self.request_body_data(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+            ),
             cookies={
                 "stel_token": self._account_token,
                 "stel_adowner": self._organization_token,
@@ -114,12 +141,24 @@ class Ads(TelegramAdsStream):
 class AdsDetails(TelegramAdsStream, HttpSubStream):
     primary_key = "id"
 
-    def __init__(self, parent: Ads, account_token: str, organization_token: str):
+    def __init__(self, parent: Ads, additional_ad_ids: List[str], account_token: str, organization_token: str):
         TelegramAdsStream.__init__(self, account_token, organization_token)
         HttpSubStream.__init__(self, parent=parent)
+        self.additional_ad_ids = additional_ad_ids
 
     def path(self, stream_slice: Mapping[str, Any] = None, *args, **kwargs) -> str:
         return "/account/ad/" + stream_slice["parent"]["id"]
+
+    def stream_slices(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        if self.additional_ad_ids:
+            for ad_id in self.additional_ad_ids:
+                yield {"parent": {"id": ad_id}}
+        yield from super().stream_slices(sync_mode, cursor_field, stream_state)
 
     def parse_response(
         self,
@@ -128,7 +167,10 @@ class AdsDetails(TelegramAdsStream, HttpSubStream):
         *args,
         **kwargs,
     ) -> Iterable[Mapping]:
-        yield {"id": stream_slice["parent"]["id"], **parse_ad_details(response)}
+        try:
+            yield {"id": stream_slice["parent"]["id"], **parse_ad_details(response)}
+        except:
+            pass
 
 
 class AdsStatistics(TelegramAdsStream, HttpSubStream):
@@ -175,7 +217,13 @@ class SourceTelegramAds(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         shared_kwargs = self.get_stream_kwargs_from_config(config)
         ads_stream = Ads(**shared_kwargs)
+        ads_details_stream = AdsDetails(
+            parent=ads_stream,
+            additional_ad_ids=config.get("additional_ad_ids", []),
+            **shared_kwargs,
+        )
+
         return [
-            AdsDetails(parent=ads_stream, **shared_kwargs),
-            AdsStatistics(parent=ads_stream, **shared_kwargs),
+            ads_details_stream,
+            AdsStatistics(parent=ads_details_stream, **shared_kwargs),
         ]

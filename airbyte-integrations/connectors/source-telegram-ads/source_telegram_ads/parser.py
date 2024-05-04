@@ -99,8 +99,36 @@ def parse_ad_stats(
 def parse_all_ads(ads_page_response: requests.Response) -> Generator[dict[str, Any], None, None]:
     with open("parse_all_ads_out.html", "w") as f:
         f.write(ads_page_response.text)
+    resp_text = ads_page_response.text
+    # print("resp_text", resp_text)
     soup = BeautifulSoup(ads_page_response.text, features="html.parser")
     table: Tag = soup.select("section.pr-content>.table-responsive>table")[0]
+
+    # next_offset_id = re.findall('"next_offset_id":\s?"([a-zA-Z\d\-]+)"', resp_text)
+    # owner_id = re.findall('"owner_id":\s?"([a-zA-Z\d_-]+)"', resp_text)
+    # r_hash = re.findall("api\?hash=([\da-zA-Z]+)", resp_text)
+    # print("next_offset_id", next_offset_id, "owner_id", owner_id, "hash", hash)
+    # if len(next_offset_id) > 0 and len(owner_id) > 0 and len(r_hash) > 0:
+    #     r = requests.post(
+    #         "https://promote.telegram.org/api",
+    #         params={"hash": r_hash[0]},
+    #         data={
+    #             "owner_id": owner_id[0],
+    #             "offset_id": next_offset_id[0],
+    #             "method": "getAdsList",
+    #         },
+    #         headers={"Cookie": ads_page_response.request.headers["Cookie"]},
+    #     )
+    #     print(
+    #         "https://promote.telegram.org/api url",
+    #         r.request.url,
+    #         "body",
+    #         r.request.body,
+    #         "text",
+    #         r.text,
+    #         "headers",
+    #         r.request.headers,
+    #     )
     for row in table.select("tbody>tr"):
         row_data = {}
         for cell_n, cell in enumerate(row.select("td>.pr-cell")):
@@ -117,6 +145,7 @@ def parse_all_ads(ads_page_response: requests.Response) -> Generator[dict[str, A
                     "%d %b %y %H:%M",
                 ).isoformat()
         yield row_data
+
     return
 
 

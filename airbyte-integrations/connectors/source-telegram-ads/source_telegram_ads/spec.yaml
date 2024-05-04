@@ -17,3 +17,9 @@ connectionSpecification:
       description: Can be extracted from stel_adowner cookie
       type: string
       order: 1
+    additional_ad_ids:
+      title: Additional Ad Ids
+      description: Specify if there is more than 100 ads
+      type: array
+      items:
+        type: string
