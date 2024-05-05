@@ -239,7 +239,7 @@ def test_funnels_stream(requests_mock, config, funnels_response, funnel_ids_resp
         "funnel_id": stream_slices[0]['funnel_id'],
         "name": stream_slices[0]['funnel_name']
     } == {
-        "funnel_id": 36152117,
+        "funnel_id": "36152117",
         "name": "test"
     }
     records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices[0])

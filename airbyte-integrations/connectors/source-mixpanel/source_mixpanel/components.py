@@ -16,6 +16,8 @@ from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import _default_file_path
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
+from airbyte_cdk.sources.declarative.models import DatetimeBasedCursor
 
 from .source import SourceMixpanel
 from .streams.engage import EngageSchema
@@ -220,6 +222,7 @@ class FunnelsSubstreamPartitionRouter(SubstreamPartitionRouter):
     def stream_slices(self) -> Iterable[StreamSlice]:
         """
         Add 'funnel_name' to the slice, the rest code is exactly the same as in super().stream_slices(...)
+        Remove empty 'parent_slice' attribute to be compatible with LegacyToPerPartitionStateMigration
         """
         if not self.parent_stream_configs:
             yield from []
@@ -253,15 +256,37 @@ class FunnelsSubstreamPartitionRouter(SubstreamPartitionRouter):
                             empty_parent_slice = False
                             yield StreamSlice(
                                 partition={
-                                    partition_field: partition_value,
-                                    "funnel_name": parent_record.get("name"),
-                                    "parent_slice": parent_partition,
+                                    partition_field: partition_value
                                 },
-                                cursor_slice={},
+                                cursor_slice={
+                                    "funnel_name": parent_record.get("name")
+                                },
                             )
                     # If the parent slice contains no records,
                     if empty_parent_slice:
                         yield from []
+
+
+class FunnelsLegacyToPerPartitionStateMigration(LegacyToPerPartitionStateMigration):
+    """
+    Gor error when use custom StateMigration:
+        custom_component_class(**kwargs):
+            TypeError: LegacyToPerPartitionStateMigration.__init__() missing 2 required positional arguments: 'partition_router', 'cursor'
+
+    """
+
+    partition_router: SubstreamPartitionRouter = None
+    cursor: DatetimeBasedCursor = None
+    config: Mapping[str, Any]
+    parameters: Mapping[str, Any]
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        state = super().migrate(stream_state)
+        for partition_state in state.get('states', []):
+            # add empty parent_slice attr to partition
+            if 'parent_slice' not in partition_state.get('partition', {}):
+                partition_state['partition']['parent_slice'] = {}
+        return state
 
 
 @dataclass

@@ -301,6 +301,12 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - funnel_id
+            value: "{{ record.funnel_id | string }}"
 
   # https://developer.mixpanel.com/reference/funnels-query
   funnels_stream:
@@ -311,6 +317,8 @@ definitions:
     primary_key:
       - funnel_id
       - date
+    state_migrations:
+      - type: LegacyToPerPartitionStateMigration
     retriever:
       type: SimpleRetriever
       requester:
@@ -328,17 +336,17 @@ definitions:
           field_path:
             - data
       partition_router:
-        - type: CustomPartitionRouter
-          class_name: "source_mixpanel.components.FunnelsSubstreamPartitionRouter"
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: funnel_id
-              request_option:
-                type: RequestOption
-                field_name: funnel_id
-                inject_into: request_parameter
-              partition_field: funnel_id
-              stream: "#/definitions/funnel_ids_stream"
+        type: CustomPartitionRouter
+        class_name: "source_mixpanel.components.FunnelsSubstreamPartitionRouter"
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: funnel_id
+            request_option:
+              type: RequestOption
+              field_name: funnel_id
+              inject_into: request_parameter
+            partition_field: funnel_id
+            stream: "#/definitions/funnel_ids_stream"
     incremental_sync: "#/definitions/incremental_sync"
     schema_loader:
       $ref: "#/definitions/schema_loader"
@@ -352,7 +360,7 @@ definitions:
         fields:
           - path:
               - name
-            value: "{{ stream_partition.get('funnel_name') }}"
+            value: "{{ stream_slice.get('funnel_name') }}"
 
 streams:
   - "#/definitions/cohorts_stream"
