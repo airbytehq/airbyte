@@ -299,13 +299,15 @@ public class MssqlInitialReadUtil {
     initialLoadStreams.streamsForInitialLoad.forEach(stream -> {
       final AirbyteStreamNameNamespacePair pair =
           new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
-      final OrderedColumnInfo ocInfo = getOrderedColumnInfo(database, stream, tableNameToTable, quoteString);
-      pairToOcInfoMap.put(pair, ocInfo);
+      final Optional<OrderedColumnInfo> ocInfo = getOrderedColumnInfo(database, stream, tableNameToTable, quoteString);
+      if (ocInfo.isPresent()) {
+        pairToOcInfoMap.put(pair, ocInfo.get());
+      }
     });
     return pairToOcInfoMap;
   }
 
-  static OrderedColumnInfo getOrderedColumnInfo(final JdbcDatabase database,
+  static Optional<OrderedColumnInfo> getOrderedColumnInfo(final JdbcDatabase database,
                                                 final ConfiguredAirbyteStream stream,
                                                 final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                 final String quoteString) {
@@ -316,7 +318,7 @@ public class MssqlInitialReadUtil {
     return getOrderedColumnInfo(database, stream, table, quoteString);
   }
 
-  static OrderedColumnInfo getOrderedColumnInfo(final JdbcDatabase database,
+  static Optional<OrderedColumnInfo> getOrderedColumnInfo(final JdbcDatabase database,
                                                 final ConfiguredAirbyteStream stream,
                                                 final TableInfo<CommonField<JDBCType>> table,
                                                 final String quoteString) {
@@ -327,14 +329,23 @@ public class MssqlInitialReadUtil {
     // stream.getStream().getNamespace(), stream.getStream().getName());
     // } // TODO: validate the seleted column rather than primary key
     final String clusterdIndexField = discoverClusteredIndexForStream(database, stream.getStream());
-    final String ocFieldName = clusterdIndexField != null ? clusterdIndexField : stream.getStream().getSourceDefinedPrimaryKey().get(0).get(0);
+    final String ocFieldName;
+    if (clusterdIndexField != null) {
+      ocFieldName = clusterdIndexField;
+    } else {
+      if (stream.getStream().getSourceDefinedPrimaryKey().isEmpty()) {
+        return Optional.empty();
+      }
+      ocFieldName = stream.getStream().getSourceDefinedPrimaryKey().getFirst().getFirst();
+    }
+
     LOGGER.info("selected ordered column field name: " + ocFieldName);
     final JDBCType ocFieldType = table.getFields().stream()
         .filter(field -> field.getName().equals(ocFieldName))
         .findFirst().get().getType();
 
     final String ocMaxValue = MssqlQueryUtils.getMaxOcValueForStream(database, stream, ocFieldName, quoteString);
-    return new OrderedColumnInfo(ocFieldName, ocFieldType, ocMaxValue);
+    return Optional.of(new OrderedColumnInfo(ocFieldName, ocFieldType, ocMaxValue));
   }
 
   public static List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog,
@@ -398,23 +409,6 @@ public class MssqlInitialReadUtil {
     return new InitialLoadStreams(streamsForOcSync.stream().filter((stream) -> !stream.getStream().getSourceDefinedPrimaryKey()
         .isEmpty()).collect(Collectors.toList()),
         pairToInitialLoadStatus);
-  }
-
-  public static Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> initPairToOrderedColumnInfoMap(final JdbcDatabase database,
-                                                                                                      final InitialLoadStreams initialLoadStreams,
-                                                                                                      final TableInfo<CommonField<JDBCType>> table,
-                                                                                                      final String quoteString) {
-    final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOcInfoMap = new HashMap<>();
-    // For every stream that is in primary ordered column sync, we want to maintain information about
-    // the
-    // current ordered column info associated with the
-    // stream
-    initialLoadStreams.streamsForInitialLoad().forEach(stream -> {
-      final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
-      final OrderedColumnInfo ocInfo = getOrderedColumnInfo(database, stream, table, quoteString);
-      pairToOcInfoMap.put(pair, ocInfo);
-    });
-    return pairToOcInfoMap;
   }
 
   private static OptionalInt extractQueueSizeFromConfig(final JsonNode config) {
