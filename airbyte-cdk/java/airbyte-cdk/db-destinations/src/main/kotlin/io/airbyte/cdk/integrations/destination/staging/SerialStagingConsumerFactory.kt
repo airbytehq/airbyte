@@ -150,14 +150,15 @@ open class SerialStagingConsumerFactory {
                 val tableName: String?
                 if (useDestinationsV2Columns) {
                     val streamId = parsedCatalog.getStream(abStream.namespace, streamName).id
-                    outputSchema = streamId.rawNamespace!!
+                    outputSchema = streamId.rawNamespace
                     tableName = streamId.rawName
                 } else {
                     outputSchema =
                         getOutputSchema(abStream, config["schema"].asText(), namingResolver)
-                    tableName = namingResolver.getRawTableName(streamName)
+                    tableName = @Suppress("deprecation") namingResolver.getRawTableName(streamName)
                 }
-                val tmpTableName = namingResolver.getTmpTableName(streamName)
+                val tmpTableName =
+                    @Suppress("deprecation") namingResolver.getTmpTableName(streamName)
                 val syncMode = stream.destinationSyncMode
 
                 val writeConfig =

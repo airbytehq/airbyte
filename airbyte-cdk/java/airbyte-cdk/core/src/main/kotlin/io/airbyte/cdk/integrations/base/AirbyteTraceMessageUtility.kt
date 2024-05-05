@@ -19,6 +19,11 @@ object AirbyteTraceMessageUtility {
         emitErrorTrace(e, displayMessage, AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
     }
 
+    @JvmStatic
+    fun emitTransientErrorTrace(e: Throwable, displayMessage: String?) {
+        emitErrorTrace(e, displayMessage, AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR)
+    }
+
     fun emitCustomErrorTrace(displayMessage: String?, internalMessage: String?) {
         emitMessage(
             makeAirbyteMessageFromTraceMessage(
@@ -85,8 +90,8 @@ object AirbyteTraceMessageUtility {
         // Not sure why defaultOutputRecordCollector is under Destination specifically,
         // but this matches usage elsewhere in base-java
         val outputRecordCollector =
-            Consumer<AirbyteMessage> { message: AirbyteMessage? ->
-                Destination.Companion.defaultOutputRecordCollector(message)
+            Consumer<AirbyteMessage> { m: AirbyteMessage? ->
+                Destination.Companion.defaultOutputRecordCollector(m)
             }
         outputRecordCollector.accept(message)
     }

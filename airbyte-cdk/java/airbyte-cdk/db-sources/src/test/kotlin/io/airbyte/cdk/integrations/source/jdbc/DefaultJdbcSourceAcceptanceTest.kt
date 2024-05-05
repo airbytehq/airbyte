@@ -20,8 +20,6 @@ import io.airbyte.cdk.testutils.TestDatabase
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import java.sql.JDBCType
-import java.util.List
-import java.util.Map
 import java.util.function.Supplier
 import java.util.stream.Stream
 import org.jooq.SQLDialect
@@ -42,7 +40,7 @@ internal class DefaultJdbcSourceAcceptanceTest :
     JdbcSourceAcceptanceTest<
         DefaultJdbcSourceAcceptanceTest.PostgresTestSource, BareBonesTestDatabase>() {
     override fun config(): JsonNode {
-        return testdb!!.testConfigBuilder()!!.build()
+        return testdb.testConfigBuilder().build()
     }
 
     override fun source(): PostgresTestSource {
@@ -67,7 +65,7 @@ internal class DefaultJdbcSourceAcceptanceTest :
                 .put(JdbcUtils.HOST_KEY, resolveHost(psqlDb))
                 .put(JdbcUtils.PORT_KEY, resolvePort(psqlDb))
                 .put(JdbcUtils.DATABASE_KEY, dbName)
-                .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
+                .put(JdbcUtils.SCHEMAS_KEY, listOf(SCHEMA_NAME))
                 .put(JdbcUtils.USERNAME_KEY, psqlDb.username)
                 .put(JdbcUtils.PASSWORD_KEY, psqlDb.password)
                 .put(JdbcUtils.CONNECTION_PROPERTIES_KEY, additionalParameters)
@@ -149,7 +147,7 @@ internal class DefaultJdbcSourceAcceptanceTest :
                     Stream.of(
                         "psql",
                         "-d",
-                        container!!.databaseName,
+                        container.databaseName,
                         "-U",
                         container.username,
                         "-v",
@@ -185,11 +183,11 @@ internal class DefaultJdbcSourceAcceptanceTest :
         val config =
             getConfigWithConnectionProperties(
                 PSQL_CONTAINER,
-                testdb!!.databaseName,
+                testdb.databaseName,
                 connectionPropertiesUrl
             )
         val customParameters = parseJdbcParameters(config, JdbcUtils.CONNECTION_PROPERTIES_KEY, "&")
-        val defaultParameters = Map.of("ssl", "true", "sslmode", "require")
+        val defaultParameters = mapOf("ssl" to "true", "sslmode" to "require")
         Assertions.assertThrows(IllegalArgumentException::class.java) {
             JdbcDataSourceUtils.assertCustomParametersDontOverwriteDefaultParameters(
                 customParameters,
@@ -205,7 +203,7 @@ internal class DefaultJdbcSourceAcceptanceTest :
         @BeforeAll
         fun init(): Unit {
             PSQL_CONTAINER = PostgreSQLContainer("postgres:13-alpine")
-            PSQL_CONTAINER!!.start()
+            PSQL_CONTAINER.start()
             CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s BIT(3) NOT NULL);"
             INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(B'101');"
         }
@@ -213,7 +211,7 @@ internal class DefaultJdbcSourceAcceptanceTest :
         @JvmStatic
         @AfterAll
         fun cleanUp(): Unit {
-            PSQL_CONTAINER!!.close()
+            PSQL_CONTAINER.close()
         }
     }
 }

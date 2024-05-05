@@ -22,8 +22,9 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
 
-abstract class S3AvroParquetDestinationAcceptanceTest protected constructor(s3Format: S3Format) :
-    S3DestinationAcceptanceTest(s3Format) {
+abstract class S3AvroParquetDestinationAcceptanceTest
+protected constructor(fileUploadFormat: FileUploadFormat) :
+    S3DestinationAcceptanceTest(fileUploadFormat) {
     @ParameterizedTest
     @ArgumentsSource(NumberDataTypeTestArgumentProvider::class)
     @Throws(Exception::class)
