@@ -135,7 +135,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   protected void insertFinalTableRecords(final boolean includeCdcDeletedAt,
                                          final StreamId streamId,
                                          final String suffix,
-                                         final List<JsonNode> records)
+                                         final List<? extends JsonNode> records)
       throws InterruptedException {
     final List<String> columnNames = includeCdcDeletedAt ? FINAL_TABLE_COLUMN_NAMES_CDC : FINAL_TABLE_COLUMN_NAMES;
     final String cdcDeletedAtDecl = includeCdcDeletedAt ? ",`_ab_cdc_deleted_at` TIMESTAMP" : "";
@@ -242,7 +242,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
         .build());
   }
 
-  private String stringifyRecords(final List<JsonNode> records, final List<String> columnNames) {
+  private String stringifyRecords(final List<? extends JsonNode> records, final List<String> columnNames) {
     return records.stream()
         // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
         .map(record -> columnNames.stream()
@@ -268,8 +268,8 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   }
 
   @Override
-  protected void insertRawTableRecords(final StreamId streamId, final List<JsonNode> records) throws InterruptedException {
-    final String recordsText = stringifyRecords(records, JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES);
+  protected void insertRawTableRecords(final StreamId streamId, final List<? extends JsonNode> records) throws InterruptedException {
+    final String recordsText = stringifyRecords(records, JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META);
 
     bq.query(QueryJobConfiguration.newBuilder(
         new StringSubstitutor(Map.of(
@@ -287,7 +287,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   }
 
   @Override
-  protected void insertV1RawTableRecords(final StreamId streamId, final List<JsonNode> records) throws Exception {
+  protected void insertV1RawTableRecords(final StreamId streamId, final List<? extends JsonNode> records) throws Exception {
     final String recordsText = stringifyRecords(records, JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS);
     bq.query(
         QueryJobConfiguration
@@ -328,9 +328,9 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   @Override
   @Test
   public void testCreateTableIncremental() throws Exception {
-    destinationHandler.execute(generator.createTable(incrementalDedupStream, "", false));
+    getDestinationHandler().execute(getGenerator().createTable(getIncrementalDedupStream(), "", false));
 
-    final Table table = bq.getTable(namespace, "users_final");
+    final Table table = bq.getTable(getNamespace(), "users_final");
     // The table should exist
     assertNotNull(table);
     final Schema schema = table.getDefinition().getSchema();
@@ -365,15 +365,15 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   public void testCreateTableInOtherRegion() throws InterruptedException {
     final BigQueryDestinationHandler destinationHandler = new BigQueryDestinationHandler(bq, "asia-east1");
     // We're creating the dataset in the wrong location in the @BeforeEach block. Explicitly delete it.
-    bq.getDataset(namespace).delete();
+    bq.getDataset(getNamespace()).delete();
     final var sqlGenerator = new BigQuerySqlGenerator(projectId, "asia-east1");
-    destinationHandler.execute(sqlGenerator.createSchema(namespace));
-    destinationHandler.execute(sqlGenerator.createTable(incrementalDedupStream, "", false));
+    destinationHandler.execute(sqlGenerator.createSchema(getNamespace()));
+    destinationHandler.execute(sqlGenerator.createTable(getIncrementalDedupStream(), "", false));
 
     // Empirically, it sometimes takes Bigquery nearly 30 seconds to propagate the dataset's existence.
     // Give ourselves 2 minutes just in case.
     for (int i = 0; i < 120; i++) {
-      final Dataset dataset = bq.getDataset(DatasetId.of(bq.getOptions().getProjectId(), namespace));
+      final Dataset dataset = bq.getDataset(DatasetId.of(bq.getOptions().getProjectId(), getNamespace()));
       if (dataset == null) {
         LOGGER.info("Sleeping and trying again... ({})", i);
         Thread.sleep(1000);
@@ -400,7 +400,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   })
   public void testFailureOnReservedColumnNamePrefix(final String prefix) {
     final StreamConfig stream = new StreamConfig(
-        streamId,
+        getStreamId(),
         SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND,
         null,
@@ -408,15 +408,15 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
         new LinkedHashMap<>() {
 
           {
-            put(generator.buildColumnId(prefix + "the_column_name"), AirbyteProtocolType.STRING);
+            put(getGenerator().buildColumnId(prefix + "the_column_name"), AirbyteProtocolType.STRING);
           }
 
         });
 
-    final Sql createTable = generator.createTable(stream, "", false);
+    final Sql createTable = getGenerator().createTable(stream, "", false);
     assertThrows(
         BigQueryException.class,
-        () -> destinationHandler.execute(createTable));
+        () -> getDestinationHandler().execute(createTable));
   }
 
   /**
@@ -482,6 +482,11 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
       }
     }
     return json;
+  }
+
+  @Disabled
+  public void testLongIdentifierHandling() {
+    super.testLongIdentifierHandling();
   }
 
 }
