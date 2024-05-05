@@ -198,7 +198,7 @@ public class MssqlQueryUtils {
       final CursorBasedStatus cursorBasedStatus = new CursorBasedStatus();
       final Optional<String> maybeCursorField = Optional.ofNullable(cursorInfoOptional.get().getCursorField());
       maybeCursorField.ifPresent(cursorField -> {
-        LOGGER.info("Querying max cursor value for {}.{}", namespace, name);
+        LOGGER.info("Cursor {}. Querying max cursor value for {}.{}", cursorField, namespace, name);
         final String quotedCursorField = getIdentifierWithQuoting(cursorField, quoteString);
         final String cursorBasedSyncStatusQuery = String.format(MAX_CURSOR_VALUE_QUERY,
             quotedCursorField,

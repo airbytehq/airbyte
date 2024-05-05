@@ -38,13 +38,7 @@ import io.airbyte.integrations.source.mssql.*;
 import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil;
 import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil.MssqlDebeziumStateAttributes;
 import io.airbyte.protocol.models.CommonField;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.v0.AirbyteStreamState;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.StreamDescriptor;
+import io.airbyte.protocol.models.v0.*;
 import io.debezium.connector.sqlserver.Lsn;
 import java.sql.JDBCType;
 import java.time.Duration;
@@ -448,6 +442,13 @@ public class MssqlInitialReadUtil {
       return size;
     }
     return MAX_QUEUE_SIZE;
+  }
+
+  public static InitialLoadStreams filterStreamInIncrementalMode(final InitialLoadStreams stream) {
+    return new InitialLoadStreams(
+            stream.streamsForInitialLoad.stream().filter(airbyteStream -> airbyteStream.getSyncMode() == SyncMode.INCREMENTAL)
+                    .collect(Collectors.toList()),
+            stream.pairToInitialLoadStatus);
   }
 
 }
