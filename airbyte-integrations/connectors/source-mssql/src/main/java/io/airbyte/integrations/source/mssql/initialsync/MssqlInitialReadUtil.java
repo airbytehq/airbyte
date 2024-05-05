@@ -93,9 +93,8 @@ public class MssqlInitialReadUtil {
       }
 
       var fullRefreshStreamInitialLoad = new InitialLoadStreams(List.of(fullRefreshStream), fullRefreshOcStatus);
-      final MssqlCdcConnectorMetadataInjector metadataInjector = MssqlCdcConnectorMetadataInjector.getInstance(emittedAt);
       return Optional
-          .of(getMssqlInitialLoadHandler(database, emittedAt, quoteString, fullRefreshStreamInitialLoad, initialLoadStateManager, metadataInjector));
+          .of(getMssqlInitialLoadHandler(database, emittedAt, quoteString, fullRefreshStreamInitialLoad, initialLoadStateManager, Optional.empty()));
     }
     return Optional.empty();
   }
@@ -105,13 +104,10 @@ public class MssqlInitialReadUtil {
                                                                     final String quoteString,
                                                                     final InitialLoadStreams initialLoadStreams,
                                                                     final MssqlInitialLoadStateManager initialLoadStateManager,
-                                                                    final MssqlCdcConnectorMetadataInjector metadataInjector) {
+                                                                    final Optional<CdcMetadataInjector> metadataInjector) {
     final JsonNode sourceConfig = database.getSourceConfig();
 
-    final MssqlDebeziumStateAttributes stateAttributes = MssqlDebeziumStateUtil.getStateAttributesFromDB(database);
-
-    final MssqlSourceOperations sourceOperations =
-        new MssqlSourceOperations(Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
+    final MssqlSourceOperations sourceOperations = new MssqlSourceOperations(metadataInjector);
 
     return new MssqlInitialLoadHandler(sourceConfig, database,
         sourceOperations, quoteString, initialLoadStateManager,
@@ -202,8 +198,10 @@ public class MssqlInitialReadUtil {
 
     // If there are streams to sync via ordered column load, build the relevant iterators.
     if (!initialLoadStreams.streamsForInitialLoad().isEmpty()) {
+      final MssqlDebeziumStateAttributes stateAttributes = MssqlDebeziumStateUtil.getStateAttributesFromDB(database);
       final MssqlInitialLoadHandler initialLoadHandler =
-          getMssqlInitialLoadHandler(database, emittedAt, quoteString, initialLoadStreams, initialLoadStateManager, metadataInjector);
+          getMssqlInitialLoadHandler(database, emittedAt, quoteString, initialLoadStreams, initialLoadStateManager,
+                  Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
       initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
           tableNameToTable,

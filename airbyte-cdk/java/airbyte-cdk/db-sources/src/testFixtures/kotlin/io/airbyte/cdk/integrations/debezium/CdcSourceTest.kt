@@ -372,7 +372,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     @Test
     @Throws(Exception::class)
-    //    @Timeout(value = 5, unit = TimeUnit.MINUTES) // TODO: check here
     fun testExistingData() {
         val targetPosition = cdcLatestTargetPosition()
         val read = source()!!.read(config()!!, configuredCatalog, null)
