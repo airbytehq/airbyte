@@ -304,16 +304,16 @@ class TestRealErrors:
                 # But since sync was successful on next attempt, then conclusion is that this is a temporal problem.
             ),
             (
-            "error_503_service_unavailable",
-            {
-                "json": {
-                    "error": {
-                        "message": "Call was not successful",
-                    }
+                "error_503_service_unavailable",
+                {
+                    "json": {
+                        "error": {
+                            "message": "Call was not successful",
+                        }
+                    },
+                    "status_code": 503,
                 },
-                "status_code": 503,
-            },
-        ),
+            ),
         ],
     )
     def test_retryable_error(self, some_config, requests_mock, name, retryable_error_response):
