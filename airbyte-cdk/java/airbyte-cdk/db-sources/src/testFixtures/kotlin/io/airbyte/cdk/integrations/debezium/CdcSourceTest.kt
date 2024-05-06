@@ -26,7 +26,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
-    @JvmField protected var testdb: T = createTestDatabase()
+    @JvmField protected var testdb: T? = null
 
     protected open fun createTableSqlFmt(): String {
         return "CREATE TABLE %s.%s(%s);"
@@ -132,8 +132,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         val actualColumns =
             ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)")
         testdb
-            .with(createSchemaSqlFmt(), modelsSchema())
-            .with(
+            ?.with(createSchemaSqlFmt(), modelsSchema())
+            ?.with(
                 createTableSqlFmt(),
                 modelsSchema(),
                 MODELS_STREAM_NAME,
@@ -671,23 +671,9 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             // Platform will clean out the state for full stream after a successful job.
             // In the test we simulate this process by removing the state for the full stream.
             val state = Jsons.jsonNode(listOf(stateMessages1[stateMessages1.size - 1]))
-            // Access the first element of the JSON array
             val streamStates = state.get(0).get("global").get("stream_states") as ArrayNode
             // Remove state for full refresh stream.
-            streamStates.let {
-                val iterator = it.iterator()
-                while (iterator.hasNext()) {
-                    println("going through stream states. ")
-                    val node = iterator.next()
-                    val name = node.get("stream_descriptor").get("name").asText()
-                    println("going through stream states. name is  " + name)
-
-                    if (name == MODELS_STREAM_NAME_2) {
-                        iterator.remove() // Remove the node if it matches the specific name
-                        println("removed!")
-                    }
-                }
-            }
+            removeStreamState(MODELS_STREAM_NAME_2, streamStates)
             val read2 = source().read(config()!!, configuredCatalog, state)
             val actualRecords2 = AutoCloseableIterators.toListAndClose(read2)
 
@@ -703,6 +689,140 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 names,
                 modelsSchema(),
             )
+
+            // Doing one more sync, make sure full refresh does not interfere with shared state.
+            // For incremental stream, nothing has been added since read2, thus no record expected.
+            // For full refresh stream, everything will be expected (6 records).
+            val state3 = Jsons.jsonNode(listOf(stateMessages2[stateMessages2.size - 1]))
+            val streamStates3 = state3.get(0).get("global").get("stream_states") as ArrayNode
+            // Remove state for full refresh stream.
+            removeStreamState(MODELS_STREAM_NAME_2, streamStates3)
+            val read3 = source().read(config()!!, configuredCatalog, state3)
+            val actualRecords3 = AutoCloseableIterators.toListAndClose(read3)
+            val recordMessages3 = extractRecordMessages(actualRecords3)
+            assertExpectedRecords(
+                Streams.concat(MODEL_RECORDS_2.stream()).collect(Collectors.toSet()),
+                recordMessages3,
+                setOf(MODELS_STREAM_NAME),
+                names,
+                modelsSchema(),
+            )
+        }
+    }
+
+    @Test // When both incremental CDC and non resumable full refresh are configured for different
+    // streams in a
+    // sync, the
+    // data is replicated as expected.
+    @Throws(Exception::class)
+    fun testCdcAndNonResumableFullRefreshInSameSync() {
+        val configuredCatalog = Jsons.clone(configuredCatalog)
+
+        val MODEL_RECORDS_2: List<JsonNode> =
+            ImmutableList.of(
+                Jsons.jsonNode(ImmutableMap.of(COL_ID, 110, COL_MAKE_ID, 1, COL_MODEL, "Fiesta-2")),
+                Jsons.jsonNode(ImmutableMap.of(COL_ID, 120, COL_MAKE_ID, 1, COL_MODEL, "Focus-2")),
+                Jsons.jsonNode(ImmutableMap.of(COL_ID, 130, COL_MAKE_ID, 1, COL_MODEL, "Ranger-2")),
+                Jsons.jsonNode(ImmutableMap.of(COL_ID, 140, COL_MAKE_ID, 2, COL_MODEL, "GLA-2")),
+                Jsons.jsonNode(ImmutableMap.of(COL_ID, 150, COL_MAKE_ID, 2, COL_MODEL, "A 220-2")),
+                Jsons.jsonNode(ImmutableMap.of(COL_ID, 160, COL_MAKE_ID, 2, COL_MODEL, "E 350-2")),
+            )
+
+        val columns =
+            ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)")
+        testdb!!.with(
+            createTableSqlFmt(),
+            modelsSchema(),
+            MODELS_STREAM_NAME_2,
+            columnClause(columns, Optional.of(COL_ID)),
+        )
+
+        for (recordJson in MODEL_RECORDS_2) {
+            writeRecords(
+                recordJson,
+                modelsSchema(),
+                MODELS_STREAM_NAME_2,
+                COL_ID,
+                COL_MAKE_ID,
+                COL_MODEL,
+            )
+        }
+
+        val airbyteStream =
+            ConfiguredAirbyteStream()
+                .withStream(
+                    CatalogHelpers.createAirbyteStream(
+                            MODELS_STREAM_NAME_2,
+                            modelsSchema(),
+                            Field.of(COL_ID, JsonSchemaType.INTEGER),
+                            Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
+                            Field.of(COL_MODEL, JsonSchemaType.STRING),
+                        )
+                        .withSupportedSyncModes(
+                            Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+                        ),
+                )
+        airbyteStream.syncMode = SyncMode.FULL_REFRESH
+
+        val streams = configuredCatalog.streams
+        streams.add(airbyteStream)
+        configuredCatalog.withStreams(streams)
+
+        val read1 = source().read(config()!!, configuredCatalog, null)
+        val actualRecords1 = AutoCloseableIterators.toListAndClose(read1)
+
+        val recordMessages1 = extractRecordMessages(actualRecords1)
+        val stateMessages1 = extractStateMessages(actualRecords1)
+        val names = HashSet(STREAM_NAMES)
+        names.add(MODELS_STREAM_NAME_2)
+
+        val puntoRecord =
+            Jsons.jsonNode(ImmutableMap.of(COL_ID, 100, COL_MAKE_ID, 3, COL_MODEL, "Punto"))
+        writeModelRecord(puntoRecord)
+        waitForCdcRecords(modelsSchema(), MODELS_STREAM_NAME, 1)
+
+        // assertExpectedStateMessages(stateMessages1)
+        // Non resumeable full refresh does not get any state messages.
+        assertExpectedStateMessageCountMatches(stateMessages1, MODEL_RECORDS.size.toLong())
+        assertExpectedRecords(
+            Streams.concat(MODEL_RECORDS_2.stream(), MODEL_RECORDS.stream())
+                .collect(Collectors.toSet()),
+            recordMessages1,
+            setOf(MODELS_STREAM_NAME),
+            names,
+            modelsSchema(),
+        )
+
+        val state = Jsons.jsonNode(listOf(stateMessages1[stateMessages1.size - 1]))
+        val read2 = source().read(config()!!, configuredCatalog, state)
+        val actualRecords2 = AutoCloseableIterators.toListAndClose(read2)
+
+        val recordMessages2 = extractRecordMessages(actualRecords2)
+        val stateMessages2 = extractStateMessages(actualRecords2)
+
+        assertExpectedStateMessagesFromIncrementalSync(stateMessages2)
+        assertExpectedStateMessageCountMatches(stateMessages2, 1)
+        assertExpectedRecords(
+            Streams.concat(MODEL_RECORDS_2.stream(), Stream.of(puntoRecord))
+                .collect(Collectors.toSet()),
+            recordMessages2,
+            setOf(MODELS_STREAM_NAME),
+            names,
+            modelsSchema(),
+        )
+    }
+
+    protected fun removeStreamState(streamName: String, streamStates: ArrayNode) {
+        streamStates.let {
+            val iterator = it.iterator()
+            while (iterator.hasNext()) {
+                val node = iterator.next()
+                val name = node.get("stream_descriptor").get("name").asText()
+
+                if (name == streamName) {
+                    iterator.remove() // Remove the node if it matches the specific name
+                }
+            }
         }
     }
 
@@ -1032,9 +1152,12 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 .toList()
                 .get(0)
 
+        validateStreamStateInResumableFullRefresh(streamStateToBeTested)
+
         Assertions.assertEquals((MODEL_RECORDS.size), recordsFromFirstBatch.size)
         assertExpectedRecords(HashSet(MODEL_RECORDS), recordsFromFirstBatch, HashSet())
     }
+    protected open fun validateStreamStateInResumableFullRefresh(streamStateToBeTested: JsonNode) {}
 
     @Test
     @Throws(Exception::class)
