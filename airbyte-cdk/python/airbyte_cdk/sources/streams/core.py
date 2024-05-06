@@ -49,10 +49,10 @@ def package_name_from_class(cls: object) -> str:
         raise ValueError(f"Could not find package name for class {cls}")
 
 
-class StateMixin(ABC):  # Rename to CheckpointMixin?
+class CheckpointMixin(ABC):
     """Mixin for a stream that implements reading and writing the internal state used to checkpoint sync progress to the platform
 
-    class CheckpointedStream(Stream, StateMixin):
+    class CheckpointedStream(Stream, CheckpointMixin):
         @property
         def state(self):
             return self._state
@@ -83,8 +83,8 @@ class StateMixin(ABC):  # Rename to CheckpointMixin?
         """State setter, accept state serialized by state getter."""
 
 
-@deprecated(version="0.87.0", reason="Deprecated in favor of the StateMixin which offers similar functionality")
-class IncrementalMixin(StateMixin, ABC):
+@deprecated(version="0.87.0", reason="Deprecated in favor of the CheckpointMixin which offers similar functionality")
+class IncrementalMixin(CheckpointMixin, ABC):
     """Mixin to make stream incremental.
 
     class IncrementalStream(Stream, IncrementalMixin):

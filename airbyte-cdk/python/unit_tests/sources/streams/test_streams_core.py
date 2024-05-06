@@ -9,7 +9,7 @@ from unittest import mock
 import pytest
 import requests
 from airbyte_cdk.models import AirbyteStream, SyncMode
-from airbyte_cdk.sources.streams import StateMixin, Stream
+from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.checkpoint import (
     FullRefreshCheckpointReader,
     IncrementalCheckpointReader,
@@ -37,7 +37,7 @@ class StreamStubFullRefresh(Stream):
     primary_key = None
 
 
-class StreamStubIncremental(Stream, StateMixin):
+class StreamStubIncremental(Stream, CheckpointMixin):
     """
     Stub full incremental class to assist with testing.
     """
@@ -65,7 +65,7 @@ class StreamStubIncremental(Stream, StateMixin):
         self._state = value
 
 
-class StreamStubResumableFullRefresh(Stream, StateMixin):
+class StreamStubResumableFullRefresh(Stream, CheckpointMixin):
     """
     Stub full incremental class to assist with testing.
     """

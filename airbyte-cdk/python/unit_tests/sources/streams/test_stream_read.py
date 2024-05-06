@@ -29,7 +29,7 @@ from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_cdk.sources.streams.core import StateMixin, StreamData
+from airbyte_cdk.sources.streams.core import CheckpointMixin, StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
 
@@ -66,7 +66,7 @@ class _MockStream(Stream):
         return {}
 
 
-class _MockIncrementalStream(_MockStream, StateMixin):
+class _MockIncrementalStream(_MockStream, CheckpointMixin):
     _state = {}
 
     @property
