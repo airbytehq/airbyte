@@ -30,7 +30,7 @@ definitions:
     pagination_strategy:
       type: CursorPagination
       page_size: 250
-      cursor_value: "{{ last_records[-1]['key'] }}"
+      cursor_value: "{{ last_record['key'] }}"
       stop_condition: "{{ response.data.has_more is false }}"
 
   incremental_sync:
