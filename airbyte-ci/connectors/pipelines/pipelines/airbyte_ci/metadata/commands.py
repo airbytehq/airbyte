@@ -29,9 +29,12 @@ async def deploy_orchestrator(ctx: click.Context) -> None:
     from pipelines.airbyte_ci.metadata.pipeline import run_metadata_orchestrator_deploy_pipeline
 
     await run_metadata_orchestrator_deploy_pipeline(
+        ctx,
         ctx.obj["is_local"],
         ctx.obj["git_branch"],
         ctx.obj["git_revision"],
+        ctx.obj["diffed_branch"],
+        ctx.obj["git_repo_url"],
         ctx.obj["report_output_prefix"],
         ctx.obj.get("gha_workflow_run_url"),
         ctx.obj.get("dagger_logs_url"),
