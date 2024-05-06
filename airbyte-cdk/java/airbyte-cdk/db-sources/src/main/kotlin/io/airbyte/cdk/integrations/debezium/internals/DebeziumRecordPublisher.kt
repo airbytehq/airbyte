@@ -37,8 +37,8 @@ class DebeziumRecordPublisher(private val debeziumPropertiesManager: DebeziumPro
                 .using(
                     debeziumPropertiesManager.getDebeziumProperties(
                         offsetManager,
-                        schemaHistoryManager
-                    )
+                        schemaHistoryManager,
+                    ),
                 )
                 .using(OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
                 .notifying { e: ChangeEvent<String?, String?> ->
@@ -59,7 +59,7 @@ class DebeziumRecordPublisher(private val debeziumPropertiesManager: DebeziumPro
                 .using { success: Boolean, message: String?, error: Throwable? ->
                     LOGGER.info(
                         "Debezium engine shutdown. Engine terminated successfully : {}",
-                        success
+                        success,
                     )
                     LOGGER.info(message)
                     if (!success) {
@@ -74,6 +74,25 @@ class DebeziumRecordPublisher(private val debeziumPropertiesManager: DebeziumPro
                     }
                     engineLatch.countDown()
                 }
+                .using(
+                    object : DebeziumEngine.ConnectorCallback {
+                        override fun connectorStarted() {
+                            LOGGER.info("DebeziumEngine notify: connector started")
+                        }
+
+                        override fun connectorStopped() {
+                            LOGGER.info("DebeziumEngine notify: connector stopped")
+                        }
+
+                        override fun taskStarted() {
+                            LOGGER.info("DebeziumEngine notify: task started")
+                        }
+
+                        override fun taskStopped() {
+                            LOGGER.info("DebeziumEngine notify: task stopped")
+                        }
+                    },
+                )
                 .build()
 
         // Run the engine asynchronously ...
