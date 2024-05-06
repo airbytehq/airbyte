@@ -38,4 +38,5 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 
 | Version | Date       | Pull Request                                             | Subject          |
 |---------|------------|----------------------------------------------------------|------------------|
+| 0.2.0   | 2024-03-28 | [](https://github.com/airbytehq/airbyte/pull/) | Migrate to Low-Code CDK. |
 | 0.1.0   | 2022-08-26 | [16051](https://github.com/airbytehq/airbyte/pull/16051) | Initial version. |
