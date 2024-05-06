@@ -155,6 +155,8 @@ protected constructor(driverClassName: String) :
             this.getAirbyteType(columnType)
         }
 
+        initializeForStateManager(database, catalog, fullyQualifiedTableNameToInfo, stateManager)
+
         val incrementalIterators =
             getIncrementalIterators(
                 database,
@@ -188,6 +190,15 @@ protected constructor(driverClassName: String) :
         }
     }
 
+    // Optional - perform any initialization logic before read. For example, source connector
+    // can choose to load up state manager here.
+    protected open fun initializeForStateManager(
+        database: Database,
+        catalog: ConfiguredAirbyteCatalog,
+        tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
+        stateManager: StateManager
+    ) {}
+
     @Throws(SQLException::class)
     protected fun validateCursorFieldForIncrementalTables(
         tableNameToTable: Map<String?, TableInfo<CommonField<DataType>>>,
@@ -217,7 +228,7 @@ protected constructor(driverClassName: String) :
                 continue
             }
             val cursorType =
-                table.fields!!
+                table.fields
                     .stream()
                     .filter { info: CommonField<DataType> -> info.name == cursorField.get() }
                     .map { obj: CommonField<DataType> -> obj.type }
@@ -300,7 +311,7 @@ protected constructor(driverClassName: String) :
         val systemNameSpaces = excludedInternalNameSpaces
         val systemViews = excludedViews
         val discoveredTables = discoverInternal(database)
-        return (if (systemNameSpaces == null || systemNameSpaces.isEmpty()) discoveredTables
+        return (if (systemNameSpaces.isEmpty()) discoveredTables
         else
             discoveredTables
                 .stream()
@@ -380,7 +391,14 @@ protected constructor(driverClassName: String) :
 
                 val table = tableNameToTable[fullyQualifiedTableName]!!
                 val tableReadIterator =
-                    createReadIterator(database, airbyteStream, table, stateManager, emittedAt)
+                    createReadIterator(
+                        database,
+                        airbyteStream,
+                        catalog,
+                        table,
+                        stateManager,
+                        emittedAt
+                    )
                 iteratorList.add(tableReadIterator)
             }
         }
@@ -401,6 +419,7 @@ protected constructor(driverClassName: String) :
     private fun createReadIterator(
         database: Database,
         airbyteStream: ConfiguredAirbyteStream,
+        catalog: ConfiguredAirbyteCatalog?,
         table: TableInfo<CommonField<DataType>>,
         stateManager: StateManager?,
         emittedAt: Instant
@@ -425,7 +444,7 @@ protected constructor(driverClassName: String) :
             val cursorInfo = stateManager!!.getCursorInfo(pair)
 
             val airbyteMessageIterator: AutoCloseableIterator<AirbyteMessage>
-            if (cursorInfo!!.map { it.cursor }.isPresent) {
+            if (cursorInfo.map { it.cursor }.isPresent) {
                 airbyteMessageIterator =
                     getIncrementalStream(
                         database,
@@ -442,7 +461,9 @@ protected constructor(driverClassName: String) :
                 airbyteMessageIterator =
                     getFullRefreshStream(
                         database,
-                        streamName,
+                        airbyteStream,
+                        catalog,
+                        stateManager,
                         namespace,
                         selectedDatabaseFields,
                         table,
@@ -452,7 +473,7 @@ protected constructor(driverClassName: String) :
                     )
             }
 
-            val cursorType = getCursorType(airbyteStream, cursorField)
+            getCursorType(airbyteStream, cursorField)
 
             val messageProducer =
                 CursorStateMessageProducer(stateManager, cursorInfo.map { it.cursor })
@@ -475,7 +496,9 @@ protected constructor(driverClassName: String) :
             iterator =
                 getFullRefreshStream(
                     database,
-                    streamName,
+                    airbyteStream,
+                    catalog,
+                    stateManager,
                     namespace,
                     selectedDatabaseFields,
                     table,
@@ -560,8 +583,10 @@ protected constructor(driverClassName: String) :
      * Creates a AirbyteMessageIterator that contains all records for a database source connection
      *
      * @param database Source Database
-     * @param streamName name of an individual stream in which a stream represents a source (e.g.
+     * @param airbyteStream name of an individual stream in which a stream represents a source (e.g.
      * API endpoint or database table)
+     * @param catalog List of streams (e.g. database tables or API endpoints) with settings on sync
+     * @param stateManager tracking the state from previous sync; used for resumable full refresh.
      * @param namespace Namespace of the database (e.g. public)
      * @param selectedDatabaseFields List of all interested database column names
      * @param table information in tabular format
@@ -569,9 +594,11 @@ protected constructor(driverClassName: String) :
      * @param syncMode The sync mode that this full refresh stream should be associated with.
      * @return AirbyteMessageIterator with all records for a database source
      */
-    private fun getFullRefreshStream(
+    protected open fun getFullRefreshStream(
         database: Database,
-        streamName: String,
+        airbyteStream: ConfiguredAirbyteStream,
+        catalog: ConfiguredAirbyteCatalog?,
+        stateManager: StateManager?,
         namespace: String,
         selectedDatabaseFields: List<String>,
         table: TableInfo<CommonField<DataType>>,
@@ -588,7 +615,12 @@ protected constructor(driverClassName: String) :
                 syncMode,
                 cursorField
             )
-        return getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli())
+        return getMessageIterator(
+            queryStream,
+            airbyteStream.stream.name,
+            namespace,
+            emittedAt.toEpochMilli()
+        )
     }
 
     /**
@@ -662,13 +694,6 @@ protected constructor(driverClassName: String) :
     protected abstract fun getAirbyteType(columnType: DataType): JsonSchemaType
 
     protected abstract val excludedInternalNameSpaces: Set<String>
-        /**
-         * Get list of system namespaces(schemas) in order to exclude them from the `discover`
-         * result list.
-         *
-         * @return set of system namespaces(schemas) to be excluded
-         */
-        get
 
     protected open val excludedViews: Set<String>
         /**
@@ -722,12 +747,6 @@ protected constructor(driverClassName: String) :
     ): Map<String, MutableList<String>>
 
     protected abstract val quoteString: String?
-        /**
-         * Returns quote symbol of the database
-         *
-         * @return quote symbol
-         */
-        get
 
     /**
      * Read all data from a table.
