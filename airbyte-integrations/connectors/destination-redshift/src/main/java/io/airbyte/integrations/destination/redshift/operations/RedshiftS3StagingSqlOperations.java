@@ -99,7 +99,7 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
 
   private String putManifest(final String manifestContents, final String stagingPath) {
     final String manifestFilePath = stagingPath + String.format("%s.manifest", UUID.randomUUID());
-    s3StorageOperations.uploadManifest(s3Config.getBucketName(), manifestFilePath, manifestContents);
+    s3StorageOperations.uploadManifest(manifestFilePath, manifestContents);
     return manifestFilePath;
   }
 

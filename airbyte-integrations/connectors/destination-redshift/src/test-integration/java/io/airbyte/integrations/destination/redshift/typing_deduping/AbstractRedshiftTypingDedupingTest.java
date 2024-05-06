@@ -27,6 +27,7 @@ import javax.sql.DataSource;
 import org.jooq.DSLContext;
 import org.jooq.conf.Settings;
 import org.jooq.impl.DSL;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedupingTest {
@@ -63,6 +64,9 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
   }
 
   @Test
+  @Disabled("Redshift connector 2.4.3 and below are rendered useless with "
+      + "Redshift cluster version https://docs.aws.amazon.com/redshift/latest/mgmt/cluster-versions.html#cluster-version-181 "
+      + "due to metadata calls hanging. We cannot run this test anymore")
   public void testRawTableMetaMigration_append() throws Exception {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
@@ -86,6 +90,9 @@ public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedup
   }
 
   @Test
+  @Disabled("Redshift connector 2.4.3 and below are rendered useless with "
+      + "Redshift cluster version https://docs.aws.amazon.com/redshift/latest/mgmt/cluster-versions.html#cluster-version-181 "
+      + "due to metadata calls hanging. We cannot run this test anymore")
   public void testRawTableMetaMigration_incrementalDedupe() throws Exception {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
