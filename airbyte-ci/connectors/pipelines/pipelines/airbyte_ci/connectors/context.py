@@ -7,11 +7,11 @@
 from __future__ import annotations
 
 from datetime import datetime
+from pathlib import Path
 from types import TracebackType
 from typing import TYPE_CHECKING
 
 import yaml  # type: ignore
-from anyio import Path
 from asyncer import asyncify
 from dagger import Directory, Platform, Secret
 from github import PullRequest
@@ -42,6 +42,8 @@ class ConnectorContext(PipelineContext):
         is_local: bool,
         git_branch: str,
         git_revision: str,
+        diffed_branch: str,
+        git_repo_url: str,
         report_output_prefix: str,
         use_remote_secrets: bool = True,
         ci_report_bucket: Optional[str] = None,
@@ -76,6 +78,8 @@ class ConnectorContext(PipelineContext):
             is_local (bool): Whether the context is for a local run or a CI run.
             git_branch (str): The current git branch name.
             git_revision (str): The current git revision, commit hash.
+            diffed_branch: str: The branch to compare the current branch against.
+            git_repo_url: str: The URL of the git repository.
             report_output_prefix (str): The S3 key to upload the test report to.
             use_remote_secrets (bool, optional): Whether to download secrets for GSM or use the local secrets. Defaults to True.
             connector_acceptance_test_image (Optional[str], optional): The image to use to run connector acceptance tests. Defaults to DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE.
@@ -122,6 +126,8 @@ class ConnectorContext(PipelineContext):
             is_local=is_local,
             git_branch=git_branch,
             git_revision=git_revision,
+            diffed_branch=diffed_branch,
+            git_repo_url=git_repo_url,
             report_output_prefix=report_output_prefix,
             gha_workflow_run_url=gha_workflow_run_url,
             dagger_logs_url=dagger_logs_url,

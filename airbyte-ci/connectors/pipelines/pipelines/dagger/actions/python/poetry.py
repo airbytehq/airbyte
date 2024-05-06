@@ -6,7 +6,7 @@ import uuid
 from pathlib import Path
 from typing import List, Optional
 
-import toml  # type: ignore
+import toml
 from dagger import Container, Directory
 from pipelines.airbyte_ci.connectors.context import PipelineContext
 from pipelines.dagger.actions.python.common import with_pip_packages, with_python_package
