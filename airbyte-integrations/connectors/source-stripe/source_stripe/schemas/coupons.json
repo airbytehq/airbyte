@@ -73,6 +73,18 @@
     "is_deleted": {
       "description": "Indicates if the coupon has been marked as deleted.",
       "type": ["null", "boolean"]
+    },
+    "applies_to": {
+      "description": "A list of product IDs the coupon applies to.",
+      "type": ["null", "object"],
+      "properties": {
+        "products": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
     }
   }
 }
