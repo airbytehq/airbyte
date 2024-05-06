@@ -17,7 +17,6 @@ from salesforce_describe_response_builder import SalesforceDescribeResponseBuild
 from salesforce_job_response_builder import JobCreateResponseBuilder, JobInfoResponseBuilder
 from source_salesforce.streams import LOOKBACK_SECONDS
 
-
 _A_FIELD_NAME = "a_field"
 _ACCESS_TOKEN = "an_access_token"
 _CLIENT_ID = "a_client_id"
