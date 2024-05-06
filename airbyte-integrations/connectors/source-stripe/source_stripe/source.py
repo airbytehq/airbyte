@@ -350,11 +350,11 @@ class SourceStripe(ConcurrentSourceAdapter):
                 **args,
             ),
             IncrementalStripeStream(
-                name="coupons", 
+                name="coupons",
                 path="coupons",
                 expand_items=["data.applies_to"],
-                event_types=["coupon.created", "coupon.updated", "coupon.deleted"], 
-                **args
+                event_types=["coupon.created", "coupon.updated", "coupon.deleted"],
+                **args,
             ),
             IncrementalStripeStream(
                 name="disputes",
