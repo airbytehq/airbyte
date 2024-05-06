@@ -35,7 +35,6 @@ class PineconeIntegrationTest(BaseIntegrationTest):
         with open("secrets/config.json", "r") as f:
             self.config = json.loads(f.read())
         self._init_pinecone()
-        # self.pinecone_index.delete(delete_all=True)
 
     def tearDown(self):
         self._wait()
