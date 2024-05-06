@@ -26,7 +26,7 @@ A connection is an automated data pipeline that replicates data from a source to
 
 | Concept                                                                                                         | Description                                                        |
 |-----------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------|
-| [Catalog Selection](/cloud/managing-airbyte-cloud/configuring-connections.md#modify-streams-in-your-connection) | What data should be replicated from the source to the destination? |
+| [Stream and Field Selection](/cloud/managing-airbyte-cloud/configuring-connections.md#modify-streams-in-your-connection) | What data should be replicated from the source to the destination? |
 | [Sync Mode](/using-airbyte/core-concepts/sync-modes/README.md)                                                  | How should the streams be replicated (read and written)?           |
 | [Sync Schedule](/using-airbyte/core-concepts/sync-schedules.md)                                         | When should a data sync be triggered?                              |
 | [Destination Namespace and Stream Prefix](/using-airbyte/core-concepts/namespaces.md)                           | Where should the replicated data be written?                       |
@@ -34,7 +34,7 @@ A connection is an automated data pipeline that replicates data from a source to
 
 ## Stream
 
-A stream is a group of related records.
+A stream is a group of related records. Depending on the destination, it may be called a table, file, or blob. We use the term `stream` to generalize the flow of data to various destinations.
 
 Examples of streams:
 
@@ -42,14 +42,26 @@ Examples of streams:
 - A resource or API endpoint for a REST API
 - The records from a directory containing many files in a filesystem
 
+## Record
+
+A record is a single entry or unit of data. This is commonly known as a "row". A record is usually unique and contains information related to a particular entity, like a customer or transaction.
+
+Examples of records: 
+
+- A row in the table in a relational database
+- A line in a file
+- A unit of data returned from an API
+
 ## Field
 
-A field is an attribute of a record in a stream.
+A field is an attribute of a record in a stream. 
 
 Examples of fields:
 
 - A column in the table in a relational database
 - A field in an API response
+
+
 
 ## Sync Schedule
 
@@ -65,11 +77,13 @@ For more details, see our [Sync Schedules documentation](sync-schedules.md).
 
 A namespace defines where the data will be written to your destination. You can use the namespace to group streams in a source or destination. In a relational database system, this is typically known as a schema.
 
+Depending on your destination, you may know this more commonly as the "Dataset", "Schema" or "Bucket Path". The term "Namespace" is used to generalize the concept across various destinations.
+
 For more details, see our [Namespace documentation](namespaces.md).
 
 ## Sync Mode
 
-A sync mode governs how Airbyte reads from a source and writes to a destination. Airbyte provides different sync modes depending on what you want to accomplish.
+A sync mode governs how Airbyte reads from a source and writes to a destination. Airbyte provides several sync modes depending what you want to accomplish. The sync modes define how your data will sync and whether duplicates will exist in the dstination.
 
 Read more about each [sync mode](/using-airbyte/core-concepts/sync-modes/README.md) and how they differ.
 
@@ -88,21 +102,15 @@ For more details, see our [Typing & Deduping documentation](/using-airbyte/core-
 
 ## Basic Normalization
 
-Basic Normalization transforms data after a sync to denest columns into their own tables. Note that normalization is only available for the following relational database & warehouse destinations:
-
-- Redshift
-- Postgres
-- Oracle
-- MySQL
-- MSSQL
+Basic Normalization transforms data after a sync to denest columns into their own tables. Note that normalization is only available for relational database & warehouse destinations that have not yet migrated to Destinations V2, and will eventually be fully deprecated.
 
 For more details, see our [Basic Normalization documentation](/using-airbyte/core-concepts/basic-normalization.md).
 
 ## Custom Transformations
 
-Airbyte integrates natively with dbt to allow you to use dbt for post-sync transformations. This is useful if you would like to trigger dbt models after a sync successfully completes.
+Airbyte Cloud integrates natively with dbt to allow you to use dbt for post-sync transformations. This is useful if you would like to trigger dbt models after a sync successfully completes.
 
-For more details, see our [dbt integration documentation](/cloud/managing-airbyte-cloud/dbt-cloud-integration.md). 
+Custom transformation is not available for Airbyte Open-Source.
 
 ## Workspace
 

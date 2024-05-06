@@ -37,7 +37,7 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefi
 
   @SneakyThrows
   @Override
-  protected boolean doesAirbyteInternalNamespaceExist(final StreamConfig streamConfig) throws Exception {
+  public boolean doesAirbyteInternalNamespaceExist(final StreamConfig streamConfig) throws Exception {
     return !database
         .queryJsons(
             """
@@ -46,19 +46,19 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefi
             WHERE schema_name = ?
             AND catalog_name = ?;
             """,
-            streamConfig.id().rawNamespace(),
+            streamConfig.getId().getRawNamespace(),
             databaseName)
         .isEmpty();
   }
 
   @Override
-  protected boolean schemaMatchesExpectation(final TableDefinition existingTable, final Collection<String> columns) {
+  public boolean schemaMatchesExpectation(final TableDefinition existingTable, final Collection<String> columns) {
     return CollectionUtils.containsAllIgnoreCase(existingTable.columns().keySet(), columns);
   }
 
   @SneakyThrows
   @Override
-  protected Optional<TableDefinition> getTableIfExists(final String namespace, final String tableName) throws Exception {
+  public Optional<TableDefinition> getTableIfExists(final String namespace, final String tableName) throws Exception {
     // TODO this looks similar to SnowflakeDestinationHandler#findExistingTables, with a twist;
     // databaseName not upper-cased and rawNamespace and rawTableName as-is (no uppercase).
     // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC translates
@@ -90,12 +90,12 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefi
   }
 
   @Override
-  protected NamespacedTableName convertToV1RawName(final StreamConfig streamConfig) {
+  public NamespacedTableName convertToV1RawName(final StreamConfig streamConfig) {
     // The implicit upper-casing happens for this in the SqlGenerator
     @SuppressWarnings("deprecation")
-    String tableName = this.namingConventionTransformer.getRawTableName(streamConfig.id().originalName());
+    String tableName = this.namingConventionTransformer.getRawTableName(streamConfig.getId().getOriginalName());
     return new NamespacedTableName(
-        this.namingConventionTransformer.getIdentifier(streamConfig.id().originalNamespace()),
+        this.namingConventionTransformer.getIdentifier(streamConfig.getId().getOriginalNamespace()),
         tableName);
   }
 
