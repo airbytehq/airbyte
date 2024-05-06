@@ -164,6 +164,7 @@ class MessageGrouper:
         current_slice_pages: List[StreamReadPages] = []
         current_page_request: Optional[HttpRequest] = None
         current_page_response: Optional[HttpResponse] = None
+        latest_state_message: Optional[Dict[str, Any]] = None
 
         while records_count < limit and (message := next(messages, None)):
             json_object = self._parse_json(message.log) if message.type == MessageType.LOG else None
@@ -180,7 +181,7 @@ class MessageGrouper:
                 and message.type == MessageType.LOG
                 and message.log.message.startswith(SliceLogger.SLICE_LOG_PREFIX)
             ):
-                yield StreamReadSlices(pages=current_slice_pages, slice_descriptor=current_slice_descriptor)
+                yield StreamReadSlices(pages=current_slice_pages, slice_descriptor=current_slice_descriptor, state=latest_state_message)
                 current_slice_descriptor = self._parse_slice_description(message.log.message)
                 current_slice_pages = []
                 at_least_one_page_in_group = False
@@ -222,10 +223,12 @@ class MessageGrouper:
                 datetime_format_inferrer.accumulate(message.record)
             elif message.type == MessageType.CONTROL and message.control.type == OrchestratorType.CONNECTOR_CONFIG:
                 yield message.control
+            elif message.type == MessageType.STATE:
+                latest_state_message = message.state
         else:
             if current_page_request or current_page_response or current_page_records:
                 self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records)
-                yield StreamReadSlices(pages=current_slice_pages, slice_descriptor=current_slice_descriptor)
+                yield StreamReadSlices(pages=current_slice_pages, slice_descriptor=current_slice_descriptor, state=latest_state_message)
 
     @staticmethod
     def _need_to_close_page(at_least_one_page_in_group: bool, message: AirbyteMessage, json_message: Optional[Dict[str, Any]]) -> bool:

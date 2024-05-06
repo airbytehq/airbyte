@@ -7,8 +7,8 @@ import alex.mojaki.s3upload.MultiPartOutputStream
 import alex.mojaki.s3upload.StreamTransferManager
 import com.amazonaws.services.s3.AmazonS3
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig
-import io.airbyte.cdk.integrations.destination.s3.S3Format
 import io.airbyte.cdk.integrations.destination.s3.template.S3FilenameTemplateParameterObject.Companion.builder
 import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory
 import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory.create
@@ -55,8 +55,8 @@ private constructor(
             BaseS3Writer.Companion.determineOutputFilename(
                 builder()
                     .customSuffix(fileSuffix)
-                    .s3Format(S3Format.CSV)
-                    .fileExtension(S3Format.CSV.fileExtension)
+                    .s3Format(FileUploadFormat.CSV)
+                    .fileExtension(FileUploadFormat.CSV.fileExtension)
                     .fileNamePattern(config.fileNamePattern)
                     .timestamp(uploadTimestamp)
                     .build()
@@ -127,7 +127,7 @@ private constructor(
         @Throws(IOException::class)
         fun build(): S3CsvWriter {
             if (!::_csvSheetGenerator.isInitialized) {
-                val formatConfig = config.formatConfig as S3CsvFormatConfig
+                val formatConfig = config.formatConfig as UploadCsvFormatConfig
                 _csvSheetGenerator =
                     CsvSheetGenerator.Factory.create(
                         configuredStream.stream.jsonSchema,
@@ -167,8 +167,8 @@ private constructor(
         uploadManager.abort()
     }
 
-    override val fileFormat: S3Format?
-        get() = S3Format.CSV
+    override val fileFormat: FileUploadFormat?
+        get() = FileUploadFormat.CSV
 
     @Throws(IOException::class)
     override fun write(formattedData: JsonNode) {

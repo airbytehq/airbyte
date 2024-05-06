@@ -32,7 +32,7 @@ cd airbyte-integrations/connector-templates/generator
 - [Stripe](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/)
 - [Salesforce](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-salesforce/)
 
-**Simple Python connectors using the bare-bones `Source` abstraction**:
+**Python connectors using the bare-bones `Source` abstraction**:
 
 - [Google Sheets](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-google-sheets/google_sheets_source/google_sheets_source.py)
 
@@ -60,7 +60,6 @@ Airbyte CDK code is within `airbyte_cdk` directory. Here's a high level overview
   declarative manifest language to define streams, operations, etc. This makes it easier to build
   connectors without writing Python code.
 - `sources/file_based` is the CDK for file-based sources. Examples include S3, Azure, GCS, etc.
-- `sources/singer` is a singer tap source adapter. Deprecated.
 
 ## Contributing
 
@@ -68,8 +67,8 @@ Thank you for being interested in contributing to Airbyte Python CDK! Here are s
 get you started:
 
 - We adhere to the [code of conduct](/CODE_OF_CONDUCT.md).
-- You can contribute by reporting bugs, posting github discussions, opening issues, improving [documentation](/docs/), and
-  submitting pull requests with bugfixes and new features alike.
+- You can contribute by reporting bugs, posting github discussions, opening issues, improving
+  [documentation](/docs/), and submitting pull requests with bugfixes and new features alike.
 - If you're changing the code, please add unit tests for your change.
 - When submitting issues or PRs, please add a small reproduction project. Using the changes in your
   connector and providing that connector code as an example (or a satellite PR) helps!
@@ -199,21 +198,25 @@ within docker.
 
 Python CDK has a
 [GitHub workflow](https://github.com/airbytehq/airbyte/actions/workflows/publish-cdk-command-manually.yml)
-that manages the CDK changelog, making a new release for `airbyte_cdk`, publishing it to PyPI, and then making a commit to update (and subsequently auto-release)
+that manages the CDK changelog, making a new release for `airbyte_cdk`, publishing it to PyPI, and
+then making a commit to update (and subsequently auto-release)
 [`source-declarative-manifest`](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-declarative-manifest)
 and Connector Builder (in the platform repository).
 
-> [!Note]: The workflow will handle the `CHANGELOG.md` entry for you. You should
-> not add changelog lines in your PRs to the CDK itself.
+> [!Note]: The workflow will handle the `CHANGELOG.md` entry for you. You should not add changelog
+> lines in your PRs to the CDK itself.
 
-> [!Warning]: The workflow bumps version on it's own, please don't change the
-> CDK version in `pyproject.toml` manually.
+> [!Warning]: The workflow bumps version on it's own, please don't change the CDK version in
+> `pyproject.toml` manually.
 
-1. You only trigger the release workflow once all the PRs that you want to be included are already merged into the `master` branch.
-2. The [`Publish CDK Manually`](https://github.com/airbytehq/airbyte/actions/workflows/publish-cdk-command-manually.yml) workflow from master using `release-type=major|manor|patch` and setting the changelog message.
-3. When the workflow runs, it will commit a new version directly to master
-  branch.
-4. The workflow will bump the version of `source-declarative-manifest` according to the `release-type` of the CDK, then commit these changes
-  back to master. The commit to master will kick off a publish of the new version of `source-declarative-manifest`.
-5. The workflow will also add a pull request to `airbyte-platform-internal`
-  repo to bump the dependency in Connector Builder.
+1. You only trigger the release workflow once all the PRs that you want to be included are already
+   merged into the `master` branch.
+2. The
+   [`Publish CDK Manually`](https://github.com/airbytehq/airbyte/actions/workflows/publish-cdk-command-manually.yml)
+   workflow from master using `release-type=major|manor|patch` and setting the changelog message.
+3. When the workflow runs, it will commit a new version directly to master branch.
+4. The workflow will bump the version of `source-declarative-manifest` according to the
+   `release-type` of the CDK, then commit these changes back to master. The commit to master will
+   kick off a publish of the new version of `source-declarative-manifest`.
+5. The workflow will also add a pull request to `airbyte-platform-internal` repo to bump the
+   dependency in Connector Builder.

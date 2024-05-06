@@ -15,8 +15,11 @@ from airbyte_cdk.models import (
     AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
+    AirbyteStateMessage,
+    AirbyteStreamState,
     Level,
     OrchestratorType,
+    StreamDescriptor,
 )
 from airbyte_cdk.models import Type as MessageType
 from unit_tests.connector_builder.utils import create_configured_catalog
@@ -470,6 +473,7 @@ def test_get_grouped_messages_with_many_slices(mock_entrypoint_read: Mock) -> No
                 request_response_log_message(request, response, url),
                 record_message("hashiras", {"name": "Obanai Iguro"}),
                 request_response_log_message(request, response, url),
+                state_message("hashiras", {"a_timestamp": 123}),
             ]
         ),
     )
@@ -486,12 +490,15 @@ def test_get_grouped_messages_with_many_slices(mock_entrypoint_read: Mock) -> No
     assert stream_read.slices[0].slice_descriptor == {"descriptor": "first_slice"}
     assert len(stream_read.slices[0].pages) == 1
     assert len(stream_read.slices[0].pages[0].records) == 1
+    assert stream_read.slices[0].state is None
 
     assert stream_read.slices[1].slice_descriptor == {"descriptor": "second_slice"}
     assert len(stream_read.slices[1].pages) == 3
     assert len(stream_read.slices[1].pages[0].records) == 2
     assert len(stream_read.slices[1].pages[1].records) == 1
     assert len(stream_read.slices[1].pages[2].records) == 0
+
+    assert stream_read.slices[1].state.stream.stream_state == {"a_timestamp": 123}
 
 
 @patch("airbyte_cdk.connector_builder.message_grouper.AirbyteEntrypoint.read")
@@ -696,6 +703,13 @@ def response_log_message(response: Mapping[str, Any]) -> AirbyteMessage:
 
 def record_message(stream: str, data: Mapping[str, Any]) -> AirbyteMessage:
     return AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(stream=stream, data=data, emitted_at=1234))
+
+
+def state_message(stream: str, data: Mapping[str, Any]) -> AirbyteMessage:
+    return AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(stream=AirbyteStreamState(
+        stream_descriptor=StreamDescriptor(name=stream),
+        stream_state=data
+    )))
 
 
 def slice_message(slice_descriptor: str = '{"key": "value"}') -> AirbyteMessage:
