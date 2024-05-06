@@ -1,12 +1,12 @@
 [build-system]
-requires = [ "poetry-core>=1.0.0",]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "5.3.7"
+version = "5.3.8"
 name = "source-stripe"
 description = "Source implementation for Stripe."
-authors = [ "Airbyte <contact@airbyte.io>",]
+authors = ["Airbyte <contact@airbyte.io>"]
 license = "Elv2"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/stripe"

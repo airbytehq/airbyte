@@ -1,5 +1,6 @@
 {
   "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
     "created": {
       "description": "The timestamp when the invoice was created",
@@ -110,7 +111,7 @@
       "description": "Any discounts applied to the invoice",
       "type": ["null", "array"],
       "items": {
-        "type": ["null", "string"]
+        "type": ["null", "object"]
       }
     },
     "discount": {
