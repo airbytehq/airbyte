@@ -55,6 +55,10 @@ class AdCreatives(FBMarketingStream):
         self._fields = [f for f in super().fields(**kwargs) if f != "thumbnail_data_url"]
         return self._fields
 
+    def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Don't have classic cursor filtering"""
+        return {}
+
     def read_records(
         self,
         sync_mode: SyncMode,

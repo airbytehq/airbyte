@@ -188,7 +188,7 @@ class API:
         setattr(self.api, "default_page_size", page_size)
         # set the default API client to Facebook lib.
 
-        adapter = requests.adapters.HTTPAdapter(max_retries=15, pool_connections=100, pool_maxsize=100, pool_block=False)
+        adapter = requests.adapters.HTTPAdapter(max_retries=15, pool_connections=20, pool_maxsize=20, pool_block=False)
         self.api._session.requests.mount('https://graph.facebook.com', adapter)
         FacebookAdsApi.set_default_api(self.api)
 
