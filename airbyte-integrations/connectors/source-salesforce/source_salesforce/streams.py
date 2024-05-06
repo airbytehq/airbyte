@@ -11,7 +11,6 @@ import urllib.parse
 import uuid
 from abc import ABC
 from contextlib import closing
-from datetime import timedelta
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
 import backoff
@@ -23,18 +22,18 @@ from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrate
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import IsoMillisConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.core import Stream, StreamData
-from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http import HttpClient, HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
 from numpy import nan
 from pendulum import DateTime  # type: ignore[attr-defined]
-from requests import codes, exceptions
+from requests import codes, exceptions, JSONDecodeError
 from requests.models import PreparedRequest
 
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .availability_strategy import SalesforceAvailabilityStrategy
 from .exceptions import SalesforceException, TmpFileIOError
-from .rate_limiting import TRANSIENT_EXCEPTIONS, default_backoff_handler
+from .rate_limiting import TRANSIENT_EXCEPTIONS, default_backoff_handler, SalesforceErrorHandler, BulkNotSupportedException
 
 # https://stackoverflow.com/a/54517228
 CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
@@ -68,6 +67,7 @@ class SalesforceStream(HttpStream, ABC):
         self.schema: Mapping[str, Any] = schema  # type: ignore[assignment]
         self.sobject_options = sobject_options
         self.start_date = self.format_start_date(start_date)
+        self._http_client = HttpClient(self.stream_name, self.logger, error_handler=SalesforceErrorHandler(stream_name=self.stream_name))
 
     @staticmethod
     def format_start_date(start_date: Optional[str]) -> Optional[str]:
@@ -356,28 +356,35 @@ class BulkSalesforceStream(SalesforceStream):
 
     transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
 
-    @default_backoff_handler(max_tries=5, backoff_method=backoff.expo, backoff_params={"factor": 15})
     def _send_http_request(self, method: str, url: str, json: dict = None, headers: dict = None, stream: bool = False):
         """
         This method should be used when you don't have to read data from the HTTP body. Else, you will have to retry when you actually read
         the response buffer (which is either by calling `json` or `iter_content`)
         """
-        return self._non_retryable_send_http_request(method, url, json, headers, stream)
+        if stream:
+            return self._non_retryable_send_http_request(method, url, json, headers, stream)
+        headers = self.authenticator.get_auth_header() if not headers else headers | self.authenticator.get_auth_header()
+        return self._http_client.send_request(method, url, headers=headers, json=json)[1]
 
     def _non_retryable_send_http_request(self, method: str, url: str, json: dict = None, headers: dict = None, stream: bool = False):
         headers = self.authenticator.get_auth_header() if not headers else headers | self.authenticator.get_auth_header()
         response = self._session.request(method, url=url, headers=headers, json=json, stream=stream)
         if response.status_code not in [200, 204]:
             self.logger.error(f"error body: {response.text}, sobject options: {self.sobject_options}")
-        response.raise_for_status()
+        if stream:
+            response.raise_for_status()
         return response
 
-    @default_backoff_handler(max_tries=5, backoff_method=backoff.expo, backoff_params={"factor": 15})
     def _create_stream_job(self, query: str, url: str) -> Optional[str]:
         json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
-        response = self._non_retryable_send_http_request("POST", url, json=json)
-        job_id: str = response.json()["id"]
-        return job_id
+        try:
+            response = self._send_http_request("POST", url, json=json)
+            json_response = response.json()
+            if hasattr(json_response, "get"):
+                return json_response.get("id")
+            return None
+        except (BulkNotSupportedException, JSONDecodeError):
+            return None
 
     def create_stream_job(self, query: str, url: str) -> Optional[str]:
         """

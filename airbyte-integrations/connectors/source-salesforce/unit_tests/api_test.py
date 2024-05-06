@@ -128,10 +128,10 @@ def test_bulk_sync_creation_failed(stream_config, stream_api):
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
     with requests_mock.Mocker() as m:
         m.register_uri("POST", stream.path(), status_code=400, json=[{"message": "test_error"}])
-        with pytest.raises(HTTPError) as err:
+        with pytest.raises(AirbyteTracedException) as err:
             stream_slices = next(iter(stream.stream_slices(sync_mode=SyncMode.incremental)))
             next(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices))
-        assert err.value.response.json()[0]["message"] == "test_error"
+        assert "test_error" in str(err.value)
 
 
 def test_bulk_stream_fallback_to_rest(mocker, requests_mock, stream_config, stream_api):

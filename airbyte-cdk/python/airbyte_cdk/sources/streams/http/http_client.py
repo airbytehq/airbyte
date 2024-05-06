@@ -6,7 +6,7 @@ import logging
 import os
 import urllib
 from pathlib import Path
-from typing import Any, Mapping, Optional, Tuple, Union
+from typing import Any, Mapping, Optional, Tuple, Union, List
 
 import requests
 import requests_cache
@@ -18,11 +18,19 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.auth import AuthBase
 
 from .decoders import Decoder, JsonDecoder
-from .error_handlers import DefaultBackoffStrategy, HttpStatusErrorHandler, JsonErrorMessageParser, ResponseAction
+from .error_handlers import DefaultBackoffStrategy, HttpStatusErrorHandler, JsonErrorMessageParser, ResponseAction, ErrorHandler
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
+
+
+class NoopDecoder(Decoder):
+    def decode(self, response: requests.Response) -> Union[Mapping[str, Any], List]:
+        pass
+
+    def validate_response(self, response: requests.Response) -> None:
+        pass
 
 
 class HttpClient:
@@ -30,6 +38,7 @@ class HttpClient:
         self,
         stream_name: str,
         logger: logging.Logger,
+        error_handler: Optional[ErrorHandler] = None,
         api_budget: Optional[APIBudget] = None,
         session: Optional[Union[requests.Session, requests_cache.CachedSession]] = None,
         authenticator: Optional[AuthBase] = None,
@@ -46,9 +55,9 @@ class HttpClient:
         if isinstance(authenticator, AuthBase):
             self._session.auth = authenticator
         self._logger = logger
-        self._error_handler = HttpStatusErrorHandler(logger)
+        self._error_handler = error_handler or HttpStatusErrorHandler(logger)
         self._backoff_strategy = DefaultBackoffStrategy()
-        self._response_decoder = JsonDecoder()
+        self._response_decoder = NoopDecoder()
         self._error_message_parser = JsonErrorMessageParser()
 
     # property moved from HttpStream

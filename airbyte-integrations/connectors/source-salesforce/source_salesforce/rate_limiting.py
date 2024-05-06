@@ -4,8 +4,13 @@
 
 import logging
 import sys
+from typing import Optional, Union, Tuple
 
 import backoff
+import requests
+from airbyte_protocol.models import FailureType
+
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from requests import codes, exceptions  # type: ignore[import]
 
@@ -39,6 +44,99 @@ _RETRYABLE_400_STATUS_CODES = {
 
 
 logger = logging.getLogger("airbyte")
+
+
+class BulkNotSupportedException(Exception):
+    pass
+
+
+class SalesforceErrorHandler(ErrorHandler):
+    def __init__(self, stream_name: str) -> None:
+        self._stream_name = stream_name
+        self.sobject_options = None  # FIXME see how this impacts streams and how we should print it.
+
+    def interpret_response(self, response: Optional[Union[requests.Response, Exception]]) -> Tuple[Optional[ResponseAction], Optional[FailureType], Optional[str]]:
+        if isinstance(response, TRANSIENT_EXCEPTIONS):
+            return ResponseAction.RETRY, FailureType.transient_error, f"Error of type {type(response)} is considered transient. Try again later. (full error message is {response})"
+        elif isinstance(response, requests.Response):
+            if response.ok:
+                return ResponseAction.IGNORE, None, None
+
+            if not (400 <= response.status_code < 500) or response.status_code in _RETRYABLE_400_STATUS_CODES:
+                return ResponseAction.RETRY, FailureType.transient_error, f"Response with status code {response.status_code} is considered transient. Try again later. (full error message is {response.content})"
+
+            error_code, error_message = self._extract_error_code_and_message(response)
+            if (
+                    "We can't complete the action because enabled transaction security policies took too long to complete." in error_message
+                    and error_code == "TXN_SECURITY_METERING_ERROR"
+            ):
+                return ResponseAction.FAIL, FailureType.config_error, 'A transient authentication error occurred. To prevent future syncs from failing, assign the "Exempt from Transaction Security" user permission to the authenticated user.'
+            elif response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
+                # A part of streams can't be used by BULK API. Every API version can have a custom list of
+                # these sobjects. Another part of them can be generated dynamically. That's why we can't track
+                # them preliminarily and there is only one way is to except error with necessary messages about
+                # their limitations. Now we know about 3 different reasons of similar errors:
+                # 1) some SaleForce sobjects(streams) is not supported by the BULK API simply (as is).
+                # 2) Access to a sobject(stream) is not available
+                # 3) sobject is not queryable. It means this sobject can't be called directly.
+                #    We can call it as part of response from another sobject only.  E.g.:
+                #        initial query: "Select Id, Subject from ActivityHistory" -> error
+                #        updated query: "Select Name, (Select Subject,ActivityType from ActivityHistories) from Contact"
+                #    The second variant forces customisation for every case (ActivityHistory, ActivityHistories etc).
+                #    And the main problem is these subqueries doesn't support CSV response format.
+                if error_message == "Selecting compound data not supported in Bulk Query" or (
+                    error_code == "INVALIDENTITY" and "is not supported by the Bulk API" in error_message
+                ):
+                    logger.error(
+                        f"Cannot receive data for stream '{self._stream_name}' using BULK API, "
+                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
+                    )
+                    raise BulkNotSupportedException()
+                elif response.status_code == codes.FORBIDDEN and error_code != "REQUEST_LIMIT_EXCEEDED":
+                    logger.error(
+                        f"Cannot receive data for stream '{self._stream_name}' ,"
+                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
+                    )
+                    raise BulkNotSupportedException()
+                elif response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
+                    logger.error(
+                        f"Cannot receive data for stream '{self._stream_name}' ,"
+                        f"sobject options: {self.sobject_options}, Error message: '{error_message}'"
+                    )
+                    raise BulkNotSupportedException()
+                elif response.status_code == codes.BAD_REQUEST and error_message.endswith("does not support query"):
+                    logger.error(
+                        f"The stream '{self._stream_name}' is not queryable, "
+                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
+                    )
+                    raise BulkNotSupportedException()
+                elif (
+                    response.status_code == codes.BAD_REQUEST
+                    and error_code == "API_ERROR"
+                    and error_message.startswith("Implementation restriction")
+                ):
+                    message = f"Unable to sync '{self._stream_name}'. To prevent future syncs from failing, ensure the authenticated user has \"View all Data\" permissions."
+                    return ResponseAction.FAIL, FailureType.config_error, message
+                elif response.status_code == codes.BAD_REQUEST and error_code == "LIMIT_EXCEEDED":
+                    message = "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed."
+                    logger.error(message)
+                    raise BulkNotSupportedException()
+                else:
+                    return ResponseAction.FAIL, FailureType.system_error, f"Unknown error on response `{response.content}`"
+
+    def _extract_error_code_and_message(self, response: requests.Response) -> tuple[Optional[str], str]:
+        try:
+            error_data = response.json()[0]
+            return error_data.get("errorCode"), error_data.get("message", "")
+        except exceptions.JSONDecodeError:
+            logger.warning(f"The response for `{response.request.url}` is not a JSON but was `{response.content}`")
+        except IndexError:
+            logger.warning(
+                f"The response for `{response.request.url}` was expected to be a list with at least one element but was `{response.content}`"
+            )
+
+        return None, "Unknown error"
+
 
 
 def default_backoff_handler(max_tries: int, backoff_method=None, backoff_params=None):
