@@ -932,11 +932,11 @@ class DefaultTyperDeduperTest {
                     "overwrite_ns",
                     "overwrite_stream"
                 ),
-                null,
+                mock(),
                 DestinationSyncMode.OVERWRITE,
-                null,
-                null,
-                null
+                mock(),
+                mock(),
+                mock()
             )
         private val APPEND_STREAM_CONFIG =
             StreamConfig(
@@ -948,11 +948,11 @@ class DefaultTyperDeduperTest {
                     "append_ns",
                     "append_stream"
                 ),
-                null,
+                mock(),
                 DestinationSyncMode.APPEND,
-                null,
-                null,
-                null
+                mock(),
+                mock(),
+                mock()
             )
         private val DEDUPE_STREAM_CONFIG =
             StreamConfig(
@@ -964,11 +964,11 @@ class DefaultTyperDeduperTest {
                     "dedup_ns",
                     "dedup_stream"
                 ),
-                null,
+                mock(),
                 DestinationSyncMode.APPEND_DEDUP,
-                null,
-                null,
-                null
+                mock(),
+                mock(),
+                mock()
             )
     }
 }
