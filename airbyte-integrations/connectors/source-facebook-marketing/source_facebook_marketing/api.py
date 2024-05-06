@@ -26,7 +26,7 @@ class FacebookAPIException(Exception):
     """General class for all API errors"""
 
 
-backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=15, factor=5)
 
 
 class MyFacebookAdsApi(FacebookAdsApi):

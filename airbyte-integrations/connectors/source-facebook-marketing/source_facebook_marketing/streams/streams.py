@@ -4,7 +4,7 @@
 
 import base64
 import logging
-from typing import Any, Iterable, List, Mapping, Optional, Set
+from typing import Any, Iterable, List, Mapping, Optional, Set, MutableMapping
 
 import pendulum
 import requests
@@ -55,9 +55,10 @@ class AdCreatives(FBMarketingStream):
         self._fields = [f for f in super().fields(**kwargs) if f != "thumbnail_data_url"]
         return self._fields
 
-    def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Don't have classic cursor filtering"""
-        return {}
+    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        """Include state filter"""
+        params = {"limit": self.page_size}
+        return params
 
     def read_records(
         self,
