@@ -201,10 +201,14 @@ class SourceGoogleAds(AbstractSource):
                 # Add segments.date to where clause of incremental custom queries if they are not present.
                 # The same will be done during read, but with start and end date from config
                 if self.is_custom_query_incremental(query):
-                    query = IncrementalCustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
+                    month_back = today().subtract(months=1)
+                    query = IncrementalCustomQuery.insert_segments_date_expr(query, month_back.to_date_string(), today().to_date_string())
 
                 query = query.set_limit(1)
                 try:
+                    logger.info(
+                        f"Running the query for account {customer.id}: {query}"
+                    )
                     response = google_api.send_request(
                         str(query),
                         customer_id=customer.id,
