@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mongodb.cdc;
 
+import static io.airbyte.integrations.source.mongodb.MongoConstants.CAPTURE_MODE_POST_IMAGE_OPTION;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.UPDATE_CAPTURE_MODE;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.AUTH_SOURCE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.CREDENTIALS_PLACEHOLDER;
@@ -68,7 +70,9 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
       properties.setProperty(MONGODB_AUTHSOURCE_KEY, config.get(AUTH_SOURCE_CONFIGURATION_KEY).asText());
     }
     properties.setProperty(MONGODB_SSL_ENABLED_KEY, MONGODB_SSL_ENABLED_VALUE);
-    properties.setProperty(MONGODB_POST_IMAGE_KEY, MONGODB_POST_IMAGE_VALUE);
+    if (config.has(UPDATE_CAPTURE_MODE) && config.get(UPDATE_CAPTURE_MODE).asText().equals(CAPTURE_MODE_POST_IMAGE_OPTION)) {
+      properties.setProperty(MONGODB_POST_IMAGE_KEY, MONGODB_POST_IMAGE_VALUE);
+    }
     return properties;
   }
 

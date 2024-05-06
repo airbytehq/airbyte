@@ -14,12 +14,8 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.time.Instant;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class MongoDbDebeziumEventConverter implements DebeziumEventConverter {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbDebeziumEventConverter.class);
 
   private final CdcMetadataInjector cdcMetadataInjector;
   private final ConfiguredAirbyteCatalog configuredAirbyteCatalog;
