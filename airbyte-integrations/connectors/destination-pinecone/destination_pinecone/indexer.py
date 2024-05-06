@@ -76,6 +76,7 @@ class PineconeIndexer(Indexer):
             self.pinecone_index.delete(filter=filter, namespace=namespace)
 
     def delete_by_metadata(self, filter, top_k, namespace=None):
+        '''Applicable to Starter implementation only. Deletes all vectors that match the given metadata filter.'''
         zero_vector = [0.0] * self.embedding_dimensions
         query_result = self.pinecone_index.query(vector=zero_vector, filter=filter, top_k=top_k, namespace=namespace)
         while len(query_result.matches) > 0:
@@ -88,6 +89,7 @@ class PineconeIndexer(Indexer):
             query_result = self.pinecone_index.query(vector=zero_vector, filter=filter, top_k=top_k, namespace=namespace)
 
     def delete_by_prefix(self, prefix, namespace=None):
+        '''Applicable to Serverless implementation only. Deletes all vectors with the given prefix.'''
         for ids in self.pinecone_index.list(prefix=prefix, namespace=namespace):
             self.pinecone_index.delete(ids=ids, namespace=namespace)
 
