@@ -31,7 +31,7 @@ class DatabricksSyncOperations(
     private val executorService: ExecutorService =
         Executors.newFixedThreadPool(
             10,
-            BasicThreadFactory.Builder().namingPattern("sync-operations").build(),
+            BasicThreadFactory.Builder().namingPattern("sync-operations-%d").build(),
         )
 ) : SyncOperations {
     override fun initializeStreams() {
