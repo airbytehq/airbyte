@@ -19,10 +19,8 @@ data:
   name: MySQL
   registries:
     cloud:
-      dockerImageTag: 3.3.25
       enabled: true
     oss:
-      dockerImageTag: 3.3.25
       enabled: true
   releaseStage: generally_available
   releases:
