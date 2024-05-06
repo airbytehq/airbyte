@@ -16,7 +16,6 @@ import java.time.Duration;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import org.codehaus.plexus.util.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 public class MssqlCdcHelper {
 

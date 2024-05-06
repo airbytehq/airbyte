@@ -415,7 +415,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         LOGGER.info("Syncing via Primary Key");
         final MssqlCursorBasedStateManager cursorBasedStateManager = new MssqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
         final InitialLoadStreams initialLoadStreams =
-                filterStreamInIncrementalMode(streamsForInitialOrderedColumnLoad(cursorBasedStateManager, catalog));
+            filterStreamInIncrementalMode(streamsForInitialOrderedColumnLoad(cursorBasedStateManager, catalog));
         final Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> pairToCursorBasedStatus =
             getCursorBasedSyncStatusForStreams(database, initialLoadStreams.streamsForInitialLoad(), stateManager, getQuoteString());
         final CursorBasedStreams cursorBasedStreams =
@@ -670,7 +670,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   @Override
   public boolean supportResumableFullRefresh(final JdbcDatabase database, final ConfiguredAirbyteStream airbyteStream) {
     if (airbyteStream.getStream() != null && airbyteStream.getStream().getSourceDefinedPrimaryKey() != null
-            && !airbyteStream.getStream().getSourceDefinedPrimaryKey().isEmpty()) {
+        && !airbyteStream.getStream().getSourceDefinedPrimaryKey().isEmpty()) {
       return true;
     }
     if (airbyteStream.getPrimaryKey() != null && !airbyteStream.getPrimaryKey().isEmpty()) {

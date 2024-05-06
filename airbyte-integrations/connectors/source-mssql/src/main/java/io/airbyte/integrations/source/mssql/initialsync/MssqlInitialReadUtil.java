@@ -201,7 +201,7 @@ public class MssqlInitialReadUtil {
       final MssqlDebeziumStateAttributes stateAttributes = MssqlDebeziumStateUtil.getStateAttributesFromDB(database);
       final MssqlInitialLoadHandler initialLoadHandler =
           getMssqlInitialLoadHandler(database, emittedAt, quoteString, initialLoadStreams, initialLoadStateManager,
-                  Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
+              Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
       initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
           tableNameToTable,
@@ -306,9 +306,9 @@ public class MssqlInitialReadUtil {
   }
 
   static Optional<OrderedColumnInfo> getOrderedColumnInfo(final JdbcDatabase database,
-                                                final ConfiguredAirbyteStream stream,
-                                                final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-                                                final String quoteString) {
+                                                          final ConfiguredAirbyteStream stream,
+                                                          final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                          final String quoteString) {
     final String fullyQualifiedTableName =
         DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.getStream().getNamespace(), stream.getStream().getName());
     final TableInfo<CommonField<JDBCType>> table = tableNameToTable
@@ -317,9 +317,9 @@ public class MssqlInitialReadUtil {
   }
 
   static Optional<OrderedColumnInfo> getOrderedColumnInfo(final JdbcDatabase database,
-                                                final ConfiguredAirbyteStream stream,
-                                                final TableInfo<CommonField<JDBCType>> table,
-                                                final String quoteString) {
+                                                          final ConfiguredAirbyteStream stream,
+                                                          final TableInfo<CommonField<JDBCType>> table,
+                                                          final String quoteString) {
     // For cursor-based syncs, we cannot always assume a ordered column field exists. We need to handle
     // the case where it does not exist when we support cursor-based syncs.
     // if (stream.getStream().getSourceDefinedPrimaryKey().size() > 1) {
@@ -438,9 +438,9 @@ public class MssqlInitialReadUtil {
 
   public static InitialLoadStreams filterStreamInIncrementalMode(final InitialLoadStreams stream) {
     return new InitialLoadStreams(
-            stream.streamsForInitialLoad.stream().filter(airbyteStream -> airbyteStream.getSyncMode() == SyncMode.INCREMENTAL)
-                    .collect(Collectors.toList()),
-            stream.pairToInitialLoadStatus);
+        stream.streamsForInitialLoad.stream().filter(airbyteStream -> airbyteStream.getSyncMode() == SyncMode.INCREMENTAL)
+            .collect(Collectors.toList()),
+        stream.pairToInitialLoadStatus);
   }
 
 }

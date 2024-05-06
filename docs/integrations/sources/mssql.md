@@ -12,6 +12,8 @@ Airbyte's certified MSSQL connector offers the following features:
   [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing)
   and chunking of database reads.
 
+> ⚠️ **Please note the minimum required platform version is v0.58.0 to run source-mysql 3.4.0.**
+
 ## Features
 
 | Feature                       | Supported | Notes              |
