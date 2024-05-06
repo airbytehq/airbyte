@@ -99,6 +99,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
@@ -490,7 +491,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         throw new RuntimeException(e);
       }
 
-      recategoriseStreamsForXmin(database, catalog, stateManager);
+      finalListOfStreamsToBeSyncedViaCtid = finalListOfStreamsToBeSyncedViaCtid.stream()
+          .filter(streamUnderCheck -> streamUnderCheck.getSyncMode() == SyncMode.INCREMENTAL).collect(toList());
 
       final FileNodeHandler fileNodeHandler =
           PostgresQueryUtils.fileNodeForStreams(database,
@@ -498,7 +500,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
               getQuoteString());
 
       ctidStateManager.setStreamStateIteratorFields(namespacePair -> Jsons.jsonNode(xminStatus));
-      ctidStateManager.setFileNodeHandler(fileNodeHandler);
       final PostgresCtidHandler ctidHandler =
           createInitialLoader(database, finalListOfStreamsToBeSyncedViaCtid, fileNodeHandler, getQuoteString(), ctidStateManager,
               Optional.empty());
@@ -535,7 +536,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     } else if (isAnyStreamIncrementalSyncMode(catalog)) {
       final PostgresCursorBasedStateManager postgresCursorBasedStateManager =
           new PostgresCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
-      recategoriseForCursorBased(database, catalog, stateManager);
+      recategoriseForCursorBased(database, catalog, stateManager, true);
 
       final FileNodeHandler fileNodeHandler =
           PostgresQueryUtils.fileNodeForStreams(database,
@@ -561,7 +562,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       }
 
       ctidStateManager.setStreamStateIteratorFields(namespacePair -> Jsons.jsonNode(cursorBasedStatusMap.get(namespacePair)));
-      ctidStateManager.setFileNodeHandler(fileNodeHandler);
       final PostgresCtidHandler cursorBasedCtidHandler =
           createInitialLoader(database, finalListOfStreamsToBeSyncedViaCtid, fileNodeHandler, getQuoteString(), ctidStateManager, Optional.empty());
 
@@ -707,7 +707,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   private void recategoriseStreamsForXmin(final JdbcDatabase database,
                                           final ConfiguredAirbyteCatalog catalog,
-                                          final StateManager stateManager) {
+                                          final StateManager stateManager,
+                                          final boolean incrementalModeOnly) {
     final XminStatus xminStatus;
     try {
       xminStatus = PostgresQueryUtils.getXminStatus(database);
@@ -736,11 +737,15 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       finalListOfStreamsToBeSyncedViaCtid =
           filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), xminStreamsCategorised.ctidStreams());
     }
+    if (incrementalModeOnly) {
+      finalListOfStreamsToBeSyncedViaCtid = filterIncrementalSyncModeStreams(finalListOfStreamsToBeSyncedViaCtid);
+    }
   }
 
   private void recategoriseForCursorBased(final JdbcDatabase database,
                                           final ConfiguredAirbyteCatalog catalog,
-                                          final StateManager postgresCursorBasedStateManager) {
+                                          final StateManager postgresCursorBasedStateManager,
+                                          final boolean incrementalModeOnly) {
 
     cursorBasedStreamsCategorised = categoriseStreams(postgresCursorBasedStateManager, catalog);
     final ResultWithFailed<List<AirbyteStreamNameNamespacePair>> streamsUnderVacuum = streamsUnderVacuum(database,
@@ -765,6 +770,13 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       finalListOfStreamsToBeSyncedViaCtid =
           filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), cursorBasedStreamsCategorised.ctidStreams());
     }
+    if (incrementalModeOnly) {
+      finalListOfStreamsToBeSyncedViaCtid = filterIncrementalSyncModeStreams(finalListOfStreamsToBeSyncedViaCtid);
+    }
+  }
+
+  private List<ConfiguredAirbyteStream> filterIncrementalSyncModeStreams(final List<ConfiguredAirbyteStream> allStreams) {
+    return allStreams.stream().filter(streamUnderCheck -> streamUnderCheck.getSyncMode() == SyncMode.INCREMENTAL).collect(toList());
   }
 
   @Override
@@ -783,14 +795,15 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       ctidStateManager = getCtidInitialLoadGlobalStateManager(database, catalog, stateManager, getQuoteString(), savedOffsetAfterReplicationSlotLSN);
     } else {
       if (isXmin(sourceConfig)) {
-        recategoriseStreamsForXmin(database, catalog, stateManager);
+        recategoriseStreamsForXmin(database, catalog, stateManager, /* incrementalOnly= */false);
         final FileNodeHandler fileNodeHandler =
             PostgresQueryUtils.fileNodeForStreams(database,
                 finalListOfStreamsToBeSyncedViaCtid,
                 getQuoteString());
         ctidStateManager = new CtidPerStreamStateManager(xminStreamsCategorised.ctidStreams().statesFromCtidSync(), fileNodeHandler);
+        ctidStateManager.setFileNodeHandler(fileNodeHandler);
       } else {
-        recategoriseForCursorBased(database, catalog, stateManager);
+        recategoriseForCursorBased(database, catalog, stateManager, /* incrementalOnly= */false);
         final FileNodeHandler fileNodeHandler =
             PostgresQueryUtils.fileNodeForStreams(database,
                 finalListOfStreamsToBeSyncedViaCtid,
@@ -798,6 +811,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
         ctidStateManager =
             new CtidPerStreamStateManager(cursorBasedStreamsCategorised.ctidStreams().statesFromCtidSync(), fileNodeHandler);
+        ctidStateManager.setFileNodeHandler(fileNodeHandler);
       }
     }
   }

@@ -532,6 +532,7 @@ class PostgresSourceTest {
     // we need to get the last state for the "incremental stream", which is not necessarily the last
     // state message of the batch.
     final AirbyteStateMessage lastEmittedState = getLastStateMessageOfStream(stateAfterFirstBatch, STREAM_NAME);
+
     final JsonNode state = Jsons.jsonNode(List.of(lastEmittedState));
 
     testdb.query(ctx -> {
