@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.87.0
+Python CDK: Allow for configuring resumable full refresh for streams (excluding substreams)
+
 ## 0.86.3
 
 File-based CDK: allow to merge schemas with nullable object values
