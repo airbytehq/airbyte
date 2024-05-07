@@ -13,7 +13,7 @@ definitions:
 
   basic_authenticator:
     type: BasicHttpAuthenticator
-    username: "{{ config[''credentials''][''api_key''] }}"
+    username: "{{ config['credentials']['api_key'] }}"
     password: ""
 
   selective_authenticator:
@@ -21,7 +21,7 @@ definitions:
     authenticator_selection_path: ["credentials", "auth_type"]
     authenticators:
       Client: "#/definitions/oauth_authenticator"
-      Api_Key: "#/definitions/basic_authenticator"
+      Api Key: "#/definitions/basic_authenticator"
 
   record_selector:
     type: RecordSelector
@@ -230,7 +230,7 @@ definitions:
         datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       step: P30D
-      cursor_granularity: PT1S
+      cursor_granularity: PT0.000001S
 
 check:
   type: CheckStream
