@@ -273,9 +273,9 @@ def _minimize_schema(fill_schema, schema_original):
             fill_schema[key] = value
 
 
-def test_engage_schema(requests_mock, engage_schema_response, config):
+def test_engage_schema(requests_mock, engage_schema_response, config_raw):
     stream = init_stream('engage', config=config_raw)
-    requests_mock.register_uri("GET", get_url_to_mock(EngageSchema(authenticator=MagicMock(), **config)), engage_schema_response)
+    requests_mock.register_uri("GET", get_url_to_mock(EngageSchema(authenticator=MagicMock(), **config_raw)), engage_schema_response)
     type_schema = {}
     _minimize_schema(type_schema, stream.get_json_schema())
 
