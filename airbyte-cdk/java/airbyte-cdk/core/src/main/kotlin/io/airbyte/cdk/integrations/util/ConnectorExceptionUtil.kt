@@ -42,7 +42,7 @@ object ConnectorExceptionUtil {
         return if (e is ConfigErrorException) {
             e.displayMessage
         } else if (e is TransientErrorException) {
-            e.displayMessage
+            e.message
         } else if (e is ConnectionErrorException) {
             ErrorMessage.getErrorMessage(e.stateCode, e.errorCode, e.exceptionMessage, e)
         } else if (isRecoveryConnectionException(e)) {

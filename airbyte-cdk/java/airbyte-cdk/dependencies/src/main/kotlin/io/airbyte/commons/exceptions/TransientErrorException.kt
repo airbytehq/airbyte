@@ -9,13 +9,8 @@ package io.airbyte.commons.exceptions
  * an AirbyteTraceMessage.
  */
 class TransientErrorException : RuntimeException {
-    val displayMessage: String
 
-    constructor(displayMessage: String) : super(displayMessage) {
-        this.displayMessage = displayMessage
-    }
+    constructor(displayMessage: String) : super(displayMessage)
 
-    constructor(displayMessage: String, exception: Throwable?) : super(displayMessage, exception) {
-        this.displayMessage = displayMessage
-    }
+    constructor(displayMessage: String, exception: Throwable?) : super(displayMessage, exception)
 }
