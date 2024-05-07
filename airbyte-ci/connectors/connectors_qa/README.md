@@ -107,6 +107,10 @@ poe lint
 ```
 ## Changelog
 
+### 1.3.1
+
+Remove requirements on DockerHub credentials to run metadata validation.
+
 ### 1.3.0
 
 Added `CheckConnectorMaxSecondsBetweenMessagesValue` check that verifies presence of `maxSecondsBetweenMessages` value in `metadata.yaml` file for all source certified connectors.
