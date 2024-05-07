@@ -152,7 +152,7 @@ def traced_exception(fb_exception: FacebookRequestError):
     Please see ../unit_tests/test_errors.py for full error examples
     Please add new errors to the tests
     """
-    msg = fb_exception.api_error_message() if fb_exception.api_error_message() else fb_exception.get_message()
+    msg = fb_exception.api_error_message() or fb_exception.get_message()
 
     if "Error validating access token" in msg:
         failure_type = FailureType.config_error
