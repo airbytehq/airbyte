@@ -3,7 +3,7 @@
  */
 package io.airbyte.cdk.testutils
 
-import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.db.ContextQueryFunction
 import io.airbyte.cdk.db.Database
@@ -55,16 +55,16 @@ protected constructor(val container: C) : AutoCloseable {
     @JvmField protected val databaseId: Int = nextDatabaseId.getAndIncrement()
     @JvmField
     protected val containerId: Int =
-        containerUidToId!!.computeIfAbsent(container.containerId) { _: String? ->
-            nextContainerId!!.getAndIncrement()
+        containerUidToId.computeIfAbsent(container.containerId) { _: String? ->
+            nextContainerId.getAndIncrement()
         }!!
     private val dateFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")
 
     init {
-        LOGGER!!.info(formatLogLine("creating database " + databaseName))
+        LOGGER!!.info(formatLogLine("creating database $databaseName"))
     }
 
-    protected fun formatLogLine(logLine: String?): String? {
+    protected fun formatLogLine(logLine: String?): String {
         val retVal = "TestDatabase databaseId=$databaseId, containerId=$containerId - $logLine"
         return retVal
     }
@@ -100,7 +100,7 @@ protected constructor(val container: C) : AutoCloseable {
      * object. This typically entails at least a CREATE DATABASE and a CREATE USER. Also Initializes
      * the [DataSource] and [DSLContext] owned by this object.
      */
-    open fun initialized(): T? {
+    open fun initialized(): T {
         inContainerBootstrapCmd().forEach { cmds: Stream<String> -> this.execInContainer(cmds) }
         this.dataSource =
             DataSourceFactory.create(
@@ -165,12 +165,12 @@ protected constructor(val container: C) : AutoCloseable {
                 databaseName
             )
 
-    val database: Database?
+    val database: Database
         get() = Database(getDslContext())
 
     protected fun execSQL(sql: Stream<String>) {
         try {
-            database!!.query<Any?> { ctx: DSLContext? ->
+            database.query<Any?> { ctx: DSLContext? ->
                 sql.forEach { statement: String? ->
                     LOGGER!!.info("executing SQL statement {}", statement)
                     ctx!!.execute(statement)
@@ -228,12 +228,12 @@ protected constructor(val container: C) : AutoCloseable {
 
     @Throws(SQLException::class)
     fun <X> query(transform: ContextQueryFunction<X>): X? {
-        return database!!.query(transform)
+        return database.query(transform)
     }
 
     @Throws(SQLException::class)
     fun <X> transaction(transform: ContextQueryFunction<X>): X? {
-        return database!!.transaction(transform)
+        return database.transaction(transform)
     }
 
     /** Returns a builder for the connector config object. */
@@ -245,7 +245,7 @@ protected constructor(val container: C) : AutoCloseable {
         return configBuilder().withHostAndPort().withCredentials().withDatabase()
     }
 
-    fun integrationTestConfigBuilder(): B? {
+    fun integrationTestConfigBuilder(): B {
         return configBuilder().withResolvedHostAndPort().withCredentials().withDatabase()
     }
 
@@ -260,8 +260,8 @@ protected constructor(val container: C) : AutoCloseable {
     ) {
         protected val builder: ImmutableMap.Builder<Any, Any> = ImmutableMap.builder()
 
-        fun build(): JsonNode {
-            return Jsons.jsonNode(builder.build())
+        fun build(): ObjectNode {
+            return Jsons.jsonNode(builder.build()) as ObjectNode
         }
 
         @Suppress("UNCHECKED_CAST")
@@ -314,7 +314,7 @@ protected constructor(val container: C) : AutoCloseable {
 
         private val nextDatabaseId: AtomicInteger = AtomicInteger(0)
 
-        private val nextContainerId: AtomicInteger? = AtomicInteger(0)
-        private val containerUidToId: MutableMap<String?, Int?>? = ConcurrentHashMap()
+        private val nextContainerId: AtomicInteger = AtomicInteger(0)
+        private val containerUidToId: MutableMap<String?, Int?> = ConcurrentHashMap()
     }
 }
