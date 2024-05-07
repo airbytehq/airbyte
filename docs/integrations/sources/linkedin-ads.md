@@ -157,20 +157,21 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 ## Data type map
 
-| Integration Type | Airbyte Type | Notes                       |
-| :--------------- | :----------- | :-------------------------- |
-| `number`         | `number`     | float number                |
-| `integer`        | `integer`    | whole number                |
-| `date`           | `string`     | FORMAT YYYY-MM-DD           |
-| `datetime`       | `string`     | FORMAT YYYY-MM-DDThh:mm: ss |
-| `array`          | `array`      |                             |
-| `boolean`        | `boolean`    | True/False                  |
-| `string`         | `string`     |                             |
+| Integration Type  | Airbyte Type  | Notes                       |
+|:------------------|:--------------|:----------------------------|
+| `number`          | `number`      | float number                |
+| `integer`         | `integer`     | whole number                |
+| `date`            | `string`      | FORMAT YYYY-MM-DD           |
+| `datetime`        | `string`      | FORMAT YYYY-MM-DDThh:mm: ss |
+| `array`           | `array`       |                             |
+| `boolean`         | `boolean`     | True/False                  |
+| `string`          | `string`      |                             |
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 2.1.2   | 2024-05-07 | [36648](https://github.com/airbytehq/airbyte/pull/36648) | Schema descriptions                                                                                             |
 | 2.1.1   | 2024-05-07 | [38013](https://github.com/airbytehq/airbyte/pull/38013) | Fix an issue where the `Accounts` stream did not correctly handle provided account IDs                          |
 | 2.1.0   | 2024-04-30 | [37573](https://github.com/airbytehq/airbyte/pull/37573) | Update API version to `202404`; add cursor-based pagination                                                     |
 | 2.0.0   | 2024-04-24 | [37531](https://github.com/airbytehq/airbyte/pull/37531) | Change primary key for Analytics Streams                                                                        |
@@ -178,8 +179,8 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 | 1.0.0   | 2024-04-10 | [36927](https://github.com/airbytehq/airbyte/pull/36927) | Update primary key for Analytics Streams                                                                        |
 | 0.8.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                                 |
 | 0.7.0   | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures                                                        |
-| 0.6.8   | 2024-02-09 | [35086](https://github.com/airbytehq/airbyte/pull/35086) | Manage dependencies with Poetry.                                                                                |
-| 0.6.7   | 2024-01-11 | [34152](https://github.com/airbytehq/airbyte/pull/34152) | prepare for airbyte-lib                                                                                         |
+| 0.6.8   | 2024-02-09 | [35086](https://github.com/airbytehq/airbyte/pull/35086) | Manage dependencies with Poetry                                                                                 |
+| 0.6.7   | 2024-01-11 | [34152](https://github.com/airbytehq/airbyte/pull/34152) | Prepare for airbyte-lib                                                                                         |
 | 0.6.6   | 2024-01-15 | [34222](https://github.com/airbytehq/airbyte/pull/34222) | Use stream slices for Analytics streams                                                                         |
 | 0.6.5   | 2023-12-15 | [33530](https://github.com/airbytehq/airbyte/pull/33530) | Fix typo in `Pivot Category` list                                                                               |
 | 0.6.4   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                 |
@@ -196,8 +197,8 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 | 0.1.16  | 2023-05-24 | [26512](https://github.com/airbytehq/airbyte/pull/26512) | Removed authSpecification from spec.json in favour of advancedAuth                                              |
 | 0.1.15  | 2023-02-13 | [22940](https://github.com/airbytehq/airbyte/pull/22940) | Specified date formatting in specification                                                                      |
 | 0.1.14  | 2023-02-03 | [22361](https://github.com/airbytehq/airbyte/pull/22361) | Turn on default HttpAvailabilityStrategy                                                                        |
-| 0.1.13  | 2023-01-27 | [22013](https://github.com/airbytehq/airbyte/pull/22013) | for adDirectSponsoredContents stream skip accounts which are part of organization                               |
-| 0.1.12  | 2022-10-18 | [18111](https://github.com/airbytehq/airbyte/pull/18111) | for adDirectSponsoredContents stream skip accounts which are part of organization                               |
+| 0.1.13  | 2023-01-27 | [22013](https://github.com/airbytehq/airbyte/pull/22013) | For adDirectSponsoredContents stream skip accounts which are part of organization                               |
+| 0.1.12  | 2022-10-18 | [18111](https://github.com/airbytehq/airbyte/pull/18111) | For adDirectSponsoredContents stream skip accounts which are part of organization                               |
 | 0.1.11  | 2022-10-07 | [17724](https://github.com/airbytehq/airbyte/pull/17724) | Retry 429/5xx errors when refreshing access token                                                               |
 | 0.1.10  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                                                   |
 | 0.1.9   | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas                                                                |
