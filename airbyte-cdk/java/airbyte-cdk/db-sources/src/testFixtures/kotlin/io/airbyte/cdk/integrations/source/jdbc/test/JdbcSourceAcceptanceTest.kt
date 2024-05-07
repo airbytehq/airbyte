@@ -508,8 +508,6 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         expectedMessages.addAll(getAirbyteMessagesSecondSync(streamName2))
 
-        System.out.println("catalog: " + catalog)
-
         val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
         val actualRecordMessages = filterRecords(actualMessages)
 

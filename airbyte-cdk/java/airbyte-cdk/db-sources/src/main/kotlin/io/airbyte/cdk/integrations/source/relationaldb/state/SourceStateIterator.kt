@@ -81,7 +81,6 @@ open class SourceStateIterator<T>(
     // we should not emit a state message.
     // If the frequency is set to be zero, we should not use it.
     private fun shouldEmitStateMessage(): Boolean {
-        println("syncCheckpointRecords: " + stateEmitFrequency.syncCheckpointRecords + "; records: " + recordCount)
         if (stateEmitFrequency.syncCheckpointRecords == 0L) {
             return false
         }

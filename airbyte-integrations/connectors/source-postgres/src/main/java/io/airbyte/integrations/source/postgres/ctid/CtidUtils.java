@@ -31,8 +31,7 @@ public class CtidUtils {
   public static final int POSTGRESQL_VERSION_TID_RANGE_SCAN_CAPABLE = 14;
 
   public static List<ConfiguredAirbyteStream> identifyNewlyAddedStreams(final ConfiguredAirbyteCatalog fullCatalog,
-                                                                        final Set<AirbyteStreamNameNamespacePair> alreadySeenStreams
-                                                                        ) {
+                                                                        final Set<AirbyteStreamNameNamespacePair> alreadySeenStreams) {
     final Set<AirbyteStreamNameNamespacePair> allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(fullCatalog);
 
     final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySeenStreams));

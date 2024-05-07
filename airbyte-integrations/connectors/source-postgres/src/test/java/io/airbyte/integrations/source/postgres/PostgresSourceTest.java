@@ -268,9 +268,9 @@ class PostgresSourceTest {
     final Set<AirbyteMessage> actualMessages =
         MoreIterators.toSet(source().read(anotherUserConfig, CONFIGURED_CATALOG, null));
     setEmittedAtToNull(actualMessages);
-    // expect 6 records and 1 state messages (view does not have its own state message because it goes
+    // expect 6 records and 2 state messages (view does not have its own state message because it goes
     // to non resumable full refresh path).
-    assertEquals(7, actualMessages.size());
+    assertEquals(8, actualMessages.size());
     final var actualRecordMessages = filterRecords(actualMessages);
     assertEquals(PRIVILEGE_TEST_CASE_EXPECTED_MESSAGES, actualRecordMessages);
   }
@@ -475,7 +475,7 @@ class PostgresSourceTest {
         createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1)));
 
     // Assert that the correct number of messages are emitted.
-    assertEquals(actualMessages.size(), expectedOutput.size() + 1);
+    assertEquals(actualMessages.size(), expectedOutput.size() + 3);
     assertThat(actualMessages.contains(expectedOutput));
     // Assert that the Postgres source is emitting records & state messages in the correct order.
     assertCorrectRecordOrderForIncrementalSync(actualMessages, "id", JsonSchemaPrimitive.NUMBER, configuredCatalog,
@@ -597,13 +597,12 @@ class PostgresSourceTest {
       return null;
     });
     // 2nd sync should reread state checkpoint mark and one new message (where id = '5.0')
-    final Set<AirbyteMessage> nextSyncMessages =
-        MoreIterators.toSet(source.read(getConfig(), configuredCatalog, state));
+    final List<AirbyteMessage> nextSyncMessages =
+        MoreIterators.toList(source().read(getConfig(), configuredCatalog, state));
     setEmittedAtToNull(nextSyncMessages);
 
-    System.out.println("final: " + nextSyncMessages);
     // All record messages will be re-read.
-    assertEquals(7, nextSyncMessages.size());
+    assertEquals(8, nextSyncMessages.size());
     assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "5.0", "name", "piccolo", "power", 100.0))));
     assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1))));
   }
@@ -614,6 +613,8 @@ class PostgresSourceTest {
     testdb.query(ctx -> {
       ctx.fetch("DELETE FROM id_and_name WHERE id = 'NaN';");
       ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (3, 'gohan', 222.1);");
+      ctx.fetch("DELETE FROM id_and_name2 WHERE id = 'NaN';");
+      ctx.fetch("INSERT INTO id_and_name2 (id, name, power) VALUES (3, 'gohan', 222.1);");
       return null;
     });
 
@@ -634,9 +635,9 @@ class PostgresSourceTest {
         createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
         createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1)));
 
-    // Assert that the correct number of messages are emitted. 4 for incremental streams, 4 for full
+    // Assert that the correct number of messages are emitted. 6 for incremental streams, 6 for full
     // refresh streams.
-    assertEquals(actualMessages.size(), 8);
+    assertEquals(actualMessages.size(), 12);
     assertThat(actualMessages.contains(expectedOutput));
 
     // For per stream, platform will collect states for all streams and compose a new state. Thus, in
@@ -652,14 +653,14 @@ class PostgresSourceTest {
       return null;
     });
     // Incremental sync should only read one new message (where id = '5.0')
-    final Set<AirbyteMessage> nextSyncMessages =
-        MoreIterators.toSet(source.read(getConfig(), configuredCatalog, state));
+    final List<AirbyteMessage> nextSyncMessages =
+        MoreIterators.toList(source().read(getConfig(), configuredCatalog, state));
     setEmittedAtToNull(nextSyncMessages);
 
     // Incremental stream: An extra state message is emitted, in addition to the record messages.
     // Full refresh stream: expect 4 messages (3 records and 1 state)
     // Thus, we expect 6 messages.
-    assertEquals(6, nextSyncMessages.size());
+    assertEquals(8, nextSyncMessages.size());
     assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "5.0", "name", "piccolo", "power", 100.0))));
   }
 
