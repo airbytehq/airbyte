@@ -24,7 +24,17 @@ format = { sequence = [
 [tool.black]
 line-length = 140
 target-version = ["py310"]
-extend-exclude = "(build|integration_tests|unit_tests|generated)"
+extend-exclude = """
+/(
+    build
+    | integration_tests
+    | unit_tests
+    | generated
+    | airbyte-cdk/python/airbyte_cdk/sources/declarative/models
+    | invalid
+    | non_formatted_code
+)/
+"""
 
 [tool.coverage.report]
 fail_under = 0
@@ -58,6 +68,9 @@ include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
 skip_glob = [
+    "airbyte-cdk/python/airbyte_cdk/sources/declarative/models/**",
+    "**/invalid/**",
+    "**/non_formatted_code/**",
     "**/connector_builder/generated/**",
     # TODO: Remove this after we move to Ruff. Ruff is mono-repo-aware and
     # correctly handles first-party imports in subdirectories.
