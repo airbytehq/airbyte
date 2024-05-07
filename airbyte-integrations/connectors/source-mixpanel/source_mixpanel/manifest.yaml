@@ -276,11 +276,6 @@ definitions:
           type: DpathExtractor
           field_path:
             - "{{ 'results' if config.credentials.project_id else 'annotations' }}"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync"
-      cursor_field: ""
-      # stream is not incremental because date in the record is the date for which annotation was added,
-      # this is not the date when annotation was added
 
   # https://developer.mixpanel.com/reference/funnels-query
   funnel_ids_stream:
