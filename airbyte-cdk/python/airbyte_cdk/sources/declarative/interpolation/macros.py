@@ -16,7 +16,7 @@ This file contains macros that can be evaluated by a `JinjaInterpolation` object
 """
 
 
-def now_utc():
+def now_utc() -> datetime.datetime:
     """
     Current local date and time in UTC timezone
 
@@ -26,7 +26,7 @@ def now_utc():
     return datetime.datetime.now(datetime.timezone.utc)
 
 
-def today_utc():
+def today_utc() -> datetime.date:
     """
     Current date in UTC timezone
 
@@ -36,7 +36,7 @@ def today_utc():
     return datetime.datetime.now(datetime.timezone.utc).date()
 
 
-def timestamp(dt: Union[numbers.Number, str]):
+def timestamp(dt: Union[numbers.Number, str]) -> Union[int, float]:
     """
     Converts a number or a string to a timestamp
 
