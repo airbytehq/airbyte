@@ -20,7 +20,7 @@ definitions:
         type: RequestOption
         inject_into: header
         field_name: X-API-TOKEN
-
+        
   paginator:
     type: DefaultPaginator
     page_token_option:
@@ -80,15 +80,52 @@ definitions:
             parent_key: "id"
             partition_field: "id"
 
+  surveys_responses_requester:
+    type: CustomRequester
+    class_name: "source_qualtrics.component.CustomRequester" 
+    url_base: "https://fra1.qualtrics.com/API/v3"
+    http_method: "POST"
+    request_body_json:
+      format: csv
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: '{{ config[''api_key''] }}'
+      inject_into:
+        type: RequestOption
+        inject_into: header
+        field_name: X-API-TOKEN
+
+  surveys_responses_stream:
+      $ref: "#/definitions/base_stream"
+      name: "surveys_responses"
+      $parameters:
+        path: "survey-definitions/{{ stream_partition.id }}/export-responses"
+      retriever:
+        type: SimpleRetriever
+        record_selector:
+          $ref: "#/definitions/selector"
+        requester:
+          $ref: "#/definitions/surveys_responses_requester"
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - stream: "#/definitions/surveys_stream"
+              parent_key: "id"
+              partition_field: "id"
+
 streams:
   - "#/definitions/groups_stream"
   - "#/definitions/surveys_stream"
   - "#/definitions/surveys_questions_stream"
+  - "#/definitions/surveys_responses_stream"
 
 check:
   type: CheckStream
   stream_names:
     - "groups"
+    - "survey"
 
 spec:
   type: Spec
@@ -111,4 +148,4 @@ metadata:
     groups_stream: true
     surveys_stream: true
     surveys_questions_stream: true
-
+    surveys_responses_stream: true

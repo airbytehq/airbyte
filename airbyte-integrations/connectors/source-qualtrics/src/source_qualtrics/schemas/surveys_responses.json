@@ -1,0 +1,37 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+      "result": {
+        "type": "object",
+        "properties": {
+          "progressId": {
+            "type": "string"
+          },
+          "percentComplete": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": ["progressId", "percentComplete", "status"]
+      },
+      "meta": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          },
+          "httpStatus": {
+            "type": "string"
+          }
+        },
+        "required": ["requestId", "httpStatus"]
+      }
+    },
+    "required": ["result", "meta"]
+  }
+  
