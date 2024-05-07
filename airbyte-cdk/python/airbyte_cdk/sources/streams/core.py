@@ -18,7 +18,6 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from deprecated.classic import deprecated
 
 if typing.TYPE_CHECKING:
     from airbyte_cdk.sources import Source
@@ -147,7 +146,6 @@ class Stream(ABC):
                 if isinstance(record_data_or_message, Mapping) or (
                     hasattr(record_data_or_message, "type") and record_data_or_message.type == MessageType.RECORD
                 ):
-                    record_data = record_data_or_message if isinstance(record_data_or_message, Mapping) else record_data_or_message.record
                     record_counter += 1
 
                     if sync_mode == SyncMode.incremental:
