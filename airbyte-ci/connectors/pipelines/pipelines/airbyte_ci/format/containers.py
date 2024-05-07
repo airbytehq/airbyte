@@ -98,7 +98,7 @@ def format_java_container(dagger_client: dagger.Client, java_code: dagger.Direct
     )
 
 
-def format_js_container(dagger_client: dagger.Client, js_code: dagger.Directory, prettier_version: str = "3.0.3") -> dagger.Container:
+def format_js_container(dagger_client: dagger.Client, js_code: dagger.Directory, prettier_version: str = "3.2.5") -> dagger.Container:
     """Create a Node container with prettier installed with mounted code to format and a cache volume."""
     return build_container(
         dagger_client,
