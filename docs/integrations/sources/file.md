@@ -26,16 +26,19 @@ This page contains the setup guide and reference information for the Files sourc
 1. For **Storage Provider**, use the dropdown menu to select the _Storage Provider_ or _Location_ of the file(s) which should be replicated, then configure the provider-specific fields as needed:
 
 #### HTTPS: Public Web [Default]
+
 - `User-Agent` (Optional)
 
 Set this to active if you want to add the [User-Agent header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent) to requests (inactive by default).
 
 #### GCS: Google Cloud Storage
+
 - `Service Account JSON` (Required for **private** buckets)
 
 To access **private** buckets stored on Google Cloud, this connector requires a service account JSON credentials file with the appropriate permissions. A detailed breakdown of this topic can be found at the [Google Cloud service accounts page](https://cloud.google.com/iam/docs/service-accounts). Please generate the "credentials.json" file and copy its content to this field, ensuring it is in JSON format. **If you are accessing publicly available data**, this field is not required.
 
 #### S3: Amazon Web Services
+
 - `AWS Access Key ID` (Required for **private** buckets)
 - `AWS Secret Access Key` (Required for **private** buckets)
 
@@ -45,6 +48,7 @@ More information on setting permissions in AWS can be found
 [here](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html). **If you are accessing publicly available data**, these fields are not required.
 
 #### AzBlob: Azure Blob Storage
+
 - `Storage Account` (Required)
 
 This is the globally unique name of the storage account that the desired blob sits within. See the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview) for more details.
@@ -55,21 +59,27 @@ This is the globally unique name of the storage account that the desired blob si
 - `Shared Key`: [Find more information here](https://learn.microsoft.com/en-us/rest/api/storageservices/authorize-with-shared-key).
 
 #### SSH: Secure Shell / SCP: Secure Copy Protocol / SFTP: Secure File Transfer Protocol
+
 - `Host` (Required)
 
 Enter the _hostname_ or _IP address_ of the remote server where the file trasfer will take place.
+
 - `User` (Required)
 
 Enter the _username_ associated with your account on the remote server.
+
 - `Password` (Optional)
 
 **If required by the remote server**, enter the _password_ associated with your user account. Otherwise, leave this field blank.
+
 - `Port` (Optional)
 
 Specify the _port number_ to use for the connection. The default port is usually 22. However, if your remote server uses a non-standard port, you can enter the appropriate port number here.
 
 <!-- env:oss -->
+
 #### Local Filesystem (Airbyte Open Source only)
+
 - `Storage`
 
 :::caution
@@ -77,14 +87,17 @@ Currently, the local storage URL for reading must start with the local mount "/l
 :::
 
 Please note that if you are replicating data from a locally stored file on Windows OS, you will need to open the `.env` file in your local Airbyte root folder and change the values for:
+
 - `LOCAL_ROOT`
 - `LOCAL_DOCKER_MOUNT`
 - `HACK_LOCAL_ROOT_PARENT`
 
 Please set these to an existing absolute path on your machine. Colons in the path need to be replaced with a double forward slash, `//`. `LOCAL_ROOT` & `LOCAL_DOCKER_MOUNT` should be set to the same value, and `HACK_LOCAL_ROOT_PARENT` should be set to their parent directory.
+
 <!-- /env:oss -->
 
 ### Step 3: Complete the connector setup
+
 1. For **URL**, enter the _URL path_ of the file to be replicated.
 
 :::note
@@ -127,7 +140,7 @@ This connector does not support syncing unstructured data files such as raw text
 ## Supported sync modes
 
 | Feature                                  | Supported? |
-|------------------------------------------|------------|
+| ---------------------------------------- | ---------- |
 | Full Refresh Sync                        | Yes        |
 | Incremental Sync                         | No         |
 | Replicate Incremental Deletes            | No         |
@@ -141,7 +154,7 @@ This source produces a single table for the target file as it replicates only on
 ## File / Stream Compression
 
 | Compression | Supported? |
-|-------------|------------|
+| ----------- | ---------- |
 | Gzip        | Yes        |
 | Zip         | Yes        |
 | Bzip2       | No         |
@@ -152,7 +165,7 @@ This source produces a single table for the target file as it replicates only on
 ## Storage Providers
 
 | Storage Providers      | Supported?                                      |
-|------------------------|-------------------------------------------------|
+| ---------------------- | ----------------------------------------------- |
 | HTTPS                  | Yes                                             |
 | Google Cloud Storage   | Yes                                             |
 | Amazon Web Services S3 | Yes                                             |
@@ -163,7 +176,7 @@ This source produces a single table for the target file as it replicates only on
 ### File Formats
 
 | Format                | Supported? |
-|-----------------------|------------|
+| --------------------- | ---------- |
 | CSV                   | Yes        |
 | JSON/JSONL            | Yes        |
 | HTML                  | No         |
@@ -185,7 +198,7 @@ Normally, Airbyte tries to infer the data type from the source, but you can use 
 Here are a list of examples of possible file inputs:
 
 | Dataset Name      | Storage | URL                                                                                                                                                        | Reader Impl        | Service Account                                                  | Description                                                                                                                                                                                                           |
-|-------------------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------|------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ----------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | epidemiology      | HTTPS   | [https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv](https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv) |                    |                                                                  | [COVID-19 Public dataset](https://console.cloud.google.com/marketplace/product/bigquery-public-datasets/covid19-public-data-program?filter=solution-type:dataset&id=7d6cc408-53c8-4485-a187-b8cb9a5c0b56) on BigQuery |
 | hr_and_financials | GCS     | gs://airbyte-vault/financial.csv                                                                                                                           | smart_open or gcfs | `{"type": "service_account", "private_key_id": "XXXXXXXX", ...}` | data from a private bucket, a service account is necessary                                                                                                                                                            |
 | landsat_index     | GCS     | gcp-public-data-landsat/index.csv.gz                                                                                                                       | smart_open         |                                                                  | Using smart_open, we don't need to specify the compression (note the gs:// is optional too, same for other providers)                                                                                                 |
@@ -193,7 +206,7 @@ Here are a list of examples of possible file inputs:
 Examples with reader options:
 
 | Dataset Name  | Storage | URL                                             | Reader Impl | Reader Options                  | Description                                                                                                                                      |
-|---------------|---------|-------------------------------------------------|-------------|---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------- | ------- | ----------------------------------------------- | ----------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | landsat_index | GCS     | gs://gcp-public-data-landsat/index.csv.gz       | GCFS        | `{"compression": "gzip"}`       | Additional reader options to specify a compression option to `read_csv`                                                                          |
 | GDELT         | S3      | s3://gdelt-open-data/events/20190914.export.csv |             | `{"sep": "\t", "header": null}` | Here is TSV data separated by tabs without header row from [AWS Open Data](https://registry.opendata.aws/gdelt/)                                 |
 | server_logs   | local   | /local/logs.log                                 |             | `{"sep": ";"}`                  | After making sure a local text file exists at `/tmp/airbyte_local/logs.log` with logs file from some server that are delimited by ';' delimiters |
@@ -201,7 +214,7 @@ Examples with reader options:
 Example for SFTP:
 
 | Dataset Name | Storage | User | Password | Host            | URL                     | Reader Options                                                            | Description                                                                                                                       |
-|--------------|---------|------|----------|-----------------|-------------------------|---------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| ------------ | ------- | ---- | -------- | --------------- | ----------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | Test Rebext  | SFTP    | demo | password | test.rebext.net | /pub/example/readme.txt | `{"sep": "\r\n", "header": null, "names": \["text"], "engine": "python"}` | We use `python` engine for `read_csv` in order to handle delimiter of more than 1 character while providing our own column names. |
 
 Please see (or add) more at `airbyte-integrations/connectors/source-file/integration_tests/integration_source_test.py` for further usages examples.
@@ -217,9 +230,10 @@ In order to read large files from a remote location, this connector uses the [sm
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
-|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
-| 0.5.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
-| 0.4.1   | 2024-03-04 | [35800](https://github.com/airbytehq/airbyte/pull/35800) | Add PyAirbyte support on Python 3.11                                                                                    |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+| 0.5.1   | 2024-05-03 | [37799](https://github.com/airbytehq/airbyte/pull/37799) | Add fastparquet engine for parquet file reader.                                                         |
+| 0.5.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                         |
+| 0.4.1   | 2024-03-04 | [35800](https://github.com/airbytehq/airbyte/pull/35800) | Add PyAirbyte support on Python 3.11                                                                    |
 | 0.4.0   | 2024-02-15 | [32354](https://github.com/airbytehq/airbyte/pull/32354) | Add Zip File Support                                                                                    |
 | 0.3.17  | 2024-02-13 | [34678](https://github.com/airbytehq/airbyte/pull/34678) | Add Fixed-Width File Support                                                                            |
 | 0.3.16  | 2024-02-12 | [35186](https://github.com/airbytehq/airbyte/pull/35186) | Manage dependencies with Poetry                                                                         |

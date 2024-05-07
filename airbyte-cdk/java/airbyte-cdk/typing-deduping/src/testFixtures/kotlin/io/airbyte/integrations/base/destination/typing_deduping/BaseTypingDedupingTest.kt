@@ -1112,7 +1112,7 @@ abstract class BaseTypingDedupingTest {
         // TODO Eventually we'll want to somehow extract the state messages while a sync is running,
         // to
         // verify checkpointing.
-        destinationOutputFuture.join()
+        destinationOutputFuture.get()
         destination.close()
     }
 

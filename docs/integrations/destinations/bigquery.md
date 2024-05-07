@@ -83,13 +83,13 @@ https://github.com/airbytehq/airbyte/issues/3549
 6. For **Dataset Location**, select the location of your BigQuery dataset.
 
 :::warning
-You cannot change the location later. 
+You cannot change the location later.
 :::
 
 7. For **Default Dataset ID**, enter the BigQuery
    [Dataset ID](https://cloud.google.com/bigquery/docs/datasets#create-dataset).
 8. For **Loading Method**, select [Standard Inserts](#using-insert) or
-   [GCS Staging](#recommended-using-a-google-cloud-storage-bucket). 
+   [GCS Staging](#recommended-using-a-google-cloud-storage-bucket).
 
 :::tip
 We recommend using the GCS Staging option.

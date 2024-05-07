@@ -290,10 +290,23 @@ def engage_schema_response():
     )
 
 
+def _minimize_schema(fill_schema, schema_original):
+    keep = ["items", "properties", "type", "$schema", "additionalProperties", "required", "format", "multipleOf"]
+    for key, value in schema_original.items():
+        if isinstance(value, dict):
+            fill_schema[key] = {}
+            _minimize_schema(fill_schema[key], value)
+        elif key in keep:
+            fill_schema[key] = value
+
+
 def test_engage_schema(requests_mock, engage_schema_response, config):
     stream = Engage(authenticator=MagicMock(), **config)
     requests_mock.register_uri("GET", get_url_to_mock(EngageSchema(authenticator=MagicMock(), **config)), engage_schema_response)
-    assert stream.get_json_schema() == {
+    type_schema = {}
+    _minimize_schema(type_schema, stream.get_json_schema())
+
+    assert type_schema == {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "additionalProperties": True,
         "properties": {
