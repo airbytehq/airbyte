@@ -32,7 +32,7 @@ sudo abctl local install --password "YOUR_PASSWORD"
 
 At the end of the install you should have access to the Airbyte UI at: [`http://localhost:8000`](http://localhost:8000)
 
-💥 Now let's just move some data! 💥 
+[Now let's just move some data](/using-airbyte/core-concepts)!
 
 ## Troubleshooting
 
