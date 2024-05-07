@@ -17,6 +17,7 @@ packages = [ { include = "source_lever_hiring"}, {include = "main.py"} ]
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 airbyte-cdk = "^0"
+responses = "^0.25.0"
 
 [tool.poetry.scripts]
 source-lever-hiring = "source_lever_hiring.run:run"
