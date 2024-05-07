@@ -54,11 +54,11 @@ class SnowflakeCortexIndexer(Indexer):
 
     def _get_airbyte_messsages_from_chunks(
         self,
-        document_chunks,
+        document_chunks: Iterable[Any],
     ) -> Iterable[AirbyteMessage]:
         """Creates Airbyte messages from chunk records."""
         airbyte_messages = []
-        for i in range(len(document_chunks)):
+        for i, chunk in enumerate(document_chunks):
             chunk = document_chunks[i]
             message = AirbyteMessage(type=Type.RECORD, record=chunk.record)
             new_data = {}

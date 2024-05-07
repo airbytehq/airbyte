@@ -1,23 +1,19 @@
 {
-    "processing": {
-        "text_fields": [
-            "str_col"
-        ],
-        "metadata_fields": [
-            "int_col"
-        ],
-        "chunk_size": 1000
-    },
-    "embedding": {
-        "mode": "openai",
-        "openai_key": "mykey"
-    },
-    "indexing": {
-        "account": "MYACCOUNT",
-        "username": "MYUSERNAME",
-        "password": "xxxxxxx",
-        "database": "MYDATABASE",
-        "warehouse": "MYWAREHOUSE",
-        "role": "ACCOUNTADMIN" 
-    }
+  "processing": {
+    "text_fields": ["str_col"],
+    "metadata_fields": ["int_col"],
+    "chunk_size": 1000
+  },
+  "embedding": {
+    "mode": "openai",
+    "openai_key": "mykey"
+  },
+  "indexing": {
+    "account": "MYACCOUNT",
+    "username": "MYUSERNAME",
+    "password": "xxxxxxx",
+    "database": "MYDATABASE",
+    "warehouse": "MYWAREHOUSE",
+    "role": "ACCOUNTADMIN"
+  }
 }
