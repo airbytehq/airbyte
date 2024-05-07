@@ -105,17 +105,28 @@ poe type_check
 ```bash
 poe lint
 ```
+
 ## Changelog
+
+### 1.3.1
+
+- Removed `DOCKER_HUB_USERNAME` as a requirement from `connectors_qa` package. The actual medatada
+  validation will still fail if the env variables are not provided.
+- Removed a check on whether documentation file exists from `MetadataCheck` in favor of the existing
+  check in `DocumentationCheck`.
 
 ### 1.3.0
 
-Added `CheckConnectorMaxSecondsBetweenMessagesValue` check that verifies presence of `maxSecondsBetweenMessages` value in `metadata.yaml` file for all source certified connectors.
+Added `CheckConnectorMaxSecondsBetweenMessagesValue` check that verifies presence of
+`maxSecondsBetweenMessages` value in `metadata.yaml` file for all source certified connectors.
 
 ### 1.2.0
 
-Added `ValidateBreakingChangesDeadlines` check that verifies the minimal compliance of breaking change rollout deadline.
+Added `ValidateBreakingChangesDeadlines` check that verifies the minimal compliance of breaking
+change rollout deadline.
 
 ### 1.1.0
+
 Introduced the `Check.run_on_released_connectors` flag.
 
 ### 1.0.4
@@ -137,4 +148,5 @@ Fix access to connector types: it should be accessed from the `Connector.connect
 - Make `CheckPublishToPyPiIsEnabled` run on source connectors only.
 
 ### 1.0.0
+
 Initial release of `connectors-qa` package.
