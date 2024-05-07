@@ -131,7 +131,7 @@ class HttpStream(Stream, ABC):
         return 5
 
     @property
-    def authenticator(self) -> AuthBase:
+    def authenticator(self) -> Optional[AuthBase]:
         return self._authenticator
 
     @property
