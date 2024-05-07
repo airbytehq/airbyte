@@ -3,6 +3,6 @@
 #
 
 # Initialize Streams Package
-from .core import NO_CURSOR_STATE_KEY, IncrementalMixin, CheckpointMixin, Stream
+from .core import NO_CURSOR_STATE_KEY, CheckpointMixin, IncrementalMixin, Stream
 
 __all__ = ["NO_CURSOR_STATE_KEY", "IncrementalMixin", "CheckpointMixin", "Stream"]
