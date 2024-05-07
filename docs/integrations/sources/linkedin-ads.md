@@ -171,7 +171,8 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
-| 2.1.0   | 2024-04-30 | [37573](https://github.com/airbytehq/airbyte/pull/37573) | Update API version to `202404`; add cursor-based pagination                                                       |
+| 2.1.1   | 2024-05-07 | [38013](https://github.com/airbytehq/airbyte/pull/38013) | Fix an issue where the `Accounts` stream did not correctly handle provided account IDs                          |
+| 2.1.0   | 2024-04-30 | [37573](https://github.com/airbytehq/airbyte/pull/37573) | Update API version to `202404`; add cursor-based pagination                                                     |
 | 2.0.0   | 2024-04-24 | [37531](https://github.com/airbytehq/airbyte/pull/37531) | Change primary key for Analytics Streams                                                                        |
 | 1.0.1   | 2024-03-28 | [34152](https://github.com/airbytehq/airbyte/pull/34152) | Proceed pagination if return less than expected                                                                 |
 | 1.0.0   | 2024-04-10 | [36927](https://github.com/airbytehq/airbyte/pull/36927) | Update primary key for Analytics Streams                                                                        |
