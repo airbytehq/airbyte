@@ -230,11 +230,13 @@ internal constructor(
                     e,
                     ConnectorExceptionUtil.getDisplayMessage(rootConfigErrorThrowable)
                 )
+                AirbyteExceptionHandler.terminate()
             } else if (ConnectorExceptionUtil.isTransientError(rootTransientErrorThrowable)) {
                 AirbyteTraceMessageUtility.emitTransientErrorTrace(
                     e,
                     ConnectorExceptionUtil.getDisplayMessage(rootTransientErrorThrowable)
                 )
+                AirbyteExceptionHandler.terminate()
             }
             if (parsed.command == Command.CHECK) {
                 // Currently, special handling is required for the CHECK case since the user display
