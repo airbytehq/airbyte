@@ -223,7 +223,7 @@ class PipelineContext:
 
     @property
     def remote_storage_enabled(self) -> bool:
-        return self.is_ci is True and self.ci_report_bucket is not None and self.ci_gcs_credentials_secret is not None
+        return self.is_ci and bool(self.ci_report_bucket) and bool(self.ci_gcs_credentials)
 
     def get_repo_file(self, file_path: str) -> File:
         """Get a file from the current repository.

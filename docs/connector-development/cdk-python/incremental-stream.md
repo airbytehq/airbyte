@@ -23,7 +23,7 @@ Cursor fields can be input by the user \(e.g: a user can choose to use an auto-i
 
 In the context of the CDK, setting the `Stream.cursor_field` property to any truthy value informs the framework that this stream is incremental.
 
-### `IncrementalMixin`
+### `StateMixin`
 
 This class mixin adds property `state` with abstract setter and getter.
 The `state` attribute helps the CDK figure out the current state of sync at any moment (in contrast to deprecated `Stream.get_updated_state` method).
