@@ -4,11 +4,25 @@
 
 package io.airbyte.integrations.destination.elasticsearch;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import co.elastic.clients.elasticsearch._core.BulkResponse;
 import co.elastic.clients.elasticsearch._core.bulk.IndexResponseItem;
 import co.elastic.clients.elasticsearch._types.ErrorCause;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction;
@@ -19,15 +33,6 @@ import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ElasticsearchAirbyteMessageConsumerFactory {
 
@@ -38,15 +43,16 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
   private static final AtomicLong recordsWritten = new AtomicLong(0);
 
   /**
-   * Holds a mapping of temp to target indices. After closing a sync job, the target index is removed
+   * Holds a mapping of temp to target indices. After closing a sync job, the
+   * target index is removed
    * if it already exists, and the temp index is copied to replace it.
    */
   private static final Map<String, String> tempIndices = new HashMap<>();
 
   public static AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
-                                              final ElasticsearchConnection connection,
-                                              final List<ElasticsearchWriteConfig> writeConfigs,
-                                              final ConfiguredAirbyteCatalog catalog) {
+      final ElasticsearchConnection connection,
+      final List<ElasticsearchWriteConfig> writeConfigs,
+      final ConfiguredAirbyteCatalog catalog) {
 
     return new BufferedStreamConsumer(
         outputRecordCollector,
@@ -58,7 +64,8 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
   }
 
   // is there any json node that wont fit in the index?
-  private static CheckedFunction<JsonNode, Boolean, Exception> isValidFunction(final ElasticsearchConnection connection) {
+  private static CheckedFunction<JsonNode, Boolean, Exception> isValidFunction(
+      final ElasticsearchConnection connection) {
     return jsonNode -> true;
   }
 
@@ -73,11 +80,16 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
   }
 
   private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(
-                                                                         final ElasticsearchConnection connection,
-                                                                         final List<ElasticsearchWriteConfig> writeConfigs) {
+      final ElasticsearchConnection connection,
+      final List<ElasticsearchWriteConfig> writeConfigs) {
 
     return (pair, records) -> {
       log.info("writing {} records in bulk operation", records.size());
+
+      records = records.stream()
+          .map(record -> processRecordFields(record))
+          .collect(Collectors.toList());
+
       final var optConfig = writeConfigs.stream()
           .filter(c -> Objects.equals(c.getStreamName(), pair.getName()) &&
               Objects.equals(c.getNamespace(), pair.getNamespace()))
@@ -101,6 +113,44 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
     };
   }
 
+  private static AirbyteRecordMessage processRecordFields(AirbyteRecordMessage record) {
+    JsonNode dataJson = record.getData();
+    if (dataJson.isObject()) {
+      ObjectNode objectNode = (ObjectNode) dataJson;
+
+      objectNode.fields().forEachRemaining(entry -> {
+        String fieldName = entry.getKey();
+        JsonNode fieldValue = entry.getValue();
+        parseFieldIfTextual(objectNode, fieldName, fieldValue);
+      });
+
+      record.setData(objectNode);
+    }
+    return record;
+  }
+
+  private static void parseFieldIfTextual(ObjectNode objectNode,
+      String fieldName,
+      JsonNode fieldValue) {
+
+    // Check if the field value is a textual (string) node
+    if (fieldValue.isTextual()) {
+      String txtFieldValue = fieldValue.textValue();
+      // Check if the textual field value contains "[" or "{", indicating it might be
+      // a JSON array or object
+      if (txtFieldValue.contains("[") || txtFieldValue.contains("{")) {
+        try {
+          // Attempt to parse the field value as JSON
+          JsonNode parsedField = mapper.readTree(txtFieldValue);
+          // Set the parsed JSON object back into the original JSON structure
+          objectNode.set(fieldName, parsedField);
+        } catch (Exception e) {
+          log.warn("Error parsing JSON field {}", e.getMessage());
+        }
+      }
+    }
+  }
+
   private static List<String> extractErrorReport(BulkResponse response) {
     final Map<String, ErrorCause> errorResult = new HashMap<>();
     response.items().forEach(item -> {
@@ -111,15 +161,16 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
     errorResult.forEach((index, error) -> {
 
       final String msg = String.format("""
-                                       failed to write bulk records for index: %s\s
-                                       error type: %s
-                                        reason: %s""", index, error.type(), error.reason());
+          failed to write bulk records for index: %s\s
+          error type: %s
+           reason: %s""", index, error.type(), error.reason());
       errorReport.add(msg);
     });
     return errorReport;
   }
 
-  private static OnStartFunction onStartFunction(final ElasticsearchConnection connection, final List<ElasticsearchWriteConfig> writeConfigs) {
+  private static OnStartFunction onStartFunction(final ElasticsearchConnection connection,
+      final List<ElasticsearchWriteConfig> writeConfigs) {
     return () -> {
       for (final var config : writeConfigs) {
         if (config.useTempIndex()) {
