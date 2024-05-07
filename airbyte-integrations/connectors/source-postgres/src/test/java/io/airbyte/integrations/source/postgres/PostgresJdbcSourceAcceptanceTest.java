@@ -78,9 +78,15 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Postgres
         .build();
   }
 
+  private PostgresSource postgresSource = null;
+
   @Override
   protected PostgresSource source() {
-    return new PostgresSource();
+    if (postgresSource != null) {
+      postgresSource.close();
+    }
+    postgresSource = new PostgresSource();
+    return postgresSource;
   }
 
   @Override

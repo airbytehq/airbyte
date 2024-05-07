@@ -152,10 +152,20 @@ class PostgresSourceTest {
   @AfterEach
   void tearDown() {
     testdb.close();
+    if (postgresSource != null) {
+      postgresSource.close();
+    }
+    postgresSource = null;
   }
 
-  public PostgresSource source() {
-    return new PostgresSource();
+  private PostgresSource postgresSource = null;
+
+  protected PostgresSource source() {
+    if (postgresSource != null) {
+      postgresSource.close();
+    }
+    postgresSource = new PostgresSource();
+    return postgresSource;
   }
 
   private static DSLContext getDslContextWithSpecifiedUser(final JsonNode config, final String username, final String password) {
