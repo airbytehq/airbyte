@@ -253,28 +253,6 @@ class FunnelsSubstreamPartitionRouter(SubstreamPartitionRouter):
                         yield from []
 
 
-class FunnelsLegacyToPerPartitionStateMigration(LegacyToPerPartitionStateMigration):
-    """
-    Gor error when use custom StateMigration:
-        custom_component_class(**kwargs):
-            TypeError: LegacyToPerPartitionStateMigration.__init__() missing 2 required positional arguments: 'partition_router', 'cursor'
-
-    """
-
-    partition_router: SubstreamPartitionRouter = None
-    cursor: DatetimeBasedCursor = None
-    config: Mapping[str, Any]
-    parameters: Mapping[str, Any]
-
-    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        state = super().migrate(stream_state)
-        for partition_state in state.get("states", []):
-            # add empty parent_slice attr to partition
-            if "parent_slice" not in partition_state.get("partition", {}):
-                partition_state["partition"]["parent_slice"] = {}
-        return state
-
-
 @dataclass
 class EngagePaginationStrategy(PageIncrement):
     """
