@@ -67,6 +67,8 @@ class PipelineContext:
         is_local: bool,
         git_branch: str,
         git_revision: str,
+        diffed_branch: str,
+        git_repo_url: str,
         report_output_prefix: str,
         gha_workflow_run_url: Optional[str] = None,
         dagger_logs_url: Optional[str] = None,
@@ -90,6 +92,8 @@ class PipelineContext:
             is_local (bool): Whether the context is for a local run or a CI run.
             git_branch (str): The current git branch name.
             git_revision (str): The current git revision, commit hash.
+            diffed_branch (str): The branch to diff against.
+            git_repo_url (str): The git repository URL.
             report_output_prefix (str): The prefix to use for the report output.
             gha_workflow_run_url (Optional[str], optional): URL to the github action workflow run. Only valid for CI run. Defaults to None.
             dagger_logs_url (Optional[str], optional): URL to the dagger logs. Only valid for CI run. Defaults to None.
@@ -104,6 +108,8 @@ class PipelineContext:
         self.is_local = is_local
         self.git_branch = git_branch
         self.git_revision = git_revision
+        self.diffed_branch = diffed_branch
+        self.git_repo_url = git_repo_url
         self.report_output_prefix = report_output_prefix
         self.gha_workflow_run_url = gha_workflow_run_url
         self.dagger_logs_url = dagger_logs_url
@@ -160,9 +166,10 @@ class PipelineContext:
         self._report = report
 
     @property
-    def ci_gcs_credentials_secret(self) -> Secret:
-        assert self.ci_gcs_credentials is not None, "The ci_gcs_credentials was not set on this PipelineContext."
-        return self.dagger_client.set_secret("ci_gcs_credentials", self.ci_gcs_credentials)
+    def ci_gcs_credentials_secret(self) -> Secret | None:
+        if self.ci_gcs_credentials is not None:
+            return self.dagger_client.set_secret("ci_gcs_credentials", self.ci_gcs_credentials)
+        return None
 
     @property
     def ci_github_access_token_secret(self) -> Secret:
@@ -180,7 +187,11 @@ class PipelineContext:
         """Build a dictionary used as kwargs to the update_commit_status_check function."""
         target_url: Optional[str] = self.gha_workflow_run_url
 
-        if self.state not in [ContextState.RUNNING, ContextState.INITIALIZED] and isinstance(self.report, ConnectorReport):
+        if (
+            self.remote_storage_enabled
+            and self.state not in [ContextState.RUNNING, ContextState.INITIALIZED]
+            and isinstance(self.report, ConnectorReport)
+        ):
             target_url = self.report.html_report_url
 
         return {
@@ -209,6 +220,10 @@ class PipelineContext:
             return None
 
         return f"https://alpha.dagger.cloud/changeByPipelines?filter=dagger.io/git.ref:{self.git_revision}"
+
+    @property
+    def remote_storage_enabled(self) -> bool:
+        return self.is_ci and bool(self.ci_report_bucket) and bool(self.ci_gcs_credentials)
 
     def get_repo_file(self, file_path: str) -> File:
         """Get a file from the current repository.

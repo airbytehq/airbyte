@@ -14,7 +14,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import org.jooq.SQLDialect
 
 class NoOpJdbcDestinationHandler<DestinationState>(
-    databaseName: String,
+    databaseName: String?,
     jdbcDatabase: JdbcDatabase,
     rawTableSchemaName: String,
     sqlDialect: SQLDialect
@@ -40,11 +40,11 @@ class NoOpJdbcDestinationHandler<DestinationState>(
         throw NotImplementedError("This JDBC Destination Handler does not support typing deduping")
     }
 
-    override fun toDestinationState(json: JsonNode?): DestinationState {
+    override fun toDestinationState(json: JsonNode): DestinationState {
         throw NotImplementedError("This JDBC Destination Handler does not support typing deduping")
     }
 
-    override fun toJdbcTypeName(airbyteType: AirbyteType?): String {
+    override fun toJdbcTypeName(airbyteType: AirbyteType): String {
         throw NotImplementedError("This JDBC Destination Handler does not support typing deduping")
     }
 }

@@ -9,7 +9,7 @@ import TabItem from "@theme/TabItem";
 
 Now that you've learned how to set up your first [source](./add-a-source) and [destination](./add-a-destination), it's time to finish the setup by creating your very first connection!
 
-On the left side of your main Airbyte dashboard, select **Connections**. You will be prompted to choose which source and destination to use for this connection. For this example, we'll use the **Google Sheets** source and the destination you previously set up, either **Local JSON**  or **Google Sheets**.
+On the left side of your main Airbyte dashboard, select **Connections**. You will be prompted to choose which source and destination to use for this connection. For this example, we'll use the **Google Sheets** source and the destination you previously set up, either **Local JSON** or **Google Sheets**.
 
 ## Configure the connection
 
@@ -19,7 +19,7 @@ Most users select "Mirror Source", which will simply copy the data from the sour
 
 <Arcade id="9E7CQiWoHtFvB12Yd5zN" title="Getting Started (Select Streams)" />
 
-Next, you can toggle which streams you want to replicate.  Our test data consists of three streams, which we've enabled and set to `Incremental - Append + Deduped` sync mode.
+Next, you can toggle which streams you want to replicate. Our test data consists of three streams, which we've enabled and set to `Incremental - Append + Deduped` sync mode.
 
 ![Setup streams](./assets/getting-started-select-streams.png)
 
@@ -50,7 +50,7 @@ Here's a basic overview of the tabs and their use:
 2. The **Job History** tab allows you to check the logs for each sync. If you encounter any errors or unexpected behaviors during a sync, checking the logs is always a good first step to finding the cause and solution.
 3. The **Schema** tab allows you to modify the streams you chose during the connection setup.
 4. The **Transformation** tab allows you to set up a custom post-sync transformations using dbt.
-4. The **Settings** tab contains the connection settings, and the option to delete the connection if you no longer wish to use it.
+5. The **Settings** tab contains the connection settings, and the option to delete the connection if you no longer wish to use it.
 
 ### Check the data from your first sync
 
@@ -70,7 +70,7 @@ Once the first sync has completed, you can verify the sync has completed by chec
 
     You should see a list of JSON objects, each containing a unique `airbyte_ab_id`, an `emitted_at` timestamp, and `airbyte_data` containing the extracted record.
 
-:::tip 
+:::tip
 If you are using Airbyte on Windows with WSL2 and Docker, refer to [this guide](/integrations/locating-files-local-destination.md) to locate the replicated folder and file.
 :::
 

@@ -3,7 +3,9 @@
 ## Overview
 
 This connector syncs data from the [US Census API](https://www.census.gov/data/developers/guidance/api-user-guide.Example_API_Queries.html)
+
 <!-- env:oss -->
+
 ### Output schema
 
 This source always outputs a single stream, `us_census_stream`. The output of the stream depends on the configuration of the connector.
@@ -16,7 +18,9 @@ This source always outputs a single stream, `us_census_stream`. The output of th
 | Incremental Sync  | No         |
 | SSL connection    | Yes        |
 | Namespaces        | No         |
+
 <!-- /env:oss -->
+
 ## Getting started
 
 ### Requirements

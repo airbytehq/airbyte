@@ -8,12 +8,12 @@ Other behaviors can be configured through the `Requester`'s `error_handler` fiel
 Schema:
 
 ```yaml
-  ErrorHandler:
-    type: object
-    description: "Error handler"
-    anyOf:
-      - "$ref": "#/definitions/DefaultErrorHandler"
-      - "$ref": "#/definitions/CompositeErrorHandler"
+ErrorHandler:
+  type: object
+  description: "Error handler"
+  anyOf:
+    - "$ref": "#/definitions/DefaultErrorHandler"
+    - "$ref": "#/definitions/CompositeErrorHandler"
 ```
 
 ## Default error handler
@@ -21,26 +21,26 @@ Schema:
 Schema:
 
 ```yaml
-  DefaultErrorHandler:
-    type: object
-    required:
-      - max_retries
-    additionalProperties: true
-    properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      response_filters:
-        type: array
-        items:
-          "$ref": "#/definitions/HttpResponseFilter"
-      max_retries:
-        type: integer
-        default: 5
-      backoff_strategies:
-        type: array
-        items:
-          "$ref": "#/definitions/BackoffStrategy"
-        default: [ ]
+DefaultErrorHandler:
+  type: object
+  required:
+    - max_retries
+  additionalProperties: true
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    response_filters:
+      type: array
+      items:
+        "$ref": "#/definitions/HttpResponseFilter"
+    max_retries:
+      type: integer
+      default: 5
+    backoff_strategies:
+      type: array
+      items:
+        "$ref": "#/definitions/BackoffStrategy"
+      default: []
 ```
 
 ## Defining errors
@@ -53,32 +53,32 @@ For instance, this example will configure the handler to also retry responses wi
 Schema:
 
 ```yaml
-  HttpResponseFilter:
-    type: object
-    required:
-      - action
-    additionalProperties: true
-    properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      action:
-        "$ref": "#/definitions/ResponseAction"
-      http_codes:
-        type: array
-        items:
-          type: integer
-        default: [ ]
-      error_message_contains:
-        type: string
-      predicate:
-        type: string
-  ResponseAction:
-    type: string
-    enum:
-      - SUCCESS
-      - FAIL
-      - IGNORE
-      - RETRY
+HttpResponseFilter:
+  type: object
+  required:
+    - action
+  additionalProperties: true
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    action:
+      "$ref": "#/definitions/ResponseAction"
+    http_codes:
+      type: array
+      items:
+        type: integer
+      default: []
+    error_message_contains:
+      type: string
+    predicate:
+      type: string
+ResponseAction:
+  type: string
+  enum:
+    - SUCCESS
+    - FAIL
+    - IGNORE
+    - RETRY
 ```
 
 Example:
@@ -154,13 +154,13 @@ The error handler supports a few backoff strategies, which are described in the 
 Schema:
 
 ```yaml
-  BackoffStrategy:
-    type: object
-    anyOf:
-      - "$ref": "#/definitions/ExponentialBackoffStrategy"
-      - "$ref": "#/definitions/ConstantBackoffStrategy"
-      - "$ref": "#/definitions/WaitTimeFromHeader"
-      - "$ref": "#/definitions/WaitUntilTimeFromHeader"
+BackoffStrategy:
+  type: object
+  anyOf:
+    - "$ref": "#/definitions/ExponentialBackoffStrategy"
+    - "$ref": "#/definitions/ConstantBackoffStrategy"
+    - "$ref": "#/definitions/WaitTimeFromHeader"
+    - "$ref": "#/definitions/WaitUntilTimeFromHeader"
 ```
 
 ### Exponential backoff
@@ -170,15 +170,15 @@ This is the default backoff strategy. The requester will backoff with an exponen
 Schema:
 
 ```yaml
-  ExponentialBackoffStrategy:
-    type: object
-    additionalProperties: true
-    properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      factor:
-        type: integer
-        default: 5
+ExponentialBackoffStrategy:
+  type: object
+  additionalProperties: true
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    factor:
+      type: integer
+      default: 5
 ```
 
 ### Constant Backoff
@@ -188,16 +188,16 @@ When using the `ConstantBackoffStrategy` strategy, the requester will backoff wi
 Schema:
 
 ```yaml
-  ConstantBackoffStrategy:
-    type: object
-    additionalProperties: true
-    required:
-      - backoff_time_in_seconds
-    properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      backoff_time_in_seconds:
-        type: number
+ConstantBackoffStrategy:
+  type: object
+  additionalProperties: true
+  required:
+    - backoff_time_in_seconds
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    backoff_time_in_seconds:
+      type: number
 ```
 
 ### Wait time defined in header
@@ -208,18 +208,18 @@ In this example, the requester will backoff by the response's "wait_time" header
 Schema:
 
 ```yaml
-  WaitTimeFromHeader:
-    type: object
-    additionalProperties: true
-    required:
-      - header
-    properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      header:
-        type: string
-      regex:
-        type: string
+WaitTimeFromHeader:
+  type: object
+  additionalProperties: true
+  required:
+    - header
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    header:
+      type: string
+    regex:
+      type: string
 ```
 
 Example:
@@ -257,20 +257,20 @@ In this example, the requester will wait until the time specified in the "wait_u
 Schema:
 
 ```yaml
-  WaitUntilTimeFromHeader:
-    type: object
-    additionalProperties: true
-    required:
-      - header
-    properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      header:
-        type: string
-      regex:
-        type: string
-      min_wait:
-        type: number
+WaitUntilTimeFromHeader:
+  type: object
+  additionalProperties: true
+  required:
+    - header
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    header:
+      type: string
+    regex:
+      type: string
+    min_wait:
+      type: number
 ```
 
 Example:
@@ -315,17 +315,17 @@ In this example, a constant backoff of 5 seconds, will be applied if the respons
 Schema:
 
 ```yaml
-  CompositeErrorHandler:
-    type: object
-    required:
-      - error_handlers
-    additionalProperties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      error_handlers:
-        type: array
-        items:
-          "$ref": "#/definitions/ErrorHandler"
+CompositeErrorHandler:
+  type: object
+  required:
+    - error_handlers
+  additionalProperties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    error_handlers:
+      type: array
+      items:
+        "$ref": "#/definitions/ErrorHandler"
 ```
 
 Example:

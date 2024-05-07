@@ -6,18 +6,18 @@ This source can sync data from the [ConvertKit API](https://developers.convertki
 
 ## This Source Supports the Following Streams
 
-* sequences
-* subscribers
-* broadcasts
-* tags
-* forms
+- sequences
+- subscribers
+- broadcasts
+- tags
+- forms
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | No                   |       |
 
 ### Performance considerations
 
@@ -27,10 +27,10 @@ The connector has a rate limit of no more than 120 requests over a rolling 60 se
 
 ### Requirements
 
-* ConvertKit API Secret
+- ConvertKit API Secret
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject                                                    |
-|:--------|:-----------| :----------- |:-----------------------------------------------------------|
+| Version | Date       | Pull Request                                             | Subject        |
+| :------ | :--------- | :------------------------------------------------------- | :------------- |
 | 0.1.0   | 2022-10-25 | [18455](https://github.com/airbytehq/airbyte/pull/18455) | Initial commit |

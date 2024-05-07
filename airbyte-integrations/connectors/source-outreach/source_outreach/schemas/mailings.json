@@ -4,243 +4,305 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier for the email.",
       "type": "integer"
     },
     "attachments": {
+      "description": "Attachments included in the email.",
       "type": ["null", "array"]
     },
     "attributableSequenceId": {
+      "description": "ID of the sequence this email is attributed to.",
       "type": ["null", "integer"]
     },
     "attributableSequenceName": {
+      "description": "Name of the sequence this email is attributed to.",
       "type": ["null", "string"]
     },
     "bodyHtml": {
+      "description": "HTML content of the email body.",
       "type": ["null", "string"]
     },
     "bodyText": {
+      "description": "Plain text content of the email body.",
       "type": ["null", "string"]
     },
     "bouncedAt": {
+      "description": "Timestamp when the email bounced.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "clickCount": {
+      "description": "Total number of clicks on links in the email.",
       "type": ["null", "integer"]
     },
     "calendar": {
+      "description": "Calendar information related to the email.",
       "type": ["null", "array"]
     },
     "clickedAt": {
+      "description": "Timestamp when the email was clicked.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "deliveredAt": {
+      "description": "Timestamp when the email was delivered.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "desiredAt": {
+      "description": "Desired time for the email to be sent.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "errorBacktrace": {
+      "description": "Backtrace information for any errors encountered.",
       "type": ["null", "string"]
     },
     "errorReason": {
+      "description": "Reason for any errors encountered.",
       "type": ["null", "string"]
     },
     "followUpTaskScheduledAt": {
+      "description": "Timestamp when the follow-up task is scheduled.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "followUpTaskType": {
+      "description": "Type of follow-up task.",
       "type": ["null", "string"]
     },
     "mailboxAddress": {
+      "description": "Email address of the mailbox.",
       "type": ["null", "string"]
     },
     "mailingType": {
+      "description": "Type of mailing.",
       "type": ["null", "string"]
     },
     "markedAsSpamAt": {
+      "description": "Timestamp when the email was marked as spam.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "meetingDescription": {
+      "description": "Description for any meeting associated with the email.",
       "type": ["null", "string"]
     },
     "meetingDuration": {
+      "description": "Duration of any meeting associated with the email.",
       "type": ["null", "integer"]
     },
     "meetingLocation": {
+      "description": "Location of any meeting associated with the email.",
       "type": ["null", "string"]
     },
     "meetingTitle": {
+      "description": "Title of any meeting associated with the email.",
       "type": ["null", "string"]
     },
     "messageId": {
+      "description": "ID of the message.",
       "type": ["null", "string"]
     },
     "notifyThreadCondition": {
+      "description": "Condition for notifying threads.",
       "type": ["null", "string"]
     },
     "notifyThreadScheduledAt": {
+      "description": "Timestamp when thread notification is scheduled.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "notifyThreadStatus": {
+      "description": "Status of thread notification.",
       "type": ["null", "string"]
     },
     "openCount": {
+      "description": "Total number of times the email has been opened.",
       "type": ["null", "integer"]
     },
     "openedAt": {
+      "description": "Timestamp when the email was opened.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "optimizedScheduledAt": {
+      "description": "Optimized scheduled time for the email.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "overrideSafetySettings": {
+      "description": "Override settings related to safety measures.",
       "type": ["null", "boolean"]
     },
     "references": {
+      "description": "References related to the email.",
       "type": ["null", "array"]
     },
     "repliedAt": {
+      "description": "Timestamp when a reply was sent.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "replySentiment": {
+      "description": "Sentiment analysis of the reply received.",
       "type": ["null", "string"]
     },
     "retryAt": {
+      "description": "Timestamp for retrying the email send.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "retryCount": {
+      "description": "Number of times the email has been retried.",
       "type": ["null", "integer"]
     },
     "retryInterval": {
+      "description": "Interval between email send retries.",
       "type": ["null", "integer"]
     },
     "schedule": {
+      "description": "Schedule information for the email.",
       "type": ["null", "array"]
     },
     "scheduleId": {
+      "description": "ID of the email schedule.",
       "type": ["null", "integer"]
     },
     "scheduledAt": {
+      "description": "Timestamp when the email is scheduled.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "state": {
+      "description": "Current state of the email.",
       "type": ["null", "string"]
     },
     "stateChangedAt": {
+      "description": "Timestamp when the state of the email changed.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "subject": {
+      "description": "Subject of the email.",
       "type": ["null", "string"]
     },
     "trackLinks": {
+      "description": "Flag indicating if links in the email are being tracked.",
       "type": ["null", "boolean"]
     },
     "trackOpens": {
+      "description": "Flag indicating if email opens are being tracked.",
       "type": ["null", "boolean"]
     },
     "unsubscribedAt": {
+      "description": "Timestamp when a recipient unsubscribed.",
       "type": ["null", "string"],
       "format": "date-time"
     },
-
     "createdAt": {
+      "description": "Timestamp when the email was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "Timestamp of the last update to the email data.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "followUpSequence": {
+      "description": "Sequences related to follow-up emails.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "followUpSequenceId": {
+      "description": "ID of the follow-up sequence.",
       "type": ["null", "integer"]
     },
     "followUpSequenceName": {
+      "description": "Name of the follow-up sequence.",
       "type": ["null", "string"]
     },
     "followUpSequenceStartingDate": {
+      "description": "Date when the follow-up sequence starts.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "mailbox": {
+      "description": "Mailbox information.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "opportunity": {
+      "description": "Opportunity information related to the email.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "prospect": {
+      "description": "Prospect information.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "recipients": {
+      "description": "List of recipients of the email.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "sequence": {
+      "description": "Sequence information related to the email.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "sequenceState": {
+      "description": "State of the sequence.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "sequenceStep": {
+      "description": "Step of the sequence.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "task": {
+      "description": "Task information related to the email.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "tasks": {
+      "description": "List of tasks associated with the email.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "template": {
+      "description": "Template information used for the email.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "user": {
+      "description": "User information related to the email.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
