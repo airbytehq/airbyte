@@ -41,8 +41,10 @@ The Younium source connector supports the following [sync modes](https://docs.ai
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                            |
-| :------ | :--------- | :------------------------------------------------------- |:---------------------------------------------------|
-| 0.3.0   | 2023-10-25 | [31690](https://github.com/airbytehq/airbyte/pull/31690) | Migrate to low-code framework |
-| 0.2.0   | 2023-03-29 | [24655](https://github.com/airbytehq/airbyte/pull/24655) | Source Younium: Adding Booking and Account streams |
-| 0.1.0   | 2022-11-09 | [18758](https://github.com/airbytehq/airbyte/pull/18758) | 🎉 New Source: Younium [python cdk]                |
+| Version | Date       | Pull Request                                             | Subject                                                    |
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
+| 0.3.2   | 2024-04-19 | [37298](https://github.com/airbytehq/airbyte/pull/37298) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |
+| 0.3.1   | 2024-04-12 | [37298](https://github.com/airbytehq/airbyte/pull/37298) | schema descriptions                                        |
+| 0.3.0   | 2023-10-25 | [31690](https://github.com/airbytehq/airbyte/pull/31690) | Migrate to low-code framework                              |
+| 0.2.0   | 2023-03-29 | [24655](https://github.com/airbytehq/airbyte/pull/24655) | Source Younium: Adding Booking and Account streams         |
+| 0.1.0   | 2022-11-09 | [18758](https://github.com/airbytehq/airbyte/pull/18758) | 🎉 New Source: Younium [python cdk]                        |

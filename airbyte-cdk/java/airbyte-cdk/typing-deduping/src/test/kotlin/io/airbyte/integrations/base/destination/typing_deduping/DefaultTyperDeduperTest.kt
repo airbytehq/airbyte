@@ -19,7 +19,6 @@ import kotlin.collections.List
 import kotlin.collections.MutableMap
 import kotlin.collections.emptyList
 import kotlin.collections.set
-import lombok.SneakyThrows
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -59,7 +58,6 @@ class DefaultTyperDeduperTest {
 
     private val MIGRATION_REQUIRING_SOFT_RESET: Migration<MockState> =
         object : Migration<MockState> {
-            @SneakyThrows
             override fun migrateIfNecessary(
                 destinationHandler: DestinationHandler<MockState>,
                 stream: StreamConfig,
@@ -934,11 +932,11 @@ class DefaultTyperDeduperTest {
                     "overwrite_ns",
                     "overwrite_stream"
                 ),
-                null,
+                mock(),
                 DestinationSyncMode.OVERWRITE,
-                null,
-                null,
-                null
+                mock(),
+                mock(),
+                mock()
             )
         private val APPEND_STREAM_CONFIG =
             StreamConfig(
@@ -950,11 +948,11 @@ class DefaultTyperDeduperTest {
                     "append_ns",
                     "append_stream"
                 ),
-                null,
+                mock(),
                 DestinationSyncMode.APPEND,
-                null,
-                null,
-                null
+                mock(),
+                mock(),
+                mock()
             )
         private val DEDUPE_STREAM_CONFIG =
             StreamConfig(
@@ -966,11 +964,11 @@ class DefaultTyperDeduperTest {
                     "dedup_ns",
                     "dedup_stream"
                 ),
-                null,
+                mock(),
                 DestinationSyncMode.APPEND_DEDUP,
-                null,
-                null,
-                null
+                mock(),
+                mock(),
+                mock()
             )
     }
 }

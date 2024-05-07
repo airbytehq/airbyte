@@ -51,3 +51,10 @@
 /airbyte-integrations/connectors/destination-s3/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-snowflake/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-redshift/ @airbytehq/destinations
+
+# Python critical connectors
+/airbyte-integrations/connectors/source-facebook-marketing/ @airbytehq/critical-connectors
+/airbyte-integrations/connectors/source-hubspot/ @airbytehq/critical-connectors
+/airbyte-integrations/connectors/source-salesforce/ @airbytehq/critical-connectors
+/airbyte-integrations/connectors/source-shopify/ @airbytehq/critical-connectors
+/airbyte-integrations/connectors/source-stripe/ @airbytehq/critical-connectors
