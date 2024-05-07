@@ -748,6 +748,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
                                           final boolean incrementalModeOnly) {
 
     cursorBasedStreamsCategorised = categoriseStreams(postgresCursorBasedStateManager, catalog);
+
+    LOGGER.info("Final cursorBasedStreamsCategorised: " + cursorBasedStreamsCategorised);
+
     final ResultWithFailed<List<AirbyteStreamNameNamespacePair>> streamsUnderVacuum = streamsUnderVacuum(database,
         cursorBasedStreamsCategorised.ctidStreams().streamsForCtidSync(),
         getQuoteString());
@@ -758,6 +761,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
     finalListOfStreamsToBeSyncedViaCtid =
         filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), cursorBasedStreamsCategorised.ctidStreams());
+
+    LOGGER.info("first final list synced: " + finalListOfStreamsToBeSyncedViaCtid);
+
     final FileNodeHandler fileNodeHandler =
         PostgresQueryUtils.fileNodeForStreams(database,
             finalListOfStreamsToBeSyncedViaCtid,
@@ -804,6 +810,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         ctidStateManager.setFileNodeHandler(fileNodeHandler);
       } else {
         recategoriseForCursorBased(database, catalog, stateManager, /* incrementalOnly= */false);
+        LOGGER.info("Final list streams to be synced: " + finalListOfStreamsToBeSyncedViaCtid);
         final FileNodeHandler fileNodeHandler =
             PostgresQueryUtils.fileNodeForStreams(database,
                 finalListOfStreamsToBeSyncedViaCtid,
