@@ -305,6 +305,7 @@ class EngagePaginationStrategy(PageIncrement):
 
 
 class EngageJsonFileSchemaLoader(JsonFileSchemaLoader):
+    """Engage schema combines static and dynamic approaches"""
 
     schema: Mapping[str, Any]
 
