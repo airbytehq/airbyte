@@ -266,7 +266,9 @@ definitions:
         type: CustomRequester
         class_name: "source_mixpanel.components.AnnotationsHttpRequester"
         url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/"
-        path: "{{ parameters['path'] }}"
+        path: |
+          {% set project_id = config.credentials.project_id %}
+          {% if project_id %}app/projects/{{project_id}}{% else %}2.0{% endif %}/annotations
         authenticator: "#/definitions/authenticator"
         error_handler:
           $ref: "#/definitions/default_error_handler"

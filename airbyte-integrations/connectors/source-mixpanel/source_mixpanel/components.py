@@ -81,16 +81,6 @@ class MixpanelHttpRequester(HttpRequester):
 
 
 class AnnotationsHttpRequester(MixpanelHttpRequester):
-    def get_url_base(self) -> str:
-        """
-        REGION: url
-        app/projects/{{ project_id }}/annotations
-        """
-        url_base = super().get_url_base()
-        project_id = self.config.get("credentials", {}).get("project_id", "")
-        last_part = f"app/projects/{project_id}/" if project_id else "2.0/"
-        return f"{url_base}{last_part}"
-
     def get_request_params(
         self,
         *,
