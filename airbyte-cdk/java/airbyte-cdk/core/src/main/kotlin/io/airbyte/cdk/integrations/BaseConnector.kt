@@ -4,6 +4,8 @@
 package io.airbyte.cdk.integrations
 
 import io.airbyte.cdk.integrations.base.Integration
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner
+import io.airbyte.commons.features.EnvVariableFeatureFlags
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.resources.MoreResources
 import io.airbyte.protocol.models.v0.ConnectorSpecification
@@ -23,4 +25,6 @@ abstract class BaseConnector : Integration {
         val resourceString = MoreResources.readResource("spec.json")
         return Jsons.deserialize(resourceString, ConnectorSpecification::class.java)
     }
+
+    protected val isCloudDeployment = AdaptiveSourceRunner.CLOUD_MODE.equals(EnvVariableFeatureFlags().deploymentMode(), ignoreCase = true)
 }
