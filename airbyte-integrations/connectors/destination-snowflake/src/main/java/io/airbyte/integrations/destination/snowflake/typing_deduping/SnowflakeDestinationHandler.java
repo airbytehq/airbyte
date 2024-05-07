@@ -132,12 +132,18 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
     if (destinationSyncMode == DestinationSyncMode.OVERWRITE) {
       return new InitialRawTableStatus(false, false, Optional.empty());
     }
-    final ResultSet tables = database.getMetaData().getTables(
-        databaseName,
-        id.getRawNamespace(),
-        id.getRawName(),
-        null);
-    if (!tables.next()) {
+    final boolean tableExists = database.executeMetadataQuery(databaseMetaData -> {
+      LOGGER.info("Retrieving table from Db metadata: {} {}",
+          id.getRawNamespace(),
+          id.getRawName());
+      try (final ResultSet tables = databaseMetaData.getTables(databaseName, id.getRawNamespace(), id.getRawName(), null)) {
+        return tables.next();
+      } catch (SQLException e) {
+        LOGGER.error("Failed to retrieve table metadata", e);
+        throw new RuntimeException(e);
+      }
+    });
+    if (!tableExists) {
       return new InitialRawTableStatus(false, false, Optional.empty());
     }
     // Snowflake timestamps have nanosecond precision, so decrement by 1ns
