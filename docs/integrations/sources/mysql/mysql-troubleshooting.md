@@ -3,6 +3,7 @@
 ### General Limitations
 
 - Use MySQL Server versions `8.0`, `5.7`, or `5.6`.
+- For Airbyte Open Source users, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.58.0` or newer
 - For Airbyte Cloud (and optionally for Airbyte Open Source), ensure SSL is enabled in your environment
 
 ### CDC Requirements
