@@ -51,7 +51,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/pinterest
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
   ab_internal:
     sl: 200
     ql: 400

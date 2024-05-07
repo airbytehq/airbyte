@@ -69,20 +69,38 @@ definitions:
     retriever: "#/definitions/retriever"
     primary_key: "id"
 
+  base_semi_incremental_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/ad_account_based_retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          type: RecordFilter
+          condition: "{{ not stream_state or record.get('updated_time') >= stream_state.get('updated_time') }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "updated_time"
+      datetime_format: "%s"
+      start_datetime: "{{ format_datetime(config.get('start_date'), '%s') }}"
+
   # Full refresh streams
   boards_stream:
+    # Docs: https://developers.pinterest.com/docs/api/v5/#operation/boards/list
     name: "boards"
     $ref: "#/definitions/base_stream"
     $parameters:
       path: "boards"
 
   catalogs_stream:
+    # Docs: https://developers.pinterest.com/docs/api/v5/#operation/catalogs/list
     name: "catalogs"
     $ref: "#/definitions/base_stream"
     $parameters:
       path: "catalogs"
 
   catalogs_feeds_stream:
+    # Docs: https://developers.pinterest.com/docs/api/v5/#operation/feeds/list
     name: "catalogs_feeds"
     $ref: "#/definitions/base_stream"
     transformations:
@@ -93,18 +111,21 @@ definitions:
       path: "catalogs/feeds"
 
   catalogs_product_groups_stream:
+    # Docs: https://developers.pinterest.com/docs/api/v5/#operation/catalogs_product_groups/list
     name: "catalogs_product_groups"
     $ref: "#/definitions/base_stream"
     $parameters:
       path: "catalogs/product_groups"
 
   ad_accounts_stream:
+    # Docs: https://developers.pinterest.com/docs/api/v5/#operation/ad_accounts/list
     name: "ad_accounts"
     $ref: "#/definitions/base_stream"
     $parameters:
       path: "ad_accounts"
 
   board_sections_stream:
+    # Docs: https://developers.pinterest.com/docs/api/v5/#operation/board_sections/list
     name: "board_sections"
     $ref: "#/definitions/base_stream"
     retriever: "#/definitions/board_based_retriever"
@@ -112,6 +133,7 @@ definitions:
       path: "boards/{{ stream_slice.id }}/sections"
 
   board_pins_stream:
+    # Docs: https://developers.pinterest.com/docs/api/v5/#operation/boards/list_pins
     name: "board_pins"
     $ref: "#/definitions/base_stream"
     retriever: "#/definitions/board_based_retriever"
@@ -119,6 +141,7 @@ definitions:
       path: "boards/{{ stream_slice.id }}/pins"
 
   audiences_stream:
+    # Docs: https://developers.pinterest.com/docs/api/v5/#operation/audiences/list
     name: "audiences"
     $ref: "#/definitions/base_stream"
     retriever: "#/definitions/ad_account_based_retriever"
@@ -126,6 +149,7 @@ definitions:
       path: "ad_accounts/{{ stream_slice.id }}/audiences"
 
   conversion_tags_stream:
+    # Docs: https://developers.pinterest.com/docs/api/v5/#operation/conversion_tags/list
     name: "conversion_tags"
     $ref: "#/definitions/base_stream"
     retriever: "#/definitions/ad_account_based_retriever"
@@ -133,13 +157,37 @@ definitions:
       path: "ad_accounts/{{ stream_slice.id }}/conversion_tags"
 
   customer_lists_stream:
+    # Docs: https://developers.pinterest.com/docs/api/v5/#tag/customer_lists
     name: "customer_lists"
     $ref: "#/definitions/base_stream"
     retriever: "#/definitions/ad_account_based_retriever"
     $parameters:
       path: "ad_accounts/{{ stream_slice.id }}/customer_lists"
 
+  # Semi-Incremental streams
+  campaigns_stream:
+    # Docs: https://developers.pinterest.com/docs/api/v5/#operation/campaigns/list
+    name: "campaigns"
+    $ref: "#/definitions/base_semi_incremental_stream"
+    $parameters:
+      path: "ad_accounts/{{ stream_slice.id }}/campaigns{{ '?entity_statuses=' + ','.join(config.get('status')) if config.get('status') else '' }}"
+
+  ad_groups_stream:
+    # Docs: https://developers.pinterest.com/docs/api/v5/#operation/ad_groups/list
+    name: "ad_groups"
+    $ref: "#/definitions/base_semi_incremental_stream"
+    $parameters:
+      path: "ad_accounts/{{ stream_slice.id }}/ad_groups{{ '?entity_statuses=' + ','.join(config.get('status')) if config.get('status') else '' }}"
+
+  ads_stream:
+    # Docs: https://developers.pinterest.com/docs/api/v5/#operation/ads/list
+    name: "ads"
+    $ref: "#/definitions/base_semi_incremental_stream"
+    $parameters:
+      path: "ad_accounts/{{ stream_slice.id }}/ads{{ '?entity_statuses=' + ','.join(config.get('status')) if config.get('status') else '' }}"
+
 streams:
+  # Full refresh streams
   - "#/definitions/boards_stream"
   - "#/definitions/catalogs_stream"
   - "#/definitions/catalogs_feeds_stream"
@@ -150,6 +198,11 @@ streams:
   - "#/definitions/audiences_stream"
   - "#/definitions/conversion_tags_stream"
   - "#/definitions/customer_lists_stream"
+
+  # Semi-Incremental streams
+  - "#/definitions/campaigns_stream"
+  - "#/definitions/ad_groups_stream"
+  - "#/definitions/ads_stream"
 
 check:
   type: CheckStream
