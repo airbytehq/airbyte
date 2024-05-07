@@ -12,6 +12,8 @@ Airbyte's certified MSSQL connector offers the following features:
   [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing)
   and chunking of database reads.
 
+> ⚠️ **Please note the minimum required platform version is v0.58.0 to run source-mysql 3.4.0.**
+
 ## Features
 
 | Feature                       | Supported | Notes              |
@@ -417,6 +419,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.18  | 2024-04-30 | [37451](https://github.com/airbytehq/airbyte/pull/37451)                                                          | Resumable full refresh read of tables.                                                                                                          |
 | 4.0.17  | 2024-05-02 | [37781](https://github.com/airbytehq/airbyte/pull/37781)                                                          | Adopt latest CDK.                                                                                                                               |
 | 4.0.16  | 2024-05-01 | [37742](https://github.com/airbytehq/airbyte/pull/37742)                                                          | Adopt latest CDK. Remove Debezium retries.                                                                                                      |
 | 4.0.15  | 2024-04-22 | [37541](https://github.com/airbytehq/airbyte/pull/37541)                                                          | Adopt latest CDK. reduce excessive logs.                                                                                                        |

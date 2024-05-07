@@ -5,11 +5,11 @@ plugins {
 airbyteJavaConnector {
     cdkVersionRequired = '0.31.5'
     features = ['db-sources']
-    useLocalCdk = false
+    useLocalCdk = true
 }
 
 java {
-    // TODO: rewrite code to avoid javac wornings in the first place
+    // TODO: rewrite code to avoid javac warnings in the first place
     compileJava {
         options.compilerArgs += "-Xlint:-try,-rawtypes"
     }
