@@ -28,7 +28,7 @@ class AirbyteExceptionHandlerTest {
 
         // mocking terminate() method in AirbyteExceptionHandler, so we don't kill the JVM
         airbyteExceptionHandler = Mockito.spy(AirbyteExceptionHandler())
-        Mockito.doNothing().`when`(airbyteExceptionHandler).terminate()
+        Mockito.doNothing().`when`(AirbyteExceptionHandler).terminate()
 
         AirbyteExceptionHandler.addThrowableForDeinterpolation(RuntimeException::class.java)
     }
