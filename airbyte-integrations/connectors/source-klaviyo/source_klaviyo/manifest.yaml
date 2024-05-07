@@ -20,6 +20,7 @@ definitions:
     error_handler:
       type: CompositeErrorHandler
       error_handlers:
+        - type: DefaultErrorHandler # adding this DefaultErrorHandler for 5XX error codes
         - type: DefaultErrorHandler
           backoff_strategies:
             - type: WaitTimeFromHeader
@@ -32,7 +33,6 @@ definitions:
             - type: HttpResponseFilter
               action: RETRY
               http_codes: [429]
-        - type: DefaultErrorHandler # adding this DefaultErrorHandler for 5XX error codes
     request_headers:
       Accept: "application/json"
       Revision: "2023-10-15"
