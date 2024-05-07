@@ -1,6 +1,5 @@
-
 from datetime import datetime, timedelta
-from typing import Any, Iterable, Mapping, Optional, Union, List
+from typing import Any, Iterable, Mapping, Optional, Union, List, Dict
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -14,20 +13,12 @@ from airbyte_protocol.models import SyncMode
 class MintegralStream(HttpStream):
     page_size = 50
     url_base = "https://ss-api.mintegral.com/api/open/v1/"
-    use_cache = True  # it is used in all streams
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_json = response.json()["data"]
         if response_json["limit"] * response_json["page"] < response_json["total"]:
-            next_page = response_json["page"] + 1
-        else:
-            return None
-
-        return {
-            "limit": self.page_size,
-            "ext_fields": "creatives",
-            "page": next_page
-        }
+            return {"limit": self.page_size, "ext_fields": "creatives", "page": response_json["page"] + 1}
+        return None
 
     def request_params(
             self,
@@ -70,9 +61,10 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
 
     def __init__(self, authenticator: TokenAuthenticator, **kwargs):
         self._state = {}
-        super().__init__(
-            authenticator=authenticator,
-        )
+        super().__init__(authenticator=authenticator)
+
+    def log(self, message):
+        print(message)  # oddly enough logger.debug() os not printed in airbyte logs, but prints are
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
@@ -86,18 +78,12 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
     def state(self, value):
         self._state[self.cursor_field] = value[self.cursor_field]
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        current_page = int(response.json()["page"])
-        total_pages = int(response.json()["page_count"])
-        print(f"Page total count: {str(total_pages)}, current page: {current_page}")
-        if current_page >= total_pages:
-            return None
-        else:
-            next_page = current_page + 1
-            print(f"Next request page: {next_page}")
-            return {
-                "page": next_page
-            }
+    def next_page_token(self, response: requests.Response) -> Optional[Dict[str, Any]]:
+        response_json = response.json()
+        current_page = int(response_json["page"])
+        if current_page < int(response_json["page_count"]):
+            return {"page": current_page + 1}
+        return None
 
     def request_params(
             self,
@@ -111,28 +97,17 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
             "per_page": self.page_size,
             "page": next_page_token["page"] if next_page_token else 1
         }
-
-        print(f"Request params: {str(request_params)}")
+        self.log(f"Request params: {request_params}")
         return request_params
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.text == "":
-            return '{}'
-        response_json = response.json()
-        print(f"Page {response_json['page']}, per_page {response_json['per_page']}, "
-              f"page_count {response_json['page_count']}, total_count {response_json['total_count']}")
-        yield from response_json["data"]
-
-    def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: Optional[List[str]] = None,
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            stream_state: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[StreamData]:
-        yield from self._read_pages(
-            lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice, stream_state
-        )
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Dict]:
+        if response.text:
+            response_json = response.json()
+            self.log(f"Page {response_json['page']}, per_page {response_json['per_page']}, "
+                     f"page_count {response_json['page_count']}, total_count {response_json['total_count']}")
+            yield from response_json["data"]
+        else:
+            yield {}
 
     def stream_slices(
             self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
