@@ -572,6 +572,8 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                         getConfiguredCatalogWithOneStream(defaultNamespace).streams[0],
                     )
                 )
+        catalog.streams.get(0).cursorField = java.util.List.of(COL_ID);
+        catalog.streams.get(0).primaryKey = java.util.List.of(java.util.List.of(COL_ID));
         val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
         val actualRecordMessages = filterRecords(actualMessages)
 

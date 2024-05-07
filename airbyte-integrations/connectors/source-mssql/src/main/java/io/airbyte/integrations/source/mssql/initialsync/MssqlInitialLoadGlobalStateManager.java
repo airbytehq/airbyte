@@ -40,6 +40,7 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
     this.pairToOrderedColInfo = pairToOrderedColInfo;
     this.stateManager = stateManager;
     this.initialCdcState = initialCdcState;
+    this.streamStateForIncrementalRunSupplier = pair -> Jsons.emptyObject();
     initStreams(initialLoadStreams, catalog);
   }
 

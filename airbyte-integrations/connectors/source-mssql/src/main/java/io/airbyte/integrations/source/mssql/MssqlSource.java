@@ -426,7 +426,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
         final MssqlInitialLoadHandler initialLoadHandler =
             new MssqlInitialLoadHandler(sourceConfig, database, new MssqlSourceOperations(), getQuoteString(), initialLoadStateManager,
-                namespacePair -> Jsons.jsonNode(pairToCursorBasedStatus.get(namespacePair)),
+                Optional.of(namespacePair -> Jsons.jsonNode(pairToCursorBasedStatus.get(namespacePair))),
                 getTableSizeInfoForStreams(database, initialLoadStreams.streamsForInitialLoad(), getQuoteString()));
 
         final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>(initialLoadHandler.getIncrementalIterators(
@@ -656,13 +656,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
           getQuoteString())
               .get();
     } else {
-      final MssqlCursorBasedStateManager cursorBasedStateManager = new MssqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
-      final InitialLoadStreams initialLoadStreams = streamsForInitialOrderedColumnLoad(cursorBasedStateManager, catalog);
-
-      final Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> pairToCursorBasedStatus =
-          getCursorBasedSyncStatusForStreams(database, initialLoadStreams.streamsForInitialLoad(), stateManager, getQuoteString());
       return new MssqlInitialLoadHandler(sourceConfig, database, new MssqlSourceOperations(), getQuoteString(), initialLoadStateManager,
-          namespacePair -> Jsons.jsonNode(pairToCursorBasedStatus.get(namespacePair)),
+          Optional.empty(),
           getTableSizeInfoForStreams(database, catalog.getStreams(), getQuoteString()));
     }
   }

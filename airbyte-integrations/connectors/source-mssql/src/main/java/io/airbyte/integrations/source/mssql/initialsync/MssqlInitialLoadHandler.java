@@ -53,7 +53,7 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
   private final MssqlSourceOperations sourceOperations;
   private final String quoteString;
   private final MssqlInitialLoadStateManager initialLoadStateManager;
-  private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
+  private final Optional<Function<AirbyteStreamNameNamespacePair, JsonNode>> streamStateForIncrementalRunSupplier;
   private static final long QUERY_TARGET_SIZE_GB = 1_073_741_824;
   private static final long DEFAULT_CHUNK_SIZE = 1_000_000;
   final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap;
@@ -64,7 +64,7 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
                                  final MssqlSourceOperations sourceOperations,
                                  final String quoteString,
                                  final MssqlInitialLoadStateManager initialLoadStateManager,
-                                 final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
+                                 final Optional<Function<AirbyteStreamNameNamespacePair, JsonNode>> streamStateForIncrementalRunSupplier,
                                  final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap) {
     this.config = config;
     this.database = database;
@@ -221,7 +221,7 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
     final Long syncCheckpointRecords = config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY) != null ? config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY).asLong()
         : DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS;
 
-    initialLoadStateManager.setStreamStateForIncrementalRunSupplier(streamStateForIncrementalRunSupplier);
+    streamStateForIncrementalRunSupplier.ifPresent(initialLoadStateManager::setStreamStateForIncrementalRunSupplier);
     return AutoCloseableIterators.transformIterator(
         r -> new SourceStateIterator<>(r, airbyteStream, initialLoadStateManager,
             new StateEmitFrequency(syncCheckpointRecords, syncCheckpointDuration)),
