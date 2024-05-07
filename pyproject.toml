@@ -11,6 +11,15 @@ python = "~3.10"
 isort = "5.6.4"
 black = "~22.3.0"
 ruff = "^0.4"
+poethepoet = "^0.26.1"
+
+[tool.poe.tasks]
+isort = { cmd = "poetry run isort --settings-file pyproject.toml ." }
+black = { cmd = "poetry run black --config pyproject.toml ." }
+format = { sequence = [
+    "isort",
+    "black",
+], help = "Format Python code in the repository. This command is invoked in airbyte-ci format." }
 
 [tool.black]
 line-length = 140
@@ -29,22 +38,6 @@ omit = [
     "integration_tests/*",
     "**/generated/*",
 ]
-
-[tool.flake8]
-extend-exclude = [
-    "*/lib/*/site-packages",
-    ".venv",
-    "build",
-    "models",
-    ".eggs",
-    "airbyte-cdk/python/airbyte_cdk/models/__init__.py",
-    "airbyte-cdk/python/airbyte_cdk/sources/declarative/models/__init__.py",
-    ".tox",
-    "airbyte_api_client",
-    "**/generated/*",
-]
-max-complexity = 20
-max-line-length = 140
 
 extend-ignore = [
     "E203", # whitespace before ':' (conflicts with Black)
