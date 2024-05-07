@@ -18,12 +18,15 @@ The Zendesk Support source connector supports two authentication methods:
 - API token
 
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
 We highly recommend using OAuth to authenticate your Zendesk Support account, as it simplifies the setup process and allows you to authenticate [directly from the Airbyte UI](#set-up-the-zendesk-support-source-connector).
+
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 We recommend using an API token to authenticate your Zendesk Support account. Please follow the steps below to generate this key.
@@ -55,11 +58,13 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 4. For **Source name**, enter a name to help you identify this source.
 5. You can use OAuth or an API token to authenticate your Zendesk Support account.
 <!-- env:cloud -->
+
 - **For Airbyte Cloud**: To authenticate using OAuth, select **OAuth 2.0** from the Authentication dropdown, then click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account.
-<!-- /env:cloud -->
-<!-- env:oss -->
+  <!-- /env:cloud -->
+  <!-- env:oss -->
 - **For Airbyte Open Source**: To authenticate using an API key, select **API Token** from the Authentication dropdown and enter the API token you generated, as well as the email address associated with your Zendesk Support account.
 <!-- /env:oss -->
+
 6. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL. For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
 7. (Optional) For **Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default.
 8. Click **Set up source** and wait for the tests to complete.
@@ -81,7 +86,7 @@ There are two types of incremental sync:
 
 1. Incremental (standard server-side, where API returns only the data updated or generated since the last sync).
 2. Client-Side Incremental (API returns all available data and connector filters out only new records).
-:::
+   :::
 
 ## Supported streams
 
@@ -123,10 +128,11 @@ The Zendesk Support source connector supports the following streams:
 - [UserFields](https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields)
 
 ### Deleted Records Support
+
 The Zendesk Support connector fetches deleted records in the following streams:
 
 | Stream                   | Deletion indicator field |
-|:-------------------------|:-------------------------|
+| :----------------------- | :----------------------- |
 | **Brands**               | `is_deleted`             |
 | **Groups**               | `deleted`                |
 | **Organizations**        | `deleted_at`             |
@@ -150,14 +156,14 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 ### Troubleshooting
 
-* Check out common troubleshooting issues for the Zendesk Support source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+- Check out common troubleshooting issues for the Zendesk Support source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2.6.3   | 2024-05-02 | [36669](https://github.com/airbytehq/airbyte/pull/36669) | Schema descriptions                                                                                                                                                                                                                |
 | 2.6.2   | 2024-02-05 | [37761](https://github.com/airbytehq/airbyte/pull/37761) | Add stop condition for `Ticket Audits` when recieved old records; Ignore 403 and 404 status codes.                                                                                                                                 |
 | 2.6.1   | 2024-04-30 | [37723](https://github.com/airbytehq/airbyte/pull/37723) | Add %Y-%m-%dT%H:%M:%S%z to cursor_datetime_formats                                                                                                                                                                                 |

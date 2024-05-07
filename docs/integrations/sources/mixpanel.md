@@ -54,7 +54,7 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
 | 2.2.2   | 2024-04-19 | [36651](https://github.com/airbytehq/airbyte/pull/36651) | Updating to 0.80.0 CDK                                                                                      |
 | 2.2.1   | 2024-04-12 | [36651](https://github.com/airbytehq/airbyte/pull/36651) | Schema descriptions                                                                                         |
 | 2.2.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                             |
