@@ -35,8 +35,7 @@ object ConnectorExceptionUtil {
     }
 
     fun isTransientError(e: Throwable?): Boolean {
-        return isTransientErrorException(e) ||
-            isRecoveryConnectionException(e);
+        return isTransientErrorException(e) || isRecoveryConnectionException(e)
     }
 
     fun getDisplayMessage(e: Throwable?): String? {
