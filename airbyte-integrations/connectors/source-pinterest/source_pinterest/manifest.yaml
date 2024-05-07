@@ -6,9 +6,9 @@ definitions:
   authenticator:
     type: CustomAuthenticator
     class_name: source_pinterest.components.auth.PinterestOauthAuthenticator
-    client_id: "{{ config['credentials']['client_id'] }}"
-    client_secret: "{{ config['credentials']['client_secret'] }}"
-    refresh_token: "{{ config['credentials']['refresh_token'] }}"
+    client_id: "{{ config.get('credentials', {}).get('client_id', config['client_id']) }}"
+    client_secret: "{{ config.get('credentials', {}).get('client_secret', config['client_secret']) }}"
+    refresh_token: "{{ config.get('credentials', {}).get('refresh_token', config['refresh_token']) }}"
     token_refresh_endpoint: "https://api.pinterest.com/v5/oauth/token"
 
   # Requester
