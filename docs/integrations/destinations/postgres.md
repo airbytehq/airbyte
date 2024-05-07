@@ -264,6 +264,7 @@ Now that you have set up the Postgres destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                  |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------- |
+| 2.0.10  | 2024-05-07 | [\#37660](https://github.com/airbytehq/airbyte/pull/37660) | Adopt CDK 0.33.2                                                                                         |
 | 2.0.9   | 2024-04-11 | [\#36974](https://github.com/airbytehq/airbyte/pull/36974) | Add option to drop with `CASCADE`                                                                        |
 | 2.0.8   | 2024-04-10 | [\#36805](https://github.com/airbytehq/airbyte/pull/36805) | Adopt CDK 0.29.10 to improve long column name handling                                                   |
 | 2.0.7   | 2024-04-08 | [\#36768](https://github.com/airbytehq/airbyte/pull/36768) | Adopt CDK 0.29.7 to improve destination state handling                                                   |
