@@ -90,6 +90,16 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
     return false;
   }
 
+  @Override
+  protected void validateFullRefreshStateMessageReadSuccess(final List<? extends AirbyteStateMessage> stateMessages) {
+    var finalStateMessage = stateMessages.get(stateMessages.size() - 1);
+    assertEquals(
+        finalStateMessage.getStream().getStreamState().get("state_type").textValue(),
+        "primary_key");
+    assertEquals(finalStateMessage.getStream().getStreamState().get("pk_name").textValue(), "id");
+    assertEquals(finalStateMessage.getStream().getStreamState().get("pk_val").textValue(), "3");
+  }
+
   @Test
   @Override
   protected void testReadMultipleTablesIncrementally() throws Exception {
@@ -366,6 +376,11 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
     final AirbyteConnectionStatus status = source().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: 08001;"), status.getMessage());
+  }
+
+  @Test
+  public void testFullRefresh() throws Exception {
+
   }
 
   @Override

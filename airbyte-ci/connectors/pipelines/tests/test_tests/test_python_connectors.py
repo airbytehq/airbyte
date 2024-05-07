@@ -4,6 +4,7 @@
 
 from unittest.mock import patch
 
+import asyncclick as click
 import pytest
 from connector_ops.utils import Connector, ConnectorLanguage
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
@@ -36,6 +37,8 @@ class TestUnitTests:
             connector=certified_connector_with_setup,
             git_branch="test",
             git_revision="test",
+            diffed_branch="test",
+            git_repo_url="test",
             report_output_prefix="test",
             is_local=True,
             use_remote_secrets=True,
@@ -57,6 +60,8 @@ class TestUnitTests:
             connector=connector_with_poetry,
             git_branch="test",
             git_revision="test",
+            diffed_branch="test",
+            git_repo_url="test",
             report_output_prefix="test",
             is_local=True,
             use_remote_secrets=True,
@@ -125,6 +130,8 @@ class TestPyAirbyteValidationTests:
             connector=compatible_connector,
             git_branch="test",
             git_revision="test",
+            diffed_branch="test",
+            git_repo_url="test",
             report_output_prefix="test",
             is_local=True,
             use_remote_secrets=True,
@@ -140,6 +147,8 @@ class TestPyAirbyteValidationTests:
             connector=incompatible_connector,
             git_branch="test",
             git_revision="test",
+            diffed_branch="test",
+            git_repo_url="test",
             report_output_prefix="test",
             is_local=True,
             use_remote_secrets=True,
