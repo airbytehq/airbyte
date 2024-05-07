@@ -1,1 +1,2 @@
 airbyte-integrations/bases/base-normalization/integration_tests/normalization_test_output
+airbyte-ci/connectors/pipelines/tests/test_changelog/result_files
