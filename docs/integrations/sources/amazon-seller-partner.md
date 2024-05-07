@@ -69,10 +69,10 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 
 **For Airbyte Open Source:**
 
-1. Using developer application from Step 1, [generate](https://developer-docs.amazon.com/sp-api/docs/self-authorization) refresh token. 
+1. Using developer application from Step 1, [generate](https://developer-docs.amazon.com/sp-api/docs/self-authorization) refresh token.
 2. Go to local Airbyte page.
 3. On the Set up the source page, select **Amazon Seller Partner** from the **Source type** dropdown.
-4. Enter a name for the Amazon Seller Partner connector. 
+4. Enter a name for the Amazon Seller Partner connector.
 5. For Start Date, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, the date 2 years ago from today will be used.
 6. For End Date, enter the date in YYYY-MM-DD format. Any data after this date will not be replicated. This field is optional - if not provided, today's date will be used.
 7. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
@@ -83,8 +83,9 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 ## Supported sync modes
 
 The Amazon Seller Partner source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
- - Full Refresh
- - Incremental
+
+- Full Refresh
+- Incremental
 
 ## Supported streams
 
@@ -160,7 +161,7 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 ## Data type map
 
 | Integration Type         | Airbyte Type |
-|:-------------------------|:-------------|
+| :----------------------- | :----------- |
 | `string`                 | `string`     |
 | `int`, `float`, `number` | `number`     |
 | `date`                   | `date`       |
@@ -171,7 +172,7 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 ## Changelog
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
-|:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 4.2.2   | 2024-04-24 | [#36630](https://github.com/airbytehq/airbyte/pull/36630) | Schema descriptions and CDK 0.80.0                                                                                                                                                  |
 | 4.2.1   | 2024-04-08 | [#36895](https://github.com/airbytehq/airbyte/pull/36895) | Fix `reportPeriod` day query params                                                                                                                                                 |
 | 4.2.0   | 2024-03-19 | [#36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                                                                                                     |

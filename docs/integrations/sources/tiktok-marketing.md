@@ -66,7 +66,7 @@ To access the Sandbox environment:
 ## Supported streams and sync modes
 
 | Stream                                    | Environment  | Key                                        | Incremental |
-|:------------------------------------------|:-------------|:-------------------------------------------|:------------|
+| :---------------------------------------- | :----------- | :----------------------------------------- | :---------- |
 | Advertisers                               | Prod,Sandbox | advertiser_id                              | No          |
 | AdGroups                                  | Prod,Sandbox | adgroup_id                                 | Yes         |
 | Ads                                       | Prod,Sandbox | ad_id                                      | Yes         |
@@ -122,7 +122,7 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
 | 3.9.6   | 2024-04-19 | [36665](https://github.com/airbytehq/airbyte/pull/36665) | Updating to 0.80.0 CDK                                                                                      |
 | 3.9.5   | 2024-04-12 | [36665](https://github.com/airbytehq/airbyte/pull/36665) | Schema descriptions                                                                                         |
 | 3.9.4   | 2024-03-20 | [36302](https://github.com/airbytehq/airbyte/pull/36302) | Don't extract state from the latest record if stream doesn't have a cursor_field                            |
