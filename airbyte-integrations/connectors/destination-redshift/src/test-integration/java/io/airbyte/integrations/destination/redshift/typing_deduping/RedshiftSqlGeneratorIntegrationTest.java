@@ -48,6 +48,11 @@ import org.junit.jupiter.api.Test;
 
 public class RedshiftSqlGeneratorIntegrationTest extends JdbcSqlGeneratorIntegrationTest<RedshiftState> {
 
+  @Override
+  protected boolean getSupportsSafeCast() {
+    return true;
+  }
+
   /**
    * Redshift's JDBC driver doesn't map certain data types onto {@link java.sql.JDBCType} usefully.
    * This class adds special handling for those types.
