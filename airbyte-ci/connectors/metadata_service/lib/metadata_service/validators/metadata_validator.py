@@ -23,13 +23,6 @@ class ValidatorOptions:
 ValidationResult = Tuple[bool, Optional[Union[ValidationError, str]]]
 Validator = Callable[[ConnectorMetadataDefinitionV0, ValidatorOptions], ValidationResult]
 
-# TODO: Remove these when each of these connectors ship any new version
-ALREADY_ON_MAJOR_VERSION_EXCEPTIONS = [
-    ("airbyte/source-prestashop", "1.0.0"),
-    ("airbyte/source-yandex-metrica", "1.0.0"),
-    ("airbyte/destination-csv", "1.0.0"),
-]
-
 
 def validate_metadata_images_in_dockerhub(
     metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions
@@ -109,14 +102,7 @@ def validate_major_version_bump_has_breaking_change_entry(
     if not is_major_version(image_tag):
         return True, None
 
-    # Some connectors had just done major version bumps when this check was introduced.
-    # These do not need breaking change entries for these specific versions.
-    # Future versions will still be validated to make sure an entry exists.
-    # See comment by ALREADY_ON_MAJOR_VERSION_EXCEPTIONS for how to get rid of this list.
     docker_repo = get(metadata_definition_dict, "data.dockerRepository")
-    if (docker_repo, image_tag) in ALREADY_ON_MAJOR_VERSION_EXCEPTIONS:
-        return True, None
-
     releases = get(metadata_definition_dict, "data.releases")
     if not releases:
         return (
