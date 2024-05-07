@@ -197,7 +197,7 @@ public class SnowflakeDatabase {
   }
 
   public static JdbcDatabase getDatabase(final DataSource dataSource) {
-    return new DefaultJdbcDatabase(dataSource);
+    return new DefaultJdbcDatabase(dataSource, new SnowflakeSourceOperations());
   }
 
   private static Runnable getRefreshTokenTask(final HikariDataSource dataSource) {
