@@ -10,7 +10,7 @@ data:
       - api.cohere.ai
       - ${embedding.api_base}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: d9e5418d-f0f4-4d19-a8b1-5630543638e2
@@ -32,13 +32,12 @@ data:
       enabled: true
   releaseDate: 2024-05-10 # TODO: Confirm the release date
   releaseStage: beta
-  # TODO: Do we need this? If so, what should the values be?
-  # resourceRequirements:
-  #   jobSpecific:
-  #     - jobType: sync
-  #       resourceRequirements:
-  #         memory_limit: 2Gi
-  #         memory_request: 2Gi
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 2Gi
+          memory_request: 2Gi
   supportLevel: certified
   tags:
     - language:python

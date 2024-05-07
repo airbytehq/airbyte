@@ -2,8 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.models import ConnectorSpecification
-from destination_snowflake_cortex.destination import DestinationSnowflakeCortex
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
