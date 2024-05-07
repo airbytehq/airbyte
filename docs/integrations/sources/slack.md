@@ -113,7 +113,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 The Slack source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
-| :---------------- | :--------- |
+|:------------------|:-----------|
 | Full Refresh Sync | Yes        |
 | Incremental Sync  | Yes        |
 | Namespaces        | No         |
@@ -136,12 +136,12 @@ It is recommended to sync required channels only, this can be done by specifying
 
 ## Data type map
 
-| Integration Type | Airbyte Type |
-| :--------------- | :----------- |
-| `string`         | `string`     |
-| `number`         | `number`     |
-| `array`          | `array`      |
-| `object`         | `object`     |
+| Integration Type  | Airbyte Type |
+|:------------------|:-------------|
+| `string`          | `string`     |
+| `number`          | `number`     |
+| `array`           | `array`      |
+| `object`          | `object`     |
 
 ## Limitations & Troubleshooting
 
@@ -165,13 +165,14 @@ Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------|
-| 1.1.0   | 2024-04-18 | [37332](https://github.com/airbytehq/airbyte/pull/37332) | Add the capability to sync from private channels
+| 1.1.1   | 2024-05-02 | [36661](https://github.com/airbytehq/airbyte/pull/36661) | Schema descriptions                                                                  |
+| 1.1.0   | 2024-04-18 | [37332](https://github.com/airbytehq/airbyte/pull/37332) | Add the capability to sync from private channels                                     |                                    
 | 1.0.0   | 2024-04-02 | [35477](https://github.com/airbytehq/airbyte/pull/35477) | Migration to low-code CDK                                                            |
 | 0.4.1   | 2024-03-27 | [36579](https://github.com/airbytehq/airbyte/pull/36579) | Upgrade airbyte-cdk version to emit record counts as floats                          |
 | 0.4.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                      |
-| 0.3.9   | 2024-02-12 | [35157](https://github.com/airbytehq/airbyte/pull/35157) | Manage dependencies with Poetry.                                                     |
+| 0.3.9   | 2024-02-12 | [35157](https://github.com/airbytehq/airbyte/pull/35157) | Manage dependencies with Poetry                                                      |
 | 0.3.8   | 2024-02-09 | [35131](https://github.com/airbytehq/airbyte/pull/35131) | Fixed the issue when `schema discovery` fails with `502` due to the platform timeout |
-| 0.3.7   | 2024-01-10 | [1234](https://github.com/airbytehq/airbyte/pull/1234)   | prepare for airbyte-lib                                                              |
+| 0.3.7   | 2024-01-10 | [1234](https://github.com/airbytehq/airbyte/pull/1234)   | Prepare for airbyte-lib                                                              |
 | 0.3.6   | 2023-11-21 | [32707](https://github.com/airbytehq/airbyte/pull/32707) | Threads: do not use client-side record filtering                                     |
 | 0.3.5   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image      |
 | 0.3.4   | 2023-10-06 | [31134](https://github.com/airbytehq/airbyte/pull/31134) | Update CDK and remove non iterable return from records                               |

@@ -47,6 +47,48 @@ definitions:
       name: "organizations"
       primary_key: "id"
       path: "/v3/organizations"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the organization.
+            type: integer
+          name:
+            description: The name of the organization.
+            type: string
+          owner_id:
+            description: The user ID of the owner or creator of the organization.
+            type: integer
+          description:
+            description: A textual description or details about the organization.
+            type: string
+          billing_address:
+            description: The billing address of the organization.
+            type: string
+          billing_country:
+            description: The country associated with the billing address of the organization.
+            type: string
+          billing_email:
+            description: The billing email address for the organization.
+            type: string
+          vat_number:
+            description: Value-added tax (VAT) number for the organization.
+            type: string
+          created:
+            description: The timestamp when the organization was created.
+            type: string
+          updated:
+            description: The timestamp when the organization data was last updated.
+            type: string
+          is_default:
+            description: Indicates if the organization is set as the default organization.
+            type: boolean
+          is_saml_org:
+            description: Flag showing if the organization uses SAML for authentication.
+            type: boolean
   organizations_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -67,6 +109,35 @@ definitions:
         $ref: "#/definitions/organizations_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the project
+            type: integer
+          name:
+            description: The name of the project
+            type: string
+          description:
+            description: A short description of the project
+            type: string
+          organization_id:
+            description:
+              The unique identifier of the organization the project belongs
+              to
+            type: integer
+          created:
+            description: The timestamp when the project was created
+            type: string
+          updated:
+            description: The timestamp when the project was last updated
+            type: string
+          is_default:
+            description: A flag indicating if the project is the default one
+            type: boolean
   tests_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -81,6 +152,43 @@ definitions:
       primary_key: "id"
       path: "loadtests/v2/tests"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the k6 test.
+            type: integer
+          project_id:
+            description: Identifier for the project to which this k6 test belongs.
+            type: integer
+          user_id:
+            description: Identifier of the user who owns this k6 test.
+            type: integer
+          name:
+            description: Name of the k6 test.
+            type: string
+          created:
+            description: Date and time when the k6 test was created.
+            type: string
+          updated:
+            description: Date and time when the k6 test was last updated.
+            type: string
+          last_test_run_id:
+            description:
+              Identifier for the last test run associated with this k6
+              test.
+            type: string
+          test_run_ids:
+            description:
+              List of identifiers for all test runs associated with this
+              k6 test.
+            type: array
+          script:
+            description: The script content of the k6 test.
+            type: string
 streams:
   - "#/definitions/organizations_stream"
   - "#/definitions/projects_stream"

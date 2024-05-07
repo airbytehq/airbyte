@@ -88,6 +88,7 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 
 | Version | Date       | Pull Request                                             | Subject                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------|
+| 1.0.1   | 2024-04-24 | [36641](https://github.com/airbytehq/airbyte/pull/36641) | Schema descriptions and CDK 0.80.0                                                 |
 | 1.0.0   | 2024-04-15 | [35863](https://github.com/airbytehq/airbyte/pull/35863) | Migrates connector to Low Code CDK, Updates incremental substream state to per-partition state                                      |
 | 0.2.0   | 2024-04-08 | [36889](https://github.com/airbytehq/airbyte/pull/36889) | Unpin CDK version                                                                  |
 | 0.1.24  | 2024-02-26 | [35541](https://github.com/airbytehq/airbyte/pull/35541) | Improve check command to avoid missing alerts                                      |

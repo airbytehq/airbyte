@@ -8,9 +8,9 @@ Cloud storage may incur egress costs. Egress refers to data that is transferred 
 
 ## Prerequisites
 
-- Tenant ID of the Microsoft Azure Application user
-- Azure Blob Storage account name
-- Azure blob storage container (Bucket) Name
+- [Tenant ID of the Microsoft Azure Application user](https://www.youtube.com/watch?v=WECmqC-MylA)
+- [Azure Blob Storage account name](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview#storage-account-name)
+- [Azure blob storage container (Bucket) Name](https://learn.microsoft.com/en-us/azure/storage/blobs/blob-containers-portal#container-properties)
 
 <details>
 <summary>
