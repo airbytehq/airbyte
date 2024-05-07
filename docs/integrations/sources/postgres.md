@@ -304,8 +304,8 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
-| ------- | ---------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
+| Version | Date       | Pull Request                                             | Subject                                                   |
+|---------|------------|----------------------------------------------------------|-----------------------------------------------------------|
 | 3.3.32  | 2024-04-30 | [37758](https://github.com/airbytehq/airbyte/pull/37758) | Correct previous release to disable debezium retries                                                                                                                       |
 | 3.3.31  | 2024-04-30 | [37754](https://github.com/airbytehq/airbyte/pull/37754) | Add CDC logs                                                                                                                                                               |
 | 3.3.30  | 2024-04-30 | [37726](https://github.com/airbytehq/airbyte/pull/37726) | Remove debezium retries                                                                                                                                                    |
