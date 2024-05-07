@@ -13,6 +13,10 @@ from airbyte_cdk.sources.declarative.types import Record, StreamSlice
 
 @dataclass
 class SubstreamPartitionRouterWithContext(SubstreamPartitionRouter):
+    """
+    It is impossible to pass additional data from the parent record to subsequent stream slices.
+    So, in this customization, we have prepared a small fix by setting the parent record data as an stream_slice.parent_record attribute
+    """
     def stream_slices(self) -> Iterable[StreamSlice]:
         if not self.parent_stream_configs:
             yield from []
@@ -55,6 +59,11 @@ class SubstreamPartitionRouterWithContext(SubstreamPartitionRouter):
 
 
 class SprintIssuesSubstreamPartitionRouter(SubstreamPartitionRouter):
+    """
+    We often require certain data to be fully retrieved from the parent stream before we begin requesting data from the child stream.
+    In this custom component, we execute stream slices twice: first, we retrieve all the parent_stream_fields,
+    and then we call stream slices again, this time with the previously fetched fields.
+    """
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         fields_parent_stream_config, *parent_stream_configs = self.parent_stream_configs

@@ -1086,8 +1086,6 @@ definitions:
           $ref: "#/definitions/error_handler"
           response_filters:
             - http_codes: [500]
-              # TODO: consider use predicate
-              # predicate: "{{ 'This board has no columns with a mapped status.' in response }}"
               action: IGNORE
     transformations:
       - type: AddFields
