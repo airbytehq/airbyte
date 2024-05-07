@@ -62,6 +62,7 @@ class AirbyteLogFormatter(logging.Formatter):
             log_message = AirbyteMessage(type="LOG", log=AirbyteLogMessage(level=airbyte_level, message=message))
             return log_message.json(exclude_unset=True) # type: ignore # this does not return the right type but fixing requires some investigation
 
+
     @staticmethod
     def extract_extra_args_from_record(record: logging.LogRecord) -> Mapping[str, Any]:
         """
