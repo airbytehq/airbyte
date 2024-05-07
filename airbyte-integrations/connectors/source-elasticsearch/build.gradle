@@ -14,8 +14,7 @@ application {
 }
 
 dependencies {
-
-    implementation 'co.elastic.clients:elasticsearch-java:7.15.0'
+    implementation 'co.elastic.clients:elasticsearch-java:7.15.1'
     implementation 'org.elasticsearch.client:elasticsearch-rest-high-level-client:7.15.2'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
 
