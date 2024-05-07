@@ -14,6 +14,28 @@ definitions:
       type: DpathExtractor
       field_path:
         - data
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: updated_at
+    cursor_datetime_formats:
+      - '%Y-%m-%dT%H:%M:%SZ'
+    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P5Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    start_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: begin_time
+    end_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: end_time
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
   streams:
     accounts:
       type: DeclarativeStream
@@ -49,27 +71,7 @@ definitions:
             cursor_value: next
             stop_condition: '{{ response.has_more is false }}'
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: begin_time
-        end_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: end_time
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        $ref: '#/definitions/incremental_sync'
     account_coupon_redemptions:
       type: DeclarativeStream
       name: account_coupon_redemptions
@@ -112,27 +114,7 @@ definitions:
                 stream:
                   $ref: '#/definitions/streams/accounts'
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: begin_time
-        end_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: end_time
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        $ref: '#/definitions/incremental_sync'
     account_notes:
       type: DeclarativeStream
       name: account_notes
@@ -175,27 +157,8 @@ definitions:
                 stream:
                   $ref: '#/definitions/streams/accounts'
       incremental_sync:
-        type: DatetimeBasedCursor
+        $ref: '#/definitions/incremental_sync'
         cursor_field: created_at
-        cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: begin_time
-        end_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: end_time
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
     add_ons:
       type: DeclarativeStream
       name: add_ons
@@ -230,27 +193,7 @@ definitions:
             cursor_value: next
             stop_condition: '{{ response.has_more is false }}'
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: begin_time
-        end_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: end_time
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        $ref: '#/definitions/incremental_sync'
     billing_infos:
       type: DeclarativeStream
       name: billing_infos
@@ -293,27 +236,7 @@ definitions:
                 stream:
                   $ref: '#/definitions/streams/accounts'
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: begin_time
-        end_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: end_time
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        $ref: '#/definitions/incremental_sync'
     coupons:
       type: DeclarativeStream
       name: coupons
@@ -348,27 +271,7 @@ definitions:
             cursor_value: next
             stop_condition: '{{ response.has_more is false }}'
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: begin_time
-        end_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: end_time
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        $ref: '#/definitions/incremental_sync'
     credit_payments:
       type: DeclarativeStream
       name: credit_payments
@@ -403,27 +306,7 @@ definitions:
             cursor_value: next
             stop_condition: '{{ response.has_more is false }}'
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: begin_time
-        end_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: end_time
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        $ref: '#/definitions/incremental_sync'
     export_dates:
       type: DeclarativeStream
       name: export_dates
@@ -433,28 +316,15 @@ definitions:
           $ref: '#/definitions/base_requester'
           path: export_dates
           http_method: GET
-          request_parameters:
-            order: asc
-            sort: updated_at
           request_headers:
             User-Agent: USER_AGENT
             Accept: application/vnd.recurly.v2021-02-25
             Content-Type: application/json
         record_selector:
-          $ref: "#/definitions/record_selector"
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          page_size_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: limit
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 200
-            cursor_value: next
-            stop_condition: '{{ response.has_more is false }}'
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class: source_recurly.components.ExportDatesExtractor
     invoices:
       type: DeclarativeStream
       name: invoices
@@ -489,27 +359,7 @@ definitions:
             cursor_value: next
             stop_condition: '{{ response.has_more is false }}'
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: begin_time
-        end_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: end_time
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        $ref: '#/definitions/incremental_sync'
     line_items:
       type: DeclarativeStream
       name: line_items
@@ -544,27 +394,7 @@ definitions:
             cursor_value: next
             stop_condition: '{{ response.has_more is false }}'
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: begin_time
-        end_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: end_time
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        $ref: '#/definitions/incremental_sync'
     measured_units:
       type: DeclarativeStream
       name: measured_units
@@ -599,27 +429,7 @@ definitions:
             cursor_value: next
             stop_condition: '{{ response.has_more is false }}'
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: begin_time
-        end_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: end_time
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        $ref: '#/definitions/incremental_sync'
     plans:
       type: DeclarativeStream
       name: plans
@@ -654,27 +464,7 @@ definitions:
             cursor_value: next
             stop_condition: '{{ response.has_more is false }}'
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: begin_time
-        end_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: end_time
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        $ref: '#/definitions/incremental_sync'
     shipping_addresses:
       type: DeclarativeStream
       name: shipping_addresses
@@ -717,27 +507,7 @@ definitions:
                 stream:
                   $ref: '#/definitions/streams/accounts'
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: begin_time
-        end_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: end_time
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        $ref: '#/definitions/incremental_sync'
     shipping_methods:
       type: DeclarativeStream
       name: shipping_methods
@@ -772,27 +542,7 @@ definitions:
             cursor_value: next
             stop_condition: '{{ response.has_more is false }}'
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: begin_time
-        end_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: end_time
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        $ref: '#/definitions/incremental_sync'
     subscriptions:
       type: DeclarativeStream
       name: subscriptions
@@ -827,27 +577,7 @@ definitions:
             cursor_value: next
             stop_condition: '{{ response.has_more is false }}'
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: begin_time
-        end_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: end_time
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        $ref: '#/definitions/incremental_sync'
     transactions:
       type: DeclarativeStream
       name: transactions
@@ -882,27 +612,7 @@ definitions:
             cursor_value: next
             stop_condition: '{{ response.has_more is false }}'
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: begin_time
-        end_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: end_time
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        $ref: '#/definitions/incremental_sync'
     unique_coupons:
       type: DeclarativeStream
       name: unique_coupons
@@ -944,28 +654,14 @@ definitions:
                 partition_field: coupon_id
                 stream:
                   $ref: '#/definitions/streams/coupons'
+                  retriever:
+                    $ref: '#/definitions/streams/coupons/retriever'
+                    record_selector:
+                      $ref: "#/definitions/record_selector"
+                      record_filter:
+                        condition: "{{ record['coupon_type'] == 'bulk' }}"
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updated_at
-        cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-        start_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: begin_time
-        end_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: end_time
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        $ref: '#/definitions/incremental_sync'
   base_requester:
     type: HttpRequester
     url_base: https://v3.recurly.com
