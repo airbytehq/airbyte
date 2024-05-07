@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "click": {
+      "type": ["integer", "null"]
+    },
+    "uuid": {
+      "type": ["string", "null"]
+    },
+    "install": {
+      "type": ["integer", "null"]
+    },
+    "geo": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "impression": {
+      "type": ["integer", "null"]
+    },
+    "spend": {
+      "type": ["integer", "null"]
+    },
+    "offer_id": {
+      "type": ["integer", "null"]
+    },
+    "offer_name": {
+      "type": ["string", "null"]
+    },
+    "preview_link": {
+      "type": ["string", "null"],
+      "format": "uri"
+    },
+    "platform": {
+      "type": ["string", "null"]
+    },
+    "package_name": {
+      "type": ["string", "null"]
+    },
+    "utc": {
+      "type": ["string", "null"]
+    },
+    "currency": {
+      "type": ["string", "null"]
+    },
+    "location": {
+      "type": ["string", "null"]
+    }
+  }
+}
