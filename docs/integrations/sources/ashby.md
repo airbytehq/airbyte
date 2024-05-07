@@ -43,6 +43,6 @@ The Ashby connector should not run into Ashby API limitations under normal usage
 
 ## Changelog
 
-| Version | Date       | Pull Request                                         | Subject                    |
-| :------ | :--------- | :--------------------------------------------------- | :------------------------- |
+| Version | Date       | Pull Request                                             | Subject                    |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------- |
 | 0.1.0   | 2022-10-22 | [18334](https://github.com/airbytehq/airbyte/pull/18334) | Add Ashby Source Connector |

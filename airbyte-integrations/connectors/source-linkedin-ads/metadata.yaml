@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 137ece28-5434-455c-8f34-69dc3782f451
-  dockerImageTag: 2.1.0
+  dockerImageTag: 2.1.2
   dockerRepository: airbyte/source-linkedin-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
   githubIssueLabel: source-linkedin-ads
@@ -49,7 +49,10 @@ data:
               - "ad_member_region_analytics"
               - "ad_member_company_analytics"
       2.0.0:
-        message: This upgrade changes primary key for *-analytics streams from pivotValues[array of strings] to string_of_pivot_values[string] so that it is compatible with more destination types.
+        message:
+          This upgrade changes primary key for *-analytics streams from pivotValues[array
+          of strings] to string_of_pivot_values[string] so that it is compatible with
+          more destination types.
         upgradeDeadline: "2024-05-14"
         scopedImpact:
           - scopeType: stream

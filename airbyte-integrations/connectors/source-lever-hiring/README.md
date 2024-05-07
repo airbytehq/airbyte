@@ -10,8 +10,6 @@ For information about how to use this connector within Airbyte, see [the documen
 * Python (`^3.9`)
 * Poetry (`^1.7`) - installation instructions [here](https://python-poetry.org/docs/#installation)
 
-
-
 ### Installing the connector
 
 From this connector directory, run:
@@ -19,14 +17,13 @@ From this connector directory, run:
 poetry install --with dev
 ```
 
-
 ### Create credentials
 
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/lever-hiring)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `src/source_lever_hiring/spec.yaml` file.
+
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `sample_files/sample_config.json` for a sample config file.
-
 
 ### Locally running the connector
 
@@ -49,16 +46,17 @@ poetry run pytest tests
 
 1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
 2. Run the following command to build the docker image:
+
 ```bash
 airbyte-ci connectors --name=source-lever-hiring build
 ```
 
 An image will be available on your host with the tag `airbyte/source-lever-hiring:dev`.
 
-
 ### Running as a docker container
 
 Then run any of the connector commands as follows:
+
 ```
 docker run --rm airbyte/source-lever-hiring:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-lever-hiring:dev check --config /secrets/config.json
@@ -69,6 +67,7 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 ### Running our CI test suite
 
 You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+
 ```bash
 airbyte-ci connectors --name=source-lever-hiring test
 ```
@@ -91,6 +90,7 @@ Please commit the changes to `pyproject.toml` and `poetry.lock` files.
 ## Publishing a new version of the connector
 
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
+
 1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-lever-hiring test`
 2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
     - bump the `dockerImageTag` value in in `metadata.yaml`

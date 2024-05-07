@@ -1,7 +1,6 @@
 # RingCentral
 
-This page contains the setup guide and reference information for the [RingCentral](https://developers.ringcentral.com/api-reference/
-) source
+This page contains the setup guide and reference information for the [RingCentral](https://developers.ringcentral.com/api-reference/) source
 
 ## Prerequisites
 
@@ -14,11 +13,11 @@ Auth Token (which acts as bearer token), account id and extension id are mandate
 - Get your bearer token by following auth section (ref - https://developers.ringcentral.com/api-reference/authentication)
 - Setup params (All params are required)
 - Available params
-    - auth_token: Recieved by following https://developers.ringcentral.com/api-reference/authentication
-    - account_id: Could be seen at response to basic api call to an endpoint with ~ operator. \
-        \ Example- (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
-    - extension_id: Could be seen at response to basic api call to an endpoint with ~ operator. \
-        \ Example- (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
+  - auth_token: Recieved by following https://developers.ringcentral.com/api-reference/authentication
+  - account_id: Could be seen at response to basic api call to an endpoint with ~ operator. \
+     \ Example- (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
+  - extension_id: Could be seen at response to basic api call to an endpoint with ~ operator. \
+     \ Example- (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
 
 ## Step 2: Set up the RingCentral connector in Airbyte
 
@@ -35,7 +34,7 @@ Auth Token (which acts as bearer token), account id and extension id are mandate
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 3. Enter your `auth_token, account_id, extension_id`.
-5. Click **Set up source**.
+4. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -66,7 +65,6 @@ The RingCentral source connector supports the following [sync modes](https://doc
 - ivr_prompts
 - fax_cover
 
-
 ## API method example
 
 GET https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours
@@ -77,6 +75,6 @@ RingCentral [API reference](https://platform.devtest.ringcentral.com/restapi/v1.
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject        |
-| :------ | :--------- | :----------------------------------------------------- | :------------- |
-| 0.1.0   | 2023-05-10 | [Init](https://github.com/airbytehq/airbyte/pull/)| Initial commit |
+| Version | Date       | Pull Request                                       | Subject        |
+| :------ | :--------- | :------------------------------------------------- | :------------- |
+| 0.1.0   | 2023-05-10 | [Init](https://github.com/airbytehq/airbyte/pull/) | Initial commit |

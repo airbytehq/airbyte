@@ -2,33 +2,41 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "The unique identifier for the schedule",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the schedule",
       "type": ["null", "string"]
     },
     "intervals": {
+      "description": "List of time intervals within the schedule",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "start_time": {
+            "description": "The start time of a specific interval",
             "type": ["null", "integer"]
           },
           "end_time": {
+            "description": "The end time of a specific interval",
             "type": ["null", "integer"]
           }
         }
       }
     },
     "time_zone": {
+      "description": "The time zone in which the schedule operates",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when the schedule was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the schedule was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     }

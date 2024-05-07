@@ -18,7 +18,7 @@ class SimpleDockerStep(Step):
         context: PipelineContext,
         paths_to_mount: List[MountPath] = [],
         internal_tools: List[MountPath] = [],
-        secrets: dict[str, dagger.Secret] = {},
+        secrets: dict[str, dagger.Secret | None] = {},
         env_variables: dict[str, str] = {},
         working_directory: str = "/",
         command: Optional[List[str]] = None,
@@ -78,7 +78,8 @@ class SimpleDockerStep(Step):
 
     def _set_secrets(self, container: dagger.Container) -> dagger.Container:
         for key, value in self.secrets.items():
-            container = container.with_secret_variable(key, value)
+            if value is not None:
+                container = container.with_secret_variable(key, value)
         return container
 
     async def init_container(self) -> dagger.Container:
