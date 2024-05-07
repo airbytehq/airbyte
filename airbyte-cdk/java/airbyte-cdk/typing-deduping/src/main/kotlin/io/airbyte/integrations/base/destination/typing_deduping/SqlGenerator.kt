@@ -34,7 +34,7 @@ interface SqlGenerator {
      * @param schema the schema to create
      * @return SQL to create the schema if it does not exist
      */
-    fun createSchema(schema: String?): Sql
+    fun createSchema(schema: String): Sql
 
     /**
      * Generate a SQL statement to copy new data from the raw table into the final table.
@@ -87,7 +87,7 @@ interface SqlGenerator {
      * @param tableName name of the v2 raw table
      * @return a string containing the necessary sql to migrate
      */
-    fun migrateFromV1toV2(streamId: StreamId, namespace: String?, tableName: String?): Sql
+    fun migrateFromV1toV2(streamId: StreamId, namespace: String, tableName: String): Sql
 
     /**
      * Typically we need to create a soft reset temporary table and clear loaded at values
