@@ -11,6 +11,7 @@ from airbyte_protocol.models import SyncMode
 
 from . import HubspotTestCase
 from .request_builders.streams import CRMStreamRequestBuilder
+from .response_builder.pagination import HubspotPaginationStrategy
 from .response_builder.streams import HubspotStreamResponseBuilder
 
 
@@ -24,7 +25,7 @@ class TestEngagementCallsStream(HubspotTestCase):
 
     @property
     def response_builder(self):
-        return HubspotStreamResponseBuilder.for_stream(self.STREAM_NAME)
+        return HubspotStreamResponseBuilder.for_stream(self.STREAM_NAME, "results", HubspotPaginationStrategy())
 
     def request(self, page_token: Optional[Dict[str, str]] = None):
         request_builder = CRMStreamRequestBuilder().for_entity(

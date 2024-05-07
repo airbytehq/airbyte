@@ -18,7 +18,7 @@ import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import Source
-from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
@@ -838,7 +838,7 @@ class Stream(HttpStream, ABC):
         return HubspotAvailabilityStrategy()
 
 
-class ClientSideIncrementalStream(Stream, IncrementalMixin):
+class ClientSideIncrementalStream(Stream, CheckpointMixin):
     _cursor_value = ""
 
     @property
@@ -861,7 +861,10 @@ class ClientSideIncrementalStream(Stream, IncrementalMixin):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = value[self.cursor_field]
+        if value:
+            self._cursor_value = value[self.cursor_field]
+        else:
+            self._cursor_value = ""
 
     def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> bool:
         """
@@ -1232,7 +1235,7 @@ class CRMSearchStream(IncrementalStream, ABC):
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         self.set_sync(sync_mode, stream_state)
-        return [None]
+        return [{}]  # I changed this from [None] since this is a more accurate depiction of what is actually being done. Sync one slice
 
     def set_sync(self, sync_mode: SyncMode, stream_state):
         self._sync_mode = sync_mode
@@ -1361,7 +1364,7 @@ class ContactLists(IncrementalStream):
     unnest_fields = ["metaData"]
 
 
-class ContactsAllBase(Stream):
+class ContactsAllBase(Stream, CheckpointMixin):
     url = "/contacts/v1/lists/all/contacts/all"
     updated_at_field = "timestamp"
     more_key = "has-more"
@@ -1374,6 +1377,62 @@ class ContactsAllBase(Stream):
     records_field = None
     filter_field = None
     filter_value = None
+    _state = {}
+    limit_field = "count"
+    limit = 100
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]) -> None:
+        self._state = value
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """
+        This is a specialized read_records for resumable full refresh that only attempts to read a single page of records
+        at a time and updates the state w/ a synthetic cursor based on the Hubspot cursor pagination value `vidOffset`
+        """
+
+        next_page_token = stream_slice
+        try:
+            properties = self._property_wrapper
+            if properties and properties.too_many_properties:
+                records, response = self._read_stream_records(
+                    stream_slice=stream_slice,
+                    stream_state=stream_state,
+                    next_page_token=next_page_token,
+                )
+            else:
+                response = self.handle_request(
+                    stream_slice=stream_slice,
+                    stream_state=stream_state,
+                    next_page_token=next_page_token,
+                    properties=properties,
+                )
+                records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
+
+            if self.filter_old_records:
+                records = self._filter_old_records(records)
+            yield from self.record_unnester.unnest(records)
+
+            self.state = self.next_page_token(response) or {}
+
+            # Always return an empty generator just in case no records were ever yielded
+            yield from []
+        except requests.exceptions.HTTPError as e:
+            response = e.response
+            if response.status_code == HTTPStatus.UNAUTHORIZED:
+                raise AirbyteTracedException("The authentication to HubSpot has expired. Re-authenticate to restore access to HubSpot.")
+            else:
+                raise e
 
     def _transform(self, records: Iterable) -> Iterable:
         for record in super()._transform(records):
@@ -1413,6 +1472,12 @@ class ContactsFormSubmissions(ContactsAllBase, ABC):
     records_field = "form-submissions"
     filter_field = "formSubmissionMode"
     filter_value = "all"
+
+
+class ContactsMergedAudit(ContactsAllBase, ABC):
+
+    records_field = "merge-audits"
+    unnest_fields = ["merged_from_email", "merged_to_email"]
 
 
 class Deals(CRMSearchStream):
@@ -2101,65 +2166,6 @@ class Contacts(CRMSearchStream):
     scopes = {"crm.objects.contacts.read"}
 
 
-class ContactsMergedAudit(Stream):
-    url = "/contacts/v1/contact/vids/batch/"
-    updated_at_field = "timestamp"
-    scopes = {"crm.objects.contacts.read"}
-    unnest_fields = ["merged_from_email", "merged_to_email"]
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.config = kwargs
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
-    ) -> Iterable[Mapping[str, Any]]:
-        slices = []
-
-        # we can query a max of 100 contacts at a time
-        max_contacts = 100
-        slices = []
-        contact_batch = []
-
-        contacts = Contacts(**self.config)
-        contacts._sync_mode = SyncMode.full_refresh
-        contacts.filter_old_records = False
-
-        for contact in contacts.read_records(sync_mode=SyncMode.full_refresh):
-            if contact.get("properties_hs_merged_object_ids"):
-                contact_batch.append(contact["id"])
-
-                if len(contact_batch) == max_contacts:
-                    slices.append({"vid": contact_batch})
-                    contact_batch = []
-
-        if contact_batch:
-            slices.append({"vid": contact_batch})
-
-        return slices
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {"vid": stream_slice["vid"]}
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        *,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-        response = self._parse_response(response)
-        if response.get("status", None) == "error":
-            self.logger.warning(f"Stream `{self.name}` cannot be procced. {response.get('message')}")
-            return
-
-        for contact_id in list(response.keys()):
-            yield from response[contact_id]["merge-audits"]
-
-
 class EngagementsCalls(CRMSearchStream):
     entity = "calls"
     last_modified_field = "hs_lastmodifieddate"
@@ -2273,7 +2279,7 @@ class EmailSubscriptions(Stream):
     filter_old_records = False
 
 
-class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
+class WebAnalyticsStream(CheckpointMixin, HttpSubStream, Stream):
     """
     A base class for Web Analytics API
     Docs: https://developers.hubspot.com/docs/api/events/web-analytics

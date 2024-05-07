@@ -135,3 +135,37 @@ class OwnersArchivedStreamRequestBuilder(AbstractRequestBuilder):
     def build(self):
         q = "&".join(filter(None, self._query_params))
         return HttpRequest(self.URL, query_params=q)
+
+
+# We only need to mock the Contacts endpoint because it services the data extracted by ListMemberships, FormSubmissions, MergedAudit
+class ContactsStreamRequestBuilder(AbstractRequestBuilder):
+    URL = "https://api.hubapi.com/contacts/v1/lists/all/contacts/all"
+
+    def __init__(self):
+        self._filters = []
+        self._vid_offset = None
+
+    @property
+    def _count(self):
+        return "count=100"
+
+    def with_filter(self, filter_field: str, filter_value: Any):
+        self._filters.append(f"{filter_field}={filter_value}")
+        return self
+
+    def with_vid_offset(self, vid_offset: str):
+        self._vid_offset = f"vidOffset={vid_offset}"
+        return self
+
+    @property
+    def _query_params(self):
+        params = [
+            self._count,
+            self._vid_offset,
+        ]
+        params.extend(self._filters)
+        return filter(None, params)
+
+    def build(self):
+        q = "&".join(filter(None, self._query_params))
+        return HttpRequest(self.URL, query_params=q)

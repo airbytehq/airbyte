@@ -3,10 +3,9 @@
 import json
 
 from airbyte_cdk.test.mock_http import HttpResponse
-from airbyte_cdk.test.mock_http.response_builder import FieldPath, HttpResponseBuilder, find_template
+from airbyte_cdk.test.mock_http.response_builder import FieldPath, HttpResponseBuilder, PaginationStrategy, find_template
 
 from . import AbstractResponseBuilder
-from .pagination import HubspotPaginationStrategy
 
 
 class HubspotStreamResponseBuilder(HttpResponseBuilder):
@@ -15,8 +14,8 @@ class HubspotStreamResponseBuilder(HttpResponseBuilder):
         return self._pagination_strategy
 
     @classmethod
-    def for_stream(cls, stream: str):
-        return cls(find_template(stream, __file__), FieldPath("results"), HubspotPaginationStrategy())
+    def for_stream(cls, stream: str, records_path: str, pagination_strategy: PaginationStrategy):
+        return cls(find_template(stream, __file__), FieldPath(records_path), pagination_strategy)
 
 
 class GenericResponseBuilder(AbstractResponseBuilder):
