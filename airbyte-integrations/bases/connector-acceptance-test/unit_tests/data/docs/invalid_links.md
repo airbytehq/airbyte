@@ -11,7 +11,6 @@ This page contains the setup guide and reference information for the [GitHub](ht
 - List of GitHub Repositories (and access for them in case they are private)
 
 <!-- env:cloud -->
-
 **For Airbyte Cloud:**
 
 - OAuth
@@ -19,7 +18,6 @@ This page contains the setup guide and reference information for the [GitHub](ht
 <!-- /env:cloud -->
 
 <!-- env:oss -->
-
 **For Airbyte Open Source:**
 
 - Personal Access Token (see [Permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
@@ -32,17 +30,14 @@ This page contains the setup guide and reference information for the [GitHub](ht
 Create a [GitHub Account](https://github.com).
 
 <!-- env:oss -->
-
 **Airbyte Open Source additional setup steps**
 
 Log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens-that_do_not_exist). To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
-
 <!-- /env:oss -->
 
 ### Step 2: Set up the GitHub connector in Airbyte
 
 <!-- env:cloud -->
-
 **For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
@@ -52,11 +47,11 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 5. To authenticate:
 <!-- env:cloud -->
 
-- **For Airbyte Cloud:** **Authenticate your GitHub account** to authorize your GitHub account. Airbyte will authenticate the GitHub account you are already logged in to. Please make sure you are logged into the right account.
-  <!-- /env:cloud -->
-  <!-- env:oss -->
+  - **For Airbyte Cloud:** **Authenticate your GitHub account** to authorize your GitHub account. Airbyte will authenticate the GitHub account you are already logged in to. Please make sure you are logged into the right account.
+<!-- /env:cloud -->
+<!-- env:oss -->
 
-- **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
+   - **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
 <!-- /env:oss -->
 
 6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
@@ -69,7 +64,7 @@ Repositories with the wrong name or repositories that do not exist or have the w
 
 - These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_requeststats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_runs`, `workflows`.
 
-- The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `pull_request_stats`, `repositories`, `tags`, `teams`, `users`
+- The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `pull_request_stats`, `repositories`,  `tags`,  `teams`, `users`
 
 8. **Branch (Optional)** - List of GitHub repository branches to pull commits from, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
 9. **Max requests per hour (Optional)** - The GitHub API allows for a maximum of 5,000 requests per hour (15,000 for Github Enterprise). You can specify a lower value to limit your use of the API quota. Refer to GitHub article [Rate limits for the REST API](https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api).
@@ -176,7 +171,6 @@ Expand to see details about GitHub connector limitations and troubleshooting.
 ### Connector limitations
 
 #### Rate limiting
-
 The GitHub connector should not run into GitHub API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully. Refer to GitHub article [Rate limits for the REST API](https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api).
 
 #### Permissions and scopes
@@ -191,14 +185,14 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 ### Troubleshooting
 
-- Check out common troubleshooting issues for the GitHub source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions)
+* Check out common troubleshooting issues for the GitHub source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions)
 
 </details>
 
 ## Changelog
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
-| :------ | :--------- | :---------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+|:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 1.5.5   | 2023-12-26 | [33783](https://github.com/airbytehq/airbyte/pull/33783)                                                          | Fix retry for 504 error in GraphQL based streams                                                                                                                    |
 | 1.5.4   | 2023-11-20 | [32679](https://github.com/airbytehq/airbyte/pull/32679)                                                          | Return AirbyteMessage if max retry exeeded for 202 status code                                                                                                      |
 | 1.5.3   | 2023-10-23 | [31702](https://github.com/airbytehq/airbyte/pull/31702)                                                          | Base image migration: remove Dockerfile and use the python-connector-base image                                                                                     |
