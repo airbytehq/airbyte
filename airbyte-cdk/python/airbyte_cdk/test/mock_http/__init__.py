@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from airbyte_cdk.test.mock_http.matcher import HttpRequestMatcher
 from airbyte_cdk.test.mock_http.mocker import HttpMocker
 from airbyte_cdk.test.mock_http.request import HttpRequest

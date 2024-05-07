@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from .error_response_builder import ErrorResponseBuilder
 from .teams_response_builder import TeamsResponseBuilder
 

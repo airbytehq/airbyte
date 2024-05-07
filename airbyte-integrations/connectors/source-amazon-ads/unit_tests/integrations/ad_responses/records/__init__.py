@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from .attribution_report_record_builder import AttributionReportRecordBuilder
 from .error_record_builder import ErrorRecordBuilder
 from .profiles_record_builder import ProfilesRecordBuilder

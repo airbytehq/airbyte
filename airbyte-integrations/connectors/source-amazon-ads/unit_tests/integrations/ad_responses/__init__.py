@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from .attribution_report_response_builder import AttributionReportResponseBuilder
 from .error_response_builder import ErrorResponseBuilder
 from .oauth_response_builder import OAuthResponseBuilder

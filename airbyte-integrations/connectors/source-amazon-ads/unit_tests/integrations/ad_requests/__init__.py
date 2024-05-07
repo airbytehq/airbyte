@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from .attribution_report_request_builder import AttributionReportRequestBuilder
 from .oauth_request_builder import OAuthRequestBuilder
 from .profiles_request_builder import ProfilesRequestBuilder
