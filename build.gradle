@@ -139,6 +139,8 @@ allprojects {
         // This is also required, to prevent stderr spam starting with
         //   "OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader cl..."
         jvmArgs "-Xshare:off"
+        // needed because we make ThreadLocal.get(Thread) accessible in IntegrationRunner.stopOrphanedThreads
+        jvmArgs "--add-opens=java.base/java.lang=ALL-UNNAMED"
 
         // Set the timezone to UTC instead of picking up the host machine's timezone,
         // which on a developer's laptop is more likely to be PST.

@@ -6,7 +6,7 @@
 import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 
 import pendulum
 import requests
@@ -183,12 +183,19 @@ class Accounts(LinkedinAdsStream):
         Override request_params() to have the ability to accept the specific account_ids from user's configuration.
         If we have list of account_ids, we need to make sure that the request_params are encoded correctly,
         We will get HTTP Error 500, if we use standard requests.urlencode methods to parse parameters,
-        so the urlencode(..., safe=":(),") is used instead, to keep the values as they are.
+        so the urlencode(..., safe=":(),%") is used instead, to keep the values as they are.
         """
         params = super().request_params(stream_state, stream_slice, next_page_token)
         if self.accounts:
-            params["search"] = f"(id:(values:List({self.accounts})))"
-        return urlencode(params, safe="():,%")
+            # Construct the URN for each account ID
+            accounts = [f"urn:li:sponsoredAccount:{account_id}" for account_id in self.config.get("account_ids")]
+
+            # Join the URNs into a single string, separated by commas, and URL encode only this part
+            encoded_accounts = quote(",".join(accounts), safe=",")
+
+            # Insert the encoded account IDs into the overall structure, keeping colons and parentheses outside safe
+            params["search"] = f"(id:(values:List({encoded_accounts})))"
+        return urlencode(params, safe=":(),%")
 
 
 class IncrementalLinkedinAdsStream(LinkedinAdsStream):

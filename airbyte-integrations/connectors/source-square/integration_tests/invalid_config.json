@@ -1,5 +1,8 @@
 {
-  "api_key": "API_KEY",
+  "credentials": {
+    "auth_type": "API Key",
+    "api_key": "API_KEY"
+  },
   "is_sandbox": true,
   "start_date": "2200-01-01",
   "include_deleted_objects": false
