@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList
 import io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.exceptions.ConnectionErrorException
+import io.airbyte.commons.exceptions.TransientErrorException
 import io.airbyte.commons.functional.Either
 import java.sql.SQLException
 import java.sql.SQLSyntaxErrorException
@@ -30,19 +31,18 @@ object ConnectorExceptionUtil {
     fun isConfigError(e: Throwable?): Boolean {
         return isConfigErrorException(e) ||
             isConnectionError(e) ||
-            isRecoveryConnectionException(e) ||
             isUnknownColumnInFieldListException(e)
     }
 
     fun isTransientError(e: Throwable?): Boolean {
-        return isConfigErrorException(e) ||
-            isConnectionError(e) ||
-            isRecoveryConnectionException(e) ||
-            isUnknownColumnInFieldListException(e)
+        return isTransientErrorException(e) ||
+            isRecoveryConnectionException(e);
     }
 
     fun getDisplayMessage(e: Throwable?): String? {
         return if (e is ConfigErrorException) {
+            e.displayMessage
+        } else if (e is ConfigErrorException) {
             e.displayMessage
         } else if (e is ConnectionErrorException) {
             ErrorMessage.getErrorMessage(e.stateCode, e.errorCode, e.exceptionMessage, e)
@@ -66,6 +66,22 @@ object ConnectorExceptionUtil {
         var current: Throwable? = e
         while (current != null) {
             if (isConfigError(current)) {
+                return current
+            } else {
+                current = current.cause
+            }
+        }
+        return e
+    }
+
+    /**
+     * Returns the first instance of an exception associated with a configuration error (if it
+     * exists). Otherwise, the original exception is returned.
+     */
+    fun getRootTransientError(e: Exception?): Throwable? {
+        var current: Throwable? = e
+        while (current != null) {
+            if (isTransientError(current)) {
                 return current
             } else {
                 current = current.cause
@@ -108,6 +124,10 @@ object ConnectorExceptionUtil {
         }
         // No need to filter on isRight since isLeft will throw before reaching this line.
         return eithers.stream().map { obj: Either<out T, Result> -> obj.right!! }.toList()
+    }
+
+    private fun isTransientErrorException(e: Throwable?): Boolean {
+        return e is TransientErrorException
     }
 
     private fun isConfigErrorException(e: Throwable?): Boolean {

@@ -220,15 +220,16 @@ internal constructor(
             // exist, we
             // just return the original exception.
             ApmTraceUtils.addExceptionToTrace(e)
-            val rootThrowable = ConnectorExceptionUtil.getRootConfigError(e)
-            val displayMessage = ConnectorExceptionUtil.getDisplayMessage(rootThrowable)
+            val rootConfigErrorThrowable = ConnectorExceptionUtil.getRootConfigError(e)
+            val rootTransientErrorThrowable = ConnectorExceptionUtil.getRootTransientError(e)
+            //val displayMessage = ConnectorExceptionUtil.getDisplayMessage(rootThrowable)
             // If the source connector throws a config error, a trace message with the relevant
             // message should
             // be surfaced.
-            if (ConnectorExceptionUtil.isConfigError(rootThrowable)) {
-                AirbyteTraceMessageUtility.emitConfigErrorTrace(e, displayMessage)
-            } else if (ConnectorExceptionUtil.isTransientError(rootThrowable)) {
-                AirbyteTraceMessageUtility.emitTransientErrorTrace(e, displayMessage);
+            if (ConnectorExceptionUtil.isConfigError(rootConfigErrorThrowable)) {
+                AirbyteTraceMessageUtility.emitConfigErrorTrace(e, ConnectorExceptionUtil.getDisplayMessage(rootConfigErrorThrowable))
+            } else if (ConnectorExceptionUtil.isTransientError(rootTransientErrorThrowable)) {
+                AirbyteTraceMessageUtility.emitTransientErrorTrace(e, ConnectorExceptionUtil.getDisplayMessage(rootTransientErrorThrowable));
             }
             if (parsed.command == Command.CHECK) {
                 // Currently, special handling is required for the CHECK case since the user display
@@ -242,7 +243,7 @@ internal constructor(
                         .withConnectionStatus(
                             AirbyteConnectionStatus()
                                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                                .withMessage(displayMessage)
+                                .withMessage(ConnectorExceptionUtil.getDisplayMessage(rootConfigErrorThrowable))
                         )
                 )
                 return
