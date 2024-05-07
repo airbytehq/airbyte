@@ -31,6 +31,7 @@ from airbyte_protocol.models import (
 from typing import Any, Dict, List, Optional
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS, HttpRequest
+import pendulum as pdm
 
 
 @pytest.mark.parametrize(
@@ -48,6 +49,8 @@ def test_check_for_errors(request, requests_mock, bulk_job_response, expected_le
     test_errors = stream.job_manager._job_check_for_errors(test_response)
     assert len(test_errors) == expected_len
 
+
+start_date = "2024-01-01T01:01:01+00:00"
 
 def _catalog(stream_name: str, sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
     return CatalogBuilder().with_stream(stream_name, sync_mode).build()
@@ -85,10 +88,10 @@ def _shop_request() -> HttpRequest:
     )
 
 
-def _data_graphql_request() -> HttpRequest:
+def _data_graphql_request(start: str) -> HttpRequest:
     return HttpRequest(
         url="https://airbyte-integration-test.myshopify.com/admin/api/2023-07/graphql.json",
-        body='{"query": "mutation {\\n                bulkOperationRunQuery(\\n                    query: \\"\\"\\"\\n                     {\\n  orders(\\n    query: \\"updated_at:>=\'2024-05-05T00:00:00+00:00\' AND updated_at:<=\'2024-05-05T02:24:00+00:00\'\\"\\n    sortKey: UPDATED_AT\\n  ) {\\n    edges {\\n      node {\\n        __typename\\n        id\\n        metafields {\\n          edges {\\n            node {\\n              __typename\\n              id\\n              namespace\\n              value\\n              key\\n              description\\n              createdAt\\n              updatedAt\\n              type\\n            }\\n          }\\n        }\\n      }\\n    }\\n  }\\n}\\n                    \\"\\"\\"\\n                ) {\\n                    bulkOperation {\\n                        id\\n                        status\\n                        createdAt\\n                    }\\n                    userErrors {\\n                        field\\n                        message\\n                    }\\n                }\\n            }"}'
+        body='{"query": "mutation {\\n                bulkOperationRunQuery(\\n                    query: \\"\\"\\"\\n                     {\\n  orders(\\n    query: \\"updated_at:>=\'2024-05-05T00:00:00+00:00\' AND updated_at:<=\'2024-05-05T01:00:00+00:00\'\\"\\n    sortKey: UPDATED_AT\\n  ) {\\n    edges {\\n      node {\\n        __typename\\n        id\\n        metafields {\\n          edges {\\n            node {\\n              __typename\\n              id\\n              namespace\\n              value\\n              key\\n              description\\n              createdAt\\n              updatedAt\\n              type\\n            }\\n          }\\n        }\\n      }\\n    }\\n  }\\n}\\n                    \\"\\"\\"\\n                ) {\\n                    bulkOperation {\\n                        id\\n                        status\\n                        createdAt\\n                    }\\n                    userErrors {\\n                        field\\n                        message\\n                    }\\n                }\\n            }"}'
     )
 
 
@@ -152,7 +155,7 @@ def _register_successful_read_requests(http_mocker: HttpMocker):
     )
 
 
-# @freeze_time("2024-05-05T01:00:00")
+@freeze_time(pdm.parse(start_date).subtract(days=1))
 def test_read_graphql_records_successfully():
     with HttpMocker() as http_mocker:
         catalog = _catalog("metafield_orders", SyncMode.full_refresh)
