@@ -7,6 +7,7 @@ import datetime
 import numbers
 from typing import Union
 
+import pytz
 from dateutil import parser
 from isodate import parse_duration
 
@@ -51,15 +52,15 @@ def timestamp(dt: Union[numbers.Number, str]):
     if isinstance(dt, numbers.Number):
         return int(dt)
     else:
-        return _str_to_datetime(dt).astimezone(datetime.timezone.utc).timestamp()
+        return _str_to_datetime(dt).astimezone(pytz.utc).timestamp()
 
 
 def _str_to_datetime(s: str) -> datetime.datetime:
     parsed_date = parser.isoparse(s)
     if not parsed_date.tzinfo:
         # Assume UTC if the input does not contain a timezone
-        parsed_date = parsed_date.replace(tzinfo=datetime.timezone.utc)
-    return parsed_date.astimezone(datetime.timezone.utc)
+        parsed_date = parsed_date.replace(tzinfo=pytz.utc)
+    return parsed_date.astimezone(pytz.utc)
 
 
 def max(*args):
