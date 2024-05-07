@@ -117,13 +117,13 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
 
   @Override
   public Sql createTable(final StreamConfig stream, final String suffix, final boolean force) {
-    final String columnDeclarations = stream.columns().entrySet().stream()
+    final String columnDeclarations = stream.getColumns().entrySet().stream()
         .map(column -> "," + column.getKey().name(QUOTE) + " " + toDialectType(column.getValue()))
         .collect(joining("\n"));
     final String forceCreateTable = force ? "OR REPLACE" : "";
 
     return Sql.of(new StringSubstitutor(Map.of(
-        "final_table_id", stream.id().finalTableId(QUOTE, suffix.toUpperCase()),
+        "final_table_id", stream.getId().finalTableId(QUOTE, suffix.toUpperCase()),
         "force_create_table", forceCreateTable,
         "column_declarations", columnDeclarations,
         "retention_period_days", retentionPeriodDays)).replace(
@@ -142,20 +142,20 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
                          final String finalSuffix,
                          final Optional<Instant> minRawTimestamp,
                          final boolean useExpensiveSaferCasting) {
-    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), minRawTimestamp, useExpensiveSaferCasting);
+    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.getColumns(), minRawTimestamp, useExpensiveSaferCasting);
     String dedupFinalTable = "";
     String cdcDeletes = "";
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor());
+    if (stream.getDestinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+      dedupFinalTable = dedupFinalTable(stream.getId(), finalSuffix, stream.getPrimaryKey(), stream.getCursor());
       cdcDeletes = cdcDeletes(stream, finalSuffix);
     }
-    final String commitRawTable = commitRawTable(stream.id());
+    final String commitRawTable = commitRawTable(stream.getId());
 
     return transactionally(insertNewRecords, dedupFinalTable, cdcDeletes, commitRawTable);
   }
 
   private String extractAndCast(final ColumnId column, final AirbyteType airbyteType, final boolean useTryCast) {
-    return cast("\"_airbyte_data\":\"" + escapeJsonIdentifier(column.originalName()) + "\"", airbyteType, useTryCast);
+    return cast("\"_airbyte_data\":\"" + escapeJsonIdentifier(column.getOriginalName()) + "\"", airbyteType, useTryCast);
   }
 
   private String cast(final String sqlExpression, final AirbyteType airbyteType, final boolean useTryCast) {
@@ -259,7 +259,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
     final String extractNewRawRecords = extractNewRawRecords(stream, minRawTimestamp, useTryCast);
 
     return new StringSubstitutor(Map.of(
-        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix.toUpperCase()),
+        "final_table_id", stream.getId().finalTableId(QUOTE, finalSuffix.toUpperCase()),
         "column_list", columnList,
         "extractNewRawRecords", extractNewRawRecords)).replace(
             """
@@ -274,13 +274,13 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
   }
 
   private String extractNewRawRecords(final StreamConfig stream, final Optional<Instant> minRawTimestamp, final boolean useTryCast) {
-    final String columnCasts = stream.columns().entrySet().stream().map(
+    final String columnCasts = stream.getColumns().entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue(), useTryCast) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
-    final String columnErrors = stream.columns().entrySet().stream().map(
+    final String columnErrors = stream.getColumns().entrySet().stream().map(
         col -> new StringSubstitutor(Map.of(
-            "raw_col_name", escapeJsonIdentifier(col.getKey().originalName()),
-            "printable_col_name", escapeSingleQuotedString(col.getKey().originalName()),
+            "raw_col_name", escapeJsonIdentifier(col.getKey().getOriginalName()),
+            "printable_col_name", escapeSingleQuotedString(col.getKey().getOriginalName()),
             "col_type", toDialectType(col.getValue()),
             "json_extract", extractAndCast(col.getKey(), col.getValue(), useTryCast))).replace(
                 // TYPEOF returns "NULL_VALUE" for a JSON null and "NULL" for a SQL null
@@ -292,12 +292,12 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
                   ELSE NULL
                 END"""))
         .collect(joining(",\n"));
-    final String columnList = stream.columns().keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
+    final String columnList = stream.getColumns().keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
     final String extractedAtCondition = buildExtractedAtCondition(minRawTimestamp);
 
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+    if (stream.getDestinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       String cdcConditionalOrIncludeStatement = "";
-      if (stream.columns().containsKey(CDC_DELETED_AT_COLUMN)) {
+      if (stream.getColumns().containsKey(CDC_DELETED_AT_COLUMN)) {
         cdcConditionalOrIncludeStatement = """
                                            OR (
                                              "_airbyte_loaded_at" IS NOT NULL
@@ -306,13 +306,13 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
                                            """;
       }
 
-      final String pkList = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
-      final String cursorOrderClause = stream.cursor()
+      final String pkList = stream.getPrimaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
+      final String cursorOrderClause = stream.getCursor()
           .map(cursorId -> cursorId.name(QUOTE) + " DESC NULLS LAST,")
           .orElse("");
 
       return new StringSubstitutor(Map.of(
-          "raw_table_id", stream.id().rawTableId(QUOTE),
+          "raw_table_id", stream.getId().rawTableId(QUOTE),
           "column_casts", columnCasts,
           "column_errors", columnErrors,
           "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
@@ -351,7 +351,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
               WHERE row_number = 1""");
     } else {
       return new StringSubstitutor(Map.of(
-          "raw_table_id", stream.id().rawTableId(QUOTE),
+          "raw_table_id", stream.getId().rawTableId(QUOTE),
           "column_casts", columnCasts,
           "column_errors", columnErrors,
           "extractedAtCondition", extractedAtCondition,
@@ -413,17 +413,17 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
   }
 
   private String cdcDeletes(final StreamConfig stream, final String finalSuffix) {
-    if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
+    if (stream.getDestinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
       return "";
     }
-    if (!stream.columns().containsKey(CDC_DELETED_AT_COLUMN)) {
+    if (!stream.getColumns().containsKey(CDC_DELETED_AT_COLUMN)) {
       return "";
     }
 
     // we want to grab IDs for deletion from the raw table (not the final table itself) to hand
     // out-of-order record insertions after the delete has been registered
     return new StringSubstitutor(Map.of(
-        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix.toUpperCase()))).replace(
+        "final_table_id", stream.getId().finalTableId(QUOTE, finalSuffix.toUpperCase()))).replace(
             """
             DELETE FROM ${final_table_id}
             WHERE _AB_CDC_DELETED_AT IS NOT NULL;
@@ -455,7 +455,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
   public Sql prepareTablesForSoftReset(final StreamConfig stream) {
     return concat(
         createTable(stream, SOFT_RESET_SUFFIX.toUpperCase(), true),
-        clearLoadedAt(stream.id()));
+        clearLoadedAt(stream.getId()));
   }
 
   @Override
