@@ -32,25 +32,25 @@ The value of your API Token can be viewed at any time from the main dashboard of
 
 The Linnworks source connector supports the following streams and [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
 
-| Stream Name                                                                                    | Full Refresh | Incremental  |
-| :--------------------------------------------------------------------------------------------- | :----------- | :----------- |
-| [ProcessedOrders](https://apps.linnworks.net/Api/Method/ProcessedOrders-SearchProcessedOrders) | ✓           | ✓            |
-| [ProcessedOrderDetails](https://apps.linnworks.net/Api/Method/Orders-GetOrdersById)            | ✓           | ✓            |
-| [StockItems](https://apps.linnworks.net//Api/Method/Stock-GetStockItemsFull)                   | ✓           | X             |
-| [StockLocations](https://apps.linnworks.net/Api/Method/Inventory-GetStockLocations)            | ✓           | X             |
-| [StockLocationDetails](https://apps.linnworks.net/Api/Method/Locations-GetLocation)            | ✓           | X             |
+| Stream Name                                                                                    | Full Refresh | Incremental |
+| :--------------------------------------------------------------------------------------------- | :----------- | :---------- |
+| [ProcessedOrders](https://apps.linnworks.net/Api/Method/ProcessedOrders-SearchProcessedOrders) | ✓            | ✓           |
+| [ProcessedOrderDetails](https://apps.linnworks.net/Api/Method/Orders-GetOrdersById)            | ✓            | ✓           |
+| [StockItems](https://apps.linnworks.net//Api/Method/Stock-GetStockItemsFull)                   | ✓            | X           |
+| [StockLocations](https://apps.linnworks.net/Api/Method/Inventory-GetStockLocations)            | ✓            | X           |
+| [StockLocationDetails](https://apps.linnworks.net/Api/Method/Locations-GetLocation)            | ✓            | X           |
 
 ### Data type mapping
 
-| Integration Type | Airbyte Type | Example                    |
-| :--------------- | :----------- | :------------------------- |
-| `number`         | `number`     | 50.23                      |
-| `integer`        | `integer`    | 50                         |
-| `date`           | `string`     | 2020-12-31                 |
-| `datetime`       | `string`     | 2020-12-31T07:30:00        |
-| `array`          | `array`      | ["Item 1", "Item 2"]       |
-| `boolean`        | `boolean`    | True/False                 |
-| `string`         | `string`     | Item 3                     |
+| Integration Type | Airbyte Type | Example              |
+| :--------------- | :----------- | :------------------- |
+| `number`         | `number`     | 50.23                |
+| `integer`        | `integer`    | 50                   |
+| `date`           | `string`     | 2020-12-31           |
+| `datetime`       | `string`     | 2020-12-31T07:30:00  |
+| `array`          | `array`      | ["Item 1", "Item 2"] |
+| `boolean`        | `boolean`    | True/False           |
+| `string`         | `string`     | Item 3               |
 
 ## Limitations & Troubleshooting
 
@@ -71,8 +71,8 @@ Rate limits for the Linnworks API vary across endpoints. Use the [links in the *
 
 | Version | Date       | Pull Request                                             | Subject                                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------- |
-| 0.1.9 | 2024-04-19 | [37188](https://github.com/airbytehq/airbyte/pull/37188) | Updating to 0.80.0 CDK |
-| 0.1.8 | 2024-04-12 | [37188](https://github.com/airbytehq/airbyte/pull/37188) | schema descriptions |
+| 0.1.9   | 2024-04-19 | [37188](https://github.com/airbytehq/airbyte/pull/37188) | Updating to 0.80.0 CDK                                                      |
+| 0.1.8   | 2024-04-12 | [37188](https://github.com/airbytehq/airbyte/pull/37188) | schema descriptions                                                         |
 | 0.1.7   | 2024-02-22 | [35557](https://github.com/airbytehq/airbyte/pull/35557) | Manage dependencies with Poetry                                             |
 | 0.1.6   | 2024-01-31 | [34717](https://github.com/airbytehq/airbyte/pull/34717) | Update CDK and migrate to base image                                        |
 | 0.1.5   | 2022-11-20 | [19865](https://github.com/airbytehq/airbyte/pull/19865) | Bump Version                                                                |

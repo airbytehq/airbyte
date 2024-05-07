@@ -24,13 +24,13 @@ An Airbyte component which pulls data from a source or pushes data to a destinat
 
 A connection is an automated data pipeline that replicates data from a source to a destination. Setting up a connection enables configuration of the following parameters:
 
-| Concept                                                                                                         | Description                                                        |
-|-----------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------|
+| Concept                                                                                                                  | Description                                                        |
+| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
 | [Stream and Field Selection](/cloud/managing-airbyte-cloud/configuring-connections.md#modify-streams-in-your-connection) | What data should be replicated from the source to the destination? |
-| [Sync Mode](/using-airbyte/core-concepts/sync-modes/README.md)                                                  | How should the streams be replicated (read and written)?           |
-| [Sync Schedule](/using-airbyte/core-concepts/sync-schedules.md)                                         | When should a data sync be triggered?                              |
-| [Destination Namespace and Stream Prefix](/using-airbyte/core-concepts/namespaces.md)                           | Where should the replicated data be written?                       |
-| [Schema Propagation](/cloud/managing-airbyte-cloud/manage-schema-changes.md)                                    | How should Airbyte handle schema drift in sources?                 |
+| [Sync Mode](/using-airbyte/core-concepts/sync-modes/README.md)                                                           | How should the streams be replicated (read and written)?           |
+| [Sync Schedule](/using-airbyte/core-concepts/sync-schedules.md)                                                          | When should a data sync be triggered?                              |
+| [Destination Namespace and Stream Prefix](/using-airbyte/core-concepts/namespaces.md)                                    | Where should the replicated data be written?                       |
+| [Schema Propagation](/cloud/managing-airbyte-cloud/manage-schema-changes.md)                                             | How should Airbyte handle schema drift in sources?                 |
 
 ## Stream
 
@@ -46,7 +46,7 @@ Examples of streams:
 
 A record is a single entry or unit of data. This is commonly known as a "row". A record is usually unique and contains information related to a particular entity, like a customer or transaction.
 
-Examples of records: 
+Examples of records:
 
 - A row in the table in a relational database
 - A line in a file
@@ -54,14 +54,12 @@ Examples of records:
 
 ## Field
 
-A field is an attribute of a record in a stream. 
+A field is an attribute of a record in a stream.
 
 Examples of fields:
 
 - A column in the table in a relational database
 - A field in an API response
-
-
 
 ## Sync Schedule
 
@@ -95,7 +93,7 @@ Typing and deduping ensures the data emitted from sources is written into the co
 - BigQuery
 
 :::info
-Typing and Deduping is the default method of transforming datasets within data warehouse and database destinations after they've been replicated. We are retaining documentation about normalization to support legacy destinations. 
+Typing and Deduping is the default method of transforming datasets within data warehouse and database destinations after they've been replicated. We are retaining documentation about normalization to support legacy destinations.
 :::
 
 For more details, see our [Typing & Deduping documentation](/using-airbyte/core-concepts/typing-deduping).
