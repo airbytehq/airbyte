@@ -2,27 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from typing import cast
 from unittest.mock import ANY, MagicMock, Mock, call, patch
 
-from typing import cast
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
-from destination_snowflake_cortex.config import SnowflakeCortexIndexingModel
 from airbyte.strategies import WriteStrategy
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStateMessage, AirbyteStreamState, ConfiguredAirbyteCatalog, Type
+from destination_snowflake_cortex.config import SnowflakeCortexIndexingModel
 from destination_snowflake_cortex.indexer import (
-    SnowflakeCortexIndexer,
+    CHUNK_ID_COLUMN,
+    DOCUMENT_ID_COLUMN,
     EMBEDDING_COLUMN,
     METADATA_COLUMN,
     PAGE_CONTENT_COLUMN,
-    DOCUMENT_ID_COLUMN,
-    CHUNK_ID_COLUMN
-)
-from airbyte_cdk.models import (
-    AirbyteRecordMessage,
-    ConfiguredAirbyteCatalog,
-    AirbyteMessage,
-    AirbyteStreamState,
-    AirbyteStateMessage,
-    Type,
+    SnowflakeCortexIndexer,
 )
 
 

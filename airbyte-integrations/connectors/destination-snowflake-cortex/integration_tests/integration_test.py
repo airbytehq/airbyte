@@ -8,10 +8,11 @@ import logging
 from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
 from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
 from airbyte_cdk.models import DestinationSyncMode, Status
-from destination_snowflake_cortex.indexer import SnowflakeCortexIndexer
 from destination_snowflake_cortex.destination import DestinationSnowflakeCortex
-from snowflake import connector
+from destination_snowflake_cortex.indexer import SnowflakeCortexIndexer
 from langchain.embeddings import OpenAIEmbeddings
+from snowflake import connector
+
 
 class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
     def _init_snowflake_cortex(self):

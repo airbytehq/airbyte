@@ -2,30 +2,26 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Optional
 import uuid
+from typing import Any, Iterable, Optional
 
+import dpath.util
+from airbyte._processors.sql.snowflakecortex import SnowflakeCortexSqlProcessor, SnowflakeSqlProcessor
+from airbyte.caches import SnowflakeCache
+from airbyte.strategies import WriteStrategy
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
-from destination_snowflake_cortex.config import SnowflakeCortexIndexingModel
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode
-
-from airbyte.caches import SnowflakeCache
-from airbyte._processors.sql.snowflakecortex import SnowflakeSqlProcessor, SnowflakeCortexSqlProcessor
-from airbyte.strategies import WriteStrategy
-
-from typing import Iterable, Any
-import dpath.util
-
 from airbyte_cdk.models import (
     AirbyteMessage,
-    ConfiguredAirbyteCatalog,
     AirbyteStateMessage,
     AirbyteStateType,
     AirbyteStreamState,
+    ConfiguredAirbyteCatalog,
+    DestinationSyncMode,
     StreamDescriptor,
     Type,
 )
+from destination_snowflake_cortex.config import SnowflakeCortexIndexingModel
 
 # extra columns to be added to the Airbyte message
 DOCUMENT_ID_COLUMN = "document_id"
@@ -33,6 +29,7 @@ CHUNK_ID_COLUMN = "chunk_id"
 METADATA_COLUMN = "metadata"
 PAGE_CONTENT_COLUMN = "page_content"
 EMBEDDING_COLUMN = "embedding"
+
 
 class SnowflakeCortexIndexer(Indexer):
     config: SnowflakeCortexIndexingModel
@@ -50,13 +47,15 @@ class SnowflakeCortexIndexer(Indexer):
         database = config.database
         warehouse = config.warehouse
         role = config.role
-        self.cache = SnowflakeCache(account=account, username=username, password=password, database=database, warehouse=warehouse, role=role)
+        self.cache = SnowflakeCache(
+            account=account, username=username, password=password, database=database, warehouse=warehouse, role=role
+        )
         self.defaut_processor = SnowflakeSqlProcessor(cache=self.cache)
 
     def _get_airbyte_messsages_from_chunks(
-            self, 
-            document_chunks, 
-        )-> Iterable[AirbyteMessage]:
+        self,
+        document_chunks,
+    ) -> Iterable[AirbyteMessage]:
         """Creates Airbyte messages from chunk records."""
         airbyte_messages = []
         for i in range(len(document_chunks)):
@@ -68,20 +67,19 @@ class SnowflakeCortexIndexer(Indexer):
             new_data[METADATA_COLUMN] = chunk.metadata
             new_data[PAGE_CONTENT_COLUMN] = chunk.page_content
             new_data[EMBEDDING_COLUMN] = chunk.embedding
-            message.record.data = new_data 
+            message.record.data = new_data
             airbyte_messages.append(message)
         return airbyte_messages
 
-
-    def _get_updated_catalog(self)-> ConfiguredAirbyteCatalog:
+    def _get_updated_catalog(self) -> ConfiguredAirbyteCatalog:
         """Adds following columns to catalog
-            document_id (primary key) -> unique per record/document 
-            chunk_id -> unique per chunk 
-            page_content -> text content of the page
-            metadata -> metadata of the record
-            embedding -> embedding of the page content 
+        document_id (primary key) -> unique per record/document
+        chunk_id -> unique per chunk
+        page_content -> text content of the page
+        metadata -> metadata of the record
+        embedding -> embedding of the page content
         """
-        updated_catalog = self.catalog  
+        updated_catalog = self.catalog
         # update each stream in the catalog
         for stream in updated_catalog.streams:
             stream.stream.json_schema["properties"][DOCUMENT_ID_COLUMN] = {"type": "string"}
@@ -93,14 +91,12 @@ class SnowflakeCortexIndexer(Indexer):
             stream.primary_key = [[DOCUMENT_ID_COLUMN]]
             # TODO: do we want to set chunk_id as a constraint in the catalog
         return updated_catalog
-    
 
-    def _get_primary_keys(self, stream_name:str) -> Optional[str]:
+    def _get_primary_keys(self, stream_name: str) -> Optional[str]:
         for stream in self.catalog.streams:
             if stream.stream.name == stream_name:
                 return stream.primary_key
         return None
-    
 
     def _get_record_primary_key(self, record: AirbyteMessage) -> Optional[str]:
         """Create primary key for the record by appending the primary keys."""
@@ -109,17 +105,16 @@ class SnowflakeCortexIndexer(Indexer):
 
         if not primary_keys:
             return None
-        
+
         primary_key = []
         for key in primary_keys:
             try:
                 primary_key.append(str(dpath.util.get(record.record.data, key)))
             except KeyError:
                 primary_key.append("__not_found__")
-        # return a stringified version of all primary keys 
+        # return a stringified version of all primary keys
         stringified_primary_key = "_".join(primary_key)
         return stringified_primary_key
-    
 
     def _create_document_id(self, record: AirbyteMessage) -> str:
         """Create document id based on the primary key values. Returns a random uuid if no primary key is found"""
@@ -128,19 +123,16 @@ class SnowflakeCortexIndexer(Indexer):
         if primary_key is not None:
             return f"Stream_{stream_name}_Key_{primary_key}"
         return str(uuid.uuid4().int)
-    
 
     def _create_state_message(self, stream, namespace, data: dict[str, Any]) -> AirbyteMessage:
         """Create a state message for the stream"""
-        stream = AirbyteStreamState(
-            stream_descriptor=StreamDescriptor(name=stream, namespace=namespace)
-        )
+        stream = AirbyteStreamState(stream_descriptor=StreamDescriptor(name=stream, namespace=namespace))
         return AirbyteMessage(
             type=Type.STATE,
             state=AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=stream, data=data),
         )
-    
-    def get_write_strategy(self, stream_name: str) -> WriteStrategy:        
+
+    def get_write_strategy(self, stream_name: str) -> WriteStrategy:
         for stream in self.catalog.streams:
             if stream.stream.name == stream_name:
                 if stream.destination_sync_mode == DestinationSyncMode.overwrite:
@@ -161,7 +153,6 @@ class SnowflakeCortexIndexer(Indexer):
         # update catalog to match all columns in the airbyte messages
         if airbyte_messages is not None and len(airbyte_messages) > 0:
             updated_catalog = self._get_updated_catalog()
-            print(f"\nUpdated catalog------------------------------\n: {updated_catalog}")
             cortex_processor = SnowflakeCortexSqlProcessor(
                 cache=self.cache,
                 catalog=updated_catalog,
@@ -170,11 +161,11 @@ class SnowflakeCortexIndexer(Indexer):
                 stream_names=[stream],
             )
             cortex_processor.process_airbyte_messages(airbyte_messages, self.get_write_strategy(stream))
-            
 
     def delete(self, delete_ids, namespace, stream):
-        # TODO: Confirm PyAirbyte SQL processor will handle deletes when needed. 
-        pass 
+        # TODO: Confirm PyAirbyte SQL processor will handle deletes when needed.
+        pass
 
     def check(self) -> Optional[str]:
         self.defaut_processor._get_tables_list()
+        # TODO: check to see if vector type is available in snowflake instance ?

@@ -7,15 +7,16 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
+from airbyte_cdk.destinations.vector_db_based.embedder import Embedder, create_from_config
+from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
+from airbyte_cdk.destinations.vector_db_based.writer import Writer
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_snowflake_cortex.config import ConfigModel
-from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
-from airbyte_cdk.destinations.vector_db_based.writer import Writer
 from destination_snowflake_cortex.indexer import SnowflakeCortexIndexer
-from airbyte_cdk.destinations.vector_db_based.embedder import Embedder, create_from_config
 
 BATCH_SIZE = 32
+
 
 class DestinationSnowflakeCortex(Destination):
     indexer: Indexer
@@ -24,9 +25,9 @@ class DestinationSnowflakeCortex(Destination):
     def _init_indexer(self, config: ConfigModel, configured_catalog: ConfiguredAirbyteCatalog | None = None):
         self.embedder = create_from_config(config.embedding, config.processing)
         self.indexer = SnowflakeCortexIndexer(config.indexing, self.embedder.embedding_dimensions, configured_catalog)
-        
 
-    def write(self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+    def write(
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
         parsed_config = ConfigModel.parse_obj(config)
         self._init_indexer(parsed_config, configured_catalog)
@@ -35,16 +36,14 @@ class DestinationSnowflakeCortex(Destination):
         )
         yield from writer.write(configured_catalog, input_messages)
 
-
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        try: 
+        try:
             parsed_config = ConfigModel.parse_obj(config)
             self._init_indexer(parsed_config)
             self.indexer.check()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
-
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         return ConnectorSpecification(

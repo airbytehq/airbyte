@@ -10,25 +10,11 @@ For information about how to use this connector within Airbyte, see [the documen
 
 #### Minimum Python version required `= 3.9.0`
 
-#### Activate Virtual Environment and install dependencies
-From this connector directory, create a virtual environment:
+### Installing the connector
+From this connector directory, run:
+```bash
+poetry install --with dev.
 ```
-python -m venv .venv
-```
-
-This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
-development environment of choice. To activate it from the terminal, run:
-```
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
-
-Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
-used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
-If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
-should work as you expect.
-
 
 #### Create credentials
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/destinations/snowflake-cortex)
@@ -41,10 +27,9 @@ and place them into `secrets/config.json`.
 
 ### Locally running the connector
 ```
-python main.py spec
-python main.py check --config secrets/config.json
-python main.py discover --config secrets/config.json
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+poetry run python main.py spec
+poetry run python main.py check --config secrets/config.json
+poetry run python main.py write --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Locally running the connector docker image
@@ -110,7 +95,7 @@ Please use this as an example. This is not optimized.
 docker build -t airbyte/destination-snowflake-cortex:dev .
 # Running the spec command against your patched connector
 docker run airbyte/destination-snowflake-cortex:dev spec
-````
+```
 #### Run
 Then run any of the connector commands as follows:
 ```
@@ -120,26 +105,28 @@ docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-snowflake-cortex:
 cat messages.jsonl | docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-snowflake-cortex:dev write --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 ## Testing
-   Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
-First install test dependencies into your virtual environment:
+You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+```bash
+airbyte-ci connectors --name=destination-snowflake-cortex test
 ```
-pip install .[tests]
-```
+
 ### Unit Tests
 To run unit tests locally, from the connector directory run:
 ```
-python -m pytest unit_tests
+poetry run pytest -s unit_tests
 ```
 
 ### Integration Tests
 There are two types of integration tests: Acceptance Tests (Airbyte's test suite for all destination connectors) and custom integration tests (which are specific to this connector).
-#### Custom Integration tests
-Place custom tests inside `integration_tests/` folder, then, from the connector root, run
+
+To run integration tests locally, make sure you have a secrets/config.json as explained above, and then run:
 ```
-python -m pytest integration_tests
-```
-#### Acceptance Tests
-Coming soon: 
+poetry run pytest -s integration_tests
+``` 
+
+### Customizing acceptance Tests
+Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
+If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 
 ### Using `airbyte-ci` to run tests
 See [airbyte-ci documentation](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#connectors-test-command)
