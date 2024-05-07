@@ -37,8 +37,7 @@ Minimum permissions (role [Storage Blob Data Reader](https://learn.microsoft.com
 
 ### Step 1: Set up Azure Blob Storage
 
-* Create a storage account with the permissions [details](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) 
-
+- Create a storage account with the permissions [details](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal)
 
 :::warning
 To use Oauth 2.0 Authentication method, Access Control (IAM) should be setup.
@@ -70,7 +69,7 @@ Follow these steps to set up an IAM role:
 7. Enter the name of the **Container** containing your files to replicate.
 8. Add a stream
    1. Write the **File Type**
-   2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format.  For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
+   2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
    3. Give a **Name** to the stream
    4. (Optional)—If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
@@ -82,7 +81,7 @@ Follow these steps to set up an IAM role:
 The Azure Blob Storage source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature                                        | Supported? |
-|:-----------------------------------------------|:-----------|
+| :--------------------------------------------- | :--------- |
 | Full Refresh Sync                              | Yes        |
 | Incremental Sync                               | Yes        |
 | Replicate Incremental Deletes                  | No         |
@@ -93,7 +92,7 @@ The Azure Blob Storage source connector supports the following [sync modes](http
 ### File Compressions
 
 | Compression | Supported? |
-|:------------|:-----------|
+| :---------- | :--------- |
 | Gzip        | Yes        |
 | Zip         | No         |
 | Bzip2       | Yes        |
@@ -194,7 +193,7 @@ Product,Description,Price
 Jeans,"Navy Blue, Bootcut, 34\"",49.99
 ```
 
-The backslash (`\`) is used directly before the second double quote (`"`) to indicate that it is _not_ the closing quote for the field, but rather a literal double quote character that should be included in the value (in this example, denoting the size of the jeans in inches: `34"` ). 
+The backslash (`\`) is used directly before the second double quote (`"`) to indicate that it is _not_ the closing quote for the field, but rather a literal double quote character that should be included in the value (in this example, denoting the size of the jeans in inches: `34"` ).
 
 Leaving this field blank (default option) will disallow escaping.
 
@@ -206,7 +205,6 @@ Leaving this field blank (default option) will disallow escaping.
 - **Strings Can Be Null**: Whether strings can be interpreted as null values. If true, strings that match the null_values set will be interpreted as null. If false, strings that match the null_values set will be interpreted as the string itself.
 - **True Values**: A set of case-sensitive strings that should be interpreted as true values.
 
-
 #### Parquet
 
 Apache Parquet is a column-oriented data storage format of the Apache Hadoop ecosystem. It provides efficient data compression and encoding schemes with enhanced performance to handle complex data in bulk. At the moment, partitioned parquet datasets are unsupported. The following settings are available:
@@ -216,6 +214,7 @@ Apache Parquet is a column-oriented data storage format of the Apache Hadoop eco
 #### Avro
 
 The Avro parser uses the [Fastavro library](https://fastavro.readthedocs.io/en/latest/). The following settings are available:
+
 - **Convert Double Fields to Strings**: Whether to convert double fields to strings. This is recommended if you have decimal numbers with a high degree of precision because there can be a loss precision when handling floating point numbers.
 
 #### JSONL
@@ -247,7 +246,7 @@ The Azure Blob Storage connector should not encounter any [Microsoft API limitat
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
 | 0.4.2   | 2024-04-23 | [37504](https://github.com/airbytehq/airbyte/pull/37504) | Update specification                                                                         |
 | 0.4.1   | 2024-04-22 | [37467](https://github.com/airbytehq/airbyte/pull/37467) | Fix start date filter                                                                        |
 | 0.4.0   | 2024-04-05 | [36825](https://github.com/airbytehq/airbyte/pull/36825) | Add oauth 2.0 support                                                                        |

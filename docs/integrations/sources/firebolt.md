@@ -49,9 +49,9 @@ You can now use the Airbyte Firebolt source.
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                           |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| Version | Date       | Pull Request                                             | Subject                                                      |
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
 | 1.0.0   | 2023-07-20 | [21842](https://github.com/airbytehq/airbyte/pull/21842) | PGDate, TimestampTZ, TimestampNTZ and Boolean column support |
-| 0.2.1   | 2022-05-10 | [25965](https://github.com/airbytehq/airbyte/pull/25965) | Fix DATETIME conversion to Airbyte date-time type |
-| 0.2.0   | 2022-09-09 | [16583](https://github.com/airbytehq/airbyte/pull/16583) | Reading from views                                |
-| 0.1.0   | 2022-04-28 | [13874](https://github.com/airbytehq/airbyte/pull/13874) | Create Firebolt source                            |
+| 0.2.1   | 2022-05-10 | [25965](https://github.com/airbytehq/airbyte/pull/25965) | Fix DATETIME conversion to Airbyte date-time type            |
+| 0.2.0   | 2022-09-09 | [16583](https://github.com/airbytehq/airbyte/pull/16583) | Reading from views                                           |
+| 0.1.0   | 2022-04-28 | [13874](https://github.com/airbytehq/airbyte/pull/13874) | Create Firebolt source                                       |

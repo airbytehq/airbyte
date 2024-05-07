@@ -87,7 +87,7 @@ Once you've configured BigQuery as a source, delete the Service Account Key from
 ### source-bigquery
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
-|:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
 | 0.4.2   | 2024-02-22 | [35503](https://github.com/airbytehq/airbyte/pull/35503) | Source BigQuery: replicating RECORD REPEATED fields                                                                                       |
 | 0.4.1   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version                                                                                                                          |
 | 0.4.0   | 2023-12-18 | [33484](https://github.com/airbytehq/airbyte/pull/33484) | Remove LEGACY state                                                                                                                       |
