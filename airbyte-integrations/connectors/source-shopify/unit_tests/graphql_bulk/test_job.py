@@ -22,6 +22,7 @@ from source_shopify.streams.streams import (
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http import HttpResponse
+from freezegun import freeze_time
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponseBuilder,
@@ -72,7 +73,7 @@ def _read(
         expecting_exception: bool = False
 ) -> EntrypointOutput:
     config = {
-        "start_date": "2023-04-13",
+        "start_date": "2024-05-05",
         "shop": "airbyte-integration-test",
         "credentials": {
             "auth_method": "api_password",
@@ -84,38 +85,28 @@ def _read(
     return read(SourceShopify(), config, catalog, state, expecting_exception)
 
 
-def get_http_records_request() -> HttpRequest:
-    url = "https://airbyte-integration-test.myshopify.com/admin/api/2023-07/shop.json"
+def _scopes_request() -> HttpRequest:
     return HttpRequest(
-        url=url,
+        url="https://airbyte-integration-test.myshopify.com/admin/oauth/access_scopes.json",
         query_params=ANY_QUERY_PARAMS,
     )
 
 
-def get_http_scopes_request() -> HttpRequest:
-    url = "https://airbyte-integration-test.myshopify.com/admin/oauth/access_scopes.json"
+def _shop_request() -> HttpRequest:
     return HttpRequest(
-        url=url,
+        url="https://airbyte-integration-test.myshopify.com/admin/api/2023-07/shop.json",
         query_params=ANY_QUERY_PARAMS,
     )
 
 
-def get_http_shop_request() -> HttpRequest:
-    url = "https://airbyte-integration-test.myshopify.com/admin/api/2023-07/shop.json"
-    return HttpRequest(
-        url=url,
-        query_params=ANY_QUERY_PARAMS,
-    )
-
-
-def get_graphql_request() -> HttpRequest:
+def data_graphql_request() -> HttpRequest:
     return HttpRequest(
         url="https://airbyte-integration-test.myshopify.com/admin/api/2023-07/graphql.json",
-        body=b'{"query": "mutation {\\n                bulkOperationRunQuery(\\n                    query: \\"\\"\\"\\n                     {\\n  orders(\\n    query: \\"updated_at:>=\'2023-04-13T00:00:00+00:00\' AND updated_at:<=\'2023-04-13T02:24:00+00:00\'\\"\\n    sortKey: UPDATED_AT\\n  ) {\\n    edges {\\n      node {\\n        __typename\\n        id\\n        metafields {\\n          edges {\\n            node {\\n              __typename\\n              id\\n              namespace\\n              value\\n              key\\n              description\\n              createdAt\\n              updatedAt\\n              type\\n            }\\n          }\\n        }\\n      }\\n    }\\n  }\\n}\\n                    \\"\\"\\"\\n                ) {\\n                    bulkOperation {\\n                        id\\n                        status\\n                        createdAt\\n                    }\\n                    userErrors {\\n                        field\\n                        message\\n                    }\\n                }\\n            }"}'
+        body='{"query": "mutation {\\n                bulkOperationRunQuery(\\n                    query: \\"\\"\\"\\n                     {\\n  orders(\\n    query: \\"updated_at:>=\'2024-05-05T00:00:00+00:00\' AND updated_at:<=\'2024-05-05T02:24:00+00:00\'\\"\\n    sortKey: UPDATED_AT\\n  ) {\\n    edges {\\n      node {\\n        __typename\\n        id\\n        metafields {\\n          edges {\\n            node {\\n              __typename\\n              id\\n              namespace\\n              value\\n              key\\n              description\\n              createdAt\\n              updatedAt\\n              type\\n            }\\n          }\\n        }\\n      }\\n    }\\n  }\\n}\\n                    \\"\\"\\"\\n                ) {\\n                    bulkOperation {\\n                        id\\n                        status\\n                        createdAt\\n                    }\\n                    userErrors {\\n                        field\\n                        message\\n                    }\\n                }\\n            }"}'
     )
 
 
-def get_graphql_request2() -> HttpRequest:
+def _status_graphql_request() -> HttpRequest:
     return HttpRequest(
         url="https://airbyte-integration-test.myshopify.com/admin/api/2023-07/graphql.json",
         body="""query {
@@ -135,44 +126,51 @@ def get_graphql_request2() -> HttpRequest:
     )
 
 
+def _records_file_request() -> HttpRequest:
+    return HttpRequest(
+        url="https://storage.googleapis.com/shopify-tiers-assets-prod-us-east1/bulk-operation-outputs/l6lersgk4i81iqc3n6iisywwtipb-final",
+        query_params=ANY_QUERY_PARAMS,
+    )
+
+
+@freeze_time("2024-05-05T01:00:00")
 def test_read_graphql_records_successfully():
     with HttpMocker() as http_mocker:
         catalog = _catalog("metafield_orders", SyncMode.full_refresh)
-        stream = catalog.streams[0].stream
 
         response_scopes = '{"access_scopes":[{"handle":"read_analytics"},{"handle":"read_customers"},{"handle":"read_gdpr_data_request"},{"handle":"read_online_store_navigation"},{"handle":"read_shopify_payments_accounts"},{"handle":"read_shopify_payments_bank_accounts"},{"handle":"read_shopify_payments_disputes"},{"handle":"read_shopify_payments_payouts"},{"handle":"read_assigned_fulfillment_orders"},{"handle":"read_discounts"},{"handle":"read_draft_orders"},{"handle":"read_files"},{"handle":"read_fulfillments"},{"handle":"read_gift_cards"},{"handle":"read_inventory"},{"handle":"read_legal_policies"},{"handle":"read_locations"},{"handle":"read_marketing_events"},{"handle":"read_merchant_managed_fulfillment_orders"},{"handle":"read_online_store_pages"},{"handle":"read_order_edits"},{"handle":"read_orders"},{"handle":"read_price_rules"},{"handle":"read_product_listings"},{"handle":"read_reports"},{"handle":"read_resource_feedbacks"},{"handle":"read_script_tags"},{"handle":"read_shipping"},{"handle":"read_locales"},{"handle":"read_content"},{"handle":"read_themes"},{"handle":"read_third_party_fulfillment_orders"},{"handle":"read_translations"},{"handle":"read_publications"},{"handle":"read_returns"},{"handle":"read_channels"},{"handle":"read_products"},{"handle":"read_markets"},{"handle":"read_shopify_credit"},{"handle":"read_store_credit_account_transactions"},{"handle":"read_all_cart_transforms"},{"handle":"read_cart_transforms"},{"handle":"read_all_checkout_completion_target_customizations"},{"handle":"read_companies"},{"handle":"read_custom_fulfillment_services"},{"handle":"read_customer_data_erasure"},{"handle":"read_customer_merge"},{"handle":"read_dery_customizations"},{"handle":"read_fulfillment_constraint_rules"},{"handle":"read_gates"},{"handle":"read_order_submission_rules"},{"handle":"read_payment_customizations"},{"handle":"read_packing_slip_templates"},{"handle":"read_payment_terms"},{"handle":"read_pixels"},{"handle":"read_product_feeds"},{"handle":"read_purchase_options"},{"handle":"read_shopify_payments_provider_accounts_sensitive"},{"handle":"read_all_orders"}]}'
         response_shop = '{"shop":{"id":58033176765,"name":"airbyte integration test","email":"sherif@airbyte.io","domain":"airbyte-integration-test.myshopify.com","province":"California","country":"US","address1":"350 29th Avenue","zip":"94121","city":"San Francisco","source":null,"phone":"8023494963","latitude":37.7827286,"longitude":-122.4889911,"primary_locale":"en","address2":"","created_at":"2021-06-22T18:00:23-07:00","updated_at":"2024-01-30T21:11:05-08:00","country_code":"US","country_name":"United States","currency":"USD","customer_email":"sherif@airbyte.io","timezone":"(GMT-08:00) America\/Los_Angeles","iana_timezone":"America\/Los_Angeles","shop_owner":"Airbyte Airbyte","money_format":"${{amount}}","money_with_currency_format":"${{amount}} USD","weight_unit":"kg","province_code":"CA","taxes_included":true,"auto_configure_tax_inclusivity":null,"tax_shipping":null,"county_taxes":true,"plan_display_name":"Developer Preview","plan_name":"partner_test","has_discounts":true,"has_gift_cards":false,"myshopify_domain":"airbyte-integration-test.myshopify.com","google_apps_domain":null,"google_apps_login_enabled":null,"money_in_emails_format":"${{amount}}","money_with_currency_in_emails_format":"${{amount}} USD","eligible_for_payments":true,"requires_extra_payments_agreement":false,"password_enabled":true,"has_storefront":true,"finances":true,"primary_location_id":63590301885,"checkout_api_supported":true,"multi_location_enabled":true,"setup_required":false,"pre_launch_enabled":false,"enabled_presentment_currencies":["USD"],"transactional_sms_disabled":false,"marketing_sms_consent_enabled_at_checkout":false}}'
         response_graphql = '{"data":{"bulkOperationRunQuery":{"bulkOperation":{"id":"gid://shopify/BulkOperation/4472588009661","status":"CREATED","createdAt":"2024-05-05T15:34:08Z"},"userErrors":[]}},"extensions":{"cost":{"requestedQueryCost":10,"actualQueryCost":10,"throttleStatus":{"maximumAvailable":2000.0,"currentlyAvailable":1990,"restoreRate":100.0}}}}'
-        response_graphql2 = '{"data":{"bulkOperationRunQuery":{"bulkOperation":{"id":"gid://shopify/BulkOperation/4472588009661","status":"COMPLETED","createdAt":"2024-05-05T15:34:08Z"},"userErrors":[]}},"extensions":{"cost":{"requestedQueryCost":10,"actualQueryCost":10,"throttleStatus":{"maximumAvailable":2000.0,"currentlyAvailable":1990,"restoreRate":100.0}}}}'
+        response_graphql2 = '{"data":{"node":{"id":"gid://shopify/BulkOperation/4476008693949","status":"COMPLETED","errorCode":null,"createdAt":"2024-05-06T20:45:48Z","objectCount":"4","fileSize":"774","url":"https://storage.googleapis.com/shopify-tiers-assets-prod-us-east1/bulk-operation-outputs/l6lersgk4i81iqc3n6iisywwtipb-final?GoogleAccessId=assets-us-prod%40shopify-tiers.iam.gserviceaccount.com&Expires=1715633149&Signature=oMjQelfAzUW%2FdulC3HbuBapbUriUJ%2Bc9%2FKpIIf954VTxBqKChJAdoTmWT9ymh%2FnCiHdM%2BeM%2FADz5siAC%2BXtHBWkJfvs%2F0cYpse0ueiQsw6R8gW5JpeSbizyGWcBBWkv5j8GncAnZOUVYDxRIgfxcPb8BlFxBfC3wsx%2F00v9D6EHbPpkIMTbCOAhheJdw9GmVa%2BOMqHGHlmiADM34RDeBPrvSo65f%2FakpV2LBQTEV%2BhDt0ndaREQ0MrpNwhKnc3vZPzA%2BliOGM0wyiYr9qVwByynHq8c%2FaJPPgI5eGEfQcyepgWZTRW5S0DbmBIFxZJLN6Nq6bJ2bIZWrVriUhNGx2g%3D%3D&response-content-disposition=attachment%3B+filename%3D%22bulk-4476008693949.jsonl%22%3B+filename%2A%3DUTF-8%27%27bulk-4476008693949.jsonl&response-content-type=application%2Fjsonl","partialDataUrl":null}},"extensions":{"cost":{"requestedQueryCost":1,"actualQueryCost":1,"throttleStatus":{"maximumAvailable":2000.0,"currentlyAvailable":1999,"restoreRate":100.0}}}}'
+        response_data = """{"__typename":"Order","id":"gid:\/\/shopify\/Order\/5010584895677"}
+{"__typename":"Metafield","id":"gid:\/\/shopify\/Metafield\/22347288150205","namespace":"my_fields","value":"asdfasdf","key":"purchase_order","description":null,"createdAt":"2023-04-13T12:09:50Z","updatedAt":"2024-05-13T00:09:50Z","type":"single_line_text_field","__parentId":"gid:\/\/shopify\/Order\/5010584895677"}
+{"__typename":"Order","id":"gid:\/\/shopify\/Order\/5010585911485"}
+{"__typename":"Metafield","id":"gid:\/\/shopify\/Metafield\/22347288740029","namespace":"my_fields","value":"asdfasdfasdf","key":"purchase_order","description":null,"createdAt":"2023-04-13T12:11:20Z","updatedAt":"2024-05-05T00:11:20Z","type":"single_line_text_field","__parentId":"gid:\/\/shopify\/Order\/5010585911485"}
+"""
 
         http_mocker.get(
-            get_http_shop_request(),
-            HttpResponse(response_shop, 200)
+            _shop_request(),
+            HttpResponse(response_shop)
         )
         http_mocker.get(
-            get_http_scopes_request(),
-            HttpResponse(response_scopes, 200)
+            _scopes_request(),
+            HttpResponse(response_scopes)
         )
         http_mocker.post(
-            get_graphql_request(),
-            HttpResponse(response_graphql, 200)
+            data_graphql_request(),
+            HttpResponse(response_graphql)
         )
         http_mocker.post(
-            get_graphql_request(),
-            HttpResponse(response_graphql, 200)
+            _status_graphql_request(),
+            HttpResponse(response_graphql2)
         )
-        http_mocker.post(
-            get_graphql_request2(),
-            HttpResponse(response_graphql2, 200)
-        )
-        http_mocker.post(
-            get_graphql_request2(),
-            HttpResponse(response_graphql2, 200)
+        http_mocker.get(
+            _records_file_request(),
+            HttpResponse(response_data)
         )
 
         output = _read(catalog)
 
-        history = http_mocker.__getattribute__("_mocker").request_history
         assert output.records
 
 
