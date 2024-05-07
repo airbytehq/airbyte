@@ -40,7 +40,7 @@ import org.mockito.Mockito
         "The static variables are updated in subclasses for convenience, and cannot be final."
 )
 abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
-    @JvmField protected var testdb: T = createTestDatabase()
+    @JvmField protected var testdb: T? = null
 
     protected fun streamName(): String {
         return TABLE_NAME
@@ -120,60 +120,60 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             testdb!!.with("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'")
         }
         testdb
-            .with(
+            ?.with(
                 createTableQuery(
                     getFullyQualifiedTableName(TABLE_NAME),
                     COLUMN_CLAUSE_WITH_PK,
                     primaryKeyClause(listOf("id"))
                 )
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(id, name, updated_at) VALUES (1, 'picard', '2004-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME)
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(id, name, updated_at) VALUES (2, 'crusher', '2005-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME)
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(id, name, updated_at) VALUES (3, 'vash', '2006-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME)
             )
-            .with(
+            ?.with(
                 createTableQuery(
                     getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK),
                     COLUMN_CLAUSE_WITHOUT_PK,
                     ""
                 )
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(id, name, updated_at) VALUES (1, 'picard', '2004-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(id, name, updated_at) VALUES (2, 'crusher', '2005-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(id, name, updated_at) VALUES (3, 'vash', '2006-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)
             )
-            .with(
+            ?.with(
                 createTableQuery(
                     getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK),
                     COLUMN_CLAUSE_WITH_COMPOSITE_PK,
                     primaryKeyClause(listOf("first_name", "last_name"))
                 )
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(first_name, last_name, updated_at) VALUES ('first', 'picard', '2004-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(first_name, last_name, updated_at) VALUES ('second', 'crusher', '2005-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(first_name, last_name, updated_at) VALUES ('third', 'vash', '2006-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)
             )
@@ -479,6 +479,46 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         Assertions.assertTrue(actualRecordMessages.containsAll(expectedMessages))
     }
 
+    @Test
+    @Throws(Exception::class)
+    protected fun testReadBothIncrementalAndFullRefreshStreams() {
+        val catalog = getConfiguredCatalogWithOneStream(defaultNamespace)
+        val expectedMessages: MutableList<AirbyteMessage> = ArrayList(testMessages)
+
+        val streamName2 = streamName() + 2
+        val tableName = getFullyQualifiedTableName(TABLE_NAME + 2)
+        testdb!!
+            .with(createTableQuery(tableName, "id INTEGER, name VARCHAR(200)", ""))
+            .with("INSERT INTO %s(id, name) VALUES (1,'picard')", tableName)
+            .with("INSERT INTO %s(id, name) VALUES (2, 'crusher')", tableName)
+            .with("INSERT INTO %s(id, name) VALUES (3, 'vash')", tableName)
+
+        val airbyteStream2 =
+            CatalogHelpers.createConfiguredAirbyteStream(
+                streamName2,
+                defaultNamespace,
+                Field.of(COL_ID, JsonSchemaType.NUMBER),
+                Field.of(COL_NAME, JsonSchemaType.STRING)
+            )
+        airbyteStream2.syncMode = SyncMode.INCREMENTAL
+        airbyteStream2.cursorField = java.util.List.of(COL_ID)
+        airbyteStream2.destinationSyncMode = DestinationSyncMode.APPEND
+        catalog.streams.add(airbyteStream2)
+
+        expectedMessages.addAll(getAirbyteMessagesSecondSync(streamName2))
+
+        System.out.println("catalog: " + catalog)
+
+        val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
+        val actualRecordMessages = filterRecords(actualMessages)
+
+        setEmittedAtToNull(actualMessages)
+
+        Assertions.assertEquals(expectedMessages.size, actualRecordMessages.size)
+        Assertions.assertTrue(expectedMessages.containsAll(actualRecordMessages))
+        Assertions.assertTrue(actualRecordMessages.containsAll(expectedMessages))
+    }
+
     protected open fun getAirbyteMessagesSecondSync(streamName: String?): List<AirbyteMessage> {
         return testMessages
             .stream()
@@ -734,11 +774,11 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected open fun executeStatementReadIncrementallyTwice() {
         testdb
-            .with(
+            ?.with(
                 "INSERT INTO %s (id, name, updated_at) VALUES (4, 'riker', '2006-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME)
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s (id, name, updated_at) VALUES (5, 'data', '2006-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME)
             )

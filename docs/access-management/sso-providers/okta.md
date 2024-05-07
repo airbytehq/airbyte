@@ -63,6 +63,7 @@ On the following screen you'll need to configure all parameters for your Okta ap
     * Your **Okta domain** (it's not specific to this application, see [Find your Okta domain](https://developer.okta.com/docs/guides/find-your-domain/main/))
     * **Client ID**
     * **Client Secret**
+
   </TabItem>
   <TabItem value="self-managed" label="Self Hosted">
     Create the application with the following parameters:
@@ -104,5 +105,6 @@ On the following screen you'll need to configure all parameters for your Okta ap
     * Client Secret
 
     Visit the [implementation guide](/enterprise-setup/implementation-guide.md) for instructions on how to deploy Airbyte Enterprise using `kubernetes`, `kubectl` and `helm`.
+
   </TabItem>
 </Tabs>

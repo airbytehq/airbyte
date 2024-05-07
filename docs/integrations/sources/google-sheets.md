@@ -11,15 +11,16 @@ The Google Sheets source connector pulls data from a single Google Sheets spread
 :::
 
 ### Prerequisites
+
 - Spreadsheet Link - The link to the Google spreadsheet you want to sync.
 <!-- env:cloud -->
 - **For Airbyte Cloud** A Google Workspace user with access to the spreadsheet
-<!-- /env:cloud -->
-<!-- env:oss -->
--  **For Airbyte Open Source:**
-  - A GCP project
-  - Enable the Google Sheets API in your GCP project
-  - Service Account Key with access to the Spreadsheet you want to replicate
+  <!-- /env:cloud -->
+  <!-- env:oss -->
+- **For Airbyte Open Source:**
+- A GCP project
+- Enable the Google Sheets API in your GCP project
+- Service Account Key with access to the Spreadsheet you want to replicate
 <!-- /env:oss -->
 
 ## Setup guide
@@ -27,6 +28,7 @@ The Google Sheets source connector pulls data from a single Google Sheets spread
 The Google Sheets source connector supports authentication via either OAuth or Service Account Key Authentication.
 
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
 We highly recommend using OAuth, as it significantly simplifies the setup process and allows you to authenticate [directly from the Airbyte UI](#set-up-the-google-sheets-source-connector-in-airbyte).
@@ -72,41 +74,41 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
 
 ### Set up the Google Sheets source connector in Airbyte
 
-
-
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Google Sheets** from the list of available sources.
 4. For **Source name**, enter a name to help you identify this source.
 5. Select your authentication method:
 <!-- env:cloud -->
-  - **For Airbyte Cloud: (Recommended)** Select **Authenticate via Google (OAuth)** from the Authentication dropdown, click **Sign in with Google** and complete the authentication workflow.
-<!-- /env:cloud -->
-<!-- env:oss -->
-  - **For Airbyte Open Source: (Recommended)** Select **Service Account Key Authentication** from the dropdown and enter your Google Cloud service account key in JSON format:
 
-  ```json
-    {
-      "type": "service_account",
-      "project_id": "YOUR_PROJECT_ID",
-      "private_key_id": "YOUR_PRIVATE_KEY",
-      ...
-    }
-  ```
+- **For Airbyte Cloud: (Recommended)** Select **Authenticate via Google (OAuth)** from the Authentication dropdown, click **Sign in with Google** and complete the authentication workflow.
+  <!-- /env:cloud -->
+  <!-- env:oss -->
+- **For Airbyte Open Source: (Recommended)** Select **Service Account Key Authentication** from the dropdown and enter your Google Cloud service account key in JSON format:
 
-  - To authenticate your Google account via OAuth, select **Authenticate via Google (OAuth)** from the dropdown and enter your Google application's client ID, client secret, and refresh token.
+```json
+  {
+    "type": "service_account",
+    "project_id": "YOUR_PROJECT_ID",
+    "private_key_id": "YOUR_PRIVATE_KEY",
+    ...
+  }
+```
+
+- To authenticate your Google account via OAuth, select **Authenticate via Google (OAuth)** from the dropdown and enter your Google application's client ID, client secret, and refresh token.
 <!-- /env:oss -->
+
 6. For **Spreadsheet Link**, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**.
 7. For **Batch Size**, enter an integer which represents batch size when processing a Google Sheet. Default value is 200.
-Batch size is an integer representing row batch size for each sent request to Google Sheets API.
-Row batch size means how many rows are processed from the google sheet, for example default value 200
-would process rows 1-201, then 201-401 and so on.
-Based on [Google Sheets API limits documentation](https://developers.google.com/sheets/api/limits),
-it is possible to send up to 300 requests per minute, but each individual request has to be processed under 180 seconds,
-otherwise the request returns a timeout error. In regards to this information, consider network speed and
-number of columns of the google sheet when deciding a batch_size value.
-Default value should cover most of the cases, but if a google sheet has over 100,000 records or more,
-consider increasing batch_size value.
+   Batch size is an integer representing row batch size for each sent request to Google Sheets API.
+   Row batch size means how many rows are processed from the google sheet, for example default value 200
+   would process rows 1-201, then 201-401 and so on.
+   Based on [Google Sheets API limits documentation](https://developers.google.com/sheets/api/limits),
+   it is possible to send up to 300 requests per minute, but each individual request has to be processed under 180 seconds,
+   otherwise the request returns a timeout error. In regards to this information, consider network speed and
+   number of columns of the google sheet when deciding a batch_size value.
+   Default value should cover most of the cases, but if a google sheet has over 100,000 records or more,
+   consider increasing batch_size value.
 8. (Optional) You may enable the option to **Convert Column Names to SQL-Compliant Format**. Enabling this option will allow the connector to convert column names to a standardized, SQL-friendly format. For example, a column name of `Café Earnings 2022` will be converted to `cafe_earnings_2022`. We recommend enabling this option if your target destination is SQL-based (ie Postgres, MySQL). Set to false by default.
 9. Click **Set up source** and wait for the tests to complete.
 
@@ -151,17 +153,17 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 ### Troubleshooting
 
-* If your sheet is completely empty (no header rows) or deleted, Airbyte will not delete the table in the destination. If this happens, the sync logs will contain a message saying the sheet has been skipped when syncing the full spreadsheet.
-* Connector setup will fail if the spreadsheet is not a Google Sheets file. If the file was saved or imported as another file type the setup could fail.
-* Check out common troubleshooting issues for the Google Sheets source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+- If your sheet is completely empty (no header rows) or deleted, Airbyte will not delete the table in the destination. If this happens, the sync logs will contain a message saying the sheet has been skipped when syncing the full spreadsheet.
+- Connector setup will fail if the spreadsheet is not a Google Sheets file. If the file was saved or imported as another file type the setup could fail.
+- Check out common troubleshooting issues for the Google Sheets source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
-|---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
-| 0.5.1   | 2024-04-11 | [35404](https://github.com/airbytehq/airbyte/pull/35404) | Add `row_batch_size` parameter more granular control read records |
+| ------- | ---------- | -------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| 0.5.1   | 2024-04-11 | [35404](https://github.com/airbytehq/airbyte/pull/35404) | Add `row_batch_size` parameter more granular control read records                 |
 | 0.5.0   | 2024-03-26 | [36515](https://github.com/airbytehq/airbyte/pull/36515) | Resolve poetry dependency conflict, add record counts to state messages           |
 | 0.4.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                   |
 | 0.3.17  | 2024-02-29 | [35722](https://github.com/airbytehq/airbyte/pull/35722) | Add logic to emit stream statuses                                                 |
