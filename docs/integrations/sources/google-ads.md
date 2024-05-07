@@ -280,6 +280,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| `3.4.2`  | 2024-04-24 | [36638](https://github.com/airbytehq/airbyte/pull/36638) | Schema descriptions and CDK 0.80.0                                                                                                   |
 | `3.4.1`  | 2024-04-08 | [36891](https://github.com/airbytehq/airbyte/pull/36891) | Optimize `check` method                                                                                                              |
 | `3.4.0`  | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                                                      |
 | `3.3.7`  | 2024-03-15 | [36208](https://github.com/airbytehq/airbyte/pull/36208) | Added error message when there is the `unrecognized field` inside of the `custom query`                                              |
