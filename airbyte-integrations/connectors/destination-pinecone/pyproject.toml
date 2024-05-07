@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-pinecone"
-version = "0.0.24"
+version = "0.1.0"
 description = "Airbyte destination implementation for Pinecone."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -19,7 +19,7 @@ include = "destination_pinecone"
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 airbyte-cdk = {version = "0.81.6", extras = ["vector-db-based"]}
-pinecone-client = {version = "2.2.4", extras = ["grpc"]}
+pinecone-client = {version = "3.1.0", extras = ["grpc"]}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2"
