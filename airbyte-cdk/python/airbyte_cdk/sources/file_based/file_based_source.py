@@ -169,36 +169,44 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
 
                 sync_mode = self._get_sync_mode_from_catalog(stream_config.name)
 
-                if sync_mode == SyncMode.full_refresh and hasattr(self, "_concurrency_level") and self._concurrency_level is not None:
-                    cursor = FileBasedFinalStateCursor(
-                        stream_config=stream_config, stream_namespace=None, message_repository=self.message_repository
-                    )
-                    stream = FileBasedStreamFacade.create_from_stream(
-                        self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
-                    )
-
-                elif (
-                    sync_mode == SyncMode.incremental
-                    and issubclass(self.cursor_cls, AbstractConcurrentFileBasedCursor)
-                    and hasattr(self, "_concurrency_level")
-                    and self._concurrency_level is not None
-                ):
-                    assert (
-                        state_manager is not None
-                    ), "No ConnectorStateManager was created, but it is required for incremental syncs. This is unexpected. Please contact Support."
-
-                    cursor = self.cursor_cls(
-                        stream_config,
-                        stream_config.name,
-                        None,
-                        stream_state,
-                        self.message_repository,
-                        state_manager,
-                        CursorField(DefaultFileBasedStream.ab_last_mod_col),
-                    )
-                    stream = FileBasedStreamFacade.create_from_stream(
-                        self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
-                    )
+                if hasattr(self, "_concurrency_level") and self._concurrency_level is not None:
+                    assert issubclass(self.cursor_cls, AbstractConcurrentFileBasedCursor), "When setting concurrency level, the cursor must be a subclass of AbstractConcurrentFileBasedCursor"
+                    if sync_mode == SyncMode.full_refresh:
+                        cursor = FileBasedFinalStateCursor(
+                            stream_config=stream_config, stream_namespace=None, message_repository=self.message_repository
+                        )
+                        stream = FileBasedStreamFacade.create_from_stream(
+                            self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
+                        )
+                    elif sync_mode == SyncMode.incremental:
+                        assert (
+                            state_manager is not None
+                        ), "No ConnectorStateManager was created, but it is required for incremental syncs. This is unexpected. Please contact Support."
+                        cursor = self.cursor_cls(
+                            stream_config,
+                            stream_config.name,
+                            None,
+                            stream_state,
+                            self.message_repository,
+                            state_manager,
+                            CursorField(DefaultFileBasedStream.ab_last_mod_col),
+                        )
+                        stream = FileBasedStreamFacade.create_from_stream(
+                            self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
+                        )
+                    else:
+                        cursor = self.cursor_cls(
+                            stream_config,
+                            stream_config.name,
+                            None,
+                            stream_state,
+                            self.message_repository,
+                            state_manager,
+                            CursorField(DefaultFileBasedStream.ab_last_mod_col),
+                        )
+                        stream = FileBasedStreamFacade.create_from_stream(
+                            self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
+                        )
                 else:
                     cursor = self.cursor_cls(stream_config)
                     stream = self._make_default_stream(stream_config, cursor)
