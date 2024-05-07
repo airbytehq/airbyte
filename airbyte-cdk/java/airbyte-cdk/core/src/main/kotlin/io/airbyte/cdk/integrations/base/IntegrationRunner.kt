@@ -222,7 +222,6 @@ internal constructor(
             ApmTraceUtils.addExceptionToTrace(e)
             val rootConfigErrorThrowable = ConnectorExceptionUtil.getRootConfigError(e)
             val rootTransientErrorThrowable = ConnectorExceptionUtil.getRootTransientError(e)
-            // val displayMessage = ConnectorExceptionUtil.getDisplayMessage(rootThrowable)
             // If the source connector throws a config error, a trace message with the relevant
             // message should
             // be surfaced.

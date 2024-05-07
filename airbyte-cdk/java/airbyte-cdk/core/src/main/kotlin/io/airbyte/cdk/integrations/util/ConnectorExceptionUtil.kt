@@ -41,7 +41,7 @@ object ConnectorExceptionUtil {
     fun getDisplayMessage(e: Throwable?): String? {
         return if (e is ConfigErrorException) {
             e.displayMessage
-        } else if (e is ConfigErrorException) {
+        } else if (e is TransientErrorException) {
             e.displayMessage
         } else if (e is ConnectionErrorException) {
             ErrorMessage.getErrorMessage(e.stateCode, e.errorCode, e.exceptionMessage, e)
