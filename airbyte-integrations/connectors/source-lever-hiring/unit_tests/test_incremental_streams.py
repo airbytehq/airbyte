@@ -1,11 +1,11 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 from typing import Any, Mapping
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
-
 from source_lever_hiring.source import SourceLeverHiring
 
 
@@ -17,7 +17,7 @@ def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
     return matches_by_name[0]
 
 
-def test_cursor_field(config_pass, users_url, auth_url, auth_token):
+def test_cursor_field(config_pass):
     stream = get_stream_by_name("opportunities", config_pass)
     expected_cursor_field = "updatedAt"
     assert stream.cursor_field == expected_cursor_field

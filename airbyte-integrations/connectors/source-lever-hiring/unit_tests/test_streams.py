@@ -1,12 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 from typing import Any, Mapping
 
 from airbyte_cdk.sources.streams import Stream
 from airbyte_protocol.models import SyncMode
 from jsonref import requests
-
 from source_lever_hiring.source import SourceLeverHiring
 
 
