@@ -17,7 +17,7 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from requests.auth import AuthBase
@@ -81,7 +81,7 @@ class SourceTestFixture(AbstractSource):
         return [HttpTestStream(authenticator=self._authenticator)]
 
 
-class HttpTestStream(HttpStream, ABC):
+class HttpTestStream(HttpStream, IncrementalMixin, ABC):
     url_base = "https://airbyte.com/api/v1/"
 
     def supports_incremental(self):
@@ -119,6 +119,14 @@ class HttpTestStream(HttpStream, ABC):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return {}
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return {}
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]) -> None:
+        pass
 
 
 def fixture_mock_send(self, request, **kwargs) -> requests.Response:

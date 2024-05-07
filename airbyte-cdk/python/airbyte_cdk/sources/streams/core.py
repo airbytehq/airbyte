@@ -170,7 +170,7 @@ class Stream(ABC):
                 # We use a dummy state if there is no suitable value provided by full_refresh streams that do not have a valid cursor.
                 # Incremental streams running full_refresh mode emit a meaningful state
                 if hasattr(self, "state"):
-                    self.state = stream_state or {FULL_REFRESH_SENTINEL_STATE_KEY: True}
+                    self.state = stream_state or self.state or {FULL_REFRESH_SENTINEL_STATE_KEY: True}
 
             # We should always emit a final state message for full refresh sync or streams that do not have any slices
             airbyte_state_message = self._checkpoint_state(state_manager)

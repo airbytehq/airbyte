@@ -38,6 +38,7 @@ class IntegrationStream(HttpStream, ABC):
     page_size = 100
     raise_on_http_errors = True
     current_page = 0
+    _state = {'__ab_full_refresh_state_message': True}
 
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
@@ -57,11 +58,6 @@ class IntegrationStream(HttpStream, ABC):
             self.current_page += 1
             return {"next_page": self.current_page}
 
-
-class IncrementalIntegrationStream(IntegrationStream, IncrementalMixin, ABC):
-    cursor_field = "created_at"
-    _state = {}
-
     @property
     def state(self) -> MutableMapping[str, Any]:
         return self._state
@@ -69,6 +65,11 @@ class IncrementalIntegrationStream(IntegrationStream, IncrementalMixin, ABC):
     @state.setter
     def state(self, value: MutableMapping[str, Any]) -> None:
         self._state = value
+
+
+class IncrementalIntegrationStream(IntegrationStream, IncrementalMixin, ABC):
+    cursor_field = "created_at"
+    _state = {}
 
     def read_records(
         self,

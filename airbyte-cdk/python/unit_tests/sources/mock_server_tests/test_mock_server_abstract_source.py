@@ -31,10 +31,6 @@ class RequestBuilder:
         return cls("dividers")
 
     @classmethod
-    def legacies_endpoint(cls) -> "RequestBuilder":
-        return cls("legacies")
-
-    @classmethod
     def planets_endpoint(cls) -> "RequestBuilder":
         return cls("planets")
 
@@ -84,10 +80,6 @@ def _create_catalog(names_and_sync_modes: List[tuple[str, SyncMode]]) -> Configu
 
 def _create_dividers_request() -> RequestBuilder:
     return RequestBuilder.dividers_endpoint()
-
-
-def _create_legacies_request() -> RequestBuilder:
-    return RequestBuilder.legacies_endpoint()
 
 
 def _create_planets_request() -> RequestBuilder:
@@ -300,39 +292,6 @@ class IncrementalStreamTest(TestCase):
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "planets"
         assert actual_messages.state_messages[0].state.stream.stream_state == {"created_at": last_record_date_1}
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 5.0
-
-    @HttpMocker()
-    def test_legacy_incremental_sync(self, http_mocker):
-        start_datetime = _NOW - timedelta(days=14)
-        config = {
-            "start_date": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
-        }
-
-        last_record_date_0 = (start_datetime + timedelta(days=4)).strftime("%Y-%m-%dT%H:%M:%SZ")
-        http_mocker.get(
-            _create_legacies_request().with_start_date(start_datetime).with_end_date(start_datetime + timedelta(days=7)).build(),
-            _create_response().with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).build(),
-        )
-
-        last_record_date_1 = (_NOW - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
-        http_mocker.get(
-            _create_legacies_request().with_start_date(start_datetime + timedelta(days=7)).with_end_date(_NOW).build(),
-            _create_response().with_record(record=_create_record("legacies").with_cursor(last_record_date_1)).with_record(record=_create_record("legacies").with_cursor(last_record_date_1)).build(),
-        )
-
-        source = SourceFixture()
-        actual_messages = read(source, config=config, catalog=_create_catalog([("legacies", SyncMode.incremental)]))
-
-        assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses("legacies"))
-        assert len(actual_messages.records) == 5
-        assert len(actual_messages.state_messages) == 2
-        validate_message_order([Type.RECORD, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
-        assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "legacies"
-        assert actual_messages.state_messages[0].state.stream.stream_state == {"created_at": last_record_date_0}
-        assert actual_messages.state_messages[0].state.sourceStats.recordCount == 3.0
-        assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "legacies"
-        assert actual_messages.state_messages[1].state.stream.stream_state == {"created_at": last_record_date_1}
-        assert actual_messages.state_messages[1].state.sourceStats.recordCount == 2.0
 
 
 @freezegun.freeze_time(_NOW)
