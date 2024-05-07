@@ -1,0 +1,127 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "additionalProperties": true,
+  "properties" : {
+    "id" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "public_metrics" : {
+      "type" : [
+        "null",
+        "object"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "tweet_count": {
+          "type" : [
+            "null",
+            "integer"
+          ]
+        },
+        "like_count": {
+          "type" : [
+            "null",
+            "integer"
+          ]
+        },
+        "following_count": {
+          "type" : [
+            "null",
+            "integer"
+          ]
+        },
+        "listed_count": {
+          "type" : [
+            "null",
+            "integer"
+          ]
+        },
+        "followers_count": {
+          "type" : [
+            "null",
+            "integer"
+          ]
+        }
+      }
+    },
+    "created_at" : {
+      "type" : [
+        "null",
+        "string"
+      ],
+      "format" : "date-time"
+    },
+    "name" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "location" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "pinned_tweet_id" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "profile_image_url" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "username" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "verified_type" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "verified" : {
+      "type" : [
+        "null",
+        "boolean"
+      ]
+    },
+    "url" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "entities" : {
+      "type" : [
+        "null",
+        "object"
+      ],
+      "additionalProperties": true,
+      "properties": {}
+    },
+    "description" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "protected" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    }
+  }
+}
