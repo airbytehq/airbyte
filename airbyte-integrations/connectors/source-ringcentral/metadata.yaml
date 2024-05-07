@@ -5,9 +5,13 @@ data:
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-ringcentral
   githubIssueLabel: source-ringcentral
-  icon: ringcentral.svg
+  icon: icon.svg
   license: MIT
   name: Ringcentral
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-ringcentral
   registries:
     cloud:
       enabled: false
@@ -16,8 +20,8 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/ringcentral
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100

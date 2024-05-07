@@ -13,13 +13,17 @@ data:
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 3d2b6f84-7f0d-4e3f-a5e5-7c7d4b50eabd
-  dockerImageTag: 0.0.22
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/destination-pinecone
   documentationUrl: https://docs.airbyte.com/integrations/destinations/pinecone
   githubIssueLabel: destination-pinecone
   icon: pinecone.svg
   license: MIT
   name: Pinecone
+  remoteRegistries:
+    pypi:
+      enabled: false # TODO: enable once the CLI is working
+      packageName: airbyte-destination-pinecone
   registries:
     cloud:
       enabled: true
@@ -36,4 +40,5 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:python
 metadataSpecVersion: "1.0"

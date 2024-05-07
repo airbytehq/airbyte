@@ -38,6 +38,17 @@
               }
             }
           }
+        },
+        "allowed_to_push": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "access_level": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
         }
       }
     },
@@ -72,6 +83,9 @@
       "type": ["null", "boolean"]
     },
     "subgroup_creation_level": {
+      "type": ["null", "string"]
+    },
+    "enabled_git_access_protocol": {
       "type": ["null", "string"]
     },
     "emails_disabled": {
@@ -152,6 +166,12 @@
       "type": ["null", "string"]
     },
     "service_access_tokens_expiration_enforced": {
+      "type": ["null", "boolean"]
+    },
+    "lock_math_rendering_limits_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "math_rendering_limits_enabled": {
       "type": ["null", "boolean"]
     }
   }

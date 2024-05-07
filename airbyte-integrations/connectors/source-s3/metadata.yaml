@@ -10,13 +10,18 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
-  dockerImageTag: 4.4.0
+  dockerImageTag: 4.5.13
   dockerRepository: airbyte/source-s3
   documentationUrl: https://docs.airbyte.com/integrations/sources/s3
   githubIssueLabel: source-s3
   icon: s3.svg
   license: ELv2
+  maxSecondsBetweenMessages: 1
   name: S3
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-s3
   registries:
     cloud:
       enabled: true
@@ -38,4 +43,5 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:python-file-based
 metadataSpecVersion: "1.0"

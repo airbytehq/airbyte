@@ -1,191 +1,57 @@
+import com.github.spotbugs.snom.Confidence
+import com.github.spotbugs.snom.Effort
 import com.github.spotbugs.snom.SpotBugsTask
-
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
     id 'base'
-    id 'com.github.node-gradle.node' version '3.5.1'
-    id 'com.github.spotbugs' version '5.0.13'
-    id 'version-catalog'
-    id 'ru.vyarus.use-python'
-}
-
-
-Properties env = new Properties()
-rootProject.file('gradle.properties').withInputStream { env.load(it) }
-
-if (!env.containsKey('VERSION')) {
-    throw new Exception('Version not specified in .env file...')
-}
-
-// `version` is used as the application build version for artifacts like jars
-// `image_tag` is used as the docker tag applied to built images.
-// These values are the same for building an specific Airbyte release or branch via the 'VERSION' environment variable.
-// For local development builds, the 'VERSION' environment variable is unset, and built images are tagged with 'dev'.
-ext {
-    version = System.getenv("VERSION") ?: env.VERSION
-    image_tag = System.getenv("VERSION") ?: 'dev'
-    skipSlowTests = (System.getProperty('skipSlowTests', 'false') != 'false')
-}
-// Pyenv support.
-try {
-    def pyenvRoot = "pyenv root".execute()
-    if (pyenvRoot.waitFor() == 0) {
-        ext.pyenvRoot = pyenvRoot.text.trim()
-    }
-} catch (IOException _) {
-    // Swallow exception if pyenv is not installed.
-}
-
-def isConnectorProject = { Project project ->
-    if (project.parent == null || project.parent.name != 'connectors') {
-        return false
-    }
-    return project.name.startsWith("source-") || project.name.startsWith("destination-")
+    id 'com.github.spotbugs' version '6.0.7' apply false
+    id 'org.jetbrains.kotlin.jvm' version '1.9.23' apply false
 }
 
 allprojects {
     apply plugin: 'base'
+    apply plugin: 'java'
+    apply plugin: 'java-test-fixtures'
+    apply plugin: 'com.github.spotbugs'
+    apply plugin: 'org.jetbrains.kotlin.jvm'
+    apply plugin: 'idea'
 
-    // by default gradle uses directory as the project name. That works very well in a single project environment but
+
+    // By default gradle uses directory as the project name. That works very well in a single project environment but
     // projects clobber each other in an environments with subprojects when projects are in directories named identically.
     def sub = rootDir.relativePath(projectDir.parentFile).replace('/', '.')
     group = "io.${rootProject.name}${sub.isEmpty() ? '' : ".$sub"}"
     project.base.archivesName = "${project.group}-${project.name}"
 
-    version = rootProject.ext.version
-}
-
-// python is required by the root project to run CAT tests for connectors
-python {
-    envPath = '.venv'
-    minPythonVersion = '3.10' // should be 3.10 for local development
-
-    // Amazon Linux support.
-    // The airbyte-ci tool runs gradle tasks in AL2023-based containers.
-    // In AL2023, `python3` is necessarily v3.9, and later pythons need to be installed and named explicitly.
-    // See https://github.com/amazonlinux/amazon-linux-2023/issues/459 for details.
-    try {
-        if ("python3.11 --version".execute().waitFor() == 0) {
-            // python3.11 definitely exists at this point, use it instead of 'python3'.
-            pythonBinary "python3.11"
-        }
-    } catch (IOException _) {
-        // Swallow exception if python3.11 is not installed.
-    }
-    // Pyenv support.
-    try {
-        def pyenvRoot = "pyenv root".execute()
-        def pyenvLatest = "pyenv latest ${minPythonVersion}".execute()
-        // Pyenv definitely exists at this point: use 'python' instead of 'python3' in all cases.
-        pythonBinary "python"
-        if (pyenvRoot.waitFor() == 0 && pyenvLatest.waitFor() == 0) {
-            pythonPath "${pyenvRoot.text.trim()}/versions/${pyenvLatest.text.trim()}/bin"
-        }
-    } catch (IOException _) {
-        // Swallow exception if pyenv is not installed.
+    // Produce reproducible archives
+    // (see https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives)
+    tasks.withType(AbstractArchiveTask).configureEach {
+        preserveFileTimestamps = false
+        reproducibleFileOrder = true
     }
 
-    scope = 'VIRTUALENV'
-    installVirtualenv = true
-    // poetry is required for installing and running airbyte-ci
-    pip 'poetry:1.5.1'
-}
-
-def cleanPythonVenv = rootProject.tasks.register('cleanPythonVenv', Exec) {
-    commandLine 'rm'
-    args '-rf', "${rootProject.projectDir.absolutePath}/.venv"
-}
-rootProject.tasks.named('clean').configure {
-    dependsOn cleanPythonVenv
-}
-
-
-def getCDKTargetVersion() {
-    def props = new Properties()
-    file("airbyte-cdk/java/airbyte-cdk/src/main/resources/version.properties").withInputStream { props.load(it) }
-    return props.getProperty('version')
-}
-static def getLatestFileModifiedTimeFromFiles(files) {
-    if (files.isEmpty()) {
-        return null
-    }
-    return files.findAll { it.isFile() }
-        .collect { it.lastModified() }
-        .max()
-}
-def checkCDKJarExists(requiredSnapshotVersion) {
-    if (requiredSnapshotVersion == null) {
-        // Connector does not require CDK snapshot.
-        return
-    }
-    final boolean checkFileChanges = true
-    final cdkTargetVersion = getCDKTargetVersion()
-    if (requiredSnapshotVersion != cdkTargetVersion) {
-        if (!cdkTargetVersion.contains("-SNAPSHOT")) {
-            throw new GradleException(
-                "CDK JAR version is not publishing snapshot but connector requires version ${requiredSnapshotVersion}.\n" +
-                "Please check that the version in the CDK properties file matches the connector build.gradle."
-            )
-        }
-        throw new GradleException(
-            "CDK JAR version ${cdkTargetVersion} does not match connector's required version ${requiredSnapshotVersion}.\n" +
-            "Please check that the version in the CDK properties file matches the connector build.gradle."
-        )
-    }
-
-    def cdkJar = file("${System.properties['user.home']}/.m2/repository/io/airbyte/airbyte-cdk/${cdkTargetVersion}/airbyte-cdk-${cdkTargetVersion}.jar")
-    if (!cdkJar.exists()) {
-        println("WARNING: CDK JAR does not exist at ${cdkJar.path}.\nPlease run './gradlew :airbyte-cdk:java:airbyte-cdk:build'.")
-    }
-    if (checkFileChanges) {
-        def latestJavaFileTimestamp = getLatestFileModifiedTimeFromFiles(file("${rootDir}/airbyte-cdk/java/airbyte-cdk/src").listFiles().findAll { it.isFile() })
-        if (cdkJar.lastModified() < latestJavaFileTimestamp) {
-            throw new GradleException("CDK JAR is out of date. Please run './gradlew :airbyte-cdk:java:airbyte-cdk:build'.")
-        }
-    }
-}
-static def getCDKSnapshotRequirement(dependenciesList) {
-    def cdkSnapshotRequirement = dependenciesList.find {
-        it.requested instanceof ModuleComponentSelector &&
-        it.requested.group == 'io.airbyte' &&
-        it.requested.module == 'airbyte-cdk' &&
-        it.requested.version.endsWith('-SNAPSHOT')
-    }
-    if (cdkSnapshotRequirement == null) {
-        return null
-    } else {
-        return cdkSnapshotRequirement.requested.version
-    }
-}
-
-// Common configurations for 'assemble'.
-allprojects {
-
+    // Common configurations for 'assemble'.
     tasks.withType(Tar).configureEach {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
     }
-
     tasks.withType(Zip).configureEach {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
         // Disabling distZip causes the build to break for some reason, so: instead of disabling it, make it fast.
         entryCompression ZipEntryCompression.STORED
     }
-}
 
-// Java projects common configurations.
-subprojects { subproj ->
+    // Convenience task to list all dependencies per project
+    tasks.register('listAllDependencies', DependencyReportTask) {}
 
-    if (!subproj.file('src/main/java').directory) {
-        return
-    }
-
-    apply plugin: 'java'
-    apply plugin: 'jacoco'
-    apply plugin: 'com.github.spotbugs'
+    // Common java configurations
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        withSourcesJar()
+        withJavadocJar()
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
         compileJava {
             options.compilerArgs += ["-Werror", "-Xlint:all,-serial,-processing"]
         }
@@ -194,69 +60,64 @@ subprojects { subproj ->
             //deprecation and removal are removed from error since we should still test those constructs.
             options.compilerArgs += ["-Werror", "-Xlint:all,-serial,-processing,-rawtypes,-unchecked,-deprecation,-removal"]
         }
-    }
-
-    if (isConnectorProject(subproj)) {
-        // This is a Java connector project.
-
-        // Evaluate CDK project before evaluating the connector.
-        evaluationDependsOn(':airbyte-cdk:java:airbyte-cdk')
-
-        if (!gradle.startParameter.taskNames.any { it.contains(':airbyte-cdk:') } &&
-            gradle.startParameter.taskNames.any { it.contains(':source-') || it.contains(':destination-') }) {
-            // We are building a connector. Warn if the CDK JAR is missing or out of date.
-            final String cdkRelativePath = 'airbyte-cdk/java/airbyte-cdk'
-            afterEvaluate {
-                def cdkVersionNeeded = getCDKSnapshotRequirement(configurations.compileClasspath.incoming.resolutionResult.allDependencies)
-                checkCDKJarExists(cdkVersionNeeded)
-            }
+        compileTestFixturesJava {
+            //rawtypes and unchecked are necessary for mockito
+            options.compilerArgs += ["-Werror", "-Xlint:all,-serial,-processing,-rawtypes,-unchecked"]
         }
     }
 
-    jacoco {
-        toolVersion = "0.8.8"
+    tasks.named('sourcesJar').configure {
+        dependsOn tasks.matching { it.name == 'generate' }
     }
 
-    jacocoTestReport {
-        reports {
-            html.required = true
-            xml.required = true
-            csv.required = false
+    compileKotlin {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_21
+            languageVersion = KotlinVersion.KOTLIN_1_9
+            allWarningsAsErrors = true
+            freeCompilerArgs = ["-Xjvm-default=all"]
+        }
+        dependsOn {
+            tasks.matching { it.name == 'generate' }
         }
     }
-    def jacocoTestReportTask = tasks.named('jacocoTestReport')
-    jacocoTestReportTask.configure {
-        dependsOn tasks.named('test')
+    compileTestKotlin {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_21
+            languageVersion = KotlinVersion.KOTLIN_1_9
+            allWarningsAsErrors = true
+            freeCompilerArgs = ["-Xjvm-default=all"]
+        }
+        dependsOn {
+            tasks.matching { it.name == 'generate' }
+        }
+    }
+    compileTestFixturesKotlin {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_21
+            languageVersion = KotlinVersion.KOTLIN_1_9
+            allWarningsAsErrors = true
+            freeCompilerArgs = ["-Xjvm-default=all"]
+        }
+        dependsOn {
+            tasks.matching { it.name == 'generate' }
+        }
     }
 
-    jacocoTestCoverageVerification {
-        violationRules {
-            failOnViolation = false
-            rule {
-                element = 'CLASS'
-                excludes = ['**/*Test*', '**/generated*']
-                limit {
-                    counter = 'BRANCH'
-                    minimum = 0.8
-                }
-                limit {
-                    counter = 'INSTRUCTION'
-                    minimum = 0.8
-                }
-            }
+    idea {
+        module {
+            downloadJavadoc = true
+            downloadSources = true
         }
     }
 
     spotbugs {
         ignoreFailures = false
-        effort = 'max'
+        effort = Effort.valueOf('MAX')
         excludeFilter.set rootProject.file('spotbugs-exclude-filter-file.xml')
-        reportLevel = 'high'
+        reportLevel = Confidence.valueOf('HIGH')
         showProgress = false
-        toolVersion = '4.7.3'
-        if (rootProject.ext.skipSlowTests && isConnectorProject(subproj)) {
-            effort = 'min'
-        }
+        toolVersion = '4.8.3'
     }
 
     test {
@@ -267,6 +128,19 @@ subprojects { subproj ->
             // Swallow the logs when running in airbyte-ci, rely on test reports instead.
             showStandardStreams = !System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
         }
+        reports {
+            junitXml {
+                outputPerTestCase = true
+            }
+        }
+
+        // This is required by mockito, see https://github.com/mockito/mockito/issues/3037.
+        jvmArgs "-XX:+EnableDynamicAgentLoading"
+        // This is also required, to prevent stderr spam starting with
+        //   "OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader cl..."
+        jvmArgs "-Xshare:off"
+        // needed because we make ThreadLocal.get(Thread) accessible in IntegrationRunner.stopOrphanedThreads
+        jvmArgs "--add-opens=java.base/java.lang=ALL-UNNAMED"
 
         // Set the timezone to UTC instead of picking up the host machine's timezone,
         // which on a developer's laptop is more likely to be PST.
@@ -285,8 +159,9 @@ subprojects { subproj ->
         systemProperty 'junit.jupiter.execution.parallel.config.fixed.parallelism', 1
         // Order test classes by annotation.
         systemProperty 'junit.jupiter.testclass.order.default', 'org.junit.jupiter.api.ClassOrderer$OrderAnnotation'
+        systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
 
-        if (!subproj.hasProperty('testExecutionConcurrency')) {
+        if (!project.hasProperty('testExecutionConcurrency')) {
             // By default, let gradle spawn as many independent workers as it wants.
             maxParallelForks = Runtime.runtime.availableProcessors()
             maxHeapSize = '3G'
@@ -296,7 +171,7 @@ subprojects { subproj ->
             maxParallelForks = 1
             maxHeapSize = '8G'
             // Manage test execution concurrency in JUnit.
-            String concurrency = subproj.property('testExecutionConcurrency').toString()
+            String concurrency = project.property('testExecutionConcurrency').toString()
             if (concurrency.isInteger() && (concurrency as int) > 0) {
                 // Define a fixed number of threads when the property is set to a positive integer.
                 systemProperty 'junit.jupiter.execution.parallel.config.fixed.parallelism', concurrency
@@ -305,59 +180,39 @@ subprojects { subproj ->
                 systemProperty 'junit.jupiter.execution.parallel.config.strategy', 'dynamic'
             }
         }
-
-        // Exclude all connector unit tests upon request.
-        if (rootProject.ext.skipSlowTests) {
-            exclude '**/io/airbyte/integrations/source/**'
-            exclude '**/io/airbyte/integrations/destination/**'
+        String junitMethodExecutionTimeout
+        if (project.hasProperty('JunitMethodExecutionTimeout')) {
+            junitMethodExecutionTimeout = project.property('JunitMethodExecutionTimeout').toString()
+        } else {
+            junitMethodExecutionTimeout = '1 m'
         }
-
-        jacoco {
-            enabled = !rootProject.ext.skipSlowTests
-            excludes = ['**/*Test*', '**/generated*']
-        }
-        finalizedBy jacocoTestReportTask
+        systemProperty 'JunitMethodExecutionTimeout', junitMethodExecutionTimeout
     }
 
-    // TODO: These should be added to the CDK or to the individual projects that need them:
-
     dependencies {
-        implementation(platform("com.fasterxml.jackson:jackson-bom:2.13.0"))
-        implementation(platform("org.glassfish.jersey:jersey-bom:2.31"))
+        // JUnit dependencies.
+        def vAssertJ = "3.25.3"
+        def vJUnit = "5.10.2"
+        def vJUnitJupiter = "5.11.0"
 
-        // version is handled by "com.fasterxml.jackson:jackson-bom:2.10.4", so we do not explicitly set it here.
-        implementation libs.bundles.jackson
-        implementation libs.guava
-        implementation libs.commons.io
-        implementation libs.bundles.apache
-        implementation libs.slf4j.api
+        testFixturesImplementation platform("org.junit:junit-bom:${vJUnit}")
+        testFixturesImplementation "org.junit.jupiter:junit-jupiter-api:${vJUnit}"
+        testFixturesImplementation "org.junit.jupiter:junit-jupiter-params:${vJUnit}"
+        testFixturesImplementation "org.mockito:mockito-junit-jupiter:${vJUnitJupiter}"
+        testFixturesImplementation "org.assertj:assertj-core:${vAssertJ}"
 
-        // SLF4J as a facade over Log4j2 required dependencies
-        implementation libs.bundles.log4j
-        implementation libs.appender.log4j2
+        testImplementation platform("org.junit:junit-bom:${vJUnit}")
+        testImplementation "org.junit.jupiter:junit-jupiter-api:${vJUnit}"
+        testImplementation "org.junit.jupiter:junit-jupiter-params:${vJUnit}"
+        testImplementation "org.mockito:mockito-junit-jupiter:${vJUnitJupiter}"
+        testImplementation "org.assertj:assertj-core:${vAssertJ}"
 
-        // Bridges from other logging implementations to SLF4J
-        implementation libs.bundles.slf4j
+        testRuntimeOnly platform("org.junit:junit-bom:${vJUnit}")
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${vJUnit}"
 
-        // Lombok dependencies
-        compileOnly libs.lombok
-        annotationProcessor libs.lombok
-
-        testCompileOnly libs.lombok
-        testAnnotationProcessor libs.lombok
-
-        testRuntimeOnly libs.junit.jupiter.engine
-        testImplementation libs.bundles.junit
-        testImplementation libs.assertj.core
-
-        testImplementation libs.junit.pioneer
-
-        // adds owasp plugin
-        spotbugsPlugins libs.findsecbugs.plugin
-        implementation libs.spotbugs.annotations
-
-        // Airbyte dependencies.
-        implementation libs.airbyte.protocol
+        // Spotbugs dependencies.
+        def vSpotbugs = "4.8.3"
+        implementation "com.github.spotbugs:spotbugs-annotations:${vSpotbugs}"
     }
 
     tasks.withType(SpotBugsTask).configureEach {
@@ -368,109 +223,7 @@ subprojects { subproj ->
         }
     }
 
-    javadoc.options.addStringOption('Xdoclint:none', '-quiet')
-}
-
-// integration and performance test tasks per project
-allprojects {
-    tasks.register('integrationTest') {
-        dependsOn tasks.matching {
-            [
-                    'integrationTestJava',
-                    'integrationTestPython',
-            ].contains(it.name)
-        }
-    }
-
-    tasks.register('performanceTest') {
-        dependsOn tasks.matching {
-            [
-                    'performanceTestJava',
-            ].contains(it.name)
-        }
-    }
-}
-
-
-// convenience task to list all dependencies per project
-subprojects {
-    tasks.register('listAllDependencies', DependencyReportTask) {}
-}
-
-// airbyte-ci tasks for local development
-def poetryInstallAirbyteCI = tasks.register('poetryInstallAirbyteCI', Exec) {
-    workingDir rootProject.file('airbyte-ci/connectors/pipelines')
-    commandLine rootProject.file('.venv/bin/python').absolutePath
-    args "-m", "poetry", "install", "--no-cache"
-}
-poetryInstallAirbyteCI.configure {
-    dependsOn tasks.named('pipInstall')
-}
-def poetryCleanVirtualenv = tasks.register('cleanVirtualenv', Exec) {
-    workingDir rootProject.file('airbyte-ci/connectors/pipelines')
-    commandLine rootProject.file('.venv/bin/python').absolutePath
-    args "-m", "poetry", "env", "remove", "--all"
-    onlyIf {
-        rootProject.file('.venv/bin/python').exists()
-    }
-}
-cleanPythonVenv.configure {
-    dependsOn poetryCleanVirtualenv
-}
-
-subprojects {
-    if (!isConnectorProject(project)) {
-        return
-    }
-    def airbyteCIConnectorsTask = { String taskName, String... connectorsArgs ->
-        def task = tasks.register(taskName, Exec) {
-            workingDir rootDir
-            environment "CI", "1" // set to use more suitable logging format
-            commandLine rootProject.file('.venv/bin/python').absolutePath
-            args "-m", "poetry"
-            args "--directory", "${rootProject.file('airbyte-ci/connectors/pipelines').absolutePath}"
-            args "run"
-            args "airbyte-ci", "connectors", "--name=${project.name}"
-            args connectorsArgs
-            // Forbid these kinds of tasks from running concurrently.
-            // We can induce serial execution by giving them all a common output directory.
-            outputs.dir rootProject.file("${rootProject.buildDir}/airbyte-ci-lock")
-            outputs.upToDateWhen { false }
-        }
-        task.configure { dependsOn poetryInstallAirbyteCI }
-        return task
-    }
-
-    // Build connector image as part of 'assemble' task.
-    // This is required for local 'integrationTest' execution.
-    def buildConnectorImage = airbyteCIConnectorsTask(
-            'buildConnectorImage', '--disable-report-auto-open', 'build', '--use-host-gradle-dist-tar')
-    buildConnectorImage.configure {
-        // Images for java projects always rely on the distribution tarball.
-        dependsOn tasks.matching { it.name == 'distTar' }
-        // Ensure that all files exist beforehand.
-        dependsOn tasks.matching { it.name == 'generate' }
-    }
-    tasks.named('assemble').configure {
-        // We may revisit the dependency on assemble but the dependency should always be on a base task.
-        dependsOn buildConnectorImage
-    }
-
-    // Convenience tasks for local airbyte-ci execution.
-    airbyteCIConnectorsTask('airbyteCIConnectorBuild', 'build')
-    airbyteCIConnectorsTask('airbyteCIConnectorTest', 'test')
-}
-
-// produce reproducible archives
-// (see https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives)
-tasks.withType(AbstractArchiveTask).configureEach {
-    preserveFileTimestamps = false
-    reproducibleFileOrder = true
-}
-
-// pin dependency versions according to ./deps.toml
-catalog {
-    versionCatalog {
-        from(files("deps.toml"))
+    javadoc {
+        options.addStringOption('Xdoclint:none', '-quiet')
     }
 }

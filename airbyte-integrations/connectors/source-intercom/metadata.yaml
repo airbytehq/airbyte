@@ -10,13 +10,18 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.6.3
   dockerRepository: airbyte/source-intercom
   documentationUrl: https://docs.airbyte.com/integrations/sources/intercom
   githubIssueLabel: source-intercom
   icon: intercom.svg
   license: MIT
+  maxSecondsBetweenMessages: 60
   name: Intercom
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-intercom
   registries:
     cloud:
       enabled: true
@@ -32,6 +37,6 @@ data:
       - companies
   supportLevel: certified
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

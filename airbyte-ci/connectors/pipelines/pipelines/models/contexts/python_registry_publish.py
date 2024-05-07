@@ -21,11 +21,14 @@ class PythonRegistryPublishContext(PipelineContext):
     def __init__(
         self,
         python_registry_token: str,
+        registry_check_url: str,
         package_path: str,
         report_output_prefix: str,
         is_local: bool,
         git_branch: str,
         git_revision: str,
+        diffed_branch: str,
+        git_repo_url: str,
         ci_report_bucket: Optional[str] = None,
         registry: str = DEFAULT_PYTHON_PACKAGE_REGISTRY_URL,
         gha_workflow_run_url: Optional[str] = None,
@@ -38,6 +41,7 @@ class PythonRegistryPublishContext(PipelineContext):
     ) -> None:
         self.python_registry_token = python_registry_token
         self.registry = registry
+        self.registry_check_url = registry_check_url
         self.package_path = package_path
         self.package_metadata = PythonPackageMetadata(package_name, version)
 
@@ -50,6 +54,8 @@ class PythonRegistryPublishContext(PipelineContext):
             is_local=is_local,
             git_branch=git_branch,
             git_revision=git_revision,
+            diffed_branch=diffed_branch,
+            git_repo_url=git_repo_url,
             gha_workflow_run_url=gha_workflow_run_url,
             dagger_logs_url=dagger_logs_url,
             pipeline_start_timestamp=pipeline_start_timestamp,
@@ -87,6 +93,7 @@ class PythonRegistryPublishContext(PipelineContext):
         pypi_context = cls(
             python_registry_token=str(connector_context.python_registry_token),
             registry=str(connector_context.python_registry_url),
+            registry_check_url=str(connector_context.python_registry_check_url),
             package_path=str(connector_context.connector.code_directory),
             package_name=current_metadata["remoteRegistries"]["pypi"]["packageName"],
             version=version,
@@ -95,6 +102,8 @@ class PythonRegistryPublishContext(PipelineContext):
             is_local=connector_context.is_local,
             git_branch=connector_context.git_branch,
             git_revision=connector_context.git_revision,
+            diffed_branch=connector_context.diffed_branch,
+            git_repo_url=connector_context.git_repo_url,
             gha_workflow_run_url=connector_context.gha_workflow_run_url,
             dagger_logs_url=connector_context.dagger_logs_url,
             pipeline_start_timestamp=connector_context.pipeline_start_timestamp,

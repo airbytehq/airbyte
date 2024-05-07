@@ -1,4 +1,5 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "additionalProperties": true,
   "properties": {
@@ -20,7 +21,10 @@
     },
     "links": {
       "type": ["null", "object"],
-      "additionalProperties": true
+      "additionalProperties": true,
+      "properties": {
+        "self": { "type": "string" }
+      }
     }
   }
 }

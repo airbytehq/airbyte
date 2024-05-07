@@ -1,0 +1,33 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "object": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "first_name": {
+      "type": ["null", "string"]
+    },
+    "last_name": {
+      "type": ["null", "string"]
+    },
+    "time_zone": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "deleted_at": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    }
+  }
+}

@@ -60,53 +60,6 @@ def test_empty_streams_fixture(mocker, test_strictness_level, basic_read_test_co
         conftest.pytest.fail.assert_not_called()
 
 
-@pytest.mark.parametrize(
-    "test_strictness_level, basic_read_test_config, expect_test_failure",
-    [
-        pytest.param(
-            Config.TestStrictnessLevel.low,
-            BasicReadTestConfig(config_path="config_path", ignored_fields={"test_stream": [IgnoredFieldsConfiguration(name="ignore_me")]}),
-            False,
-            id="[LOW test strictness level] Ignored fields can be declared without bypass_reason.",
-        ),
-        pytest.param(
-            Config.TestStrictnessLevel.low,
-            BasicReadTestConfig(
-                config_path="config_path",
-                ignored_fields={"test_stream": [IgnoredFieldsConfiguration(name="ignore_me", bypass_reason="test")]},
-            ),
-            False,
-            id="[LOW test strictness level] Ignored fields can be declared with a bypass_reason.",
-        ),
-        pytest.param(
-            Config.TestStrictnessLevel.high,
-            BasicReadTestConfig(config_path="config_path", ignored_fields={"test_stream": [IgnoredFieldsConfiguration(name="ignore_me")]}),
-            True,
-            id="[HIGH test strictness level] Ignored fields can't be declared without bypass_reason.",
-        ),
-        pytest.param(
-            Config.TestStrictnessLevel.high,
-            BasicReadTestConfig(
-                config_path="config_path",
-                ignored_fields={"test_stream": [IgnoredFieldsConfiguration(name="ignore_me", bypass_reason="test")]},
-            ),
-            False,
-            id="[HIGH test strictness level] Ignored fields can be declared with a bypass_reason.",
-        ),
-    ],
-)
-def test_ignored_fields_fixture(mocker, test_strictness_level, basic_read_test_config, expect_test_failure):
-    mocker.patch.object(conftest.pytest, "fail")
-    # Pytest prevents fixture to be directly called. Using __wrapped__ allows us to call the actual function before it's been wrapped by the decorator.
-    assert (
-        conftest.ignored_fields_fixture.__wrapped__(basic_read_test_config, test_strictness_level) == basic_read_test_config.ignored_fields
-    )
-    if expect_test_failure:
-        conftest.pytest.fail.assert_called_once()
-    else:
-        conftest.pytest.fail.assert_not_called()
-
-
 TEST_AIRBYTE_STREAM_A = AirbyteStream(name="test_stream_a", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh])
 TEST_AIRBYTE_STREAM_B = AirbyteStream(name="test_stream_b", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh])
 TEST_AIRBYTE_STREAM_C = AirbyteStream(name="test_stream_c", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh])

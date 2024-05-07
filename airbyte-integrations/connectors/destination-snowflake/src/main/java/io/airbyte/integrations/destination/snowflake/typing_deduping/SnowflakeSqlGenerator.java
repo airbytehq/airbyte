@@ -21,22 +21,18 @@ import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
-import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigratedException;
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
-public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinition> {
+public class SnowflakeSqlGenerator implements SqlGenerator {
 
   public static final String QUOTE = "\"";
 
@@ -52,6 +48,12 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
       "CURRENT_USER",
       "LOCALTIME",
       "LOCALTIMESTAMP");
+
+  private final int retentionPeriodDays;
+
+  public SnowflakeSqlGenerator(int retentionPeriodDays) {
+    this.retentionPeriodDays = retentionPeriodDays;
+  }
 
   @Override
   public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
@@ -115,53 +117,24 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public Sql createTable(final StreamConfig stream, final String suffix, final boolean force) {
-    final String columnDeclarations = stream.columns().entrySet().stream()
+    final String columnDeclarations = stream.getColumns().entrySet().stream()
         .map(column -> "," + column.getKey().name(QUOTE) + " " + toDialectType(column.getValue()))
         .collect(joining("\n"));
     final String forceCreateTable = force ? "OR REPLACE" : "";
 
     return Sql.of(new StringSubstitutor(Map.of(
-        "final_table_id", stream.id().finalTableId(QUOTE, suffix.toUpperCase()),
+        "final_table_id", stream.getId().finalTableId(QUOTE, suffix.toUpperCase()),
         "force_create_table", forceCreateTable,
-        "column_declarations", columnDeclarations)).replace(
+        "column_declarations", columnDeclarations,
+        "retention_period_days", retentionPeriodDays)).replace(
             """
             CREATE ${force_create_table} TABLE ${final_table_id} (
               "_AIRBYTE_RAW_ID" TEXT NOT NULL,
               "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
               "_AIRBYTE_META" VARIANT NOT NULL
               ${column_declarations}
-            );
+            ) data_retention_time_in_days = ${retention_period_days};
             """));
-  }
-
-  @Override
-  public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final SnowflakeTableDefinition existingTable)
-      throws TableNotMigratedException {
-    final Set<String> pks = getPks(stream);
-
-    // Check that the columns match, with special handling for the metadata columns.
-    final LinkedHashMap<String, String> intendedColumns = stream.columns().entrySet().stream()
-        .collect(LinkedHashMap::new,
-            (map, column) -> map.put(column.getKey().name(), toDialectType(column.getValue())),
-            LinkedHashMap::putAll);
-    final LinkedHashMap<String, String> actualColumns = existingTable.columns().entrySet().stream()
-        .filter(column -> JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream().map(String::toUpperCase)
-            .noneMatch(airbyteColumnName -> airbyteColumnName.equals(column.getKey())))
-        .collect(LinkedHashMap::new,
-            (map, column) -> map.put(column.getKey(), column.getValue().type()),
-            LinkedHashMap::putAll);
-    // soft-resetting https://github.com/airbytehq/airbyte/pull/31082
-    @SuppressWarnings("deprecation")
-    final boolean hasPksWithNonNullConstraint = existingTable.columns().entrySet().stream()
-        .anyMatch(c -> pks.contains(c.getKey()) && !c.getValue().isNullable());
-
-    final boolean sameColumns = actualColumns.equals(intendedColumns)
-        && !hasPksWithNonNullConstraint
-        && "TEXT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.toUpperCase()).type())
-        && "TIMESTAMP_TZ".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.toUpperCase()).type())
-        && "VARIANT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_META.toUpperCase()).type());
-
-    return sameColumns;
   }
 
   @Override
@@ -169,20 +142,20 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                          final String finalSuffix,
                          final Optional<Instant> minRawTimestamp,
                          final boolean useExpensiveSaferCasting) {
-    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), minRawTimestamp, useExpensiveSaferCasting);
+    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.getColumns(), minRawTimestamp, useExpensiveSaferCasting);
     String dedupFinalTable = "";
     String cdcDeletes = "";
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor());
+    if (stream.getDestinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+      dedupFinalTable = dedupFinalTable(stream.getId(), finalSuffix, stream.getPrimaryKey(), stream.getCursor());
       cdcDeletes = cdcDeletes(stream, finalSuffix);
     }
-    final String commitRawTable = commitRawTable(stream.id(), minRawTimestamp);
+    final String commitRawTable = commitRawTable(stream.getId());
 
     return transactionally(insertNewRecords, dedupFinalTable, cdcDeletes, commitRawTable);
   }
 
   private String extractAndCast(final ColumnId column, final AirbyteType airbyteType, final boolean useTryCast) {
-    return cast("\"_airbyte_data\":\"" + escapeJsonIdentifier(column.originalName()) + "\"", airbyteType, useTryCast);
+    return cast("\"_airbyte_data\":\"" + escapeJsonIdentifier(column.getOriginalName()) + "\"", airbyteType, useTryCast);
   }
 
   private String cast(final String sqlExpression, final AirbyteType airbyteType, final boolean useTryCast) {
@@ -261,6 +234,21 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     }
   }
 
+  private static String airbyteExtractedAtUtcForced(final String sqlExpression) {
+    return new StringSubstitutor(Map.of("expression", sqlExpression)).replace(
+        """
+        TIMESTAMPADD(
+          HOUR,
+          EXTRACT(timezone_hour from ${expression}),
+          TIMESTAMPADD(
+            MINUTE,
+            EXTRACT(timezone_minute from ${expression}),
+            CONVERT_TIMEZONE('UTC', ${expression})
+          )
+        )
+        """);
+  }
+
   @VisibleForTesting
   String insertNewRecords(final StreamConfig stream,
                           final String finalSuffix,
@@ -271,7 +259,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     final String extractNewRawRecords = extractNewRawRecords(stream, minRawTimestamp, useTryCast);
 
     return new StringSubstitutor(Map.of(
-        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix.toUpperCase()),
+        "final_table_id", stream.getId().finalTableId(QUOTE, finalSuffix.toUpperCase()),
         "column_list", columnList,
         "extractNewRawRecords", extractNewRawRecords)).replace(
             """
@@ -286,13 +274,13 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   private String extractNewRawRecords(final StreamConfig stream, final Optional<Instant> minRawTimestamp, final boolean useTryCast) {
-    final String columnCasts = stream.columns().entrySet().stream().map(
+    final String columnCasts = stream.getColumns().entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue(), useTryCast) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
-    final String columnErrors = stream.columns().entrySet().stream().map(
+    final String columnErrors = stream.getColumns().entrySet().stream().map(
         col -> new StringSubstitutor(Map.of(
-            "raw_col_name", escapeJsonIdentifier(col.getKey().originalName()),
-            "printable_col_name", escapeSingleQuotedString(col.getKey().originalName()),
+            "raw_col_name", escapeJsonIdentifier(col.getKey().getOriginalName()),
+            "printable_col_name", escapeSingleQuotedString(col.getKey().getOriginalName()),
             "col_type", toDialectType(col.getValue()),
             "json_extract", extractAndCast(col.getKey(), col.getValue(), useTryCast))).replace(
                 // TYPEOF returns "NULL_VALUE" for a JSON null and "NULL" for a SQL null
@@ -304,12 +292,12 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                   ELSE NULL
                 END"""))
         .collect(joining(",\n"));
-    final String columnList = stream.columns().keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
+    final String columnList = stream.getColumns().keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
     final String extractedAtCondition = buildExtractedAtCondition(minRawTimestamp);
 
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+    if (stream.getDestinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       String cdcConditionalOrIncludeStatement = "";
-      if (stream.columns().containsKey(CDC_DELETED_AT_COLUMN)) {
+      if (stream.getColumns().containsKey(CDC_DELETED_AT_COLUMN)) {
         cdcConditionalOrIncludeStatement = """
                                            OR (
                                              "_airbyte_loaded_at" IS NOT NULL
@@ -318,27 +306,28 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                                            """;
       }
 
-      final String pkList = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
-      final String cursorOrderClause = stream.cursor()
+      final String pkList = stream.getPrimaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
+      final String cursorOrderClause = stream.getCursor()
           .map(cursorId -> cursorId.name(QUOTE) + " DESC NULLS LAST,")
           .orElse("");
 
       return new StringSubstitutor(Map.of(
-          "raw_table_id", stream.id().rawTableId(QUOTE),
+          "raw_table_id", stream.getId().rawTableId(QUOTE),
           "column_casts", columnCasts,
           "column_errors", columnErrors,
           "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
           "extractedAtCondition", extractedAtCondition,
           "column_list", columnList,
           "pk_list", pkList,
-          "cursor_order_clause", cursorOrderClause)).replace(
+          "cursor_order_clause", cursorOrderClause,
+          "airbyte_extracted_at_utc", airbyteExtractedAtUtcForced("\"_airbyte_extracted_at\""))).replace(
               """
               WITH intermediate_data AS (
                 SELECT
               ${column_casts}
               ARRAY_CONSTRUCT_COMPACT(${column_errors}) as "_airbyte_cast_errors",
                 "_airbyte_raw_id",
-                "_airbyte_extracted_at"
+                ${airbyte_extracted_at_utc} as "_airbyte_extracted_at"
                 FROM ${raw_table_id}
                 WHERE (
                     "_airbyte_loaded_at" IS NULL
@@ -362,18 +351,19 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
               WHERE row_number = 1""");
     } else {
       return new StringSubstitutor(Map.of(
-          "raw_table_id", stream.id().rawTableId(QUOTE),
+          "raw_table_id", stream.getId().rawTableId(QUOTE),
           "column_casts", columnCasts,
           "column_errors", columnErrors,
           "extractedAtCondition", extractedAtCondition,
-          "column_list", columnList)).replace(
+          "column_list", columnList,
+          "airbyte_extracted_at_utc", airbyteExtractedAtUtcForced("\"_airbyte_extracted_at\""))).replace(
               """
               WITH intermediate_data AS (
                 SELECT
               ${column_casts}
               ARRAY_CONSTRUCT_COMPACT(${column_errors}) as "_airbyte_cast_errors",
                 "_airbyte_raw_id",
-                "_airbyte_extracted_at"
+                ${airbyte_extracted_at_utc} as "_airbyte_extracted_at"
                 FROM ${raw_table_id}
                 WHERE
                   "_airbyte_loaded_at" IS NULL
@@ -390,7 +380,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   private static String buildExtractedAtCondition(final Optional<Instant> minRawTimestamp) {
     return minRawTimestamp
-        .map(ts -> " AND \"_airbyte_extracted_at\" > '" + ts + "'")
+        .map(ts -> " AND " + airbyteExtractedAtUtcForced("\"_airbyte_extracted_at\"") + " > '" + ts + "'")
         .orElse("");
   }
 
@@ -407,13 +397,14 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     return new StringSubstitutor(Map.of(
         "final_table_id", id.finalTableId(QUOTE, finalSuffix.toUpperCase()),
         "pk_list", pkList,
-        "cursor_order_clause", cursorOrderClause)).replace(
+        "cursor_order_clause", cursorOrderClause,
+        "airbyte_extracted_at_utc", airbyteExtractedAtUtcForced("\"_AIRBYTE_EXTRACTED_AT\""))).replace(
             """
             DELETE FROM ${final_table_id}
             WHERE "_AIRBYTE_RAW_ID" IN (
               SELECT "_AIRBYTE_RAW_ID" FROM (
                 SELECT "_AIRBYTE_RAW_ID", row_number() OVER (
-                  PARTITION BY ${pk_list} ORDER BY ${cursor_order_clause} "_AIRBYTE_EXTRACTED_AT" DESC
+                  PARTITION BY ${pk_list} ORDER BY ${cursor_order_clause} ${airbyte_extracted_at_utc} DESC
                 ) as row_number FROM ${final_table_id}
               )
               WHERE row_number != 1
@@ -422,17 +413,17 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   private String cdcDeletes(final StreamConfig stream, final String finalSuffix) {
-    if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
+    if (stream.getDestinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
       return "";
     }
-    if (!stream.columns().containsKey(CDC_DELETED_AT_COLUMN)) {
+    if (!stream.getColumns().containsKey(CDC_DELETED_AT_COLUMN)) {
       return "";
     }
 
     // we want to grab IDs for deletion from the raw table (not the final table itself) to hand
     // out-of-order record insertions after the delete has been registered
     return new StringSubstitutor(Map.of(
-        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix.toUpperCase()))).replace(
+        "final_table_id", stream.getId().finalTableId(QUOTE, finalSuffix.toUpperCase()))).replace(
             """
             DELETE FROM ${final_table_id}
             WHERE _AB_CDC_DELETED_AT IS NOT NULL;
@@ -440,15 +431,13 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @VisibleForTesting
-  String commitRawTable(final StreamId id, final Optional<Instant> minRawTimestamp) {
+  String commitRawTable(final StreamId id) {
     return new StringSubstitutor(Map.of(
-        "raw_table_id", id.rawTableId(QUOTE),
-        "extractedAtCondition", buildExtractedAtCondition(minRawTimestamp))).replace(
+        "raw_table_id", id.rawTableId(QUOTE))).replace(
             """
             UPDATE ${raw_table_id}
             SET "_airbyte_loaded_at" = CURRENT_TIMESTAMP()
             WHERE "_airbyte_loaded_at" IS NULL
-              ${extractedAtCondition}
             ;""");
   }
 
@@ -466,7 +455,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   public Sql prepareTablesForSoftReset(final StreamConfig stream) {
     return concat(
         createTable(stream, SOFT_RESET_SUFFIX.toUpperCase(), true),
-        clearLoadedAt(stream.id()));
+        clearLoadedAt(stream.getId()));
   }
 
   @Override
@@ -550,10 +539,6 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     return str
         .replace("\\", "\\\\")
         .replace("'", "\\'");
-  }
-
-  private static Set<String> getPks(final StreamConfig stream) {
-    return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).collect(Collectors.toSet()) : Collections.emptySet();
   }
 
 }

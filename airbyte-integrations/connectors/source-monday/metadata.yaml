@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
-  dockerImageTag: 2.0.0
+  dockerImageTag: 2.1.2
   releases:
     breakingChanges:
       2.0.0:
@@ -33,7 +33,12 @@ data:
   githubIssueLabel: source-monday
   icon: monday.svg
   license: MIT
+  maxSecondsBetweenMessages: 60
   name: Monday
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-monday
   registries:
     cloud:
       enabled: true
@@ -42,6 +47,6 @@ data:
   releaseStage: generally_available
   supportLevel: certified
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

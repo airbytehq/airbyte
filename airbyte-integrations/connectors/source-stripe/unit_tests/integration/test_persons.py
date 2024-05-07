@@ -19,7 +19,16 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import AirbyteStreamStatus, Level
+from airbyte_protocol.models import (
+    AirbyteStateBlob,
+    AirbyteStreamState,
+    AirbyteStreamStatus,
+    ConfiguredAirbyteCatalog,
+    FailureType,
+    Level,
+    StreamDescriptor,
+    SyncMode,
+)
 from integration.config import ConfigBuilder
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
@@ -34,6 +43,7 @@ _CONFIG = {
     "client_secret": _CLIENT_SECRET,
     "account_id": _ACCOUNT_ID,
 }
+_NO_STATE = StateBuilder().build()
 _AVOIDING_INCLUSIVE_BOUNDARIES = timedelta(seconds=1)
 
 
@@ -116,7 +126,7 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog())
+        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
@@ -149,7 +159,7 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog())
+        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
@@ -183,7 +193,7 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog())
+        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
@@ -196,7 +206,7 @@ class PersonsTest(TestCase):
             a_response_with_status(400),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog())
+        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
         error_log_messages = [message for message in actual_messages.logs if message.log.level == Level.ERROR]
 
@@ -218,7 +228,7 @@ class PersonsTest(TestCase):
             a_response_with_status(400),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog())
+        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
         error_log_messages = [message for message in actual_messages.logs if message.log.level == Level.ERROR]
 
@@ -234,7 +244,7 @@ class PersonsTest(TestCase):
             a_response_with_status(401),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog())
+        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog(), expecting_exception=True)
 
         assert actual_messages.errors[-1].trace.error.failure_type == FailureType.system_error
@@ -252,7 +262,7 @@ class PersonsTest(TestCase):
             a_response_with_status(401),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog())
+        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog(), expecting_exception=True)
 
         assert actual_messages.errors[-1].trace.error.failure_type == FailureType.system_error
@@ -270,7 +280,7 @@ class PersonsTest(TestCase):
             a_response_with_status(403),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog())
+        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog(), expecting_exception=True)
         error_log_messages = [message for message in actual_messages.logs if message.log.level == Level.ERROR]
 
@@ -305,16 +315,19 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).build(),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental))
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build()
+        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
         actual_messages = read(
             source,
             config=_CONFIG,
             catalog=_create_catalog(sync_mode=SyncMode.incremental),
-            state=StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build(),
+            state=state,
         )
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
-        assert actual_messages.most_recent_state == {"persons": {"updated": int(state_datetime.timestamp())}}
+        most_recent_state = actual_messages.most_recent_state
+        assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
+        assert most_recent_state.stream_state == AirbyteStateBlob(updated=int(state_datetime.timestamp()))
         assert len(actual_messages.records) == 1
 
     @HttpMocker()
@@ -343,16 +356,19 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_persons_event_record(event_type="person.deleted")).build(),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental))
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build()
+        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
         actual_messages = read(
             source,
             config=_CONFIG,
             catalog=_create_catalog(sync_mode=SyncMode.incremental),
-            state=StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build(),
+            state=state,
         )
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
-        assert actual_messages.most_recent_state == {"persons": {"updated": int(state_datetime.timestamp())}}
+        most_recent_state = actual_messages.most_recent_state
+        assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
+        assert most_recent_state.stream_state == AirbyteStateBlob(updated=int(state_datetime.timestamp()))
         assert len(actual_messages.records) == 1
         assert actual_messages.records[0].record.data.get("is_deleted")
 
@@ -378,16 +394,19 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).build(),
         )
 
-        source = SourceStripe(config=config, catalog=_create_catalog(sync_mode=SyncMode.incremental))
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build()
+        source = SourceStripe(config=config, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
         actual_messages = read(
             source,
             config=config,
             catalog=_create_catalog(sync_mode=SyncMode.incremental),
-            state=StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build(),
+            state=state,
         )
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
-        assert actual_messages.most_recent_state == {"persons": {"updated": int(state_datetime.timestamp())}}
+        most_recent_state = actual_messages.most_recent_state
+        assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
+        assert most_recent_state.stream_state == AirbyteStateBlob(updated=int(state_datetime.timestamp()))
         assert len(actual_messages.records) == 1
 
     @HttpMocker()
@@ -411,7 +430,7 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog())
+        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
@@ -438,7 +457,7 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog())
+        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
@@ -476,16 +495,19 @@ class PersonsTest(TestCase):
             ]
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental))
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build()
+        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
         actual_messages = read(
             source,
             config=_CONFIG,
             catalog=_create_catalog(sync_mode=SyncMode.incremental),
-            state=StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build(),
+            state=state,
         )
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
-        assert actual_messages.most_recent_state == {"persons": {"updated": int(state_datetime.timestamp())}}
+        most_recent_state = actual_messages.most_recent_state
+        assert most_recent_state.stream_descriptor == StreamDescriptor(name="persons")
+        assert most_recent_state.stream_state == AirbyteStateBlob(updated=int(state_datetime.timestamp()))
         assert len(actual_messages.records) == 1
 
     @HttpMocker()
@@ -510,10 +532,11 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog())
+        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
-        assert len(actual_messages.errors) == 1
+        # first error is the actual error, second is to break the Python app with code != 0
+        assert list(map(lambda message: message.trace.error.failure_type, actual_messages.errors)) == [FailureType.system_error, FailureType.config_error]
 
     @HttpMocker()
     def test_incremental_rate_limit_max_attempts_exceeded(self, http_mocker: HttpMocker) -> None:
@@ -544,15 +567,16 @@ class PersonsTest(TestCase):
             a_response_with_status(429),  # Returns 429 on all subsequent requests to test the maximum number of retries
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental))
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build()
+        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
         actual_messages = read(
             source,
             config=_CONFIG,
             catalog=_create_catalog(sync_mode=SyncMode.incremental),
-            state=StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build(),
+            state=state,
         )
 
-        assert len(actual_messages.errors) == 1
+        assert len(actual_messages.errors) == 2
 
     @HttpMocker()
     def test_server_error_parent_stream_accounts(self, http_mocker: HttpMocker) -> None:
@@ -575,7 +599,7 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog())
+        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
@@ -602,7 +626,7 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog())
+        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
@@ -630,7 +654,8 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog())
+        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
-        assert len(actual_messages.errors) == 1
+        # first error is the actual error, second is to break the Python app with code != 0
+        assert list(map(lambda message: message.trace.error.failure_type, actual_messages.errors)) == [FailureType.system_error, FailureType.config_error]

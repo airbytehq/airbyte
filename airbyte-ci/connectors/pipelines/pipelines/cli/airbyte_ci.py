@@ -34,11 +34,11 @@ from pipelines.cli.click_decorators import (
 from pipelines.cli.confirm_prompt import pre_confirm_all_flag
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.cli.telemetry import click_track_command
-from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, CIContext
+from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, LOCAL_BUILD_PLATFORM, CIContext
 from pipelines.dagger.actions.connector.hooks import get_dagger_sdk_version
 from pipelines.helpers import github
 from pipelines.helpers.git import get_current_git_branch, get_current_git_revision
-from pipelines.helpers.utils import get_current_epoch_time
+from pipelines.helpers.utils import AIRBYTE_REPO_URL, get_current_epoch_time
 
 
 def log_context_info(ctx: click.Context) -> None:
@@ -47,12 +47,14 @@ def log_context_info(ctx: click.Context) -> None:
     main_logger.info("Running airbyte-ci in CI mode.")
     main_logger.info(f"CI Context: {ctx.obj['ci_context']}")
     main_logger.info(f"CI Report Bucket Name: {ctx.obj['ci_report_bucket_name']}")
+    main_logger.info(f"Git Repo URL: {ctx.obj['git_repo_url']}")
     main_logger.info(f"Git Branch: {ctx.obj['git_branch']}")
     main_logger.info(f"Git Revision: {ctx.obj['git_revision']}")
     main_logger.info(f"GitHub Workflow Run ID: {ctx.obj['gha_workflow_run_id']}")
     main_logger.info(f"GitHub Workflow Run URL: {ctx.obj['gha_workflow_run_url']}")
     main_logger.info(f"Pull Request Number: {ctx.obj['pull_request_number']}")
     main_logger.info(f"Pipeline Start Timestamp: {ctx.obj['pipeline_start_timestamp']}")
+    main_logger.info(f"Local build platform: {LOCAL_BUILD_PLATFORM}")
 
 
 def _get_gha_workflow_run_url(ctx: click.Context) -> Optional[str]:
@@ -145,12 +147,13 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
 @click.option("--enable-update-check/--disable-update-check", default=True)
 @click.option("--enable-auto-update/--disable-auto-update", default=True)
 @click.option("--is-local/--is-ci", default=True)
+@click.option("--git-repo-url", default=AIRBYTE_REPO_URL, envvar="CI_GIT_REPO_URL")
 @click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
 @click.option("--git-revision", default=get_current_git_revision, envvar="CI_GIT_REVISION")
 @click.option(
     "--diffed-branch",
     help="Branch to which the git diff will happen to detect new or modified connectors",
-    default="origin/master",
+    default="master",
     type=str,
 )
 @click.option("--gha-workflow-run-id", help="[CI Only] The run id of the GitHub action workflow", default=None, type=str)

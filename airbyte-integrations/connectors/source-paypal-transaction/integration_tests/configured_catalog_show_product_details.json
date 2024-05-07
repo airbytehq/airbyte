@@ -1,0 +1,14 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "show_product_details",
+        "json_schema": {},
+        "source_defined_cursor": false,
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    }
+  ]
+}

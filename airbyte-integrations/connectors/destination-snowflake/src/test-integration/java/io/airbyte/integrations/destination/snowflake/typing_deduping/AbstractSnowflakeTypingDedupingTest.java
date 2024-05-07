@@ -29,6 +29,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.airbyte.workers.exception.TestHarnessException;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
@@ -46,6 +47,19 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
   private JdbcDatabase database;
   private DataSource dataSource;
 
+  private static volatile boolean cleanedAirbyteInternalTable = false;
+
+  private static void cleanAirbyteInternalTable(JdbcDatabase database) throws SQLException {
+    if (!cleanedAirbyteInternalTable) {
+      synchronized (AbstractSnowflakeTypingDedupingTest.class) {
+        if (!cleanedAirbyteInternalTable) {
+          database.execute("DELETE FROM \"airbyte_internal\".\"_airbyte_destination_state\" WHERE \"updated_at\" < current_date() - 7");
+          cleanedAirbyteInternalTable = true;
+        }
+      }
+    }
+  }
+
   protected abstract String getConfigPath();
 
   @Override
@@ -54,12 +68,13 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
   }
 
   @Override
-  protected JsonNode generateConfig() {
+  protected JsonNode generateConfig() throws SQLException {
     final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of(getConfigPath())));
     ((ObjectNode) config).put("schema", "typing_deduping_default_schema" + getUniqueSuffix());
     databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
     dataSource = SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS);
     database = SnowflakeDatabase.getDatabase(dataSource);
+    cleanAirbyteInternalTable(database);
     return config;
   }
 
@@ -77,7 +92,7 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
   }
 
   @Override
-  protected List<JsonNode> dumpFinalTableRecords(String streamNamespace, final String streamName) throws Exception {
+  public List<JsonNode> dumpFinalTableRecords(String streamNamespace, final String streamName) throws Exception {
     if (streamNamespace == null) {
       streamNamespace = getDefaultSchema();
     }
@@ -107,12 +122,12 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
   }
 
   @Override
-  protected SqlGenerator<?> getSqlGenerator() {
-    return new SnowflakeSqlGenerator();
+  protected SqlGenerator getSqlGenerator() {
+    return new SnowflakeSqlGenerator(0);
   }
 
   @Override
-  protected Map<String, String> getFinalMetadataColumnNames() {
+  public Map<String, String> getFinalMetadataColumnNames() {
     return FINAL_METADATA_COLUMN_NAMES;
   }
 
@@ -135,8 +150,8 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
               .withSyncMode(SyncMode.FULL_REFRESH)
               .withDestinationSyncMode(DestinationSyncMode.APPEND)
               .withStream(new AirbyteStream()
-                  .withNamespace(streamNamespace)
-                  .withName(streamName)
+                  .withNamespace(getStreamNamespace())
+                  .withName(getStreamName())
                   .withJsonSchema(SCHEMA))));
 
       // First sync
@@ -149,14 +164,14 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
 
       runSync(catalog, messages2);
 
-      final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl");
+      final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw_mixed_tzs.jsonl");
       final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
       verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
     } finally {
       // manually drop the lowercased schema, since we no longer have the code to do it automatically
       // (the raw table is still in lowercase "airbyte_internal"."whatever", so the auto-cleanup code
       // handles it fine)
-      database.execute("DROP SCHEMA IF EXISTS \"" + streamNamespace + "\" CASCADE");
+      database.execute("DROP SCHEMA IF EXISTS \"" + getStreamNamespace() + "\" CASCADE");
     }
   }
 
@@ -168,8 +183,8 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
               .withSyncMode(SyncMode.FULL_REFRESH)
               .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
               .withStream(new AirbyteStream()
-                  .withNamespace(streamNamespace)
-                  .withName(streamName)
+                  .withNamespace(getStreamNamespace())
+                  .withName(getStreamName())
                   .withJsonSchema(SCHEMA))));
 
       // First sync
@@ -189,7 +204,7 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
       // manually drop the lowercased schema, since we no longer have the code to do it automatically
       // (the raw table is still in lowercase "airbyte_internal"."whatever", so the auto-cleanup code
       // handles it fine)
-      database.execute("DROP SCHEMA IF EXISTS \"" + streamNamespace + "\" CASCADE");
+      database.execute("DROP SCHEMA IF EXISTS \"" + getStreamNamespace() + "\" CASCADE");
     }
   }
 
@@ -201,8 +216,8 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
             .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
             .withStream(new AirbyteStream()
-                .withNamespace(streamNamespace)
-                .withName(streamName)
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
                 .withJsonSchema(SCHEMA))));
 
     // First sync
@@ -215,7 +230,38 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
 
     // Second sync
     runSync(catalog, messages); // does not throw with latest version
-    assertEquals(1, dumpFinalTableRecords(streamNamespace, streamName).toArray().length);
+    assertEquals(1, dumpFinalTableRecords(getStreamNamespace(), getStreamName()).toArray().length);
+  }
+
+  @Test
+  public void testExtractedAtUtcTimezoneMigration() throws Exception {
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+            .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
+            .withCursorField(List.of("updated_at"))
+            .withStream(new AirbyteStream()
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
+                .withJsonSchema(SCHEMA))));
+
+    // First sync
+    final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
+    runSync(catalog, messages1, "airbyte/destination-snowflake:3.5.11");
+
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/ltz_extracted_at_sync1_expectedrecords_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords1 = readRecords("dat/ltz_extracted_at_sync1_expectedrecords_dedup_final.jsonl");
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison());
+
+    // Second sync
+    final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
+
+    runSync(catalog, messages2);
+
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw_mixed_tzs.jsonl");
+    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_final_mixed_tzs.jsonl");
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
   }
 
   private String getDefaultSchema() {

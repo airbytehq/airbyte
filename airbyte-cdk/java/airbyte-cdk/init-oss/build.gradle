@@ -1,5 +1,0 @@
-// TODO: remove this module stub entirely during CDK module consolidation
-
-plugins {
-    id "java-library"
-}

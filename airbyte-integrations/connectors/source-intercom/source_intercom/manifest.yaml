@@ -1,4 +1,4 @@
-version: "0.50.2"
+version: 0.72.1
 
 definitions:
   ## bases
@@ -20,7 +20,9 @@ definitions:
       type: BearerAuthenticator
       api_token: "{{ config['access_token'] }}"
     request_headers:
-      Intercom-Version: "2.5" # ATTENTION: API version change is possible here
+      # There is a bug in interpolation, causing the `2.10` string to be evaluated to `2.1`, cutting off the `0`.
+      # the workaround is to put the `string` inside the `string`, then it's evaluated properly to `2.10`
+      Intercom-Version: "'2.10'"
       Accept: "application/json"
     error_handler:
       type: "DefaultErrorHandler"
@@ -291,6 +293,16 @@ definitions:
       page_size: 150
   conversations:
     $ref: "#/definitions/stream_incremental_search"
+    retriever:
+      $ref: "#/definitions/stream_incremental_search/retriever"
+      requester:
+        $ref: "#/definitions/requester_incremental_search"
+        request_headers:
+          # API version header
+          # There are 404 - User Not Found issue, when `2.10` is used, for certain users:
+          # https://github.com/airbytehq/oncall/issues/4514
+          Intercom-Version: "2.9"
+          Accept: "application/json"
     $parameters:
       name: "conversations"
       path: "conversations/search"

@@ -43,9 +43,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     ab_file_name_col = "_ab_source_file_url"
     airbyte_columns = [ab_last_mod_col, ab_file_name_col]
 
-    def __init__(self, cursor: AbstractFileBasedCursor, **kwargs: Any):
+    def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
-        self._cursor = cursor
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -55,6 +54,16 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     def state(self, value: MutableMapping[str, Any]) -> None:
         """State setter, accept state serialized by state getter."""
         self._cursor.set_initial_state(value)
+
+    @property
+    def cursor(self) -> Optional[AbstractFileBasedCursor]:
+        return self._cursor
+
+    @cursor.setter
+    def cursor(self, value: AbstractFileBasedCursor) -> None:
+        if self._cursor is not None:
+            raise RuntimeError(f"Cursor for stream {self.name} is already set. This is unexpected. Please contact Support.")
+        self._cursor = value
 
     @property
     def primary_key(self) -> PrimaryKeyType:

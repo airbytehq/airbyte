@@ -1,0 +1,90 @@
+{
+  "payload": {
+    "orders": [
+      {
+        "purchaseOrderNumber": "L8266355",
+        "purchaseOrderState": "New",
+        "orderDetails": {
+          "purchaseOrderDate": "2019-05-23T10:00:00Z",
+          "purchaseOrderChangedDate": "2019-05-24T16:05:00Z",
+          "purchaseOrderStateChangedDate": "2019-05-23T10:00:00Z",
+          "purchaseOrderType": "RegularOrder",
+          "importDetails": {
+            "methodOfPayment": "PaidByBuyer",
+            "internationalCommercialTerms": "ExWorks",
+            "portOfDelivery": "YANTIAN, CHINA",
+            "importContainers": "1-40'HC, 1-20'",
+            "shippingInstructions": "PREFERENCE IS PALLET-LOAD, BUT IF CONTAINERS ARE FLOOR-LOADED, THEN PLEASE DO CLAMP-LOAD OR STRAIGHT FLOOR-LOAD. DO NOT USE SLIP SHEET FOR THIS FC DESTINATION. PAYMENT TERMS ARE PER CONTAINER."
+          },
+          "dealCode": "BTS",
+          "paymentMethod": "Invoice",
+          "buyingParty": {
+            "partyId": "ABCD",
+            "address": {
+              "name": "APPARIO RETAIL PVT.LTD.",
+              "addressLine1": "3APPARIO RETAIL PVT.LTD.- C/O. AMAZON SELLER SERVIC",
+              "city": "Siddhapudur",
+              "stateOrRegion": "Tamil Nadu",
+              "postalCode": "641044",
+              "countryCode": "IN",
+              "phone": "206-266-8000"
+            }
+          },
+          "sellingParty": {
+            "partyId": "TEST1"
+          },
+          "shipToParty": {
+            "partyId": "ABCD",
+            "address": {
+              "name": "APPARIO RETAIL PVT.LTD.",
+              "addressLine1": "3APPARIO RETAIL PVT.LTD.- C/O. AMAZON SELLER SERVIC",
+              "city": "Siddhapudur",
+              "stateOrRegion": "Tamil Nadu",
+              "postalCode": "641044",
+              "countryCode": "IN",
+              "phone": "206-266-8000"
+            }
+          },
+          "billToParty": {
+            "partyId": "ABCD",
+            "address": {
+              "name": "APPARIO RETAIL PVT.LTD.",
+              "addressLine1": "3APPARIO RETAIL PVT.LTD.- C/O. AMAZON SELLER SERVIC",
+              "city": "Siddhapudur",
+              "stateOrRegion": "Tamil Nadu",
+              "postalCode": "641044",
+              "countryCode": "IN",
+              "phone": "206-266-8000"
+            }
+          },
+          "taxInfo": {
+            "taxType": "GST",
+            "taxRegistrationNumber": "098522PCA6346DTEDD"
+          }
+        },
+        "deliveryWindow": "2019-05-23T10:00:00Z--2019-05-30T10:00:00Z",
+        "items": [
+          {
+            "itemSequenceNumber": "1",
+            "amazonProductIdentifier": "ABC123434",
+            "vendorProductIdentifier": "028877454078",
+            "orderedQuantity": {
+              "amount": 2,
+              "unitOfMeasure": "Cases",
+              "unitSize": 10
+            },
+            "isBackOrderAllowed": true,
+            "netCost": {
+              "amount": "1800",
+              "currencyCode": "INR"
+            },
+            "listPrice": {
+              "amount": "2000",
+              "currencyCode": "INR"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

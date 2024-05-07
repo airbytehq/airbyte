@@ -14,7 +14,7 @@ from packaging import version
 from pipelines.airbyte_ci.steps.python_registry import PublishToPythonRegistry
 from pipelines.cli.confirm_prompt import confirm
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-from pipelines.consts import DEFAULT_PYTHON_PACKAGE_REGISTRY_URL
+from pipelines.consts import DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL, DEFAULT_PYTHON_PACKAGE_REGISTRY_URL
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
 from pipelines.models.contexts.python_registry_publish import PythonRegistryPublishContext
 from pipelines.models.steps import StepStatus
@@ -78,6 +78,8 @@ async def publish(
         is_local=ctx.obj["is_local"],
         git_branch=ctx.obj["git_branch"],
         git_revision=ctx.obj["git_revision"],
+        diffed_branch=ctx.obj["diffed_branch"],
+        git_repo_url=ctx.obj["git_repo_url"],
         ci_report_bucket=ctx.obj["ci_report_bucket_name"],
         report_output_prefix=ctx.obj["report_output_prefix"],
         gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
@@ -87,6 +89,7 @@ async def publish(
         ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
         python_registry_token=python_registry_token,
         registry=python_registry_url,
+        registry_check_url=DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL,
         package_path=ctx.obj["package_path"],
         package_name=publish_name,
         version=publish_version,

@@ -4,6 +4,7 @@ Airbyte's certified MongoDB connector offers the following features:
 
 * [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) via [MongoDB's change streams](https://www.mongodb.com/docs/manual/changeStreams/)/[Replica Set Oplog](https://www.mongodb.com/docs/manual/core/replica-set-oplog/).
 * Reliable replication of any collection size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of data reads.
+* ***NEW*** Full refresh syncing of collections.
 
 ## Quick Start
 
@@ -131,10 +132,16 @@ The source will test the connection to the MongoDB instance upon creation.
 ## Replication Methods
 
 The MongoDB source utilizes change data capture (CDC) as a reliable way to keep your data up to date.
+In addtion MongoDB source now allows for syncing in a full refresh mode.
 
 ### CDC
 
 Airbyte utilizes [the change streams feature](https://www.mongodb.com/docs/manual/changeStreams/) of a [MongoDB replica set](https://www.mongodb.com/docs/manual/replication/) to incrementally capture inserts, updates and deletes using a replication plugin. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/).
+
+### Full Refresh
+The Full refresh sync mode added in v4.0.0 allows for reading a the entire contents of a collection, repeatedly.
+The MongoDB source connector is using checkpointing in Full Refresh read so a sync job that failed for netwrok error for example,
+Rather than starting over it will continue its full refresh read from a last known point.
 
 ### Schema Enforcement
 
@@ -203,10 +210,11 @@ When importing a large MongoDB collection for the first time, the import duratio
 | Username                                   | The username which is used to access the database.  Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                                                                                     |
 | Password                                   | The password associated with this username. Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                                                                                             |
 | Authentication Source                      | (MongoDB Atlas clusters only) Specifies the database that the supplied credentials should be validated against. Defaults to `admin`.  See the [MongoDB documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#mongodb-urioption-urioption.authSource) for more details.                                                                                                                                             |
-| Schema Enforced                            | Controls whether schema is discovered and enforced. See discussion in [Schema Enforcement](#Schema-Enforcement).                                                                                                                                                                                                                                                                                                                                     |
+| Schema Enforced                            | Controls whether schema is discovered and enforced. See discussion in [Schema Enforcement](#Schema-Enforcement).                                                                                                                                                                                                                                                                                                                             |
 | Initial Waiting Time in Seconds (Advanced) | The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds.                                                                                                                                                                                                                                                             |
 | Size of the queue (Advanced)               | The size of the internal queue. This may interfere with memory consumption and efficiency of the connector, please be careful.                                                                                                                                                                                                                                                                                                               |
 | Discovery Sample Size (Advanced)           | The maximum number of documents to sample when attempting to discover the unique fields for a collection.  Default is 10,000 with a valid range of 1,000 to 100,000.  See the [MongoDB sampling method](https://www.mongodb.com/docs/compass/current/sampling/#sampling-method) for more details.                                                                                                                                            |
+| Update Capture Mode (Advanced)             | Determines how Airbyte looks up the value of an updated document.  Default is "Lookup". **IMPORTANT** : "Post image" is only supported in MongoDB version 6.0+. In addition, the collections of interest must be setup to [return pre and post images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images). Failure to do so will lead to data loss.                                        |
 
 For more information regarding configuration parameters, please see [MongoDb Documentation](https://docs.mongodb.com/drivers/java/sync/v4.10/fundamentals/connection/).
 
@@ -214,7 +222,31 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
-| 1.2.5   | 2024-01-29 | [34573](https://github.com/airbytehq/airbyte/pull/34573) | Allow resuming an initial snapshot when Id type is not of default ObjectId .                              |
+| 1.3.12  | 2024-05-07 | [36851](https://github.com/airbytehq/airbyte/pull/36851) | Upgrade debezium to version 2.5.1.                                                                        |
+| 1.3.11  | 2024-05-02 | [37753](https://github.com/airbytehq/airbyte/pull/37753) | Chunk size(limit) should correspond to ~1GB of data.                                                      |
+| 1.3.10  | 2024-05-02 | [37781](https://github.com/airbytehq/airbyte/pull/37781) | Adopt latest CDK.                                                                                         |
+| 1.3.9   | 2024-05-01 | [37742](https://github.com/airbytehq/airbyte/pull/37742) | Adopt latest CDK. Remove Debezium retries.                                                                |
+| 1.3.8   | 2024-04-24 | [37559](https://github.com/airbytehq/airbyte/pull/37559) | Implement fixed-size chunking while performing initial load.                                              |
+| 1.3.7   | 2024-04-24 | [37557](https://github.com/airbytehq/airbyte/pull/37557) | Change bug in resume token validity check.                                                                |
+| 1.3.6   | 2024-04-24 | [37525](https://github.com/airbytehq/airbyte/pull/37525) | Internal refactor.                                                                                        |
+| 1.3.5   | 2024-04-22 | [37348](https://github.com/airbytehq/airbyte/pull/37348) | Do not send estimate trace if we do not have data.                                                        |
+| 1.3.4   | 2024-04-16 | [37348](https://github.com/airbytehq/airbyte/pull/37348) | Populate null values in airbyte record messages.                                                          |
+| 1.3.3   | 2024-04-05 | [36872](https://github.com/airbytehq/airbyte/pull/36872) | Update to connector's metadat definition.                                                                 |
+| 1.3.2   | 2024-04-04 | [36845](https://github.com/airbytehq/airbyte/pull/36845) | Adopt Kotlin CDK.                                                                                         |
+| 1.3.1   | 2024-04-04 | [36837](https://github.com/airbytehq/airbyte/pull/36837) | Adopt CDK 0.28.0.                                                                                         |
+| 1.3.0   | 2024-03-15 | [35669](https://github.com/airbytehq/airbyte/pull/35669) | Full refresh read of collections.                                                                         |
+| 1.2.16  | 2024-03-06 | [35669](https://github.com/airbytehq/airbyte/pull/35669) | State message will now include record count.                                                              |
+| 1.2.15  | 2024-02-27 | [35673](https://github.com/airbytehq/airbyte/pull/35673) | Consume user provided connection string.                                                                  |
+| 1.2.14  | 2024-02-27 | [35675](https://github.com/airbytehq/airbyte/pull/35675) | Fix invalid cdc error message.                                                                            |
+| 1.2.13  | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569) | Fix logging bug.                                                                                          |
+| 1.2.12  | 2024-02-21 | [35526](https://github.com/airbytehq/airbyte/pull/35526) | Improve error handling.                                                                                   |
+| 1.2.11  | 2024-02-20 | [35375](https://github.com/airbytehq/airbyte/pull/35375) | Add config to throw an error on invalid CDC position and enable it by default.                            |
+| 1.2.10  | 2024-02-13 | [35036](https://github.com/airbytehq/airbyte/pull/34751) | Emit analytics message for invalid CDC cursor.                                                            |
+| 1.2.9   | 2024-02-13 | [35114](https://github.com/airbytehq/airbyte/pull/35114) | Extend subsequent cdc record wait time to the duration of initial. Bug Fixes                              |
+| 1.2.8   | 2024-02-08 | [34748](https://github.com/airbytehq/airbyte/pull/34748) | Adopt CDK 0.19.0                                                                                          |
+| 1.2.7   | 2024-02-01 | [34759](https://github.com/airbytehq/airbyte/pull/34759) | Fail sync if initial snapshot for any stream fails.                                                       |
+| 1.2.6   | 2024-01-31 | [34594](https://github.com/airbytehq/airbyte/pull/34594) | Scope initial resume token to streams of interest.                                                        |
+| 1.2.5   | 2024-01-29 | [34641](https://github.com/airbytehq/airbyte/pull/34641) | Allow resuming an initial snapshot when Id type is not of default ObjectId .                              |
 | 1.2.4   | 2024-01-26 | [34573](https://github.com/airbytehq/airbyte/pull/34573) | Adopt CDK v0.16.0.                                                                                        |
 | 1.2.3   | 2024-01-18 | [34364](https://github.com/airbytehq/airbyte/pull/34364) | Add additional logging for resume token + reduce discovery size to 10.                                    |
 | 1.2.2   | 2024-01-16 | [34314](https://github.com/airbytehq/airbyte/pull/34314) | Reduce minimum document discovery size to 100.                                                            |

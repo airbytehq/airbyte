@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - "*"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-public-apis
   registries:
     cloud:
       enabled: false
@@ -23,5 +27,6 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:low-code
+    - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

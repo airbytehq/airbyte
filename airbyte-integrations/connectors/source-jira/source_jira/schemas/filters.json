@@ -3,6 +3,7 @@
   "type": "object",
   "properties": {
     "expand": {
+      "description": "Expands the additional information about the filter",
       "type": "string"
     },
     "self": {
@@ -31,7 +32,6 @@
         "self": {
           "type": "string",
           "description": "The URL of the user.",
-
           "readOnly": true
         },
         "key": {
@@ -124,7 +124,6 @@
                   "self": {
                     "type": "string",
                     "description": "The URL for these group details.",
-
                     "readOnly": true
                   }
                 }
@@ -252,7 +251,6 @@
     "viewUrl": {
       "type": "string",
       "description": "A URL to view the filter results in Jira, using the ID of the filter. For example, *https://your-domain.atlassian.net/issues/?filter=10100*.",
-
       "readOnly": true
     },
     "searchUrl": {
@@ -425,7 +423,6 @@
                             "self": {
                               "type": "string",
                               "description": "The URL for these group details.",
-
                               "readOnly": true
                             }
                           }
@@ -555,7 +552,6 @@
                     "self": {
                       "type": "string",
                       "description": "The URL of the component.",
-
                       "readOnly": true
                     },
                     "id": {
@@ -579,7 +575,6 @@
                         "self": {
                           "type": "string",
                           "description": "The URL of the user.",
-
                           "readOnly": true
                         },
                         "key": {
@@ -672,7 +667,6 @@
                                   "self": {
                                     "type": "string",
                                     "description": "The URL for these group details.",
-
                                     "readOnly": true
                                   }
                                 }
@@ -820,7 +814,6 @@
                         "self": {
                           "type": "string",
                           "description": "The URL of the user.",
-
                           "readOnly": true
                         },
                         "key": {
@@ -913,7 +906,6 @@
                                   "self": {
                                     "type": "string",
                                     "description": "The URL for these group details.",
-
                                     "readOnly": true
                                   }
                                 }
@@ -1052,7 +1044,6 @@
                         "self": {
                           "type": "string",
                           "description": "The URL of the user.",
-
                           "readOnly": true
                         },
                         "key": {
@@ -1468,7 +1459,6 @@
                     "self": {
                       "type": "string",
                       "description": "The URL of the version.",
-
                       "readOnly": true
                     },
                     "id": {
@@ -1632,7 +1622,6 @@
                   "self": {
                     "type": "string",
                     "description": "The URL of the project category.",
-
                     "readOnly": true
                   },
                   "id": {
@@ -1788,7 +1777,6 @@
                   "self": {
                     "type": "string",
                     "description": "The URL of the user.",
-
                     "readOnly": true
                   },
                   "key": {
@@ -1881,7 +1869,6 @@
                             "self": {
                               "type": "string",
                               "description": "The URL for these group details.",
-
                               "readOnly": true
                             }
                           }
@@ -2020,7 +2007,6 @@
                   "self": {
                     "type": "string",
                     "description": "The URL of the user.",
-
                     "readOnly": true
                   },
                   "key": {
@@ -2113,7 +2099,6 @@
                             "self": {
                               "type": "string",
                               "description": "The URL for these group details.",
-
                               "readOnly": true
                             }
                           }
@@ -2242,7 +2227,6 @@
               "self": {
                 "type": "string",
                 "description": "The URL the project role details.",
-
                 "readOnly": true
               },
               "name": {
@@ -2293,7 +2277,6 @@
                     "avatarUrl": {
                       "type": "string",
                       "description": "The avatar of the role actor.",
-
                       "readOnly": true
                     },
                     "actorUser": {
@@ -2454,6 +2437,9 @@
             "description": "The group that the filter is shared with. For a request, specify the `name` property for the group.",
             "type": "object",
             "properties": {
+              "groupId": {
+                "type": ["null", "string"]
+              },
               "name": {
                 "type": "string",
                 "description": "The name of group."
@@ -2461,7 +2447,6 @@
               "self": {
                 "type": "string",
                 "description": "The URL for these group details.",
-
                 "readOnly": true
               }
             }
@@ -2470,7 +2455,13 @@
       }
     },
     "isWritable": {
+      "description": "Indicates if the filter is writable or read-only",
       "type": "boolean"
+    },
+    "approximateLastUsed": {
+      "description": "The approximate last time the filter was used",
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "subscriptions": {
       "type": "array",
@@ -2492,7 +2483,6 @@
               "self": {
                 "type": "string",
                 "description": "The URL of the user.",
-
                 "readOnly": true
               },
               "key": {
@@ -2585,7 +2575,6 @@
                         "self": {
                           "type": "string",
                           "description": "The URL for these group details.",
-
                           "readOnly": true
                         }
                       }
@@ -2717,7 +2706,6 @@
               "self": {
                 "type": "string",
                 "description": "The URL for these group details.",
-
                 "readOnly": true
               }
             }

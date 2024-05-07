@@ -3,59 +3,64 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier and name of the workflow.",
       "type": "object",
       "properties": {
+        "entityId": {
+          "type": ["null", "string"]
+        },
         "name": {
-          "type": "string",
-          "description": "The name of the workflow."
+          "description": "The name of the workflow.",
+          "type": "string"
         }
       }
     },
     "description": {
-      "type": "string",
-      "description": "The description of the workflow."
+      "description": "The detailed description of the workflow.",
+      "type": "string"
     },
     "transitions": {
+      "description": "The transitions available within the workflow.",
       "type": "array",
-      "description": "The transitions of the workflow.",
       "items": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
-            "description": "The ID of the transition."
+            "description": "The unique identifier of the transition.",
+            "type": "string"
           },
           "name": {
-            "type": "string",
-            "description": "The name of the transition."
+            "description": "The name of the transition.",
+            "type": "string"
           },
           "description": {
-            "type": "string",
-            "description": "The description of the transition."
+            "description": "The detailed description of the transition.",
+            "type": "string"
           },
           "from": {
-            "type": "array",
             "description": "The statuses the transition can start from.",
+            "type": "array",
             "items": {
-              "type": "string",
-              "description": "The statuses the transition can start from."
+              "description": "The statuses the transition can start from.",
+              "type": "string"
             }
           },
           "to": {
-            "type": "string",
-            "description": "The status the transition goes to."
+            "description": "The status that the transition moves the issue to.",
+            "type": "string"
           },
           "type": {
-            "type": "string",
             "description": "The type of the transition.",
+            "type": "string",
             "enum": ["global", "initial", "directed"]
           },
           "screen": {
+            "description": "The screen associated with the transition.",
             "type": "object",
             "properties": {
               "id": {
-                "type": "string",
-                "description": "The ID of the screen."
+                "description": "The unique identifier of the screen.",
+                "type": "string"
               }
             }
           },
@@ -63,49 +68,49 @@
             "type": "object",
             "properties": {
               "conditions": {
+                "description": "The conditions that must be met for the transition to occur.",
                 "type": "array",
-                "description": "The workflow conditions.",
                 "items": {
                   "type": "object",
                   "properties": {
                     "type": {
-                      "type": "string",
-                      "description": "The type of the transition rule."
+                      "description": "The type of the transition rule.",
+                      "type": "string"
                     },
                     "configuration": {
-                      "description": "The configuration of the transition rule. This is currently returned only for some of the rule types. Availability of this property is subject to change."
+                      "description": "The configuration of the transition rule (availability may vary)."
                     }
                   }
                 }
               },
               "validators": {
+                "description": "Validation checks performed during the transition.",
                 "type": "array",
-                "description": "The workflow validators.",
                 "items": {
                   "type": "object",
                   "properties": {
                     "type": {
-                      "type": "string",
-                      "description": "The type of the transition rule."
+                      "description": "The type of the validator.",
+                      "type": "string"
                     },
                     "configuration": {
-                      "description": "The configuration of the transition rule. This is currently returned only for some of the rule types. Availability of this property is subject to change."
+                      "description": "The configuration of the validator (availability may vary)."
                     }
                   }
                 }
               },
               "postFunctions": {
+                "description": "Actions that occur after a transition.",
                 "type": "array",
-                "description": "The workflow post functions.",
                 "items": {
                   "type": "object",
                   "properties": {
                     "type": {
-                      "type": "string",
-                      "description": "The type of the transition rule."
+                      "description": "The type of the post function.",
+                      "type": "string"
                     },
                     "configuration": {
-                      "description": "The configuration of the transition rule. This is currently returned only for some of the rule types. Availability of this property is subject to change."
+                      "description": "The configuration of the post function (availability may vary)."
                     }
                   }
                 }
@@ -116,25 +121,25 @@
       }
     },
     "statuses": {
+      "description": "The various statuses that the workflow can have.",
       "type": "array",
-      "description": "The statuses of the workflow.",
       "items": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
-            "description": "The ID of the issue status."
+            "description": "The unique identifier of the issue status.",
+            "type": "string"
           },
           "name": {
-            "type": "string",
-            "description": "The name of the status in the workflow."
+            "description": "The name of the status in the workflow.",
+            "type": "string"
           },
           "properties": {
             "type": "object",
             "properties": {
               "issueEditable": {
-                "type": "boolean",
-                "description": "Whether issues are editable in this status."
+                "description": "Indicates whether issues are editable in this status.",
+                "type": "boolean"
               }
             }
           }
@@ -142,10 +147,12 @@
       }
     },
     "created": {
+      "description": "The date and time when the workflow was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated": {
+      "description": "The date and time when the workflow was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     }

@@ -16,6 +16,10 @@ data:
   icon: smartsheet.svg
   license: MIT
   name: Smartsheets
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-smartsheets
   registries:
     cloud:
       enabled: true
@@ -25,4 +29,5 @@ data:
   supportLevel: community
   tags:
     - language:python
+    - cdk:python
 metadataSpecVersion: "1.0"

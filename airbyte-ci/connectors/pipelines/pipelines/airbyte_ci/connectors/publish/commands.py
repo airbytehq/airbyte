@@ -11,7 +11,7 @@ from pipelines.airbyte_ci.connectors.publish.pipeline import reorder_contexts, r
 from pipelines.cli.click_decorators import click_ci_requirements_option
 from pipelines.cli.confirm_prompt import confirm
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-from pipelines.consts import DEFAULT_PYTHON_PACKAGE_REGISTRY_URL, ContextState
+from pipelines.consts import DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL, DEFAULT_PYTHON_PACKAGE_REGISTRY_URL, ContextState
 from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 
 
@@ -67,10 +67,17 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 )
 @click.option(
     "--python-registry-url",
-    help="Which python registry registry to publish to. If not set, the default pypi is used. For test pypi, use https://test.pypi.org/legacy/",
+    help="Which python registry url to publish to. If not set, the default pypi is used. For test pypi, use https://test.pypi.org/legacy/",
     type=click.STRING,
     default=DEFAULT_PYTHON_PACKAGE_REGISTRY_URL,
     envvar="PYTHON_REGISTRY_URL",
+)
+@click.option(
+    "--python-registry-check-url",
+    help="Which url to check whether a certain version is published already. If not set, the default pypi is used. For test pypi, use https://test.pypi.org/pypi/",
+    type=click.STRING,
+    default=DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL,
+    envvar="PYTHON_REGISTRY_CHECK_URL",
 )
 @click.pass_context
 async def publish(
@@ -84,6 +91,7 @@ async def publish(
     slack_channel: str,
     python_registry_token: str,
     python_registry_url: str,
+    python_registry_check_url: str,
 ) -> bool:
     ctx.obj["spec_cache_gcs_credentials"] = spec_cache_gcs_credentials
     ctx.obj["spec_cache_bucket_name"] = spec_cache_bucket_name
@@ -115,6 +123,8 @@ async def publish(
                 is_local=ctx.obj["is_local"],
                 git_branch=ctx.obj["git_branch"],
                 git_revision=ctx.obj["git_revision"],
+                diffed_branch=ctx.obj["diffed_branch"],
+                git_repo_url=ctx.obj["git_repo_url"],
                 gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
                 dagger_logs_url=ctx.obj.get("dagger_logs_url"),
                 pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
@@ -126,6 +136,7 @@ async def publish(
                 use_local_cdk=ctx.obj.get("use_local_cdk"),
                 python_registry_token=python_registry_token,
                 python_registry_url=python_registry_url,
+                python_registry_check_url=python_registry_check_url,
             )
             for connector in ctx.obj["selected_connectors_with_modified_files"]
         ]

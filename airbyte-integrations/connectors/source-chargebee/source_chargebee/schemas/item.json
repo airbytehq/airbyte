@@ -4,16 +4,13 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "type": ["string", "null"]
     },
     "name": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "type": ["string", "null"]
     },
     "description": {
-      "type": ["string", "null"],
-      "maxLength": 500
+      "type": ["string", "null"]
     },
     "status": {
       "type": ["string", "null"]
@@ -25,8 +22,7 @@
       "type": ["integer", "null"]
     },
     "item_family_id": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "type": ["string", "null"]
     },
     "type": {
       "type": ["string", "null"]
@@ -38,8 +34,7 @@
       "type": ["boolean", "null"]
     },
     "redirect_url": {
-      "type": ["string", "null"],
-      "maxLength": 500
+      "type": ["string", "null"]
     },
     "enabled_for_checkout": {
       "type": ["boolean", "null"]
@@ -54,12 +49,10 @@
       "type": ["string", "null"]
     },
     "gift_claim_redirect_url": {
-      "type": ["string", "null"],
-      "maxLength": 500
+      "type": ["string", "null"]
     },
     "unit": {
-      "type": ["string", "null"],
-      "maxLength": 30
+      "type": ["string", "null"]
     },
     "metered": {
       "type": ["boolean", "null"]
@@ -75,8 +68,7 @@
       "properties": {}
     },
     "external_name": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "type": ["string", "null"]
     },
     "applicable_items": {
       "type": ["array", "null"],
@@ -84,8 +76,7 @@
         "type": ["object", "null"],
         "properties": {
           "id": {
-            "type": ["string", "null"],
-            "maxLength": 100
+            "type": ["string", "null"]
           }
         }
       }
@@ -97,18 +88,7 @@
       "type": ["string", "null"]
     },
     "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
-          },
-          "value": {
-            "type": ["null", "string"]
-          }
-        }
-      }
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }

@@ -405,13 +405,12 @@ def test_stream_commits_incremental_read():
         "start_date": "2022-02-02T10:10:03Z",
     }
 
-    default_branches = {"organization/repository": "master"}
-    branches_to_pull = {"organization/repository": ["branch"]}
+    branches_to_pull = ["organization/repository/branch"]
 
-    stream = Commits(**repository_args_with_start_date, branches_to_pull=branches_to_pull, default_branches=default_branches)
+    stream = Commits(**repository_args_with_start_date, branches_to_pull=branches_to_pull)
     stream.page_size = 2
 
-    data = [
+    commits_data = [
         {"sha": 1, "commit": {"author": {"date": "2022-02-02T10:10:02Z"}}},
         {"sha": 2, "commit": {"author": {"date": "2022-02-02T10:10:04Z"}}},
         {"sha": 3, "commit": {"author": {"date": "2022-02-02T10:10:06Z"}}},
@@ -421,27 +420,57 @@ def test_stream_commits_incremental_read():
         {"sha": 7, "commit": {"author": {"date": "2022-02-02T10:10:14Z"}}},
     ]
 
-    api_url = "https://api.github.com/repos/organization/repository/commits"
+    repo_api_url = "https://api.github.com/repos/organization/repository"
+    branches_api_url = "https://api.github.com/repos/organization/repository/branches"
+    commits_api_url = "https://api.github.com/repos/organization/repository/commits"
 
     responses.add(
         "GET",
-        api_url,
-        json=data[0:3],
+        repo_api_url,
+        json={"id": 1, "updated_at": "2022-02-02T10:10:02Z", "default_branch": "main", "full_name": "organization/repository"},
+    )
+    responses.add(
+        responses.GET,
+        branches_api_url,
+        json=[
+            {
+                "name": "branch",
+                "commit": {
+                    "sha": "74445338726f0f8e1c27c10dce90ca00c5ae2858",
+                    "url": "https://api.github.com/repos/airbytehq/airbyte/commits/74445338726f0f8e1c27c10dce90ca00c5ae2858"
+                },
+                "protected": False
+            },
+            {
+                "name": "main",
+                "commit": {
+                    "sha": "c27c10dce90ca00c5ae285874445338726f0f8e1",
+                    "url": "https://api.github.com/repos/airbytehq/airbyte/commits/c27c10dce90ca00c5ae285874445338726f0f8e1"
+                },
+                "protected": False
+            }
+        ],
+        status=200,
+    )
+    responses.add(
+        "GET",
+        commits_api_url,
+        json=commits_data[0:3],
         match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:03Z", "sha": "branch", "per_page": "2"}, strict_match=False)],
     )
 
     responses.add(
         "GET",
-        api_url,
-        json=data[3:5],
+        commits_api_url,
+        json=commits_data[3:5],
         headers={"Link": '<https://api.github.com/repos/organization/repository/commits?page=2>; rel="next"'},
         match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:06Z", "sha": "branch", "per_page": "2"}, strict_match=False)],
     )
 
     responses.add(
         "GET",
-        api_url,
-        json=data[5:7],
+        commits_api_url,
+        json=commits_data[5:7],
         match=[
             matchers.query_param_matcher(
                 {"since": "2022-02-02T10:10:06Z", "sha": "branch", "per_page": "2", "page": "2"}, strict_match=False
@@ -1379,17 +1408,17 @@ def test_stream_contributor_activity_accepted_response(caplog, rate_limit_mock_r
         status=200,
     )
     responses.add(
-            responses.GET,
-            "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
-            json={"full_name": "airbytehq/test_airbyte", "default_branch": "default_branch"},
-            status=200,
-        )
+        responses.GET,
+        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
+        json={"full_name": "airbytehq/test_airbyte", "default_branch": "default_branch"},
+        status=200,
+    )
     responses.add(
-                responses.GET,
-                "https://api.github.com/repos/airbytehq/test_airbyte/branches?per_page=100",
-                json={},
-                status=200,
-            )
+        responses.GET,
+        "https://api.github.com/repos/airbytehq/test_airbyte/branches?per_page=100",
+        json={},
+        status=200,
+    )
     resp = responses.add(
         responses.GET,
         "https://api.github.com/repos/airbytehq/test_airbyte/stats/contributors?per_page=100",
@@ -1401,9 +1430,14 @@ def test_stream_contributor_activity_accepted_response(caplog, rate_limit_mock_r
     configured_catalog = {
         "streams": [
             {
-                "stream": {"name": "contributor_activity", "json_schema": {}, "supported_sync_modes": ["full_refresh"],"source_defined_primary_key": [["id"]]},
+                "stream": {
+                    "name": "contributor_activity",
+                    "json_schema": {},
+                    "supported_sync_modes": ["full_refresh"],
+                    "source_defined_primary_key": [["id"]],
+                },
                 "sync_mode": "full_refresh",
-                "destination_sync_mode": "overwrite"
+                "destination_sync_mode": "overwrite",
             }
         ]
     }
