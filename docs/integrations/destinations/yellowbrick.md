@@ -134,8 +134,8 @@ following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-s
 
 ### Output Schema (Raw Tables)
 
-Each stream will be mapped to a separate raw table in Yellowbrick. The default schema in which the raw tables are 
-created is `airbyte_internal`. This can be overridden in the configuration. 
+Each stream will be mapped to a separate raw table in Yellowbrick. The default schema in which the raw tables are
+created is `airbyte_internal`. This can be overridden in the configuration.
 Each table will contain 3 columns:
 
 - `_airbyte_raw_id`: a uuid assigned by Airbyte to each event that is processed. The column type in
@@ -143,13 +143,14 @@ Each table will contain 3 columns:
 - `_airbyte_extracted_at`: a timestamp representing when the event was pulled from the data source.
   The column type in Yellowbrick is `TIMESTAMP WITH TIME ZONE`.
 - `_airbyte_loaded_at`: a timestamp representing when the row was processed into final table.
-    The column type in Yellowbrick is `TIMESTAMP WITH TIME ZONE`.
+  The column type in Yellowbrick is `TIMESTAMP WITH TIME ZONE`.
 - `_airbyte_data`: a json blob representing with the event data. The column type in Yellowbrick
   is `JSONB`.
 
 ### Final Tables Data type mapping
+
 | Airbyte Type               | Yellowbrick Type         |
-|:---------------------------|:-------------------------|
+| :------------------------- | :----------------------- |
 | string                     | VARCHAR                  |
 | number                     | DECIMAL                  |
 | integer                    | BIGINT                   |
@@ -168,6 +169,6 @@ Each table will contain 3 columns:
 
 ## Changelog
 
-| Version | Date       | Pull Request                                                 | Subject                                                                                             |
-|:--------|:-----------|:-------------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
-| 0.0.1   | 2024-03-02 | [\#35775](https://github.com/airbytehq/airbyte/pull/35775)   | Initial release
+| Version | Date       | Pull Request                                               | Subject         |
+| :------ | :--------- | :--------------------------------------------------------- | :-------------- |
+| 0.0.1   | 2024-03-02 | [\#35775](https://github.com/airbytehq/airbyte/pull/35775) | Initial release |

@@ -16,6 +16,11 @@ pytestmark = [
 
 PATH_TO_INITIAL_FILES = Path("airbyte-ci/connectors/pipelines/tests/test_changelog/initial_files")
 PATH_TO_RESULT_FILES = Path("airbyte-ci/connectors/pipelines/tests/test_changelog/result_files")
+
+# When WRITE_TO_RESULT_FILE is set to True, all tests below will generate the resulting markdown
+# and write it back to the fixture files.
+# This is useful when you changed the source files and need to regenrate the fixtures.
+# The comparison against target will still fail, but it will succeed on the subsequent test run.
 WRITE_TO_RESULT_FILE = False
 
 

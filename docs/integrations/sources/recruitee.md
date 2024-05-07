@@ -24,9 +24,9 @@ You can find your Company ID and find or create an API key within [Recruitee](ht
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source. 
-4. Enter your `company_id` - Recruitee Company ID.
-5. Enter your `api_key` - Recruitee API key.
+2. Set the name for your source.
+3. Enter your `company_id` - Recruitee Company ID.
+4. Enter your `api_key` - Recruitee API key.
 5. Click **Set up source**.
 
 ## Supported sync modes
@@ -42,12 +42,12 @@ The Recruitee source connector supports the following [sync modes](https://docs.
 
 ## Supported Streams
 
-* [Candidates](https://docs.recruitee.com/reference/candidates-get)
-* [Offers](https://docs.recruitee.com/reference/offers-get)
-* [Departments](https://docs.recruitee.com/reference/departments-get)
+- [Candidates](https://docs.recruitee.com/reference/candidates-get)
+- [Offers](https://docs.recruitee.com/reference/offers-get)
+- [Departments](https://docs.recruitee.com/reference/departments-get)
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                           |
-|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------|
-| 0.1.0   | 2022-10-30 | [18671](https://github.com/airbytehq/airbyte/pull/18671)   | New Source: Recruitee                                |
+| Version | Date       | Pull Request                                             | Subject               |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------- |
+| 0.1.0   | 2022-10-30 | [18671](https://github.com/airbytehq/airbyte/pull/18671) | New Source: Recruitee |

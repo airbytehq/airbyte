@@ -21,16 +21,16 @@ For a production-ready deployment of Self-Managed Enterprise, various infrastruc
 
 Prior to deploying Self-Managed Enterprise, we recommend having each of the following infrastructure components ready to go. When possible, it's easiest to have all components running in the same [VPC](https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html). The provided recommendations are for customers deploying to AWS:
 
-| Component                | Recommendation                                                            |
-|--------------------------|-----------------------------------------------------------------------------|
+| Component                | Recommendation                                                                                                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Kubernetes Cluster       | Amazon EKS cluster running in [2 or more availability zones](https://docs.aws.amazon.com/eks/latest/userguide/disaster-recovery-resiliency.html) on a minimum of 6 nodes. |
-| Ingress                  | [Amazon ALB](#configuring-ingress) and a URL for users to access the Airbyte UI or make API requests.                                                  |
-| Object Storage           | [Amazon S3 bucket](#configuring-external-logging) with two directories for log and state storage.         |
-| Dedicated Database       | [Amazon RDS Postgres](#configuring-the-airbyte-database) with at least one read replica.                                               |
-| External Secrets Manager | [Amazon Secrets Manager](/operator-guides/configuring-airbyte#secrets) for storing connector secrets.                                               |
-
+| Ingress                  | [Amazon ALB](#configuring-ingress) and a URL for users to access the Airbyte UI or make API requests.                                                                     |
+| Object Storage           | [Amazon S3 bucket](#configuring-external-logging) with two directories for log and state storage.                                                                         |
+| Dedicated Database       | [Amazon RDS Postgres](#configuring-the-airbyte-database) with at least one read replica.                                                                                  |
+| External Secrets Manager | [Amazon Secrets Manager](/operator-guides/configuring-airbyte#secrets) for storing connector secrets.                                                                     |
 
 We require you to install and configure the following Kubernetes tooling:
+
 1. Install `helm` by following [these instructions](https://helm.sh/docs/intro/install/)
 2. Install `kubectl` by following [these instructions](https://kubernetes.io/docs/tasks/tools/).
 3. Configure `kubectl` to connect to your cluster by using `kubectl use-context my-cluster-name`:
@@ -49,7 +49,7 @@ We require you to install and configure the following Kubernetes tooling:
 
 </TabItem>
 
-<TabItem value="GKE" label="GKE"> 
+<TabItem value="GKE" label="GKE">
 
 1. Configure `gcloud` with `gcloud auth login`.
 2. On the Google Cloud Console, the cluster page will have a "Connect" button, with a command to run locally: `gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE_NAME --project $PROJECT_NAME`.
@@ -90,7 +90,7 @@ metadata:
   name: airbyte-config-secrets
 type: Opaque
 stringData:
-## Storage Secrets
+  ## Storage Secrets
   # S3
   s3-access-key-id: ## e.g. AKIAIOSFODNN7EXAMPLE
   s3-secret-access-key: ## e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
@@ -111,35 +111,33 @@ Ensure your access key is tied to an IAM user with the [following policies](http
 
 ```yaml
 {
-   "Version":"2012-10-17",
-   "Statement":[
+  "Version": "2012-10-17",
+  "Statement":
+    [
+      { "Effect": "Allow", "Action": "s3:ListAllMyBuckets", "Resource": "*" },
       {
-         "Effect":"Allow",
-         "Action": "s3:ListAllMyBuckets",
-         "Resource":"*"
+        "Effect": "Allow",
+        "Action": ["s3:ListBucket", "s3:GetBucketLocation"],
+        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME",
       },
       {
-         "Effect":"Allow",
-         "Action":["s3:ListBucket","s3:GetBucketLocation"],
-         "Resource":"arn:aws:s3:::YOUR-S3-BUCKET-NAME"
-      },
-      {
-         "Effect":"Allow",
-         "Action":[
+        "Effect": "Allow",
+        "Action":
+          [
             "s3:PutObject",
             "s3:PutObjectAcl",
             "s3:GetObject",
             "s3:GetObjectAcl",
-            "s3:DeleteObject"
-         ],
-         "Resource":"arn:aws:s3:::YOUR-S3-BUCKET-NAME/*"
-      }
-   ]
+            "s3:DeleteObject",
+          ],
+        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME/*",
+      },
+    ],
 }
 ```
 
 </TabItem>
-<TabItem value="GCS" label="GCS"> 
+<TabItem value="GCS" label="GCS">
 
 First, create a new file `gcp.json` containing the credentials JSON blob for the service account you are looking to assume.
 
@@ -163,10 +161,9 @@ kubectl create secret generic gcp-cred-secrets --from-file=gcp.json --namespace 
 </Tabs>
 </details>
 
-
 #### External Connector Secret Management
 
-Airbyte's default behavior is to store encrypted connector secrets on your cluster as Kubernetes secrets. You may opt to instead store connector secrets in an external secret manager of your choosing (AWS Secrets Manager, Google Secrets Manager or Hashicorp Vault). 
+Airbyte's default behavior is to store encrypted connector secrets on your cluster as Kubernetes secrets. You may opt to instead store connector secrets in an external secret manager of your choosing (AWS Secrets Manager, Google Secrets Manager or Hashicorp Vault).
 
 <details>
 <summary>Secrets for External Connector Secret Management</summary>
@@ -197,12 +194,12 @@ kubectl create secret generic airbyte-config-secrets \
 
 </details>
 
-
 ## Installation Steps
 
 ### Step 1: Add Airbyte Helm Repository
 
 Follow these instructions to add the Airbyte helm repository:
+
 1. Run `helm repo add airbyte https://airbytehq.github.io/helm-charts`, where `airbyte` is the name of the repository that will be indexed locally.
 2. Perform the repo indexing process, and ensure your helm repository is up-to-date by running `helm repo update`.
 3. You can then browse all charts uploaded to your repository by running `helm search repo airbyte`.
@@ -220,9 +217,9 @@ Follow these instructions to add the Airbyte helm repository:
 webapp-url: # example: http://localhost:8080
 
 initial-user:
-  email: 
-  first-name: 
-  last-name: 
+  email:
+  first-name:
+  last-name:
   username: # your existing Airbyte instance username
   password: # your existing Airbyte instance password
 
@@ -235,7 +232,7 @@ license-key: # license key provided by Airbyte team
 
 4. Add your Airbyte Self-Managed Enterprise license key to your `airbyte.yml` in the `license-key` field.
 
-5. To enable SSO authentication, add [SSO auth details](/access-management/sso) to your `airbyte.yml` file. 
+5. To enable SSO authentication, add [SSO auth details](/access-management/sso) to your `airbyte.yml` file.
 
 <details>
 <summary>Configuring auth in your airbyte.yml file</summary>
@@ -245,13 +242,13 @@ license-key: # license key provided by Airbyte team
 To configure SSO with Okta, add the following at the end of your `airbyte.yml` file:
 
 ```yaml
-auth:   
-    identity-providers:
-        -   type: okta
-            domain: $OKTA_DOMAIN
-            app-name: $OKTA_APP_INTEGRATION_NAME
-            client-id: $OKTA_CLIENT_ID
-            client-secret: $OKTA_CLIENT_SECRET
+auth:
+  identity-providers:
+    - type: okta
+      domain: $OKTA_DOMAIN
+      app-name: $OKTA_APP_INTEGRATION_NAME
+      client-id: $OKTA_CLIENT_ID
+      client-secret: $OKTA_CLIENT_SECRET
 ```
 
 See the [following guide](/access-management/sso-providers/okta) on how to collect this information for Okta.
@@ -262,13 +259,13 @@ See the [following guide](/access-management/sso-providers/okta) on how to colle
 To configure SSO with any identity provider via [OpenID Connect (OIDC)](https://openid.net/developers/how-connect-works/), such as Azure Entra ID (formerly ActiveDirectory), add the following at the end of your `values.yml` file:
 
 ```yaml
-auth:   
-    identity-providers:
-        -   type: oidc
-            domain: $DOMAIN
-            app-name: $APP_INTEGRATION_NAME
-            client-id: $CLIENT_ID
-            client-secret: $CLIENT_SECRET
+auth:
+  identity-providers:
+    - type: oidc
+      domain: $DOMAIN
+      app-name: $APP_INTEGRATION_NAME
+      client-id: $CLIENT_ID
+      client-secret: $CLIENT_SECRET
 ```
 
 See the [following guide](/access-management/sso-providers/azure-entra-id) on how to collect this information for Azure Entra ID (formerly ActiveDirectory).
@@ -293,7 +290,7 @@ global:
   edition: enterprise
 ```
 
-3. The following subsections help you customize your deployment to use an external database, log storage, dedicated ingress, and more. To skip this and deploy a minimal, local version of Self-Managed Enterprise, [jump to Step 4](#step-4-deploy-self-managed-enterprise). 
+3. The following subsections help you customize your deployment to use an external database, log storage, dedicated ingress, and more. To skip this and deploy a minimal, local version of Self-Managed Enterprise, [jump to Step 4](#step-4-deploy-self-managed-enterprise).
 
 #### Configuring the Airbyte Database
 
@@ -308,16 +305,16 @@ We assume in the following that you've already configured a Postgres instance:
 
 ```yaml
 postgresql:
-    enabled: false
+  enabled: false
 
-externalDatabase:   
-    host: ## Database host
-    user: ## Non-root username for the Airbyte database
-    database: db-airbyte ## Database name
-    port: 5432 ## Database port number 
+externalDatabase:
+  host: ## Database host
+  user: ## Non-root username for the Airbyte database
+  database: db-airbyte ## Database name
+  port: 5432 ## Database port number
 ```
 
-2. For the non-root user's password which has database access, you may use `password`, `existingSecret` or `jdbcUrl`. We recommend using `existingSecret`, or injecting sensitive fields from your own external secret store. Each of these parameters is mutually exclusive: 
+2. For the non-root user's password which has database access, you may use `password`, `existingSecret` or `jdbcUrl`. We recommend using `existingSecret`, or injecting sensitive fields from your own external secret store. Each of these parameters is mutually exclusive:
 
 ```yaml
 postgresql:
@@ -407,33 +404,33 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: # host, example: enterprise-demo.airbyte.com
-    http:
-      paths:
-      - backend:
-          service:
-            # format is ${RELEASE_NAME}-airbyte-webapp-svc
-            name: airbyte-enterprise-airbyte-webapp-svc 
-            port:
-              number: 80 # service port, example: 8080
-        path: /
-        pathType: Prefix
-      - backend:
-          service:
-            # format is ${RELEASE_NAME}-airbyte-keycloak-svc
-            name: airbyte-enterprise-airbyte-keycloak-svc
-            port:
-              number: 8180
-        path: /auth
-        pathType: Prefix
-      - backend:
-          service:
-            # format is ${RELEASE_NAME}-airbyte--server-svc
-            name: airbyte-enterprise-airbyte-server-svc
-            port:
-              number: 8001
-        path: /api/public
-        pathType: Prefix
+    - host: # host, example: enterprise-demo.airbyte.com
+      http:
+        paths:
+          - backend:
+              service:
+                # format is ${RELEASE_NAME}-airbyte-webapp-svc
+                name: airbyte-enterprise-airbyte-webapp-svc
+                port:
+                  number: 80 # service port, example: 8080
+            path: /
+            pathType: Prefix
+          - backend:
+              service:
+                # format is ${RELEASE_NAME}-airbyte-keycloak-svc
+                name: airbyte-enterprise-airbyte-keycloak-svc
+                port:
+                  number: 8180
+            path: /auth
+            pathType: Prefix
+          - backend:
+              service:
+                # format is ${RELEASE_NAME}-airbyte--server-svc
+                name: airbyte-enterprise-airbyte-server-svc
+                port:
+                  number: 8001
+            path: /api/public
+            pathType: Prefix
 ```
 
 </TabItem>
@@ -462,31 +459,31 @@ metadata:
     # alb.ingress.kubernetes.io/security-groups: <SECURITY_GROUP>
 spec:
   rules:
-  - host: # e.g. enterprise-demo.airbyte.com
-    http:
-      paths:
-      - backend:
-          service:
-            name: airbyte-enterprise-airbyte-webapp-svc 
-            port:
-              number: 80
-        path: /
-        pathType: Prefix
-      - backend:
-          service:
-            name: airbyte-enterprise-airbyte-keycloak-svc
-            port:
-              number: 8180
-        path: /auth
-        pathType: Prefix
-      - backend:
-          service:
-            # format is ${RELEASE_NAME}-airbyte-server-svc
-            name: airbyte-enterprise-airbyte-server-svc
-            port:
-              number: 8001
-        path: /api/public
-        pathType: Prefix
+    - host: # e.g. enterprise-demo.airbyte.com
+      http:
+        paths:
+          - backend:
+              service:
+                name: airbyte-enterprise-airbyte-webapp-svc
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix
+          - backend:
+              service:
+                name: airbyte-enterprise-airbyte-keycloak-svc
+                port:
+                  number: 8180
+            path: /auth
+            pathType: Prefix
+          - backend:
+              service:
+                # format is ${RELEASE_NAME}-airbyte-server-svc
+                name: airbyte-enterprise-airbyte-server-svc
+                port:
+                  number: 8001
+            path: /api/public
+            pathType: Prefix
 ```
 
 The ALB controller will use a `ServiceAccount` that requires the [following IAM policy](https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json) to be attached.
@@ -527,7 +524,7 @@ secretsManager:
     kms: ## Optional - ARN for KMS Decryption.
 ```
 
-Set `authenticationType` to `instanceProfile` if the compute infrastructure running Airbyte has pre-existing permissions (e.g. IAM role) to read and write from AWS Secrets Manager. 
+Set `authenticationType` to `instanceProfile` if the compute infrastructure running Airbyte has pre-existing permissions (e.g. IAM role) to read and write from AWS Secrets Manager.
 
 To decrypt secrets in the secret manager with AWS KMS, configure the `kms` field, and ensure your Kubernetes cluster has pre-existing permissions to read and decrypt secrets.
 
@@ -588,7 +585,7 @@ In order to customize your deployment, you need to create an additional `values.
 After specifying your own configuration, run the following command:
 
 ```sh
-helm upgrade \ 
+helm upgrade \
 --namespace airbyte \
 --values path/to/values.yaml
 --values ./values.yml \
