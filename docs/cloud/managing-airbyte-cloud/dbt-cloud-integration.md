@@ -15,7 +15,7 @@ Transforming data may cause an increase in your destination's compute cost. This
 ## Prerequisites
 - To use the dbt Cloud integration, you must use a paid version of dbt Cloud.
 - The service token must have Member, Job Admin, or Account Admin permissions.
-- Airbyte currently only supports integration with dbt Cloud accounts that have an access URL `https://cloud.getdbt.com/`. Custom access URLs are not supported at this time
+- Airbyte currently only supports integration with dbt Cloud accounts that have an access URL `https://cloud.getdbt.com/`. Custom access URLs are not supported at this time.
 
 ## Step 1: Generate a service token
 
