@@ -11,6 +11,8 @@ import io.airbyte.cdk.integrations.base.Source
 import io.airbyte.cdk.testutils.TestDatabase
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.util.AutoCloseableIterators
+import io.airbyte.protocol.models.AirbyteStreamStatusTraceMessage
+import io.airbyte.protocol.models.AirbyteTraceMessage
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
@@ -105,6 +107,23 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     protected abstract fun addCdcDefaultCursorField(stream: AirbyteStream?)
 
     protected abstract fun assertExpectedStateMessages(stateMessages: List<AirbyteStateMessage>)
+
+    protected open fun assertStreamStatusTraceMessageIndex(idx: Int, allMessages: List<AirbyteMessage>, expectedStreamStatus: AirbyteStreamStatusTraceMessage) {
+        var actualMessage = allMessages[idx]
+        Assertions.assertEquals(actualMessage.type, AirbyteMessage.Type.TRACE)
+        var traceMessage = actualMessage.trace
+        Assertions.assertNotNull(traceMessage.streamStatus)
+        Assertions.assertEquals(expectedStreamStatus, traceMessage.streamStatus)
+    }
+
+    private fun createAirbteStreanStatusTraceMessage(namespace: String, streamName: String, status:AirbyteStreamStatusTraceMessage.AirbyteStreamStatus) : AirbyteStreamStatusTraceMessage {
+
+        return AirbyteStreamStatusTraceMessage().withStreamDescriptor(io.airbyte.protocol.models.StreamDescriptor().withNamespace(namespace).withName(
+            streamName)).withStatus(status)
+    }
+    protected open fun assertExpectedTraceMessage(traceMessages: List<AirbyteTraceMessage>) {
+
+    }
 
     protected open fun assertExpectedStateMessagesForFullRefresh(
         stateMessages: List<AirbyteStateMessage>
@@ -309,6 +328,14 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             .collect(Collectors.toList())
     }
 
+    protected fun extractTraceMessages(messages: List<AirbyteMessage>): MutableList<io.airbyte.protocol.models.v0.AirbyteTraceMessage>? {
+        return messages
+            .stream()
+            .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.TRACE }
+            .map { obj: AirbyteMessage -> obj.trace }
+            .collect(Collectors.toList())
+    }
+
     protected fun assertExpectedRecords(
         expectedRecords: Set<JsonNode>,
         actualRecords: Set<AirbyteRecordMessage>
@@ -379,6 +406,12 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         val recordMessages = extractRecordMessages(actualRecords)
         val stateMessages = extractStateMessages(actualRecords)
+        val traceMessages = extractTraceMessages(actualRecords)
+
+        assertStreamStatusTraceMessageIndex(0, actualRecords,
+            createAirbteStreanStatusTraceMessage(modelsSchema(), MODELS_STREAM_NAME, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED))
+        assertStreamStatusTraceMessageIndex(actualRecords.size - 1 , actualRecords,
+            createAirbteStreanStatusTraceMessage(modelsSchema(), MODELS_STREAM_NAME, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE))
 
         Assertions.assertNotNull(targetPosition)
         recordMessages.forEach(
@@ -440,6 +473,11 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         val actualRecords1 = AutoCloseableIterators.toListAndClose(read1)
         val stateMessages1 = extractStateMessages(actualRecords1)
         assertExpectedStateMessages(stateMessages1)
+
+        assertStreamStatusTraceMessageIndex(0, actualRecords1,
+            createAirbteStreanStatusTraceMessage(modelsSchema(), MODELS_STREAM_NAME, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED))
+        assertStreamStatusTraceMessageIndex(actualRecords1.size - 1 , actualRecords1,
+            createAirbteStreanStatusTraceMessage(modelsSchema(), MODELS_STREAM_NAME, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE))
 
         updateCommand(MODELS_STREAM_NAME, COL_MODEL, updatedModel, COL_ID, 11)
         waitForCdcRecords(modelsSchema(), MODELS_STREAM_NAME, 1)
