@@ -208,7 +208,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         typerDeduper,
         parsedCatalog,
         defaultNamespace,
-            JavaBaseConstants.DestinationColumns.V2_WITHOUT_META)
+        DestinationColumns.V2_WITHOUT_META)
         .setBufferMemoryLimit(Optional.of(getSnowflakeBufferMemoryLimit()))
         .setOptimalBatchSizeBytes(
             // The per stream size limit is following recommendations from:
