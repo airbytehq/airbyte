@@ -3,17 +3,23 @@
 #
 
 
-from typing import Union, Optional
+from typing import Optional, Union
 
 import requests
 
 
 class BaseBackoffException(requests.exceptions.HTTPError):
-    def __init__(self, request: requests.PreparedRequest, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], error_message: str = ""):
+    def __init__(
+        self,
+        request: requests.PreparedRequest,
+        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+        error_message: str = "",
+    ):
 
         if isinstance(response_or_exception, requests.Response):
             error_message = (
-                error_message or f"Request URL: {request.url}, Response Code: {response_or_exception.status_code}, Response Text: {response_or_exception.text}"
+                error_message
+                or f"Request URL: {request.url}, Response Code: {response_or_exception.status_code}, Response Text: {response_or_exception.text}"
             )
         else:
             error_message = error_message or f"Request URL: {request.url}, Exception: {response_or_exception}"
@@ -32,7 +38,13 @@ class UserDefinedBackoffException(BaseBackoffException):
     An exception that exposes how long it attempted to backoff
     """
 
-    def __init__(self, backoff: Union[int, float], request: requests.PreparedRequest, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], error_message: str = ""):
+    def __init__(
+        self,
+        backoff: Union[int, float],
+        request: requests.PreparedRequest,
+        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+        error_message: str = "",
+    ):
         """
         :param backoff: how long to backoff in seconds
         :param request: the request that triggered this backoff exception

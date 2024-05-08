@@ -1,8 +1,9 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
-from dataclasses import dataclass
+
 from airbyte_cdk.models import FailureType
 
 
@@ -11,6 +12,7 @@ class ResponseAction(Enum):
     RETRY = "RETRY"
     FAIL = "FAIL"
     IGNORE = "IGNORE"
+
 
 @dataclass
 class ErrorResolution:

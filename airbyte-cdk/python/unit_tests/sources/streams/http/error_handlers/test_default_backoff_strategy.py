@@ -1,11 +1,10 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-import requests
 from typing import Optional, Union
+
 import pytest
-
+import requests
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, DefaultBackoffStrategy
-
 
 
 def test_given_no_arguments_default_backoff_strategy_returns_default_values():

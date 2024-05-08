@@ -5,9 +5,9 @@
 import logging
 import os
 import urllib
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, Optional, Tuple, Union
-from dataclasses import dataclass
 
 import requests
 import requests_cache
@@ -17,14 +17,23 @@ from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.auth import AuthBase
 
-from .error_handlers import DefaultBackoffStrategy, HttpStatusErrorHandler, JsonErrorMessageParser, ResponseAction, ErrorResolution, ErrorHandler, BackoffStrategy, ErrorMessageParser
+from .error_handlers import (
+    BackoffStrategy,
+    DefaultBackoffStrategy,
+    ErrorHandler,
+    ErrorMessageParser,
+    ErrorResolution,
+    HttpStatusErrorHandler,
+    JsonErrorMessageParser,
+    ResponseAction,
+)
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
-class HttpClient:
 
+class HttpClient:
     def __init__(
         self,
         name: str,
@@ -179,7 +188,9 @@ class HttpClient:
 
         elif error_resolution.response_action == ResponseAction.IGNORE:
             if response:
-                log_message = f"Ignoring response for '{request.method}' request to '{request.url}' with response code '{response.status_code}'"
+                log_message = (
+                    f"Ignoring response for '{request.method}' request to '{request.url}' with response code '{response.status_code}'"
+                )
             else:
                 log_message = f"Ignoring response for '{request.method}' request to '{request.url}' with error '{exc}'"
 
@@ -188,7 +199,10 @@ class HttpClient:
         # TODO: Consider dynamic retry count depending on subsequent error codes
         elif error_resolution.response_action == ResponseAction.RETRY:
             custom_backoff_time = self._backoff_strategy.backoff_time(response or exc)
-            error_message = error_resolution.error_message or f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action}."
+            error_message = (
+                error_resolution.error_message
+                or f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action}."
+            )
             if custom_backoff_time:
                 raise UserDefinedBackoffException(
                     backoff=custom_backoff_time, request=request, response_or_exception=(response or exc), error_message=error_message
@@ -203,7 +217,7 @@ class HttpClient:
                 self._logger.error(response.text)
                 raise e
 
-        return response # type: ignore # will either return a valid response of type requests.Response or raise an exception
+        return response  # type: ignore # will either return a valid response of type requests.Response or raise an exception
 
     def send_request(
         self,

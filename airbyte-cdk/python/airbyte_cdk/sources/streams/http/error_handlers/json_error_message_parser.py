@@ -11,7 +11,6 @@ from .error_message_parser import ErrorMessageParser
 
 
 class JsonErrorMessageParser(ErrorMessageParser):
-
     def _try_get_error(self, value: Optional[JsonType]) -> Optional[str]:
         if isinstance(value, str):
             return value

@@ -9,7 +9,6 @@ import requests
 
 
 class BackoffStrategy(ABC):
-
     @abstractmethod
     def backoff_time(self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]]) -> Optional[float]:
         """

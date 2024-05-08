@@ -4,11 +4,11 @@ import logging
 from typing import Any, Mapping, Optional, Tuple, Union
 
 import requests
-from requests import RequestException
 from airbyte_cdk.models import FailureType
+from requests import RequestException
 
 from .error_handler import ErrorHandler
-from .response_models import ResponseAction, ErrorResolution
+from .response_models import ErrorResolution, ResponseAction
 
 
 class HttpStatusErrorHandler(ErrorHandler):
@@ -79,9 +79,7 @@ class HttpStatusErrorHandler(ErrorHandler):
         self._logger = logger
         self._error_mapping = error_mapping or self._DEFAULT_ERROR_MAPPING
 
-    def interpret_response(
-        self, response_or_exception: Optional[Union[requests.Response, Exception]] = None
-    ) -> ErrorResolution:
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         """
         Interpret the response and return the corresponding response action, failure type, and error message.
 

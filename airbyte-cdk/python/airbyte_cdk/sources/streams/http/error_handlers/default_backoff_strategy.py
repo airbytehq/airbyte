@@ -7,13 +7,13 @@ import requests
 
 from .backoff_strategy import BackoffStrategy
 
+
 class DefaultBackoffStrategy(BackoffStrategy):
     def __init__(
         self,
         max_retries: int = 5,
         max_time: int = 60 * 10,
         retry_factor: float = 5,
-
     ):
         self.max_retries = max_retries
         self.max_time = max_time
