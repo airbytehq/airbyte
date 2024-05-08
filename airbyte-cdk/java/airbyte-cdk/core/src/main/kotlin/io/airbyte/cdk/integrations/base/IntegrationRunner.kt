@@ -250,15 +250,16 @@ internal constructor(
             if (ConnectorExceptionUtil.isConfigError(rootConfigErrorThrowable)) {
                 AirbyteTraceMessageUtility.emitConfigErrorTrace(
                     e,
-                    ConnectorExceptionUtil.getDisplayMessage(rootConfigErrorThrowable)
+                    ConnectorExceptionUtil.getDisplayMessage(rootConfigErrorThrowable),
                 )
-                AirbyteExceptionHandler.terminate()
+                // On receiving a config error, the container should be immediately shut down.
             } else if (ConnectorExceptionUtil.isTransientError(rootTransientErrorThrowable)) {
                 AirbyteTraceMessageUtility.emitTransientErrorTrace(
                     e,
                     ConnectorExceptionUtil.getDisplayMessage(rootTransientErrorThrowable)
                 )
-                AirbyteExceptionHandler.terminate()
+                // On receiving a transient error, the container should be immediately shut down.
+                System.exit(1)
             }
             throw e
         }

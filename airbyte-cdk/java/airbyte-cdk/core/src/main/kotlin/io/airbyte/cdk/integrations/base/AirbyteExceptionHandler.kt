@@ -155,14 +155,6 @@ class AirbyteExceptionHandler : Thread.UncaughtExceptionHandler {
             }
         }
 
-        // by doing this in a separate method we can mock it to avoid closing the jvm and therefore
-        // test
-        // properly
-        @JvmStatic
-        fun terminate() {
-            System.exit(1)
-        }
-
         internal fun addCommonStringsToDeinterpolate() {
             // Add some common strings to deinterpolate, regardless of what the connector is doing
             addStringForDeinterpolation("airbyte")
