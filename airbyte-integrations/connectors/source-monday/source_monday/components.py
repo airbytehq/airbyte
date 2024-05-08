@@ -11,8 +11,8 @@ from airbyte_cdk.sources.declarative.incremental import DeclarativeCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 
 RequestInput = Union[str, Mapping[str, str]]
 

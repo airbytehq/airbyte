@@ -8,8 +8,8 @@ from typing import Any, ClassVar, Iterable, Mapping, MutableMapping, Optional, U
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.incremental import DeclarativeCursor
-from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
 
 @dataclass

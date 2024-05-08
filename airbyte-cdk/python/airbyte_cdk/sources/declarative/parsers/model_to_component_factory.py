@@ -126,8 +126,8 @@ from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer, StreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTransformation, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
-from airbyte_cdk.sources.types import Config
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
+from airbyte_cdk.sources.types import Config
 from airbyte_cdk.sources.utils.transform import TypeTransformer
 from isodate import parse_duration
 from pydantic import BaseModel
@@ -705,7 +705,12 @@ class ModelToComponentFactory:
         )
 
     def create_default_paginator(
-        self, model: DefaultPaginatorModel, config: Config, *, url_base: str, cursor_used_for_stop_condition: Optional[DeclarativeCursor] = None
+        self,
+        model: DefaultPaginatorModel,
+        config: Config,
+        *,
+        url_base: str,
+        cursor_used_for_stop_condition: Optional[DeclarativeCursor] = None,
     ) -> Union[DefaultPaginator, PaginatorTestReadDecorator]:
         decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
         page_size_option = (

@@ -11,11 +11,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.types import StreamSlice
 from source_iterable.source import SourceIterable
-from source_iterable.streams import (
-    Campaigns,
-    CampaignsMetrics,
-    Templates,
-)
+from source_iterable.streams import Campaigns, CampaignsMetrics, Templates
 from source_iterable.utils import dateutil_parse
 
 
