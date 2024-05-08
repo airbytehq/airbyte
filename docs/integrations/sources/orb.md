@@ -62,7 +62,7 @@ an Orb Account and API Key.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                               |
 | ------- | ---------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| 1.3.0   | 2024-03-25 | [37648](https://github.com/airbytehq/airbyte/pull/37648) | Migrate to Low Code                                                                                   |
+| 2.0.0   | 2024-05-08 | [37648](https://github.com/airbytehq/airbyte/pull/37648) | Migrate to Low Code                                                                                   |
 | 1.2.2   | 2024-04-19 | [37211](https://github.com/airbytehq/airbyte/pull/37211) | Updating to 0.80.0 CDK                                                                                |
 | 1.2.1   | 2024-04-12 | [37211](https://github.com/airbytehq/airbyte/pull/37211) | schema descriptions                                                                                   |
 | 1.2.0   | 2024-03-19 | [x](https://github.com/airbytehq/airbyte/pull/x)         | Expose `end_date`parameter                                                                            |
