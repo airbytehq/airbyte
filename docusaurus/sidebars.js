@@ -482,18 +482,6 @@ module.exports = {
         "cloud/managing-airbyte-cloud/manage-connection-state",
       ],
     },
-    {
-      type: "category",
-      label: "Workspace Management",
-      items: [
-        "cloud/managing-airbyte-cloud/manage-data-residency",
-        "using-airbyte/workspaces",
-        "cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications",
-        "cloud/managing-airbyte-cloud/manage-credits",
-        "operator-guides/using-custom-connectors",
-        
-      ]
-    },
     sectionHeader("Managing Airbyte"),
     deployAirbyte,
     {
@@ -559,6 +547,18 @@ module.exports = {
         "operator-guides/using-dagster-integration",
         "operator-guides/using-kestra-plugin",
       ],
+    },
+    {
+      type: "category",
+      label: "Account Management",
+      items: [
+        "cloud/managing-airbyte-cloud/manage-data-residency",
+        "using-airbyte/workspaces",
+        "cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications",
+        "cloud/managing-airbyte-cloud/manage-credits",
+        "operator-guides/using-custom-connectors",
+        
+      ]
     },
     sectionHeader("Developer Guides"),
     {

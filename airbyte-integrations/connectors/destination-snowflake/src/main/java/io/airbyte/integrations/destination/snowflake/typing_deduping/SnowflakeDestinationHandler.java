@@ -42,7 +42,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import net.snowflake.client.jdbc.SnowflakeSQLException;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
@@ -360,32 +359,6 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
       case DATE -> "DATE";
       case UNKNOWN -> "VARIANT";
     };
-  }
-
-  protected String getDeleteStatesSql(Map<StreamId, ? extends SnowflakeState> destinationStates) {
-    // only doing the DELETE where there's rows to delete allows us to avoid taking a lock on the table
-    // when there's nothing to delete
-    // This is particularly relevant in the context of tests, where many instance of the snowflake
-    // destination could be run in parallel
-    String deleteStatesSql = super.getDeleteStatesSql(destinationStates);
-    StringBuilder sql = new StringBuilder();
-    // sql.append("BEGIN\n");
-    sql.append("  IF (EXISTS (").append(deleteStatesSql.replace("delete from", "SELECT 1 FROM ")).append(")) THEN\n");
-    sql.append("    ").append(deleteStatesSql).append(";\n");
-    sql.append("  END IF\n");
-    // sql.append("END;\n");
-    return sql.toString();
-  }
-
-  protected void executeWithinTransaction(List<String> statements) throws SQLException {
-    StringBuilder sb = new StringBuilder();
-    sb.append("BEGIN\n");
-    sb.append("  BEGIN TRANSACTION;\n    ");
-    sb.append(StringUtils.join(statements, ";\n    "));
-    sb.append(";\n  COMMIT;\n");
-    sb.append("END;");
-    LOGGER.info("executing SQL:" + sb);
-    getJdbcDatabase().execute(sb.toString());
   }
 
 }

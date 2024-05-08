@@ -668,9 +668,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         && !airbyteStream.getStream().getSourceDefinedPrimaryKey().isEmpty()) {
       return true;
     }
-    if (airbyteStream.getPrimaryKey() != null && !airbyteStream.getPrimaryKey().isEmpty()) {
-      return true;
-    }
 
     return false;
   }
