@@ -36,6 +36,20 @@ extend-exclude = """
 )/
 """
 
+[tool.flake8]
+extend-exclude = [
+    "*/lib/*/site-packages",
+    ".venv",
+    "build",
+    "models",
+    ".eggs",
+    "**/__init__.py",
+    "**/generated/*",
+    "**/declarative/models/*",
+]
+max-complexity = 20
+max-line-length = 140
+
 [tool.coverage.report]
 fail_under = 0
 skip_empty = true
