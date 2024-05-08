@@ -37,12 +37,15 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
         @Throws(Throwable::class)
         override fun invoke(proxy: Any, method: Method, args: Array<Any>): Any? {
             val methodName = method.name
-            val invocationContextClass: Class<*> = when (methodName) {
-                "interceptDynamicTest" -> DynamicTestInvocationContext::class.java
-                else -> ReflectiveInvocationContext::class.java
-            }
+            val invocationContextClass: Class<*> =
+                when (methodName) {
+                    "interceptDynamicTest" -> DynamicTestInvocationContext::class.java
+                    else -> ReflectiveInvocationContext::class.java
+                }
             try {
-                LoggingInvocationInterceptor::class.java.getDeclaredMethod(
+                LoggingInvocationInterceptor::class
+                    .java
+                    .getDeclaredMethod(
                         method.name,
                         InvocationInterceptor.Invocation::class.java,
                         invocationContextClass,
@@ -68,7 +71,8 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                     "instance creation for %s".formatted(reflectiveInvocationContext!!.targetClass)
             } else if (methodMatcher.matches()) {
                 val interceptedEvent = methodMatcher.group(1)
-                val methodRealClassName = reflectiveInvocationContext!!.executable!!.declaringClass.simpleName
+                val methodRealClassName =
+                    reflectiveInvocationContext!!.executable!!.declaringClass.simpleName
                 val methodName = reflectiveInvocationContext.executable!!.name
                 val targetClassName = reflectiveInvocationContext.targetClass.simpleName
                 val methodDisplayName =
