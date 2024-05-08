@@ -16,7 +16,7 @@ class JsonErrorMessageParser(ErrorMessageParser):
         if isinstance(value, str):
             return value
         elif isinstance(value, list):
-            errors_in_value = [_try_get_error(v) for v in value]
+            errors_in_value = [self._try_get_error(v) for v in value]
             return ", ".join(v for v in errors_in_value if v is not None)
         elif isinstance(value, dict):
             new_value = (

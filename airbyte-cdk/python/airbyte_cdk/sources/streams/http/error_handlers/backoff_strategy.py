@@ -3,38 +3,15 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Union
 
 import requests
 
 
 class BackoffStrategy(ABC):
-    @property
-    @abstractmethod
-    def max_retries(self) -> int:
-        """
-        Override if needed. Specifies maximum amount of retries for backoff policy. Return None for no limit.
-        """
-        pass
-
-    @property
-    @abstractmethod
-    def max_time(self) -> int:
-        """
-        Override if needed. Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit.
-        """
-        pass
-
-    @property
-    @abstractmethod
-    def retry_factor(self) -> float:
-        """
-        Override if needed. Specifies factor for backoff policy.
-        """
-        pass
 
     @abstractmethod
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
+    def backoff_time(self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]]) -> Optional[float]:
         """
         Override this method to dynamically determine backoff time e.g: by reading the X-Retry-After header.
 
