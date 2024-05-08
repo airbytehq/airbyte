@@ -73,6 +73,12 @@ class AirbyteExceptionHandler : Thread.UncaughtExceptionHandler {
         terminate()
     }
 
+    // by doing this in a separate method we can mock it to avoid closing the jvm and therefore test
+    // properly
+    fun terminate() {
+        System.exit(1)
+    }
+
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(AirbyteExceptionHandler::class.java)
         const val logMessage: String =
