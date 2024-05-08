@@ -77,10 +77,13 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
   protected CtidStatus generateCtidStatusForState(final AirbyteStreamNameNamespacePair pair) {
     final Long fileNode = fileNodeHandler.getFileNode(pair);
     assert fileNode != null;
+    // If the table is empty, lastCtid will be set to zero for the final state message.
+    final String lastCtidInState = (Objects.nonNull(lastCtid)
+        && StringUtils.isNotBlank(lastCtid)) ? lastCtid : Ctid.ZERO.toString();
     return new CtidStatus()
         .withVersion(CTID_STATUS_VERSION)
         .withStateType(StateType.CTID)
-        .withCtid(lastCtid)
+        .withCtid(lastCtidInState)
         .withIncrementalState(getStreamState(pair))
         .withRelationFilenode(fileNode);
   }

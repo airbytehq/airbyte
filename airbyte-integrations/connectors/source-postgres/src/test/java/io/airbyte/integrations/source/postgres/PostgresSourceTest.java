@@ -278,9 +278,9 @@ class PostgresSourceTest {
     final Set<AirbyteMessage> actualMessages =
         MoreIterators.toSet(source().read(anotherUserConfig, CONFIGURED_CATALOG, null));
     setEmittedAtToNull(actualMessages);
-    // expect 6 records and 2 state messages (view does not have its own state message because it goes
+    // expect 6 records and 3 state messages (view does not have its own state message because it goes
     // to non resumable full refresh path).
-    assertEquals(8, actualMessages.size());
+    assertEquals(9, actualMessages.size());
     final var actualRecordMessages = filterRecords(actualMessages);
     assertEquals(PRIVILEGE_TEST_CASE_EXPECTED_MESSAGES, actualRecordMessages);
   }
@@ -509,6 +509,40 @@ class PostgresSourceTest {
   }
 
   @Test
+  void testReadFullRefreshEmptyTable() throws Exception {
+    // Delete all data from id_and_name table.
+    testdb.query(ctx -> {
+      ctx.fetch("DELETE FROM id_and_name WHERE id = 'NaN';");
+      ctx.fetch("DELETE FROM id_and_name WHERE id = '1';");
+      ctx.fetch("DELETE FROM id_and_name WHERE id = '2';");
+      return null;
+    });
+
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CONFIGURED_CATALOG
+            .withStreams(CONFIGURED_CATALOG.getStreams()
+                .stream()
+                .filter(s -> s.getStream().getName().equals(STREAM_NAME))
+                .toList());
+    final PostgresSource source = source();
+    source.setStateEmissionFrequencyForDebug(1);
+    final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(getConfig(), configuredCatalog, null));
+    setEmittedAtToNull(actualMessages);
+
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessage(actualMessages);
+
+    setEmittedAtToNull(actualMessages);
+
+    // Assert that the correct number of messages are emitted - final state message.
+    assertEquals(1, actualMessages.size());
+    assertEquals(1, stateAfterFirstBatch.size());
+
+    AirbyteStateMessage stateMessage = stateAfterFirstBatch.get(0);
+    assertEquals("ctid", stateMessage.getStream().getStreamState().get("state_type").asText());
+    assertEquals("(0,0)", stateMessage.getStream().getStreamState().get("ctid").asText());
+  }
+
+  @Test
   void testReadFullRefreshSuccessWithSecondAttempt() throws Exception {
     // We want to test ordering, so we can delete the NaN entry and add a 3.
     testdb.query(ctx -> {
@@ -556,10 +590,9 @@ class PostgresSourceTest {
         MoreIterators.toSet(source.read(getConfig(), configuredCatalog, state));
     setEmittedAtToNull(nextSyncMessages);
 
-    // An extra state message is emitted, in addition to the record messages.
-    assertEquals(nextSyncMessages.size(), 3);
+    // A state message is emitted, in addition to the new record messages.
+    assertEquals(nextSyncMessages.size(), 2);
     assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "5.0", "name", "piccolo", "power", 100.0))));
-    assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1))));
   }
 
   @Test
