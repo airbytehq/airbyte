@@ -4,9 +4,10 @@
 
 import builtins
 import datetime
-import numbers
+import typing
 from typing import Union
 
+import isodate
 import pytz
 from dateutil import parser
 from isodate import parse_duration
@@ -36,7 +37,7 @@ def today_utc() -> datetime.date:
     return datetime.datetime.now(datetime.timezone.utc).date()
 
 
-def timestamp(dt: Union[numbers.Number, str]) -> Union[int, float]:
+def timestamp(dt: Union[float, str]) -> Union[int, float]:
     """
     Converts a number or a string to a timestamp
 
@@ -49,7 +50,7 @@ def timestamp(dt: Union[numbers.Number, str]) -> Union[int, float]:
     :param dt: datetime to convert to timestamp
     :return: unix timestamp
     """
-    if isinstance(dt, numbers.Number):
+    if isinstance(dt, float):
         return int(dt)
     else:
         return _str_to_datetime(dt).astimezone(pytz.utc).timestamp()
@@ -63,7 +64,7 @@ def _str_to_datetime(s: str) -> datetime.datetime:
     return parsed_date.astimezone(pytz.utc)
 
 
-def max(*args):
+def max(*args: typing.Any) -> typing.Any:
     """
     Returns biggest object of an iterable, or two or more arguments.
 
@@ -96,7 +97,7 @@ def day_delta(num_days: int, format: str = "%Y-%m-%dT%H:%M:%S.%f%z") -> str:
     return (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=num_days)).strftime(format)
 
 
-def duration(datestring: str) -> datetime.timedelta:
+def duration(datestring: str) -> Union[datetime.timedelta, isodate.Duration]:
     """
     Converts ISO8601 duration to datetime.timedelta
 
