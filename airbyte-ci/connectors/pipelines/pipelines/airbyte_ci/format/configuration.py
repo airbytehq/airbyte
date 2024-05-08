@@ -37,7 +37,9 @@ FORMATTERS_CONFIGURATIONS: List[FormatConfiguration] = [
         Formatter.JS,
         ["**/*.json", "**/*.yaml", "**/*.yml", "**/*.md"],
         format_js_container,
-        [f"prettier --write . --config .prettierrc --ignore-path .prettierignore --list-different --cache --cache-location={CACHE_MOUNT_PATH}/.prettier_cache"],
+        [
+            f"prettier --write . --config .prettierrc --ignore-path .prettierignore --list-different --cache --cache-location={CACHE_MOUNT_PATH}/.prettier_cache"
+        ],
     ),
     # Add license header to java and python files. The license header is stored in LICENSE_SHORT file.
     FormatConfiguration(
