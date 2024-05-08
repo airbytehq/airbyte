@@ -12,7 +12,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from firebolt.client import DEFAULT_API_URL
-from firebolt.client.auth import UsernamePassword, ClientCredentials, Auth
+from firebolt.client.auth import Auth, ClientCredentials, UsernamePassword
 from firebolt.db import Connection, connect
 
 from .writer import create_firebolt_wirter
@@ -20,15 +20,16 @@ from .writer import create_firebolt_wirter
 logger = getLogger("airbyte")
 
 
-def _determine_auth(key: str, secret:str) -> Auth:
+def _determine_auth(key: str, secret: str) -> Auth:
     """
     Determine between new auth based on key and secret or legacy email based auth.
     """
-    if '@' in key:
+    if "@" in key:
         # email auth can only be used with UsernamePassword
         return UsernamePassword(key, secret)
     else:
         return ClientCredentials(key, secret)
+
 
 def parse_config(config: json, logger: Optional[AirbyteLogger] = None) -> Dict[str, Any]:
     """
@@ -38,8 +39,7 @@ def parse_config(config: json, logger: Optional[AirbyteLogger] = None) -> Dict[s
     :return: dictionary of firebolt.db.Connection-compatible kwargs
     """
     # We should use client_id/client_secret, this code supports username/password for legacy users
-    auth = _determine_auth(config.get("client_id", config.get("username")),
-                           config.get("client_secret", config.get("password")))
+    auth = _determine_auth(config.get("client_id", config.get("username")), config.get("client_secret", config.get("password")))
     connection_args = {
         "database": config["database"],
         "auth": auth,
