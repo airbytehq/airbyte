@@ -41,6 +41,7 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -326,6 +327,11 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   }
 
   @Override
+  public boolean getSupportsSafeCast() {
+    return true;
+  }
+
+  @Override
   @Test
   public void testCreateTableIncremental() throws Exception {
     getDestinationHandler().execute(getGenerator().createTable(getIncrementalDedupStream(), "", false));
@@ -403,7 +409,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
         getStreamId(),
         SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND,
-        null,
+        Collections.emptyList(),
         Optional.empty(),
         new LinkedHashMap<>() {
 

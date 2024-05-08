@@ -83,13 +83,13 @@ https://github.com/airbytehq/airbyte/issues/3549
 6. For **Dataset Location**, select the location of your BigQuery dataset.
 
 :::warning
-You cannot change the location later. 
+You cannot change the location later.
 :::
 
 7. For **Default Dataset ID**, enter the BigQuery
    [Dataset ID](https://cloud.google.com/bigquery/docs/datasets#create-dataset).
 8. For **Loading Method**, select [Standard Inserts](#using-insert) or
-   [GCS Staging](#recommended-using-a-google-cloud-storage-bucket). 
+   [GCS Staging](#recommended-using-a-google-cloud-storage-bucket).
 
 :::tip
 We recommend using the GCS Staging option.
@@ -220,6 +220,7 @@ tutorials:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.4.15  | 2024-05-07 | [34611](https://github.com/airbytehq/airbyte/pull/34611)   | Adopt CDK 0.33.2                                                                                                                    |
 | 2.4.14  | 2024-02-25 | [37584](https://github.com/airbytehq/airbyte/pull/37584)   | Remove unused insecure dependencies from CDK                                                                                                                    |
 | 2.4.13  | 2024-02-25 | [36899](https://github.com/airbytehq/airbyte/pull/36899)   | adopt latest CDK                                                                                                                                                |
 | 2.4.12  | 2024-03-04 | [35315](https://github.com/airbytehq/airbyte/pull/35315)   | Adopt CDK 0.23.11                                                                                                                                               |

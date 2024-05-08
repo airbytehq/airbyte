@@ -132,12 +132,18 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
     if (destinationSyncMode == DestinationSyncMode.OVERWRITE) {
       return new InitialRawTableStatus(false, false, Optional.empty());
     }
-    final ResultSet tables = database.getMetaData().getTables(
-        databaseName,
-        id.getRawNamespace(),
-        id.getRawName(),
-        null);
-    if (!tables.next()) {
+    final boolean tableExists = database.executeMetadataQuery(databaseMetaData -> {
+      LOGGER.info("Retrieving table from Db metadata: {} {}",
+          id.getRawNamespace(),
+          id.getRawName());
+      try (final ResultSet tables = databaseMetaData.getTables(databaseName, id.getRawNamespace(), id.getRawName(), null)) {
+        return tables.next();
+      } catch (SQLException e) {
+        LOGGER.error("Failed to retrieve table metadata", e);
+        throw new RuntimeException(e);
+      }
+    });
+    if (!tableExists) {
       return new InitialRawTableStatus(false, false, Optional.empty());
     }
     // Snowflake timestamps have nanosecond precision, so decrement by 1ns
@@ -232,19 +238,19 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
         : Collections.emptySet();
   }
 
-  private boolean isAirbyteRawIdColumnMatch(final TableDefinition existingTable) {
+  protected boolean isAirbyteRawIdColumnMatch(final TableDefinition existingTable) {
     final String abRawIdColumnName = COLUMN_NAME_AB_RAW_ID.toUpperCase();
     return existingTable.columns().containsKey(abRawIdColumnName) &&
         toJdbcTypeName(AirbyteProtocolType.STRING).equals(existingTable.columns().get(abRawIdColumnName).getType());
   }
 
-  private boolean isAirbyteExtractedAtColumnMatch(final TableDefinition existingTable) {
+  protected boolean isAirbyteExtractedAtColumnMatch(final TableDefinition existingTable) {
     final String abExtractedAtColumnName = COLUMN_NAME_AB_EXTRACTED_AT.toUpperCase();
     return existingTable.columns().containsKey(abExtractedAtColumnName) &&
         toJdbcTypeName(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE).equals(existingTable.columns().get(abExtractedAtColumnName).getType());
   }
 
-  private boolean isAirbyteMetaColumnMatch(TableDefinition existingTable) {
+  protected boolean isAirbyteMetaColumnMatch(TableDefinition existingTable) {
     final String abMetaColumnName = COLUMN_NAME_AB_META.toUpperCase();
     return existingTable.columns().containsKey(abMetaColumnName) &&
         "VARIANT".equals(existingTable.columns().get(abMetaColumnName).getType());

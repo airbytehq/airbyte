@@ -3,9 +3,11 @@
   "type": "object",
   "properties": {
     "name": {
+      "description": "The name of the board section.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier for the board section.",
       "type": ["null", "string"]
     }
   }
