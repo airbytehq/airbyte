@@ -17,10 +17,10 @@ import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseF
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.ExecutorService
@@ -71,6 +71,8 @@ constructor(
 
     // Note that this map will only be populated for streams with nonzero records.
     private val recordCounts: ConcurrentMap<StreamDescriptor, AtomicLong> = ConcurrentHashMap()
+    private val terminalStatusesFromSource: ConcurrentMap<StreamDescriptor, AirbyteStreamStatus> =
+        ConcurrentHashMap()
 
     private var hasStarted = false
     private var hasClosed = false
@@ -103,12 +105,43 @@ constructor(
             airbyteMessageDeserializer.deserializeAirbyteMessage(
                 message,
             )
-        if (AirbyteMessage.Type.RECORD == partialAirbyteMessage.type) {
-            validateRecord(partialAirbyteMessage)
+        when (partialAirbyteMessage.type) {
+            AirbyteMessage.Type.RECORD -> {
+                validateRecord(partialAirbyteMessage)
 
-            partialAirbyteMessage.record?.streamDescriptor?.let {
-                getRecordCounter(it).incrementAndGet()
+                partialAirbyteMessage.record?.streamDescriptor?.let {
+                    getRecordCounter(it).incrementAndGet()
+
+                    if (terminalStatusesFromSource.containsKey(it)) {
+                        throw IllegalStateException(
+                            "Received a record message after a terminal stream status for stream ${it.namespace}.${it.name}"
+                        )
+                    }
+                }
             }
+            AirbyteMessage.Type.TRACE -> {
+                // There are many types of trace messages, but we only care about stream status
+                // messages with status=COMPLETE or INCOMPLETE.
+                // INCOMPLETE is a slightly misleading name - it actually means "Stream has stopped
+                // due to an interruption or error", i.e. failure
+                partialAirbyteMessage.trace?.streamStatus?.let {
+                    val isTerminalStatus =
+                        it.status == AirbyteStreamStatus.COMPLETE ||
+                            it.status == AirbyteStreamStatus.INCOMPLETE
+                    if (isTerminalStatus) {
+                        val conflictsWithExistingStatus =
+                            terminalStatusesFromSource.containsKey(it.streamDescriptor) &&
+                                terminalStatusesFromSource[it.streamDescriptor] != it.status
+                        if (conflictsWithExistingStatus) {
+                            throw IllegalStateException(
+                                "Received conflicting stream statuses for stream ${it.streamDescriptor.namespace}.${it.streamDescriptor.name}"
+                            )
+                        }
+                        terminalStatusesFromSource[it.streamDescriptor] = it.status
+                    }
+                }
+            }
+            else -> {}
         }
         bufferEnqueue.addRecord(
             partialAirbyteMessage,
@@ -131,12 +164,18 @@ constructor(
 
         val streamSyncSummaries =
             streamNames.associate { streamDescriptor ->
+                // If we didn't receive a stream status message, assume success.
+                // Platform won't send us any stream status messages yet (since we're not declaring
+                // supportsRefresh in metadata), so we will always hit this case.
+                val terminalStatusFromSource =
+                    terminalStatusesFromSource[streamDescriptor] ?: AirbyteStreamStatus.COMPLETE
                 StreamDescriptorUtils.withDefaultNamespace(
                     streamDescriptor,
                     bufferManager.defaultNamespace,
                 ) to
                     StreamSyncSummary(
-                        Optional.of(getRecordCounter(streamDescriptor).get()),
+                        getRecordCounter(streamDescriptor).get(),
+                        terminalStatusFromSource,
                     )
             }
         onClose.accept(hasFailed, streamSyncSummaries)
