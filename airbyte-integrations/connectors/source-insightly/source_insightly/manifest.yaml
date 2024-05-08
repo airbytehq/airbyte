@@ -80,6 +80,226 @@ definitions:
     $parameters:
       path: "/ActivitySets"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          ACTIVITYSET_ID:
+            description: ID of the activity set
+            type: integer
+          NAME:
+            description: Name of the activity set
+            type:
+              - string
+              - "null"
+          FOR_CONTACTS:
+            description: Activity set associated with contacts
+            type:
+              - boolean
+              - "null"
+          FOR_ORGANISATIONS:
+            description: Activity set associated with organizations
+            type:
+              - boolean
+              - "null"
+          FOR_OPPORTUNITIES:
+            description: Activity set associated with opportunities
+            type:
+              - boolean
+              - "null"
+          FOR_PROJECTS:
+            description: Activity set associated with projects
+            type:
+              - boolean
+              - "null"
+          FOR_LEADS:
+            description: Activity set associated with leads
+            type:
+              - boolean
+              - "null"
+          OWNER_USER_ID:
+            description: ID of the user who owns the activity set
+            type:
+              - integer
+              - "null"
+          ACTIVITIES:
+            description: List of activities included in the activity set
+            type: array
+            items:
+              type: object
+              properties:
+                ACTIVITY_ID:
+                  description: ID of the activity
+                  type:
+                    - integer
+                    - "null"
+                ACTIVITYSET_ID:
+                  description: ID of the activity set to which the activity belongs
+                  type:
+                    - integer
+                    - "null"
+                ACTIVITY_NAME:
+                  description: Name of the activity
+                  type:
+                    - string
+                    - "null"
+                ACTIVITY_DETAILS:
+                  description: Details or description of the activity
+                  type:
+                    - string
+                    - "null"
+                ACTIVITY_TYPE:
+                  description: Type of the activity
+                  type:
+                    - string
+                    - "null"
+                CATEGORY_ID:
+                  description: ID of the category to which the activity belongs
+                  type:
+                    - integer
+                    - "null"
+                REMINDER:
+                  description: Details about the reminder set for the activity
+                  type:
+                    - boolean
+                    - "null"
+                REMINDER_DAYS_BEFORE_DUE:
+                  description:
+                    Number of days before the due date when the reminder
+                    is triggered
+                  type:
+                    - integer
+                    - "null"
+                REMINDER_TIME:
+                  description: Time of day when the reminder is triggered
+                  type:
+                    - string
+                    - "null"
+                PUBLICLY_VISIBLE:
+                  description:
+                    Boolean flag indicating if the activity is publicly
+                    visible
+                  type:
+                    - boolean
+                    - "null"
+                OWNER_VISIBLE:
+                  description:
+                    Boolean flag indicating if the activity is visible
+                    to the owner
+                  type:
+                    - boolean
+                    - "null"
+                OWNER_USER_ID:
+                  description: ID of the user who owns the activity
+                  type:
+                    - integer
+                    - "null"
+                RESPONSIBLE_USER_ID:
+                  description: ID of the user responsible for the activity
+                  type:
+                    - integer
+                    - "null"
+                ASSIGNED_TEAM_ID:
+                  description: ID of the team assigned to the activity
+                  type:
+                    - integer
+                    - "null"
+                SKIP_SUN:
+                  description:
+                    Boolean flag indicating if the activity is skipped
+                    on Sundays
+                  type:
+                    - boolean
+                    - "null"
+                SKIP_MON:
+                  description:
+                    Boolean flag indicating if the activity is skipped
+                    on Mondays
+                  type:
+                    - boolean
+                    - "null"
+                SKIP_TUE:
+                  description:
+                    Boolean flag indicating if the activity is skipped
+                    on Tuesdays
+                  type:
+                    - boolean
+                    - "null"
+                SKIP_WED:
+                  description:
+                    Boolean flag indicating if the activity is skipped
+                    on Wednesdays
+                  type:
+                    - boolean
+                    - "null"
+                SKIP_THU:
+                  description:
+                    Boolean flag indicating if the activity is skipped
+                    on Thursdays
+                  type:
+                    - boolean
+                    - "null"
+                SKIP_FRI:
+                  description:
+                    Boolean flag indicating if the activity is skipped
+                    on Fridays
+                  type:
+                    - boolean
+                    - "null"
+                SKIP_SAT:
+                  description:
+                    Boolean flag indicating if the activity is skipped
+                    on Saturdays
+                  type:
+                    - boolean
+                    - "null"
+                DUE_DAYS_AFTER_START:
+                  description:
+                    Number of days after the start of the activity by which
+                    it is due
+                  type:
+                    - integer
+                    - "null"
+                DUE_DAYS_BEFORE_END:
+                  description:
+                    Number of days before the end of the activity by which
+                    it is due
+                  type:
+                    - integer
+                    - "null"
+                EVENT_DAYS_AFTER_START:
+                  description:
+                    Number of days after the start of the activity when
+                    the event occurs
+                  type:
+                    - integer
+                    - "null"
+                EVENT_DAYS_BEFORE_END:
+                  description:
+                    Number of days before the end of the activity when
+                    the event occurs
+                  type:
+                    - integer
+                    - "null"
+                EVENT_TIME:
+                  description: Time of the event associated with the activity
+                  type:
+                    - string
+                    - "null"
+                ALL_DAY:
+                  description:
+                    Boolean flag indicating if the activity is an all-day
+                    event
+                  type:
+                    - boolean
+                    - "null"
+                DURATION:
+                  description: Duration of the activity
+                  type:
+                    - integer
+                    - "null"
   contacts_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "contacts"
@@ -87,6 +307,321 @@ definitions:
     $parameters:
       path: "/Contacts/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          CONTACT_ID:
+            description: The unique identifier for the contact
+            type: integer
+          SALUTATION:
+            description: The salutation for the contact
+            type:
+              - string
+              - "null"
+          FIRST_NAME:
+            description: The first name of the contact
+            type:
+              - string
+              - "null"
+          LAST_NAME:
+            description: The last name of the contact
+            type:
+              - string
+              - "null"
+          IMAGE_URL:
+            description: URL of the contact's image
+            type:
+              - string
+              - "null"
+          BACKGROUND:
+            description: Background information about the contact
+            type:
+              - string
+              - "null"
+          OWNER_USER_ID:
+            description: The ID of the user who owns the contact
+            type:
+              - integer
+              - "null"
+          DATE_CREATED_UTC:
+            description: The date and time the contact was created in UTC
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            description: The date and time the contact was last updated in UTC
+            type:
+              - string
+              - "null"
+            format: date-time
+          SOCIAL_LINKEDIN:
+            description: The LinkedIn profile of the contact
+            type:
+              - string
+              - "null"
+          SOCIAL_FACEBOOK:
+            description: The Facebook profile of the contact
+            type:
+              - string
+              - "null"
+          SOCIAL_TWITTER:
+            description: The Twitter profile of the contact
+            type:
+              - string
+              - "null"
+          DATE_OF_BIRTH:
+            description: The date of birth of the contact
+            type:
+              - string
+              - "null"
+          PHONE:
+            description: The primary phone number of the contact
+            type:
+              - string
+              - "null"
+          PHONE_HOME:
+            description: The home phone number of the contact
+            type:
+              - string
+              - "null"
+          PHONE_MOBILE:
+            description: The mobile phone number of the contact
+            type:
+              - string
+              - "null"
+          PHONE_OTHER:
+            description: Another phone number of the contact
+            type:
+              - string
+              - "null"
+          PHONE_ASSISTANT:
+            description: The phone number of the contact's assistant
+            type:
+              - string
+              - "null"
+          PHONE_FAX:
+            description: The fax number of the contact
+            type:
+              - string
+              - "null"
+          EMAIL_ADDRESS:
+            description: The email address of the contact
+            type:
+              - string
+              - "null"
+          ASSISTANT_NAME:
+            description: The name of the contact's assistant
+            type:
+              - string
+              - "null"
+          ADDRESS_MAIL_STREET:
+            description: The street address of the mailing address
+            type:
+              - string
+              - "null"
+          ADDRESS_MAIL_CITY:
+            description: The city of the mailing address
+            type:
+              - string
+              - "null"
+          ADDRESS_MAIL_STATE:
+            description: The state of the mailing address
+            type:
+              - string
+              - "null"
+          ADDRESS_MAIL_POSTCODE:
+            description: The postcode of the mailing address
+            type:
+              - string
+              - "null"
+          ADDRESS_MAIL_COUNTRY:
+            description: The country of the mailing address
+            type:
+              - string
+              - "null"
+          ADDRESS_OTHER_STREET:
+            description: The street address of the other address
+            type:
+              - string
+              - "null"
+          ADDRESS_OTHER_CITY:
+            description: The city of the other address
+            type:
+              - string
+              - "null"
+          ADDRESS_OTHER_STATE:
+            description: The state of the other address
+            type:
+              - string
+              - "null"
+          ADDRESS_OTHER_POSTCODE:
+            description: The postcode of the other address
+            type:
+              - string
+              - "null"
+          ADDRESS_OTHER_COUNTRY:
+            description: The country of the other address
+            type:
+              - string
+              - "null"
+          LAST_ACTIVITY_DATE_UTC:
+            description:
+              The date and time of the last activity related to the contact
+              in UTC
+            type:
+              - string
+              - "null"
+            format: date-time
+          NEXT_ACTIVITY_DATE_UTC:
+            description:
+              The date and time of the next activity related to the contact
+              in UTC
+            type:
+              - string
+              - "null"
+            format: date-time
+          CREATED_USER_ID:
+            description: The user ID of the user who created the contact
+            type:
+              - integer
+              - "null"
+          ORGANISATION_ID:
+            description: The ID of the organization the contact is associated with
+            type:
+              - integer
+              - "null"
+          TITLE:
+            description: The title of the contact
+            type:
+              - string
+              - "null"
+          VISIBLE_TEAM_ID:
+            description: The ID of the team the contact is visible to
+            type:
+              - integer
+              - "null"
+          VISIBLE_TO:
+            description: Indicates who the contact is visible to
+            type:
+              - string
+              - "null"
+          EMAIL_OPTED_OUT:
+            description: Whether the contact has opted out of email communication
+            type:
+              - boolean
+              - "null"
+          CUSTOMFIELDS:
+            description: Custom fields associated with the contact
+            type: array
+            items:
+              type: object
+              properties:
+                FIELD_NAME:
+                  description: The name of the custom field
+                  type:
+                    - string
+                    - "null"
+                FIELD_VALUE:
+                  description: The value of the custom field for this contact
+                  type: object
+          TAGS:
+            description: Tags or categories associated with the contact
+            type: array
+            items:
+              type: object
+              properties:
+                TAG_NAME:
+                  description: The name of the tag associated with the contact
+                  type:
+                    - string
+                    - "null"
+          DATES:
+            description: Important dates related to the contact
+            type: array
+            items:
+              type: object
+              properties:
+                DATE_ID:
+                  description: The unique identifier for the date event
+                  type:
+                    - integer
+                    - "null"
+                OCCASION_NAME:
+                  description: The name of the occasion
+                  type:
+                    - string
+                    - "null"
+                OCCASION_DATE:
+                  description: The date of the occasion
+                  type:
+                    - string
+                    - "null"
+                REPEAT_YEARLY:
+                  description: Indicates if the occasion repeats yearly
+                  type:
+                    - boolean
+                    - "null"
+                CREATE_TASK_YEARLY:
+                  description: Indicates whether a task should be created yearly
+                  type:
+                    - boolean
+                    - "null"
+          LINKS:
+            description: Links or references related to the contact
+            type: array
+            items:
+              type: object
+              properties:
+                LINK_ID:
+                  description: Unique identifier for the link
+                  type:
+                    - integer
+                    - "null"
+                OBJECT_NAME:
+                  description: The name of the object
+                  type:
+                    - string
+                    - "null"
+                OBJECT_ID:
+                  description: The ID of the object
+                  type:
+                    - integer
+                    - "null"
+                LINK_OBJECT_NAME:
+                  description: The name of the linked object
+                  type:
+                    - string
+                    - "null"
+                LINK_OBJECT_ID:
+                  description: The ID of the linked object
+                  type:
+                    - integer
+                    - "null"
+                ROLE:
+                  description: The role of the contact in the relationship
+                  type:
+                    - string
+                    - "null"
+                DETAILS:
+                  description: Details about the link
+                  type:
+                    - string
+                    - "null"
+                RELATIONSHIP_ID:
+                  description: The ID of the relationship
+                  type:
+                    - integer
+                    - "null"
+                IS_FORWARD:
+                  description: Flag indicating if the link is forward
+                  type:
+                    - boolean
+                    - "null"
   countries_stream:
     $ref: "#/definitions/base_stream"
     name: "countries"
@@ -94,6 +629,15 @@ definitions:
     $parameters:
       path: "/Countries"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          COUNTRY_NAME:
+            description: The name of the country.
+            type: string
   currencies_stream:
     $ref: "#/definitions/base_stream"
     name: "currencies"
@@ -101,6 +645,20 @@ definitions:
     $parameters:
       path: "/Currencies"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          CURRENCY_CODE:
+            description: The unique code representing the currency.
+            type: string
+          CURRENCY_SYMBOL:
+            description: The symbol used to denote the currency.
+            type:
+              - string
+              - "null"
   emails_stream:
     $ref: "#/definitions/base_stream"
     name: "emails"
@@ -108,6 +666,125 @@ definitions:
     $parameters:
       path: "/Emails/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          EMAIL_ID:
+            description: The unique identifier of the email
+            type: integer
+          EMAIL_FROM:
+            description: The sender of the email
+            type:
+              - string
+              - "null"
+          SUBJECT:
+            description: The subject of the email
+            type:
+              - string
+              - "null"
+          EMAIL_DATE_UTC:
+            description: The date and time when the email was sent/received
+            type:
+              - string
+              - "null"
+            format: date-time
+          FORMAT:
+            description: The format of the email content
+            type:
+              - string
+              - "null"
+          SIZE:
+            description: The size of the email content
+            type:
+              - integer
+              - "null"
+          OWNER_USER_ID:
+            description: The ID of the user who owns the email
+            type:
+              - integer
+              - "null"
+          DATE_CREATED_UTC:
+            description: The date and time when the email record was created
+            type:
+              - string
+              - "null"
+            format: date-time
+          QUEUED_SEND_DATE_UTC:
+            description: The date and time when the email was queued for sending
+            type:
+              - string
+              - "null"
+            format: date-time
+          CREATED_USER_ID:
+            description: The ID of the user who created the email
+            type:
+              - integer
+              - "null"
+          TAGS:
+            description: Tags associated with the email
+            type: array
+            items:
+              type: object
+              properties:
+                TAG_NAME:
+                  description: The name of the tag
+                  type:
+                    - string
+                    - "null"
+          LINKS:
+            description: Related links associated with the email
+            type: array
+            items:
+              type: object
+              properties:
+                LINK_ID:
+                  description: The ID of the link
+                  type:
+                    - integer
+                    - "null"
+                OBJECT_NAME:
+                  description: The name of the object associated with the email
+                  type:
+                    - string
+                    - "null"
+                OBJECT_ID:
+                  description: The ID of the object associated with the email
+                  type:
+                    - integer
+                    - "null"
+                LINK_OBJECT_NAME:
+                  description: The name of the linked object
+                  type:
+                    - string
+                    - "null"
+                LINK_OBJECT_ID:
+                  description: The ID of the linked object
+                  type:
+                    - integer
+                    - "null"
+                ROLE:
+                  description: The role of the linked object
+                  type:
+                    - string
+                    - "null"
+                DETAILS:
+                  description: Details about the link
+                  type:
+                    - string
+                    - "null"
+                RELATIONSHIP_ID:
+                  description: The ID representing the relationship with the link
+                  type:
+                    - integer
+                    - "null"
+                IS_FORWARD:
+                  description: Indicates if the link is a forward link
+                  type:
+                    - boolean
+                    - "null"
   events_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "events"
@@ -115,6 +792,142 @@ definitions:
     $parameters:
       path: "/Events/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          EVENT_ID:
+            description: Unique identifier for the event
+            type: integer
+          TITLE:
+            description: Title of the event
+            type:
+              - string
+              - "null"
+          LOCATION:
+            description: Location of the event
+            type:
+              - string
+              - "null"
+          START_DATE_UTC:
+            description: Start date and time of the event (UTC)
+            type:
+              - string
+              - "null"
+            format: date-time
+          END_DATE_UTC:
+            description: End date and time of the event (UTC)
+            type:
+              - string
+              - "null"
+            format: date-time
+          ALL_DAY:
+            description: Indicates if the event is an all-day event
+            type:
+              - boolean
+              - "null"
+          DETAILS:
+            description: Additional details of the event
+            type:
+              - string
+              - "null"
+          DATE_CREATED_UTC:
+            description: DateTime when the event was created (UTC)
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            description: DateTime when the event was last updated (UTC)
+            type:
+              - string
+              - "null"
+            format: date-time
+          REMINDER_DATE_UTC:
+            description:
+              DateTime when the reminder for the event is set to trigger
+              (UTC)
+            type:
+              - string
+              - "null"
+            format: date-time
+          REMINDER_SENT:
+            description: Indicates if the reminder for the event has been sent
+            type:
+              - boolean
+              - "null"
+          OWNER_USER_ID:
+            description: User ID of the event owner
+            type:
+              - integer
+              - "null"
+          CUSTOMFIELDS:
+            description: Custom fields associated with the event
+            type: array
+            items:
+              type: object
+              properties:
+                FIELD_NAME:
+                  description: Name of the custom field
+                  type:
+                    - string
+                    - "null"
+                FIELD_VALUE:
+                  description: Value of the custom field
+                  type: object
+          LINKS:
+            description: Links associated with the event
+            type: array
+            items:
+              type: object
+              properties:
+                LINK_ID:
+                  description: Unique identifier for the link
+                  type:
+                    - integer
+                    - "null"
+                OBJECT_NAME:
+                  description: Name of the object
+                  type:
+                    - string
+                    - "null"
+                OBJECT_ID:
+                  description: ID of the object
+                  type:
+                    - integer
+                    - "null"
+                LINK_OBJECT_NAME:
+                  description: Name of the linked object
+                  type:
+                    - string
+                    - "null"
+                LINK_OBJECT_ID:
+                  description: ID of the linked object
+                  type:
+                    - integer
+                    - "null"
+                ROLE:
+                  description: Role of the link in the relationship
+                  type:
+                    - string
+                    - "null"
+                DETAILS:
+                  description: Details of the link
+                  type:
+                    - string
+                    - "null"
+                RELATIONSHIP_ID:
+                  description: ID of the relationship
+                  type:
+                    - integer
+                    - "null"
+                IS_FORWARD:
+                  description: Indicates if the link is forward
+                  type:
+                    - boolean
+                    - "null"
   knowledge_article_categories_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "knowledge_article_categories"
@@ -122,6 +935,46 @@ definitions:
     $parameters:
       path: "/KnowledgeArticleCategory/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          CATEGORY_ID:
+            description: Unique identifier for the knowledge article category.
+            type: integer
+          CATEGORY_NAME:
+            description: Name of the knowledge article category.
+            type:
+              - string
+              - "null"
+          DESCRIPTION:
+            description: Detailed description of the knowledge article category.
+            type:
+              - string
+              - "null"
+          CREATED_USER_ID:
+            description:
+              Identifier of the user who created the knowledge article
+              category.
+            type:
+              - integer
+              - "null"
+          DATE_CREATED_UTC:
+            description: Date and time when the knowledge article category was created.
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            description:
+              Date and time when the knowledge article category was last
+              updated.
+            type:
+              - string
+              - "null"
+            format: date-time
   knowledge_article_folders_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "knowledge_article_folders"
@@ -129,6 +982,60 @@ definitions:
     $parameters:
       path: "/KnowledgeArticleFolder/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          FOLDER_ID:
+            description: Unique identifier for the knowledge article folder.
+            type: integer
+          FOLDER_NAME:
+            description: The name of the knowledge article folder.
+            type:
+              - string
+              - "null"
+          CATEGORY_ID:
+            description:
+              Unique identifier for the knowledge article category to which
+              the folder belongs.
+            type:
+              - string
+              - "null"
+          VISIBILITY:
+            description:
+              Indicates the visibility of the knowledge article folder
+              (e.g., public, private, restricted).
+            type:
+              - string
+              - "null"
+          ORDER_ARTICLES:
+            description: Defines the order in which articles appear within the folder.
+            type:
+              - string
+              - "null"
+          CREATED_USER_ID:
+            description:
+              Unique identifier of the user who created the knowledge article
+              folder.
+            type:
+              - integer
+              - "null"
+          DATE_CREATED_UTC:
+            description: The date and time when the knowledge article folder was created.
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            description:
+              The date and time when the knowledge article folder was last
+              updated.
+            type:
+              - string
+              - "null"
+            format: date-time
   knowledge_articles_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "knowledge_articles"
@@ -136,6 +1043,151 @@ definitions:
     $parameters:
       path: "/KnowledgeArticle/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          ARTICLE_ID:
+            description: The unique identifier for the knowledge article
+            type: integer
+          CATEGORY_ID:
+            description: The category ID to which the article belongs
+            type:
+              - integer
+              - "null"
+          FOLDER_ID:
+            description: The ID of the folder where the article is stored
+            type:
+              - integer
+              - "null"
+          ARTICLE_NO:
+            description: The article number for reference
+            type:
+              - integer
+              - "null"
+          ArticleVersion:
+            description: The version of the article
+            type:
+              - string
+              - "null"
+          Status:
+            description: The status of the article (e.g., draft, published)
+            type:
+              - string
+              - "null"
+          Language:
+            description: The language in which the article is written
+            type:
+              - string
+              - "null"
+          Title:
+            description: The title of the knowledge article
+            type:
+              - string
+              - "null"
+          Body:
+            description: The main content of the knowledge article
+            type:
+              - string
+              - "null"
+          URL_SLUG:
+            description: The URL-friendly slug for the article
+            type:
+              - string
+              - "null"
+          DOWNVOTE_COUNT:
+            description: Number of downvotes received for the article
+            type:
+              - integer
+              - "null"
+          UPVOTE_COUNT:
+            description: Number of upvotes received for the article
+            type:
+              - integer
+              - "null"
+          PROMOTED:
+            description: Indicates if the article is promoted or not
+            type:
+              - boolean
+              - "null"
+          FIRST_PUBLISHED_DATE_UTC:
+            description:
+              The date and time when the article was first published in
+              UTC timezone
+            type:
+              - string
+              - "null"
+            format: date-time
+          LAST_PUBLISHED_DATE_UTC:
+            description:
+              The date and time when the article was last published in
+              UTC timezone
+            type:
+              - string
+              - "null"
+            format: date-time
+          ARCHIVED_DATE_UTC:
+            description: The date and time when the article was archived in UTC timezone
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_CREATED_UTC:
+            description: The date and time when the article was created in UTC timezone
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            description:
+              The date and time when the article was last updated in UTC
+              timezone
+            type:
+              - string
+              - "null"
+            format: date-time
+          OWNER_USER_ID:
+            description: The user ID of the owner of the article
+            type:
+              - integer
+              - "null"
+          CREATED_USER_ID:
+            description: The user ID of the creator of the knowledge article
+            type:
+              - integer
+              - "null"
+          ExternalLinkCount:
+            description: Number of external links referenced in the article
+            type:
+              - string
+              - "null"
+          CUSTOMFIELDS:
+            description: Custom fields associated with the article
+            type: array
+            items:
+              type: object
+              properties:
+                FIELD_NAME:
+                  description: Name of the custom field
+                  type:
+                    - string
+                    - "null"
+                FIELD_VALUE:
+                  description: Value of the custom field
+                  type: object
+          TAGS:
+            description: Tags associated with the article
+            type: array
+            items:
+              type: object
+              properties:
+                TAG_NAME:
+                  description: The name of the tag
+                  type:
+                    - string
+                    - "null"
   leads_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "leads"
@@ -150,6 +1202,32 @@ definitions:
     $parameters:
       path: "/LeadSources"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          LEAD_SOURCE_ID:
+            description: The unique identifier for the lead source.
+            type: integer
+          LEAD_SOURCE:
+            description: The name or label of the lead source.
+            type:
+              - string
+              - "null"
+          DEFAULT_VALUE:
+            description:
+              The default value for the lead source, used when no specific
+              lead source is assigned.
+            type:
+              - boolean
+              - "null"
+          FIELD_ORDER:
+            description: The order in which the lead sources are displayed or prioritized.
+            type:
+              - integer
+              - "null"
   lead_statuses_stream:
     $ref: "#/definitions/base_stream"
     name: "lead_statuses"
@@ -157,6 +1235,35 @@ definitions:
     $parameters:
       path: "/LeadStatuses"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          LEAD_STATUS_ID:
+            description: Unique identifier for each lead status.
+            type: integer
+          LEAD_STATUS:
+            description: Represents the name or label of the lead status.
+            type:
+              - string
+              - "null"
+          DEFAULT_STATUS:
+            description: Specifies the default status for leads.
+            type:
+              - boolean
+              - "null"
+          STATUS_TYPE:
+            description: Indicates the type or category of the lead status.
+            type:
+              - integer
+              - "null"
+          FIELD_ORDER:
+            description: Designates the order of fields for lead status.
+            type:
+              - integer
+              - "null"
   milestones_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "milestones"
@@ -164,6 +1271,63 @@ definitions:
     $parameters:
       path: "/Milestones/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          MILESTONE_ID:
+            description: Unique identifier for the milestone
+            type: integer
+          TITLE:
+            description: Title or name of the milestone
+            type:
+              - string
+              - "null"
+          COMPLETED:
+            description: Flag indicating if the milestone has been completed or not
+            type:
+              - boolean
+              - "null"
+          DUE_DATE:
+            description: Due date for completion of the milestone
+            type:
+              - string
+              - "null"
+          OWNER_USER_ID:
+            description: User ID of the owner of the milestone
+            type:
+              - integer
+              - "null"
+          DATE_CREATED_UTC:
+            description: Date and time when the milestone was created in UTC
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            description: Date and time when the milestone was last updated in UTC
+            type:
+              - string
+              - "null"
+            format: date-time
+          COMPLETED_DATE_UTC:
+            description: Date and time when the milestone was completed in UTC
+            type:
+              - string
+              - "null"
+            format: date-time
+          PROJECT_ID:
+            description: Identifier of the project to which the milestone belongs
+            type:
+              - integer
+              - "null"
+          RESPONSIBLE_USER:
+            description: User responsible for completing the milestone
+            type:
+              - integer
+              - "null"
   notes_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "notes"
@@ -171,6 +1335,93 @@ definitions:
     $parameters:
       path: "/Notes/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          NOTE_ID:
+            description: The unique identifier of the note.
+            type: integer
+          TITLE:
+            description: The title or subject of the note.
+            type:
+              - string
+              - "null"
+          BODY:
+            description: The content or text of the note.
+            type:
+              - string
+              - "null"
+          DATE_CREATED_UTC:
+            description: The date and time the note was created in UTC timezone.
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            description: The date and time the note was last updated in UTC timezone.
+            type:
+              - string
+              - "null"
+            format: date-time
+          OWNER_USER_ID:
+            description: The ID of the user who owns the note.
+            type:
+              - integer
+              - "null"
+          LINKS:
+            description: Array of links associated with the note.
+            type: array
+            items:
+              type: object
+              properties:
+                LINK_ID:
+                  description: The ID of the link.
+                  type:
+                    - integer
+                    - "null"
+                OBJECT_NAME:
+                  description: The name of the linked object.
+                  type:
+                    - string
+                    - "null"
+                OBJECT_ID:
+                  description: The ID of the linked object.
+                  type:
+                    - integer
+                    - "null"
+                LINK_OBJECT_NAME:
+                  description: The name of the object the link is associated with.
+                  type:
+                    - string
+                    - "null"
+                LINK_OBJECT_ID:
+                  description: The ID of the object the link is associated with.
+                  type:
+                    - integer
+                    - "null"
+                ROLE:
+                  description: The role or type of relationship between the objects.
+                  type:
+                    - string
+                    - "null"
+                DETAILS:
+                  description: Additional details or description for the link.
+                  type:
+                    - string
+                    - "null"
+                RELATIONSHIP_ID:
+                  description: The ID of the relationship between the objects.
+                  type:
+                    - integer
+                    - "null"
+                IS_FORWARD:
+                  description: Indicates if the link is forward or backward.
+                  type:
+                    - boolean
+                    - "null"
   opportunities_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "opportunities"
@@ -178,6 +1429,234 @@ definitions:
     $parameters:
       path: "/Opportunities/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          OPPORTUNITY_ID:
+            description: The unique identifier of the opportunity
+            type: integer
+          OPPORTUNITY_NAME:
+            description: The name of the opportunity
+            type:
+              - string
+              - "null"
+          OPPORTUNITY_DETAILS:
+            description: Detailed information about the opportunity
+            type:
+              - string
+              - "null"
+          OPPORTUNITY_STATE:
+            description: The state of the opportunity
+            type:
+              - string
+              - "null"
+          RESPONSIBLE_USER_ID:
+            description: The ID of the user responsible for the opportunity
+            type:
+              - integer
+              - "null"
+          CATEGORY_ID:
+            description: The category ID associated with the opportunity
+            type:
+              - integer
+              - "null"
+          IMAGE_URL:
+            description: URL of any image associated with the opportunity
+            type:
+              - string
+              - "null"
+          BID_CURRENCY:
+            description: The currency used for the bid amount
+            type:
+              - string
+              - "null"
+          BID_AMOUNT:
+            description: The amount bid for the opportunity
+            type:
+              - number
+              - "null"
+          BID_TYPE:
+            description: The type of bid placed
+            type:
+              - string
+              - "null"
+          BID_DURATION:
+            description: The duration for which the bid is valid
+            type:
+              - integer
+              - "null"
+          ACTUAL_CLOSE_DATE:
+            description: The actual date when the opportunity was closed
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_CREATED_UTC:
+            description: The date and time when the opportunity was created (in UTC)
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            description:
+              The date and time when the opportunity was last updated (in
+              UTC)
+            type:
+              - string
+              - "null"
+            format: date-time
+          OPPORTUNITY_VALUE:
+            description: The value associated with the opportunity
+            type:
+              - number
+              - "null"
+          PROBABILITY:
+            description: The probability of the opportunity being successful
+            type:
+              - integer
+              - "null"
+          FORECAST_CLOSE_DATE:
+            description: The forecasted date for closing the opportunity
+            type:
+              - string
+              - "null"
+            format: date-time
+          OWNER_USER_ID:
+            description: The ID of the user who owns the opportunity
+            type:
+              - integer
+              - "null"
+          LAST_ACTIVITY_DATE_UTC:
+            description:
+              The date and time of the last activity related to the opportunity
+              (in UTC)
+            type:
+              - string
+              - "null"
+            format: date-time
+          NEXT_ACTIVITY_DATE_UTC:
+            description: The date and time of the next planned activity (in UTC)
+            type:
+              - string
+              - "null"
+            format: date-time
+          PIPELINE_ID:
+            description: The ID of the pipeline the opportunity belongs to
+            type:
+              - integer
+              - "null"
+          STAGE_ID:
+            description: The ID of the stage the opportunity is in
+            type:
+              - integer
+              - "null"
+          CREATED_USER_ID:
+            description: The ID of the user who created the opportunity
+            type:
+              - integer
+              - "null"
+          ORGANISATION_ID:
+            description: The ID of the organization associated with the opportunity
+            type:
+              - integer
+              - "null"
+          PRICEBOOK_ID:
+            description: The ID of the price book associated with the opportunity
+            type:
+              - integer
+              - "null"
+          VISIBLE_TEAM_ID:
+            description: The ID of the team with visibility rights to the opportunity
+            type:
+              - integer
+              - "null"
+          VISIBLE_TO:
+            description: The visibility settings for the opportunity
+            type:
+              - string
+              - "null"
+          CUSTOMFIELDS:
+            description: Custom fields associated with the opportunity
+            type: array
+            items:
+              type: object
+              properties:
+                FIELD_NAME:
+                  description: Name of the custom field
+                  type:
+                    - string
+                    - "null"
+                FIELD_VALUE:
+                  description: Value of the custom field
+                  type: object
+          TAGS:
+            description: Tags associated with the opportunity
+            type: array
+            items:
+              type: object
+              properties:
+                TAG_NAME:
+                  description: Name of the tag associated with the opportunity
+                  type:
+                    - string
+                    - "null"
+              required:
+                - TAG_NAME
+          LINKS:
+            description: Links associated with the opportunity
+            type: array
+            items:
+              type: object
+              properties:
+                LINK_ID:
+                  description: ID of the linked object
+                  type:
+                    - integer
+                    - "null"
+                OBJECT_NAME:
+                  description: Name of the linked object
+                  type:
+                    - string
+                    - "null"
+                OBJECT_ID:
+                  description: ID of the linked object
+                  type:
+                    - integer
+                    - "null"
+                LINK_OBJECT_NAME:
+                  description: Name of the linked object
+                  type:
+                    - string
+                    - "null"
+                LINK_OBJECT_ID:
+                  description: ID of the linked object
+                  type:
+                    - integer
+                    - "null"
+                ROLE:
+                  description: Role of the link
+                  type:
+                    - string
+                    - "null"
+                DETAILS:
+                  description: Details of the link
+                  type:
+                    - string
+                    - "null"
+                RELATIONSHIP_ID:
+                  description: ID of the relationship
+                  type:
+                    - integer
+                    - "null"
+                IS_FORWARD:
+                  description: Indicates if the link is being forwarded
+                  type:
+                    - boolean
+                    - "null"
   opportunity_categories_stream:
     $ref: "#/definitions/base_stream"
     name: "opportunity_categories"
@@ -185,6 +1664,30 @@ definitions:
     $parameters:
       path: "/OpportunityCategories"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          CATEGORY_ID:
+            description: The unique identifier for the opportunity category
+            type: integer
+          CATEGORY_NAME:
+            description: The name or label of the opportunity category
+            type:
+              - string
+              - "null"
+          ACTIVE:
+            description: Indicates whether the opportunity category is active or inactive
+            type:
+              - boolean
+              - "null"
+          BACKGROUND_COLOR:
+            description: The background color associated with the opportunity category
+            type:
+              - string
+              - "null"
   opportunity_products_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "opportunity_products"
@@ -199,6 +1702,27 @@ definitions:
     $parameters:
       path: "/OpportunityStateReasons"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          STATE_REASON_ID:
+            description: Unique identifier for the state reason.
+            type: integer
+          STATE_REASON:
+            description: The reason associated with the opportunity state.
+            type:
+              - string
+              - "null"
+          FOR_OPPORTUNITY_STATE:
+            description:
+              The particular opportunity state that the reason applies
+              to.
+            type:
+              - string
+              - "null"
   organisations_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "organisations"
@@ -206,6 +1730,292 @@ definitions:
     $parameters:
       path: "/Organisations/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          ORGANISATION_ID:
+            description: The unique ID of the organisation.
+            type: integer
+          ORGANISATION_NAME:
+            description: The name of the organisation.
+            type:
+              - string
+              - "null"
+          BACKGROUND:
+            description: Background information or description about the organisation.
+            type:
+              - string
+              - "null"
+          IMAGE_URL:
+            description: URL of the image associated with the organisation.
+            type:
+              - string
+              - "null"
+          OWNER_USER_ID:
+            description: The user ID of the owner of the organisation.
+            type:
+              - integer
+              - "null"
+          DATE_CREATED_UTC:
+            description:
+              The date and time when the organisation record was created
+              in Coordinated Universal Time (UTC).
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            description:
+              The date and time when the organisation record was last updated
+              in Coordinated Universal Time (UTC).
+            type:
+              - string
+              - "null"
+            format: date-time
+          LAST_ACTIVITY_DATE_UTC:
+            description:
+              The date and time of the last activity related to the organisation
+              in Coordinated Universal Time (UTC).
+            type:
+              - string
+              - "null"
+            format: date-time
+          NEXT_ACTIVITY_DATE_UTC:
+            description:
+              The date and time of the next planned activity related to
+              the organisation in Coordinated Universal Time (UTC).
+            type:
+              - string
+              - "null"
+            format: date-time
+          CREATED_USER_ID:
+            description: The user ID of the user who created the organisation record.
+            type:
+              - integer
+              - "null"
+          PHONE:
+            description: The phone number associated with the organisation.
+            type:
+              - string
+              - "null"
+          PHONE_FAX:
+            description: The fax number associated with the organisation.
+            type:
+              - string
+              - "null"
+          WEBSITE:
+            description: Website URL of the organisation.
+            type:
+              - string
+              - "null"
+          ADDRESS_BILLING_STREET:
+            description: The street address of the billing address of the organisation.
+            type:
+              - string
+              - "null"
+          ADDRESS_BILLING_CITY:
+            description: The city of the billing address of the organisation.
+            type:
+              - string
+              - "null"
+          ADDRESS_BILLING_STATE:
+            description: The state of the billing address of the organisation.
+            type:
+              - string
+              - "null"
+          ADDRESS_BILLING_COUNTRY:
+            description: The country of the billing address of the organisation.
+            type:
+              - string
+              - "null"
+          ADDRESS_BILLING_POSTCODE:
+            description: The postal code of the billing address of the organisation.
+            type:
+              - string
+              - "null"
+          ADDRESS_SHIP_STREET:
+            description: The street address of the shipping address of the organisation.
+            type:
+              - string
+              - "null"
+          ADDRESS_SHIP_CITY:
+            description: The city of the shipping address of the organisation.
+            type:
+              - string
+              - "null"
+          ADDRESS_SHIP_STATE:
+            description: The state of the shipping address of the organisation.
+            type:
+              - string
+              - "null"
+          ADDRESS_SHIP_POSTCODE:
+            description: The postal code of the shipping address of the organisation.
+            type:
+              - string
+              - "null"
+          ADDRESS_SHIP_COUNTRY:
+            description: The country of the shipping address of the organisation.
+            type:
+              - string
+              - "null"
+          SOCIAL_LINKEDIN:
+            description: LinkedIn profile URL associated with the organisation.
+            type:
+              - string
+              - "null"
+          SOCIAL_FACEBOOK:
+            description: Facebook page URL associated with the organisation.
+            type:
+              - string
+              - "null"
+          SOCIAL_TWITTER:
+            description: Twitter handle associated with the organisation.
+            type:
+              - string
+              - "null"
+          VISIBLE_TEAM_ID:
+            description: The team ID that has visibility permission for the organisation.
+            type:
+              - integer
+              - "null"
+          VISIBLE_TO:
+            description: Visibility level of the organisation.
+            type:
+              - string
+              - "null"
+          CUSTOMFIELDS:
+            description: Custom fields associated with the organisation.
+            type: array
+            items:
+              type: object
+              properties:
+                FIELD_NAME:
+                  description: The name of the custom field.
+                  type:
+                    - string
+                    - "null"
+                FIELD_VALUE:
+                  description: The value of the custom field.
+                  type: object
+          TAGS:
+            description: Tags associated with the organisation.
+            type: array
+            items:
+              type: object
+              properties:
+                TAG_NAME:
+                  description: The name of the tag.
+                  type:
+                    - string
+                    - "null"
+          DATES:
+            description: Important dates associated with the organisation.
+            type: array
+            items:
+              type: object
+              properties:
+                DATE_ID:
+                  description: The ID of the date record.
+                  type:
+                    - integer
+                    - "null"
+                OCCASION_NAME:
+                  description: Name of the occasion associated with the date.
+                  type:
+                    - string
+                    - "null"
+                OCCASION_DATE:
+                  description: The date of a particular occasion.
+                  type:
+                    - string
+                    - "null"
+                REPEAT_YEARLY:
+                  description: Flag indicating if the occasion repeats yearly.
+                  type:
+                    - boolean
+                    - "null"
+                CREATE_TASK_YEARLY:
+                  description: Flag indicating if a task is created yearly.
+                  type:
+                    - boolean
+                    - "null"
+          EMAILDOMAINS:
+            description: Email domains associated with the organisation.
+            type: array
+            items:
+              type: object
+              properties:
+                EMAIL_DOMAIN_ID:
+                  description: The ID of the email domain.
+                  type:
+                    - integer
+                    - "null"
+                EMAIL_DOMAIN:
+                  description:
+                    The domain of an email address associated with the
+                    organisation.
+                  type:
+                    - string
+                    - "null"
+          LINKS:
+            description: Links related to the organisation.
+            type: array
+            items:
+              type: object
+              properties:
+                LINK_ID:
+                  description: The ID of the link.
+                  type:
+                    - integer
+                    - "null"
+                OBJECT_NAME:
+                  description:
+                    Name of the organisation or entity the link is associated
+                    with.
+                  type:
+                    - string
+                    - "null"
+                OBJECT_ID:
+                  description:
+                    The ID of the organisation or entity the link is associated
+                    with.
+                  type:
+                    - integer
+                    - "null"
+                LINK_OBJECT_NAME:
+                  description: Name of the object linked to.
+                  type:
+                    - string
+                    - "null"
+                LINK_OBJECT_ID:
+                  description: The ID of the object linked to.
+                  type:
+                    - integer
+                    - "null"
+                ROLE:
+                  description: Role of the organisation in the linked relationship.
+                  type:
+                    - string
+                    - "null"
+                DETAILS:
+                  description: Details of the link.
+                  type:
+                    - string
+                    - "null"
+                RELATIONSHIP_ID:
+                  description: The ID of the relationship between the linked objects.
+                  type:
+                    - integer
+                    - "null"
+                IS_FORWARD:
+                  description: Flag indicating if the link is in a forward direction.
+                  type:
+                    - boolean
+                    - "null"
   pipelines_stream:
     $ref: "#/definitions/base_stream"
     name: "pipelines"
@@ -213,6 +2023,35 @@ definitions:
     $parameters:
       path: "/Pipelines"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          PIPELINE_ID:
+            description: Unique identifier of the pipeline
+            type: integer
+          PIPELINE_NAME:
+            description: Name of the pipeline
+            type:
+              - string
+              - "null"
+          FOR_OPPORTUNITIES:
+            description: Flag indicating if the pipeline is for opportunities
+            type:
+              - boolean
+              - "null"
+          FOR_PROJECTS:
+            description: Flag indicating if the pipeline is for projects
+            type:
+              - boolean
+              - "null"
+          OWNER_USER_ID:
+            description: Unique identifier of the user who owns the pipeline
+            type:
+              - integer
+              - "null"
   pipeline_stages_stream:
     $ref: "#/definitions/base_stream"
     name: "pipeline_stages"
@@ -220,6 +2059,46 @@ definitions:
     $parameters:
       path: "/PipelineStages"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          STAGE_ID:
+            description: Unique identifier for the pipeline stage
+            type: integer
+          PIPELINE_ID:
+            description: Unique identifier for the pipeline to which the stage belongs
+            type:
+              - integer
+              - "null"
+          STAGE_NAME:
+            description: Name or label for the pipeline stage
+            type:
+              - string
+              - "null"
+          STAGE_ORDER:
+            description:
+              Numerical order value indicating the position of the pipeline
+              stage in the pipeline flow
+            type:
+              - integer
+              - "null"
+          ACTIVITYSET_ID:
+            description:
+              Unique identifier for the activity set associated with the
+              pipeline stage
+            type:
+              - integer
+              - "null"
+          OWNER_USER_ID:
+            description:
+              Unique identifier for the user who owns or is responsible
+              for the pipeline stage
+            type:
+              - integer
+              - "null"
   pricebook_entries_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "price_book_entries"
@@ -248,6 +2127,32 @@ definitions:
     $parameters:
       path: "/ProjectCategories"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          CATEGORY_ID:
+            description: Unique identifier for the project category
+            type: integer
+          CATEGORY_NAME:
+            description: The name or title of the project category
+            type:
+              - string
+              - "null"
+          ACTIVE:
+            description:
+              Indicates if the project category is currently active or
+              not
+            type:
+              - boolean
+              - "null"
+          BACKGROUND_COLOR:
+            description: The background color associated with the project category
+            type:
+              - string
+              - "null"
   projects_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "projects"
@@ -255,6 +2160,197 @@ definitions:
     $parameters:
       path: "/Projects/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          PROJECT_ID:
+            description: Unique identifier for the project.
+            type: integer
+          PROJECT_NAME:
+            description: Name of the project.
+            type:
+              - string
+              - "null"
+          STATUS:
+            description: Status of the project.
+            type:
+              - string
+              - "null"
+          PROJECT_DETAILS:
+            description: Details or description of the project.
+            type:
+              - string
+              - "null"
+          STARTED_DATE:
+            description: Date and time when the project was started.
+            type:
+              - string
+              - "null"
+            format: date-time
+          COMPLETED_DATE:
+            description: Date and time when the project was completed.
+            type:
+              - string
+              - "null"
+            format: date-time
+          OPPORTUNITY_ID:
+            description:
+              Unique identifier of the opportunity associated with the
+              project.
+            type:
+              - integer
+              - "null"
+          CATEGORY_ID:
+            description: Unique identifier for the project category.
+            type:
+              - integer
+              - "null"
+          PIPELINE_ID:
+            description: Unique identifier of the pipeline to which the project belongs.
+            type:
+              - integer
+              - "null"
+          STAGE_ID:
+            description: Unique identifier of the stage to which the project belongs.
+            type:
+              - integer
+              - "null"
+          IMAGE_URL:
+            description: URL of the image associated with the project.
+            type:
+              - string
+              - "null"
+          OWNER_USER_ID:
+            description: Unique identifier of the user who owns the project.
+            type:
+              - integer
+              - "null"
+          DATE_CREATED_UTC:
+            description: Date and time when the project was created (in UTC).
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            description: Date and time when the project was last updated (in UTC).
+            type:
+              - string
+              - "null"
+            format: date-time
+          LAST_ACTIVITY_DATE_UTC:
+            description:
+              Date and time of the last activity related to the project
+              (in UTC).
+            type:
+              - string
+              - "null"
+          NEXT_ACTIVITY_DATE_UTC:
+            description:
+              Date and time of the next activity related to the project
+              (in UTC).
+            type:
+              - string
+              - "null"
+          CREATED_USER_ID:
+            description: Unique identifier of the user who created the project.
+            type:
+              - integer
+              - "null"
+          RESPONSIBLE_USER_ID:
+            description: Unique identifier of the user responsible for the project.
+            type:
+              - integer
+              - "null"
+          VISIBLE_TEAM_ID:
+            description: Unique identifier of the team that can view the project.
+            type:
+              - integer
+              - "null"
+          VISIBLE_TO:
+            description: Visibility setting for the project.
+            type:
+              - string
+              - "null"
+          CUSTOMFIELDS:
+            description: Custom fields associated with the project.
+            type: array
+            items:
+              type: object
+              properties:
+                FIELD_NAME:
+                  description: Name of the custom field.
+                  type:
+                    - string
+                    - "null"
+                FIELD_VALUE:
+                  description: Value of the custom field.
+                  type: object
+          TAGS:
+            description: Tags associated with the project.
+            type: array
+            items:
+              type: object
+              properties:
+                TAG_NAME:
+                  description: Name of the tag.
+                  type:
+                    - string
+                    - "null"
+          LINKS:
+            description: Links associated with the project.
+            type: array
+            items:
+              type: object
+              properties:
+                LINK_ID:
+                  description: Unique identifier for the link.
+                  type:
+                    - integer
+                    - "null"
+                OBJECT_NAME:
+                  description: Name of the object.
+                  type:
+                    - string
+                    - "null"
+                OBJECT_ID:
+                  description: Unique identifier of the object.
+                  type:
+                    - integer
+                    - "null"
+                LINK_OBJECT_NAME:
+                  description: Name of the linked object.
+                  type:
+                    - string
+                    - "null"
+                LINK_OBJECT_ID:
+                  description: Unique identifier of the linked object.
+                  type:
+                    - integer
+                    - "null"
+                ROLE:
+                  description: Role associated with the link.
+                  type:
+                    - string
+                    - "null"
+                DETAILS:
+                  description: Details of the link.
+                  type:
+                    - string
+                    - "null"
+                RELATIONSHIP_ID:
+                  description: Unique identifier for the relationship.
+                  type:
+                    - integer
+                    - "null"
+                IS_FORWARD:
+                  description: Flag indicating if the link is forward.
+                  type:
+                    - boolean
+                    - "null"
   prospects_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "prospects"
@@ -262,6 +2358,216 @@ definitions:
     $parameters:
       path: "/Prospect/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          PROSPECT_ID:
+            description: The ID of the prospect.
+            type: integer
+          LEAD_ID:
+            description: The ID of the lead associated with the prospect.
+            type:
+              - integer
+              - "null"
+          CONTACT_ID:
+            description: The ID of the contact associated with the prospect.
+            type:
+              - integer
+              - "null"
+          ORGANISATION_ID:
+            description: The ID of the organization associated with the prospect.
+            type:
+              - integer
+              - "null"
+          SALUTATION:
+            description: The salutation or title used when addressing the prospect.
+            type:
+              - string
+              - "null"
+          FIRST_NAME:
+            description: The first name of the prospect.
+            type:
+              - string
+              - "null"
+          LAST_NAME:
+            description: The last name of the prospect.
+            type:
+              - string
+              - "null"
+          ORGANISATION_NAME:
+            description: The name of the organization associated with the prospect.
+            type:
+              - string
+              - "null"
+          TITLE:
+            description: The job title of the prospect.
+            type:
+              - string
+              - "null"
+          EMAIL_ADDRESS:
+            description: The email address of the prospect.
+            type:
+              - string
+              - "null"
+          PHONE:
+            description: The phone number of the prospect.
+            type:
+              - string
+              - "null"
+          MOBILE:
+            description: The mobile number of the prospect.
+            type:
+              - string
+              - "null"
+          FAX:
+            description: The fax number of the prospect.
+            type:
+              - string
+              - "null"
+          WEBSITE:
+            description: The website URL of the prospect's organization.
+            type:
+              - string
+              - "null"
+          ADDRESS_STREET:
+            description: The street address of the prospect.
+            type:
+              - string
+              - "null"
+          ADDRESS_CITY:
+            description: The city where the prospect is located.
+            type:
+              - string
+              - "null"
+          ADDRESS_STATE:
+            description: The state or region where the prospect is located.
+            type:
+              - string
+              - "null"
+          ADDRESS_POSTCODE:
+            description: The postcode of the prospect's address.
+            type:
+              - string
+              - "null"
+          ADDRESS_COUNTRY:
+            description: The country where the prospect is located.
+            type:
+              - string
+              - "null"
+          INDUSTRY:
+            description: The industry of the prospect.
+            type:
+              - string
+              - "null"
+          EMPLOYEE_COUNT:
+            description: The number of employees in the prospect's organization.
+            type:
+              - integer
+              - "null"
+          SCORE:
+            description: The score assigned to the prospect.
+            type:
+              - integer
+              - "null"
+          GRADE:
+            description: The grade of the prospect.
+            type:
+              - string
+              - "null"
+          DESCRIPTION:
+            description: A description or notes related to the prospect.
+            type:
+              - string
+              - "null"
+          DO_NOT_EMAIL:
+            description: Indicates if the prospect should not be contacted via email.
+            type:
+              - boolean
+              - "null"
+          DO_NOT_CALL:
+            description: Indicates if the prospect should not be contacted via phone.
+            type:
+              - boolean
+              - "null"
+          OPTED_OUT:
+            description: Indicates if the prospect has opted out of communications.
+            type:
+              - boolean
+              - "null"
+          LAST_ACTIVITY_DATE_UTC:
+            description: The date and time of the prospect's last activity in UTC.
+            type:
+              - string
+              - "null"
+            format: date-time
+          CREATED_USER_ID:
+            description: The ID of the user who created the prospect.
+            type:
+              - integer
+              - "null"
+          OWNER_USER_ID:
+            description: The ID of the user who owns or is responsible for the prospect.
+            type:
+              - integer
+              - "null"
+          DATE_CREATED_UTC:
+            description: The date and time when the prospect was created in UTC.
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            description: The date and time when the prospect was last updated in UTC.
+            type:
+              - string
+              - "null"
+            format: date-time
+          DO_NOT_SYNC:
+            description: Indicates if the prospect should not be synchronized.
+            type:
+              - boolean
+              - "null"
+          LEAD_CONVERSION_DATE_UTC:
+            description:
+              The date and time when the prospect was converted to a lead
+              in UTC.
+            type:
+              - string
+              - "null"
+            format: date-time
+          GRADE_PROFILE_ID:
+            description: The ID of the grade profile associated with the prospect.
+            type:
+              - integer
+              - "null"
+          CUSTOMFIELDS:
+            description: Custom fields associated with the prospect
+            type: array
+            items:
+              type: object
+              properties:
+                FIELD_NAME:
+                  description: The name of a custom field.
+                  type:
+                    - string
+                    - "null"
+                FIELD_VALUE:
+                  description: The value of the custom field.
+                  type: object
+          TAGS:
+            description: Tags associated with the prospect
+            type: array
+            items:
+              type: object
+              properties:
+                TAG_NAME:
+                  description: The name of a tag associated with the prospect.
+                  type:
+                    - string
+                    - "null"
   quote_products_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "quote_products"
@@ -283,6 +2589,47 @@ definitions:
     $parameters:
       path: "/Relationships"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          RELATIONSHIP_ID:
+            description: The unique identifier for this relationship.
+            type: integer
+          FORWARD_TITLE:
+            description: The name or title of the object on one side of the relationship.
+            type:
+              - string
+              - "null"
+          FORWARD:
+            description: The ID of the object on one side of the relationship.
+            type:
+              - string
+              - "null"
+          REVERSE_TITLE:
+            description:
+              The name or title of the object on the other side of the
+              relationship.
+            type:
+              - string
+              - "null"
+          REVERSE:
+            description: The ID of the object on the other side of the relationship.
+            type:
+              - string
+              - "null"
+          FOR_CONTACTS:
+            description: List of contacts associated with this relationship.
+            type:
+              - boolean
+              - "null"
+          FOR_ORGANISATIONS:
+            description: List of organizations associated with this relationship.
+            type:
+              - boolean
+              - "null"
   tags_stream:
     $ref: "#/definitions/base_stream"
     name: "tags"
@@ -297,6 +2644,34 @@ definitions:
     $parameters:
       path: "/TaskCategories"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          CATEGORY_ID:
+            description: Unique identifier for the task category.
+            type: integer
+          CATEGORY_NAME:
+            description: The name or label assigned to the task category.
+            type:
+              - string
+              - "null"
+          ACTIVE:
+            description:
+              Flag indicating if the task category is currently active
+              or not.
+            type:
+              - boolean
+              - "null"
+          BACKGROUND_COLOR:
+            description:
+              The background color associated with the task category for
+              visual representation.
+            type:
+              - string
+              - "null"
   tasks_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "tasks"
@@ -304,6 +2679,233 @@ definitions:
     $parameters:
       path: "/Tasks/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          TASK_ID:
+            description: The unique ID of the task.
+            type: integer
+          TITLE:
+            description: The title or name of the task.
+            type:
+              - string
+              - "null"
+          CATEGORY_ID:
+            description: The category ID associated with the task.
+            type:
+              - integer
+              - "null"
+          DUE_DATE:
+            description: The deadline or due date for the task.
+            type:
+              - string
+              - "null"
+            format: date-time
+          COMPLETED_DATE_UTC:
+            description: The date and time when the task was completed.
+            type:
+              - string
+              - "null"
+            format: date-time
+          COMPLETED:
+            description: Indicates if the task has been completed or not.
+            type:
+              - boolean
+              - "null"
+          DETAILS:
+            description: Additional details or description of the task.
+            type:
+              - string
+              - "null"
+          STATUS:
+            description: The current status of the task.
+            type:
+              - string
+              - "null"
+          PRIORITY:
+            description: The priority level of the task.
+            type:
+              - integer
+              - "null"
+          PERCENT_COMPLETE:
+            description: The completion percentage of the task.
+            type:
+              - integer
+              - "null"
+          PUBLICLY_VISIBLE:
+            description: Indicates if the task is publicly visible.
+            type:
+              - "null"
+              - boolean
+          START_DATE:
+            description: The start date of the task.
+            type:
+              - string
+              - "null"
+            format: date-time
+          MILESTONE_ID:
+            description: The milestone ID associated with the task.
+            type:
+              - integer
+              - "null"
+          RESPONSIBLE_USER_ID:
+            description: The user ID of the individual responsible for the task.
+            type:
+              - integer
+              - "null"
+          OWNER_USER_ID:
+            description: The user ID of the owner of the task.
+            type:
+              - integer
+              - "null"
+          DATE_CREATED_UTC:
+            description: The date and time when the task was created.
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            description: The date and time when the task was last updated.
+            type:
+              - string
+              - "null"
+            format: date-time
+          EMAIL_ID:
+            description: The email ID associated with the task.
+            type:
+              - integer
+              - "null"
+          PROJECT_ID:
+            description: The project ID associated with the task.
+            type:
+              - integer
+              - "null"
+          REMINDER_DATE_UTC:
+            description: The date and time for the reminder of the task.
+            type:
+              - string
+              - "null"
+            format: date-time
+          REMINDER_SENT:
+            description: Indicates if a reminder has been sent for the task.
+            type:
+              - boolean
+              - "null"
+          OWNER_VISIBLE:
+            description: Indicates if the owner is visible or not.
+            type:
+              - boolean
+              - "null"
+          STAGE_ID:
+            description: The stage ID of the task.
+            type:
+              - integer
+              - "null"
+          ASSIGNED_BY_USER_ID:
+            description: The user ID of the individual who assigned the task.
+            type:
+              - integer
+              - "null"
+          PARENT_TASK_ID:
+            description: The ID of the parent task if this task is a subtask.
+            type:
+              - integer
+              - "null"
+          RECURRENCE:
+            description: Details of any recurring pattern for the task.
+            type:
+              - string
+              - "null"
+          OPPORTUNITY_ID:
+            description: The opportunity ID associated with the task.
+            type:
+              - integer
+              - "null"
+          ASSIGNED_TEAM_ID:
+            description: The team ID to which the task is assigned.
+            type:
+              - integer
+              - "null"
+          ASSIGNED_DATE_UTC:
+            description: The date and time when the task was assigned.
+            type:
+              - string
+              - "null"
+            format: date-time
+          CREATED_USER_ID:
+            description: The user ID of the user who created the task.
+            type:
+              - integer
+              - "null"
+          CUSTOMFIELDS:
+            description: Custom fields associated with the task.
+            type: array
+            items:
+              type: object
+              properties:
+                FIELD_NAME:
+                  description: The name of the custom field.
+                  type:
+                    - string
+                    - "null"
+                FIELD_VALUE:
+                  description: The value of the custom field.
+                  type: object
+          LINKS:
+            description: Links related to the task.
+            type: array
+            items:
+              type: object
+              properties:
+                LINK_ID:
+                  description: The ID of the link.
+                  type:
+                    - integer
+                    - "null"
+                OBJECT_NAME:
+                  description: The name of the object linked to the task.
+                  type:
+                    - string
+                    - "null"
+                OBJECT_ID:
+                  description: The ID of the object linked to the task.
+                  type:
+                    - integer
+                    - "null"
+                LINK_OBJECT_NAME:
+                  description: The name of the object associated with the link.
+                  type:
+                    - string
+                    - "null"
+                LINK_OBJECT_ID:
+                  description: The object ID associated with the link.
+                  type:
+                    - integer
+                    - "null"
+                ROLE:
+                  description: The role associated with the link.
+                  type:
+                    - string
+                    - "null"
+                DETAILS:
+                  description: Details or description of the link.
+                  type:
+                    - string
+                    - "null"
+                RELATIONSHIP_ID:
+                  description: The relationship ID associated with the link.
+                  type:
+                    - integer
+                    - "null"
+                IS_FORWARD:
+                  description: Indicates if the link is forward or not.
+                  type:
+                    - boolean
+                    - "null"
   team_members_stream:
     $ref: "#/definitions/base_stream"
     name: "team_members"
@@ -311,6 +2913,25 @@ definitions:
     $parameters:
       path: "/TeamMembers"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          PERMISSION_ID:
+            description: The permission level associated with the team member
+            type:
+              - integer
+              - "null"
+          TEAM_ID:
+            description: The identifier for the team to which the member belongs
+            type:
+              - integer
+              - "null"
+          MEMBER_USER_ID:
+            description: The unique identifier for the team member user
+            type: integer
   teams_stream:
     $ref: "#/definitions/base_stream"
     name: "teams"
@@ -318,6 +2939,41 @@ definitions:
     $parameters:
       path: "/Teams"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          TEAM_ID:
+            description: The unique identifier for the team.
+            type: integer
+          TEAM_NAME:
+            description: The name of the team.
+            type:
+              - string
+              - "null"
+          ANONYMOUS_TEAM:
+            description: Indicates if the team is anonymous or not.
+            type:
+              - boolean
+              - "null"
+          DATE_CREATED_UTC:
+            description: The date and time when the team was created.
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            description: The date and time when the team was last updated.
+            type:
+              - string
+              - "null"
+            format: date-time
+          TEAMMEMBERS:
+            description: List of team members associated with the team.
+            type: array
   tickets_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "tickets"
@@ -332,6 +2988,112 @@ definitions:
     $parameters:
       path: "/Users/Search"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        type: object
+        properties:
+          USER_ID:
+            description: The unique identifier of the user
+            type: integer
+          CONTACT_ID:
+            description: The unique identifier for the user contact
+            type:
+              - integer
+              - "null"
+          FIRST_NAME:
+            description: The first name of the user
+            type:
+              - string
+              - "null"
+          LAST_NAME:
+            description: The last name of the user
+            type:
+              - string
+              - "null"
+          TIMEZONE_ID:
+            description: The timezone identifier of the user
+            type:
+              - string
+              - "null"
+          EMAIL_ADDRESS:
+            description: The email address of the user
+            type:
+              - string
+              - "null"
+          EMAIL_DROPBOX_IDENTIFIER:
+            description: The Dropbox identifier of the user
+            type:
+              - string
+              - "null"
+          EMAIL_DROPBOX_ADDRESS:
+            description: The Dropbox email address associated with the user
+            type:
+              - string
+              - "null"
+          ADMINISTRATOR:
+            description: Indicates if the user has administrator privileges
+            type:
+              - boolean
+              - "null"
+          ACCOUNT_OWNER:
+            description: Indicates if the user is the owner of the account
+            type:
+              - boolean
+              - "null"
+          ACTIVE:
+            description: Indicates if the user is currently active
+            type:
+              - boolean
+              - "null"
+          DATE_CREATED_UTC:
+            description: The date and time when the user was created in UTC timezone
+            type:
+              - string
+              - "null"
+            format: date-time
+          DATE_UPDATED_UTC:
+            description: The date and time when the user was last updated in UTC timezone
+            type:
+              - string
+              - "null"
+            format: date-time
+          USER_CURRENCY:
+            description: The currency used by the user
+            type:
+              - string
+              - "null"
+          CONTACT_DISPLAY:
+            description: The display name of the user
+            type:
+              - string
+              - "null"
+          CONTACT_ORDER:
+            description: The order of the contact
+            type:
+              - string
+              - "null"
+          TASK_WEEK_START:
+            description: The start day of the week for tasks
+            type:
+              - integer
+              - "null"
+          INSTANCE_ID:
+            description: The unique identifier of the instance
+            type:
+              - integer
+              - "null"
+          PROFILE_ID:
+            description: The profile identifier of the user
+            type:
+              - integer
+              - "null"
+          ROLE_ID:
+            description: The role identifier of the user
+            type:
+              - integer
+              - "null"
 streams:
   - "#/definitions/activity_sets_stream"
   - "#/definitions/contacts_stream"
@@ -342,33 +3104,33 @@ streams:
   - "#/definitions/knowledge_article_categories_stream"
   - "#/definitions/knowledge_article_folders_stream"
   - "#/definitions/knowledge_articles_stream"
-  # - "#/definitions/leads_stream"
+    # - "#/definitions/leads_stream"
   - "#/definitions/lead_sources_stream"
   - "#/definitions/lead_statuses_stream"
   - "#/definitions/milestones_stream"
   - "#/definitions/notes_stream"
   - "#/definitions/opportunities_stream"
   - "#/definitions/opportunity_categories_stream"
-  # - "#/definitions/opportunity_products_stream"
+    # - "#/definitions/opportunity_products_stream"
   - "#/definitions/opportunity_state_reasons_stream"
   - "#/definitions/organisations_stream"
   - "#/definitions/pipelines_stream"
   - "#/definitions/pipeline_stages_stream"
-  # - "#/definitions/pricebook_entries_stream"
-  # - "#/definitions/pricebooks_stream"
-  # - "#/definitions/products_stream"
+    # - "#/definitions/pricebook_entries_stream"
+    # - "#/definitions/pricebooks_stream"
+    # - "#/definitions/products_stream"
   - "#/definitions/project_categories_stream"
   - "#/definitions/projects_stream"
   - "#/definitions/prospects_stream"
-  # - "#/definitions/quote_products_stream"
-  # - "#/definitions/quotes_stream"
+    # - "#/definitions/quote_products_stream"
+    # - "#/definitions/quotes_stream"
   - "#/definitions/relationships_stream"
-  # - "#/definitions/tags_stream"
+    # - "#/definitions/tags_stream"
   - "#/definitions/task_categories_stream"
   - "#/definitions/tasks_stream"
   - "#/definitions/team_members_stream"
   - "#/definitions/teams_stream"
-  # - "#/definitions/tickets_stream"
+    # - "#/definitions/tickets_stream"
   - "#/definitions/users_stream"
 
 check:
@@ -376,20 +3138,20 @@ check:
   stream_names:
     - "activity_sets"
     - "contacts"
-    # - "countries"
-    # - "currencies"
-    # - "opportunities"
-    # - "opportunity_state_reasons"
-    # - "organizations"
-    # - "pipelines"
-    # - "pipeline_stages"
-    # - "projects"
-    # - "relationships"
-    # - "task_categories"
-    # - "tasks"
-    # - "team_members"
-    # - "teams"
-    # - "users"
+      # - "countries"
+      # - "currencies"
+      # - "opportunities"
+      # - "opportunity_state_reasons"
+      # - "organizations"
+      # - "pipelines"
+      # - "pipeline_stages"
+      # - "projects"
+      # - "relationships"
+      # - "task_categories"
+      # - "tasks"
+      # - "team_members"
+      # - "teams"
+      # - "users"
 
 spec:
   type: Spec

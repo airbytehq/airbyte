@@ -5,14 +5,16 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import com.google.cloud.bigquery.BigQuery;
+import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer;
+import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager;
+import io.airbyte.cdk.integrations.destination.async.state.FlushFailure;
+import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction;
-import io.airbyte.cdk.integrations.destination_async.AsyncStreamConsumer;
-import io.airbyte.cdk.integrations.destination_async.OnCloseFunction;
-import io.airbyte.cdk.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
@@ -28,7 +30,7 @@ public class BigQueryRecordStandardConsumer extends AsyncStreamConsumer {
                                         OnCloseFunction onClose,
                                         BigQuery bigQuery,
                                         ConfiguredAirbyteCatalog catalog,
-                                        String defaultNamespace,
+                                        Optional<String> defaultNamespace,
                                         Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> uploaderMap) {
     super(outputRecordCollector,
         onStart,
@@ -37,6 +39,7 @@ public class BigQueryRecordStandardConsumer extends AsyncStreamConsumer {
         catalog,
         new BufferManager((long) (Runtime.getRuntime().maxMemory() * 0.5)),
         defaultNamespace,
+        new FlushFailure(),
         Executors.newFixedThreadPool(2));
   }
 

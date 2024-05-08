@@ -45,7 +45,6 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
     state.put(IS_COMPRESSED, dbHistory.isCompressed());
 
     final JsonNode asJson = Jsons.jsonNode(state);
-
     LOGGER.info("debezium state offset: {}", Jsons.jsonNode(offset));
 
     final CdcState cdcState = new CdcState().withState(asJson);

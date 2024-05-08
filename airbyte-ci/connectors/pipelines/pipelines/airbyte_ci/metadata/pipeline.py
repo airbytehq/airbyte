@@ -5,6 +5,7 @@
 import uuid
 from typing import Optional
 
+import asyncclick as click
 import dagger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
@@ -153,9 +154,12 @@ class TestOrchestrator(PoetryRunStep):
 
 
 async def run_metadata_orchestrator_deploy_pipeline(
+    ctx: click.Context,
     is_local: bool,
     git_branch: str,
     git_revision: str,
+    diffed_branch: str,
+    git_repo_url: str,
     report_output_prefix: str,
     gha_workflow_run_url: Optional[str],
     dagger_logs_url: Optional[str],
@@ -169,6 +173,8 @@ async def run_metadata_orchestrator_deploy_pipeline(
         is_local=is_local,
         git_branch=git_branch,
         git_revision=git_revision,
+        diffed_branch=diffed_branch,
+        git_repo_url=git_repo_url,
         report_output_prefix=report_output_prefix,
         gha_workflow_run_url=gha_workflow_run_url,
         dagger_logs_url=dagger_logs_url,

@@ -3,7 +3,8 @@
 This page contains the setup guide and reference information for the Serpstat source connector.
 
 ## Setup guide
-### Step 1: Get Serpstat API key 
+
+### Step 1: Get Serpstat API key
 
 #### For new Serpstat users
 
@@ -30,23 +31,23 @@ Go to [My account](https://serpstat.com/users/profile/) page and click **Copy** 
 
 The Serpstat source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* Full refresh
+- Full refresh
 
 ## Supported Streams
 
-* [Domains summary](https://serpstat.com/api/412-summarnij-otchet-po-domenu-v4-serpstatdomainproceduregetdomainsinfo/)
-* [Domain history](https://serpstat.com/api/420-istoriya-po-domenu-v4-serpstatdomainproceduregetdomainshistory/)
-* [Domain keywords](https://serpstat.com/api/584-top-search-engine-keywords-by-v4-domain-serpstatdomainproceduregetdomainkeywords/)
-* [Domain keywords by region](https://serpstat.com/api/sorting-the-domain-by-keywords/)
-* [Domain competitors](https://serpstat.com/api/590-domain-competitors-in-v4-search-result-serpstatdomainproceduregetcompetitors/)
-* [Domain top pages](https://serpstat.com/api/588-domain-top-urls-v4-serpstatdomainproceduregettopurls/)
+- [Domains summary](https://serpstat.com/api/412-summarnij-otchet-po-domenu-v4-serpstatdomainproceduregetdomainsinfo/)
+- [Domain history](https://serpstat.com/api/420-istoriya-po-domenu-v4-serpstatdomainproceduregetdomainshistory/)
+- [Domain keywords](https://serpstat.com/api/584-top-search-engine-keywords-by-v4-domain-serpstatdomainproceduregetdomainkeywords/)
+- [Domain keywords by region](https://serpstat.com/api/sorting-the-domain-by-keywords/)
+- [Domain competitors](https://serpstat.com/api/590-domain-competitors-in-v4-search-result-serpstatdomainproceduregetcompetitors/)
+- [Domain top pages](https://serpstat.com/api/588-domain-top-urls-v4-serpstatdomainproceduregettopurls/)
 
-## Performance considerations 
-    
+## Performance considerations
+
 The maximum sync speed is limited by the number of requests per second per API key. See this limit in your [Serpstat account](https://serpstat.com/users/profile/).
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                                       |
-|:--------| :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
-| 0.1.0   | 2023-08-21 | [28147](https://github.com/airbytehq/airbyte/pull/28147)   | Release Serpstat Connector                                                                |
+| Version | Date       | Pull Request                                             | Subject                    |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------- |
+| 0.1.0   | 2023-08-21 | [28147](https://github.com/airbytehq/airbyte/pull/28147) | Release Serpstat Connector |
