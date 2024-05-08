@@ -93,8 +93,8 @@ Firebolt. Each table will contain 3 columns:
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject                   |
-| :------ | :--------- | :-------------------------------------------------------- | :------------------------ |
-| 1.0.0   | TBD | TBD | Service account authentication support  |
-| 0.1.1   | 2024-03-05 | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector      |
-| 0.1.0   | 2022-05-18 | [13118](https://github.com/airbytehq/airbyte/pull/13118)  | New Destination: Firebolt |
+| Version | Date       | Pull Request                                             | Subject                                |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------- |
+| 0.2.0   | 2024-05-08 | [36443](https://github.com/airbytehq/airbyte/pull/36443) | Service account authentication support |
+| 0.1.1   | 2024-03-05 | [35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector                   |
+| 0.1.0   | 2022-05-18 | [13118](https://github.com/airbytehq/airbyte/pull/13118) | New Destination: Firebolt              |
