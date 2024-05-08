@@ -13,11 +13,9 @@ class DefaultBackoffStrategy(BackoffStrategy):
         self,
         max_retries: int = 5,
         max_time: int = 60 * 10,
-        retry_factor: float = 5,
     ):
         self.max_retries = max_retries
         self.max_time = max_time
-        self.retry_factor = retry_factor
 
     def backoff_time(self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]]) -> Optional[float]:
         """

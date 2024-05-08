@@ -34,6 +34,11 @@ BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
 
 class HttpClient:
+
+    _DEFAULT_MAX_RETRY = 5
+    _DEFAULT_RETRY_FACTOR = 5
+    _DEFAULT_MAX_TIME = 60 * 10
+
     def __init__(
         self,
         name: str,
@@ -139,13 +144,13 @@ class HttpClient:
         least one attempt and some retry attempts, to comply this logic we add
         1 to expected retries attempts.
         """
-        if self._backoff_strategy.max_retries is not None:
-            max_tries = max(0, self._backoff_strategy.max_retries) + 1
+        max_retries = self._backoff_strategy.max_retries or self._DEFAULT_MAX_RETRY  # type: ignore # max_retries is included in default implemention but optional
+        max_tries = max(0, max_retries) + 1
 
-        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=self._backoff_strategy.max_time)(self._send)
-        backoff_handler = default_backoff_handler(
-            max_tries=max_tries, max_time=self._backoff_strategy.max_time, factor=self._backoff_strategy.retry_factor
-        )
+        max_time = self._backoff_strategy.max_time or self._DEFAULT_MAX_TIME  # type: ignore # max_time is included in default implemention but optional
+
+        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
+        backoff_handler = default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self._DEFAULT_RETRY_FACTOR)
         # backoff handlers wrap _send, so it will always return a response
         response = backoff_handler(user_backoff_handler)(request, request_kwargs)
 

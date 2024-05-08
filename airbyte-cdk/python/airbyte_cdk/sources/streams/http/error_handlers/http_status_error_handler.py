@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import logging
-from typing import Any, Mapping, Optional, Tuple, Union
+from typing import Any, Mapping, Optional, Type, Union
 
 import requests
 from airbyte_cdk.models import FailureType
@@ -13,7 +13,7 @@ from .response_models import ErrorResolution, ResponseAction
 
 class HttpStatusErrorHandler(ErrorHandler):
 
-    _DEFAULT_ERROR_MAPPING: Mapping[Union[int, str, Exception], ErrorResolution] = {
+    _DEFAULT_ERROR_MAPPING: Mapping[Union[int, str, Type[Exception]], ErrorResolution] = {
         RequestException: ErrorResolution(
             response_action=ResponseAction.RETRY,
             failure_type=FailureType.transient_error,
@@ -69,7 +69,7 @@ class HttpStatusErrorHandler(ErrorHandler):
     def __init__(
         self,
         logger: logging.Logger,
-        error_mapping: Optional[Mapping[Union[int, str, Exception], ErrorResolution]] = None,
+        error_mapping: Optional[Mapping[Union[int, str, type[Exception]], ErrorResolution]] = None,
     ) -> None:
         """
         Initialize the HttpStatusErrorHandler.
@@ -88,7 +88,7 @@ class HttpStatusErrorHandler(ErrorHandler):
         """
 
         if isinstance(response_or_exception, Exception):
-            mapped_error: ErrorResolution = self._error_mapping.get(response_or_exception.__class__)
+            mapped_error: Optional[ErrorResolution] = self._error_mapping.get(response_or_exception.__class__)
 
             if mapped_error is not None:
                 return mapped_error
@@ -118,7 +118,7 @@ class HttpStatusErrorHandler(ErrorHandler):
 
             error_key = response_or_exception.status_code
 
-            mapped_error: ErrorResolution = self._error_mapping.get(error_key)
+            mapped_error = self._error_mapping.get(error_key)
 
             if mapped_error is not None:
                 return mapped_error

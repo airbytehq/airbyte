@@ -21,10 +21,10 @@ class BaseBackoffException(requests.exceptions.HTTPError):
                 error_message
                 or f"Request URL: {request.url}, Response Code: {response_or_exception.status_code}, Response Text: {response_or_exception.text}"
             )
+            super().__init__(error_message, request=request, response=response_or_exception)
         else:
             error_message = error_message or f"Request URL: {request.url}, Exception: {response_or_exception}"
-
-        super().__init__(error_message, request=request, response=response_or_exception)
+            super().__init__(error_message, request=request, response=None)
 
 
 class RequestBodyException(Exception):
