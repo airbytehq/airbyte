@@ -4,10 +4,10 @@
 
 package io.airbyte.integrations.destination.databricks.sync
 
+import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil as exceptions
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
-import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil as exceptions
-import io.airbyte.commons.concurrency.CompletableFutures
+import io.airbyte.commons.concurrency.CompletableFutures.allOf
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksDestinationHandler
@@ -21,8 +21,6 @@ import java.util.concurrent.Executors
 import java.util.stream.Stream
 import org.apache.commons.lang3.concurrent.BasicThreadFactory
 
-private val log = KotlinLogging.logger {}
-
 class DatabricksSyncOperations(
     private val parsedCatalog: ParsedCatalog,
     private val destinationHandler: DatabricksDestinationHandler,
@@ -34,6 +32,8 @@ class DatabricksSyncOperations(
             BasicThreadFactory.Builder().namingPattern("sync-operations-%d").build(),
         )
 ) : SyncOperations {
+
+    private val log = KotlinLogging.logger {}
     override fun initializeStreams() {
         log.info { "Preparing required schemas and tables for all streams" }
         // Notes for What does WriteConfig hold ?
@@ -58,7 +58,7 @@ class DatabricksSyncOperations(
                 }
                 .toList()
         val futuresResult =
-            CompletableFutures.allOf(initializationFutures).toCompletableFuture().join()
+            allOf(initializationFutures).toCompletableFuture().join()
         exceptions.getResultsOrLogAndThrowFirst(
             "Following exceptions occurred during sync initialization",
             futuresResult,
@@ -95,7 +95,7 @@ class DatabricksSyncOperations(
                     )
                 }
                 .toList()
-        val futuresResult = CompletableFutures.allOf(finalizeFutures).toCompletableFuture().join()
+        val futuresResult = allOf(finalizeFutures).toCompletableFuture().join()
         exceptions.getResultsOrLogAndThrowFirst(
             "Following exceptions occurred while finalizing the sync",
             futuresResult,
