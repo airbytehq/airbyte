@@ -820,6 +820,10 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   @Override
   public boolean supportResumableFullRefresh(final JdbcDatabase database, final ConfiguredAirbyteStream airbyteStream) {
+    if (!finalListOfStreamsToBeSyncedViaCtid.contains(airbyteStream)) {
+      return false;
+    }
+
     final FileNodeHandler fileNodeHandler =
         PostgresQueryUtils.fileNodeForStreams(database,
             List.of(airbyteStream),
