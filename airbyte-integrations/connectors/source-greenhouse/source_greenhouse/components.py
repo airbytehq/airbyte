@@ -7,13 +7,13 @@ from dataclasses import InitVar, dataclass
 from typing import Any, ClassVar, Iterable, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.incremental import Cursor
+from airbyte_cdk.sources.declarative.incremental import DeclarativeCursor
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
 
 
 @dataclass
-class GreenHouseSlicer(Cursor):
+class GreenHouseSlicer(DeclarativeCursor):
     parameters: InitVar[Mapping[str, Any]]
     cursor_field: str
     request_cursor_field: str

@@ -10,7 +10,7 @@ from typing import Any, Callable, Iterable, List, Mapping, Optional, Set, Tuple,
 import requests
 from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
-from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
+from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
@@ -58,7 +58,7 @@ class SimpleRetriever(Retriever):
     _primary_key: str = field(init=False, repr=False, default="")
     paginator: Optional[Paginator] = None
     stream_slicer: StreamSlicer = SinglePartitionRouter(parameters={})
-    cursor: Optional[Cursor] = None
+    cursor: Optional[DeclarativeCursor] = None
     ignore_stream_slicer_parameters_on_paginated_requests: bool = False
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:

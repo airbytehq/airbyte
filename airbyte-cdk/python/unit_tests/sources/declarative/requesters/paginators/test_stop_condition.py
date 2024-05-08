@@ -4,7 +4,7 @@
 
 from unittest.mock import Mock, call
 
-from airbyte_cdk.sources.declarative.incremental import Cursor
+from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.stop_condition import (
     CursorStopCondition,
@@ -21,7 +21,7 @@ ANY_RESPONSE = Mock()
 
 @fixture
 def mocked_cursor():
-    return Mock(spec=Cursor)
+    return Mock(spec=DeclarativeCursor)
 
 
 @fixture

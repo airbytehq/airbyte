@@ -6,7 +6,7 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, Mapping, Optional, Union
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
-from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
+from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
@@ -14,7 +14,7 @@ from airbyte_cdk.sources.message import MessageRepository
 
 
 @dataclass
-class ZendeskChatIdIncrementalCursor(Cursor):
+class ZendeskChatIdIncrementalCursor(DeclarativeCursor):
     """
     Custom Incremental Cursor implementation to provide the ability to pull data using `id`(int) as cursor.
     More info: https://developer.zendesk.com/api-reference/live-chat/chat-api/agents/#parameters

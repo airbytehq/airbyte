@@ -9,7 +9,7 @@ from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optio
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
-from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
+from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
@@ -19,7 +19,7 @@ from isodate import Duration, parse_duration
 
 
 @dataclass
-class DatetimeBasedCursor(Cursor):
+class DatetimeBasedCursor(DeclarativeCursor):
     """
     Slices the stream over a datetime range and create a state with format {<cursor_field>: <datetime> }
 

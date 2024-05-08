@@ -5,7 +5,7 @@
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
-from airbyte_cdk.sources.declarative.incremental import Cursor
+from airbyte_cdk.sources.declarative.incremental import DeclarativeCursor
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
@@ -15,7 +15,7 @@ from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 class EventsSimpleRetriever(SimpleRetriever):
     def __post_init__(self, parameters: Mapping[str, Any]):
         super().__post_init__(parameters)
-        self.cursor = self.stream_slicer if isinstance(self.stream_slicer, Cursor) else None
+        self.cursor = self.stream_slicer if isinstance(self.stream_slicer, DeclarativeCursor) else None
 
     def request_params(
         self,

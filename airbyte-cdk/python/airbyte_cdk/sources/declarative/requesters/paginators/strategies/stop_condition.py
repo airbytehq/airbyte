@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from typing import Any, List, Optional
 
 import requests
-from airbyte_cdk.sources.declarative.incremental import Cursor
+from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.types import Record
 
@@ -23,7 +23,7 @@ class PaginationStopCondition(ABC):
 
 
 class CursorStopCondition(PaginationStopCondition):
-    def __init__(self, cursor: Cursor):
+    def __init__(self, cursor: DeclarativeCursor):
         self._cursor = cursor
 
     def is_met(self, record: Record) -> bool:
