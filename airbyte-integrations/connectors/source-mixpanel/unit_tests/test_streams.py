@@ -171,6 +171,7 @@ def test_engage_stream_incremental(requests_mock, engage_response, config_raw):
         }
     }
     config_raw['start_date'] = '2022-02-01T00:00:00Z'
+    config_raw['end_date'] = '2024-03-01T00:00:00Z'
 
     requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "engage/properties", json=engage_properties)
     requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "engage?", engage_response)
