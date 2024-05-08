@@ -16,10 +16,6 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.util.*
 import java.util.concurrent.*
-import java.util.concurrent.locks.Lock
-import java.util.concurrent.locks.ReadWriteLock
-import java.util.concurrent.locks.ReentrantLock
-import java.util.concurrent.locks.ReentrantReadWriteLock
 import java.util.function.Supplier
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.concurrent.BasicThreadFactory
@@ -43,56 +39,27 @@ import org.slf4j.LoggerFactory
  */
 class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
     private val sqlGenerator: SqlGenerator,
-    destinationHandler: DestinationHandler<DestinationState>,
-    parsedCatalog: ParsedCatalog,
-    v1V2Migrator: DestinationV1V2Migrator,
-    v2TableMigrator: V2TableMigrator,
-    migrations: List<Migration<DestinationState>>
-) : TyperDeduper {
-    private val destinationHandler: DestinationHandler<DestinationState>
-
-    private val v1V2Migrator: DestinationV1V2Migrator
-    private val v2TableMigrator: V2TableMigrator
+    private val destinationHandler: DestinationHandler<DestinationState>,
+    private val parsedCatalog: ParsedCatalog,
+    private val v1V2Migrator: DestinationV1V2Migrator,
+    private val v2TableMigrator: V2TableMigrator,
     private val migrations: List<Migration<DestinationState>>
-    private val parsedCatalog: ParsedCatalog
-    private var overwriteStreamsWithTmpTable: MutableSet<StreamId?>? = null
-    private val streamsWithSuccessfulSetup: MutableSet<Pair<String, String>>
-    private val initialRawTableStateByStream: MutableMap<StreamId?, InitialRawTableStatus>
+) : TyperDeduper {
 
-    // We only want to run a single instance of T+D per stream at a time. These objects are used for
-    // synchronization per stream.
-    // Use a read-write lock because we need the same semantics:
-    // * any number of threads can insert to the raw tables at the same time, as long as T+D isn't
-    // running (i.e. "read lock")
-    // * T+D must run in complete isolation (i.e. "write lock")
-    private val tdLocks: MutableMap<StreamId?, ReadWriteLock>
-
-    // These locks are used to prevent multiple simultaneous attempts to T+D the same stream.
-    // We use tryLock with these so that we don't queue up multiple T+D runs for the same stream.
-    private val internalTdLocks: MutableMap<StreamId?, Lock>
-
-    private val executorService: ExecutorService
+    private lateinit var overwriteStreamsWithTmpTable: MutableSet<StreamId>
+    private val streamsWithSuccessfulSetup: MutableSet<Pair<String, String>> =
+        ConcurrentHashMap.newKeySet(parsedCatalog.streams.size)
+    private val initialRawTableStateByStream: MutableMap<StreamId, InitialRawTableStatus> =
+        ConcurrentHashMap()
+    private val executorService: ExecutorService =
+        Executors.newFixedThreadPool(
+            FutureUtils.countOfTypeAndDedupeThreads,
+            BasicThreadFactory.Builder()
+                .namingPattern(IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME)
+                .build()
+        )
     private lateinit var destinationInitialStatuses:
         List<DestinationInitialStatus<DestinationState>>
-
-    init {
-        this.destinationHandler = destinationHandler
-        this.parsedCatalog = parsedCatalog
-        this.v1V2Migrator = v1V2Migrator
-        this.v2TableMigrator = v2TableMigrator
-        this.migrations = migrations
-        this.initialRawTableStateByStream = ConcurrentHashMap()
-        this.streamsWithSuccessfulSetup = ConcurrentHashMap.newKeySet(parsedCatalog.streams.size)
-        this.tdLocks = ConcurrentHashMap()
-        this.internalTdLocks = ConcurrentHashMap()
-        this.executorService =
-            Executors.newFixedThreadPool(
-                FutureUtils.countOfTypeAndDedupeThreads,
-                BasicThreadFactory.Builder()
-                    .namingPattern(IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME)
-                    .build()
-            )
-    }
 
     constructor(
         sqlGenerator: SqlGenerator,
@@ -149,7 +116,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
 
     @Throws(Exception::class)
     override fun prepareFinalTables() {
-        check(overwriteStreamsWithTmpTable == null) { "Tables were already prepared." }
+        check(!::overwriteStreamsWithTmpTable.isInitialized) { "Tables were already prepared." }
         overwriteStreamsWithTmpTable = ConcurrentHashMap.newKeySet()
         LOGGER.info("Preparing tables")
 
@@ -184,7 +151,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 val stream = initialState.streamConfig
                 try {
                     if (initialState.isFinalTablePresent) {
-                        LOGGER.info("Final Table exists for stream {}", stream.id!!.finalName)
+                        LOGGER.info("Final Table exists for stream {}", stream.id.finalName)
                         // The table already exists. Decide whether we're writing to it directly, or
                         // using a tmp table.
                         if (stream.destinationSyncMode == DestinationSyncMode.OVERWRITE) {
@@ -192,7 +159,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                                 // We want to overwrite an existing table. Write into a tmp table.
                                 // We'll overwrite the table at the
                                 // end of the sync.
-                                overwriteStreamsWithTmpTable!!.add(stream.id)
+                                overwriteStreamsWithTmpTable.add(stream.id)
                                 // overwrite an existing tmp table if needed.
                                 destinationHandler.execute(
                                     sqlGenerator.createTable(
@@ -203,17 +170,17 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                                 )
                                 LOGGER.info(
                                     "Using temp final table for stream {}, will overwrite existing table at end of sync",
-                                    stream.id!!.finalName
+                                    stream.id.finalName
                                 )
                             } else {
                                 LOGGER.info(
                                     "Final Table for stream {} is empty and matches the expected v2 format, writing to table directly",
-                                    stream.id!!.finalName
+                                    stream.id.finalName
                                 )
                             }
                         } else if (
                             initialState.isSchemaMismatch ||
-                                initialState.destinationState!!.needsSoftReset()
+                                initialState.destinationState.needsSoftReset()
                         ) {
                             // We're loading data directly into the existing table.
                             // Make sure it has the right schema.
@@ -228,7 +195,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                     } else {
                         LOGGER.info(
                             "Final Table does not exist for stream {}, creating.",
-                            stream.id!!.finalName
+                            stream.id.finalName
                         )
                         // The table doesn't exist. Create it. Don't force.
                         destinationHandler.execute(
@@ -239,26 +206,14 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                     initialRawTableStateByStream[stream.id] = initialState.initialRawTableStatus
 
                     streamsWithSuccessfulSetup.add(
-                        Pair.of(stream.id!!.originalNamespace, stream.id!!.originalName)
+                        Pair.of(stream.id.originalNamespace, stream.id.originalName)
                     )
 
-                    // Use fair locking. This slows down lock operations, but that performance hit
-                    // is by far dwarfed
-                    // by our IO costs. This lock needs to be fair because the raw table writers are
-                    // running almost
-                    // constantly,
-                    // and we don't want them to starve T+D.
-                    tdLocks[stream.id] = ReentrantReadWriteLock(true)
-                    // This lock doesn't need to be fair; any T+D instance is equivalent and we'll
-                    // skip T+D if we can't
-                    // immediately acquire the lock.
-                    internalTdLocks[stream.id] = ReentrantLock()
-
-                    return@supplyAsync Unit
+                    return@supplyAsync
                 } catch (e: Exception) {
                     LOGGER.error(
                         "Exception occurred while preparing tables for stream " +
-                            stream.id!!.originalName,
+                            stream.id.originalName,
                         e
                     )
                     throw RuntimeException(e)
@@ -269,9 +224,9 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
     }
 
     @Throws(Exception::class)
-    override fun typeAndDedupe(originalNamespace: String, originalName: String, mustRun: Boolean) {
+    override fun typeAndDedupe(originalNamespace: String, originalName: String) {
         val streamConfig = parsedCatalog.getStream(originalNamespace, originalName)
-        val task = typeAndDedupeTask(streamConfig, mustRun)
+        val task = typeAndDedupeTask(streamConfig)
         FutureUtils.reduceExceptions(
             setOf(task),
             String.format(
@@ -282,14 +237,9 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
         )
     }
 
-    override fun getRawTableInsertLock(originalNamespace: String, originalName: String): Lock {
-        val streamConfig = parsedCatalog.getStream(originalNamespace, originalName)
-        return tdLocks[streamConfig!!.id]!!.readLock()
-    }
-
-    private fun streamSetupSucceeded(streamConfig: StreamConfig?): Boolean {
-        val originalNamespace = streamConfig!!.id!!.originalNamespace
-        val originalName = streamConfig.id!!.originalName
+    private fun streamSetupSucceeded(streamConfig: StreamConfig): Boolean {
+        val originalNamespace = streamConfig.id.originalNamespace
+        val originalName = streamConfig.id.originalName
         if (!streamsWithSuccessfulSetup.contains(Pair.of(originalNamespace, originalName))) {
             // For example, if T+D setup fails, but the consumer tries to run T+D on all streams
             // during close,
@@ -304,65 +254,26 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
         return true
     }
 
-    fun typeAndDedupeTask(
-        streamConfig: StreamConfig?,
-        mustRun: Boolean
+    private fun typeAndDedupeTask(
+        streamConfig: StreamConfig
     ): CompletableFuture<Optional<Exception>> {
         return CompletableFuture.supplyAsync(
             {
-                val originalNamespace = streamConfig!!.id!!.originalNamespace
-                val originalName = streamConfig.id!!.originalName
+                val originalName = streamConfig.id.originalName
                 try {
                     if (!streamSetupSucceeded(streamConfig)) {
                         return@supplyAsync Optional.empty<Exception>()
                     }
 
-                    val run: Boolean
-                    val internalLock = internalTdLocks[streamConfig.id]
-                    if (mustRun) {
-                        // If we must run T+D, then wait until we acquire the lock.
-                        internalLock!!.lock()
-                        run = true
-                    } else {
-                        // Otherwise, try and get the lock. If another thread already has it, then
-                        // we should noop here.
-                        run = internalLock!!.tryLock()
-                    }
-
-                    if (run) {
-                        LOGGER.info(
-                            "Waiting for raw table writes to pause for {}.{}",
-                            originalNamespace,
-                            originalName
-                        )
-                        val externalLock = tdLocks[streamConfig.id]!!.writeLock()
-                        externalLock.lock()
-                        try {
-                            val initialRawTableStatus =
-                                initialRawTableStateByStream.getValue(streamConfig.id)
-                            TypeAndDedupeTransaction.executeTypeAndDedupe(
-                                sqlGenerator,
-                                destinationHandler,
-                                streamConfig,
-                                initialRawTableStatus.maxProcessedTimestamp,
-                                getFinalTableSuffix(streamConfig.id)
-                            )
-                        } finally {
-                            LOGGER.info(
-                                "Allowing other threads to proceed for {}.{}",
-                                originalNamespace,
-                                originalName
-                            )
-                            externalLock.unlock()
-                            internalLock.unlock()
-                        }
-                    } else {
-                        LOGGER.info(
-                            "Another thread is already trying to run typing and deduping for {}.{}. Skipping it here.",
-                            originalNamespace,
-                            originalName
-                        )
-                    }
+                    val initialRawTableStatus =
+                        initialRawTableStateByStream.getValue(streamConfig.id)
+                    TypeAndDedupeTransaction.executeTypeAndDedupe(
+                        sqlGenerator,
+                        destinationHandler,
+                        streamConfig,
+                        initialRawTableStatus.maxProcessedTimestamp,
+                        getFinalTableSuffix(streamConfig.id)
+                    )
                     return@supplyAsync Optional.empty<Exception>()
                 } catch (e: Exception) {
                     LOGGER.error(
@@ -390,7 +301,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 // Skip if we don't have any records for this stream.
                 val streamSyncSummary =
                     streamSyncSummaries.getOrDefault(
-                        streamConfig!!.id!!.asStreamDescriptor(),
+                        streamConfig.id.asStreamDescriptor(),
                         StreamSyncSummary.DEFAULT
                     )
                 val nonzeroRecords =
@@ -410,14 +321,14 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 if (!shouldRunTypingDeduping) {
                     LOGGER.info(
                         "Skipping typing and deduping for stream {}.{} because it had no records during this sync and no unprocessed records from a previous sync.",
-                        streamConfig.id!!.originalNamespace,
-                        streamConfig.id!!.originalName
+                        streamConfig.id.originalNamespace,
+                        streamConfig.id.originalName
                     )
                 }
                 shouldRunTypingDeduping
             }
-            .forEach { streamConfig: StreamConfig? ->
-                typeAndDedupeTasks.add(typeAndDedupeTask(streamConfig, true))
+            .forEach { streamConfig: StreamConfig ->
+                typeAndDedupeTasks.add(typeAndDedupeTask(streamConfig))
             }
         CompletableFuture.allOf(*typeAndDedupeTasks.toTypedArray()).join()
         FutureUtils.reduceExceptions(
@@ -439,13 +350,13 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
         for (streamConfig in parsedCatalog.streams) {
             if (
                 !streamsWithSuccessfulSetup.contains(
-                    Pair.of(streamConfig!!.id!!.originalNamespace, streamConfig.id!!.originalName)
+                    Pair.of(streamConfig.id.originalNamespace, streamConfig.id.originalName)
                 )
             ) {
                 LOGGER.warn(
                     "Skipping committing final table for for {}.{} because we could not set up the tables for this stream.",
-                    streamConfig.id!!.originalNamespace,
-                    streamConfig.id!!.originalName
+                    streamConfig.id.originalNamespace,
+                    streamConfig.id.originalName
                 )
                 continue
             }
@@ -461,18 +372,18 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
     }
 
     private fun commitFinalTableTask(
-        streamConfig: StreamConfig?
+        streamConfig: StreamConfig
     ): CompletableFuture<Optional<Exception>> {
-        return CompletableFuture.supplyAsync<Optional<Exception>>(
-            Supplier<Optional<Exception>> supplyAsync@{
-                val streamId = streamConfig!!.id
+        return CompletableFuture.supplyAsync(
+            Supplier supplyAsync@{
+                val streamId = streamConfig.id
                 val finalSuffix = getFinalTableSuffix(streamId)
                 if (!StringUtils.isEmpty(finalSuffix)) {
                     val overwriteFinalTable =
                         sqlGenerator.overwriteFinalTable(streamId, finalSuffix)
                     LOGGER.info(
                         "Overwriting final table with tmp table for stream {}.{}",
-                        streamId!!.originalNamespace,
+                        streamId.originalNamespace,
                         streamId.originalName
                     )
                     try {
@@ -486,14 +397,14 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                         return@supplyAsync Optional.of(e)
                     }
                 }
-                return@supplyAsync Optional.empty<Exception?>()
+                return@supplyAsync Optional.empty<Exception>()
             },
             this.executorService
         )
     }
 
-    private fun getFinalTableSuffix(streamId: StreamId?): String {
-        return if (overwriteStreamsWithTmpTable!!.contains(streamId)) TMP_OVERWRITE_TABLE_SUFFIX
+    private fun getFinalTableSuffix(streamId: StreamId): String {
+        return if (overwriteStreamsWithTmpTable.contains(streamId)) TMP_OVERWRITE_TABLE_SUFFIX
         else NO_SUFFIX
     }
 

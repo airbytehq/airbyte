@@ -414,7 +414,7 @@ open class S3StorageOperations(
         )
     }
 
-    fun uploadManifest(bucketName: String, manifestFilePath: String, manifestContents: String) {
+    fun uploadManifest(manifestFilePath: String, manifestContents: String) {
         s3Client.putObject(s3Config.bucketName, manifestFilePath, manifestContents)
     }
 

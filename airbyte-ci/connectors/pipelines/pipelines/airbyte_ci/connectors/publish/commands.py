@@ -123,6 +123,8 @@ async def publish(
                 is_local=ctx.obj["is_local"],
                 git_branch=ctx.obj["git_branch"],
                 git_revision=ctx.obj["git_revision"],
+                diffed_branch=ctx.obj["diffed_branch"],
+                git_repo_url=ctx.obj["git_repo_url"],
                 gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
                 dagger_logs_url=ctx.obj.get("dagger_logs_url"),
                 pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),

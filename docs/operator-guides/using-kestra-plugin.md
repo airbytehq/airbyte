@@ -5,17 +5,17 @@ products: oss-*
 
 # Using the Kestra Plugin
 
-Kestra has an official plugin for Airbyte, including support for self-hosted Airbyte and Airbyte Cloud. This plugin allows you to trigger data replication jobs (`Syncs`) and wait for their completion before proceeding with any downstream tasks. Alternatively, you may also run those syncs in a fire-and-forget way by setting the `wait` argument to `false`. 
+Kestra has an official plugin for Airbyte, including support for self-hosted Airbyte and Airbyte Cloud. This plugin allows you to trigger data replication jobs (`Syncs`) and wait for their completion before proceeding with any downstream tasks. Alternatively, you may also run those syncs in a fire-and-forget way by setting the `wait` argument to `false`.
 
-After Airbyte tasks successfully ingest raw data, you can easily start running downstream data transformations with dbt, Python, SQL, Spark, and many more, using a variety of available plugins. Check the [plugin documentation](https://kestra.io/plugins/) for a list of all supported integrations. 
+After Airbyte tasks successfully ingest raw data, you can easily start running downstream data transformations with dbt, Python, SQL, Spark, and many more, using a variety of available plugins. Check the [plugin documentation](https://kestra.io/plugins/) for a list of all supported integrations.
 
 ## Available tasks
 
 These are the two main tasks to orchestrate Airbyte syncs:
 
-1) The `io.kestra.plugin.airbyte.connections.Sync` task will sync connections for a self-hosted Airbyte instance
+1. The `io.kestra.plugin.airbyte.connections.Sync` task will sync connections for a self-hosted Airbyte instance
 
-2) The `io.kestra.plugin.airbyte.cloud.jobs.Sync` task will sync connections for Airbyte Cloud 
+2. The `io.kestra.plugin.airbyte.cloud.jobs.Sync` task will sync connections for Airbyte Cloud
 
 ## **1. Set up the tools**
 
@@ -37,10 +37,9 @@ Then, run `docker compose up -d` and [navigate to the UI](http://localhost:80
 
 ![airbyte_kestra_CLI](../.gitbook/assets/airbyte_kestra_1.gif)
 
-
 ## 2. Create a flow from the UI
 
-Kestra UI provides a wide range of Blueprints to help you get started. 
+Kestra UI provides a wide range of Blueprints to help you get started.
 
 Navigate to Blueprints. Then type "Airbyte" in the search bar to find the desired integration. This way, you can easily accomplish fairly standardized data orchestration tasks, such as the following:
 
@@ -56,12 +55,11 @@ Select a blueprint matching your use case and click "Use".
 
 ![airbyte_kestra_UI](../.gitbook/assets/airbyte_kestra_2.gif)
 
-
-Then, within the editor, adjust the connection ID and task names and click "Save". Finally, trigger your flow. 
+Then, within the editor, adjust the connection ID and task names and click "Save". Finally, trigger your flow.
 
 ## 3. Simple demo
 
-Here is an example flow that triggers multiple Airbyte connections in parallel to sync data for multiple **Pokémon**. 
+Here is an example flow that triggers multiple Airbyte connections in parallel to sync data for multiple **Pokémon**.
 
 ```yaml
 id: airbyteSyncs
@@ -92,7 +90,7 @@ taskDefaults:
 triggers:
   - id: everyMinute
     type: io.kestra.core.models.triggers.types.Schedule
-    cron: "*/1 * * * *"      
+    cron: "*/1 * * * *"
 ```
 
 ## Next steps
