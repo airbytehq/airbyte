@@ -115,7 +115,10 @@ def format_datetime(dt: Union[str, datetime.datetime], format: str) -> str:
     """
     if isinstance(dt, datetime.datetime):
         return dt.strftime(format)
-    return _str_to_datetime(dt).strftime(format)
+    dt_datetime = _str_to_datetime(dt)
+    if format == "%s":
+        return str(int(dt_datetime.timestamp()))
+    return dt_datetime.strftime(format)
 
 
 _macros_list = [now_utc, today_utc, timestamp, max, day_delta, duration, format_datetime]
