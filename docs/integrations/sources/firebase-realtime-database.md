@@ -12,12 +12,12 @@ If your database has data as below at path `https://{your-database-name}.firebas
 
 ```json
 {
-  "liam": {"address": "somewhere", "age": 24},
-  "olivia": {"address": "somewhere", "age": 30}
+  "liam": { "address": "somewhere", "age": 24 },
+  "olivia": { "address": "somewhere", "age": 30 }
 }
 ```
 
-and you specified a  `store-a/users` as a path in configuration, you would sync records like below ...
+and you specified a `store-a/users` as a path in configuration, you would sync records like below ...
 
 ```json
 {"key": "liam", "value": "{\"address\": \"somewhere\", \"age\": 24}}"}
@@ -26,12 +26,12 @@ and you specified a  `store-a/users` as a path in configuration, you would sync 
 
 ### Features
 
-| Feature | Supported | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
-| Change Data Capture | No |  |
-| SSL Support | Yes |  |
+| Feature             | Supported | Notes |
+| :------------------ | :-------- | :---- |
+| Full Refresh Sync   | Yes       |       |
+| Incremental Sync    | No        |       |
+| Change Data Capture | No        |       |
+| SSL Support         | Yes       |       |
 
 ## Getting started
 
@@ -39,9 +39,9 @@ and you specified a  `store-a/users` as a path in configuration, you would sync 
 
 To use the Firebase Realtime Database source, you'll need:
 
-* A Google Cloud Project with Firebase enabled
-* A Google Cloud Service Account with the "Firebase Realtime Database Viewer" roles in your Google Cloud project
-* A Service Account Key to authenticate into your Service Account
+- A Google Cloud Project with Firebase enabled
+- A Google Cloud Service Account with the "Firebase Realtime Database Viewer" roles in your Google Cloud project
+- A Service Account Key to authenticate into your Service Account
 
 See the setup guide for more information about how to create the required resources.
 
@@ -65,10 +65,10 @@ Follow the [Creating and Managing Service Account Keys](https://cloud.google.com
 
 You should now have all the requirements needed to configure Firebase Realtime Database as a source in the UI. You'll need the following information to configure the Firebase Realtime Database source:
 
-* **Database Name**
-* **Service Account Key JSON**: the contents of your Service Account Key JSON file.
-* **Node Path \[Optional\]**: node path in your database's data which you want to sync. default value is ""(root node).
-* **Buffer Size \[Optional\]**: number of records to fetch at one time (buffered). default value is 10000.
+- **Database Name**
+- **Service Account Key JSON**: the contents of your Service Account Key JSON file.
+- **Node Path \[Optional\]**: node path in your database's data which you want to sync. default value is ""(root node).
+- **Buffer Size \[Optional\]**: number of records to fetch at one time (buffered). default value is 10000.
 
 Once you've configured Firebase Realtime Database as a source, delete the Service Account Key from your computer.
 
@@ -76,7 +76,6 @@ Once you've configured Firebase Realtime Database as a source, delete the Servic
 
 ### source-firebase-realtime-database
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.0 | 2022-10-16 | [\#18029](https://github.com/airbytehq/airbyte/pull/18029) | 🎉 New Source: Firebase Realtime Database. |
-
+| Version | Date       | Pull Request                                               | Subject                                    |
+| :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------- |
+| 0.1.0   | 2022-10-16 | [\#18029](https://github.com/airbytehq/airbyte/pull/18029) | 🎉 New Source: Firebase Realtime Database. |

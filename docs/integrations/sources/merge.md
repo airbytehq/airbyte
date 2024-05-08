@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the [Merge](htt
 
 ## Prerequisites
 
-Access Token (which acts as bearer token) and linked accounts tokens are mandate for this connector to work, It could be seen at settings (Bearer ref - https://app.merge.dev/keys) and (Account token ref - https://app.merge.dev/keys). 
+Access Token (which acts as bearer token) and linked accounts tokens are mandate for this connector to work, It could be seen at settings (Bearer ref - https://app.merge.dev/keys) and (Account token ref - https://app.merge.dev/keys).
 
 ## Setup guide
 
@@ -14,9 +14,9 @@ Access Token (which acts as bearer token) and linked accounts tokens are mandate
 - Get your bearer token on keys section (ref - https://app.merge.dev/keys)
 - Setup params (All params are required)
 - Available params
-    - account_token: Linked account token seen after integration at linked account section
-    - api_token: Bearer token seen at keys section, try to use production keys
-    - start_date: Date filter for eligible streams
+  - account_token: Linked account token seen after integration at linked account section
+  - api_token: Bearer token seen at keys section, try to use production keys
+  - start_date: Date filter for eligible streams
 
 ## Step 2: Set up the Merge connector in Airbyte
 
@@ -33,7 +33,7 @@ Access Token (which acts as bearer token) and linked accounts tokens are mandate
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 3. Enter your `account_token, api_token and start_date`.
-5. Click **Set up source**.
+4. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -74,6 +74,6 @@ Merge [API reference](https://api.merge.dev/api/ats/v1/) has v1 at present. The 
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject        |
-| :------ | :--------- | :----------------------------------------------------- | :------------- |
-| 0.1.0   | 2023-04-18 | [Init](https://github.com/airbytehq/airbyte/pull/)| Initial commit |
+| Version | Date       | Pull Request                                       | Subject        |
+| :------ | :--------- | :------------------------------------------------- | :------------- |
+| 0.1.0   | 2023-04-18 | [Init](https://github.com/airbytehq/airbyte/pull/) | Initial commit |

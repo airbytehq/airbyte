@@ -8,10 +8,10 @@ This page contains the setup guide and reference information for the [Shopify](h
 
 ## Prerequisites
 
-* An active [Shopify store](https://www.shopify.com).
-* If you are syncing data from a store that you do not own, you will need to [request access to your client's store](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) (not required for account owners).
+- An active [Shopify store](https://www.shopify.com).
+- If you are syncing data from a store that you do not own, you will need to [request access to your client's store](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) (not required for account owners).
 <!-- env:oss  -->
-* For **Airbyte Open Source** users: A custom Shopify application with [`read_` scopes enabled](#scopes-required-for-custom-app).
+- For **Airbyte Open Source** users: A custom Shopify application with [`read_` scopes enabled](#scopes-required-for-custom-app).
 <!-- /env:oss -->
 
 ## Setup guide
@@ -19,6 +19,7 @@ This page contains the setup guide and reference information for the [Shopify](h
 This connector supports **OAuth2.0** and **API Password** (for private applications) authentication methods.
 
 <!-- env:cloud -->
+
 :::note
 For existing **Airbyte Cloud** customers, if you are currently using the **API Password** authentication method, please switch to **OAuth2.0**, as the API Password will be deprecated shortly. This change will not affect **Airbyte Open Source** connections.
 :::
@@ -38,6 +39,7 @@ For existing **Airbyte Cloud** customers, if you are currently using the **API P
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 ### Airbyte Open Source
 
 #### Create a custom app
@@ -64,39 +66,39 @@ Authentication to the Shopify API requires a [custom application](https://help.s
 
 Add the following scopes to your custom app to ensure Airbyte can sync all available data. For more information on access scopes, see the [Shopify docs](https://shopify.dev/docs/api/usage/access-scopes).
 
-* `read_analytics`
-* `read_assigned_fulfillment_orders`
-* `read_content`
-* `read_customers`
-* `read_discounts`
-* `read_draft_orders`
-* `read_fulfillments`
-* `read_gdpr_data_request`
-* `read_gift_cards`
-* `read_inventory`
-* `read_legal_policies`
-* `read_locations`
-* `read_locales`
-* `read_marketing_events`
-* `read_merchant_managed_fulfillment_orders`
-* `read_online_store_pages`
-* `read_order_edits`
-* `read_orders`
-* `read_price_rules`
-* `read_product_listings`
-* `read_products`
-* `read_publications`
-* `read_reports`
-* `read_resource_feedbacks`
-* `read_script_tags`
-* `read_shipping`
-* `read_shopify_payments_accounts`
-* `read_shopify_payments_bank_accounts`
-* `read_shopify_payments_disputes`
-* `read_shopify_payments_payouts`
-* `read_themes`
-* `read_third_party_fulfillment_orders`
-* `read_translations`
+- `read_analytics`
+- `read_assigned_fulfillment_orders`
+- `read_content`
+- `read_customers`
+- `read_discounts`
+- `read_draft_orders`
+- `read_fulfillments`
+- `read_gdpr_data_request`
+- `read_gift_cards`
+- `read_inventory`
+- `read_legal_policies`
+- `read_locations`
+- `read_locales`
+- `read_marketing_events`
+- `read_merchant_managed_fulfillment_orders`
+- `read_online_store_pages`
+- `read_order_edits`
+- `read_orders`
+- `read_price_rules`
+- `read_product_listings`
+- `read_products`
+- `read_publications`
+- `read_reports`
+- `read_resource_feedbacks`
+- `read_script_tags`
+- `read_shipping`
+- `read_shopify_payments_accounts`
+- `read_shopify_payments_bank_accounts`
+- `read_shopify_payments_disputes`
+- `read_shopify_payments_payouts`
+- `read_themes`
+- `read_third_party_fulfillment_orders`
+- `read_translations`
 
 <!-- env:oss -->
 
@@ -187,27 +189,26 @@ Expand to see details about Shopify connector limitations and troubleshooting
 Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-apis/rate-limits). Typically, there should not be issues with throttling or exceeding the rate limits but, in some edge cases, you may encounter the following warning message:
 
 ```text
-"Caught retryable error '<some_error> or null' after <some_number> tries. 
+"Caught retryable error '<some_error> or null' after <some_number> tries.
 Waiting <some_number> seconds then retrying..."
 ```
 
 This is expected when the connector hits a `429 - Rate Limit Exceeded` HTTP Error. The sync operation will continue successfully after a short backoff period.
 
-For all `Shopify GraphQL BULK` api requests these limitations are applied: https://shopify.dev/docs/api/usage/bulk-operations/queries#operation-restrictions 
-
+For all `Shopify GraphQL BULK` api requests these limitations are applied: https://shopify.dev/docs/api/usage/bulk-operations/queries#operation-restrictions
 
 ### Troubleshooting
 
-* If you encounter access errors while using **OAuth2.0** authentication, please make sure you've followed this [Shopify Article](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) to request the access to the client's store first. Once the access is granted, you should be able to proceed with **OAuth2.0** authentication.
-* Check out common troubleshooting issues for the Shopify source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
+- If you encounter access errors while using **OAuth2.0** authentication, please make sure you've followed this [Shopify Article](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) to request the access to the client's store first. Once the access is granted, you should be able to proceed with **OAuth2.0** authentication.
+- Check out common troubleshooting issues for the Shopify source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.0.8   | 2024-05-02 | [37589](https://github.com/airbytehq/airbyte/pull/37589) | Added retry for known HTTP Errors for BULK streams |
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.0.8   | 2024-05-02 | [37589](https://github.com/airbytehq/airbyte/pull/37589) | Added retry for known HTTP Errors for BULK streams                                                                                                                                                                                                                                                                                                                                        |
 | 2.0.7   | 2024-04-24 | [36660](https://github.com/airbytehq/airbyte/pull/36660) | Schema descriptions                                                                                                                                                                                                                                                                                                                                                                       |
 | 2.0.6   | 2024-04-22 | [37468](https://github.com/airbytehq/airbyte/pull/37468) | Fixed one time retry for `Internal Server Error` for BULK streams                                                                                                                                                                                                                                                                                                                         |
 | 2.0.5   | 2024-04-03 | [36788](https://github.com/airbytehq/airbyte/pull/36788) | Added ability to dynamically adjust the size of the `slice`                                                                                                                                                                                                                                                                                                                               |
