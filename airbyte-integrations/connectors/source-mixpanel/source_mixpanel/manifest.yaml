@@ -134,7 +134,9 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: created
       cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S"
         - "%Y-%m-%d %H:%M:%S"
+        - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S%z"
       datetime_format: "%Y-%m-%d %H:%M:%S"
       start_datetime:
@@ -185,13 +187,17 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ config.start_date or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config.end_date or day_delta(-1, format="%Y-%m-%dT%H:%M:%SZ") }}'
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     transformations:
       - class_name: "source_mixpanel.components.EngageTransformation"
       - type: AddFields
         fields:
           - path:
               - browser_version
-            value: "{{ record.browser_version | string }}"
+            value: "{{ record.browser_version | string if record.browser_version else '' }}"
     schema_loader:
       type: CustomSchemaLoader
       class_name: "source_mixpanel.components.EngageJsonFileSchemaLoader"
@@ -203,6 +209,9 @@ definitions:
       name: cohort_members
       path: 2.0/engage
       field_path: results
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: "source_mixpanel.components.CohortMembersLegacyToPerPartitionStateMigration"
     retriever:
       $ref: "#/definitions/retriever"
       requester:

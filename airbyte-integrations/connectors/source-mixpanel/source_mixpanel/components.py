@@ -9,7 +9,8 @@ import requests
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
-from airbyte_cdk.sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
+from airbyte_cdk.sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration, \
+    _is_already_migrated
 from airbyte_cdk.sources.declarative.models import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
@@ -260,7 +261,7 @@ class EngagePaginationStrategy(PageIncrement):
     session_id - returned after first request
     page - incremental page number
     """
-
+    _total = 0
     def next_page_token(self, response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         """
         Determines page and subpage numbers for the `items` stream
@@ -337,3 +338,29 @@ class EngageJsonFileSchemaLoader(JsonFileSchemaLoader):
                 schema["properties"][property_name] = types.get(property_type, {"type": ["null", "string"]})
         self.schema = schema
         return schema
+
+
+class CohortMembersLegacyToPerPartitionStateMigration(LegacyToPerPartitionStateMigration):
+    """Cohort Members stream should not support incremental syncs because
+    the only possible cursor 'last_seen' is not suitable for this purposes
+    since members of cohorts can be changed any time.
+
+    So here, just reset legacy state
+    """
+    config: Mapping[str, Any]
+    parameters: Mapping[str, Any]
+    def __init__(
+        self,
+        config: Mapping[str, Any],
+        parameters: Mapping[str, Any],
+    ):
+        self._config = config
+        self._parameters = parameters
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if _is_already_migrated(stream_state):
+            return False
+        return True
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"states": []}
