@@ -276,6 +276,7 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                          |
 | :-------------- | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.7.3           | 2024-05-07 | [\#34612](https://github.com/airbytehq/airbyte/pull/34612) | Adopt CDK 0.33.2                                                                                                                                                 |
 | 3.7.2           | 2024-05-06 | [\#37857](https://github.com/airbytehq/airbyte/pull/37857) | Use safe executeMetadata call                                                                                                                                    |
 | 3.7.1           | 2024-04-30 | [\#36910](https://github.com/airbytehq/airbyte/pull/36910) | Bump CDK version                                                                                                                                                 |
 | 3.7.0           | 2024-04-08 | [\#35754](https://github.com/airbytehq/airbyte/pull/35754) | Allow configuring `data_retention_time_in_days`; apply to both raw and final tables. _Note_: Existing tables will not be affected; you must manually alter them. |

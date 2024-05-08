@@ -229,7 +229,8 @@ Any database or table encoding combination of charset and collation is supported
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
-| :------ | :--------- | :--------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------| :--------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.2   | 2024-05-07 | [38046](https://github.com/airbytehq/airbyte/pull/38046)   | Resumeable refresh should run only if there is source defined pk.                                                                               |
 | 3.4.1   | 2024-05-03 | [37824](https://github.com/airbytehq/airbyte/pull/37824)   | Fixed a bug on Resumeable full refresh where cursor based source throw NPE.                                                                     |
 | 3.4.0   | 2024-05-02 | [36932](https://github.com/airbytehq/airbyte/pull/36932)   | Resumeable full refresh. Note please upgrade your platform - minimum platform version is 0.58.0.                                                |
 | 3.3.25  | 2024-05-02 | [37781](https://github.com/airbytehq/airbyte/pull/37781)   | Adopt latest CDK.                                                                                                                               |

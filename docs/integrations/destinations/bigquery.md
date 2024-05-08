@@ -220,6 +220,7 @@ tutorials:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.4.15  | 2024-05-07 | [34611](https://github.com/airbytehq/airbyte/pull/34611)   | Adopt CDK 0.33.2                                                                                                                    |
 | 2.4.14  | 2024-02-25 | [37584](https://github.com/airbytehq/airbyte/pull/37584)   | Remove unused insecure dependencies from CDK                                                                                                                    |
 | 2.4.13  | 2024-02-25 | [36899](https://github.com/airbytehq/airbyte/pull/36899)   | adopt latest CDK                                                                                                                                                |
 | 2.4.12  | 2024-03-04 | [35315](https://github.com/airbytehq/airbyte/pull/35315)   | Adopt CDK 0.23.11                                                                                                                                               |
