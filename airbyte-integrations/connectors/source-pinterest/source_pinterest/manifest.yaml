@@ -140,6 +140,22 @@ definitions:
     $parameters:
       path: "boards/{{ stream_slice.id }}/pins"
 
+  board_section_pins_stream:
+    # Docs: https://developers.pinterest.com/docs/api/v5/#operation/board_sections/list_pins
+    name: "board_section_pins"
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            stream: "#/definitions/board_sections_stream"
+            partition_field: "id"
+    $parameters:
+      path: "boards/{{ stream_slice.parent_slice.id }}/sections/{{ stream_slice.id }}/pins"
+
   audiences_stream:
     # Docs: https://developers.pinterest.com/docs/api/v5/#operation/audiences/list
     name: "audiences"
@@ -147,6 +163,22 @@ definitions:
     retriever: "#/definitions/ad_account_based_retriever"
     $parameters:
       path: "ad_accounts/{{ stream_slice.id }}/audiences"
+
+  keywords_stream:
+    # Docs: https://developers.pinterest.com/docs/api/v5/#operation/keywords/get
+    name: "keywords"
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            stream: "#/definitions/ad_groups_stream"
+            partition_field: "id"
+    $parameters:
+      path: "ad_accounts/{{ stream_slice.parent_slice.id }}/keywords?ad_group_id={{ stream_slice.id }}"
 
   conversion_tags_stream:
     # Docs: https://developers.pinterest.com/docs/api/v5/#operation/conversion_tags/list
@@ -195,7 +227,9 @@ streams:
   - "#/definitions/ad_accounts_stream"
   - "#/definitions/board_sections_stream"
   - "#/definitions/board_pins_stream"
+  - "#/definitions/board_section_pins_stream"
   - "#/definitions/audiences_stream"
+  - "#/definitions/keywords_stream"
   - "#/definitions/conversion_tags_stream"
   - "#/definitions/customer_lists_stream"
 
