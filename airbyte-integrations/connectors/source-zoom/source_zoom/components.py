@@ -11,7 +11,7 @@ from typing import Any, Mapping, Optional, Union
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.types import Config
 from requests import HTTPError
 
 # https://developers.zoom.us/docs/internal-apps/s2s-oauth/#successful-response

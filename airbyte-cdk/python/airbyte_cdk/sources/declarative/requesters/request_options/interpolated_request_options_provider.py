@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_nes
 )
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_input_provider import InterpolatedRequestInputProvider
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
-from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
 RequestInput = Union[str, Mapping[str, str]]
 ValidRequestTypes = (str, list)

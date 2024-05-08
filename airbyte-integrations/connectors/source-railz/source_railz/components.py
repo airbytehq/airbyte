@@ -13,7 +13,7 @@ from airbyte_cdk.sources.declarative.auth.declarative_authenticator import Decla
 from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice
+from airbyte_cdk.sources.types import Config, Record, StreamSlice
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
 from isodate import Duration, parse_duration
 

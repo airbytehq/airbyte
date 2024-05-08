@@ -4,7 +4,7 @@
 
 
 import pytest
-from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.types import StreamSlice
 from source_mailchimp.components import MailChimpRecordFilter
 
 

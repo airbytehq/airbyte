@@ -7,7 +7,7 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.types import Config
 
 NestedMappingEntry = Union[dict[str, "NestedMapping"], list["NestedMapping"], str, int, float, bool, None]
 NestedMapping = Union[dict[str, NestedMappingEntry], str]

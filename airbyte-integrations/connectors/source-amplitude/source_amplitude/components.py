@@ -14,7 +14,7 @@ import pendulum
 import requests
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
-from airbyte_cdk.sources.declarative.types import Config, Record
+from airbyte_cdk.sources.types import Config, Record
 
 logger = logging.getLogger("airbyte")
 

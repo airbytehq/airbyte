@@ -13,7 +13,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status i
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever, SimpleRetrieverTestReadDecorator
-from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.types import Record
 
 A_SLICE_STATE = {"slice_state": "slice state value"}
 A_STREAM_SLICE = {"stream slice": "slice value"}

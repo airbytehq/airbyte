@@ -5,7 +5,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.types import Config
 
 
 class Interpolation(ABC):

@@ -1,12 +1,11 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, List, Mapping, MutableMapping, Optional
 
-import pendulum
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.types import StreamSlice, StreamState
 
 
 @dataclass

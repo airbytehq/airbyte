@@ -8,7 +8,7 @@ from io import StringIO
 
 import requests
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Record
 
 
 @dataclass

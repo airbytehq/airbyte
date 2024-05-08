@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.stop_condi
     PaginationStopCondition,
     StopConditionPaginationStrategyDecorator,
 )
-from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.types import Record
 from pytest import fixture
 
 ANY_RECORD = Mock()

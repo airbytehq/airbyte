@@ -7,7 +7,7 @@ from typing import List, Union
 
 import requests
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.types import Record
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from braintree.attribute_getter import AttributeGetter
 from braintree.customer import Customer as BCustomer
