@@ -1,6 +1,5 @@
 {
   "type": ["null", "object"],
-  "additionalProperties": true,
   "properties": {
     "created": {
       "description": "The timestamp when the invoice was created",
