@@ -53,7 +53,7 @@ class AirbyteMessageDeserializer(
             partial.record?.data = null
         } else if (AirbyteMessage.Type.STATE == msgType) {
             partial.withSerialized(message)
-        } else {
+        } else if (AirbyteMessage.Type.TRACE != msgType) {
             throw RuntimeException(String.format("Unsupported message type: %s", msgType))
         }
 
