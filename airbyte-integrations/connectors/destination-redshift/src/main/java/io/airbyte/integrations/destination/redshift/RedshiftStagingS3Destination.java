@@ -46,7 +46,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.NoOpTyperDeduper
 import io.airbyte.integrations.base.destination.typing_deduping.NoopV2TableMigrator;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftS3StagingSqlOperations;
@@ -267,7 +266,6 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
         config,
         catalog,
         isPurgeStagingData(s3Options),
-        new TypeAndDedupeOperationValve(),
         typerDeduper,
         parsedCatalog,
         defaultNamespace,
