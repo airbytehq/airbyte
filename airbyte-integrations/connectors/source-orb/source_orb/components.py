@@ -5,8 +5,6 @@
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
-import pendulum
-import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.transformations.transformation import RecordTransformation
