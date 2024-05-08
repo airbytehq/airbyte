@@ -99,8 +99,6 @@ def validate_environment(is_local: bool) -> None:
             raise click.UsageError("You need to run this command from the repository root.")
     else:
         required_env_vars_for_ci = [
-            "GCP_GSM_CREDENTIALS",
-            "CI_REPORT_BUCKET_NAME",
             "CI_GITHUB_ACCESS_TOKEN",
             "DOCKER_HUB_USERNAME",
             "DOCKER_HUB_PASSWORD",
@@ -152,9 +150,11 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
         "bump_version": "pipelines.airbyte_ci.connectors.bump_version.commands.bump_version",
         "migrate_to_base_image": "pipelines.airbyte_ci.connectors.migrate_to_base_image.commands.migrate_to_base_image",
         "migrate-to-poetry": "pipelines.airbyte_ci.connectors.migrate_to_poetry.commands.migrate_to_poetry",
+        "migrate_to_inline_schemas": "pipelines.airbyte_ci.connectors.migrate_to_inline_schemas.commands.migrate_to_inline_schemas",
         "upgrade_base_image": "pipelines.airbyte_ci.connectors.upgrade_base_image.commands.upgrade_base_image",
         "upgrade_cdk": "pipelines.airbyte_ci.connectors.upgrade_cdk.commands.upgrade_cdk",
         "up_to_date": "pipelines.airbyte_ci.connectors.up_to_date.commands.up_to_date",
+        "pull_request": "pipelines.airbyte_ci.connectors.pull_request.commands.pull_request",
     },
 )
 @click.option(

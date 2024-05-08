@@ -4,29 +4,37 @@
   "type": ["null", "object"],
   "properties": {
     "created_at": {
+      "description": "Timestamp when the vote was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "id": {
+      "description": "Unique identifier for the vote",
       "type": ["null", "integer"]
     },
     "item_id": {
+      "description": "Identifier of the item that was voted on",
       "type": ["null", "integer"]
     },
     "item_type": {
+      "description": "Type of the item that was voted on (e.g., ticket, article)",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "Timestamp when the vote was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "url": {
+      "description": "URL of the resource related to the vote",
       "type": ["null", "string"]
     },
     "user_id": {
+      "description": "Unique identifier of the user who voted",
       "type": ["null", "integer"]
     },
     "value": {
+      "description": "Value of the vote (e.g., upvote, downvote)",
       "type": ["null", "integer"]
     }
   }

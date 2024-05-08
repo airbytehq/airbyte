@@ -10,9 +10,9 @@ import kotlin.collections.LinkedHashMap
 
 data class StreamConfig(
     val id: StreamId,
-    val syncMode: SyncMode?,
-    val destinationSyncMode: DestinationSyncMode?,
-    val primaryKey: List<ColumnId>?,
-    val cursor: Optional<ColumnId>?,
-    val columns: LinkedHashMap<ColumnId, AirbyteType>?
+    val syncMode: SyncMode,
+    val destinationSyncMode: DestinationSyncMode,
+    val primaryKey: List<ColumnId>,
+    val cursor: Optional<ColumnId>,
+    val columns: LinkedHashMap<ColumnId, AirbyteType>,
 )

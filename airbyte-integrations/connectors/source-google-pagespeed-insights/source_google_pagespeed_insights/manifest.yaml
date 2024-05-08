@@ -47,6 +47,489 @@ definitions:
       name: "pagespeed"
       path: "/runPagespeed"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        type: object
+        properties:
+          strategy:
+            description: Strategy used for page analysis.
+            type: string
+          captchaResult:
+            description: Result of captcha check during analysis.
+            type: string
+          kind:
+            description: A string indicating the object type.
+            type: string
+          id:
+            description: Unique identifier for the analyzed page.
+            type: string
+          loadingExperience:
+            description: Loading experience metrics for the analyzed page.
+            type: object
+            properties:
+              id:
+                description: Unique identifier for the loading experience data.
+                type: string
+              metrics:
+                description: Metrics related to loading experience.
+                type: object
+                properties:
+                  CUMULATIVE_LAYOUT_SHIFT_SCORE:
+                    description: Cumulative layout shift score metrics.
+                    type: object
+                    properties:
+                      percentile:
+                        description:
+                          Percentile value for cumulative layout shift
+                          score.
+                        type: number
+                      distributions:
+                        description: Distribution details.
+                        type: array
+                        items:
+                          description: Individual distribution data.
+                          type: object
+                          properties:
+                            min:
+                              description: Minimum value in the distribution.
+                              type: number
+                            max:
+                              description: Maximum value in the distribution.
+                              type: number
+                            proportion:
+                              description: Proportion of the distribution.
+                              type: number
+                      category:
+                        description: Category of cumulative layout shift score.
+                        type: string
+                  EXPERIMENTAL_INTERACTION_TO_NEXT_PAINT:
+                    description: Experimental interaction to next paint metrics.
+                    type: object
+                    properties:
+                      percentile:
+                        description:
+                          Percentile value for experimental interaction
+                          to next paint.
+                        type: number
+                      distributions:
+                        description: Distribution details.
+                        type: array
+                        items:
+                          description: Individual distribution data.
+                          type: object
+                          properties:
+                            min:
+                              description: Minimum value in the distribution.
+                              type: number
+                            max:
+                              description: Maximum value in the distribution.
+                              type: number
+                            proportion:
+                              description: Proportion of the distribution.
+                              type: number
+                      category:
+                        description:
+                          Category of experimental interaction to next
+                          paint.
+                        type: string
+                  EXPERIMENTAL_TIME_TO_FIRST_BYTE:
+                    description: Experimental time to first byte metrics.
+                    type: object
+                    properties:
+                      percentile:
+                        description:
+                          Percentile value for experimental time to first
+                          byte.
+                        type: number
+                      distributions:
+                        description: Distribution details.
+                        type: array
+                        items:
+                          description: Individual distribution data.
+                          type: object
+                          properties:
+                            min:
+                              description: Minimum value in the distribution.
+                              type: number
+                            max:
+                              description: Maximum value in the distribution.
+                              type: number
+                            proportion:
+                              description: Proportion of the distribution.
+                              type: number
+                      category:
+                        description: Category of experimental time to first byte.
+                        type: string
+                  FIRST_CONTENTFUL_PAINT_MS:
+                    description: First contentful paint latency metrics.
+                    type: object
+                    properties:
+                      percentile:
+                        description: Percentile value for first contentful paint latency.
+                        type: number
+                      distributions:
+                        description: Distribution details.
+                        type: array
+                        items:
+                          description: Individual distribution data.
+                          type: object
+                          properties:
+                            min:
+                              description: Minimum value in the distribution.
+                              type: number
+                            max:
+                              description: Maximum value in the distribution.
+                              type: number
+                            proportion:
+                              description: Proportion of the distribution.
+                              type: number
+                      category:
+                        description: Category of first contentful paint latency.
+                        type: string
+                  FIRST_INPUT_DELAY_MS:
+                    description: First input delay latency metrics.
+                    type: object
+                    properties:
+                      percentile:
+                        description: Percentile value for first input delay latency.
+                        type: number
+                      distributions:
+                        description: Distribution details.
+                        type: array
+                        items:
+                          description: Individual distribution data.
+                          type: object
+                          properties:
+                            min:
+                              description: Minimum value in the distribution.
+                              type: number
+                            max:
+                              description: Maximum value in the distribution.
+                              type: number
+                            proportion:
+                              description: Proportion of the distribution.
+                              type: number
+                      category:
+                        description: Category of first input delay latency.
+                        type: string
+                  LARGEST_CONTENTFUL_PAINT_MS:
+                    description: Largest contentful paint latency metrics.
+                    type: object
+                    properties:
+                      percentile:
+                        description:
+                          Percentile value for largest contentful paint
+                          latency.
+                        type: number
+                      distributions:
+                        description: Distribution details.
+                        type: array
+                        items:
+                          description: Individual distribution data.
+                          type: object
+                          properties:
+                            min:
+                              description: Minimum value in the distribution.
+                              type: number
+                            max:
+                              description: Maximum value in the distribution.
+                              type: number
+                            proportion:
+                              description: Proportion of the distribution.
+                              type: number
+                      category:
+                        description: Category of largest contentful paint latency.
+                        type: string
+              overall_category:
+                description: Overall category performance of loading experience.
+                type: string
+              initial_url:
+                description: Initial URL used for loading experience analysis.
+                type: string
+          originLoadingExperience:
+            description:
+              Loading experience metrics for the origin site of the analyzed
+              page.
+            type: object
+            properties:
+              id:
+                description: Unique identifier for the origin loading experience data.
+                type: string
+              metrics:
+                description: Metrics related to origin loading experience.
+                type: object
+                properties:
+                  CUMULATIVE_LAYOUT_SHIFT_SCORE:
+                    description:
+                      Cumulative layout shift score metrics for origin
+                      site.
+                    type: object
+                    properties:
+                      percentile:
+                        description:
+                          Percentile value for cumulative layout shift
+                          score of origin site.
+                        type: number
+                      distributions:
+                        description: Distribution details.
+                        type: array
+                        items:
+                          description: Individual distribution data.
+                          type: object
+                          properties:
+                            min:
+                              description: Minimum value in the distribution.
+                              type: number
+                            max:
+                              description: Maximum value in the distribution.
+                              type: number
+                            proportion:
+                              description: Proportion of the distribution.
+                              type: number
+                      category:
+                        description:
+                          Category of cumulative layout shift score for
+                          origin site.
+                        type: string
+                  EXPERIMENTAL_INTERACTION_TO_NEXT_PAINT:
+                    description:
+                      Experimental interaction to next paint metrics for
+                      origin site.
+                    type: object
+                    properties:
+                      percentile:
+                        description:
+                          Percentile value for experimental interaction
+                          to next paint of origin site.
+                        type: number
+                      distributions:
+                        description: Distribution details.
+                        type: array
+                        items:
+                          description: Individual distribution data.
+                          type: object
+                          properties:
+                            min:
+                              description: Minimum value in the distribution.
+                              type: number
+                            max:
+                              description: Maximum value in the distribution.
+                              type: number
+                            proportion:
+                              description: Proportion of the distribution.
+                              type: number
+                      category:
+                        description:
+                          Category of experimental interaction to next
+                          paint for origin site.
+                        type: string
+                  EXPERIMENTAL_TIME_TO_FIRST_BYTE:
+                    description:
+                      Experimental time to first byte metrics for origin
+                      site.
+                    type: object
+                    properties:
+                      percentile:
+                        description:
+                          Percentile value for experimental time to first
+                          byte of origin site.
+                        type: number
+                      distributions:
+                        description: Distribution details.
+                        type: array
+                        items:
+                          description: Individual distribution data.
+                          type: object
+                          properties:
+                            min:
+                              description: Minimum value in the distribution.
+                              type: number
+                            max:
+                              description: Maximum value in the distribution.
+                              type: number
+                            proportion:
+                              description: Proportion of the distribution.
+                              type: number
+                      category:
+                        description:
+                          Category of experimental time to first byte for
+                          origin site.
+                        type: string
+                  FIRST_CONTENTFUL_PAINT_MS:
+                    description:
+                      First contentful paint latency metrics for origin
+                      site.
+                    type: object
+                    properties:
+                      percentile:
+                        description:
+                          Percentile value for first contentful paint latency
+                          of origin site.
+                        type: number
+                      distributions:
+                        description: Distribution details.
+                        type: array
+                        items:
+                          description: Individual distribution data.
+                          type: object
+                          properties:
+                            min:
+                              description: Minimum value in the distribution.
+                              type: number
+                            max:
+                              description: Maximum value in the distribution.
+                              type: number
+                            proportion:
+                              description: Proportion of the distribution.
+                              type: number
+                      category:
+                        description:
+                          Category of first contentful paint latency for
+                          origin site.
+                        type: string
+                  FIRST_INPUT_DELAY_MS:
+                    description: First input delay latency metrics for origin site.
+                    type: object
+                    properties:
+                      percentile:
+                        description:
+                          Percentile value for first input delay latency
+                          of origin site.
+                        type: number
+                      distributions:
+                        description: Distribution details.
+                        type: array
+                        items:
+                          description: Individual distribution data.
+                          type: object
+                          properties:
+                            min:
+                              description: Minimum value in the distribution.
+                              type: number
+                            max:
+                              description: Maximum value in the distribution.
+                              type: number
+                            proportion:
+                              description: Proportion of the distribution.
+                              type: number
+                      category:
+                        description:
+                          Category of first input delay latency for origin
+                          site.
+                        type: string
+                  LARGEST_CONTENTFUL_PAINT_MS:
+                    description:
+                      Largest contentful paint latency metrics for origin
+                      site.
+                    type: object
+                    properties:
+                      percentile:
+                        description:
+                          Percentile value for largest contentful paint
+                          latency of origin site.
+                        type: number
+                      distributions:
+                        description: Distribution details.
+                        type: array
+                        items:
+                          description: Individual distribution data.
+                          type: object
+                          properties:
+                            min:
+                              description: Minimum value in the distribution.
+                              type: number
+                            max:
+                              description: Maximum value in the distribution.
+                              type: number
+                            proportion:
+                              description: Proportion of the distribution.
+                              type: number
+                      category:
+                        description:
+                          Category of largest contentful paint latency
+                          for origin site.
+                        type: string
+              overall_category:
+                description:
+                  Overall category performance of loading experience for
+                  origin site.
+                type: string
+              initial_url:
+                description:
+                  Initial URL of the origin site for loading experience
+                  analysis.
+                type: string
+          lighthouseResult:
+            description: Results from Lighthouse analysis.
+            type: object
+            properties:
+              requestedUrl:
+                description: The URL requested for analysis.
+                type: string
+              finalUrl:
+                description: The final URL of the analyzed page.
+                type: string
+              lighthouseVersion:
+                description: Version of Lighthouse used for the analysis.
+                type: string
+              userAgent:
+                description: User agent used for analysis.
+                type: string
+              fetchTime:
+                description: Time taken to fetch the analyzed page.
+                type: string
+              environment:
+                description: Environment details during analysis.
+                type: object
+                properties:
+                  networkUserAgent:
+                    description: Network user agent used for analysis.
+                    type: string
+                  hostUserAgent:
+                    description: Host user agent used for analysis.
+                    type: string
+                  benchmarkIndex:
+                    description: Benchmark value used for comparison.
+                    type: number
+              runWarnings:
+                description: Warnings generated during the analysis run.
+                type: array
+              configSettings:
+                description: Settings used for analysis configuration.
+                type: object
+                properties:
+                  emulatedFormFactor:
+                    description: Emulated form factor used for analysis.
+                    type: string
+                  formFactor:
+                    description: Form factor used for analysis.
+                    type: string
+                  locale:
+                    description: Locale used for analysis.
+                    type: string
+                  onlyCategories:
+                    description: Categories included in the analysis.
+                    type: array
+                    items:
+                      description: Category included in the analysis.
+                      type: string
+                  channel:
+                    description: Channel used for analysis.
+                    type: string
+              audits:
+                description: Detailed audit results.
+                type: object
+              categories:
+                description: Overall performance categories.
+                type: object
+              categoryGroups:
+                description: Grouped performance categories.
+                type: object
+          analysisUTCTimestamp:
+            description: The timestamp of when the analysis was performed in UTC.
+            type: string
 streams:
   - "#/definitions/pagespeed_stream"
 
