@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "0.86.3"
+version = "0.88.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "airbyte_cdk-0.86.3-py3-none-any.whl", hash = "sha256:2616946d1b9f762d627bbbd34a4fdc5ff7d63c97a9a0eef68b32c3b6992a9721"},
-    {file = "airbyte_cdk-0.86.3.tar.gz", hash = "sha256:0f0239f41f4b20654448e179fb5a1e89f56c6794e5c4ff27d3c2fda77cd29bfa"},
+    {file = "airbyte_cdk-0.88.0-py3-none-any.whl", hash = "sha256:72f9af784f731be99c95d7a0ef11579b17354ce1eeb59cf984fa5a53a3ba5fff"},
+    {file = "airbyte_cdk-0.88.0.tar.gz", hash = "sha256:6a6a6330e954e4327cb21b8908da4ec27ae7b8fd9fae19073496bcc5246b7a45"},
 ]
 
 [package.dependencies]
@@ -565,13 +565,13 @@ extended-testing = ["jinja2 (>=3,<4)"]
 
 [[package]]
 name = "langsmith"
-version = "0.1.54"
+version = "0.1.55"
 description = "Client library to connect to the LangSmith LLM Tracing and Evaluation Platform."
 optional = false
 python-versions = "<4.0,>=3.8.1"
 files = [
-    {file = "langsmith-0.1.54-py3-none-any.whl", hash = "sha256:e8ba2758dbdff0fccb35337c28a5ab641dd980b22e178d390b72a15c9ae9caff"},
-    {file = "langsmith-0.1.54.tar.gz", hash = "sha256:86f5a90e48303de897f37a893f8bb635eabdaf23e674099e8bc0f2e9ca2f8faf"},
+    {file = "langsmith-0.1.55-py3-none-any.whl", hash = "sha256:c198b4019d0e0948fa2c94efcafa0312bd5e7ce36aae8d62a38af2d6b16584fc"},
+    {file = "langsmith-0.1.55.tar.gz", hash = "sha256:08b75046471e3c32cb6b526e48ca4570bfe3911d6b0a3f8575ee062da940324c"},
 ]
 
 [package.dependencies]
@@ -1053,17 +1053,6 @@ files = [
 ]
 
 [[package]]
-name = "recurly"
-version = "4.10.0"
-description = "Recurly v4"
-optional = false
-python-versions = "*"
-files = [
-    {file = "recurly-4.10.0-py3-none-any.whl", hash = "sha256:b8e3b1ec58f7b1e1b91286f2db864f6ba4053837ad920d0c2868508020442aaf"},
-    {file = "recurly-4.10.0.tar.gz", hash = "sha256:a8dddab76bb38f76a715644448f45499227bfd00529ef33f7945b3bcc5a8f3a2"},
-]
-
-[[package]]
 name = "requests"
 version = "2.31.0"
 description = "Python HTTP for Humans."
@@ -1322,4 +1311,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,<3.12"
-content-hash = "d2cdd3671402e48f7886abb0bd22aace726ee81c95de13e5ae0c4c9f1d22a582"
+content-hash = "25d79195c052c9654e64e6cd73809188b3aa16bd228841f214ff871a895c9c6c"
