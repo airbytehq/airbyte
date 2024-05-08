@@ -127,6 +127,7 @@ recommend altering the final tables (e.g. adding constraints) as it may cause is
 
 In some cases, you need to manually run a soft reset - for example, if you accidentally delete some
 records from the final table and want to repopulate them from the raw data. This can be done by:
+
 1. Dropping the final table entirely (`DROP TABLE <your_final_table>`)
 1. Unsetting the raw table's `_airbyte_loaded_at` column
    (`UPDATE airbyte_internal.<your_raw_table> SET _airbyte_loaded_at = NULL`)

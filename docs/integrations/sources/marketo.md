@@ -91,6 +91,7 @@ This connector can be used to sync the following tables from Marketo:
 Available fields are limited by what is presented in the static schema.
 
 :::
+
 - **[Lists](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListByIdUsingGET)**: Contains info about your Marketo static lists.
 - **[Programs](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Programs/browseProgramsUsingGET)**: Contains info about your Marketo programs.
 - **[Segmentations](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET)**: Contains info about your Marketo programs.
@@ -116,7 +117,7 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 ## Changelog
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
-|:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| :------- | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
 | `1.4.0`  | 2024-04-15 | [36854](https://github.com/airbytehq/airbyte/pull/36854) | Migrate to low-code                                                                              |
 | 1.3.2    | 2024-04-19 | [36650](https://github.com/airbytehq/airbyte/pull/36650) | Updating to 0.80.0 CDK                                                                           |
 | 1.3.1    | 2024-04-12 | [36650](https://github.com/airbytehq/airbyte/pull/36650) | schema descriptions                                                                              |

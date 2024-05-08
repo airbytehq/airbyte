@@ -41,7 +41,7 @@ Just pass the generated API key for establishing the connection.
 The MailGun source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
-|:------------------------------|:-----------|
+| :---------------------------- | :--------- |
 | Full Refresh Sync             | Yes        |
 | Incremental Sync              | Yes        |
 | Replicate Incremental Deletes | No         |
@@ -64,7 +64,7 @@ MailGun's [API reference](https://documentation.mailgun.com/en/latest/api_refere
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
-|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | 0.2.6   | 2024-05-02 | [37594](https://github.com/airbytehq/airbyte/pull/37594) | Change `last_recrods` to `last_record`                                          |
 | 0.2.5   | 2024-04-19 | [37193](https://github.com/airbytehq/airbyte/pull/37193) | Updating to 0.80.0 CDK                                                          |
 | 0.2.4   | 2024-04-18 | [37193](https://github.com/airbytehq/airbyte/pull/37193) | Manage dependencies with Poetry.                                                |

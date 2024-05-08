@@ -1,7 +1,7 @@
 # SpaceX-API
 
 The connector uses the v4 API documented here: https://github.com/r-spacex/SpaceX-API . It is
-straightforward HTTP REST API with no authentication. 
+straightforward HTTP REST API with no authentication.
 
 ## Dummy API key
 
@@ -28,8 +28,7 @@ Just pass any dummy api key for establishing the connection. Example:123
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 3. Enter your `api_key`.
-5. Enter your `id` if needed. (Optional)
-6. Click **Set up source**.
+4. Enter your `id` if needed. (Optional)
+5. Click **Set up source**.
 
- * We use only GET methods, all endpoints are straightforward. We emit what we receive as HTTP response.
-
+- We use only GET methods, all endpoints are straightforward. We emit what we receive as HTTP response.

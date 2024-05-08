@@ -6,21 +6,21 @@ This source can sync data from the [MailerLite API](https://developers.mailerlit
 
 ## This Source Supports the Following Streams
 
-* campaigns
-* subscribers
-* automations
-* timezones
-* segments
-* forms_popup
-* forms_embedded
-* forms_promotion
+- campaigns
+- subscribers
+- automations
+- timezones
+- segments
+- forms_popup
+- forms_embedded
+- forms_promotion
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | No                   |       |
 
 ### Performance considerations
 
@@ -30,7 +30,7 @@ MailerLite API has a global rate limit of 120 requests per minute.
 
 ### Requirements
 
-* MailerLite API Key
+- MailerLite API Key
 
 ## Changelog
 
