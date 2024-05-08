@@ -4,30 +4,38 @@
   "type": ["null", "object"],
   "properties": {
     "actor": {
+      "description": "The user who performed the deletion action",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "The unique identifier of the user",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "The name of the user",
           "type": ["null", "string"]
         }
       }
     },
     "id": {
+      "description": "The unique identifier of the deleted ticket",
       "type": ["null", "integer"]
     },
     "subject": {
+      "description": "The subject or title of the deleted ticket",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Additional details or comments about the deleted ticket",
       "type": ["null", "string"]
     },
     "deleted_at": {
+      "description": "The timestamp when the ticket was deleted",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "previous_state": {
+      "description": "The state of the ticket before it was deleted",
       "type": ["null", "string"]
     }
   }
