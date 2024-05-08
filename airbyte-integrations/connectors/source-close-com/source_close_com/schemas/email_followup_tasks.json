@@ -1,10 +1,18 @@
 {
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
     "_type": {
       "type": ["null", "string"]
     },
     "view": {
+      "type": ["null", "string"]
+    },
+    "total_emails_count_in_thread": {
+      "type": ["null", "integer"]
+    },
+    "updated_by_name": {
       "type": ["null", "string"]
     },
     "assigned_to": {
@@ -69,6 +77,9 @@
     },
     "updated_by_name ": {
       "type": ["null", "string"]
+    },
+    "total_emails_count_in_thread ": {
+      "type": ["null", "integer"]
     }
   }
 }

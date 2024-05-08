@@ -2,20 +2,24 @@
   "type": "object",
   "properties": {
     "page_id": {
+      "description": "The identifier of the Instagram page associated with the insights",
       "type": ["null", "string"]
     },
     "business_account_id": {
+      "description": "The identifier of the business account to which the insights belong",
       "type": ["null", "string"]
     },
-    "date": {
-      "type": ["null", "string"],
-      "format": "date-time"
+    "breakdown": {
+      "description": "The breakdown of the insights data, such as age, gender, location, etc.",
+      "type": ["null", "string"]
     },
     "metric": {
+      "description": "The specific metric or measure tracked in the insights data",
       "type": ["null", "string"]
     },
     "value": {
-      "type": ["integer", "object"]
+      "description": "The actual value of the metric for the given breakdown and page",
+      "type": ["null", "object"]
     }
   }
 }

@@ -1,293 +1,316 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
-  "type": "object",
+  "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "state": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "balance_in_cents": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "total_revenue_in_cents": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "product_price_in_cents": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "product_version_number": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "current_period_ends_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "next_assessment_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "trial_started_at": {
-      "type": "string"
+      "type": ["null", "string"]
+    },
+    "credit_balance_in_cents": {
+      "type": ["null", "integer"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "locale": {
+      "type": ["null", "string"]
+    },
+    "prepayment_balance_in_cents": {
+      "type": ["null", "integer"]
+    },
+    "receives_invoice_emails": {
+      "type": ["null", "boolean"]
+    },
+    "scheduled_cancellation_at": {
+      "type": ["null", "string"]
     },
     "trial_ended_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "activated_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "expires_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "created_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "updated_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "cancellation_message": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "cancellation_method": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "cancel_at_end_of_period": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "canceled_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "current_period_started_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "previous_state": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "signup_payment_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "signup_revenue": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "delayed_cancel_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "coupon_code": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "snap_day": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "payment_collection_method": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "customer": {
-      "type": "object",
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "first_name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "last_name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "email": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "cc_emails": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "organization": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "reference": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "id": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "created_at": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "updated_at": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "address": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "address_2": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "city": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "state": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "state_name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "zip": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "country": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "country_name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "phone": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "verified": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "portal_customer_created_at": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "portal_invite_last_sent_at": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "portal_invite_last_accepted_at": {
           "type": ["null", "string"]
         },
         "tax_exempt": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "vat_number": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "parent_id": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "locale": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "default_subscription_group_uid": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
     "product": {
-      "type": "object",
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "id": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "handle": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "description": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "accounting_code": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "request_credit_card": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "expiration_interval": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "expiration_interval_unit": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "created_at": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "updated_at": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "price_in_cents": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "interval": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "interval_unit": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "initial_charge_in_cents": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "trial_price_in_cents": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "trial_interval": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "trial_interval_unit": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "archived_at": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "require_credit_card": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "return_params": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "taxable": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "update_return_url": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "initial_charge_after_trial": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "version_number": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "update_return_params": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "product_family": {
-          "type": "object",
+          "type": ["null", "object"],
+          "additionalProperties": true,
           "properties": {
             "id": {
-              "type": "integer"
+              "type": ["null", "integer"]
             },
             "name": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "handle": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "accounting_code": {
-              "type": "null"
+              "type": ["null", "string"]
             },
             "description": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "created_at": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "updated_at": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           }
         },
         "public_signup_pages": {
-          "type": "array",
+          "type": ["null", "array"],
           "items": {
             "anyOf": [
               {
-                "type": "object",
+                "type": ["null", "object"],
+                "additionalProperties": true,
                 "properties": {
                   "id": {
-                    "type": "integer"
+                    "type": ["null", "integer"]
                   },
                   "return_url": {
-                    "type": "string"
+                    "type": ["null", "string"]
                   },
                   "return_params": {
-                    "type": "string"
+                    "type": ["null", "string"]
                   },
                   "url": {
-                    "type": "string"
+                    "type": ["null", "string"]
                   }
                 }
               }
@@ -295,244 +318,259 @@
           }
         },
         "product_price_point_name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "request_billing_address": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "require_billing_address": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "require_shipping_address": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "tax_code": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "default_product_price_point_id": {
-          "type": "integer"
+          "type": ["null", "integer"]
         }
       }
     },
     "credit_card": {
-      "type": "object",
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "id": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "first_name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "last_name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "masked_card_number": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "card_type": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "expiration_month": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "expiration_year": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "customer_id": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "current_vault": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "vault_token": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "billing_address": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "billing_city": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "billing_state": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "billing_zip": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "billing_country": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "customer_vault_token": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "billing_address_2": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "payment_type": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "disabled": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "chargify_token": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "site_gateway_setting_id": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "gateway_handle": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
     "group": {
-      "type": "object",
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "uid": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "scheme": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "primary_subscription_id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "primary": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
     "bank_account": {
-      "type": "object",
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "bank_account_holder_type": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "bank_account_type": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "bank_name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "billing_address": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "billing_address_2": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "billing_city": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "billing_state": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "billing_zip": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "billing_country": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "current_vault": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "customer_id": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "customer_vault_token": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "first_name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "last_name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "id": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "masked_bank_account_number": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "masked_bank_routing_number": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "vault_token": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "chargify_token": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "site_gateway_setting_id": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "gateway_handle": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
     "payment_type": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "referral_code": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "next_product_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "next_product_handle": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "coupon_use_count": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "coupon_uses_allowed": {
-      "type": "integer"
+      "type": ["null", "integer"]
+    },
+    "product_price_point_type": {
+      "type": ["null", "string"]
+    },
+    "coupons": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true
+      }
     },
     "reason_code": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "automatically_resume_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "coupon_codes": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "anyOf": [
-          {
-            "type": "string"
-          }
-        ]
+        "type": ["null", "string"]
       }
     },
     "offer_id": {
-      "type": "string"
+      "type": ["null", "integer"]
     },
     "payer_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "current_billing_amount_in_cents": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "product_price_point_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "next_product_price_point_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "net_terms": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "stored_credential_transaction_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "reference": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "on_hold_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "prepaid_dunning": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
+    },
+    "dunning_communication_delay_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "dunning_communication_delay_time_zone": {
+      "type": ["null", "string"]
     }
   }
 }

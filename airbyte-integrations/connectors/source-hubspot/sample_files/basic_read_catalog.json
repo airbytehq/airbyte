@@ -224,6 +224,15 @@
     },
     {
       "stream": {
+        "name": "owners_archived",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "products",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -236,7 +245,29 @@
     },
     {
       "stream": {
-        "name": "property_history",
+        "name": "contacts_property_history",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["timestamp"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["timestamp"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "companies_property_history",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["timestamp"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["timestamp"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "deals_property_history",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "default_cursor_field": ["timestamp"]
@@ -299,6 +330,33 @@
     {
       "stream": {
         "name": "cars",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "contacts_merged_audit",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "contacts_web_analytics",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "contacts_form_submissions",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

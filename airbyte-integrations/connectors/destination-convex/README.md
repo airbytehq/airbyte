@@ -34,14 +34,6 @@ used for editable installs (`pip install -e`) to pull in Python dependencies fro
 If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
 should work as you expect.
 
-#### Building via Gradle
-
-From the Airbyte repository root, run:
-
-```
-./gradlew :airbyte-integrations:connectors:destination-convex:build
-```
-
 #### Create credentials
 
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/destinations/convex)
@@ -64,20 +56,19 @@ python main.py write --config secrets/config.json --catalog integration_tests/co
 
 #### Build
 
-First, make sure you build the latest Docker image:
+**Via [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) (recommended):**
 
-```
-docker build . -t airbyte/destination-convex:dev
-```
-
-You can also build the connector image via Gradle:
-
-```
-./gradlew :airbyte-integrations:connectors:destination-convex:airbyteDocker
+```bash
+airbyte-ci connectors --name=destination-convex build
 ```
 
-When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
-the Dockerfile.
+An image will be built with the tag `airbyte/destination-convex:dev`.
+
+**Via `docker build`:**
+
+```bash
+docker build -t airbyte/destination-convex:dev .
+```
 
 #### Run
 
@@ -92,51 +83,16 @@ cat messages.jsonl | docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integr
 
 ## Testing
 
-Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
-First install test dependencies into your virtual environment:
+You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
 
-```
-pip install .[tests]
-```
-
-### Unit Tests
-
-To run unit tests locally, from the connector directory run:
-
-```
-python -m pytest unit_tests
+```bash
+airbyte-ci connectors --name=destination-convex test
 ```
 
-### Integration Tests
+### Customizing acceptance Tests
 
-There are two types of integration tests: Acceptance Tests (Airbyte's test suite for all destination connectors) and custom integration tests (which are specific to this connector).
-
-#### Custom Integration tests
-
-Place custom tests inside `integration_tests/` folder, then, from the connector root, run
-
-```
-python -m pytest integration_tests
-```
-
-#### Acceptance Tests
-
-Coming soon:
-
-### Using gradle to run tests
-
-All commands should be run from airbyte project root.
-To run unit tests:
-
-```
-./gradlew :airbyte-integrations:connectors:destination-convex:unitTest
-```
-
-To run acceptance and custom integration tests:
-
-```
-./gradlew :airbyte-integrations:connectors:destination-convex:integrationTest
-```
+Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
+If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 
 ## Dependency Management
 
@@ -150,8 +106,10 @@ We split dependencies between two groups, dependencies that are:
 
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
 
-1. Make sure your changes are passing unit and integration tests.
-1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use [SemVer](https://semver.org/)).
-1. Create a Pull Request.
-1. Pat yourself on the back for being an awesome contributor.
-1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=destination-convex test`
+2. Bump the connector version in `metadata.yaml`: increment the `dockerImageTag` value. Please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors).
+3. Make sure the `metadata.yaml` content is up to date.
+4. Make the connector documentation and its changelog is up to date (`docs/integrations/destinations/convex.md`).
+5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
+6. Pat yourself on the back for being an awesome contributor.
+7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.

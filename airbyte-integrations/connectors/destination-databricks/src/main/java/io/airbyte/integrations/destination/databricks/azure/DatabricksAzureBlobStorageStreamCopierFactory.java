@@ -5,14 +5,14 @@
 package io.airbyte.integrations.destination.databricks.azure;
 
 import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.cdk.integrations.destination.jdbc.copy.StreamCopier;
+import io.airbyte.cdk.integrations.destination.jdbc.copy.StreamCopierFactory;
+import io.airbyte.cdk.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 import io.airbyte.integrations.destination.databricks.DatabricksDestinationConfig;
 import io.airbyte.integrations.destination.databricks.DatabricksStreamCopierFactory;
-import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
-import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
-import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 

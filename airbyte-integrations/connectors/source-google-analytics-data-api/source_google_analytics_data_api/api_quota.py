@@ -8,6 +8,7 @@ from functools import wraps
 from typing import Any, Iterable, Mapping, Optional
 
 import requests
+from requests.exceptions import JSONDecodeError
 
 from .utils import API_LIMIT_PER_HOUR
 
@@ -130,7 +131,7 @@ class GoogleAnalyticsApiQuotaBase:
                 self.logger.warning(f"The `{quota_name}` quota is running out of tokens. Available {remaining} out of {total_available}.")
                 self._set_retry_attrs_for_quota(quota_name)
                 return None
-            else:
+            elif self.error_message:
                 self.logger.warning(self.error_message)
 
     def _check_for_errors(self, response: requests.Response) -> None:
@@ -144,7 +145,7 @@ class GoogleAnalyticsApiQuotaBase:
                     self._set_retry_attrs_for_quota(quota_name)
                     self.logger.warn(f"The `{quota_name}` quota is exceeded!")
                     return None
-        except AttributeError as attr_e:
+        except (AttributeError, JSONDecodeError) as attr_e:
             self.logger.warning(
                 f"`GoogleAnalyticsApiQuota._check_for_errors`: Received non JSON response from the API. Full error: {attr_e}. Bypassing."
             )
@@ -159,7 +160,7 @@ class GoogleAnalyticsApiQuota(GoogleAnalyticsApiQuotaBase):
         # try get json from response
         try:
             parsed_response = response.json()
-        except AttributeError as e:
+        except (AttributeError, JSONDecodeError) as e:
             self.logger.warn(
                 f"`GoogleAnalyticsApiQuota._check_quota`: Received non JSON response from the API. Full error: {e}. Bypassing."
             )

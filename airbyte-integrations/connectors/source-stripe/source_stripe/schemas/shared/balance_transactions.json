@@ -66,6 +66,9 @@
     },
     "amount": {
       "type": ["null", "integer"]
+    },
+    "reporting_category": {
+      "type": ["null", "string"]
     }
   }
 }

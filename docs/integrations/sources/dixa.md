@@ -51,6 +51,7 @@ When using the connector, keep in mind that increasing the `batch_size` paramete
 
 | Version | Date       | Pull Request                                             | Subject                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------- |
+| 0.3.0   | 2023-10-17 | [30994](https://github.com/airbytehq/airbyte/pull/30994) | Migrate to Low-code Framework                                         |
 | 0.2.0   | 2023-06-08 | [25103](https://github.com/airbytehq/airbyte/pull/25103) | Add fields to `conversation_export` stream                            |
 | 0.1.3   | 2022-07-07 | [14437](https://github.com/airbytehq/airbyte/pull/14437) | 🎉 Source Dixa: bump version 0.1.3                                    |
 | 0.1.2   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                       |

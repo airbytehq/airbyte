@@ -1,133 +1,179 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "ad_group_id": {
+      "description": "The ID of the ad group to which the ad belongs.",
       "type": ["null", "string"]
     },
     "android_deep_link": {
+      "description": "The deep link URL for Android devices.",
       "type": ["null", "string"]
     },
     "carousel_android_deep_links": {
+      "description": "URLs that deep link Android users to specific content within the carousel ad.",
       "type": ["null", "array"],
       "items": {
+        "description": "The deep link URLs for individual carousel items on Android devices.",
         "type": ["null", "string"]
       }
     },
     "carousel_destination_urls": {
+      "description": "URLs that direct users to the landing pages of the advertised content.",
       "type": ["null", "array"],
       "items": {
+        "description": "The destination URLs for individual carousel items.",
         "type": ["null", "string"]
       }
     },
     "carousel_ios_deep_links": {
+      "description": "URLs that deep link iOS users to specific content within the carousel ad.",
       "type": ["null", "array"],
       "items": {
+        "description": "The deep link URLs for individual carousel items on iOS devices.",
         "type": ["null", "string"]
       }
     },
     "click_tracking_url": {
+      "description": "The URL for tracking clicks on the ad.",
       "type": ["null", "string"]
     },
     "creative_type": {
+      "description": "The type of creative used in the ad.",
       "type": ["null", "string"]
     },
     "destination_url": {
+      "description": "The main destination URL of the ad.",
       "type": ["null", "string"]
     },
     "ios_deep_link": {
+      "description": "The deep link URL for iOS devices.",
       "type": ["null", "string"]
     },
     "is_pin_deleted": {
+      "description": "A flag indicating if the ad is linked to a deleted pin.",
       "type": ["null", "boolean"]
     },
     "is_removable": {
+      "description": "A flag indicating if the ad is removable.",
       "type": ["null", "boolean"]
     },
     "name": {
+      "description": "The name or title of the ad.",
       "type": ["null", "string"]
     },
     "pin_id": {
+      "description": "The ID of the pin associated with the ad.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The current status of the ad.",
       "type": ["null", "string"]
     },
     "tracking_urls": {
+      "description": "Various tracking URLs used to monitor user interactions with the ad.",
       "type": ["null", "object"],
       "properties": {
         "impression": {
+          "description": "URL to track impressions of the ad.",
           "type": ["null", "array"],
           "items": {
+            "description": "Tracking URLs for ad impressions.",
             "type": ["null", "string"]
           }
         },
         "click": {
+          "description": "URL to track clicks on the ad.",
           "type": ["null", "array"],
           "items": {
+            "description": "Tracking URLs for clicks on the ad.",
             "type": ["null", "string"]
           }
         },
         "engagement": {
+          "description": "URL to track user engagements with the ad.",
           "type": ["null", "array"],
           "items": {
+            "description": "Tracking URLs for ad engagement.",
             "type": ["null", "string"]
           }
         },
         "buyable_button": {
+          "description": "URL to track clicks on the buyable button in the ad.",
           "type": ["null", "array"],
           "items": {
+            "description": "Tracking URLs for buyable buttons.",
             "type": ["null", "string"]
           }
         },
         "audience_verification": {
+          "description": "URL to track audience verification events.",
           "type": ["null", "array"],
           "items": {
+            "description": "Tracking URLs for audience verification.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "view_tracking_url": {
+      "description": "The URL for tracking views of the ad.",
+      "type": ["null", "string"]
+    },
+    "lead_form_id": {
+      "description": "The ID of the lead form associated with the ad.",
       "type": ["null", "string"]
     },
     "ad_account_id": {
+      "description": "The ID of the ad account associated with the ad data.",
       "type": ["null", "string"]
     },
     "campaign_id": {
+      "description": "The ID of the campaign associated with the ad.",
       "type": ["null", "string"]
     },
     "collection_items_destination_url_template": {
+      "description": "The template URL for destination pages of collection items.",
       "type": ["null", "string"]
     },
     "created_time": {
+      "description": "The timestamp when the ad was created.",
       "type": ["null", "integer"]
     },
     "id": {
+      "description": "The unique ID of the ad.",
       "type": ["null", "string"]
     },
     "rejected_reasons": {
+      "description": "Reasons for rejecting the ad.",
       "type": ["null", "array"],
       "items": {
+        "description": "Reasons for rejection of the ad.",
         "type": ["null", "string"]
       }
     },
     "rejection_labels": {
+      "description": "Labels applied to the ad when it is rejected.",
       "type": ["null", "array"],
       "items": {
+        "description": "Labels for the rejected ad.",
         "type": ["null", "string"]
       }
     },
     "review_status": {
+      "description": "The review status of the ad.",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "The type of the ad.",
       "type": ["null", "string"]
     },
     "updated_time": {
+      "description": "The timestamp when the ad was last updated.",
       "type": ["null", "integer"]
     },
     "summary_status": {
+      "description": "The summarized status of the ad.",
       "type": ["null", "string"]
     }
   }

@@ -4,45 +4,147 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "sku": { "type": ["null", "string"] },
-    "fnsku": { "type": ["null", "string"] },
-    "asin": { "type": ["null", "string"] },
-    "product-name": { "type": ["null", "string"] },
-    "product-group": { "type": ["null", "string"] },
-    "brand": { "type": ["null", "string"] },
-    "fulfilled-by": { "type": ["null", "string"] },
-    "your-price": { "type": ["null", "string"] },
-    "sales-price": { "type": ["null", "string"] },
-    "longest-side": { "type": ["null", "string"] },
-    "median-side": { "type": ["null", "string"] },
-    "shortest-side": { "type": ["null", "string"] },
-    "length-and-girth": { "type": ["null", "string"] },
-    "unit-of-dimension": { "type": ["null", "string"] },
-    "item-package-weight": { "type": ["null", "string"] },
-    "unit-of-weight": { "type": ["null", "string"] },
-    "product-size-tier": { "type": ["null", "string"] },
-    "currency": { "type": ["null", "string"] },
-    "estimated-fee-total": { "type": ["null", "string"] },
-    "estimated-referral-fee-per-unit": { "type": ["null", "string"] },
-    "estimated-variable-closing-fee": { "type": ["null", "string"] },
-    "estimated-order-handling-fee-per-order": { "type": ["null", "string"] },
-    "estimated-pick-pack-fee-per-unit": { "type": ["null", "string"] },
-    "estimated-weight-handling-fee-per-unit": { "type": ["null", "string"] },
-    "expected-fulfillment-fee-per-unit": { "type": ["null", "string"] },
+    "sku": {
+      "description": "Stock Keeping Unit representing the product",
+      "type": ["null", "string"]
+    },
+    "fnsku": {
+      "description": "Fulfillment Network Stock Keeping Unit representing the product",
+      "type": ["null", "string"]
+    },
+    "asin": {
+      "description": "Amazon Standard Identification Number representing the product",
+      "type": ["null", "string"]
+    },
+    "product-name": {
+      "description": "Name of the product",
+      "type": ["null", "string"]
+    },
+    "product-group": {
+      "description": "Group to which the product belongs",
+      "type": ["null", "string"]
+    },
+    "brand": {
+      "description": "Brand of the product",
+      "type": ["null", "string"]
+    },
+    "fulfilled-by": {
+      "description": "Indicates whether the product is fulfilled by the seller or Amazon",
+      "type": ["null", "string"]
+    },
+    "your-price": {
+      "description": "Price set by the seller for the product",
+      "type": ["null", "string"]
+    },
+    "sales-price": {
+      "description": "Price at which the product is sold",
+      "type": ["null", "string"]
+    },
+    "longest-side": {
+      "description": "Length of the longest side of the product",
+      "type": ["null", "string"]
+    },
+    "median-side": {
+      "description": "Length of the median side of the product",
+      "type": ["null", "string"]
+    },
+    "shortest-side": {
+      "description": "Length of the shortest side of the product",
+      "type": ["null", "string"]
+    },
+    "length-and-girth": {
+      "description": "Combined length and girth of the product",
+      "type": ["null", "string"]
+    },
+    "unit-of-dimension": {
+      "description": "Unit of measurement for dimensions",
+      "type": ["null", "string"]
+    },
+    "item-package-weight": {
+      "description": "Weight of the product package",
+      "type": ["null", "string"]
+    },
+    "unit-of-weight": {
+      "description": "Unit of measurement for weight",
+      "type": ["null", "string"]
+    },
+    "product-size-tier": {
+      "description": "Size tier of the product",
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "description": "Currency used for the fee calculations",
+      "type": ["null", "string"]
+    },
+    "estimated-fee-total": {
+      "description": "Total estimated fees for the product",
+      "type": ["null", "string"]
+    },
+    "estimated-referral-fee-per-unit": {
+      "description": "Estimated referral fee per unit",
+      "type": ["null", "string"]
+    },
+    "estimated-variable-closing-fee": {
+      "description": "Estimated variable closing fee",
+      "type": ["null", "string"]
+    },
+    "estimated-order-handling-fee-per-order": {
+      "description": "Estimated order handling fee per order",
+      "type": ["null", "string"]
+    },
+    "estimated-pick-pack-fee-per-unit": {
+      "description": "Estimated pick and pack fee per unit",
+      "type": ["null", "string"]
+    },
+    "estimated-weight-handling-fee-per-unit": {
+      "description": "Estimated weight handling fee per unit",
+      "type": ["null", "string"]
+    },
+    "expected-fulfillment-fee-per-unit": {
+      "description": "Expected fulfillment fee per unit",
+      "type": ["null", "string"]
+    },
     "estimated-future-fee (Current Selling on Amazon + Future Fulfillment fees)": {
+      "description": "Estimated future total fee including current Amazon selling and future fulfillment fees",
       "type": ["null", "string"]
     },
     "estimated-future-order-handling-fee-per-order": {
+      "description": "Estimated future order handling fee per order",
       "type": ["null", "string"]
     },
-    "estimated-future-pick-pack-fee-per-unit": { "type": ["null", "string"] },
+    "estimated-future-pick-pack-fee-per-unit": {
+      "description": "Estimated future pick and pack fee per unit",
+      "type": ["null", "string"]
+    },
     "estimated-future-weight-handling-fee-per-unit": {
+      "description": "Estimated future weight handling fee per unit",
       "type": ["null", "string"]
     },
-    "expected-future-fulfillment-fee-per-unit": { "type": ["null", "string"] },
-    "estimated-future-referral-fee-per-unit": { "type": ["null", "string"] },
-    "current-fee-category": { "type": ["null", "string"] },
-    "future-fee-category": { "type": ["null", "string"] },
-    "future-fee-category-effective-date": { "type": ["null", "string"] }
+    "expected-future-fulfillment-fee-per-unit": {
+      "description": "Expected future fulfillment fee per unit",
+      "type": ["null", "string"]
+    },
+    "estimated-future-referral-fee-per-unit": {
+      "description": "Estimated future referral fee per unit",
+      "type": ["null", "string"]
+    },
+    "current-fee-category": {
+      "description": "Current fee category of the product",
+      "type": ["null", "string"]
+    },
+    "future-fee-category": {
+      "description": "Future fee category of the product",
+      "type": ["null", "string"]
+    },
+    "future-fee-category-effective-date": {
+      "description": "Effective date for the future fee category in date-time format",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "dataEndTime": {
+      "description": "End time of the data in date format",
+      "type": ["null", "string"],
+      "format": "date"
+    }
   }
 }

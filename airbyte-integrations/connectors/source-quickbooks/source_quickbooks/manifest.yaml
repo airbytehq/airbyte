@@ -54,7 +54,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "airbyte_cursor" ]
+          - path: ["airbyte_cursor"]
             value: "{{ record.MetaData.LastUpdatedTime }}"
     $parameters:
       path: "/v3/company/{{ config.credentials.realm_id }}/query"

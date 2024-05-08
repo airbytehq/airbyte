@@ -23,6 +23,6 @@ setuptools.setup(
         ],
     },
     extras_require={
-        "tests": ["airbyte-cdk", "pytest", "mypy", "types-PyYAML"],
+        "tests": ["airbyte-cdk", "pyyaml", "pytest", "mypy", "types-PyYAML"],
     },
 )

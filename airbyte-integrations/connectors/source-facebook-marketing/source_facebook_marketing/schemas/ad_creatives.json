@@ -1,39 +1,50 @@
 {
   "properties": {
     "body": {
+      "description": "The body text of the ad creative.",
       "type": ["null", "string"]
     },
     "object_story_id": {
+      "description": "Story ID associated with the object.",
       "type": ["null", "string"]
     },
     "image_url": {
+      "description": "URL of the main image used in the ad creative.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier of the ad creative.",
       "type": ["null", "string"]
     },
     "account_id": {
+      "description": "The unique identifier of the Facebook ad account associated with the ad creative.",
       "type": ["null", "string"]
     },
     "actor_id": {
+      "description": "The unique identifier of the actor associated with the ad creative.",
       "type": ["null", "string"]
     },
     "adlabels": {
+      "description": "A collection of ad labels associated with the ad creative.",
       "type": ["null", "array"],
       "items": {
         "type": "object",
         "properties": {
           "id": {
+            "description": "The unique identifier of the ad label.",
             "type": "string"
           },
           "created_time": {
+            "description": "The timestamp when the ad label was created.",
             "type": "string",
             "format": "date-time"
           },
           "name": {
+            "description": "The name of the ad label.",
             "type": "string"
           },
           "updated_time": {
+            "description": "The timestamp when the ad label was last updated.",
             "type": "string",
             "format": "date-time"
           }
@@ -41,31 +52,43 @@
       }
     },
     "applink_treatment": {
+      "description": "Specifies how the app link is treated.",
       "type": ["null", "string"]
     },
     "asset_feed_spec": {
+      "description": "Specifies the asset customization rules, call to actions, and groups for the ad creative.",
       "type": ["null", "object"],
       "properties": {
         "ad_formats": {
+          "description": "A collection of ad formats.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string"]
           }
         },
         "additional_data": {
+          "description": "Additional data related to the asset feed.",
           "type": ["null", "object"],
           "properties": {
             "brand_page_id": {
+              "description": "The unique identifier of the brand's Facebook page.",
               "type": ["null", "string"]
             },
             "multi_share_end_card": {
+              "description": "Specifies if there is a multi-share end card.",
+              "type": ["null", "boolean"]
+            },
+            "is_click_to_message": {
+              "description": "Indicates whether the ad is a click-to-message ad.",
               "type": ["null", "boolean"]
             }
           }
         },
         "asset_customization_rules": {
+          "description": "Customization rules for assets within the ad creative.",
           "type": ["null", "array"],
           "items": {
+            "description": "Rules for customizing the ad asset.",
             "type": ["null", "object"],
             "properties": {
               "body_label": {
@@ -183,9 +206,11 @@
           }
         },
         "autotranslate": {
+          "description": "Specifies if autotranslate is enabled.",
           "type": ["null", "string"]
         },
         "bodies": {
+          "description": "A collection of various bodies for the ad creative.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
@@ -222,14 +247,17 @@
           }
         },
         "call_to_action_types": {
+          "description": "A collection of call-to-action types.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string"]
           }
         },
         "call_to_actions": {
+          "description": "Actions prompting the audience to take in response to the ad.",
           "type": ["null", "array"],
           "items": {
+            "description": "A collection of call-to-action elements.",
             "type": ["null", "object"],
             "properties": {
               "adlabels": {
@@ -296,6 +324,7 @@
           }
         },
         "captions": {
+          "description": "A collection of captions for the ad creative.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
@@ -332,6 +361,7 @@
           }
         },
         "descriptions": {
+          "description": "A collection of descriptions for the ad creative.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
@@ -368,8 +398,10 @@
           }
         },
         "groups": {
+          "description": "Group information related to the asset feed.",
           "type": ["null", "array"],
           "items": {
+            "description": "Groups information associated with the ad creative.",
             "type": ["null", "object"],
             "properties": {
               "body_label": {
@@ -397,6 +429,7 @@
           }
         },
         "images": {
+          "description": "A collection of images for the ad creative.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
@@ -439,6 +472,7 @@
           }
         },
         "link_urls": {
+          "description": "A collection of link URLs for the ad creative.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
@@ -484,6 +518,7 @@
           }
         },
         "optimization_type": {
+          "description": "The optimization type for the ad creative.",
           "oneOf": [
             {
               "type": ["null", "array"],
@@ -496,7 +531,16 @@
             }
           ]
         },
+        "reasons_to_shop": {
+          "description": "Reasons to shop specified for the ad creative.",
+          "type": ["null", "boolean"]
+        },
+        "shops_bundle": {
+          "description": "Indicates if the ad creative is part of a shops bundle.",
+          "type": ["null", "boolean"]
+        },
         "titles": {
+          "description": "A collection of titles for the ad creative.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
@@ -533,6 +577,7 @@
           }
         },
         "videos": {
+          "description": "A collection of videos for the ad creative.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
@@ -583,37 +628,51 @@
       }
     },
     "call_to_action_type": {
+      "description": "The type of call-to-action for the ad creative.",
       "type": ["null", "string"]
     },
     "effective_instagram_story_id": {
+      "description": "The effective Instagram story ID associated with the ad creative.",
       "type": ["null", "string"]
     },
     "effective_object_story_id": {
+      "description": "The effective object story ID for the ad creative.",
       "type": ["null", "string"]
     },
     "title": {
+      "description": "Title of the ad creative.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name or title of the ad creative.",
       "type": ["null", "string"]
     },
-    "image_crops": { "$ref": "ads_image_crops.json" },
+    "image_crops": {
+      "description": "Cropped versions of the main image used in the ad creative.",
+      "$ref": "ads_image_crops.json"
+    },
     "instagram_actor_id": {
+      "description": "Instagram actor ID associated with the ad creative.",
       "type": ["null", "string"]
     },
     "instagram_permalink_url": {
+      "description": "Permalink URL of the ad creative on Instagram.",
       "type": ["null", "string"]
     },
     "instagram_story_id": {
+      "description": "ID of the story on Instagram.",
       "type": ["null", "string"]
     },
     "link_og_id": {
+      "description": "Open Graph ID related to the link.",
       "type": ["null", "string"]
     },
     "object_id": {
+      "description": "ID of the associated object.",
       "type": ["null", "string"]
     },
     "object_story_spec": {
+      "description": "Specification for the object story associated with the ad creative.",
       "properties": {
         "page_id": {
           "type": ["null", "string"]
@@ -818,7 +877,9 @@
                   "description": {
                     "type": ["null", "string"]
                   },
-                  "image_crops": { "$ref": "ads_image_crops.json" },
+                  "image_crops": {
+                    "$ref": "ads_image_crops.json"
+                  },
                   "name": {
                     "type": ["null", "string"]
                   },
@@ -839,7 +900,9 @@
             "link": {
               "type": ["null", "string"]
             },
-            "image_crops": { "$ref": "ads_image_crops.json" },
+            "image_crops": {
+              "$ref": "ads_image_crops.json"
+            },
             "description": {
               "type": ["null", "string"]
             },
@@ -877,6 +940,9 @@
               }
             },
             "show_multiple_images": {
+              "type": ["null", "boolean"]
+            },
+            "use_flexible_image_aspect_ratio": {
               "type": ["null", "boolean"]
             }
           },
@@ -1093,6 +1159,17 @@
                     },
                     "type": ["null", "object"]
                   },
+                  "place_data": {
+                    "properties": {
+                      "location_source_id": {
+                        "type": ["null", "string"]
+                      },
+                      "type": {
+                        "type": ["null", "string"]
+                      }
+                    },
+                    "type": ["null", "object"]
+                  },
                   "caption": {
                     "type": ["null", "string"]
                   },
@@ -1102,7 +1179,9 @@
                   "description": {
                     "type": ["null", "string"]
                   },
-                  "image_crops": { "$ref": "ads_image_crops.json" },
+                  "image_crops": {
+                    "$ref": "ads_image_crops.json"
+                  },
                   "name": {
                     "type": ["null", "string"]
                   },
@@ -1117,13 +1196,18 @@
               },
               "type": ["null", "array"]
             },
+            "format_option": {
+              "type": ["null", "string"]
+            },
             "multi_share_optimized": {
               "type": ["null", "boolean"]
             },
             "link": {
               "type": ["null", "string"]
             },
-            "image_crops": { "$ref": "ads_image_crops.json" },
+            "image_crops": {
+              "$ref": "ads_image_crops.json"
+            },
             "description": {
               "type": ["null", "string"]
             },
@@ -1253,7 +1337,9 @@
                 "type": "string"
               }
             },
-            "targeting": { "$ref": "targeting.json" },
+            "targeting": {
+              "$ref": "targeting.json"
+            },
             "title": {
               "type": ["null", "string"]
             },
@@ -1266,21 +1352,27 @@
       "type": ["null", "object"]
     },
     "object_type": {
+      "description": "Type of object associated with the ad creative.",
       "type": ["null", "string"]
     },
     "object_url": {
+      "description": "URL of the associated object.",
       "type": ["null", "string"]
     },
     "product_set_id": {
+      "description": "ID of the product set linked to the ad creative.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Status of the ad creative.",
       "type": ["null", "string"]
     },
     "template_url": {
+      "description": "URL of the template used in the ad creative.",
       "type": ["null", "string"]
     },
     "template_url_spec": {
+      "description": "Specification for the template URL.",
       "type": ["null", "object"],
       "properties": {
         "android": {
@@ -1375,21 +1467,27 @@
       }
     },
     "thumbnail_data_url": {
+      "description": "URL of the thumbnail data.",
       "type": ["null", "string"]
     },
     "thumbnail_url": {
+      "description": "URL of the thumbnail image.",
       "type": ["null", "string"]
     },
     "image_hash": {
+      "description": "Hash value representing the image used in the ad creative.",
       "type": ["null", "string"]
     },
     "url_tags": {
+      "description": "Tags added to the URL of the ad creative.",
       "type": ["null", "string"]
     },
     "video_id": {
+      "description": "ID of the video used in the ad creative.",
       "type": ["null", "string"]
     },
     "link_url": {
+      "description": "URL associated with the ad creative.",
       "type": ["null", "string"]
     }
   },

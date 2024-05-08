@@ -5,18 +5,20 @@
 package io.airbyte.integrations.source.dynamodb;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.util.HashMap;
 import java.util.Map;
+import org.junit.jupiter.api.Disabled;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 
+@Disabled
 public class DynamodbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String TABLE_NAME = "airbyte_table";

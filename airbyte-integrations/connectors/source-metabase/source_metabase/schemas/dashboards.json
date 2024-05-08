@@ -1,5 +1,7 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
     "description": {
       "type": ["null", "string"]
@@ -9,38 +11,6 @@
     },
     "collection_position": {
       "type": ["null", "integer"]
-    },
-    "creator": {
-      "type": ["null", "object"],
-      "properties": {
-        "email": {
-          "type": ["null", "string"]
-        },
-        "first_name": {
-          "type": ["null", "string"]
-        },
-        "last_login": {
-          "type": ["null", "string"]
-        },
-        "is_qbnewb": {
-          "type": ["null", "boolean"]
-        },
-        "is_superuser": {
-          "type": ["null", "boolean"]
-        },
-        "id": {
-          "type": ["null", "integer"]
-        },
-        "last_name": {
-          "type": ["null", "string"]
-        },
-        "date_joined": {
-          "type": ["null", "string"]
-        },
-        "common_name": {
-          "type": ["null", "string"]
-        }
-      }
     },
     "enable_embedding": {
       "type": ["null", "boolean"]
@@ -134,6 +104,38 @@
     },
     "points_of_interest": {
       "type": ["null", "string"]
+    },
+    "dashcards": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {}
+      }
+    },
+    "param_fields": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "param_values": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "can_write": {
+      "type": ["null", "boolean"]
+    },
+    "tabs": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {}
+      }
+    },
+    "collection_authority_level": {
+      "type": ["null", "string"]
+    },
+    "collection": {
+      "type": ["null", "object"],
+      "properties": {}
     }
   }
 }

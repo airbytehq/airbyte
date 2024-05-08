@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "created_at": {
+      "description": "The date and time when the catalog product group was created.",
+      "type": ["null", "integer"]
+    },
+    "description": {
+      "description": "The description of the catalog product group.",
+      "type": ["null", "string"]
+    },
+    "feed_id": {
+      "description": "The ID of the feed associated with the catalog product group.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "The unique identifier of the catalog product group.",
+      "type": ["null", "string"]
+    },
+    "is_featured": {
+      "description": "Indicates whether the product group is featured or not.",
+      "type": ["null", "boolean"]
+    },
+    "name": {
+      "description": "The name of the catalog product group.",
+      "type": ["null", "string"]
+    },
+    "status": {
+      "description": "The status of the catalog product group.",
+      "type": ["null", "string"]
+    },
+    "type": {
+      "description": "The type of the catalog product group.",
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "description": "The date and time when the catalog product group was last updated.",
+      "type": ["null", "integer"]
+    }
+  }
+}

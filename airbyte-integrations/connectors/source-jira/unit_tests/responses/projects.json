@@ -23,7 +23,7 @@
       "expand": "description,lead,issueTypes,url,projectKeys,permissions,insight",
       "self": "https://airbyteio.atlassian.net/rest/api/3/project/10016",
       "id": "2",
-      "key": "Project1",
+      "key": "Project2",
       "description": "Test project 13 description",
       "name": "Test project 13",
       "avatarUrls": {

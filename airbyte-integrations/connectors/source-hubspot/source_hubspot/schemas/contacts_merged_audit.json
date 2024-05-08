@@ -1,0 +1,179 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "canonical-vid": {
+      "description": "The unique identifier for the merged contact in HubSpot's CRM.",
+      "type": ["null", "integer"]
+    },
+    "vid-to-merge": {
+      "description": "The contact\u2019s unique identifier to be merged.",
+      "type": ["null", "integer"]
+    },
+    "timestamp": {
+      "description": "The timestamp of when the merge operation occurred.",
+      "type": ["null", "integer"]
+    },
+    "entity-id": {
+      "description": "The entity identifier for the merged contact.",
+      "type": ["null", "string"]
+    },
+    "user-id": {
+      "description": "The user ID responsible for the merge operation.",
+      "type": ["null", "integer"]
+    },
+    "num-properties-moved": {
+      "description": "The number of properties moved during the merge process.",
+      "type": ["null", "integer"]
+    },
+    "merged_from_email": {
+      "description": "Details of the email address from which the contact was merged from.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "source-vids": {
+          "description": "Array of unique identifiers of video sources.",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "integer"]
+          }
+        },
+        "updated-by-user-id": {
+          "description": "The user ID of the user who updated the email address.",
+          "type": ["null", "integer"]
+        },
+        "source-label": {
+          "description": "The label of the source of the email address.",
+          "type": ["null", "string"]
+        },
+        "source-type": {
+          "description": "The type of the source of the email address.",
+          "type": ["null", "string"]
+        },
+        "value": {
+          "description": "The email address value.",
+          "type": ["null", "string"]
+        },
+        "source-id": {
+          "description": "The unique identifier of the source of the email address.",
+          "type": ["null", "string"]
+        },
+        "selected": {
+          "description": "Indicates if this email address was selected during the merge process.",
+          "type": ["null", "boolean"]
+        },
+        "timestamp": {
+          "description": "The timestamp of when the merge occurred.",
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "merged_from_email_source-vids": {
+      "description": "Array of unique identifiers of video sources.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "merged_from_email_updated-by-user-id": {
+      "description": "The user ID of the user who updated the email address from which the contact was merged from.",
+      "type": ["null", "integer"]
+    },
+    "merged_from_email_source-label": {
+      "description": "The source label of the email address from which the contact was merged from.",
+      "type": ["null", "string"]
+    },
+    "merged_from_email_source-type": {
+      "description": "The source type of the email address from which the contact was merged from.",
+      "type": ["null", "string"]
+    },
+    "merged_from_email_value": {
+      "description": "The email address value from which the contact was merged from.",
+      "type": ["null", "string"]
+    },
+    "merged_from_email_source-id": {
+      "description": "The source ID of the email address from which the contact was merged from.",
+      "type": ["null", "string"]
+    },
+    "merged_from_email_selected": {
+      "description": "Indicates if the email address from which the contact was merged from was selected.",
+      "type": ["null", "boolean"]
+    },
+    "merged_from_email_timestamp": {
+      "description": "The timestamp of the email address merge.",
+      "type": ["null", "integer"]
+    },
+    "merged_to_email": {
+      "description": "Details of the email address to which the contact was merged to.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "updated-by-user-id": {
+          "description": "The user ID of the user who updated the email address.",
+          "type": ["null", "integer"]
+        },
+        "source-label": {
+          "description": "The label of the source of the email address.",
+          "type": ["null", "string"]
+        },
+        "source-type": {
+          "description": "The type of the source of the email address.",
+          "type": ["null", "string"]
+        },
+        "value": {
+          "description": "The email address value.",
+          "type": ["null", "string"]
+        },
+        "source-id": {
+          "description": "The unique identifier of the source of the email address.",
+          "type": ["null", "string"]
+        },
+        "selected": {
+          "description": "Indicates if this email address was selected during the merge process.",
+          "type": ["null", "boolean"]
+        },
+        "timestamp": {
+          "description": "The timestamp of when the merge occurred.",
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "merged_to_email_updated-by-user-id": {
+      "description": "The user ID of the user who updated the email address to which the contact was merged to.",
+      "type": ["null", "integer"]
+    },
+    "merged_to_email_source-label": {
+      "description": "The source label of the email address to which the contact was merged to.",
+      "type": ["null", "string"]
+    },
+    "merged_to_email_source-type": {
+      "description": "The source type of the email address to which the contact was merged to.",
+      "type": ["null", "string"]
+    },
+    "merged_to_email_value": {
+      "description": "The email address value to which the contact was merged to.",
+      "type": ["null", "string"]
+    },
+    "merged_to_email_source-id": {
+      "description": "The source ID of the email address to which the contact was merged to.",
+      "type": ["null", "string"]
+    },
+    "merged_to_email_selected": {
+      "description": "Indicates if the email address to which the contact was merged to was selected.",
+      "type": ["null", "boolean"]
+    },
+    "merged_to_email_timestamp": {
+      "description": "The timestamp of the email address merge.",
+      "type": ["null", "integer"]
+    },
+    "first-name": {
+      "description": "The first name of the merged contact.",
+      "type": ["null", "string"]
+    },
+    "last-name": {
+      "description": "The last name of the merged contact.",
+      "type": ["null", "string"]
+    }
+  }
+}

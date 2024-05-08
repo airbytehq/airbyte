@@ -1,18 +1,18 @@
-name: 'Prepare Runner for Building'
-description: 'Prepare Runner for Building project'
+name: "Prepare Runner for Building"
+description: "Prepare Runner for Building project"
 inputs:
   install_java:
-    description: ''
+    description: ""
     required: false
-    default: 'true'
+    default: "true"
   install_node:
-    description: ''
+    description: ""
     required: false
-    default: 'true'
+    default: "true"
   install_python:
-    description: ''
+    description: ""
     required: false
-    default: 'true'
+    default: "true"
 runs:
   using: "composite"
   steps:
@@ -20,7 +20,7 @@ runs:
       uses: actions/setup-java@v3
       with:
         distribution: "zulu"
-        java-version: "17"
+        java-version: "21"
 
     - if: inputs.install_node == 'true'
       uses: actions/setup-node@v3

@@ -1,7 +1,21 @@
 {
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
     "description": {
+      "date_updated": ["null", "string"]
+    },
+    "back_reference_is_visible": {
+      "date_updated": ["null", "boolean"]
+    },
+    "choices": {
+      "date_updated": ["null", "array"]
+    },
+    "is_shared": {
+      "date_updated": ["null", "boolean"]
+    },
+    "referenced_custom_type_id": {
       "date_updated": ["null", "string"]
     },
     "name": {

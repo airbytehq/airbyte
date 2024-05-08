@@ -8,22 +8,32 @@ connectionSpecification:
     - credentials
   additionalProperties: true
   properties:
+    batch_size:
+      type: integer
+      title: Row Batch Size
+      description: >-
+        Default value is 200.
+        An integer representing row batch size for each sent request to Google Sheets API.
+        Row batch size means how many rows are processed from the google sheet, for example default value 200
+        would process rows 1-201, then 201-401 and so on.
+        Based on <a href='https://developers.google.com/sheets/api/limits'>Google Sheets API limits documentation</a>,
+        it is possible to send up to 300 requests per minute, but each individual request has to be processed under 180 seconds,
+        otherwise the request returns a timeout error. In regards to this information, consider network speed and
+        number of columns of the google sheet when deciding a batch_size value.
+        Default value should cover most of the cases, but if a google sheet has over 100,000 records or more,
+        consider increasing batch_size value.
+      default: 200
     spreadsheet_id:
       type: string
       title: Spreadsheet Link
       description: >-
-        Enter the link to the Google spreadsheet you want to sync
+        Enter the link to the Google spreadsheet you want to sync. To copy the link, click the 'Share' button in the top-right corner of the spreadsheet, then click 'Copy link'.
       examples:
         - https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit
-    row_batch_size:
-      type: integer
-      title: Row Batch Size
-      description: Number of rows fetched when making a Google Sheet API call. Defaults to 200.
-      default: 200
     names_conversion:
       type: boolean
-      title: Columns Name Conversion
-      description: Columns name conversion using a set of rules, for example, 'My Name' -> 'my-name'.
+      title: Convert Column Names to SQL-Compliant Format
+      description: Enables the conversion of column names to a standardized, SQL-compliant format. For example, 'My Name' -> 'my_name'. Enable this option if your destination is SQL-based.
       default: false
     credentials:
       type: object
@@ -45,17 +55,17 @@ connectionSpecification:
             client_id:
               title: Client ID
               type: string
-              description: "Enter your Google application's Client ID"
+              description: "Enter your Google application's Client ID. See <a href='https://developers.google.com/identity/protocols/oauth2'>Google's documentation</a> for more information."
               airbyte_secret: true
             client_secret:
               title: Client Secret
               type: string
-              description: "Enter your Google application's Client Secret"
+              description: "Enter your Google application's Client Secret. See <a href='https://developers.google.com/identity/protocols/oauth2'>Google's documentation</a> for more information."
               airbyte_secret: true
             refresh_token:
               title: Refresh Token
               type: string
-              description: "Enter your Google application's refresh token"
+              description: "Enter your Google application's refresh token. See <a href='https://developers.google.com/identity/protocols/oauth2'>Google's documentation</a> for more information."
               airbyte_secret: true
         - title: Service Account Key Authentication
           type: object
@@ -69,7 +79,7 @@ connectionSpecification:
             service_account_info:
               type: string
               title: Service Account Information.
-              description: 'Enter your Google Cloud <a href="https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys">service account key</a> in JSON format'
+              description: 'The JSON key of the service account to use for authorization. Read more <a href="https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys">here</a>.'
               airbyte_secret: true
               examples:
                 - '{ "type": "service_account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ... }'

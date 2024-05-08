@@ -4,513 +4,525 @@
   "description": "A list of reports containing campaigns marked as Sent.",
   "properties": {
     "id": {
+      "description": "A string that uniquely identifies this campaign.",
       "type": "string",
-      "title": "Campaign ID",
-      "description": "A string that uniquely identifies this campaign."
+      "title": "Campaign ID"
     },
     "campaign_title": {
-      "type": "string",
-      "title": "Campaign Title",
       "description": "The title of the campaign.",
+      "type": ["null", "string"],
+      "title": "Campaign Title",
       "readOnly": true
     },
     "type": {
-      "type": "string",
-      "title": "Campaign Type",
-      "description": "The type of campaign (regular, plain-text, ab_split, rss, automation, variate, or auto)."
+      "description": "The type of campaign (regular, plain-text, ab_split, rss, automation, variate, or auto).",
+      "type": ["null", "string"],
+      "title": "Campaign Type"
     },
     "list_id": {
+      "description": "The unique list id.",
       "type": "string",
       "title": "List ID",
-      "description": "The unique list id.",
       "readOnly": true
     },
     "list_is_active": {
+      "description": "The status of the list used, namely if it's deleted or disabled.",
       "type": "boolean",
       "title": "List Status",
-      "description": "The status of the list used, namely if it's deleted or disabled.",
       "readOnly": true
     },
     "list_name": {
-      "type": "string",
-      "title": "List Name",
       "description": "The name of the list.",
+      "type": ["null", "string"],
+      "title": "List Name",
       "readOnly": true
     },
     "subject_line": {
-      "type": "string",
-      "title": "Campaign Subject Line",
       "description": "The subject line for the campaign.",
+      "type": ["null", "string"],
+      "title": "Campaign Subject Line",
       "readOnly": true
     },
     "preview_text": {
-      "type": "string",
-      "title": "Campaign Preview Text",
-      "description": "The preview text for the campaign."
+      "description": "The preview text for the campaign.",
+      "type": ["null", "string"],
+      "title": "Campaign Preview Text"
     },
     "emails_sent": {
+      "description": "The total number of emails sent for this campaign.",
       "type": "integer",
-      "title": "Emails Sent",
-      "description": "The total number of emails sent for this campaign."
+      "title": "Emails Sent"
     },
     "abuse_reports": {
+      "description": "The number of abuse reports generated for this campaign.",
       "type": "integer",
-      "title": "Abuse Reports",
-      "description": "The number of abuse reports generated for this campaign."
+      "title": "Abuse Reports"
     },
     "unsubscribed": {
+      "description": "The total number of unsubscribed members for this campaign.",
       "type": "integer",
       "title": "Unsubscribe Count",
-      "description": "The total number of unsubscribed members for this campaign.",
       "readOnly": true
     },
     "send_time": {
-      "type": "string",
-      "format": "date-time",
-      "title": "Send Time",
       "description": "The date and time a campaign was sent in ISO 8601 format.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone",
+      "title": "Send Time",
       "readOnly": true
     },
     "rss_last_send": {
-      "type": "string",
-      "format": "date-time",
-      "title": "RSS Last Send",
       "description": "For RSS campaigns, the date and time of the last send in ISO 8601 format.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone",
+      "title": "RSS Last Send",
       "readOnly": true
     },
     "bounces": {
+      "description": "An object describing the bounce summary for the campaign.",
       "type": "object",
       "title": "Bounces",
-      "description": "An object describing the bounce summary for the campaign.",
       "properties": {
         "hard_bounces": {
+          "description": "The total number of hard bounced email addresses.",
           "type": "integer",
-          "title": "Hard Bounces",
-          "description": "The total number of hard bounced email addresses."
+          "title": "Hard Bounces"
         },
         "soft_bounces": {
+          "description": "The total number of soft bounced email addresses.",
           "type": "integer",
-          "title": "Soft Bounces",
-          "description": "The total number of soft bounced email addresses."
+          "title": "Soft Bounces"
         },
         "syntax_errors": {
+          "description": "The total number of addresses that were syntax-related bounces.",
           "type": "integer",
-          "title": "Syntax Errors",
-          "description": "The total number of addresses that were syntax-related bounces."
+          "title": "Syntax Errors"
         }
       }
     },
     "forwards": {
+      "description": "An object describing the forwards and forward activity for the campaign.",
       "type": "object",
       "title": "Forwards",
-      "description": "An object describing the forwards and forward activity for the campaign.",
       "properties": {
         "forwards_count": {
+          "description": "How many times the campaign has been forwarded.",
           "type": "integer",
-          "title": "Total Forwards",
-          "description": "How many times the campaign has been forwarded."
+          "title": "Total Forwards"
         },
         "forwards_opens": {
+          "description": "How many times the forwarded campaign has been opened.",
           "type": "integer",
-          "title": "Forward Opens",
-          "description": "How many times the forwarded campaign has been opened."
+          "title": "Forward Opens"
         }
       }
     },
     "opens": {
+      "description": "An object describing the open activity for the campaign.",
       "type": "object",
       "title": "Opens",
-      "description": "An object describing the open activity for the campaign.",
       "properties": {
         "opens_total": {
+          "description": "The total number of opens for a campaign.",
           "type": "integer",
-          "title": "Total Opens",
-          "description": "The total number of opens for a campaign."
+          "title": "Total Opens"
         },
         "unique_opens": {
+          "description": "The total number of unique opens.",
           "type": "integer",
-          "title": "Unique Opens",
-          "description": "The total number of unique opens."
+          "title": "Unique Opens"
         },
         "open_rate": {
+          "description": "The number of unique opens divided by the total number of successful deliveries.",
           "type": "number",
-          "title": "Open Rate",
-          "description": "The number of unique opens divided by the total number of successful deliveries."
+          "title": "Open Rate"
         },
         "last_open": {
-          "type": "string",
+          "description": "The date and time of the last recorded open in ISO 8601 format.",
+          "type": ["null", "string"],
           "format": "date-time",
-          "title": "Last Open",
-          "description": "The date and time of the last recorded open in ISO 8601 format."
+          "airbyte_type": "timestamp_with_timezone",
+          "title": "Last Open"
         }
       }
     },
     "clicks": {
+      "description": "An object describing the click activity for the campaign.",
       "type": "object",
       "title": "Clicks",
-      "description": "An object describing the click activity for the campaign.",
       "properties": {
         "clicks_total": {
+          "description": "The total number of clicks for the campaign.",
           "type": "integer",
-          "title": "Total Clicks",
-          "description": "The total number of clicks for the campaign."
+          "title": "Total Clicks"
         },
         "unique_clicks": {
+          "description": "The total number of unique clicks for links across a campaign.",
           "type": "integer",
-          "title": "Unique Clicks",
-          "description": "The total number of unique clicks for links across a campaign."
+          "title": "Unique Clicks"
         },
         "unique_subscriber_clicks": {
+          "description": "The total number of subscribers who clicked on a campaign.",
           "type": "integer",
-          "title": "Unique Subscriber Clicks",
-          "description": "The total number of subscribers who clicked on a campaign."
+          "title": "Unique Subscriber Clicks"
         },
         "click_rate": {
+          "description": "The number of unique clicks divided by the total number of successful deliveries.",
           "type": "number",
-          "title": "Click Rate",
-          "description": "The number of unique clicks divided by the total number of successful deliveries."
+          "title": "Click Rate"
         },
         "last_click": {
-          "type": "string",
+          "description": "The date and time of the last recorded click for the campaign in ISO 8601 format.",
+          "type": ["null", "string"],
           "format": "date-time",
-          "title": "Last Click",
-          "description": "The date and time of the last recorded click for the campaign in ISO 8601 format."
+          "airbyte_type": "timestamp_with_timezone",
+          "title": "Last Click"
         }
       }
     },
     "facebook_likes": {
+      "description": "An object describing campaign engagement on Facebook.",
       "type": "object",
       "title": "Facebook Likes",
-      "description": "An object describing campaign engagement on Facebook.",
       "properties": {
         "recipient_likes": {
+          "description": "The number of recipients who liked the campaign on Facebook.",
           "type": "integer",
-          "title": "Recipient Likes",
-          "description": "The number of recipients who liked the campaign on Facebook."
+          "title": "Recipient Likes"
         },
         "unique_likes": {
+          "description": "The number of unique likes.",
           "type": "integer",
-          "title": "Unique Likes",
-          "description": "The number of unique likes."
+          "title": "Unique Likes"
         },
         "facebook_likes": {
+          "description": "The number of Facebook likes for the campaign.",
           "type": "integer",
-          "title": "Facebook Likes",
-          "description": "The number of Facebook likes for the campaign."
+          "title": "Facebook Likes"
         }
       }
     },
     "industry_stats": {
+      "description": "The average campaign statistics for your industry.",
       "type": "object",
       "title": "Industry Stats",
-      "description": "The average campaign statistics for your industry.",
       "properties": {
         "type": {
-          "type": "string",
-          "title": "Industry Type",
-          "description": "The type of business industry associated with your account. For example: retail, education, etc."
+          "description": "The type of business industry associated with your account. For example: retail, education, etc.",
+          "type": ["null", "string"],
+          "title": "Industry Type"
         },
         "open_rate": {
+          "description": "The industry open rate.",
           "type": "number",
-          "title": "Open Rate",
-          "description": "The industry open rate."
+          "title": "Open Rate"
         },
         "click_rate": {
+          "description": "The industry click rate.",
           "type": "number",
-          "title": "Click Rate",
-          "description": "The industry click rate."
+          "title": "Click Rate"
         },
         "bounce_rate": {
+          "description": "The industry bounce rate.",
           "type": "number",
-          "title": "Bounce Rate",
-          "description": "The industry bounce rate."
+          "title": "Bounce Rate"
         },
         "unopen_rate": {
+          "description": "The industry unopened rate.",
           "type": "number",
-          "title": "Unopened Rate",
-          "description": "The industry unopened rate."
+          "title": "Unopened Rate"
         },
         "unsub_rate": {
+          "description": "The industry unsubscribe rate.",
           "type": "number",
-          "title": "Unsubscribe Rate",
-          "description": "The industry unsubscribe rate."
+          "title": "Unsubscribe Rate"
         },
         "abuse_rate": {
+          "description": "The industry abuse rate.",
           "type": "number",
-          "title": "Abuse Rate",
-          "description": "The industry abuse rate."
+          "title": "Abuse Rate"
         }
       }
     },
     "list_stats": {
+      "description": "The average campaign statistics for your list. This won't be present if we haven't calculated it yet for this list.",
       "type": "object",
       "title": "List Stats",
-      "description": "The average campaign statistics for your list. This won't be present if we haven't calculated it yet for this list.",
       "properties": {
         "sub_rate": {
+          "description": "The average number of subscriptions per month for the list.",
           "type": "number",
           "title": "Average Subscription Rate",
-          "description": "The average number of subscriptions per month for the list.",
           "readOnly": true
         },
         "unsub_rate": {
+          "description": "The average number of unsubscriptions per month for the list.",
           "type": "number",
           "title": "Average Unsubscription Rate",
-          "description": "The average number of unsubscriptions per month for the list.",
           "readOnly": true
         },
         "open_rate": {
+          "description": "The average open rate (a percentage represented as a number between 0 and 100) per campaign for the list.",
           "type": "number",
           "title": "Open Rate",
-          "description": "The average open rate (a percentage represented as a number between 0 and 100) per campaign for the list.",
           "readOnly": true
         },
         "click_rate": {
+          "description": "The average click rate (a percentage represented as a number between 0 and 100) per campaign for the list.",
           "type": "number",
           "title": "Click Rate",
-          "description": "The average click rate (a percentage represented as a number between 0 and 100) per campaign for the list.",
           "readOnly": true
         }
       }
     },
     "ab_split": {
+      "description": "General stats about different groups of an A/B Split campaign. Does not return information about Multivariate Campaigns.",
       "type": "object",
       "title": "A/B Split Stats",
-      "description": "General stats about different groups of an A/B Split campaign. Does not return information about Multivariate Campaigns.",
       "properties": {
         "a": {
+          "description": "Stats for Campaign A.",
           "type": "object",
           "title": "Campaign A",
-          "description": "Stats for Campaign A.",
           "properties": {
             "bounces": {
+              "description": "Bounces for Campaign A.",
               "type": "integer",
-              "title": "Bounces",
-              "description": "Bounces for Campaign A."
+              "title": "Bounces"
             },
             "abuse_reports": {
+              "description": "Abuse reports for Campaign A.",
               "type": "integer",
-              "title": "Abuse Reports",
-              "description": "Abuse reports for Campaign A."
+              "title": "Abuse Reports"
             },
             "unsubs": {
+              "description": "Unsubscribes for Campaign A.",
               "type": "integer",
-              "title": "Unsubscribes",
-              "description": "Unsubscribes for Campaign A."
+              "title": "Unsubscribes"
             },
             "recipient_clicks": {
+              "description": "Recipient Clicks for Campaign A.",
               "type": "integer",
-              "title": "Recipient Clicks",
-              "description": "Recipient Clicks for Campaign A."
+              "title": "Recipient Clicks"
             },
             "forwards": {
+              "description": "Forwards for Campaign A.",
               "type": "integer",
-              "title": "Forwards",
-              "description": "Forwards for Campaign A."
+              "title": "Forwards"
             },
             "forwards_opens": {
+              "description": "Opens from forwards for Campaign A.",
               "type": "integer",
-              "title": "Forward Opens",
-              "description": "Opens from forwards for Campaign A."
+              "title": "Forward Opens"
             },
             "opens": {
+              "description": "Opens for Campaign A.",
               "type": "integer",
-              "title": "Opens",
-              "description": "Opens for Campaign A."
+              "title": "Opens"
             },
             "last_open": {
-              "type": "string",
+              "description": "The last open for Campaign A.",
+              "type": ["null", "string"],
               "title": "Last Open",
-              "description": "The last open for Campaign A."
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
             },
             "unique_opens": {
+              "description": "Unique opens for Campaign A.",
               "type": "integer",
-              "title": "Unique Opens",
-              "description": "Unique opens for Campaign A."
+              "title": "Unique Opens"
             }
           }
         },
         "b": {
+          "description": "Stats for Campaign B.",
           "type": "object",
           "title": "Campaign B",
-          "description": "Stats for Campaign B.",
           "properties": {
             "bounces": {
+              "description": "Bounces for Campaign B.",
               "type": "integer",
-              "title": "Bounces",
-              "description": "Bounces for Campaign B."
+              "title": "Bounces"
             },
             "abuse_reports": {
+              "description": "Abuse reports for Campaign B.",
               "type": "integer",
-              "title": "Abuse Reports",
-              "description": "Abuse reports for Campaign B."
+              "title": "Abuse Reports"
             },
             "unsubs": {
+              "description": "Unsubscribes for Campaign B.",
               "type": "integer",
-              "title": "Unsubscribes",
-              "description": "Unsubscribes for Campaign B."
+              "title": "Unsubscribes"
             },
             "recipient_clicks": {
+              "description": "Recipients clicks for Campaign B.",
               "type": "integer",
-              "title": "Recipient Clicks",
-              "description": "Recipients clicks for Campaign B."
+              "title": "Recipient Clicks"
             },
             "forwards": {
+              "description": "Forwards for Campaign B.",
               "type": "integer",
-              "title": "Forwards",
-              "description": "Forwards for Campaign B."
+              "title": "Forwards"
             },
             "forwards_opens": {
+              "description": "Opens for forwards from Campaign B.",
               "type": "integer",
-              "title": "Forward Opens",
-              "description": "Opens for forwards from Campaign B."
+              "title": "Forward Opens"
             },
             "opens": {
+              "description": "Opens for Campaign B.",
               "type": "integer",
-              "title": "Opens",
-              "description": "Opens for Campaign B."
+              "title": "Opens"
             },
             "last_open": {
-              "type": "string",
+              "description": "The last open for Campaign B.",
+              "type": ["null", "string"],
               "title": "Last Open",
-              "description": "The last open for Campaign B."
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
             },
             "unique_opens": {
+              "description": "Unique opens for Campaign B.",
               "type": "integer",
-              "title": "Unique Opens",
-              "description": "Unique opens for Campaign B."
+              "title": "Unique Opens"
             }
           }
         }
       }
     },
     "timewarp": {
+      "description": "An hourly breakdown of sends, opens, and clicks if a campaign is sent using timewarp.",
       "type": "array",
       "title": "Timewarp Stats",
-      "description": "An hourly breakdown of sends, opens, and clicks if a campaign is sent using timewarp.",
       "items": {
         "type": "object",
         "properties": {
           "gmt_offset": {
+            "description": "For campaigns sent with timewarp, the time zone group the member is part of.",
             "type": "integer",
-            "title": "GMT Offset",
-            "description": "For campaigns sent with timewarp, the time zone group the member is apart of."
+            "title": "GMT Offset"
           },
           "opens": {
+            "description": "The number of opens.",
             "type": "integer",
-            "title": "Opens",
-            "description": "The number of opens."
+            "title": "Opens"
           },
           "last_open": {
-            "type": "string",
+            "description": "The date and time of the last open in ISO 8601 format.",
+            "type": ["null", "string"],
             "format": "date-time",
-            "title": "Last Open",
-            "description": "The date and time of the last open in ISO 8601 format."
+            "airbyte_type": "timestamp_with_timezone",
+            "title": "Last Open"
           },
           "unique_opens": {
+            "description": "The number of unique opens.",
             "type": "integer",
-            "title": "Unique Opens",
-            "description": "The number of unique opens."
+            "title": "Unique Opens"
           },
           "clicks": {
+            "description": "The number of clicks.",
             "type": "integer",
-            "title": "Clicks",
-            "description": "The number of clicks."
+            "title": "Clicks"
           },
           "last_click": {
-            "type": "string",
+            "description": "The date and time of the last click in ISO 8601 format.",
+            "type": ["null", "string"],
             "format": "date-time",
-            "title": "Last Click",
-            "description": "The date and time of the last click in ISO 8601 format."
+            "airbyte_type": "timestamp_with_timezone",
+            "title": "Last Click"
           },
           "unique_clicks": {
+            "description": "The number of unique clicks.",
             "type": "integer",
-            "title": "Unique Clicks",
-            "description": "The number of unique clicks."
+            "title": "Unique Clicks"
           },
           "bounces": {
+            "description": "The number of bounces.",
             "type": "integer",
-            "title": "Bounces",
-            "description": "The number of bounces."
+            "title": "Bounces"
           }
         }
       }
     },
     "timeseries": {
+      "description": "An hourly breakdown of the performance of the campaign over the first 24 hours.",
       "type": "array",
       "title": "Timeseries",
-      "description": "An hourly breakdown of the performance of the campaign over the first 24 hours.",
       "items": {
         "type": "object",
         "properties": {
           "timestamp": {
-            "type": "string",
+            "description": "The date and time for the series in ISO 8601 format.",
+            "type": ["null", "string"],
             "format": "date-time",
-            "title": "Timestamp",
-            "description": "The date and time for the series in ISO 8601 format."
+            "airbyte_type": "timestamp_with_timezone",
+            "title": "Timestamp"
           },
           "emails_sent": {
+            "description": "The number of emails sent in the timeseries.",
             "type": "integer",
-            "title": "Emails Sent",
-            "description": "The number of emails sent in the timeseries."
+            "title": "Emails Sent"
           },
           "unique_opens": {
+            "description": "The number of unique opens in the timeseries.",
             "type": "integer",
-            "title": "Unique Opens",
-            "description": "The number of unique opens in the timeseries."
+            "title": "Unique Opens"
           },
           "recipients_clicks": {
+            "description": "The number of clicks in the timeseries.",
             "type": "integer",
-            "title": "Recipient Clicks",
-            "description": "The number of clicks in the timeseries."
+            "title": "Recipient Clicks"
           }
         }
       }
     },
     "share_report": {
+      "description": "The url and password for the VIP report.",
       "type": "object",
       "title": "Share Report",
-      "description": "The url and password for the [VIP report](https://mailchimp.com/help/share-a-campaign-report/).",
       "properties": {
         "share_url": {
-          "type": "string",
-          "title": "Report URL",
           "description": "The URL for the VIP report.",
+          "type": ["null", "string"],
+          "title": "Report URL",
           "readOnly": true
         },
         "share_password": {
-          "type": "string",
-          "title": "Report Password",
           "description": "If password protected, the password for the VIP report.",
+          "type": ["null", "string"],
+          "title": "Report Password",
           "readOnly": true
         }
       }
     },
     "ecommerce": {
+      "description": "E-Commerce stats for a campaign.",
       "type": "object",
       "title": "E-Commerce Report",
-      "description": "E-Commerce stats for a campaign.",
       "properties": {
         "total_orders": {
+          "description": "The total orders for a campaign.",
           "type": "integer",
           "title": "Total Orders",
-          "description": "The total orders for a campaign.",
           "readOnly": true
         },
         "total_spent": {
+          "description": "The total spent for a campaign. Calculated as the sum of all order totals with no deductions.",
           "type": "number",
           "title": "Total Spent",
-          "description": "The total spent for a campaign. Calculated as the sum of all order totals with no deductions.",
           "readOnly": true
         },
         "total_revenue": {
+          "description": "The total revenue for a campaign. Calculated as the sum of all order totals minus shipping and tax totals.",
           "type": "number",
           "title": "Total Revenue",
-          "description": "The total revenue for a campaign. Calculated as the sum of all order totals minus shipping and tax totals.",
           "readOnly": true
         },
         "currency_code": {
-          "type": "string",
+          "description": "The currency code used for the campaign.",
+          "type": ["null", "string"],
           "title": "Three letter currency code for this user",
           "readOnly": true,
           "example": "USD"
@@ -518,39 +530,39 @@
       }
     },
     "delivery_status": {
+      "description": "Updates on campaigns in the process of sending.",
       "type": "object",
       "title": "Campaign Delivery Status",
-      "description": "Updates on campaigns in the process of sending.",
       "properties": {
         "enabled": {
+          "description": "Whether Campaign Delivery Status is enabled for this account and campaign.",
           "type": "boolean",
           "title": "Delivery Status Enabled",
-          "description": "Whether Campaign Delivery Status is enabled for this account and campaign.",
           "readOnly": true
         },
         "can_cancel": {
+          "description": "Whether a campaign send can be canceled.",
           "type": "boolean",
           "title": "Campaign Cancelable",
-          "description": "Whether a campaign send can be canceled.",
           "readOnly": true
         },
         "status": {
-          "type": "string",
-          "title": "Campaign Delivery Status",
           "description": "The current state of a campaign delivery.",
+          "type": ["null", "string"],
+          "title": "Campaign Delivery Status",
           "enum": ["delivering", "delivered", "canceling", "canceled"],
           "readOnly": true
         },
         "emails_sent": {
+          "description": "The total number of emails confirmed sent for this campaign so far.",
           "type": "integer",
           "title": "Emails Sent",
-          "description": "The total number of emails confirmed sent for this campaign so far.",
           "readOnly": true
         },
         "emails_canceled": {
+          "description": "The total number of emails canceled for this campaign.",
           "type": "integer",
           "title": "Emails Canceled",
-          "description": "The total number of emails canceled for this campaign.",
           "readOnly": true
         }
       }

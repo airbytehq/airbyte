@@ -19,6 +19,20 @@ def test_get_value_from_config():
     assert val == "2022-01-01"
 
 
+@pytest.mark.parametrize(
+    "valid_types, expected_value",
+    [
+        pytest.param((str,), "1234J", id="test_value_is_a_string_if_valid_types_is_str"),
+        pytest.param(None, 1234j, id="test_value_is_interpreted_as_complex_number_by_default"),
+    ],
+)
+def test_get_value_with_complex_number(valid_types, expected_value):
+    s = "{{ config['value'] }}"
+    config = {"value": "1234J"}
+    val = interpolation.eval(s, config, valid_types=valid_types)
+    assert val == expected_value
+
+
 def test_get_value_from_stream_slice():
     s = "{{ stream_slice['date'] }}"
     config = {"date": "2022-01-01"}
@@ -118,6 +132,27 @@ def test_negative_day_delta():
 
 
 @pytest.mark.parametrize(
+    "test_name, input_value, expected_output",
+    [
+        ("test_string_to_string", "hello world", "hello world"),
+        ("test_int_to_string", 1, "1"),
+        ("test_number_to_string", 1.52, "1.52"),
+        ("test_true_to_string", True, "true"),
+        ("test_false_to_string", False, "false"),
+        ("test_array_to_string", ["hello", "world"], '["hello", "world"]'),
+        ("test_object_to_array", {"hello": "world"}, '{"hello": "world"}'),
+    ]
+)
+def test_to_string(test_name, input_value, expected_output):
+    interpolation = JinjaInterpolation()
+    config = {"key": input_value}
+    template = "{{ config['key'] | string }}"
+    actual_output = interpolation.eval(template, config, {})
+    assert isinstance(actual_output, str)
+    assert actual_output == expected_output
+
+
+@pytest.mark.parametrize(
     "s, expected_value",
     [
         pytest.param("{{ timestamp(1621439283) }}", 1621439283, id="test_timestamp_from_timestamp"),
@@ -193,25 +228,34 @@ def test_undeclared_variables(template_string, expected_error, expected_value):
 
 
 @freeze_time("2021-09-01")
-@pytest.mark.parametrize("template_string, expected_value",[
-    pytest.param("{{ now_utc() }}", "2021-09-01 00:00:00+00:00", id="test_now_utc"),
-    pytest.param("{{ now_utc().strftime('%Y-%m-%d') }}", "2021-09-01", id="test_now_utc_strftime"),
-    pytest.param("{{ today_utc() }}", "2021-09-01", id="test_today_utc"),
-    pytest.param("{{ today_utc().strftime('%Y/%m/%d') }}", "2021/09/01", id="test_todat_utc_stftime"),
-    pytest.param("{{ timestamp(1646006400) }}", 1646006400, id="test_timestamp_from_timestamp"),
-    pytest.param("{{ timestamp('2022-02-28') }}", 1646006400, id="test_timestamp_from_timestamp"),
-    pytest.param("{{ timestamp('2022-02-28T00:00:00Z') }}", 1646006400, id="test_timestamp_from_timestamp"),
-    pytest.param("{{ timestamp('2022-02-28 00:00:00Z') }}", 1646006400, id="test_timestamp_from_timestamp"),
-    pytest.param("{{ timestamp('2022-02-28T00:00:00-08:00') }}", 1646035200, id="test_timestamp_from_date_with_tz"),
-    pytest.param("{{ max(2, 3) }}", 3, id="test_max_with_arguments"),
-    pytest.param("{{ max([2, 3]) }}", 3, id="test_max_with_list"),
-    pytest.param("{{ day_delta(1) }}", "2021-09-02T00:00:00.000000+0000", id="test_day_delta"),
-    pytest.param("{{ day_delta(-1) }}", "2021-08-31T00:00:00.000000+0000", id="test_day_delta_negative"),
-    pytest.param("{{ day_delta(1, format='%Y-%m-%d') }}", "2021-09-02", id="test_day_delta_with_format"),
-    pytest.param("{{ duration('P1D') }}", "1 day, 0:00:00", id="test_duration_one_day"),
-    pytest.param("{{ duration('P6DT23H') }}", "6 days, 23:00:00", id="test_duration_six_days_and_23_hours"),
-    pytest.param("{{ (now_utc() - duration('P1D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}", "2021-08-31T00:00:00Z", id="test_now_utc_with_duration_and_format"),
-])
+@pytest.mark.parametrize(
+    "template_string, expected_value",
+    [
+        pytest.param("{{ now_utc() }}", "2021-09-01 00:00:00+00:00", id="test_now_utc"),
+        pytest.param("{{ now_utc().strftime('%Y-%m-%d') }}", "2021-09-01", id="test_now_utc_strftime"),
+        pytest.param("{{ today_utc() }}", "2021-09-01", id="test_today_utc"),
+        pytest.param("{{ today_utc().strftime('%Y/%m/%d') }}", "2021/09/01", id="test_todat_utc_stftime"),
+        pytest.param("{{ timestamp(1646006400) }}", 1646006400, id="test_timestamp_from_timestamp"),
+        pytest.param("{{ timestamp('2022-02-28') }}", 1646006400, id="test_timestamp_from_timestamp"),
+        pytest.param("{{ timestamp('2022-02-28T00:00:00Z') }}", 1646006400, id="test_timestamp_from_timestamp"),
+        pytest.param("{{ timestamp('2022-02-28 00:00:00Z') }}", 1646006400, id="test_timestamp_from_timestamp"),
+        pytest.param("{{ timestamp('2022-02-28T00:00:00-08:00') }}", 1646035200, id="test_timestamp_from_date_with_tz"),
+        pytest.param("{{ max(2, 3) }}", 3, id="test_max_with_arguments"),
+        pytest.param("{{ max([2, 3]) }}", 3, id="test_max_with_list"),
+        pytest.param("{{ day_delta(1) }}", "2021-09-02T00:00:00.000000+0000", id="test_day_delta"),
+        pytest.param("{{ day_delta(-1) }}", "2021-08-31T00:00:00.000000+0000", id="test_day_delta_negative"),
+        pytest.param("{{ day_delta(1, format='%Y-%m-%d') }}", "2021-09-02", id="test_day_delta_with_format"),
+        pytest.param("{{ duration('P1D') }}", "1 day, 0:00:00", id="test_duration_one_day"),
+        pytest.param("{{ duration('P6DT23H') }}", "6 days, 23:00:00", id="test_duration_six_days_and_23_hours"),
+        pytest.param(
+            "{{ (now_utc() - duration('P1D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}",
+            "2021-08-31T00:00:00Z",
+            id="test_now_utc_with_duration_and_format",
+        ),
+        pytest.param("{{ 1 | string }}", "1", id="test_int_to_string"),
+        pytest.param("{{ [\"hello\", \"world\"] | string }}", "[\"hello\", \"world\"]", id="test_array_to_string"),
+    ],
+)
 def test_macros_examples(template_string, expected_value):
     # The outputs of this test are referenced in declarative_component_schema.yaml
     # If you change the expected output, you must also change the expected output in declarative_component_schema.yaml

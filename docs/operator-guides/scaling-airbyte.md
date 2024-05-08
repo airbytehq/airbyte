@@ -1,3 +1,7 @@
+---
+products: oss-*
+---
+
 # Scaling Airbyte
 
 As depicted in our [High-Level View](../understanding-airbyte/high-level-view.md), Airbyte is made up of several components under the hood: 1. Scheduler 2. Server 3. Temporal 4. Webapp 5. Database
@@ -30,7 +34,6 @@ Our Java connectors currently follow Java's default behaviour with container mem
 You may want to customize this by setting `JOB_MAIN_CONTAINER_MEMORY_REQUEST` and `JOB_MAIN_CONTAINER_MEMORY_LIMIT` environment variables to custom values.
 
 Note that all Source database connectors are Java connectors. This means that users currently need to over-specify memory resource for Java connectors.
-
 
 ### Disk Space
 

@@ -2,98 +2,134 @@
   "type": "object",
   "properties": {
     "business_account_id": {
+      "description": "The unique identifier for the business account associated with the media.",
       "type": ["null", "string"]
     },
     "page_id": {
+      "description": "The unique identifier for the Instagram page associated with the media.",
       "type": ["null", "string"]
     },
     "caption": {
+      "description": "The caption or description provided for the media.",
       "type": ["null", "string"]
     },
     "comments_count": {
+      "description": "The total number of comments received on the media.",
       "type": ["null", "integer"]
     },
     "id": {
+      "description": "The unique identifier for the media item.",
       "type": ["null", "string"]
     },
     "ig_id": {
+      "description": "The Instagram-specific identifier for the media item.",
       "type": ["null", "string"]
     },
     "is_comment_enabled": {
+      "description": "A flag indicating whether comments are enabled for the media.",
       "type": ["null", "boolean"]
     },
     "like_count": {
+      "description": "The total number of likes received on the media.",
       "type": ["null", "integer"]
     },
     "media_type": {
+      "description": "The type of media (e.g., image, video) of the media item.",
+      "type": ["null", "string"]
+    },
+    "media_product_type": {
+      "description": "The product type associated with the media (e.g., shopping product).",
       "type": ["null", "string"]
     },
     "media_url": {
+      "description": "The URL for accessing the media content of the media item.",
       "type": ["null", "string"]
     },
     "owner": {
+      "description": "Contains information about the owner of the post.",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "The unique identifier of the owner of the media item.",
           "type": ["null", "string"]
         }
       }
     },
     "permalink": {
+      "description": "The permanent link to the media item on Instagram.",
       "type": ["null", "string"]
     },
     "shortcode": {
+      "description": "The unique shortcode assigned to the media item.",
       "type": ["null", "string"]
     },
     "thumbnail_url": {
+      "description": "The URL for accessing the thumbnail image of the media item.",
       "type": ["null", "string"]
     },
     "timestamp": {
+      "description": "The date and time when the media item was created.",
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "username": {
+      "description": "The username of the owner of the media item.",
       "type": ["null", "string"]
     },
     "children": {
+      "description": "Contains an array of media items that are part of the post.",
       "type": ["null", "array"],
       "items": {
+        "description": "Properties of each media item like image, caption, etc.",
         "type": "object",
         "properties": {
           "id": {
+            "description": "The unique identifier for the child media item.",
             "type": ["null", "string"]
           },
           "ig_id": {
+            "description": "The Instagram-specific identifier for the child media item.",
             "type": ["null", "string"]
           },
           "media_type": {
+            "description": "The type of media of the child item (e.g., image, video).",
             "type": ["null", "string"]
           },
           "media_url": {
+            "description": "The URL for accessing the media content of the child item.",
             "type": ["null", "string"]
           },
           "owner": {
+            "description": "Contains information about the owner of the media item.",
             "type": ["null", "object"],
             "properties": {
               "id": {
+                "description": "The unique identifier of the owner of the child media item.",
                 "type": ["null", "string"]
               }
             }
           },
           "permalink": {
+            "description": "The permanent link to the child media item on Instagram.",
             "type": ["null", "string"]
           },
           "shortcode": {
+            "description": "The unique shortcode assigned to the child media item.",
             "type": ["null", "string"]
           },
           "thumbnail_url": {
+            "description": "The URL for accessing the thumbnail image of the child media item.",
             "type": ["null", "string"]
           },
           "timestamp": {
+            "description": "The date and time when the child media item was created.",
             "type": ["null", "string"],
-            "format": "date-time"
+            "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone"
           },
           "username": {
+            "description": "The username of the owner of the child media item.",
             "type": ["null", "string"]
           }
         }

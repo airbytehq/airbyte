@@ -1,0 +1,4 @@
+// there is no entry for id2, which is a required PK for this schema
+{"type": "RECORD", "record": {"emitted_at": 1000, "data": {"id1": 1, "id2": null, "updated_at": "2000-01-01T00:00:00Z", "_ab_cdc_deleted_at": null, "name": "Alice", "address": {"city": "San Francisco", "state": "CA"}}}}
+{"type": "RECORD", "record": {"emitted_at": 2000, "data": {"id1": 1, "id2": null, "updated_at": "2000-01-02T00:00:00Z", "_ab_cdc_deleted_at": null, "name": "Alice", "address": {"city": "San Francisco", "state": "CA"}}}}
+{"type": "RECORD", "record": {"emitted_at": 3000, "data": {"id1": 1, "id2": null, "updated_at": "2000-01-03T00:00:00Z", "_ab_cdc_deleted_at": null, "name": "Alice", "address": {"city": "San Francisco", "state": "CA"}}}}

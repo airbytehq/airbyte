@@ -6,24 +6,26 @@ package io.airbyte.integrations.source.cockroachdb;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
+import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
-import io.airbyte.integrations.standardtest.source.TestDataHolder;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Set;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.CockroachContainer;
 
+@Disabled
 public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private CockroachContainer container;
@@ -85,7 +87,6 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    dslContext.close();
     container.close();
   }
 

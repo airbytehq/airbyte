@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "closed": {
+      "description": "Indicates whether the project is closed or not.",
+      "type": ["null", "boolean"]
+    },
+    "created_at": {
+      "description": "The date and time when the project was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "creator": {
+      "description": "Information about the user who created the project.",
+      "type": ["null", "object"],
+      "properties": {
+        "avatarUrl": {
+          "description": "The URL to the creator's avatar image.",
+          "type": ["null", "string"]
+        },
+        "login": {
+          "description": "The username of the creator.",
+          "type": ["null", "string"]
+        },
+        "resourcePath": {
+          "description": "The resource path for the creator's profile.",
+          "type": ["null", "string"]
+        },
+        "url": {
+          "description": "The URL to the creator's profile.",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "closed_at": {
+      "description": "The date and time when the project was closed.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The date and time when the project was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "node_id": {
+      "description": "The node ID of the project.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "The unique identifier of the project.",
+      "type": ["null", "integer"]
+    },
+    "number": {
+      "description": "The project number.",
+      "type": ["null", "integer"]
+    },
+    "public": {
+      "description": "Indicates whether the project is public or private.",
+      "type": ["null", "boolean"]
+    },
+    "readme": {
+      "description": "The README content of the project.",
+      "type": ["null", "string"]
+    },
+    "short_description": {
+      "description": "A brief description of the project.",
+      "type": ["null", "string"]
+    },
+    "template": {
+      "description": "Indicates whether the project is a template or not.",
+      "type": ["null", "boolean"]
+    },
+    "title": {
+      "description": "The title of the project.",
+      "type": ["null", "string"]
+    },
+    "url": {
+      "description": "The URL to access the project.",
+      "type": ["null", "string"]
+    },
+    "viewerCanClose": {
+      "description": "Indicates whether the current viewer can close the project.",
+      "type": ["null", "boolean"]
+    },
+    "viewerCanReopen": {
+      "description": "Indicates whether the current viewer can reopen the project.",
+      "type": ["null", "boolean"]
+    },
+    "viewerCanUpdate": {
+      "description": "Indicates whether the current viewer can update the project.",
+      "type": ["null", "boolean"]
+    },
+    "owner_id": {
+      "description": "The ID of the project owner.",
+      "type": ["null", "string"]
+    },
+    "repository": {
+      "description": "Information about the repository associated with the project.",
+      "type": "string"
+    }
+  }
+}

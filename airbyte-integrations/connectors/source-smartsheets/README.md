@@ -1,139 +1,78 @@
-# Smartsheets Source 
+# Customer Io Source
 
-This is the repository for the Smartsheets source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/smartsheets).
-
-### Author
-This connector was created by Nate Nowack, github.com/zzstoatzz.
-
-## How Airbyte connects to your Smartsheets
-This version of the Airbyte-Smartsheet source connector utilizes API keys to access your source sheet(s). You can generate an API key for your account from a session of your Smartsheet webapp by clicking:
-
-
-- Account (top-right icon)
-- Apps & Integrations
-- API Access
-- Generate new access token
-
-
-Airbyte will ask for this token when you configure the source connector. You will also need the ID of the Smartsheet, which you can copy from your Smartsheet app session by going to:
-- File
-- Properties
-
-Optionally you can include a list of metadata fields to be ingested by the connector, these fields are optional however the config file does require the metadata_fields be present, see sample_config.json under integrations tests for an example.
-
-| Supported Metadata Fields |
-|------|
-|sheetcreatedAt|
-|sheetid|
-|sheetmodifiedAt|
-|sheetname|
-|sheetpermalink|
-|sheetversion|
-|sheetaccess_level|
-|row_id|
-|row_access_level|
-|row_created_at|
-|row_created_by|
-|row_expanded|
-|row_modified_by|
-|row_parent_id|
-|row_permalink|
-|row_number|
-|row_version|
+This is the repository for the Customer Io configuration based source connector.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/customer-io).
 
 ## Local development
 
-### Prerequisites
-**To iterate on this connector, make sure to complete this prerequisites section.**
-
-#### Minimum Python version required `= 3.7.0`
-
-#### Build & Activate Virtual Environment and install dependencies
-From this connector directory, create a virtual environment:
-```
-python -m venv .venv
-```
-
-This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
-development environment of choice. To activate it from the terminal, run:
-```
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
-
-Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
-used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
-If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
-should work as you expect.
-
-#### Building via Gradle
-From the Airbyte repository root, run:
-```
-./gradlew :airbyte-integrations:connectors:source-smartsheets:build
-```
-
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/smartsheets)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_smartsheets/spec.json` file.
-Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
-See `sample_files/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source smartsheets test creds`
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/customer-io)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_customer_io/spec.yaml` file.
+Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
+See `integration_tests/sample_config.json` for a sample config file.
+
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source customer-io test creds`
 and place them into `secrets/config.json`.
-
-
-### Locally running the connector
-```
-python main_dev.py spec
-python main_dev.py check --config secrets/config.json
-python main_dev.py discover --config secrets/config.json
-python main_dev.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
-```
-
-### Unit Tests
-To run unit tests locally, from the connector directory run:
-```
-python -m pytest unit_tests
-```
 
 ### Locally running the connector docker image
 
 #### Build
-First, make sure you build the latest Docker image:
-```
-docker build . -t airbyte/source-smartsheets:dev
+
+**Via [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) (recommended):**
+
+```bash
+airbyte-ci connectors --name source-customer-io build
 ```
 
-You can also build the connector image via Gradle:
+An image will be built with the tag `airbyte/source-customer-io:dev`.
+
+**Via `docker build`:**
+
+```bash
+docker build -t airbyte/source-customer-io:dev .
 ```
-./gradlew :airbyte-integrations:connectors:source-smartsheets:airbyteDocker
-```
-When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
-the Dockerfile.
 
 #### Run
+
 Then run any of the connector commands as follows:
+
 ```
-docker run --rm airbyte/source-smartsheets:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-smartsheets:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-smartsheets:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files airbyte/source-smartsheets:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
+docker run --rm airbyte/source-customer-io:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-customer-io:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-customer-io:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-customer-io:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
-### Integration Tests
-1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-smartsheets:integrationTest` to run the standard integration test suite.
-1. To run additional integration tests, place your integration tests in a new directory `integration_tests` and run them with `python -m pytest -s integration_tests`.
-   Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
+## Testing
+
+You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+
+```bash
+airbyte-ci connectors --name=source-smartsheets test
+```
+
+### Customizing acceptance Tests
+
+Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
+If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 
 ## Dependency Management
+
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
+We split dependencies between two groups, dependencies that are:
+
+- required for your connector to work need to go to `MAIN_REQUIREMENTS` list.
+- required for the testing need to go to `TEST_REQUIREMENTS` list
 
 ### Publishing a new version of the connector
+
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
-1. Make sure your changes are passing unit and integration tests
-1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use SemVer).
-1. Create a Pull Request
-1. Pat yourself on the back for being an awesome contributor
-1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master
+
+1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-smartsheets test`
+2. Bump the connector version in `metadata.yaml`: increment the `dockerImageTag` value. Please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors).
+3. Make sure the `metadata.yaml` content is up to date.
+4. Make the connector documentation and its changelog is up to date (`docs/integrations/sources/smartsheets.md`).
+5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
+6. Pat yourself on the back for being an awesome contributor.
+7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.

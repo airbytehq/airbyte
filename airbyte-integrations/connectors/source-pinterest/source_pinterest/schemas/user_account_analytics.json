@@ -1,42 +1,54 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "data_status": {
+      "description": "The status of the data being fetched, such as 'success' or 'error'.",
       "type": ["null", "string"]
     },
     "date": {
+      "description": "The date corresponding to the analytics data.",
       "type": ["null", "string"],
       "format": "date"
     },
     "metrics": {
+      "description": "Various metrics related to user account analytics.",
       "type": ["null", "object"],
       "properties": {
         "ENGAGEMENT": {
+          "description": "The level of user interaction or engagement with content.",
           "type": ["null", "number"]
         },
         "CLICKTHROUGH_RATE": {
+          "description": "The rate at which users clicked through to view content.",
           "type": ["null", "number"]
         },
         "CLICKTHROUGH": {
+          "description": "The number of times users clicked through to view content.",
           "type": ["null", "number"]
         },
         "CLOSEUP": {
+          "description": "The number of close-up views of content.",
           "type": ["null", "number"]
         },
         "CLOSEUP_RATE": {
+          "description": "The rate at which close-up views of content occurred.",
           "type": ["null", "number"]
         },
         "ENGAGEMENT_RATE": {
+          "description": "The rate at which user engagement with content occurred.",
           "type": ["null", "number"]
         },
         "SAVE": {
+          "description": "The number of times users saved or pinned content.",
           "type": ["null", "number"]
         },
         "SAVE_RATE": {
+          "description": "The rate at which content was saved or pinned by users.",
           "type": ["null", "number"]
         },
         "IMPRESSION": {
+          "description": "The number of times content was displayed or viewed.",
           "type": ["null", "number"]
         }
       }

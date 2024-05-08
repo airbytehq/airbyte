@@ -5,7 +5,7 @@
   "groups": "new-group-airbute",
   "projects": "new-group-airbute/new-ci-test-project",
   "credentials": {
-      "auth_type": "access_token",
-      "access_token": "migrated_from_old_config"
+    "auth_type": "access_token",
+    "access_token": "migrated_from_old_config"
   }
 }

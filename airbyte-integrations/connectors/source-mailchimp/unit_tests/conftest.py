@@ -3,7 +3,6 @@
 #
 
 from pytest import fixture
-from source_mailchimp.source import MailChimpAuthenticator
 
 
 @fixture(name="data_center")
@@ -13,7 +12,7 @@ def data_center_fixture():
 
 @fixture(name="config")
 def config_fixture(data_center):
-    return {"apikey": f"API_KEY-{data_center}"}
+    return {"apikey": f"API_KEY-{data_center}", "start_date": "2022-01-01T00:00:00.000Z"}
 
 
 @fixture(name="access_token")
@@ -41,8 +40,3 @@ def apikey_config_fixture(data_center):
 @fixture(name="wrong_config")
 def wrong_config_fixture():
     return {"credentials": {"auth_type": "not auth_type"}}
-
-
-@fixture(name="auth")
-def authenticator_fixture(apikey_config):
-    return MailChimpAuthenticator().get_auth(apikey_config)

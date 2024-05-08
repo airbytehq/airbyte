@@ -1,0 +1,459 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "DATE": {
+      "description": "The date for the data entry.",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "ADVERTISER_ID": {
+      "description": "The unique identifier of the advertiser.",
+      "type": ["null", "number"]
+    },
+    "AD_ACCOUNT_ID": {
+      "description": "The unique identifier of the advertising account.",
+      "type": ["string"]
+    },
+    "AD_ID": {
+      "description": "The unique identifier of the ad.",
+      "type": ["null", "string"]
+    },
+    "AD_GROUP_ENTITY_STATUS": {
+      "description": "The status of the ad group entity.",
+      "type": ["null", "string"]
+    },
+    "AD_GROUP_ID": {
+      "description": "The unique identifier of the ad group.",
+      "type": ["null", "string"]
+    },
+    "CAMPAIGN_DAILY_SPEND_CAP": {
+      "description": "The daily spend cap set for the campaign.",
+      "type": ["null", "number"]
+    },
+    "CAMPAIGN_ENTITY_STATUS": {
+      "description": "The status of the campaign entity.",
+      "type": ["null", "string"]
+    },
+    "CAMPAIGN_ID": {
+      "description": "The unique identifier of the campaign.",
+      "type": ["null", "number"]
+    },
+    "CAMPAIGN_LIFETIME_SPEND_CAP": {
+      "description": "The lifetime spend cap set for the campaign.",
+      "type": ["null", "number"]
+    },
+    "CAMPAIGN_NAME": {
+      "description": "The name of the campaign.",
+      "type": ["null", "string"]
+    },
+    "CHECKOUT_ROAS": {
+      "description": "Return on ad spend for checkout actions.",
+      "type": ["null", "number"]
+    },
+    "CLICKTHROUGH_1": {
+      "description": "Click-throughs for a specific action 1.",
+      "type": ["null", "number"]
+    },
+    "CLICKTHROUGH_1_GROSS": {
+      "description": "Gross click-throughs for a specific action 1.",
+      "type": ["null", "number"]
+    },
+    "CLICKTHROUGH_2": {
+      "description": "Click-throughs for a specific action 2.",
+      "type": ["null", "number"]
+    },
+    "CPC_IN_MICRO_DOLLAR": {
+      "description": "Cost per click in micro dollars.",
+      "type": ["null", "number"]
+    },
+    "CPM_IN_DOLLAR": {
+      "description": "Cost per mille in dollars.",
+      "type": ["null", "number"]
+    },
+    "CPM_IN_MICRO_DOLLAR": {
+      "description": "Cost per mille in micro dollars.",
+      "type": ["null", "number"]
+    },
+    "CTR": {
+      "description": "Click-through rate.",
+      "type": ["null", "number"]
+    },
+    "CTR_2": {
+      "description": "Click-through rate for a specific action 2.",
+      "type": ["null", "number"]
+    },
+    "ECPCV_IN_DOLLAR": {
+      "description": "Effective cost per click for view actions in dollars.",
+      "type": ["null", "number"]
+    },
+    "ECPCV_P95_IN_DOLLAR": {
+      "description": "Effective cost per click for view actions at the 95th percentile in dollars.",
+      "type": ["null", "number"]
+    },
+    "ECPC_IN_DOLLAR": {
+      "description": "Effective cost per click in dollars.",
+      "type": ["null", "number"]
+    },
+    "ECPC_IN_MICRO_DOLLAR": {
+      "description": "Effective cost per click in micro dollars.",
+      "type": ["null", "number"]
+    },
+    "ECPE_IN_DOLLAR": {
+      "description": "Effective cost per engagement in dollars.",
+      "type": ["null", "number"]
+    },
+    "ECPM_IN_MICRO_DOLLAR": {
+      "description": "Effective cost per mille in micro dollars.",
+      "type": ["null", "number"]
+    },
+    "ECPV_IN_DOLLAR": {
+      "description": "Effective cost per view in dollars.",
+      "type": ["null", "number"]
+    },
+    "ECTR": {
+      "description": "Engagement click-through rate.",
+      "type": ["null", "number"]
+    },
+    "EENGAGEMENT_RATE": {
+      "description": "Effective engagement rate.",
+      "type": ["null", "number"]
+    },
+    "ENGAGEMENT_1": {
+      "description": "Engagements for a specific action 1.",
+      "type": ["null", "number"]
+    },
+    "ENGAGEMENT_2": {
+      "description": "Engagements for a specific action 2.",
+      "type": ["null", "number"]
+    },
+    "ENGAGEMENT_RATE": {
+      "description": "Engagement rate.",
+      "type": ["null", "number"]
+    },
+    "IDEA_PIN_PRODUCT_TAG_VISIT_1": {
+      "description": "Product tag visits for a specific action 1.",
+      "type": ["null", "number"]
+    },
+    "IDEA_PIN_PRODUCT_TAG_VISIT_2": {
+      "description": "Product tag visits for a specific action 2.",
+      "type": ["null", "number"]
+    },
+    "IMPRESSION_1": {
+      "description": "Impressions for a specific action 1.",
+      "type": ["null", "number"]
+    },
+    "IMPRESSION_1_GROSS": {
+      "description": "Gross impressions for a specific action 1.",
+      "type": ["null", "number"]
+    },
+    "IMPRESSION_2": {
+      "description": "Impressions for a specific action 2.",
+      "type": ["null", "number"]
+    },
+    "INAPP_CHECKOUT_COST_PER_ACTION": {
+      "description": "In-app checkout cost per action.",
+      "type": ["null", "number"]
+    },
+    "OUTBOUND_CLICK_1": {
+      "description": "Outbound clicks for a specific action 1.",
+      "type": ["null", "number"]
+    },
+    "OUTBOUND_CLICK_2": {
+      "description": "Outbound clicks for a specific action 2.",
+      "type": ["null", "number"]
+    },
+    "PAGE_VISIT_COST_PER_ACTION": {
+      "description": "Page visit cost per action.",
+      "type": ["null", "number"]
+    },
+    "PAGE_VISIT_ROAS": {
+      "description": "Return on ad spend for page visit actions.",
+      "type": ["null", "number"]
+    },
+    "PAID_IMPRESSION": {
+      "description": "Paid impressions.",
+      "type": ["null", "number"]
+    },
+    "PIN_ID": {
+      "description": "The unique identifier of the pin.",
+      "type": ["null", "number"]
+    },
+    "PIN_PROMOTION_ID": {
+      "description": "The promotion ID of the pin.",
+      "type": ["null", "number"]
+    },
+    "REPIN_1": {
+      "description": "Repins for a specific action 1.",
+      "type": ["null", "number"]
+    },
+    "REPIN_2": {
+      "description": "Repins for a specific action 2.",
+      "type": ["null", "number"]
+    },
+    "REPIN_RATE": {
+      "description": "Repins rate.",
+      "type": ["null", "number"]
+    },
+    "SPEND_IN_DOLLAR": {
+      "description": "Total spend in dollars.",
+      "type": ["null", "number"]
+    },
+    "SPEND_IN_MICRO_DOLLAR": {
+      "description": "Total spend in micro dollars.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_CHECKOUT": {
+      "description": "Total checkout activities.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_CHECKOUT_VALUE_IN_MICRO_DOLLAR": {
+      "description": "Total checkout value in micro dollars.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_CLICKTHROUGH": {
+      "description": "Total click-throughs.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_CLICK_ADD_TO_CART": {
+      "description": "Total clicks to add to cart.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_CLICK_CHECKOUT": {
+      "description": "Total clicks to checkout.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_CLICK_CHECKOUT_VALUE_IN_MICRO_DOLLAR": {
+      "description": "Total click checkout value in micro dollars.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_CLICK_LEAD": {
+      "description": "Total clicks for generating leads.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_CLICK_SIGNUP": {
+      "description": "Total clicks for sign-ups.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_CLICK_SIGNUP_VALUE_IN_MICRO_DOLLAR": {
+      "description": "Total click sign-up value in micro dollars.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_CONVERSIONS": {
+      "description": "Total conversion actions.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_CUSTOM": {
+      "description": "Total custom actions.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_ENGAGEMENT": {
+      "description": "Total engagement actions.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_ENGAGEMENT_CHECKOUT": {
+      "description": "Total engagement actions leading to checkout.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_ENGAGEMENT_CHECKOUT_VALUE_IN_MICRO_DOLLAR": {
+      "description": "Total engagement checkout value in micro dollars.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_ENGAGEMENT_LEAD": {
+      "description": "Total engagement actions leading to a lead.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_ENGAGEMENT_SIGNUP": {
+      "description": "Total engagement actions leading to sign-ups.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_ENGAGEMENT_SIGNUP_VALUE_IN_MICRO_DOLLAR": {
+      "description": "Total engagement sign-up value in micro dollars.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_IDEA_PIN_PRODUCT_TAG_VISIT": {
+      "description": "Total product tag visits.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_IMPRESSION_FREQUENCY": {
+      "description": "Total impression frequency.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_IMPRESSION_USER": {
+      "description": "Total impression users.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_LEAD": {
+      "description": "Total generated leads.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_OFFLINE_CHECKOUT": {
+      "description": "Total offline checkout actions.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_PAGE_VISIT": {
+      "description": "Total page visits.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_REPIN_RATE": {
+      "description": "Total repin rate.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_SIGNUP": {
+      "description": "Total sign-ups.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_SIGNUP_VALUE_IN_MICRO_DOLLAR": {
+      "description": "Total sign-up value in micro dollars.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIDEO_3SEC_VIEWS": {
+      "description": "Total video views for at least 3 seconds.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIDEO_AVG_WATCHTIME_IN_SECOND": {
+      "description": "Average watch time for video in seconds.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIDEO_MRC_VIEWS": {
+      "description": "Total video MRC views.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIDEO_P0_COMBINED": {
+      "description": "Video views at point 0 combined.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIDEO_P100_COMPLETE": {
+      "description": "Video views at 100% completion.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIDEO_P25_COMBINED": {
+      "description": "Video views at 25% completion combined.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIDEO_P50_COMBINED": {
+      "description": "Video views at 50% completion combined.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIDEO_P75_COMBINED": {
+      "description": "Video views at 75% completion combined.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIDEO_P95_COMBINED": {
+      "description": "Video views at 95% completion combined.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIEW_ADD_TO_CART": {
+      "description": "Total views leading to add to cart actions.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIEW_CHECKOUT": {
+      "description": "Total views leading to checkout actions.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIEW_CHECKOUT_VALUE_IN_MICRO_DOLLAR": {
+      "description": "Total view checkout value in micro dollars.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIEW_LEAD": {
+      "description": "Total views leading to lead actions.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIEW_SIGNUP": {
+      "description": "Total views leading to sign-up actions.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIEW_SIGNUP_VALUE_IN_MICRO_DOLLAR": {
+      "description": "Total view sign-up value in micro dollars.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_WEB_CHECKOUT": {
+      "description": "Total web checkout actions.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_WEB_CHECKOUT_VALUE_IN_MICRO_DOLLAR": {
+      "description": "Total web checkout value in micro dollars.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_WEB_CLICK_CHECKOUT": {
+      "description": "Total web click to checkout actions.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_WEB_CLICK_CHECKOUT_VALUE_IN_MICRO_DOLLAR": {
+      "description": "Total web click checkout value in micro dollars.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_WEB_ENGAGEMENT_CHECKOUT": {
+      "description": "Total web engagement leading to checkout actions.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_WEB_ENGAGEMENT_CHECKOUT_VALUE_IN_MICRO_DOLLAR": {
+      "description": "Total web engagement checkout value in micro dollars.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_WEB_SESSIONS": {
+      "description": "Total web sessions.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_WEB_VIEW_CHECKOUT": {
+      "description": "Total web views leading to checkout actions.",
+      "type": ["null", "number"]
+    },
+    "TOTAL_WEB_VIEW_CHECKOUT_VALUE_IN_MICRO_DOLLAR": {
+      "description": "Total web view checkout value in micro dollars.",
+      "type": ["null", "number"]
+    },
+    "VIDEO_3SEC_VIEWS_2": {
+      "description": "Video views for at least 3 seconds for a specific action 2.",
+      "type": ["null", "number"]
+    },
+    "VIDEO_LENGTH": {
+      "description": "The length of the video.",
+      "type": ["null", "number"]
+    },
+    "VIDEO_MRC_VIEWS_2": {
+      "description": "Video MRC views for a specific action 2.",
+      "type": ["null", "number"]
+    },
+    "VIDEO_P0_COMBINED_2": {
+      "description": "Video views at point 0 combined for a specific action 2.",
+      "type": ["null", "number"]
+    },
+    "VIDEO_P100_COMPLETE_2": {
+      "description": "Video views at 100% completion for a specific action 2.",
+      "type": ["null", "number"]
+    },
+    "VIDEO_P25_COMBINED_2": {
+      "description": "Video views at 25% completion combined for a specific action 2.",
+      "type": ["null", "number"]
+    },
+    "VIDEO_P50_COMBINED_2": {
+      "description": "Video views at 50% completion combined for a specific action 2.",
+      "type": ["null", "number"]
+    },
+    "VIDEO_P75_COMBINED_2": {
+      "description": "Video views at 75% completion combined for a specific action 2.",
+      "type": ["null", "number"]
+    },
+    "VIDEO_P95_COMBINED_2": {
+      "description": "Video views at 95% completion combined for a specific action 2.",
+      "type": ["null", "number"]
+    },
+    "WEB_CHECKOUT_COST_PER_ACTION": {
+      "description": "Web checkout cost per action.",
+      "type": ["null", "number"]
+    },
+    "WEB_CHECKOUT_ROAS": {
+      "description": "Return on ad spend for web checkout actions.",
+      "type": ["null", "number"]
+    },
+    "WEB_SESSIONS_1": {
+      "description": "Web sessions for a specific action 1.",
+      "type": ["null", "number"]
+    },
+    "WEB_SESSIONS_2": {
+      "description": "Web sessions for a specific action 2.",
+      "type": ["null", "number"]
+    }
+  }
+}

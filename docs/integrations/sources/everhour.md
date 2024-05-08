@@ -1,6 +1,6 @@
 # Everhour
 
-This page contains the setup guide and reference information for the Everhour source connector.
+This page contains the setup guide and reference information for the [Everhour](https://everhour.com/) source connector.
 
 ## Prerequisites
 
@@ -8,7 +8,7 @@ This page contains the setup guide and reference information for the Everhour so
 
 ## Supported sync modes
 
-Currently, this project only supports full sync mode. 
+Currently, this project only supports full sync mode.
 
 ## Supported Streams
 
@@ -23,7 +23,6 @@ This project supports the following streams:
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                        |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
-
-| 0.1.0   | 2023-02-28 | [23593](https://github.com/airbytehq/airbyte/pull/23593)   | Initial Release   |
+| Version | Date       | Pull Request                                             | Subject         |
+| :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| 0.1.0   | 2023-02-28 | [23593](https://github.com/airbytehq/airbyte/pull/23593) | Initial Release |

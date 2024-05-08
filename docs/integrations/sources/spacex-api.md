@@ -29,8 +29,8 @@ No prerequisites, but a dummy api_key is required as it enhances security in fut
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 3. Enter your `api_key`.
-5. Enter your `id` if needed. (Optional)
-6. Click **Set up source**.
+4. Enter your `id` if needed. (Optional)
+5. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -70,6 +70,7 @@ The SpaceX API has both v4 and v5 for [launches](https://github.com/r-spacex/Spa
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject        |
-| :------ | :--------- | :----------------------------------------------------- | :------------- |
-| 0.1.0   | 2022-10-22 | [Init](https://github.com/airbytehq/airbyte/pull/18311) | Initial commit |
+| Version | Date       | Pull Request                                             | Subject                                           |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.1.1   | 2023-11-08 | [32202](https://github.com/airbytehq/airbyte/pull/32202) | Adjust schemas to cover all fields in the records |
+| 0.1.0   | 2022-10-22 | [Init](https://github.com/airbytehq/airbyte/pull/18311)  | Initial commit                                    |

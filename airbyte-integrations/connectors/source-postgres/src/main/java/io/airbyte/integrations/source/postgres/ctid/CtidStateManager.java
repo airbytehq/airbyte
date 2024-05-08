@@ -4,99 +4,116 @@
 
 package io.airbyte.integrations.source.postgres.ctid;
 
-import io.airbyte.commons.exceptions.ConfigErrorException;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageProducer;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.v0.AirbyteStreamState;
-import io.airbyte.protocol.models.v0.StreamDescriptor;
-import java.util.HashMap;
-import java.util.List;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CtidStateManager {
+public abstract class CtidStateManager implements SourceStateMessageProducer<AirbyteMessageWithCtid> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CtidStateManager.class);
+
   public static final long CTID_STATUS_VERSION = 2;
-  private final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus;
-  private final static AirbyteStateMessage EMPTY_STATE = new AirbyteStateMessage()
-      .withType(AirbyteStateType.STREAM)
-      .withStream(new AirbyteStreamState());
+  public static final String STATE_TYPE_KEY = "state_type";
 
-  public CtidStateManager(final List<AirbyteStateMessage> stateMessages, final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
-    this.pairToCtidStatus = createPairToCtidStatusMap(stateMessages, fileNodes);
-  }
+  protected final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus;
+  private Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
 
-  private static Map<AirbyteStreamNameNamespacePair, CtidStatus> createPairToCtidStatusMap(final List<AirbyteStateMessage> stateMessages,
-                                                                                           final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
-    final Map<AirbyteStreamNameNamespacePair, CtidStatus> localMap = new HashMap<>();
-    if (stateMessages != null) {
-      for (final AirbyteStateMessage stateMessage : stateMessages) {
-        if (stateMessage.getType() == AirbyteStateType.STREAM && !stateMessage.equals(EMPTY_STATE)) {
-          LOGGER.info("State message: " + stateMessage);
-          final StreamDescriptor streamDescriptor = stateMessage.getStream().getStreamDescriptor();
-          final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace());
-          final CtidStatus ctidStatus;
-          try {
-            ctidStatus = Jsons.object(stateMessage.getStream().getStreamState(), CtidStatus.class);
-            assert (ctidStatus.getVersion() == CTID_STATUS_VERSION);
-            assert (ctidStatus.getStateType().equals(StateType.CTID));
-          } catch (final IllegalArgumentException e) {
-            throw new ConfigErrorException("Invalid per-stream state");
-          }
-          if (validateRelationFileNode(ctidStatus, pair, fileNodes)) {
-            localMap.put(pair, ctidStatus);
-          } else {
-            LOGGER.warn(
-                "The relation file node for table in source db {} is not equal to the saved ctid state, a full sync from scratch will be triggered.",
-                pair);
-          }
-        }
-      }
-    }
-    return localMap;
-  }
+  private String lastCtid;
+  private FileNodeHandler fileNodeHandler;
 
-  private static boolean validateRelationFileNode(final CtidStatus ctidstatus,
-                                                  final AirbyteStreamNameNamespacePair pair,
-                                                  final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
-    if (fileNodes.containsKey(pair)) {
-      final Long fileNode = fileNodes.get(pair);
-      return Objects.equals(ctidstatus.getRelationFilenode(), fileNode);
-    }
-    return true;
+  protected CtidStateManager(final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus) {
+    this.pairToCtidStatus = pairToCtidStatus;
   }
 
   public CtidStatus getCtidStatus(final AirbyteStreamNameNamespacePair pair) {
     return pairToCtidStatus.get(pair);
   }
 
-  // TODO : We will need a similar method to generate a GLOBAL state message for CDC
-  public static AirbyteMessage createPerStreamStateMessage(final AirbyteStreamNameNamespacePair pair, final CtidStatus ctidStatus) {
-    final AirbyteStreamState airbyteStreamState =
-        new AirbyteStreamState()
-            .withStreamDescriptor(
-                new StreamDescriptor()
-                    .withName(pair.getName())
-                    .withNamespace(pair.getNamespace()))
-            .withStreamState(Jsons.jsonNode(ctidStatus));
+  public static boolean validateRelationFileNode(final CtidStatus ctidstatus,
+                                                 final AirbyteStreamNameNamespacePair pair,
+                                                 final FileNodeHandler fileNodeHandler) {
 
-    final AirbyteStateMessage stateMessage =
-        new AirbyteStateMessage()
-            .withType(AirbyteStateType.STREAM)
-            .withStream(airbyteStreamState);
+    if (fileNodeHandler.hasFileNode(pair)) {
+      final Long fileNode = fileNodeHandler.getFileNode(pair);
+      return Objects.equals(ctidstatus.getRelationFilenode(), fileNode);
+    }
+    return true;
+  }
 
-    return new AirbyteMessage()
-        .withType(Type.STATE)
-        .withState(stateMessage);
+  public abstract AirbyteStateMessage createCtidStateMessage(final AirbyteStreamNameNamespacePair pair, final CtidStatus ctidStatus);
+
+  public abstract AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun);
+
+  public void setStreamStateIteratorFields(Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
+                                           FileNodeHandler fileNodeHandler) {
+    this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
+    this.fileNodeHandler = fileNodeHandler;
+  }
+
+  @Override
+  public AirbyteStateMessage generateStateMessageAtCheckpoint(final ConfiguredAirbyteStream stream) {
+    final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(),
+        stream.getStream().getNamespace());
+    final Long fileNode = fileNodeHandler.getFileNode(pair);
+    assert fileNode != null;
+    final CtidStatus ctidStatus = new CtidStatus()
+        .withVersion(CTID_STATUS_VERSION)
+        .withStateType(StateType.CTID)
+        .withCtid(lastCtid)
+        .withIncrementalState(getStreamState(pair))
+        .withRelationFilenode(fileNode);
+    LOGGER.info("Emitting ctid state for stream {}, state is {}", pair, ctidStatus);
+    return createCtidStateMessage(pair, ctidStatus);
+  }
+
+  /**
+   * Stores the latest CTID.
+   */
+  @Override
+  public AirbyteMessage processRecordMessage(final ConfiguredAirbyteStream stream, AirbyteMessageWithCtid message) {
+    if (Objects.nonNull(message.ctid())) {
+      this.lastCtid = message.ctid();
+    }
+    return message.recordMessage();
+  }
+
+  /**
+   * Creates a final state message for the stream.
+   */
+  @Override
+  public AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream stream) {
+    final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(),
+        stream.getStream().getNamespace());
+
+    final AirbyteStateMessage finalStateMessage = createFinalStateMessage(pair, getStreamState(pair));
+    LOGGER.info("Finished initial sync of stream {}, Emitting final state, state is {}", pair, finalStateMessage);
+    return finalStateMessage;
+  }
+
+  /**
+   * Extra criteria(besides checking frequency) to check if we should emit state message.
+   */
+  @Override
+  public boolean shouldEmitStateMessage(final ConfiguredAirbyteStream stream) {
+    return Objects.nonNull(lastCtid)
+        && StringUtils.isNotBlank(lastCtid);
+  }
+
+  private JsonNode getStreamState(final AirbyteStreamNameNamespacePair pair) {
+    final CtidStatus currentCtidStatus = getCtidStatus(pair);
+    return (currentCtidStatus == null || currentCtidStatus.getIncrementalState() == null) ? streamStateForIncrementalRunSupplier.apply(pair)
+        : currentCtidStatus.getIncrementalState();
   }
 
 }

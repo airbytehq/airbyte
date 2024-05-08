@@ -20,6 +20,18 @@
         "type": "string",
         "description": "Access token for making authenticated requests. See the <a href=\"https://developers.intercom.com/building-apps/docs/authentication-types#how-to-get-your-access-token\">Intercom docs</a> for more information.",
         "airbyte_secret": true
+      },
+      "client_id": {
+        "title": "Client Id",
+        "type": "string",
+        "description": "Client Id for your Intercom application.",
+        "airbyte_secret": true
+      },
+      "client_secret": {
+        "title": "Client Secret",
+        "type": "string",
+        "description": "Client Secret for your Intercom application.",
+        "airbyte_secret": true
       }
     }
   },

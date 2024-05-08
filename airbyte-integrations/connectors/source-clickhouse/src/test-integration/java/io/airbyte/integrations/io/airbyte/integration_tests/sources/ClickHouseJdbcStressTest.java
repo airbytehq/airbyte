@@ -8,12 +8,12 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.cdk.integrations.source.jdbc.test.JdbcStressTest;
+import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
-import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.JDBCType;
 import java.time.Duration;
 import java.util.Optional;

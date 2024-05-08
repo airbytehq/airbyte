@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Post Comments",
+  "type": ["null", "object"],
+  "properties": {
+    "author_id": {
+      "description": "The unique identifier of the author of the comment.",
+      "type": ["null", "integer"]
+    },
+    "body": {
+      "description": "The content or text of the comment.",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "The timestamp when the comment was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "html_url": {
+      "description": "The URL link to the HTML representation of the comment.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "The unique identifier of the comment.",
+      "type": ["null", "integer"]
+    },
+    "locale": {
+      "description": "The locale or language of the comment.",
+      "type": ["null", "string"]
+    },
+    "non_author_editor_id": {
+      "description": "The unique identifier of a non-author who edited the comment.",
+      "type": ["null", "integer"]
+    },
+    "non_author_updated_at": {
+      "description": "The timestamp when the non-author last updated the comment.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "source_id": {
+      "description": "The ID of the source associated with the comment.",
+      "type": ["null", "integer"]
+    },
+    "source_type": {
+      "description": "The type of the source associated with the comment.",
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "description": "The timestamp when the comment was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "url": {
+      "description": "The URL link to the comment resource.",
+      "type": ["null", "string"]
+    },
+    "vote_count": {
+      "description": "The total count of votes received on the comment.",
+      "type": ["null", "integer"]
+    },
+    "vote_sum": {
+      "description": "The sum of votes received on the comment, considering upvotes and downvotes.",
+      "type": ["null", "integer"]
+    }
+  }
+}

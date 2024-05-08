@@ -1,0 +1,424 @@
+version: "0.52.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["data"]
+  requester:
+    type: HttpRequester
+    url_base: "https://app.orbit.love/api/v1/"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_token'] }}"
+    request_parameters:
+      start_date: "{{ config.get('start_date') }}"
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  workspace_stream:
+    $ref: "#/definitions/base_stream"
+    name: "workspace"
+    primary_key: "id"
+    $parameters:
+      path: "workspaces/{{config['workspace']}}"
+
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier for the workspace
+            type:
+              - "null"
+              - string
+          type:
+            description: The type of entity, in this case, it's 'workspace'
+            type:
+              - "null"
+              - string
+          relationships:
+            description: Relationships of the workspace with other entities
+            type: object
+            properties:
+              last_member:
+                description: Information about the last member who joined the workspace
+                type:
+                  - "null"
+                  - object
+                properties:
+                  data:
+                    description: Details of the last member
+                    type:
+                      - "null"
+                      - object
+              last_activity:
+                description: Information about the last activity in the workspace
+                type:
+                  - "null"
+                  - object
+                properties:
+                  data:
+                    description: Details of the last activity
+                    type:
+                      - "null"
+                      - object
+              repositories:
+                description: List of repositories associated with the workspace
+                type:
+                  - "null"
+                  - object
+                properties:
+                  data:
+                    description: Details of the repositories
+                    type:
+                      - "null"
+                      - array
+          attributes:
+            description: Attributes related to the workspace
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              name:
+                description: The name of the workspace
+                type:
+                  - "null"
+                  - string
+              slug:
+                description: A unique identifier for the workspace
+                type:
+                  - "null"
+                  - string
+              updated_at:
+                description: Date and time when the workspace was last updated
+                type:
+                  - "null"
+                  - string
+              created_at:
+                description: Date and time when the workspace was created
+                type:
+                  - "null"
+                  - string
+              members_count:
+                description: The total number of members in the workspace
+                type:
+                  - "null"
+                  - integer
+              activities_count:
+                description: The total number of activities in the workspace
+                type:
+                  - "null"
+                  - integer
+              tags:
+                description: Tags associated with the workspace
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties: {}
+  members_stream:
+    $ref: "#/definitions/base_stream"
+    name: "members"
+    primary_key: "id"
+    $parameters:
+      path: "{{config['workspace']}}/members"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 100
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          inject_into: request_parameter
+          field_name: items
+          type: RequestOption
+
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the member
+            type:
+              - "null"
+              - string
+          fake:
+            description: Indicates if the member data is fake or real
+            type:
+              - "null"
+              - string
+          type:
+            description: Type of entity, in this case, the member
+            type:
+              - "null"
+              - string
+          attributes:
+            description: Contains the main attributes data of the member
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              activities_count:
+                description: Total number of activities performed by the member
+                type:
+                  - "null"
+                  - integer
+              activities_score:
+                description: Score calculated based on the member's activities
+                type:
+                  - "null"
+                  - number
+              avatar_url:
+                description: URL of the member's avatar image
+                type:
+                  - "null"
+                  - string
+              bio:
+                description: Member's biography or description
+                type:
+                  - "null"
+                  - string
+              birthday:
+                description: Date of birth of the member
+                type:
+                  - "null"
+                  - string
+              company:
+                description: Name of the company the member is associated with
+                type:
+                  - "null"
+                  - string
+              title:
+                description: Job title or role of the member
+                type:
+                  - "null"
+                  - string
+              created_at:
+                description: Timestamp when the member was created
+                type:
+                  - "null"
+                  - string
+              deleted_at:
+                description: Timestamp when the member was deleted, if applicable
+                type:
+                  - "null"
+                  - string
+              first_activity_occurred_at:
+                description: Timestamp of the first activity performed by the member
+                type:
+                  - "null"
+                  - string
+              last_activity_occurred_at:
+                description: Timestamp of the last activity performed by the member
+                type:
+                  - "null"
+                  - string
+              location:
+                description: Current location of the member
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Full name of the member
+                type:
+                  - "null"
+                  - string
+              pronouns:
+                description: Preferred pronouns of the member
+                type:
+                  - "null"
+                  - string
+              reach:
+                description: Extent of influence or reach the member has
+                type:
+                  - "null"
+                  - integer
+              shipping_address:
+                description: Shipping address details of the member
+                type:
+                  - "null"
+                  - string
+              slug:
+                description: Unique string used in URLs to identify the member
+                type:
+                  - "null"
+                  - string
+              source:
+                description: Source or platform from which the member originated
+                type:
+                  - "null"
+                  - string
+              tag_list:
+                description: List of tags associated with the member
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+              tags:
+                description: Additional tags associated with the member for categorization
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+              teammate:
+                description: Indicates if the member is a teammate within an organization
+                type: boolean
+              tshirt:
+                description: T-shirt size preference of the member
+                type:
+                  - "null"
+                  - string
+              updated_at:
+                description: Timestamp of the last update to the member profile
+                type:
+                  - "null"
+                  - string
+              merged_at:
+                description: Timestamp when the member's data was merged
+                type:
+                  - "null"
+                  - string
+              url:
+                description: URL of the member profile
+                type:
+                  - "null"
+                  - string
+              orbit_url:
+                description: URL to access the member's Orbit profile
+                type:
+                  - "null"
+                  - string
+              created:
+                description: Creation timestamp of the member
+                type:
+                  - "null"
+                  - boolean
+              id:
+                description: Unique identifier for the member
+                type:
+                  - "null"
+                  - string
+              orbit_level:
+                description: Level of engagement with Orbit platform
+                type:
+                  - "null"
+                  - integer
+              love:
+                description:
+                  Measure of appreciation or positive feedback received
+                  by the member
+                type:
+                  - "null"
+                  - string
+              twitter:
+                description: Twitter profile link of the member
+                type:
+                  - "null"
+                  - string
+              github:
+                description: GitHub profile link of the member
+                type:
+                  - "null"
+                  - string
+              discourse:
+                description: Discourse profile link of the member
+                type:
+                  - "null"
+                  - string
+              email:
+                description: Email address of the member
+                type:
+                  - "null"
+                  - string
+              devto:
+                description: DEV.TO profile link of the member
+                type:
+                  - "null"
+                  - string
+              linkedin:
+                description: LinkedIn profile link of the member
+                type:
+                  - "null"
+                  - string
+              discord:
+                description: Discord profile link of the member
+                type:
+                  - "null"
+                  - string
+              github_followers:
+                description: Number of followers on GitHub
+                type:
+                  - "null"
+                  - integer
+              twitter_followers:
+                description: Number of followers on Twitter
+                type:
+                  - "null"
+                  - integer
+              topics:
+                description: List of topics of interest to the member
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+              languages:
+                description: List of programming languages known by the member
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+          relationships:
+            description: Contains the relationship data of the member
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+streams:
+  - "#/definitions/workspace_stream"
+  - "#/definitions/members_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "workspace"

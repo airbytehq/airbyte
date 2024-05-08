@@ -27,7 +27,6 @@ acceptance_tests:
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
         timeout_seconds: 3600
-        threshold_days: 30 # Reduce this if you have many data to retrieve
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
@@ -38,7 +37,7 @@ acceptance_tests:
               bypass_reason: "Can't be idempotent by nature"
             - name: metadata
               bypass_reason: "Can't be idempotent by nature"
-          campaigns_report_daily: 
+          campaigns_report_daily:
             - name: granularity
               bypass_reason: "Can't be idempotent by nature"
             - name: metadata

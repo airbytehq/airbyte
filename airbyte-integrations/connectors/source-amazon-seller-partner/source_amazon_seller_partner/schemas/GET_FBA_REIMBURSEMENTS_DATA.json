@@ -1,117 +1,87 @@
 {
-  "title" : "FBA Reimbursements Data",
-  "description" : "FBA Reimbursements Data Reports",
-  "type" : "object",
-  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "title": "FBA Reimbursements Data",
+  "description": "FBA Reimbursements Data Reports",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": true,
-  "properties" : {
+  "properties": {
     "approval-date": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
+      "description": "The date and time when the reimbursement was approved.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "reimbursement-id": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "description": "The unique identifier for the reimbursement record.",
+      "type": ["null", "string"]
     },
     "case-id": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "description": "The case ID associated with the reimbursement.",
+      "type": ["null", "string"]
     },
     "amazon-order-id": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "description": "The unique identifier for the Amazon order related to the reimbursement.",
+      "type": ["null", "string"]
     },
     "reason": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "description": "The reason provided for the reimbursement.",
+      "type": ["null", "string"]
     },
     "sku": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "description": "The Stock Keeping Unit (SKU) of the product.",
+      "type": ["null", "string"]
     },
     "fnsku": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "description": "The Fulfillment Network SKU of the product.",
+      "type": ["null", "string"]
     },
     "asin": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "description": "The Amazon Standard Identification Number (ASIN) of the product.",
+      "type": ["null", "string"]
     },
     "product-name": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "description": "The name of the product for which the reimbursement was issued.",
+      "type": ["null", "string"]
     },
     "condition": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "description": "The condition of the product for which the reimbursement was issued.",
+      "type": ["null", "string"]
     },
     "currency-unit": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "description": "The currency unit used for the reimbursement amount.",
+      "type": ["null", "string"]
     },
     "amount-per-unit": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "description": "The amount reimbursed per unit of the product.",
+      "type": ["null", "string"]
     },
     "quantity-reimbursed-cash": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "description": "The quantity of the product reimbursed in cash.",
+      "type": ["null", "string"]
     },
     "amount-total": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "description": "The total amount reimbursed for the product.",
+      "type": ["null", "string"]
     },
     "quantity-reimbursed-inventory": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "description": "The quantity of the product added back to inventory as reimbursement.",
+      "type": ["null", "string"]
     },
     "quantity-reimbursed-total": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "description": "The total quantity of the product reimbursed.",
+      "type": ["null", "string"]
     },
     "original-reimbursement-id": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "description": "The original reimbursement ID associated with the record.",
+      "type": ["null", "string"]
     },
     "original-reimbursement-type": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "description": "The type of original reimbursement.",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "The end time of the data represented in the record.",
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

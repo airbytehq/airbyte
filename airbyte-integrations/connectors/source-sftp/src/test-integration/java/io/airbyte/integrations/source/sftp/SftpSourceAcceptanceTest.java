@@ -6,11 +6,11 @@ package io.airbyte.integrations.source.sftp;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;

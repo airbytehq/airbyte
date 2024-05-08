@@ -4,13 +4,16 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_LSN;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.debezium.internals.DebeziumEventUtils;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.SyncMode;
@@ -79,9 +82,9 @@ public final class PostgresCatalogHelper {
 
     final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
-    properties.set(DebeziumEventUtils.CDC_LSN, numberType);
-    properties.set(DebeziumEventUtils.CDC_UPDATED_AT, stringType);
-    properties.set(DebeziumEventUtils.CDC_DELETED_AT, stringType);
+    properties.set(DebeziumEventConverter.CDC_LSN, numberType);
+    properties.set(DebeziumEventConverter.CDC_UPDATED_AT, stringType);
+    properties.set(DebeziumEventConverter.CDC_DELETED_AT, stringType);
 
     return stream;
   }
@@ -120,6 +123,15 @@ public final class PostgresCatalogHelper {
         publicizedTables.stream().map(pair -> pair.getNamespace() + "." + pair.getName()).toList());
 
     return publicizedTables;
+  }
+
+  /*
+   * To prepare for Destination v2, cdc streams must have a default cursor field this defaults to lsn
+   * as a cursor as it is monotonically increasing and unique
+   */
+  public static AirbyteStream setDefaultCursorFieldForCdc(final AirbyteStream stream) {
+    stream.setDefaultCursorField(ImmutableList.of(CDC_LSN));
+    return stream;
   }
 
 }

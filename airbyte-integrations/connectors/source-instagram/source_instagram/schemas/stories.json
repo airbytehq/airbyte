@@ -2,51 +2,71 @@
   "type": "object",
   "properties": {
     "business_account_id": {
+      "description": "The ID of the business account associated with the story.",
       "type": ["null", "string"]
     },
     "page_id": {
+      "description": "ID of the page associated with the story.",
       "type": ["null", "string"]
     },
     "caption": {
+      "description": "The caption associated with the story.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique ID of the story.",
       "type": ["null", "string"]
     },
     "ig_id": {
+      "description": "Instagram ID of the story.",
       "type": ["null", "string"]
     },
     "like_count": {
+      "description": "Number of likes on the story.",
       "type": ["null", "integer"]
     },
     "media_type": {
+      "description": "Type of media in the story (image, video, etc.).",
+      "type": ["null", "string"]
+    },
+    "media_product_type": {
+      "description": "Product type associated with the media in the story.",
       "type": ["null", "string"]
     },
     "media_url": {
+      "description": "URL of the media in the story.",
       "type": ["null", "string"]
     },
     "owner": {
+      "description": "The user who owns the story.",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "ID of the owner of the story.",
           "type": ["null", "string"]
         }
       }
     },
     "permalink": {
+      "description": "Permanent link to the story.",
       "type": ["null", "string"]
     },
     "shortcode": {
+      "description": "Shortcode identifier of the story.",
       "type": ["null", "string"]
     },
     "thumbnail_url": {
+      "description": "URL of the thumbnail of the media in the story.",
       "type": ["null", "string"]
     },
     "timestamp": {
+      "description": "Timestamp when the story was posted.",
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "username": {
+      "description": "Username associated with the story.",
       "type": ["null", "string"]
     }
   }

@@ -8,13 +8,13 @@ import pytest
 
 @pytest.fixture
 def start_date():
-    return pendulum.parse("2017-01-25").date()
+    return pendulum.parse("2024-01-25T00:00:00").date()
 
 
 @pytest.fixture
 def config(start_date):
     return {
-        "api_secret": "unexisting-secret",
+        "credentials": {"api_secret": "unexisting-secret"},
         "attribution_window": 5,
         "project_timezone": pendulum.timezone("UTC"),
         "select_properties_by_default": True,
@@ -32,3 +32,8 @@ def config_raw(config):
         "start_date": str(config["start_date"]),
         "end_date": str(config["end_date"]),
     }
+
+
+@pytest.fixture(autouse=True)
+def patch_time(mocker):
+    mocker.patch("time.sleep")

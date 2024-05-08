@@ -1,130 +1,226 @@
-# Paypal Transaction Source
+# Paypal-Transaction source connector
 
-This is the repository for the Paypal Transaction source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/paypal-transaction).
+This is the repository for the Paypal-Transaction source connector, written in Python.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/paypal-transaction).
 
 ## Local development
 
-### Prerequisites
-**To iterate on this connector, make sure to complete this prerequisites section.**
+#### Prerequisites
 
-#### Build & Activate Virtual Environment and install dependencies
-From this connector directory, create a virtual environment:
-```
-python -m venv .venv
-```
+- Python (~=3.9)
+- Poetry (~=1.7) - installation instructions [here](https://python-poetry.org/docs/#installation)
+- Paypal Client ID and Client Secret
+- If you are going to use the data generator scripts you need to setup yourPaypal Sandbox and a Buyer user in your sandbox, to simulate the data. YOu cna get that information in the [Apps & Credentials page](https://developer.paypal.com/dashboard/applications/live).
+  - Buyer Username
+  - Buyer Password
+  - Payer ID (Account ID)
 
-This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
-development environment of choice. To activate it from the terminal, run:
-```
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
+### Installing the connector
 
-Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
-used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
-If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
-should work as you expect.
+From this connector directory, run:
 
-#### Building via Gradle
-You can also build the connector in Gradle. This is typically used in CI and not needed for your development workflow.
-
-To build using Gradle, from the Airbyte repository root, run:
-```
-./gradlew :airbyte-integrations:connectors:source-paypal-transaction:build
+```bash
+poetry install --with dev
 ```
 
-#### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/paypal-transaction)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_paypal_transaction/spec.json` file.
+### Create credentials
+
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/paypal-transaction)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_paypal_transaction/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
-See `integration_tests/sample_config.json` for a sample config file.
+See `sample_files/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source paypal-transaction test creds`
-and place them into `secrets/config.json`.
+- You must have created your credentials under the `secrets/` folder
+- For the read command, you can create separate catalogs to test the streams individually. All catalogs are under the folder `integration_tests`. Select the one you want to test with the read command.
 
 ### Locally running the connector
+
 ```
-python main.py spec
-python main.py check --config secrets/config.json
-python main.py discover --config secrets/config.json
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+poetry run source-paypal-transaction spec
+poetry run source-paypal-transaction check --config secrets/config.json
+poetry run source-paypal-transaction discover --config secrets/config.json
+# Example with list_payments catalog and the debug flag
+poetry run source-paypal-transaction read --config secrets/config.json --catalog integration_tests/configured_catalog_list_payments.json --debug
 ```
 
-### Locally running the connector docker image
+### Running unit tests
 
-#### Build
-First, make sure you build the latest Docker image:
+To run unit tests locally, from the connector directory run:
+
 ```
-docker build . -t airbyte/source-paypal-transaction:dev
+poetry run pytest unit_tests
 ```
 
-You can also build the connector image via Gradle:
-```
-./gradlew :airbyte-integrations:connectors:source-paypal-transaction:airbyteDocker
-```
-When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
-the Dockerfile.
+### Building the docker image
 
-#### Run
+1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
+2. Run the following command to build the docker image:
+
+### Installing the connector
+
+From this connector directory, run:
+
+```bash
+poetry install --with dev
+```
+
+##### Customizing our build process
+
+When contributing on our connector you might need to customize the build process to add a system dependency or set an env var.
+You can customize our build process by adding a `build_customization.py` module to your connector.
+This module should contain a `pre_connector_install` and `post_connector_install` async function that will mutate the base image and the connector container respectively.
+It will be imported at runtime by our build process and the functions will be called if they exist.
+
+Here is an example of a `build_customization.py` module:
+
+```python
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    # Feel free to check the dagger documentation for more information on the Container object and its methods.
+    # https://dagger-io.readthedocs.io/en/sdk-python-v0.6.4/
+    from dagger import Container
+```
+
+An image will be available on your host with the tag `airbyte/source-paypal-transaction:dev`.
+
+### Running as a docker container
+
 Then run any of the connector commands as follows:
+
 ```
 docker run --rm airbyte/source-paypal-transaction:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-paypal-transaction:dev check --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-paypal-transaction:dev discover --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-paypal-transaction:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
-## Testing
-Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
-First install test dependencies into your virtual environment:
-```
-pip install '.[tests]'
-```
-### Unit Tests
-To run unit tests locally, from the connector directory run:
-```
-python -m pytest unit_tests
+
+### Running our CI test suite
+
+You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+
+```bash
+airbyte-ci connectors --name=source-paypal-transaction test
 ```
 
-### Integration Tests
-There are two types of integration tests: Acceptance Tests (Airbyte's test suite for all source connectors) and custom integration tests (which are specific to this connector).
-#### Custom Integration tests
-Place custom tests inside `integration_tests/` folder, then, from the connector root, run
+If you are testing locally, you can use your local credentials (config.json file) by using `--use-local-secrets`
+
+```bash
+airbyte-ci connectors --name source-paypal-transaction --use-local-secrets test
 ```
-python -m pytest integration_tests
-```
-#### Acceptance Tests
-Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
+
+### Customizing acceptance Tests
+
+Customize `acceptance-test-config.yml` file to configure acceptance tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
-To run your integration tests with acceptance tests, from the connector root, run
-```
-docker build . --no-cache -t airbyte/source-paypal-transaction:dev \
-&& python -m pytest -p connector_acceptance_test.plugin
-```
-To run your integration tests with docker
 
-### Using gradle to run tests
-All commands should be run from airbyte project root.
-To run unit tests:
+## Running Unit tests locally
+
+To run unit tests locally, form the root `source_paypal_transaction` directory run:
+
+```bash
+python -m pytest unit_test
 ```
-./gradlew :airbyte-integrations:connectors:source-paypal-transaction:unitTest
-```
-To run acceptance and custom integration tests:
-```
-./gradlew :airbyte-integrations:connectors:source-paypal-transaction:integrationTest
-```
+
+## Test changes in the sandbox
+
+If you have a [Paypal Sandbox](https://developer.paypal.com/tools/sandbox/accounts/) you will be able to use some APIs to create new data and test how data is being created in your destinaiton and choose the best syn strategy that suits better your use case.
+Some endpoints will require special permissions on the sandbox to update and change some values.
+
+In the `bin` folder you will find several data generator scripts:
+
+- **disputes_generator.py:**
+
+  - Update dispute: Uses the _PATCH_ method of the `https://api-m.paypal.com/v1/customer/disputes/{dispute_id}` endpoint. You need the ID and create a payload to pass it as an argument. See more information [here](https://developer.paypal.com/docs/api/customer-disputes/v1/#disputes_patch).
+
+  ```bash
+  python disputes_generator.py update DISPUTE_ID ''[{"op": "replace", "path": "/reason", "value": "The new reason"}]'
+  ```
+
+  - Update Evidence status: Uses the _POST_ method of the `https://api-m.paypal.com/v1/customer/disputes/{dispute_id}/require-evidence` endpoint. You need the ID and select an option to pass it as an argument. See more information [here](https://developer.paypal.com/docs/api/customer-disputes/v1/#disputes_require-evidence)
+
+  ```bash
+  python update_dispute.py require-evidence DISPUTE_ID SELLER_EVIDENCE
+  ```
+
+- **invoices.py:**
+
+  - Create draft invoice: Uses the _POST_ method of the `https://api-m.sandbox.paypal.com/v2/invoicing/invoices` endpoint. It will automatically generate an invoice (no need to pass any parameters). See more information [here](https://developer.paypal.com/docs/api/invoicing/v2/#invoices_create).
+
+  ```bash
+  python invoices.py create_draft
+  ```
+
+  - Send a Draft Invoice: Uses the _POST_ method of the `https://api-m.sandbox.paypal.com/v2/invoicing/invoices/{invoice_id}/send` endpoint. You need the Invoice ID, a subject and a note (just to have something to update) and an email as an argument. See more information [here](https://developer.paypal.com/docs/api/invoicing/v2/#invoices_send)
+
+  ```bash
+  python invoices.py send_draft --invoice_id "INV2-XXXX-XXXX-XXXX-XXXX" --subject "Your Invoice Subject" --note "Your custom note" --additional_recipients example@email.com
+  ```
+
+- **payments_generator.py:**
+
+  - Partially update payment: Uses the _PATCH_ method of the `https://api-m.paypal.com/v1/payments/payment/{payment_id}` endpoint. You need the payment ID and a payload with new values. (no need to pass any parameters). See more information [here](https://developer.paypal.com/docs/api/invoicing/v2/#invoices_create).
+
+  ```bash
+   python script_name.py update PAYMENT_ID '[{"op": "replace", "path": "/transactions/0/amount", "value": {"total": "50.00", "currency": "USD"}}]'
+  ```
+
+- **paypal_transaction_generator.py:**
+  Make sure you have the `buyer_username`, `buyer_password` and `payer_id` in your config file. You can get the sample configuratin in the `sample_config.json`.
+
+  - Generate transactions: This uses Selenium, so you will be prompted to your account to simulate the complete transaction flow. You can add a number at the end of the command to do more than one transaction. By default the script runs 3 transactions.
+
+  **NOTE: Be midnfu of the number of transactions, as it will be interacting with your machine, and you may not be able to use it while creating the transactions**
+
+  ```bash
+   python paypal_transaction_generator.py [NUMBER_OF_DESIRED_TRANSACTIONS]
+  ```
+
+- **product_catalog.py:**
+
+  - Create a product: Uses the _POST_ method of the `https://api-m.sandbox.paypal.com/v1/catalogs/products` endpoint. You need to add the description and the category in the command line. For the proper category see more information [here](https://developer.paypal.com/docs/api/catalog-products/v1/#products_create).
+
+  ```bash
+  python product_catalog.py --action create --description "YOUR DESCRIPTION" --category PAYPAL_CATEGORY
+  ```
+
+  - Update a product: Uses the _PATCH_ method of the `https://developer.paypal.com/docs/api/catalog-products/v1/#products_patch` endpoint. You need the product ID, a description and the Category as an argument. See more information [here](https://developer.paypal.com/docs/api/catalog-products/v1/#products_patch)
+
+  ```bash
+  python product_catalog.py --action update --product_id PRODUCT_ID --update_payload '[{"op": "replace", "path": "/description", "value": "My Update. Does it changes it?"}]'
+  ```
 
 ## Dependency Management
+
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
 We split dependencies between two groups, dependencies that are:
-* required for your connector to work need to go to `MAIN_REQUIREMENTS` list.
-* required for the testing need to go to `TEST_REQUIREMENTS` list
 
-### Publishing a new version of the connector
+- required for your connector to work need to go to `MAIN_REQUIREMENTS` list.
+- required for the testing need to go to `TEST_REQUIREMENTS` list
+
+All of your dependencies should be managed via Poetry.
+
+To add a new dependency, run:
+
+```bash
+poetry add <package-name>
+```
+
+Please commit the changes to `pyproject.toml` and `poetry.lock` files.
+
+## Publishing a new version of the connector
+
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
-1. Make sure your changes are passing unit and integration tests.
-1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use [SemVer](https://semver.org/)).
-1. Create a Pull Request.
-1. Pat yourself on the back for being an awesome contributor.
-1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+
+1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-paypal-transaction test`
+2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)):
+   - bump the `dockerImageTag` value in in `metadata.yaml`
+   - bump the `version` value in `pyproject.toml`
+3. Make sure the `metadata.yaml` content is up to date.
+4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/paypal-transaction.md`).
+5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
+6. Pat yourself on the back for being an awesome contributor.
+7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+8. Once your PR is merged, the new version of the connector will be automatically published to Docker Hub and our connector registry.

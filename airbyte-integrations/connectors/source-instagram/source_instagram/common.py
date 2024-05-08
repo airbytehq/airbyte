@@ -37,6 +37,20 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         if exc.api_error_code() in (4, 17, 32, 613):
             return True
 
+        if (
+            exc.http_status() == status_codes.INTERNAL_SERVER_ERROR
+            and exc.api_error_code() == 1
+            and exc.api_error_message() == "Please reduce the amount of data you're asking for, then retry your request"
+        ):
+            return True
+
+        if (
+            exc.http_status() == status_codes.INTERNAL_SERVER_ERROR
+            and exc.api_error_code() == 1
+            and exc.api_error_message() == "An unknown error occurred"
+        ):
+            return True
+
         if exc.http_status() == status_codes.TOO_MANY_REQUESTS:
             return True
 

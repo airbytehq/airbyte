@@ -1,0 +1,19 @@
+# Airbyte connectors QA checks
+
+This document is listing all the static-analysis checks that are performed on the Airbyte connectors.
+These checks are running in our CI/CD pipeline and are used to ensure a connector is following the best practices and is respecting the Airbyte standards.
+Meeting these standards means that the connector will be able to be safely integrated into the Airbyte platform and released to registries (DockerHub, Pypi etc.).
+You can consider these checks as a set of guidelines to follow when developing a connector.
+They are by no mean replacing the need for a manual review of the connector codebase and the implementation of good test suites.
+{% for category, checks in checks_by_category.items() %}
+## {{ category.value }}
+{% for check in checks %}
+### {{ check.name }}
+
+_Applies to the following connector types: {{ ', '.join(check.applies_to_connector_types) }}_
+_Applies to the following connector languages: {{ ', '.join(check.applies_to_connector_languages) }}_
+_Applies to connector with {{ ', '.join(check.applies_to_connector_support_levels) if check.applies_to_connector_support_levels else 'any' }} support level_
+
+{{ check.description }}
+{% endfor %}
+{%- endfor %}

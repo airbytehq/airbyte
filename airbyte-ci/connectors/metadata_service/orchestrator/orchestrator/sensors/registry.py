@@ -1,5 +1,8 @@
-from dagster import sensor, RunRequest, SkipReason, SensorDefinition, SensorEvaluationContext, build_resources, DefaultSensorStatus
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
+from dagster import DefaultSensorStatus, RunRequest, SensorDefinition, SensorEvaluationContext, SkipReason, build_resources, sensor
 from orchestrator.utils.dagster_helpers import string_array_to_hash
 
 
@@ -12,7 +15,7 @@ def registry_updated_sensor(job, resources_def) -> SensorDefinition:
     @sensor(
         name=f"{job.name}_on_registry_updated",
         job=job,
-        minimum_interval_seconds=30,
+        minimum_interval_seconds=(2 * 60),
         default_status=DefaultSensorStatus.STOPPED,
     )
     def registry_updated_sensor_definition(context: SensorEvaluationContext):

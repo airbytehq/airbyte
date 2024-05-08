@@ -2,50 +2,235 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "timestamp": 9621295127 },
-      "stream_descriptor": { "name": "events" }
+      "stream_state": {
+        "datetime": "2120-10-10 00:00:00+00:00"
+      },
+      "stream_descriptor": {
+        "name": "events"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "timestamp": "2120-10-10T00:00:00Z" },
-      "stream_descriptor": { "name": "global_exclusions" }
+      "stream_state": {
+        "updated": "2120-10-10T00:00:00+00:00"
+      },
+      "stream_descriptor": {
+        "name": "global_exclusions"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": "2120-10-10 00:00:00" },
-      "stream_descriptor": { "name": "flows" }
+      "stream_state": {
+        "updated": "2120-10-10T00:00:00+00:00",
+        "archived": {
+          "updated": "2120-10-10T00:00:00+00:00"
+        }
+      },
+      "stream_descriptor": {
+        "name": "flows"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": "2120-10-10 00:00:00" },
-      "stream_descriptor": { "name": "metrics" }
+      "stream_state": {
+        "updated": "2120-10-10T00:00:00+00:00"
+      },
+      "stream_descriptor": {
+        "name": "metrics"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": "2120-10-10 00:00:00" },
-      "stream_descriptor": { "name": "lists" }
+      "stream_state": {
+        "updated": "2120-10-10T00:00:00+00:00"
+      },
+      "stream_descriptor": {
+        "name": "lists"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": "2120-10-10 00:00:00" },
-      "stream_descriptor": { "name": "campaigns" }
+      "stream_state": {
+        "states": [
+          {
+            "partition": { "id": "R2p3ry", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "R4ZhCr", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "RPfQMj", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "RgS4w6", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "RnsiHB", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "RwKPyg", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "S7aBY2", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "S8nmQ9", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "SBYgiK", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "SYEFFb", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "Seq8wh", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "SmDD4y", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "TDGJsj", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "TWcKFn", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "TaSce6", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "TjbH4K", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "TpNXq9", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "UeGLUr", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "UzdNhZ", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "VDZnQt", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "VJCDbR", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "VmvmBq", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "WBxsQE", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "WJLXnV", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "X7UeXn", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "XGj3p8", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "XUbNgM", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "XpP2a5", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          },
+          {
+            "partition": { "id": "Ya5ziX", "parent_slice": {} },
+            "cursor": { "updated": "2120-10-10T00:00:00+00:00" }
+          }
+        ]
+      },
+      "stream_descriptor": { "name": "lists_detailed" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated": "2120-10-10 00:00:00" },
-      "stream_descriptor": { "name": "profiles" }
+      "stream_state": {
+        "updated_at": "2120-10-10T00:00:00+00:00",
+        "archived": {
+          "updated_at": "2120-10-10T00:00:00+00:00"
+        }
+      },
+      "stream_descriptor": {
+        "name": "campaigns"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2120-10-10T00:00:00+00:00",
+        "archived": {
+          "updated_at": "2120-10-10T00:00:00+00:00"
+        }
+      },
+      "stream_descriptor": {
+        "name": "campaigns_detailed"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2120-10-10T00:00:00+00:00"
+      },
+      "stream_descriptor": {
+        "name": "profiles"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2120-10-10T00:00:00+00:00"
+      },
+      "stream_descriptor": {
+        "name": "email_templates"
+      }
     }
   }
 ]

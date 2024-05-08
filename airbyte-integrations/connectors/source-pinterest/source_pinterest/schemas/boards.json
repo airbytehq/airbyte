@@ -1,54 +1,69 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "additionalProperties": true,
   "properties": {
     "owner": {
+      "description": "Details of the owner of the board.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "username": {
+          "description": "The username of the board owner.",
           "type": ["null", "string"]
         }
       }
     },
     "name": {
+      "description": "The name/title of the board.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "A brief description or summary of the board.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier for the board.",
       "type": ["null", "string"]
     },
     "privacy": {
+      "description": "The privacy settings of the board.",
       "type": ["null", "string"]
     },
     "follower_count": {
+      "description": "The count of followers the board has.",
       "type": ["null", "integer"]
     },
     "collaborator_count": {
+      "description": "The number of collaborators involved in the board.",
       "type": ["null", "integer"]
     },
     "pin_count": {
+      "description": "The total number of pins in the board.",
       "type": ["null", "integer"]
     },
     "media": {
+      "description": "Represents media content associated with the boards.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "media_type": {
+          "description": "The type of media content associated with the board.",
           "type": ["null", "string"]
         }
       }
     },
     "created_at": {
+      "description": "The date and time when the board was created.",
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "board_pins_modified_at": {
+      "description": "The most recent date and time when the board's pins were modified.",
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     }
   }
 }

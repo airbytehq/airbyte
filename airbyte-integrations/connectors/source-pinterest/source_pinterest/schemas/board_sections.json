@@ -1,11 +1,13 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "name": {
+      "description": "The name of the board section.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier for the board section.",
       "type": ["null", "string"]
     }
   }

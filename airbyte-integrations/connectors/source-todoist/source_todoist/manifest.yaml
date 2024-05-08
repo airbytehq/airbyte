@@ -1,0 +1,255 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+  requester:
+    type: HttpRequester
+    url_base: "https://api.todoist.com/rest/v2"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['token'] }}"
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "#/definitions/requester"
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+  tasks_stream:
+    $ref: "#/definitions/base_stream"
+    name: "tasks"
+    $parameters:
+      path: "/tasks"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          assignee_id:
+            description: The unique identifier of the user assigned to the task
+            type:
+              - "null"
+              - string
+          assigner_id:
+            description: The unique identifier of the user who assigned the task
+            type:
+              - "null"
+              - string
+          comment_count:
+            description: The count of comments on the task
+            type:
+              - "null"
+              - integer
+          content:
+            description: The title or description of the task
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the task was created
+            type:
+              - "null"
+              - string
+          creator_id:
+            description: The unique identifier of the user who created the task
+            type:
+              - "null"
+              - string
+          description:
+            description: Additional details or notes about the task
+            type:
+              - "null"
+              - string
+          due:
+            description: The due date and time of the task
+            anyOf:
+              - type:
+                  - "null"
+                  - object
+              - properties:
+                  date:
+                    type:
+                      - "null"
+                      - string
+                  is_recurring:
+                    type:
+                      - "null"
+                      - boolean
+                  lang:
+                    type:
+                      - "null"
+                      - string
+                  string:
+                    type:
+                      - "null"
+                      - string
+                type:
+                  - "null"
+                  - object
+          id:
+            description: The unique identifier of the task
+            type:
+              - "null"
+              - string
+          duration:
+            description: The estimated duration or time required to complete the task
+            type:
+              - "null"
+              - string
+          is_completed:
+            description: Indicates whether the task is completed or not (true/false)
+            type:
+              - "null"
+              - boolean
+          labels:
+            description: List of labels associated with the task
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          order:
+            description: The position or order of the task within a project or section
+            type:
+              - "null"
+              - integer
+          parent_id:
+            description:
+              The unique identifier of the parent task if this task is
+              subtask
+            type:
+              - "null"
+              - string
+          priority:
+            description: The priority level of the task (e.g., high, medium, low)
+            type:
+              - "null"
+              - integer
+          project_id:
+            description: The unique identifier of the project to which the task belongs
+            type:
+              - "null"
+              - string
+          section_id:
+            description:
+              The unique identifier of the section within a project where
+              the task is located
+            type:
+              - "null"
+              - string
+          url:
+            description: The URL link to view the task details
+            type:
+              - "null"
+              - string
+  projects_stream:
+    $ref: "#/definitions/base_stream"
+    name: "projects"
+    $parameters:
+      path: "/projects"
+
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          color:
+            description: The color associated with the project.
+            type:
+              - "null"
+              - string
+          comment_count:
+            description: The number of comments on the project.
+            type:
+              - "null"
+              - integer
+          id:
+            description: The unique identifier for the project.
+            type:
+              - "null"
+              - string
+          is_favorite:
+            description: Indicates if the project is marked as favorite.
+            type:
+              - "null"
+              - boolean
+          is_inbox_project:
+            description: Specifies if the project is the inbox project.
+            type:
+              - "null"
+              - boolean
+          is_shared:
+            description: Indicates if the project is shared with others.
+            type:
+              - "null"
+              - boolean
+          is_team_inbox:
+            description: Specifies if the project is a team inbox.
+            type:
+              - "null"
+              - boolean
+          name:
+            description: The name or title of the project.
+            type:
+              - "null"
+              - string
+          order:
+            description: The order or priority of the project in the list.
+            type:
+              - "null"
+              - integer
+          parent_id:
+            description: The ID of the parent project if this is a subproject.
+            type:
+              - "null"
+              - string
+          url:
+            description: The URL for accessing the project.
+            type:
+              - "null"
+              - string
+          view_style:
+            description: The style or layout for viewing the project.
+            type:
+              - "null"
+              - string
+streams:
+  - "#/definitions/tasks_stream"
+  - "#/definitions/projects_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "tasks"
+    - "projects"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/source-todolist
+  connection_specification:
+    title: Source Todolist Spec
+    type: object
+    required:
+      - token
+    additionalProperties: true
+    properties:
+      token:
+        type: string
+        description: API authorization bearer token for authenticating the API
+        airbyte_secret: true

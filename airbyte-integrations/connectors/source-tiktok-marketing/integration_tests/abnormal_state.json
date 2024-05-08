@@ -14,6 +14,17 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": {
+        "name": "ads_audience_reports_by_province_daily"
+      },
+      "stream_state": {
+        "stat_time_day": "2099-01-01"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
         "name": "ad_groups_reports_daily"
       },
       "stream_state": {
@@ -117,6 +128,116 @@
       },
       "stream_state": {
         "modify_time": "2099-01-01 01:00:0"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "creative_assets_images"
+      },
+      "stream_state": {
+        "modify_time": "2099-01-01 01:00:0"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "creative_assets_videos"
+      },
+      "stream_state": {
+        "modify_time": "2099-01-01 01:00:0"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ad_group_audience_reports_by_platform_daily"
+      },
+      "stream_state": {
+        "stat_time_day": "2099-01-01"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "campaigns_audience_reports_daily"
+      },
+      "stream_state": {
+        "stat_time_day": "2099-01-01"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "campaigns_audience_reports_by_platform_daily"
+      },
+      "stream_state": {
+        "stat_time_day": "2099-01-01"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ad_group_audience_reports_by_country_daily"
+      },
+      "stream_state": {
+        "stat_time_day": "2099-01-01"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "advertisers_audience_reports_by_platform_daily"
+      },
+      "stream_state": {
+        "stat_time_day": "2099-01-01"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ads_audience_reports_by_country_daily"
+      },
+      "stream_state": {
+        "stat_time_day": "2099-01-01"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ads_audience_reports_by_platform_daily"
+      },
+      "stream_state": {
+        "stat_time_day": "2099-01-01"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "advertisers_audience_reports_by_country_daily"
+      },
+      "stream_state": {
+        "stat_time_day": "2099-01-01"
       }
     }
   }

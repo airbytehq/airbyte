@@ -4,7 +4,7 @@
   "databricks_http_path": "test_http_path",
   "databricks_port": "443",
   "databricks_personal_access_token": "test_token",
-  "database" : "test",
+  "database": "test",
   "schema": "test",
   "enable_schema_evolution": "true",
   "data_source": {

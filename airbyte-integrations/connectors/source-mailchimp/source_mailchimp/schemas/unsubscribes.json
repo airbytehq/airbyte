@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "email_id": {
+      "description": "The unique ID of the unsubscribed email.",
+      "type": ["null", "string"]
+    },
+    "email_address": {
+      "description": "The email address of the subscriber who unsubscribed.",
+      "type": ["null", "string"]
+    },
+    "merge_fields": {
+      "description": "Additional information about the subscriber.",
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "vip": {
+      "description": "Indicates whether the subscriber was a VIP.",
+      "type": ["null", "boolean"]
+    },
+    "timestamp": {
+      "description": "The date and time when the subscriber unsubscribed.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "reason": {
+      "description": "The reason provided by the subscriber for unsubscribing.",
+      "type": ["null", "string"]
+    },
+    "campaign_id": {
+      "description": "The ID of the campaign associated with the unsubscribe.",
+      "type": ["null", "string"]
+    },
+    "list_id": {
+      "description": "The ID of the list from which the subscriber unsubscribed.",
+      "type": ["null", "string"]
+    },
+    "list_is_active": {
+      "description": "Indicates whether the list is active or inactive.",
+      "type": ["null", "boolean"]
+    }
+  }
+}

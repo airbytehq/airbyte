@@ -27,6 +27,7 @@ TWILIO_MONITOR_URL_BASE = "https://monitor.twilio.com/v1/"
 TWILIO_STUDIO_API_BASE = "https://studio.twilio.com/v1/"
 TWILIO_CONVERSATIONS_URL_BASE = "https://conversations.twilio.com/v1/"
 TWILIO_TRUNKING_URL_BASE = "https://trunking.twilio.com/v1/"
+TWILIO_VERIFY_BASE_V2 = "https://verify.twilio.com/v2/"
 
 
 class TwilioStream(HttpStream, ABC):
@@ -70,8 +71,9 @@ class TwilioStream(HttpStream, ABC):
             for record in records:
                 for field in self.changeable_fields:
                     record.pop(field, None)
-                    yield record
-        yield from records
+                yield record
+        else:
+            yield from records
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """This method is called if we run into the rate limit.
@@ -431,6 +433,23 @@ class Executions(TwilioNestedStream):
         return {"flow_sid": record["sid"]}
 
 
+class Step(TwilioNestedStream):
+    """
+    https://www.twilio.com/docs/studio/rest-api/v2/step#read-a-list-of-step-resources
+    """
+
+    parent_stream = Executions
+    url_base = TWILIO_STUDIO_API_BASE
+    uri_from_subresource = False
+    data_field = "steps"
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return f"Flows/{stream_slice['flow_sid']}/Executions/{stream_slice['execution_sid']}/Steps"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"flow_sid": record["flow_sid"], "execution_sid": record["sid"]}
+
+
 class OutgoingCallerIds(TwilioNestedStream):
     """https://www.twilio.com/docs/voice/api/outgoing-caller-ids#outgoingcallerids-list-resource"""
 
@@ -452,6 +471,20 @@ class Services(TwilioStream):
     """
 
     url_base = TWILIO_CHAT_BASE
+
+    def path(self, **kwargs):
+        return "Services"
+
+
+class VerifyServices(TwilioStream):
+    """
+    https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources
+    """
+
+    # Unlike other endpoints, this one won't accept requests where pageSize >100
+    page_size = 100
+    data_field = "services"
+    url_base = TWILIO_VERIFY_BASE_V2
 
     def path(self, **kwargs):
         return "Services"
@@ -611,3 +644,28 @@ class ConversationMessages(TwilioNestedStream):
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {"conversation_sid": record["sid"]}
+
+
+class Users(TwilioStream):
+    """https://www.twilio.com/docs/conversations/api/user-resource"""
+
+    url_base = TWILIO_CONVERSATIONS_URL_BASE
+
+    def path(self, **kwargs):
+        return self.name.title()
+
+
+class UserConversations(TwilioNestedStream):
+    """https://www.twilio.com/docs/conversations/api/user-conversation-resource#list-all-of-a-users-conversations"""
+
+    parent_stream = Users
+    url_base = TWILIO_CONVERSATIONS_URL_BASE
+    uri_from_subresource = False
+    data_field = "conversations"
+    primary_key = ["account_sid"]
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return f"Users/{stream_slice['user_sid']}/Conversations"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"user_sid": record["sid"]}

@@ -8,14 +8,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 public class MySQLDestinationTest {
 
-  public static final String JDBC_URL = "jdbc:mysql://localhost:1337/db";
+  public static final String JDBC_URL = "jdbc:mysql://localhost:1337";
 
   private JsonNode buildConfigNoJdbcParameters() {
     return Jsons.jsonNode(ImmutableMap.of(

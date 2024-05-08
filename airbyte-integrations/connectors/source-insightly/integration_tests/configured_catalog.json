@@ -1,26 +1,424 @@
 {
   "streams": [
     {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
       "stream": {
-        "name": "team_members",
+        "default_cursor_field": null,
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["MEMBER_USER_ID"]]
+        "name": "activity_sets",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["ACTIVITYSET_ID"]],
+        "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "full_refresh"
     },
     {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
       "stream": {
-        "name": "users",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
         "default_cursor_field": ["DATE_UPDATED_UTC"],
-        "source_defined_primary_key": [["USER_ID"]]
+        "json_schema": {},
+        "name": "contacts",
+        "namespace": null,
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [["CONTACT_ID"]],
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "countries",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["COUNTRY_NAME"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "currencies",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["CURRENCY_CODE"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "emails",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["EMAIL_ID"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": ["DATE_UPDATED_UTC"],
+        "json_schema": {},
+        "name": "events",
+        "namespace": null,
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [["EVENT_ID"]],
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": ["DATE_UPDATED_UTC"],
+        "json_schema": {},
+        "name": "knowledge_article_categories",
+        "namespace": null,
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [["CATEGORY_ID"]],
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": ["DATE_UPDATED_UTC"],
+        "json_schema": {},
+        "name": "knowledge_article_folders",
+        "namespace": null,
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [["FOLDER_ID"]],
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": ["DATE_UPDATED_UTC"],
+        "json_schema": {},
+        "name": "knowledge_articles",
+        "namespace": null,
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [["ARTICLE_ID"]],
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "lead_sources",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["LEAD_SOURCE_ID"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "lead_statuses",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["LEAD_STATUS_ID"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": ["DATE_UPDATED_UTC"],
+        "json_schema": {},
+        "name": "milestones",
+        "namespace": null,
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [["MILESTONE_ID"]],
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": ["DATE_UPDATED_UTC"],
+        "json_schema": {},
+        "name": "notes",
+        "namespace": null,
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [["NOTE_ID"]],
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": ["DATE_UPDATED_UTC"],
+        "json_schema": {},
+        "name": "opportunities",
+        "namespace": null,
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [["OPPORTUNITY_ID"]],
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "opportunity_categories",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["CATEGORY_ID"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "opportunity_state_reasons",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["STATE_REASON_ID"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": ["DATE_UPDATED_UTC"],
+        "json_schema": {},
+        "name": "organisations",
+        "namespace": null,
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [["ORGANISATION_ID"]],
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "pipelines",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["PIPELINE_ID"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "pipeline_stages",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["STAGE_ID"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "project_categories",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["CATEGORY_ID"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": ["DATE_UPDATED_UTC"],
+        "json_schema": {},
+        "name": "projects",
+        "namespace": null,
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [["PROJECT_ID"]],
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": ["DATE_UPDATED_UTC"],
+        "json_schema": {},
+        "name": "prospects",
+        "namespace": null,
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [["PROSPECT_ID"]],
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "relationships",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["RELATIONSHIP_ID"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "task_categories",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["CATEGORY_ID"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": ["DATE_UPDATED_UTC"],
+        "json_schema": {},
+        "name": "tasks",
+        "namespace": null,
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [["TASK_ID"]],
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "team_members",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["MEMBER_USER_ID"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "teams",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["TEAM_ID"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": ["DATE_UPDATED_UTC"],
+        "json_schema": {},
+        "name": "users",
+        "namespace": null,
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [["USER_ID"]],
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "full_refresh"
     }
   ]
 }

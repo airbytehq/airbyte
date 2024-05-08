@@ -63,7 +63,6 @@ definitions:
         field_name: offset
     requester:
       $ref: "#/definitions/requester"
-
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"
@@ -81,6 +80,18 @@ definitions:
           updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     incremental_sync:
       $ref: "#/definitions/date_stream_slicer"
+  semi_incremental_stream:
+    $ref: "#/definitions/base_stream"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_chargebee.components.IncrementalSingleSliceCursor
+      cursor_field: "updated_at"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/nested_selector"
+        record_filter:
+          condition: "{{ record['updated_at'] >= ( stream_state.get('prior_state', {}).get('updated_at', 0) if stream_state else stream_slice.get('prior_state', {}).get('updated_at', 0) ) }}"
   addon_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -89,6 +100,7 @@ definitions:
       path: "/addons"
       stream_cursor_field: "updated_at"
   attached_item_stream:
+    $comment: "As of 2/8/24 this stream should be full refresh only as there is an issue with state being appended rather than replaced, causing duplicates. See GH Issue: https://github.com/airbytehq/airbyte/issues/33854"
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
@@ -97,12 +109,12 @@ definitions:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream: "#/definitions/item_stream"
-            parent_key: id
-            partition_field: id
+            parent_key: "id"
+            partition_field: "item_id"
     $parameters:
       name: "attached_item"
       primary_key: "id"
-      path: "/items/{{ stream_slice.id }}/attached_items"
+      path: "/items/{{ stream_slice.item_id }}/attached_items"
   customer_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -130,7 +142,7 @@ definitions:
               response_filters:
                 - http_codes: [404]
                   action: IGNORE
-                  error_message: "Entity unavailable. Customer must have been deleted."
+                  error_message: "Entity unavailable. Customer may have been deleted."
                 - error_message_contains: "This API operation is not enabled for this site"
                   action: IGNORE
                   error_message: "Stream is available only for Product Catalog 1.0"
@@ -138,6 +150,13 @@ definitions:
               backoff_strategies:
                 - type: WaitTimeFromHeader
                   header: "Retry-After"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["customer_id"]
+            value: "{{ stream_slice.id }}"
+      - type: CustomTransformation
+        class_name: source_chargebee.components.CustomFieldTransformation
     $parameters:
       name: "contact"
       primary_key: "id"
@@ -149,8 +168,6 @@ definitions:
       requester:
         $ref: "#/definitions/base_incremental_stream/retriever/requester"
         request_parameters:
-          sort_by[asc]: created_at
-          include_deleted: "true"
           updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $parameters:
       name: "coupon"
@@ -179,8 +196,7 @@ definitions:
       requester:
         $ref: "#/definitions/base_incremental_stream/retriever/requester"
         request_parameters:
-          sort_by[asc]: "occurred_at"
-          include_deleted: "true"
+          sort_by[asc]: occurred_at
           occurred_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $parameters:
       name: "event"
@@ -188,7 +204,7 @@ definitions:
       path: "/events"
       stream_cursor_field: "occurred_at"
   gift_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "#/definitions/semi_incremental_stream"
     $parameters:
       name: "gift"
       primary_key: "id"
@@ -251,7 +267,6 @@ definitions:
         $ref: "#/definitions/base_incremental_stream/retriever/requester"
         request_parameters:
           sort_by[asc]: created_at
-          include_deleted: "true"
           created_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $parameters:
       name: "promotional_credit"
@@ -273,11 +288,12 @@ definitions:
       path: "/transactions"
       stream_cursor_field: "updated_at"
   unbilled_charge_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "#/definitions/semi_incremental_stream"
     $parameters:
       name: "unbilled_charge"
       primary_key: "id"
       path: "/unbilled_charges"
+      stream_cursor_field: "updated_at"
   virtual_bank_account_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -311,10 +327,74 @@ definitions:
             stream: "#/definitions/quote_stream"
             parent_key: id
             partition_field: id
+      requester:
+        $ref: "#/definitions/requester"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [404]
+                  action: IGNORE
+                  error_message: "Entity unavailable. Quote may have been deleted."
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["quote_id"]
+            value: "{{ stream_slice.id }}"
+      - type: CustomTransformation
+        class_name: source_chargebee.components.CustomFieldTransformation
     $parameters:
       name: "quote_line_group"
       primary_key: "id"
       path: "/quotes/{{ stream_slice.id }}/quote_line_groups"
+  site_migration_detail_stream:
+    $ref: "#/definitions/base_stream"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_chargebee.components.IncrementalSingleSliceCursor
+      cursor_field: "migrated_at"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/nested_selector"
+        record_filter:
+          condition: "{{ record['migrated_at'] >= ( stream_state.get('prior_state', {}).get('migrated_at', 0) if stream_state else stream_slice.get('prior_state', {}).get('migrated_at', 0) ) }}"
+    $parameters:
+      name: "site_migration_detail"
+      primary_key: "entity_id"
+      path: "/site_migration_details"
+      cursor_field: "migrated_at"
+  comment_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort_by[asc]: created_at
+          created_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
+    incremental_sync:
+      $ref: "#/definitions/date_stream_slicer"
+    $parameters:
+      name: "comment"
+      primary_key: "id"
+      path: "/comments"
+      stream_cursor_field: "created_at"
+  item_family_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "item_family"
+      primary_key: "id"
+      path: "/item_families"
+      stream_cursor_field: "updated_at"
+  differential_price_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "differential_price"
+      primary_key: "id"
+      path: "/differential_prices"
+      stream_cursor_field: "updated_at"
 
 streams:
   - "#/definitions/addon_stream"
@@ -339,6 +419,10 @@ streams:
   - "#/definitions/virtual_bank_account_stream"
   - "#/definitions/quote_stream"
   - "#/definitions/quote_line_group_stream"
+  - "#/definitions/site_migration_detail_stream"
+  - "#/definitions/comment_stream"
+  - "#/definitions/item_family_stream"
+  - "#/definitions/differential_price_stream"
 
 check:
   stream_names:

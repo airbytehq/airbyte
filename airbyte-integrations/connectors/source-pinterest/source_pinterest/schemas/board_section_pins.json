@@ -1,114 +1,153 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the pin.",
       "type": ["null", "string"]
     },
     "created_at": {
-      "type": ["null", "string"]
+      "description": "Date and time when the pin was created.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "link": {
+      "description": "URL link associated with the pin.",
       "type": ["null", "string"]
     },
     "title": {
+      "description": "Title or caption associated with the pin.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Textual description of the pin content or context.",
       "type": ["null", "string"]
     },
     "alt_text": {
+      "description": "Alternate text describing the pin for accessibility purposes.",
       "type": ["null", "string"]
     },
     "board_id": {
+      "description": "Unique identifier for the board the pin belongs to.",
       "type": ["null", "string"]
     },
     "board_section_id": {
+      "description": "Unique identifier for the section within the board where the pin is categorized.",
       "type": ["null", "string"]
     },
     "board_owner": {
+      "description": "Details of the owner of the board the pins belong to",
       "type": ["null", "object"],
       "properties": {
         "username": {
+          "description": "Username of the owner of the board.",
           "type": ["null", "string"]
         }
       }
     },
+    "pin_metrics": {
+      "description": "Metrics or statistics related to the pin, such as views or saves.",
+      "type": ["null", "object"]
+    },
     "media": {
+      "description": "Media content associated with the pins",
       "type": ["null", "object"],
       "properties": {
         "media_type": {
+          "description": "Type of media content associated with the pin.",
           "type": ["null", "string"]
         },
         "images": {
+          "description": "Different image sizes available for the pin",
           "type": ["null", "object"],
           "properties": {
             "150x150": {
+              "description": "Square thumbnail image sized at 150x150 resolution",
               "type": ["null", "object"],
               "properties": {
                 "width": {
+                  "description": "Width of the image in 150x150 resolution.",
                   "type": ["null", "integer"]
                 },
                 "height": {
+                  "description": "Height of the image in 150x150 resolution.",
                   "type": ["null", "integer"]
                 },
                 "url": {
+                  "description": "URL of the image in 150x150 resolution.",
                   "type": ["null", "string"]
                 }
               }
             },
             "400x300": {
+              "description": "Image sized at 400x300 resolution",
               "type": ["null", "object"],
               "properties": {
                 "width": {
+                  "description": "Width of the image in 400x300 resolution.",
                   "type": ["null", "integer"]
                 },
                 "height": {
+                  "description": "Height of the image in 400x300 resolution.",
                   "type": ["null", "integer"]
                 },
                 "url": {
+                  "description": "URL of the image in 400x300 resolution.",
                   "type": ["null", "string"]
                 }
               }
             },
             "600x": {
+              "description": "Image sized at 600x resolution",
               "type": ["null", "object"],
               "properties": {
                 "width": {
+                  "description": "Width of the image in 600x resolution.",
                   "type": ["null", "integer"]
                 },
                 "height": {
+                  "description": "Height of the image in 600x resolution.",
                   "type": ["null", "integer"]
                 },
                 "url": {
+                  "description": "URL of the image in 600x resolution.",
                   "type": ["null", "string"]
                 }
               }
             },
             "1200x": {
+              "description": "Image sized at 1200x resolution",
               "type": ["null", "object"],
               "properties": {
                 "width": {
+                  "description": "Width of the image in the specified resolution.",
                   "type": ["null", "integer"]
                 },
                 "height": {
+                  "description": "Height of the image in the specified resolution.",
                   "type": ["null", "integer"]
                 },
                 "url": {
+                  "description": "URL of the image in the specified resolution.",
                   "type": ["null", "string"]
                 }
               }
             },
             "originals": {
+              "description": "Original image file without any resizing",
               "type": ["null", "object"],
               "properties": {
                 "width": {
+                  "description": "Width of the original image.",
                   "type": ["null", "integer"]
                 },
                 "height": {
+                  "description": "Height of the original image.",
                   "type": ["null", "integer"]
                 },
                 "url": {
+                  "description": "URL of the original image.",
                   "type": ["null", "string"]
                 }
               }

@@ -5,11 +5,11 @@
 package io.airbyte.integrations.destination.clickhouse;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.spec_modification.SpecModifyingDestination;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.spec_modification.SpecModifyingDestination;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +34,11 @@ public class ClickhouseDestinationStrictEncrypt extends SpecModifyingDestination
     LOGGER.info("starting destination: {}", ClickhouseDestinationStrictEncrypt.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", ClickhouseDestinationStrictEncrypt.class);
+  }
+
+  @Override
+  public boolean isV2Destination() {
+    return true;
   }
 
 }

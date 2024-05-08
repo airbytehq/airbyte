@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "created_at": {
+      "description": "The timestamp when the catalog was created.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "id": {
+      "description": "Unique identifier of the catalog.",
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "description": "The timestamp when the catalog was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "name": {
+      "description": "Name/title of the catalog.",
+      "type": ["null", "string"]
+    },
+    "catalog_type": {
+      "description": "The type of the catalog representing the content.",
+      "type": ["null", "string"]
+    }
+  }
+}

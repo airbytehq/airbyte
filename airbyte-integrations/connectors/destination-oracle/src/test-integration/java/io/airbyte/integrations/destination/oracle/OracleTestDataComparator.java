@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.oracle;
 
-import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import java.util.ArrayList;
 import java.util.List;
 

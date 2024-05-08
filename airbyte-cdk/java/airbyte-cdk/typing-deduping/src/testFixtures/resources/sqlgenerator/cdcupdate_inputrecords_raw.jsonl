@@ -1,0 +1,14 @@
+// Records from the first sync (note the non-null loaded_at value)
+{"_airbyte_raw_id": "d5790c04-52df-42f3-8f77-a543268822a7", "_airbyte_extracted_at": "2022-12-31T00:00:00Z", "_airbyte_loaded_at": "2022-12-31T00:00:01Z", "_airbyte_data": {"id1": 1, "id2": 100, "updated_at": "2022-12-01T00:00:00Z", "string": "spooky ghost", "_ab_cdc_deleted_at": null}}
+{"_airbyte_raw_id": "3593a002-3ab2-4e67-8b4a-e62f0f9a26f9", "_airbyte_extracted_at": "2022-12-31T00:00:00Z", "_airbyte_loaded_at": "2022-12-31T00:00:01Z", "_airbyte_data": {"id1": 0, "id2": 100, "updated_at": "2022-12-01T01:00:00Z", "string": "zombie", "_ab_cdc_deleted_at": "2022-12-31T00:00:00Z"}}
+{"_airbyte_raw_id": "e3b03d92-0f7c-49e5-b203-573dbb7bd1cb", "_airbyte_extracted_at": "2022-12-31T00:00:00Z", "_airbyte_loaded_at": "2022-12-31T00:00:01Z", "_airbyte_data": {"id1": 5, "id2": 100, "updated_at": "2022-12-01T02:00:00Z", "string": "will be deleted", "_ab_cdc_deleted_at": null}}
+{"_airbyte_raw_id": "687718e4-a2a9-4233-80a9-9671f83d61ae", "_airbyte_extracted_at": "2022-12-31T00:00:00Z", "_airbyte_loaded_at": "2022-12-31T00:00:01Z", "_airbyte_data": {"id1": 6, "id2": 100, "updated_at": "2022-12-01T03:00:00Z", "string": "should be untouched", "_ab_cdc_deleted_at": null}}
+
+// Records from the second sync
+{"_airbyte_raw_id": "5f959152-0db0-44b9-b7e4-0d5c44dc2664", "_airbyte_extracted_at": "2023-01-01T00:00:00Z", "_airbyte_data": {"id1": 2, "id2": 100, "updated_at": "2023-01-01T01:00:00Z", "_ab_cdc_deleted_at": null, "string": "alice"}}
+{"_airbyte_raw_id": "a182ff97-8868-42b9-b3cf-c0753fba55e1", "_airbyte_extracted_at": "2023-01-01T00:00:00Z", "_airbyte_data": {"id1": 2, "id2": 100, "updated_at": "2023-01-01T02:00:00Z", "_ab_cdc_deleted_at": null, "string": "alice2"}}
+{"_airbyte_raw_id": "65a6c31f-9ded-4e3d-9339-38ee85b0ae81", "_airbyte_extracted_at": "2023-01-01T00:00:00Z", "_airbyte_data": {"id1": 3, "id2": 100, "updated_at": "2023-01-01T03:00:00Z", "_ab_cdc_deleted_at": null, "string": "bob"}}
+{"_airbyte_raw_id": "f7fffb67-cd05-4cf7-bcd9-00f2fe796168", "_airbyte_extracted_at": "2023-01-01T00:00:00Z", "_airbyte_data": {"id1": 1, "id2": 100, "updated_at": "2023-01-01T04:00:00Z", "_ab_cdc_deleted_at": "2022-12-31T23:59:59Z"}}
+{"_airbyte_raw_id": "4d8674a5-eb6e-41ca-a310-69c64c88d101", "_airbyte_extracted_at": "2023-01-01T00:00:00Z", "_airbyte_data": {"id1": 0, "id2": 100, "updated_at": "2023-01-01T05:00:00Z", "_ab_cdc_deleted_at": null, "string": "zombie_returned"}}
+// CDC generally outputs an explicit null for deleted_at, but verify that we can also handle the case where deleted_at is unset.
+{"_airbyte_raw_id": "f0b59e49-8c74-4101-9f14-cb4d1193fd5a", "_airbyte_extracted_at": "2023-01-01T00:00:00Z", "_airbyte_data": {"id1": 4, "id2": 100, "updated_at": "2023-01-01T06:00:00Z", "string": "charlie"}}

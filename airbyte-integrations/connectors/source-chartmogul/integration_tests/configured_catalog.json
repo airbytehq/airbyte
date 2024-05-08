@@ -22,7 +22,37 @@
     },
     {
       "stream": {
-        "name": "customer_count",
+        "name": "customer_daily_count",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["date"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "customer_weekly_count",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["date"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "customer_monthly_count",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["date"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "customer_quarterly_count",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["date"]]

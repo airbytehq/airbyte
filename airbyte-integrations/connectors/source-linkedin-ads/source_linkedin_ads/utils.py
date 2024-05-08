@@ -14,18 +14,11 @@ import pendulum as pdm
 DESTINATION_RESERVED_KEYWORDS: list = ["pivot"]
 
 
-def get_parent_stream_values(record: Dict, key_value_map: Dict) -> Dict:
+def get_parent_stream_values(record: Mapping[str, Any], key_value_map: Mapping[str, str]) -> Mapping[str, Any]:
     """
-    Outputs the Dict with key:value slices for the stream.
-    :: EXAMPLE:
-        Input:
-            records = [{dict}, {dict}, ...],
-            key_value_map = {<slice_key_name>: <key inside record>}
-
-        Output:
-            {
-                <slice_key_name> : records.<key inside record>.value,
-            }
+    :param record: Mapping[str, Any]
+    :param key_value_map: Mapping[str, str] {<slice_key_name>: <key inside record>}
+    :return: Mapping[str, str] {<slice_key_name> : records.<key inside record>.value}
     """
     result = {}
     for key in key_value_map:
@@ -38,7 +31,6 @@ def get_parent_stream_values(record: Dict, key_value_map: Dict) -> Dict:
 def transform_change_audit_stamps(
     record: Dict, dict_key: str = "changeAuditStamps", props: List = ["created", "lastModified"], fields: List = ["time"]
 ) -> Mapping[str, Any]:
-
     """
     :: EXAMPLE `changeAuditStamps` input structure:
         {
@@ -96,7 +88,6 @@ def transform_date_range(
     props: List = ["start", "end"],
     fields: List = ["year", "month", "day"],
 ) -> Mapping[str, Any]:
-
     """
     :: EXAMPLE `dateRange` input structure in Analytics streams:
         {
@@ -314,13 +305,18 @@ def transform_col_names(record: Dict, dict_keys: list = []) -> Mapping[str, Any]
     return record
 
 
+def transform_pivot_values(record: Dict) -> Mapping[str, Any]:
+    pivot_values = record.get("pivotValues", [])
+    record["string_of_pivot_values"] = ",".join(pivot_values)
+    return record
+
+
 def transform_data(records: List) -> Iterable[Mapping]:
     """
     We need to transform the nested complex data structures into simple key:value pair,
     to be properly normalised in the destination.
     """
     for record in records:
-
         if "changeAuditStamps" in record:
             record = transform_change_audit_stamps(record)
 
@@ -332,6 +328,9 @@ def transform_data(records: List) -> Iterable[Mapping]:
 
         if "variables" in record:
             record = transform_variables(record)
+
+        if "pivotValues" in record:
+            record = transform_pivot_values(record)
 
         record = transform_col_names(record, DESTINATION_RESERVED_KEYWORDS)
 

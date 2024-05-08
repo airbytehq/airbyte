@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "created_at": {
+      "description": "The date and time when the catalog was created",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "id": {
+      "description": "The unique identifier for the catalog",
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "description": "The date and time when the catalog was last updated",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "name": {
+      "description": "The name or title of the catalog",
+      "type": ["null", "string"]
+    },
+    "format": {
+      "description": "The format of the catalog data, e.g., JSON, XML",
+      "type": ["null", "string"]
+    },
+    "catalog_type": {
+      "description": "The type of catalog being fetched, e.g., product, service, event",
+      "type": ["null", "string"]
+    },
+    "location": {
+      "description": "The physical or digital location associated with the catalog",
+      "type": ["null", "string"]
+    },
+    "preferred_processing_schedule": {
+      "description": "Preferred processing schedule for items in the catalog",
+      "type": ["null", "object"],
+      "properties": {
+        "time": {
+          "description": "The preferred processing time for items",
+          "type": ["null", "string"]
+        },
+        "timezone": {
+          "description": "The timezone used for the processing schedule",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "status": {
+      "description": "The current status of the catalog, e.g., active, inactive",
+      "type": ["null", "string"]
+    },
+    "default_currency": {
+      "description": "The default currency used for pricing within the catalog",
+      "type": ["null", "string"]
+    },
+    "default_locale": {
+      "description": "The default locale for language and formatting within the catalog",
+      "type": ["null", "string"]
+    },
+    "default_country": {
+      "description": "The default country applicable to the catalog items",
+      "type": ["null", "string"]
+    },
+    "default_availability": {
+      "description": "The default availability status for items in the catalog",
+      "type": ["null", "string"]
+    }
+  }
+}

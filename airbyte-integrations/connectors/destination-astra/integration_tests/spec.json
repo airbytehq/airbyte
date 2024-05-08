@@ -1,0 +1,377 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/astra",
+  "connectionSpecification": {
+    "title": "Destination Config",
+    "description": "The configuration model for the Vector DB based destinations. This model is used to generate the UI for the destination configuration,\nas well as to provide type safety for the configuration passed to the destination.\n\nThe configuration model is composed of four parts:\n* Processing configuration\n* Embedding configuration\n* Indexing configuration\n* Advanced configuration\n\nProcessing, embedding and advanced configuration are provided by this base class, while the indexing configuration is provided by the destination connector in the sub class.",
+    "type": "object",
+    "properties": {
+      "embedding": {
+        "title": "Embedding",
+        "description": "Embedding configuration",
+        "group": "embedding",
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "OpenAI",
+            "type": "object",
+            "properties": {
+              "mode": {
+                "title": "Mode",
+                "default": "openai",
+                "const": "openai",
+                "enum": ["openai"],
+                "type": "string"
+              },
+              "openai_key": {
+                "title": "OpenAI API key",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": ["openai_key", "mode"],
+            "description": "Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
+          },
+          {
+            "title": "Cohere",
+            "type": "object",
+            "properties": {
+              "mode": {
+                "title": "Mode",
+                "default": "cohere",
+                "const": "cohere",
+                "enum": ["cohere"],
+                "type": "string"
+              },
+              "cohere_key": {
+                "title": "Cohere API key",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": ["cohere_key", "mode"],
+            "description": "Use the Cohere API to embed text."
+          },
+          {
+            "title": "Fake",
+            "type": "object",
+            "properties": {
+              "mode": {
+                "title": "Mode",
+                "default": "fake",
+                "const": "fake",
+                "enum": ["fake"],
+                "type": "string"
+              }
+            },
+            "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs.",
+            "required": ["mode"]
+          },
+          {
+            "title": "Azure OpenAI",
+            "type": "object",
+            "properties": {
+              "mode": {
+                "title": "Mode",
+                "default": "azure_openai",
+                "const": "azure_openai",
+                "enum": ["azure_openai"],
+                "type": "string"
+              },
+              "openai_key": {
+                "title": "Azure OpenAI API key",
+                "description": "The API key for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
+                "airbyte_secret": true,
+                "type": "string"
+              },
+              "api_base": {
+                "title": "Resource base URL",
+                "description": "The base URL for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
+                "examples": ["https://your-resource-name.openai.azure.com"],
+                "type": "string"
+              },
+              "deployment": {
+                "title": "Deployment",
+                "description": "The deployment for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
+                "examples": ["your-resource-name"],
+                "type": "string"
+              }
+            },
+            "required": ["openai_key", "api_base", "deployment", "mode"],
+            "description": "Use the Azure-hosted OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
+          },
+          {
+            "title": "OpenAI-compatible",
+            "type": "object",
+            "properties": {
+              "mode": {
+                "title": "Mode",
+                "default": "openai_compatible",
+                "const": "openai_compatible",
+                "enum": ["openai_compatible"],
+                "type": "string"
+              },
+              "api_key": {
+                "title": "API key",
+                "default": "",
+                "airbyte_secret": true,
+                "type": "string"
+              },
+              "base_url": {
+                "title": "Base URL",
+                "description": "The base URL for your OpenAI-compatible service",
+                "examples": ["https://your-service-name.com"],
+                "type": "string"
+              },
+              "model_name": {
+                "title": "Model name",
+                "description": "The name of the model to use for embedding",
+                "default": "text-embedding-ada-002",
+                "examples": ["text-embedding-ada-002"],
+                "type": "string"
+              },
+              "dimensions": {
+                "title": "Embedding dimensions",
+                "description": "The number of dimensions the embedding model is generating",
+                "examples": [1536, 384],
+                "type": "integer"
+              }
+            },
+            "required": ["base_url", "dimensions", "mode"],
+            "description": "Use a service that's compatible with the OpenAI API to embed text."
+          }
+        ]
+      },
+      "processing": {
+        "title": "ProcessingConfigModel",
+        "type": "object",
+        "properties": {
+          "chunk_size": {
+            "title": "Chunk size",
+            "description": "Size of chunks in tokens to store in vector store (make sure it is not too big for the context if your LLM)",
+            "maximum": 8191,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "chunk_overlap": {
+            "title": "Chunk overlap",
+            "description": "Size of overlap between chunks in tokens to store in vector store to better capture relevant context",
+            "default": 0,
+            "type": "integer"
+          },
+          "text_fields": {
+            "title": "Text fields to embed",
+            "description": "List of fields in the record that should be used to calculate the embedding. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
+            "default": [],
+            "always_show": true,
+            "examples": ["text", "user.name", "users.*.name"],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metadata_fields": {
+            "title": "Fields to store as metadata",
+            "description": "List of fields in the record that should be stored as metadata. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered metadata fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array. When specifying nested paths, all matching values are flattened into an array set to a field named by the path.",
+            "default": [],
+            "always_show": true,
+            "examples": ["age", "user", "user.name"],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "text_splitter": {
+            "title": "Text splitter",
+            "description": "Split text fields into chunks based on the specified method.",
+            "type": "object",
+            "oneOf": [
+              {
+                "title": "By Separator",
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "title": "Mode",
+                    "default": "separator",
+                    "const": "separator",
+                    "enum": ["separator"],
+                    "type": "string"
+                  },
+                  "separators": {
+                    "title": "Separators",
+                    "description": "List of separator strings to split text fields by. The separator itself needs to be wrapped in double quotes, e.g. to split by the dot character, use \".\". To split by a newline, use \"\\n\".",
+                    "default": ["\"\\n\\n\"", "\"\\n\"", "\" \"", "\"\""],
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "keep_separator": {
+                    "title": "Keep separator",
+                    "description": "Whether to keep the separator in the resulting chunks",
+                    "default": false,
+                    "type": "boolean"
+                  }
+                },
+                "description": "Split the text by the list of separators until the chunk size is reached, using the earlier mentioned separators where possible. This is useful for splitting text fields by paragraphs, sentences, words, etc.",
+                "required": ["mode"]
+              },
+              {
+                "title": "By Markdown header",
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "title": "Mode",
+                    "default": "markdown",
+                    "const": "markdown",
+                    "enum": ["markdown"],
+                    "type": "string"
+                  },
+                  "split_level": {
+                    "title": "Split level",
+                    "description": "Level of markdown headers to split text fields by. Headings down to the specified level will be used as split points",
+                    "default": 1,
+                    "minimum": 1,
+                    "maximum": 6,
+                    "type": "integer"
+                  }
+                },
+                "description": "Split the text by Markdown headers down to the specified header level. If the chunk size fits multiple sections, they will be combined into a single chunk.",
+                "required": ["mode"]
+              },
+              {
+                "title": "By Programming Language",
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "title": "Mode",
+                    "default": "code",
+                    "const": "code",
+                    "enum": ["code"],
+                    "type": "string"
+                  },
+                  "language": {
+                    "title": "Language",
+                    "description": "Split code in suitable places based on the programming language",
+                    "enum": [
+                      "cpp",
+                      "go",
+                      "java",
+                      "js",
+                      "php",
+                      "proto",
+                      "python",
+                      "rst",
+                      "ruby",
+                      "rust",
+                      "scala",
+                      "swift",
+                      "markdown",
+                      "latex",
+                      "html",
+                      "sol"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": ["language", "mode"],
+                "description": "Split the text by suitable delimiters based on the programming language. This is useful for splitting code into chunks."
+              }
+            ]
+          },
+          "field_name_mappings": {
+            "title": "Field name mappings",
+            "description": "List of fields to rename. Not applicable for nested fields, but can be used to rename fields already flattened via dot notation.",
+            "default": [],
+            "type": "array",
+            "items": {
+              "title": "FieldNameMappingConfigModel",
+              "type": "object",
+              "properties": {
+                "from_field": {
+                  "title": "From field name",
+                  "description": "The field name in the source",
+                  "type": "string"
+                },
+                "to_field": {
+                  "title": "To field name",
+                  "description": "The field name to use in the destination",
+                  "type": "string"
+                }
+              },
+              "required": ["from_field", "to_field"]
+            }
+          }
+        },
+        "required": ["chunk_size"],
+        "group": "processing"
+      },
+      "omit_raw_text": {
+        "title": "Do not store raw text",
+        "description": "Do not store the text that gets embedded along with the vector and the metadata in the destination. If set to true, only the vector and the metadata will be stored - in this case raw text for LLM use cases needs to be retrieved from another source.",
+        "default": false,
+        "group": "advanced",
+        "type": "boolean"
+      },
+      "indexing": {
+        "title": "Indexing",
+        "type": "object",
+        "properties": {
+          "astra_db_app_token": {
+            "title": "Astra DB Application Token",
+            "description": "The application token authorizes a user to connect to a specific Astra DB database. It is created when the user clicks the Generate Token button on the Overview tab of the Database page in the Astra UI.",
+            "airbyte_secret": true,
+            "type": "string"
+          },
+          "astra_db_endpoint": {
+            "title": "Astra DB Endpoint",
+            "description": "The endpoint specifies which Astra DB database queries are sent to. It can be copied from the Database Details section of the Overview tab of the Database page in the Astra UI.",
+            "pattern": "^https:\\/\\/([a-z]|[0-9]){8}-([a-z]|[0-9]){4}-([a-z]|[0-9]){4}-([a-z]|[0-9]){4}-([a-z]|[0-9]){12}-[^\\.]*?\\.apps\\.astra\\.datastax\\.com",
+            "examples": [
+              "https://8292d414-dd1b-4c33-8431-e838bedc04f7-us-east1.apps.astra.datastax.com"
+            ],
+            "type": "string"
+          },
+          "astra_db_keyspace": {
+            "title": "Astra DB Keyspace",
+            "description": "Keyspaces (or Namespaces) serve as containers for organizing data within a database. You can create a new keyspace uisng the Data Explorer tab in the Astra UI. The keyspace default_keyspace is created for you when you create a Vector Database in Astra DB.",
+            "type": "string"
+          },
+          "collection": {
+            "title": "Astra DB collection",
+            "description": "Collections hold data. They are analagous to tables in traditional Cassandra terminology. This tool will create the collection with the provided name automatically if it does not already exist. Alternatively, you can create one thorugh the Data Explorer tab in the Astra UI.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "astra_db_app_token",
+          "astra_db_endpoint",
+          "astra_db_keyspace",
+          "collection"
+        ],
+        "description": "Astra DB gives developers the APIs, real-time data and ecosystem integrations to put accurate RAG and Gen AI apps with fewer hallucinations in production.",
+        "group": "indexing"
+      }
+    },
+    "required": ["embedding", "processing", "indexing"],
+    "groups": [
+      {
+        "id": "processing",
+        "title": "Processing"
+      },
+      {
+        "id": "embedding",
+        "title": "Embedding"
+      },
+      {
+        "id": "indexing",
+        "title": "Indexing"
+      },
+      {
+        "id": "advanced",
+        "title": "Advanced"
+      }
+    ]
+  },
+  "supportsIncremental": true,
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"]
+}

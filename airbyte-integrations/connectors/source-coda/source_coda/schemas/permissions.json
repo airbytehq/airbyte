@@ -1,21 +1,22 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "access": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "principal": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "type": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "email": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     }

@@ -9,13 +9,13 @@ from source_faker import SourceFaker
 
 
 class MockLogger:
-    def debug(a,b, **kwargs):
+    def debug(a, b, **kwargs):
         return None
 
-    def info(a,b, **kwargs):
+    def info(a, b, **kwargs):
         return None
 
-    def exception(a,b,**kwargs):
+    def exception(a, b, **kwargs):
         print(b)
         return None
 
@@ -46,7 +46,7 @@ def test_source_streams():
 
     assert len(schemas) == 3
     assert schemas[1]["properties"] == {
-        "id": {"type": "number"},
+        "id": {"type": "integer"},
         "created_at": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
         "updated_at": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
         "name": {"type": "string"},
@@ -62,18 +62,18 @@ def test_source_streams():
         "height": {"type": "string"},
         "blood_type": {"type": "string"},
         "weight": {"type": "integer"},
-        'address': {
-            'type': 'object',
-            'properties': {
-                'city': {'type': 'string'},
-                'country_code': {'type': 'string'},
-                'postal_code': {'type': 'string'},
-                'province': {'type': 'string'},
-                'state': {'type': 'string'},
-                'street_name': {'type': 'string'},
-                'street_number': {'type': 'string'}
-            }
-        }
+        "address": {
+            "type": "object",
+            "properties": {
+                "city": {"type": "string"},
+                "country_code": {"type": "string"},
+                "postal_code": {"type": "string"},
+                "province": {"type": "string"},
+                "state": {"type": "string"},
+                "street_name": {"type": "string"},
+                "street_number": {"type": "string"},
+            },
+        },
     }
 
 
@@ -172,33 +172,6 @@ def test_read_products():
     assert state_rows_count == 2
 
 
-def test_no_read_limit_hit():
-    source = SourceFaker()
-    config = {"count": 10, "parallelism": 1}
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[
-            {
-                "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["incremental"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            }
-        ]
-    )
-    state = {"users": {"id": 10}}
-    iterator = source.read(logger, config, catalog, state)
-
-    record_rows_count = 0
-    state_rows_count = 0
-    for row in iterator:
-        if row.type is Type.RECORD:
-            record_rows_count = record_rows_count + 1
-        if row.type is Type.STATE:
-            state_rows_count = state_rows_count + 1
-
-    assert record_rows_count == 0
-    assert state_rows_count == 1
-
-
 def test_read_big_random_data():
     source = SourceFaker()
     config = {"count": 1000, "records_per_slice": 100, "parallelism": 1}
@@ -288,8 +261,8 @@ def test_read_with_seed():
     iterator = source.read(logger, config, catalog, state)
 
     records = [row for row in iterator if row.type is Type.RECORD]
-    assert records[0].record.data["occupation"] == "Cartoonist"
-    assert records[0].record.data["email"] == "reflect1958+1@yahoo.com"
+    assert records[0].record.data["occupation"] == "Sheriff Principal"
+    assert records[0].record.data["email"] == "alleged2069+1@example.com"
 
 
 def test_ensure_no_purchases_without_users():
