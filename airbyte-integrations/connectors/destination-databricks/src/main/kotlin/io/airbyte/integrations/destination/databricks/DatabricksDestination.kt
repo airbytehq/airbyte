@@ -22,7 +22,6 @@ import io.airbyte.integrations.destination.databricks.jdbc.DatabricksSqlGenerato
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksStorageOperations
 import io.airbyte.integrations.destination.databricks.model.DatabricksConnectorConfig
 import io.airbyte.integrations.destination.databricks.staging.DatabricksFlushFunction
-import io.airbyte.integrations.destination.databricks.sync.DatabricksStreamOperations
 import io.airbyte.integrations.destination.databricks.sync.DatabricksSyncOperations
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -89,19 +88,18 @@ class DatabricksDestination : BaseConnector(), Destination {
                 connectorConfig.database,
                 connectorConfig.purgeStagingData
             )
-        val streamOperations = DatabricksStreamOperations(storageOperations, FileUploadFormat.CSV)
-        val syncOperations =
-            DatabricksSyncOperations(
-                parsedCatalog,
-                destinationHandler,
-                streamOperations,
-                connectorConfig.schema
-            )
 
         // Initialize streams on connector instantiation. Fail fast even before buffers are created
         // if something goes wrong here.
         // Rather than trying to safeguard if succeeded in AutoCloseable's onClose
-        syncOperations.initializeStreams()
+        val syncOperations =
+            DatabricksSyncOperations(
+                parsedCatalog,
+                destinationHandler,
+                connectorConfig.schema,
+                storageOperations,
+                fileUploadFormat = FileUploadFormat.CSV
+            )
 
         return AsyncStreamConsumer(
             outputRecordCollector = outputRecordCollector,

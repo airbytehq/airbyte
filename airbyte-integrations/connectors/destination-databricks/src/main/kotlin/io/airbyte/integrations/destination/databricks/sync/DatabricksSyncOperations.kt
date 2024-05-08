@@ -4,14 +4,15 @@
 
 package io.airbyte.integrations.destination.databricks.sync
 
-import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil as exceptions
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
+import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil as exceptions
 import io.airbyte.commons.concurrency.CompletableFutures.allOf
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
-import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksDestinationHandler
-import io.airbyte.integrations.destination.sync.StreamOperations
+import io.airbyte.integrations.destination.sync.StorageOperations
 import io.airbyte.integrations.destination.sync.SyncOperations
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -24,17 +25,26 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory
 class DatabricksSyncOperations(
     private val parsedCatalog: ParsedCatalog,
     private val destinationHandler: DatabricksDestinationHandler,
-    private val streamOperations: StreamOperations<MinimumDestinationState.Impl>,
     private val defaultNamespace: String,
+    private val storageOperations: StorageOperations,
+    private val fileUploadFormat: FileUploadFormat,
     private val executorService: ExecutorService =
         Executors.newFixedThreadPool(
             10,
             BasicThreadFactory.Builder().namingPattern("sync-operations-%d").build(),
         )
 ) : SyncOperations {
+    companion object {
+        // Use companion to be accessible during instantiation with init
+        private val log = KotlinLogging.logger {}
+    }
 
-    private val log = KotlinLogging.logger {}
-    override fun initializeStreams() {
+    private val streamOpsMap: Map<StreamId, DatabricksStreamOperations>
+    init {
+        streamOpsMap = createPerStreamOpClients()
+    }
+
+    private fun createPerStreamOpClients(): Map<StreamId, DatabricksStreamOperations> {
         log.info { "Preparing required schemas and tables for all streams" }
         // Notes for What does WriteConfig hold ?
         // streamName = ConfiguredAirbyteStream.AirbyteStream.name / originalName
@@ -52,28 +62,29 @@ class DatabricksSyncOperations(
             streamsInitialStates
                 .map {
                     CompletableFuture.supplyAsync(
-                        { streamOperations.initialize(it) },
+                        {
+                            Pair(
+                                it.streamConfig.id,
+                                DatabricksStreamOperations(storageOperations, fileUploadFormat, it)
+                            )
+                        },
                         executorService,
                     )
                 }
                 .toList()
-        val futuresResult =
-            allOf(initializationFutures).toCompletableFuture().join()
-        exceptions.getResultsOrLogAndThrowFirst(
-            "Following exceptions occurred during sync initialization",
-            futuresResult,
-        )
+        val futuresResult = allOf(initializationFutures).toCompletableFuture().get()
+        val result =
+            exceptions.getResultsOrLogAndThrowFirst(
+                "Following exceptions occurred during sync initialization",
+                futuresResult,
+            )
+        return result.toMap()
     }
 
-    override fun flushStreams() {
-        TODO("Not yet implemented")
-    }
-
-    // TODO: This method is an Adapter for FlushFunction, since it operates on per stream basis.
-    fun flushStream(descriptor: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
+    override fun flushStream(descriptor: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
         val streamConfig =
             parsedCatalog.getStream(descriptor.namespace ?: defaultNamespace, descriptor.name)
-        streamOperations.writeRecords(streamConfig, stream)
+        streamOpsMap[streamConfig.id]?.writeRecords(streamConfig, stream)
     }
 
     override fun finalizeStreams(streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>) {
@@ -83,13 +94,12 @@ class DatabricksSyncOperations(
                 .map {
                     CompletableFuture.supplyAsync(
                         {
-                            streamOperations.finalizeTable(
+                            val streamConfig =
                                 parsedCatalog.getStream(
                                     it.key.namespace ?: defaultNamespace,
                                     it.key.name,
-                                ),
-                                it.value,
-                            )
+                                )
+                            streamOpsMap[streamConfig.id]?.finalizeTable(streamConfig, it.value)
                         },
                         executorService,
                     )

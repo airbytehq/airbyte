@@ -6,14 +6,11 @@ package io.airbyte.integrations.destination.sync
 
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
-import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import java.util.stream.Stream
 
 /** Operations on individual streams. */
 interface StreamOperations<T> {
-
-    fun initialize(destinationInitialStatus: DestinationInitialStatus<T>)
 
     fun writeRecords(streamConfig: StreamConfig, stream: Stream<PartialAirbyteMessage>)
 

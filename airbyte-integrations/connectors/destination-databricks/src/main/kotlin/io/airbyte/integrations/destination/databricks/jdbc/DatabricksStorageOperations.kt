@@ -13,6 +13,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeTransaction
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
+import io.airbyte.integrations.destination.sync.StorageOperations
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
@@ -26,7 +27,7 @@ class DatabricksStorageOperations(
     private val workspaceClient: WorkspaceClient,
     private val database: String,
     private val purgeStagedFiles: Boolean = false
-) {
+) : StorageOperations {
 
     private val log = KotlinLogging.logger {}
 
@@ -34,13 +35,13 @@ class DatabricksStorageOperations(
     //  Hoist them to SqlGenerator interface in CDK, until then using concrete instance.
     private val databricksSqlGenerator = sqlGenerator as DatabricksSqlGenerator
 
-    fun copyIntoStagingTable(streamConfig: StreamConfig, buffer: SerializableBuffer) {
-        val stagedFile = "${stagingDirectory(streamConfig.id, database)}/${buffer.filename}"
+    override fun writeToStage(streamId: StreamId, buffer: SerializableBuffer) {
+        val stagedFile = "${stagingDirectory(streamId, database)}/${buffer.filename}"
         workspaceClient.files().upload(stagedFile, buffer.inputStream)
         destinationHandler.execute(
             Sql.of(
                 """
-                        COPY INTO `$database`.`${streamConfig.id.rawNamespace}`.`${streamConfig.id.rawName}`
+                        COPY INTO `$database`.`${streamId.rawNamespace}`.`${streamId.rawName}`
                         FROM '$stagedFile'
                         FILEFORMAT = CSV
                         FORMAT_OPTIONS ('header'='true', 'inferSchema'='true', 'escape'='"');
@@ -57,7 +58,7 @@ class DatabricksStorageOperations(
         // recursively.
         if (purgeStagedFiles) {
             log.info {
-                "Removing staged file ${stagingDirectory(streamConfig.id, database)}/${buffer.filename}"
+                "Removing staged file ${stagingDirectory(streamId, database)}/${buffer.filename}"
             }
             // Using Jdbc for PUT 'file' and REMOVE 'file' just returns a presigned S3 url and the
             // HTTP method to call as
@@ -66,11 +67,11 @@ class DatabricksStorageOperations(
             // database)}/${buffer.filename}'"))
             workspaceClient
                 .files()
-                .delete("${stagingDirectory(streamConfig.id, database)}/${buffer.filename}")
+                .delete("${stagingDirectory(streamId, database)}/${buffer.filename}")
         }
     }
 
-    fun typeAndDedupe(
+    override fun typeAndDedupe(
         streamConfig: StreamConfig,
         maxProcessedTimestamp: Optional<Instant>,
         finalTableSuffix: String
@@ -84,22 +85,7 @@ class DatabricksStorageOperations(
         )
     }
 
-    fun overwriteFinalTable(streamConfig: StreamConfig, suffix: String) {
-        // Guard to not accidentally overwrite existing table or DROP it.
-        if (suffix.isNotBlank()) {
-            log.info {
-                "Overwriting table ${streamConfig.id.finalTableId(DatabricksSqlGenerator.QUOTE)} with ${
-                    streamConfig.id.finalTableId(
-                        DatabricksSqlGenerator.QUOTE,
-                        suffix,
-                    )
-                }"
-            }
-            destinationHandler.execute(sqlGenerator.overwriteFinalTable(streamConfig.id, suffix))
-        }
-    }
-
-    fun prepareStagingTable(streamId: StreamId, destinationSyncMode: DestinationSyncMode) {
+    private fun prepareStagingTable(streamId: StreamId, destinationSyncMode: DestinationSyncMode) {
         val rawSchema = streamId.rawNamespace
         // TODO: Optimize by running SHOW SCHEMAS; rather than CREATE SCHEMA if not exists
         destinationHandler.execute(sqlGenerator.createSchema(rawSchema))
@@ -113,28 +99,7 @@ class DatabricksStorageOperations(
         }
     }
 
-    fun createSchemaIfNotExists(streamConfig: StreamConfig) {
-        val finalSchema = streamConfig.id.finalNamespace
-        // TODO: Optimize by running SHOW SCHEMAS; rather than CREATE SCHEMA if not exists
-        destinationHandler.execute(sqlGenerator.createSchema(finalSchema))
-    }
-
-    fun createFinalTable(streamConfig: StreamConfig, suffix: String, replace: Boolean) {
-        // The table doesn't exist. Create it. Don't force.
-        destinationHandler.execute(
-            sqlGenerator.createTable(streamConfig, suffix, replace),
-        )
-    }
-
-    fun executeSoftReset(streamConfig: StreamConfig) {
-        TypeAndDedupeTransaction.executeSoftReset(
-            sqlGenerator,
-            destinationHandler,
-            streamConfig,
-        )
-    }
-
-    fun prepareStagingVolume(streamId: StreamId) {
+    private fun prepareStagingVolume(streamId: StreamId) {
         destinationHandler.execute(
             Sql.of(
                 "CREATE VOLUME IF NOT EXISTS `$database`.`${streamId.rawNamespace}`.`${volumeName(streamId)}`"
@@ -143,10 +108,53 @@ class DatabricksStorageOperations(
         workspaceClient.files().createDirectory(stagingDirectory(streamId, database))
     }
 
-    fun deleteStagingDirectory(streamId: StreamId) {
+    override fun prepareStage(streamConfig: StreamConfig) {
+        prepareStagingTable(streamConfig.id, streamConfig.destinationSyncMode)
+        prepareStagingVolume(streamConfig.id)
+    }
+
+    override fun cleanupStage(streamId: StreamId) {
         if (purgeStagedFiles) {
             // This operation might fail if there are files left over for any reason from COPY step
             workspaceClient.files().deleteDirectory(stagingDirectory(streamId, database))
+        }
+    }
+
+    override fun createFinalSchema(streamId: StreamId) {
+        val finalSchema = streamId.finalNamespace
+        // TODO: Optimize by running SHOW SCHEMAS; rather than CREATE SCHEMA if not exists
+        destinationHandler.execute(sqlGenerator.createSchema(finalSchema))
+    }
+
+    override fun createFinalTable(streamConfig: StreamConfig, suffix: String, replace: Boolean) {
+        // The table doesn't exist. Create it. Don't force.
+        destinationHandler.execute(
+            sqlGenerator.createTable(streamConfig, suffix, replace),
+        )
+    }
+
+    override fun softResetFinalTable(streamConfig: StreamConfig) {
+        TypeAndDedupeTransaction.executeSoftReset(
+            sqlGenerator,
+            destinationHandler,
+            streamConfig,
+        )
+    }
+
+    override fun overwriteFinalTable(streamConfig: StreamConfig, tmpTableSuffix: String) {
+        // Guard to not accidentally overwrite existing table or DROP it.
+        if (tmpTableSuffix.isNotBlank()) {
+            log.info {
+                "Overwriting table ${streamConfig.id.finalTableId(DatabricksSqlGenerator.QUOTE)} with ${
+                    streamConfig.id.finalTableId(
+                        DatabricksSqlGenerator.QUOTE,
+                        tmpTableSuffix,
+                    )
+                }"
+            }
+            destinationHandler.execute(
+                sqlGenerator.overwriteFinalTable(streamConfig.id, tmpTableSuffix)
+            )
         }
     }
 

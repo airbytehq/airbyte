@@ -5,11 +5,14 @@
 package io.airbyte.integrations.destination.sync
 
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import java.util.stream.Stream
 
 /** Connector sync operations */
 interface SyncOperations {
-    fun initializeStreams()
-    fun flushStreams()
+
+    /** DestinationFlush function sends per stream with descriptor. */
+    fun flushStream(descriptor: StreamDescriptor, stream: Stream<PartialAirbyteMessage>)
     fun finalizeStreams(streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>)
 }

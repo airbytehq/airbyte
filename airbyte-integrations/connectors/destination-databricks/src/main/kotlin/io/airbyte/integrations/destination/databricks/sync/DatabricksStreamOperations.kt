@@ -12,77 +12,57 @@ import io.airbyte.integrations.base.destination.typing_deduping.DestinationIniti
 import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableStatus
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
-import io.airbyte.integrations.destination.databricks.jdbc.DatabricksStorageOperations
 import io.airbyte.integrations.destination.databricks.staging.SerializableBufferFactory
+import io.airbyte.integrations.destination.sync.StorageOperations
 import io.airbyte.integrations.destination.sync.StreamOperations
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicReference
 import java.util.stream.Stream
 import org.apache.commons.io.FileUtils
 
 class DatabricksStreamOperations(
-    private val storageOperations: DatabricksStorageOperations,
+    private val storageOperations: StorageOperations,
     private val fileUploadFormat: FileUploadFormat,
+    destinationInitialStatus: DestinationInitialStatus<MinimumDestinationState.Impl>,
 ) : StreamOperations<MinimumDestinationState.Impl> {
     private val log = KotlinLogging.logger {}
 
     // State maintained to make decision between async calls
-    private val initialRawTableStatus = AtomicReference<InitialRawTableStatus>(null)
-    private val overwriteFinalTableWithTmp: AtomicBoolean = AtomicBoolean(false)
+    private val finalTmpTableSuffix: String
+    private val initialRawTableStatus: InitialRawTableStatus =
+        destinationInitialStatus.initialRawTableStatus
+    init {
+        val stream = destinationInitialStatus.streamConfig
+        storageOperations.prepareStage(stream)
+        // Prepare final tables based on sync mode.
+        finalTmpTableSuffix = prepareFinalTable(destinationInitialStatus)
+    }
+
     companion object {
         private const val NO_SUFFIX = ""
         private const val TMP_OVERWRITE_TABLE_SUFFIX = "_airbyte_tmp"
     }
 
-    override fun initialize(
-        destinationInitialStatus: DestinationInitialStatus<MinimumDestinationState.Impl>
-    ) {
-        if (
-            !initialRawTableStatus.compareAndSet(
-                null,
-                destinationInitialStatus.initialRawTableStatus
-            )
-        ) {
-            log.warn {
-                "Ignoring already initialized Stream ${destinationInitialStatus.streamConfig.id}"
-            }
-        }
-
-        val stream = destinationInitialStatus.streamConfig
-
-        // Prepare staging related objects
-        storageOperations.prepareStagingTable(
-            stream.id,
-            stream.destinationSyncMode,
-        )
-        storageOperations.prepareStagingVolume(stream.id)
-
-        // Prepare final tables based on sync mode.
-        prepareFinalTable(destinationInitialStatus)
-    }
-
     private fun prepareFinalTable(
         initialStatus: DestinationInitialStatus<MinimumDestinationState.Impl>
-    ) {
+    ): String {
         val stream = initialStatus.streamConfig
         // No special handling if final table doesn't exist, just create and return
         if (!initialStatus.isFinalTablePresent) {
             log.info {
                 "Final table does not exist for stream ${initialStatus.streamConfig.id.finalName}, creating."
             }
-            storageOperations.createSchemaIfNotExists(stream)
+            storageOperations.createFinalSchema(stream.id)
             storageOperations.createFinalTable(stream, NO_SUFFIX, false)
-            return
+            return NO_SUFFIX
         }
 
         log.info { "Final Table exists for stream ${stream.id.finalName}" }
         // The table already exists. Decide whether we're writing to it directly, or
         // using a tmp table.
         when (stream.destinationSyncMode) {
-            DestinationSyncMode.OVERWRITE -> prepareFinalTableForOverwrite(initialStatus)
+            DestinationSyncMode.OVERWRITE -> return prepareFinalTableForOverwrite(initialStatus)
             DestinationSyncMode.APPEND,
             DestinationSyncMode.APPEND_DEDUP -> {
                 if (
@@ -93,31 +73,33 @@ class DatabricksStreamOperations(
                     // Make sure it has the right schema.
                     // Also, if a raw table migration wants us to do a soft reset, do that
                     // here.
-                    storageOperations.executeSoftReset(stream)
+                    storageOperations.softResetFinalTable(stream)
                 }
+                return NO_SUFFIX
             }
         }
     }
 
     private fun prepareFinalTableForOverwrite(
         initialStatus: DestinationInitialStatus<MinimumDestinationState.Impl>
-    ) {
+    ): String {
         val stream = initialStatus.streamConfig
         if (!initialStatus.isFinalTableEmpty || initialStatus.isSchemaMismatch) {
-            // We want to overwrite an existing table. Write into a tmp table.
-            // We'll overwrite the table at the
-            // end of the sync.
-            overwriteFinalTableWithTmp.set(true)
             // overwrite an existing tmp table if needed.
             storageOperations.createFinalTable(stream, TMP_OVERWRITE_TABLE_SUFFIX, true)
             log.info {
                 "Using temp final table for stream ${stream.id.finalName}, will overwrite existing table at end of sync"
             }
-        } else {
-            log.info {
-                "Final Table for stream ${stream.id.finalName} is empty and matches the expected v2 format, writing to table directly"
-            }
+            // We want to overwrite an existing table. Write into a tmp table.
+            // We'll overwrite the table at the
+            // end of the sync.
+            return TMP_OVERWRITE_TABLE_SUFFIX
         }
+
+        log.info {
+            "Final Table for stream ${stream.id.finalName} is empty and matches the expected v2 format, writing to table directly"
+        }
+        return NO_SUFFIX
     }
 
     override fun writeRecords(streamConfig: StreamConfig, stream: Stream<PartialAirbyteMessage>) {
@@ -134,7 +116,7 @@ class DatabricksStreamOperations(
             log.info {
                 "Buffer flush complete for stream ${streamConfig.id.originalName} (${FileUtils.byteCountToDisplaySize(it.byteCount)}) to staging"
             }
-            storageOperations.copyIntoStagingTable(streamConfig, writeBuffer)
+            storageOperations.writeToStage(streamConfig.id, writeBuffer)
         }
     }
 
@@ -142,7 +124,7 @@ class DatabricksStreamOperations(
         // Legacy logic that if recordsWritten or not tracked then it could be non-zero
         val shouldRunFinalizer =
             syncSummary.recordsWritten.map { it > 0 }.orElse(true) ||
-                initialRawTableStatus.get().hasUnprocessedRecords
+                initialRawTableStatus.hasUnprocessedRecords
         if (!shouldRunFinalizer) {
             log.info {
                 "Skipping typing and deduping for stream ${streamConfig.id.originalNamespace}.${streamConfig.id.originalName} " +
@@ -150,25 +132,21 @@ class DatabricksStreamOperations(
             }
             return
         }
-        val finalTableSuffix = getFinalTableSuffix()
+
         storageOperations.typeAndDedupe(
             streamConfig,
-            initialRawTableStatus.get().maxProcessedTimestamp,
-            finalTableSuffix
+            initialRawTableStatus.maxProcessedTimestamp,
+            finalTmpTableSuffix
         )
 
         // Delete staging directory, implementation will handle if it has to do it or not or a No-OP
-        storageOperations.deleteStagingDirectory(streamConfig.id)
+        storageOperations.cleanupStage(streamConfig.id)
 
         // For overwrite, its wasteful to do T+D so we don't do soft-reset in prepare. Instead we do
         // type-dedupe
         // on a suffixed table and do a swap here when we have to for schema mismatches
         if (streamConfig.destinationSyncMode == DestinationSyncMode.OVERWRITE) {
-            storageOperations.overwriteFinalTable(streamConfig, finalTableSuffix)
+            storageOperations.overwriteFinalTable(streamConfig, finalTmpTableSuffix)
         }
-    }
-
-    private fun getFinalTableSuffix(): String {
-        return if (overwriteFinalTableWithTmp.get()) TMP_OVERWRITE_TABLE_SUFFIX else NO_SUFFIX
     }
 }
