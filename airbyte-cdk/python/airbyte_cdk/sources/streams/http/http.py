@@ -45,7 +45,6 @@ class HttpStream(Stream, ABC):
         self._session.mount(
             "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
         )
-        self._authenticator: Optional[AuthBase] = None
         self._session.auth = authenticator
 
     @property
@@ -129,10 +128,6 @@ class HttpStream(Stream, ABC):
         Override if needed. Specifies factor for backoff policy.
         """
         return 5
-
-    @property
-    def authenticator(self) -> Optional[AuthBase]:
-        return self._authenticator
 
     @property
     def availability_strategy(self) -> Optional[AvailabilityStrategy]:

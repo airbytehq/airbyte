@@ -42,13 +42,11 @@ class StubBasicReadHttpStream(HttpStream):
 
 def test_default_authenticator():
     stream = StubBasicReadHttpStream()
-    assert stream.authenticator is None
     assert stream._session.auth is None
 
 
 def test_requests_native_token_authenticator():
     stream = StubBasicReadHttpStream(authenticator=TokenAuthenticator("test-token"))
-    assert stream.authenticator is None
     assert isinstance(stream._session.auth, TokenAuthenticator)
 
 
