@@ -3,6 +3,7 @@
 #
 
 import logging
+import re
 import sys
 from typing import Optional, Union, Tuple
 
@@ -51,9 +52,9 @@ class BulkNotSupportedException(Exception):
 
 
 class SalesforceErrorHandler(ErrorHandler):
-    def __init__(self, stream_name: str) -> None:
+    def __init__(self, stream_name: str, sobject_options) -> None:
         self._stream_name = stream_name
-        self.sobject_options = None  # FIXME see how this impacts streams and how we should print it.
+        self._sobject_options = sobject_options
 
     def interpret_response(self, response: Optional[Union[requests.Response, Exception]]) -> Tuple[Optional[ResponseAction], Optional[FailureType], Optional[str]]:
         if isinstance(response, TRANSIENT_EXCEPTIONS):
@@ -66,65 +67,79 @@ class SalesforceErrorHandler(ErrorHandler):
                 return ResponseAction.RETRY, FailureType.transient_error, f"Response with status code {response.status_code} is considered transient. Try again later. (full error message is {response.content})"
 
             error_code, error_message = self._extract_error_code_and_message(response)
+            if self._is_bulk_job_creation(response) and response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
+                self._handle_bulk_job_creation_endpoint_specific_errors(response, error_code, error_message)
+
+            if response.status_code == codes.too_many_requests or (response.status_code == codes.forbidden and error_code == "REQUEST_LIMIT_EXCEEDED"):
+                # It is unclear as to why we don't retry on those. The rate limit window is 24 hours but it is rolling so we could end up being able to sync more records before 24 hours. Note that there is also a limit of concurrent long running requests which can fall in this bucket.
+                return ResponseAction.FAIL, FailureType.transient_error, f"Request limit reached with HTTP status {response.status_code}. body: {response.text}"
+
             if (
-                    "We can't complete the action because enabled transaction security policies took too long to complete." in error_message
-                    and error_code == "TXN_SECURITY_METERING_ERROR"
+                "We can't complete the action because enabled transaction security policies took too long to complete." in error_message
+                and error_code == "TXN_SECURITY_METERING_ERROR"
             ):
                 return ResponseAction.FAIL, FailureType.config_error, 'A transient authentication error occurred. To prevent future syncs from failing, assign the "Exempt from Transaction Security" user permission to the authenticated user.'
-            elif response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
-                # A part of streams can't be used by BULK API. Every API version can have a custom list of
-                # these sobjects. Another part of them can be generated dynamically. That's why we can't track
-                # them preliminarily and there is only one way is to except error with necessary messages about
-                # their limitations. Now we know about 3 different reasons of similar errors:
-                # 1) some SaleForce sobjects(streams) is not supported by the BULK API simply (as is).
-                # 2) Access to a sobject(stream) is not available
-                # 3) sobject is not queryable. It means this sobject can't be called directly.
-                #    We can call it as part of response from another sobject only.  E.g.:
-                #        initial query: "Select Id, Subject from ActivityHistory" -> error
-                #        updated query: "Select Name, (Select Subject,ActivityType from ActivityHistories) from Contact"
-                #    The second variant forces customisation for every case (ActivityHistory, ActivityHistories etc).
-                #    And the main problem is these subqueries doesn't support CSV response format.
-                if error_message == "Selecting compound data not supported in Bulk Query" or (
-                    error_code == "INVALIDENTITY" and "is not supported by the Bulk API" in error_message
-                ):
-                    logger.error(
-                        f"Cannot receive data for stream '{self._stream_name}' using BULK API, "
-                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
-                    )
-                    raise BulkNotSupportedException()
-                elif response.status_code == codes.FORBIDDEN and error_code != "REQUEST_LIMIT_EXCEEDED":
-                    logger.error(
-                        f"Cannot receive data for stream '{self._stream_name}' ,"
-                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
-                    )
-                    raise BulkNotSupportedException()
-                elif response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
-                    logger.error(
-                        f"Cannot receive data for stream '{self._stream_name}' ,"
-                        f"sobject options: {self.sobject_options}, Error message: '{error_message}'"
-                    )
-                    raise BulkNotSupportedException()
-                elif response.status_code == codes.BAD_REQUEST and error_message.endswith("does not support query"):
-                    logger.error(
-                        f"The stream '{self._stream_name}' is not queryable, "
-                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
-                    )
-                    raise BulkNotSupportedException()
-                elif (
-                    response.status_code == codes.BAD_REQUEST
-                    and error_code == "API_ERROR"
-                    and error_message.startswith("Implementation restriction")
-                ):
-                    message = f"Unable to sync '{self._stream_name}'. To prevent future syncs from failing, ensure the authenticated user has \"View all Data\" permissions."
-                    return ResponseAction.FAIL, FailureType.config_error, message
-                elif response.status_code == codes.BAD_REQUEST and error_code == "LIMIT_EXCEEDED":
-                    message = "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed."
-                    logger.error(message)
-                    raise BulkNotSupportedException()
-                else:
-                    return ResponseAction.FAIL, FailureType.system_error, f"Unknown error on response `{response.content}`"
+        else:  # FIXME maybe check some statuses of remove retry
+            return ResponseAction.RETRY, FailureType.system_error, f"Unknown error {response}. Attempting to retry in case this would succeed..."
 
-    def _extract_error_code_and_message(self, response: requests.Response) -> tuple[Optional[str], str]:
+    @staticmethod
+    def _is_bulk_job_creation(response: requests.Response) -> bool:
+        # TODO comment on PR: I don't like that because it duplicates the format of the URL but with a test at least we should be fine to valide once it changes
+        return bool(re.compile(r"services/data/[A-Za-z0-9]+/jobs/query").search(response.url))
+
+    def _handle_bulk_job_creation_endpoint_specific_errors(self, response: requests.Response, error_code: Optional[str], error_message: str) -> Tuple[Optional[ResponseAction], Optional[FailureType], Optional[str]]:
+        # A part of streams can't be used by BULK API. Every API version can have a custom list of
+        # these sobjects. Another part of them can be generated dynamically. That's why we can't track
+        # them preliminarily and there is only one way is to except error with necessary messages about
+        # their limitations. Now we know about 3 different reasons of similar errors:
+        # 1) some SaleForce sobjects(streams) is not supported by the BULK API simply (as is).
+        # 2) Access to a sobject(stream) is not available
+        # 3) sobject is not queryable. It means this sobject can't be called directly.
+        #    We can call it as part of response from another sobject only.  E.g.:
+        #        initial query: "Select Id, Subject from ActivityHistory" -> error
+        #        updated query: "Select Name, (Select Subject,ActivityType from ActivityHistories) from Contact"
+        #    The second variant forces customisation for every case (ActivityHistory, ActivityHistories etc).
+        #    And the main problem is these subqueries doesn't support CSV response format.
+        if error_message == "Selecting compound data not supported in Bulk Query" or (
+                error_code == "INVALIDENTITY" and "is not supported by the Bulk API" in error_message
+        ):
+            logger.error(
+                f"Cannot receive data for stream '{self._stream_name}' using BULK API, "
+                f"sobject options: {self._sobject_options}, error message: '{error_message}'"
+            )
+            raise BulkNotSupportedException()
+        elif response.status_code == codes.BAD_REQUEST:
+            if error_message.endswith("does not support query"):
+                logger.error(
+                    f"The stream '{self._stream_name}' is not queryable, "
+                    f"sobject options: {self._sobject_options}, error message: '{error_message}'"
+                )
+                raise BulkNotSupportedException()
+            elif error_code == "API_ERROR" and error_message.startswith("Implementation restriction"):
+                message = f"Unable to sync '{self._stream_name}'. To prevent future syncs from failing, ensure the authenticated user has \"View all Data\" permissions."
+                return ResponseAction.FAIL, FailureType.config_error, message
+            elif error_code == "LIMIT_EXCEEDED":
+                message = "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed."
+                logger.error(message)
+                raise BulkNotSupportedException()
+        elif response.status_code == codes.FORBIDDEN:
+            if error_code == "REQUEST_LIMIT_EXCEEDED":
+                logger.error(
+                    f"Cannot receive data for stream '{self._stream_name}' ,"
+                    f"sobject options: {self._sobject_options}, Error message: '{error_message}'"
+                )
+                raise BulkNotSupportedException()
+            else:
+                logger.error(
+                    f"Cannot receive data for stream '{self._stream_name}' ,"
+                    f"sobject options: {self._sobject_options}, error message: '{error_message}'"
+                )
+                raise BulkNotSupportedException()
+
+        return ResponseAction.FAIL, FailureType.system_error, error_message
+
+    @staticmethod
+    def _extract_error_code_and_message(response: requests.Response) -> tuple[Optional[str], str]:
         try:
             error_data = response.json()[0]
             return error_data.get("errorCode"), error_data.get("message", "")
@@ -135,8 +150,7 @@ class SalesforceErrorHandler(ErrorHandler):
                 f"The response for `{response.request.url}` was expected to be a list with at least one element but was `{response.content}`"
             )
 
-        return None, "Unknown error"
-
+        return None, f"Unknown error on response `{response.content}`"
 
 
 def default_backoff_handler(max_tries: int, backoff_method=None, backoff_params=None):
