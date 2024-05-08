@@ -50,7 +50,7 @@ def timestamp(dt: Union[float, str]) -> Union[int, float]:
     :param dt: datetime to convert to timestamp
     :return: unix timestamp
     """
-    if isinstance(dt, float):
+    if isinstance(dt, (int, float)):
         return int(dt)
     else:
         return _str_to_datetime(dt).astimezone(pytz.utc).timestamp()
