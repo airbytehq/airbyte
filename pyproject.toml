@@ -49,6 +49,13 @@ extend-exclude = [
 ]
 max-complexity = 20
 max-line-length = 140
+extend-ignore = [
+    "E203", # whitespace before ':' (conflicts with Black)
+    "E231", # Bad trailing comma (conflicts with Black)
+    "E501", # line too long (conflicts with Black)
+    "W503", # line break before binary operator (conflicts with Black)
+    "F811", # TODO: ella fix after pflake8 version update
+]
 
 [tool.coverage.report]
 fail_under = 0
@@ -61,14 +68,6 @@ omit = [
     "unit_tests/*",
     "integration_tests/*",
     "**/generated/*",
-]
-
-extend-ignore = [
-    "E203", # whitespace before ':' (conflicts with Black)
-    "E231", # Bad trailing comma (conflicts with Black)
-    "E501", # line too long (conflicts with Black)
-    "W503", # line break before binary operator (conflicts with Black)
-    "F811", # TODO: ella fix after pflake8 version update
 ]
 
 # TODO: This will be removed in favor of the section below.
