@@ -68,11 +68,14 @@ class DatabricksSqlGeneratorIntegrationTest :
             )
     override val sqlGenerator: SqlGenerator
         get() = DatabricksSqlGenerator(DatabricksNamingTransformer(), connectorConfig.database)
-    private val databricksSqlGenerator = sqlGenerator as DatabricksSqlGenerator
+    override val supportsSafeCast: Boolean
+        get() = true
 
-    override fun createNamespace(namespace: String?) {
+    override fun createNamespace(namespace: String) {
         destinationHandler.execute(sqlGenerator.createSchema(namespace))
     }
+
+    private val databricksSqlGenerator = sqlGenerator as DatabricksSqlGenerator
 
     override fun createRawTable(streamId: StreamId) {
         destinationHandler.execute(databricksSqlGenerator.createRawTable(streamId))
@@ -192,6 +195,13 @@ class DatabricksSqlGeneratorIntegrationTest :
         return dumpTable(streamId.finalTableId(DatabricksSqlGenerator.QUOTE, suffix ?: ""))
     }
 
+    override fun teardownNamespace(namespace: String) {
+        jdbcDatabase.execute(
+            "DROP SCHEMA IF EXISTS ${connectorConfig.database}.${namespace.lowercase()} CASCADE"
+        )
+        //        println("Skipping teardown for now, re-enable $namespace")
+    }
+
     private fun dumpTable(tableIdentifier: String): List<JsonNode> {
         val sourceOperations =
             object : JdbcSourceOperations() {
@@ -236,13 +246,6 @@ class DatabricksSqlGeneratorIntegrationTest :
                 )
             },
         )
-    }
-
-    override fun teardownNamespace(namespace: String?) {
-        jdbcDatabase.execute(
-            "DROP SCHEMA IF EXISTS ${connectorConfig.database}.${namespace?.lowercase() ?: ""} CASCADE"
-        )
-        //        println("Skipping teardown for now, re-enable $namespace")
     }
 
     @Disabled override fun testCreateTableIncremental() {}

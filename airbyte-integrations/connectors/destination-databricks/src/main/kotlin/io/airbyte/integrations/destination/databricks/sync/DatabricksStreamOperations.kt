@@ -56,7 +56,7 @@ class DatabricksStreamOperations(
         // Prepare staging related objects
         storageOperations.prepareStagingTable(
             stream.id,
-            stream.destinationSyncMode!!,
+            stream.destinationSyncMode,
         )
         storageOperations.prepareStagingVolume(stream.id)
 
@@ -81,7 +81,7 @@ class DatabricksStreamOperations(
         log.info { "Final Table exists for stream ${stream.id.finalName}" }
         // The table already exists. Decide whether we're writing to it directly, or
         // using a tmp table.
-        when (stream.destinationSyncMode!!) {
+        when (stream.destinationSyncMode) {
             DestinationSyncMode.OVERWRITE -> prepareFinalTableForOverwrite(initialStatus)
             DestinationSyncMode.APPEND,
             DestinationSyncMode.APPEND_DEDUP -> {

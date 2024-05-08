@@ -140,7 +140,7 @@ class DatabricksSqlGenerator(
 
     override fun createTable(stream: StreamConfig, suffix: String, force: Boolean): Sql {
         val columnNameTypeMapping =
-            sequenceOf(metaColumnTypeMap.asSequence(), stream.columns!!.asSequence())
+            sequenceOf(metaColumnTypeMap.asSequence(), stream.columns.asSequence())
                 .flatten()
                 .map { it -> "${it.key.name(QUOTE)} ${toDialectType(it.value)}" }
                 .toList()
@@ -155,7 +155,7 @@ class DatabricksSqlGenerator(
         )
     }
 
-    override fun createSchema(schema: String?): Sql {
+    override fun createSchema(schema: String): Sql {
         return Sql.of("CREATE SCHEMA IF NOT EXISTS $unityCatalogName.`$schema`")
     }
 
@@ -189,14 +189,14 @@ class DatabricksSqlGenerator(
     ): Sql {
         val finalColumnNames =
             sequenceOf(
-                    stream.columns!!.keys.asSequence(),
+                    stream.columns.keys.asSequence(),
                     metaColumnTypeMap.keys.filter { it.name != AB_META }.asSequence(),
                 )
                 .flatten()
                 .joinToString(", \n") { it.name(QUOTE) }
 
         val pkEqualityMatch =
-            stream.primaryKey!!
+            stream.primaryKey
                 .map { it.name(QUOTE) }
                 .joinToString(
                     separator = " AND \n",
@@ -208,7 +208,7 @@ class DatabricksSqlGenerator(
                 )
 
         val cursorCompareCondition =
-            stream.cursor!!
+            stream.cursor
                 .map { it.name(QUOTE) }
                 .map {
                     """
@@ -221,11 +221,11 @@ class DatabricksSqlGenerator(
                 .orElse("target_table.$AB_EXTRACTED_AT < deduped_records.$AB_EXTRACTED_AT")
 
         val whenMatchedCdcDeleteCondition =
-            if (stream.columns!!.containsKey(cdcDeletedColumn))
+            if (stream.columns.containsKey(cdcDeletedColumn))
                 "WHEN MATCHED AND deduped_records.$CDC_DELETED_COLUMN_NAME IS NOT NULL AND $cursorCompareCondition THEN DELETE"
             else ""
         val whenNotMatchedCdcSkipCondition =
-            if (stream.columns!!.containsKey(cdcDeletedColumn))
+            if (stream.columns.containsKey(cdcDeletedColumn))
                 "AND deduped_records.$CDC_DELETED_COLUMN_NAME IS NULL"
             else ""
 
@@ -253,7 +253,7 @@ class DatabricksSqlGenerator(
 
         val finalColumnNames =
             sequenceOf(
-                    stream.columns!!.keys.asSequence(),
+                    stream.columns.keys.asSequence(),
                     metaColumnTypeMap.keys.filter { it.name != AB_META }.asSequence(),
                 )
                 .flatten()
@@ -296,7 +296,7 @@ class DatabricksSqlGenerator(
         // JsonPath queried projection columns from raw Table.
         val projectionColumns =
             sequenceOf(
-                    stream.columns!!.entries.asSequence().map {
+                    stream.columns.entries.asSequence().map {
                         "${cast(it.key.originalName, it.value, safeCast)} as `${it.key.name}`"
                     },
                     metaColumnTypeMap
@@ -311,7 +311,7 @@ class DatabricksSqlGenerator(
         val excludeCdcDeletedCondition =
             if (
                 dedupe &&
-                    stream.columns!!.containsKey(
+                    stream.columns.containsKey(
                         cdcDeletedColumn,
                     )
             )
@@ -329,12 +329,10 @@ class DatabricksSqlGenerator(
 
         // Airbyte meta - casting errors struct
         val typeCastErrors =
-            stream.columns!!
-                .entries
-                .joinToString(
-                    separator = ", \n",
-                    transform = {
-                        """
+            stream.columns.entries.joinToString(
+                separator = ", \n",
+                transform = {
+                    """
                     |CASE
                     |   WHEN ${jsonPath(it.key.originalName)} IS NOT NULL
                     |   AND ${cast(it.key.originalName, it.value, false)} IS NULL THEN named_struct(
@@ -348,8 +346,8 @@ class DatabricksSqlGenerator(
                     |   ELSE NULL
                     |END
                     """.trimMargin()
-                    },
-                )
+                },
+            )
         val typeCastErrorsArray =
             """
             |array_compact(
@@ -396,8 +394,8 @@ class DatabricksSqlGenerator(
             return selectCTENoDedupe
         }
 
-        val cursorOrderBy = stream.cursor!!.map { "${it.name(QUOTE)} DESC NULLS LAST," }.orElse("")
-        val commaSeperatedPks = stream.primaryKey!!.joinToString { it.name(QUOTE) }
+        val cursorOrderBy = stream.cursor.map { "${it.name(QUOTE)} DESC NULLS LAST," }.orElse("")
+        val commaSeperatedPks = stream.primaryKey.joinToString { it.name(QUOTE) }
 
         val selectCTEDedupe =
             """
@@ -442,11 +440,7 @@ class DatabricksSqlGenerator(
         )
     }
 
-    override fun migrateFromV1toV2(
-        streamId: StreamId,
-        namespace: String?,
-        tableName: String?
-    ): Sql {
+    override fun migrateFromV1toV2(streamId: StreamId, namespace: String, tableName: String): Sql {
         throw UnsupportedOperationException(
             "This method is not allowed in Databricks and should not be called"
         )

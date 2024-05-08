@@ -5,25 +5,25 @@
   "properties": {
     "string": { "type": "string" },
     "boolean": { "type": "boolean" },
-    "date": { "type": "string", "format" : "date" },
+    "date": { "type": "string", "format": "date" },
     "tsntz": {
-      "type" : "string",
-      "format" : "date-time",
+      "type": "string",
+      "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "tstz": {
-      "type" : "string",
-      "format" : "date-time",
+      "type": "string",
+      "format": "date-time",
       "airbyte_type": "timestamp_with_timezone"
     },
     "tntz": {
-      "type" : "string",
-      "format" : "time",
+      "type": "string",
+      "format": "time",
       "airbyte_type": "time_without_timezone"
     },
     "ttz": {
-      "type" : "string",
-      "format" : "time",
+      "type": "string",
+      "format": "time",
       "airbyte_type": "time_with_timezone"
     },
     "integer": { "type": "integer" },

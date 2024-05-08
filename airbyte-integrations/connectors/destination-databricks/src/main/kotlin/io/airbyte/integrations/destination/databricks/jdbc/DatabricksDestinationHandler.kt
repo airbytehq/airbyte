@@ -175,7 +175,7 @@ class DatabricksDestinationHandler(
         if (!isAbRawIdMatch || !isAbExtractedAtMatch || !isAbMetaMatch) return false
 
         val expectedColumns =
-            streamConfig.columns!!.entries.associate {
+            streamConfig.columns.entries.associate {
                 it.key.name to DatabricksSqlGenerator.toDialectType(it.value)
             }
         val actualColumns =
