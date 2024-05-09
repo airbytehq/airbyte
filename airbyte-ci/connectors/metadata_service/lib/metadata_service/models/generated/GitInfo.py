@@ -13,19 +13,7 @@ class GitInfo(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    commit_sha: Optional[str] = Field(
-        None,
-        description="The git commit sha of the last commit that modified this file. DO NOT DEFINE THIS FIELD MANUALLY. It will be overwritten by the CI.",
-    )
-    commit_timestamp: Optional[datetime] = Field(
-        None,
-        description="The git commit timestamp of the last commit that modified this file. DO NOT DEFINE THIS FIELD MANUALLY. It will be overwritten by the CI.",
-    )
-    commit_author: Optional[str] = Field(
-        None,
-        description="The git commit author of the last commit that modified this file. DO NOT DEFINE THIS FIELD MANUALLY. It will be overwritten by the CI.",
-    )
-    commit_author_email: Optional[str] = Field(
-        None,
-        description="The git commit author email of the last commit that modified this file. DO NOT DEFINE THIS FIELD MANUALLY. It will be overwritten by the CI.",
-    )
+    commit_sha: Optional[str] = Field(None, description="The git commit sha of the last commit that modified this file.")
+    commit_timestamp: Optional[datetime] = Field(None, description="The git commit timestamp of the last commit that modified this file.")
+    commit_author: Optional[str] = Field(None, description="The git commit author of the last commit that modified this file.")
+    commit_author_email: Optional[str] = Field(None, description="The git commit author email of the last commit that modified this file.")

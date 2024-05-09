@@ -5,6 +5,7 @@
 import copy
 import json
 import os
+from datetime import datetime
 from typing import List, Optional, Tuple, Union
 
 import orchestrator.hacks as HACKS
@@ -24,9 +25,9 @@ from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLif
 from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition
 from orchestrator.utils.blob_helpers import yaml_blob_to_dict
 from orchestrator.utils.dagster_helpers import OutputDataFrame
-from orchestrator.utils.object_helpers import deep_copy_params
+from orchestrator.utils.object_helpers import deep_copy_params, default_none_to_dict
 from pydantic import BaseModel, ValidationError
-from pydash.objects import get
+from pydash.objects import get, set_with
 
 PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
 TaggedRegistryEntry = Tuple[str, PolymorphicRegistryEntry]
@@ -142,6 +143,35 @@ def apply_ab_internal_defaults(metadata_data: dict) -> dict:
 
 
 @deep_copy_params
+def apply_generated_fields(metadata_data: dict, metadata_entry: LatestMetadataEntry) -> dict:
+    """Apply generated fields to the metadata data field.
+
+    Args:
+        metadata_data (dict): The metadata data field.
+        metadata_entry (LatestMetadataEntry): The metadata entry.
+
+    Returns:
+        dict: The metadata data field with the generated fields applied.
+    """
+    generated_fields = metadata_data.get("generated") or {}
+
+    # Add the source file metadata
+    generated_fields = set_with(generated_fields, "source_file_info.metadata_etag", metadata_entry.etag, default_none_to_dict)
+    generated_fields = set_with(generated_fields, "source_file_info.metadata_file_path", metadata_entry.file_path, default_none_to_dict)
+    generated_fields = set_with(generated_fields, "source_file_info.metadata_bucket_name", metadata_entry.bucket_name, default_none_to_dict)
+    generated_fields = set_with(
+        generated_fields, "source_file_info.metadata_last_modified", metadata_entry.last_modified, default_none_to_dict
+    )
+
+    # Add the registry entry generation timestamp
+    generated_fields = set_with(
+        generated_fields, "source_file_info.registry_entry_generated_at", datetime.now().isoformat(), default_none_to_dict
+    )
+
+    return generated_fields
+
+
+@deep_copy_params
 @sentry_sdk.trace
 def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_registry_key: str) -> dict:
     """Convert the metadata definition to a registry entry.
@@ -180,6 +210,9 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
     overridden_metadata_data["tombstone"] = False
     overridden_metadata_data["custom"] = False
     overridden_metadata_data["public"] = True
+
+    # Add generated fields for source file metadata and git
+    overridden_metadata_data["generated"] = apply_generated_fields(overridden_metadata_data, metadata_entry)
 
     # if there is no supportLevel, set it to "community"
     if not overridden_metadata_data.get("supportLevel"):
@@ -472,6 +505,8 @@ def metadata_entry(context: OpExecutionContext, airbyte_slack_users: pd.DataFram
         icon_url=icon_url,
         bucket_name=matching_blob.bucket.name,
         file_path=metadata_file_path,
+        etag=etag,
+        last_modified=matching_blob.time_created.isoformat(),
     )
 
     PublishConnectorLifecycle.log(

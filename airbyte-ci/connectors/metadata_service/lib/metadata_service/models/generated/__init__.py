@@ -16,5 +16,6 @@ from .RegistryOverrides import *
 from .ReleaseStage import *
 from .RemoteRegistries import *
 from .ResourceRequirements import *
+from .SourceFileInfo import *
 from .SuggestedStreams import *
 from .SupportLevel import *
