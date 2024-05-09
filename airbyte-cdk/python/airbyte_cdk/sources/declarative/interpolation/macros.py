@@ -113,6 +113,10 @@ def format_datetime(dt: Union[str, datetime.datetime], format: str) -> str:
 
     Usage:
     `"{{ format_datetime(config.start_date, '%Y-%m-%d') }}"`
+
+    CPython Datetime package has known bug with `stfrtime` method: '%s' formatting uses locale timezone
+    https://github.com/python/cpython/issues/77169
+    https://github.com/python/cpython/issues/56959
     """
     if isinstance(dt, datetime.datetime):
         return dt.strftime(format)
