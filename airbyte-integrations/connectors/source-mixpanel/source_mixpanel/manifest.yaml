@@ -215,6 +215,17 @@ definitions:
         http_method: POST
       paginator:
         $ref: "#/definitions/paginator"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: |
+            {%- set condition = namespace(value=true) -%}
+            {%- for state in stream_state.get('states', []) -%}
+                {%- if state['partition']['id'] == stream_slice['id'] and state['cursor']['last_seen'] >= record['$properties']['$last_seen'] -%}
+                    {%- set condition.value = false -%}
+                {%- endif -%}
+            {%- endfor -%}
+            {{ condition.value }}
       partition_router:
         class_name: "source_mixpanel.components.CohortMembersSubstreamPartitionRouter"
         parent_stream_configs:
