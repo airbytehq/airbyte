@@ -3,7 +3,7 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Optional, Any
+from typing import Any, Optional
 
 from airbyte_cdk.sources.types import Config
 

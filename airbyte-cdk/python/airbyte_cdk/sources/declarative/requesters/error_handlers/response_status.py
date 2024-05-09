@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Final, Optional, Union, Any
+from typing import Any, Final, Optional, Union
 
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 
