@@ -34,10 +34,6 @@ data:
   name: Outreach
   releaseDate: 2021-11-03
   releaseStage: alpha
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-outreach
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/outreach
   tags:
