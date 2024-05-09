@@ -21,9 +21,12 @@ import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -54,11 +57,11 @@ public class BigqueryDestinationHandlerTest {
   @Test
   public void testClusteringMatches() {
     StreamConfig stream = new StreamConfig(mock(),
-        null,
+        SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND_DEDUP,
         List.of(new ColumnId("foo", "bar", "fizz")),
-        null,
-        null);
+        Optional.empty(),
+        new LinkedHashMap<>());
 
     // Clustering is null
     final StandardTableDefinition existingTable = mock(StandardTableDefinition.class);
@@ -72,11 +75,11 @@ public class BigqueryDestinationHandlerTest {
 
     // Clustering matches
     stream = new StreamConfig(mock(),
-        null,
+        SyncMode.FULL_REFRESH,
         DestinationSyncMode.OVERWRITE,
-        null,
-        null,
-        null);
+        Collections.emptyList(),
+        Optional.empty(),
+        new LinkedHashMap<>());
     Assertions.assertTrue(BigQueryDestinationHandler.clusteringMatches(stream, existingTable));
 
     // Clustering only the first 3 PK columns (See https://github.com/airbytehq/oncall/issues/2565)
@@ -87,13 +90,13 @@ public class BigqueryDestinationHandlerTest {
                 .collect(Collectors.toList()))
             .build());
     stream = new StreamConfig(mock(),
-        null,
+        SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND_DEDUP,
         Stream.concat(expectedStreamColumnNames.stream(), Stream.of("d", "e"))
             .map(name -> new ColumnId(name, "foo", "bar"))
             .collect(Collectors.toList()),
-        null,
-        null);
+        Optional.empty(),
+        new LinkedHashMap<>());
     Assertions.assertTrue(BigQueryDestinationHandler.clusteringMatches(stream, existingTable));
   }
 

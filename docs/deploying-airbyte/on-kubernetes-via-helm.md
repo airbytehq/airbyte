@@ -316,7 +316,7 @@ GCS logging was tested on [Airbyte Helm Chart Version 0.54.69](https://artifacth
 2. **Create Service Account**: Click "Create Service Account", enter a name, description, and then click "Create".
 3. **Grant Permissions**: Assign the role of "Storage Object Admin" to the service account by selecting it from the role list.
 4. **Create Key**: After creating the service account, click on it, go to the "Keys" tab, and then click "Add Key" > "Create new key". Choose JSON as the key type and click "Create". The key file will be downloaded automatically to your computer.
-5. **Encode Key**: Encode GCP credentials file contents using Base64. This key will be referenced as `<encoded_key>` 
+5. **Encode Key**: Encode GCP credentials file contents using Base64. This key will be referenced as `<encoded_key>`
 
 #### Update the values.yaml with the GCS Logging Information below
 
@@ -333,15 +333,15 @@ global:
      type: "GCS"
    gcs:
      bucket: "<bucket_name>"
-     credentials: "/secrets/gcs-log-creds/gcp.json"      
+     credentials: "/secrets/gcs-log-creds/gcp.json"
      credentialsJson: "<encoded_key>"
 ```
 
-
 Update the following Environment Variables in the worker section:
+
 ```
 worker:
- 
+
  extraEnv:
    - name: STATE_STORAGE_GCS_BUCKET_NAME
      value: <bucket_name>
