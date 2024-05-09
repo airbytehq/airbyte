@@ -37,7 +37,7 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
     request_body_data: Optional[RequestInput] = None
     request_body_json: Optional[NestedMapping] = None
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if self.request_parameters is None:
             self.request_parameters = {}
         if self.request_headers is None:
@@ -92,7 +92,7 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Union[Mapping, str]]:
+    ) -> Union[Mapping[str, Any], str]:
         return self._body_data_interpolator.eval_request_inputs(
             stream_state,
             stream_slice,
@@ -107,5 +107,5 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping]:
+    ) -> Mapping[str, Any]:
         return self._body_json_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)

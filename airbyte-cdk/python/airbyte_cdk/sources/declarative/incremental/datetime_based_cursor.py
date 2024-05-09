@@ -169,7 +169,7 @@ class DatetimeBasedCursor(DeclarativeCursor):
         return self._partition_daterange(start_datetime, end_datetime, self._step)
 
     def _calculate_earliest_possible_value(self, end_datetime: datetime.datetime) -> datetime.datetime:
-        lookback_delta = self._parse_timedelta(self._lookback_window.eval(self.config) if self.lookback_window else "P0D")
+        lookback_delta = self._parse_timedelta(self._lookback_window.eval(self.config) if self._lookback_window else "P0D")
         earliest_possible_start_datetime = min(self._start_datetime.get_datetime(self.config), end_datetime)
         cursor_datetime = self._calculate_cursor_datetime_from_state(self.get_stream_state())
         return max(earliest_possible_start_datetime, cursor_datetime) - lookback_delta

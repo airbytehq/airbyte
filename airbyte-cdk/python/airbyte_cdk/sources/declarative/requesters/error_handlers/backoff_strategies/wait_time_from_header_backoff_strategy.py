@@ -26,13 +26,13 @@ class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy):
     header: Union[InterpolatedString, str]
     parameters: InitVar[Mapping[str, Any]]
     config: Config
-    regex: Optional[str] = None
+    regex: Optional[re.Pattern[str]] = None
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self.regex = re.compile(self.regex) if self.regex else None
         self.header = InterpolatedString.create(self.header, parameters=parameters)
 
     def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
-        header = self.header.eval(config=self.config)
+        header = self.header.eval(config=self.config)  # type: ignore  # header is always cast to an interpolated stream
         header_value = get_numeric_value_from_header(response, header, self.regex)
         return header_value

@@ -24,7 +24,7 @@ class DefaultSchemaLoader(SchemaLoader):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._parameters = parameters
         self.default_loader = JsonFileSchemaLoader(parameters=parameters, config=self.config)
 

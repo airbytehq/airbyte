@@ -24,10 +24,13 @@ class ConstantBackoffStrategy(BackoffStrategy):
     parameters: InitVar[Mapping[str, Any]]
     config: Config
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if not isinstance(self.backoff_time_in_seconds, InterpolatedString):
             self.backoff_time_in_seconds = str(self.backoff_time_in_seconds)
-        self.backoff_time_in_seconds = InterpolatedString.create(self.backoff_time_in_seconds, parameters=parameters)
+        if isinstance(self.backoff_time_in_seconds, float):
+            self.backoff_time_in_seconds = InterpolatedString.create(str(self.backoff_time_in_seconds), parameters=parameters)
+        else:
+            self.backoff_time_in_seconds = InterpolatedString.create(self.backoff_time_in_seconds, parameters=parameters)
 
     def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
-        return self.backoff_time_in_seconds.eval(self.config)
+        return self.backoff_time_in_seconds.eval(self.config)  # type: ignore # backoff_time_in_seconds is always cast to an interpolated string

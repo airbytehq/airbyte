@@ -24,10 +24,13 @@ class ExponentialBackoffStrategy(BackoffStrategy):
     config: Config
     factor: Union[float, InterpolatedString, str] = 5
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if not isinstance(self.factor, InterpolatedString):
             self.factor = str(self.factor)
-        self.factor = InterpolatedString.create(self.factor, parameters=parameters)
+        if isinstance(self.factor, float):
+            self.factor = InterpolatedString.create(str(self.factor), parameters=parameters)
+        else:
+            self.factor = InterpolatedString.create(self.factor, parameters=parameters)
 
     def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
-        return self.factor.eval(self.config) * 2**attempt_count
+        return self.factor.eval(self.config) * 2**attempt_count  # type: ignore # factor is always cast to an interpolated string
