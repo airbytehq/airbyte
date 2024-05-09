@@ -21,8 +21,7 @@ import java.sql.SQLException
 @Requires(property = "metadata.resource")
 @Replaces(MetadataQuerier.Factory::class)
 class ResourceDrivenMetadataQuerierFactory(
-    @Value("\${metadata.resource}") resource: String? = null,
-    override val discoverMapper: DiscoverMapper
+    @Value("\${metadata.resource}") resource: String? = null
 ) : MetadataQuerier.Factory {
 
     val tableNames: List<TableName>
@@ -30,9 +29,16 @@ class ResourceDrivenMetadataQuerierFactory(
 
     init {
         val json: String? = resource?.let { MoreResources.readResource(it) }
-        val list: List<TestMetadataPair> = JsonUtils.parseList(TestMetadataPair::class.java, json)
-        tableNames = list.map { it.key }
-        metadata = list.filter { it.value != null }.associate { it.key to it.value!! }
+        val level0: List<Level1> = JsonUtils.parseList(Level1::class.java, json)
+        tableNames = level0.map { it.key }
+        metadata = level0.mapNotNull { level1: Level1 ->
+            level1.value?.let { level2: Level2 ->
+                val columns: List<Field> = level2.columns.map { (id: String, className: String) ->
+                    Field(id, Class.forName(className).kotlin.objectInstance as FieldType)
+                }
+                level1.key to TestTableMetadata(columns, level2.primaryKeys)
+            }
+        }.toMap()
     }
 
     override fun session(config: SourceConfiguration): MetadataQuerier =
@@ -44,7 +50,7 @@ class ResourceDrivenMetadataQuerierFactory(
                 return tableNames
             }
 
-            override fun columnMetadata(table: TableName): List<ColumnMetadata> =
+            override fun fields(table: TableName): List<Field> =
                 tableMetadata(table).columns
 
             override fun primaryKeys(table: TableName): List<List<String>> =
@@ -62,8 +68,9 @@ class ResourceDrivenMetadataQuerierFactory(
 }
 
 data class TestTableMetadata(
-    val columns: List<ColumnMetadata>,
+    val columns: List<Field>,
     val primaryKeys: List<List<String>>
 )
 
-data class TestMetadataPair(val key: TableName, val value: TestTableMetadata?)
+data class Level1(val key: TableName, val value: Level2?)
+data class Level2(val columns: Map<String, String>, val primaryKeys: List<List<String>>)

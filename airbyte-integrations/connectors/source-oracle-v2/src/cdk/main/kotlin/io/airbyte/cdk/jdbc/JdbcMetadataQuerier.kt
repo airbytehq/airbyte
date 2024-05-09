@@ -5,13 +5,13 @@
 package io.airbyte.cdk.jdbc
 
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.cdk.discover.ColumnMetadata
-import io.airbyte.cdk.discover.DiscoverMapper
-import io.airbyte.cdk.discover.GenericUserDefinedType
+import io.airbyte.cdk.discover.ColumnMetadataToFieldTypeMapper
+import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetadataQuerier
-import io.airbyte.cdk.discover.SystemType
 import io.airbyte.cdk.discover.TableName
-import io.airbyte.cdk.discover.UserDefinedType
+import io.airbyte.cdk.read.stream.SelectQueryBuilder
+import io.airbyte.cdk.read.stream.SelectQueryGenerator
+import io.airbyte.cdk.read.stream.SelectQueryRootNode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.Connection
@@ -24,7 +24,8 @@ import java.sql.Statement
 /** Default implementation of [MetadataQuerier]. */
 class JdbcMetadataQuerier(
     val config: SourceConfiguration,
-    val discoverMapper: DiscoverMapper,
+    val selectQueryGenerator: SelectQueryGenerator,
+    val columnMetadataToFieldTypeMapper: ColumnMetadataToFieldTypeMapper,
     jdbcConnectionFactory: JdbcConnectionFactory
 ) : MetadataQuerier {
 
@@ -34,7 +35,7 @@ class JdbcMetadataQuerier(
 
     override fun tableNames(): List<TableName> = memoizedColumnNames.keys.toList()
 
-    private fun <T> swallow(supplier: () -> T): T? {
+    fun <T> swallow(supplier: () -> T): T? {
         try {
             return supplier()
         } catch (e: Exception) {
@@ -143,13 +144,17 @@ class JdbcMetadataQuerier(
         }
     }
 
-    override fun columnMetadata(table: TableName): List<ColumnMetadata> {
+    override fun fields(table: TableName): List<Field> =
+        columnMetadata(table).map { Field(it.label, columnMetadataToFieldTypeMapper.toFieldType(it)) }
+
+    fun columnMetadata(table: TableName): List<ColumnMetadata> {
         val columnNames: List<String> = memoizedColumnNames[table] ?: listOf()
         if (columnNames.isEmpty()) {
             return listOf()
         }
+        val selectMany: SelectQueryRootNode = SelectQueryBuilder.selectLimit0(table, columnNames)
         val resultsFromSelectMany: List<ColumnMetadata>? =
-            queryColumnMetadata(conn, discoverMapper.selectFromTableLimit0(table, columnNames))
+            queryColumnMetadata(conn, selectQueryGenerator.generateSql(selectMany).sql)
         if (resultsFromSelectMany != null) {
             return resultsFromSelectMany
         }
@@ -157,12 +162,12 @@ class JdbcMetadataQuerier(
             "Not all columns of $table might be accessible, trying each column individually."
         }
         return columnNames.flatMap {
-            val sql: String = discoverMapper.selectFromTableLimit0(table, listOf(it))
-            queryColumnMetadata(conn, sql) ?: listOf()
+            val selectOne: SelectQueryRootNode = SelectQueryBuilder.selectLimit0(table, listOf(it))
+            queryColumnMetadata(conn, selectQueryGenerator.generateSql(selectOne).sql) ?: listOf()
         }
     }
 
-    private fun queryColumnMetadata(conn: Connection, sql: String): List<ColumnMetadata>? {
+    fun queryColumnMetadata(conn: Connection, sql: String): List<ColumnMetadata>? {
         log.info { "Querying $sql for catalog discovery." }
         conn.createStatement().use { stmt: Statement ->
             try {
@@ -263,12 +268,15 @@ class JdbcMetadataQuerier(
 
     /** Default implementation of [MetadataQuerier.Factory]. */
     @Singleton
-    class Factory(override val discoverMapper: DiscoverMapper) : MetadataQuerier.Factory {
+    class Factory(
+        val selectQueryGenerator: SelectQueryGenerator,
+        val columnMetadataToFieldTypeMapper: ColumnMetadataToFieldTypeMapper,
+    ) : MetadataQuerier.Factory {
 
         /** The [SourceConfiguration] is deliberately not injected in order to support tests. */
         override fun session(config: SourceConfiguration): MetadataQuerier {
             val jdbcConnectionFactory = JdbcConnectionFactory(config)
-            return JdbcMetadataQuerier(config, discoverMapper, jdbcConnectionFactory)
+            return JdbcMetadataQuerier(config, selectQueryGenerator, columnMetadataToFieldTypeMapper, jdbcConnectionFactory)
         }
     }
 }

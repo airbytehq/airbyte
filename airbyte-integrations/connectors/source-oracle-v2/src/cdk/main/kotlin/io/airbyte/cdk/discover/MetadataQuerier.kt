@@ -18,18 +18,14 @@ interface MetadataQuerier : AutoCloseable {
     fun tableNames(): List<TableName>
 
     /** Executes a SELECT * on the table, discards the results, and extracts all column metadata. */
-    fun columnMetadata(table: TableName): List<ColumnMetadata>
+    fun fields(table: TableName): List<Field>
 
     /** Queries the information_schema for all primary keys for the given table. */
     fun primaryKeys(table: TableName): List<List<String>>
 
     /** Factory for [MetadataQuerier] instances. */
     @DefaultImplementation(JdbcMetadataQuerier.Factory::class)
-    interface Factory {
-
-        /** [DiscoverMapper] which is required by the [MetadataQuerier] instances. */
-        val discoverMapper: DiscoverMapper
-
+    fun interface Factory {
         /** An implementation might open a connection to build a [MetadataQuerier] instance. */
         fun session(config: SourceConfiguration): MetadataQuerier
     }

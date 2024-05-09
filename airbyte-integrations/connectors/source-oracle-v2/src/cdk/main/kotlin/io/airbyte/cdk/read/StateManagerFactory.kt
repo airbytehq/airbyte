@@ -160,11 +160,7 @@ class StateManagerFactory(
                 id to airbyteTypeFromJsonSchema(schema)
             }
         val actualDataColumns: Map<String, Field> =
-            metadataQuerier.columnMetadata(table)
-                .map {
-                    Field(it.label, metadataQuerierFactory.discoverMapper.toFieldType(it))
-                }
-                .associateBy { it.id }
+            metadataQuerier.fields(table).associateBy { it.id }
         fun dataColumnOrNull(id: String): Field? {
             if (id.startsWith("_ab_")) {
                 // Ignore airbyte metadata columns.

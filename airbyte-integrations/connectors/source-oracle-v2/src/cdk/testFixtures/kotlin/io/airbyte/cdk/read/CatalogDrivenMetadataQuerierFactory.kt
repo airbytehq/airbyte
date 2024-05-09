@@ -6,12 +6,13 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.cdk.discover.ColumnMetadata
-import io.airbyte.cdk.discover.DiscoverMapper
+import io.airbyte.cdk.jdbc.ColumnMetadata
+import io.airbyte.cdk.discover.ColumnMetadataToFieldTypeMapper
+import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetadataQuerier
-import io.airbyte.cdk.discover.SystemType
+import io.airbyte.cdk.jdbc.SystemType
 import io.airbyte.cdk.discover.TableName
-import io.airbyte.cdk.discover.FieldType
+import io.airbyte.cdk.discover.PokemonFieldType
 import io.airbyte.cdk.operation.CONNECTOR_OPERATION
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
@@ -37,7 +38,7 @@ import java.sql.SQLException
 @Primary
 @Replaces(MetadataQuerier.Factory::class)
 class CatalogDrivenMetadataQuerierFactory(
-    override val discoverMapper: DiscoverMapper,
+    val columnMetadataToFieldTypeMapper: ColumnMetadataToFieldTypeMapper,
     val catalog: ConfiguredAirbyteCatalog
 ) : MetadataQuerier.Factory {
 
@@ -52,28 +53,21 @@ class CatalogDrivenMetadataQuerierFactory(
                 }
             }
 
-            override fun columnMetadata(table: TableName): List<ColumnMetadata> {
+            override fun fields(table: TableName): List<Field> {
                 val stream: ConfiguredAirbyteStream = stream(table)
                 val jsonSchema: JsonNode = stream.stream.jsonSchema["properties"]!!
-                return jsonSchema.fields().asSequence().toList().map {
-                    (field: String, value: JsonNode) ->
+                return jsonSchema.properties().map { (id: String, value: JsonNode) ->
                     JDBCType.entries
                         .map {
                             ColumnMetadata(
-                                name = field,
-                                label = field,
+                                name = id,
+                                label = id,
                                 type = SystemType(typeCode = it.vendorTypeNumber)
                             )
                         }
-                        .find {
-                            val fieldType: FieldType = discoverMapper.toFieldType(it)
-                            fieldType.airbyteType.asJsonSchema() == value
-                        }
-                        ?: ColumnMetadata(
-                            name = field,
-                            label = field,
-                            type = SystemType(typeCode = 0)
-                        )
+                        .map { Field(id, columnMetadataToFieldTypeMapper.toFieldType(it)) }
+                        .find { it.type.airbyteType.asJsonSchema() == value }
+                        ?: Field(id, PokemonFieldType)
                 }
             }
 

@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.test.source
 
-import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.discover.ArrayFieldType
 import io.airbyte.cdk.discover.BigDecimalFieldType
 import io.airbyte.cdk.discover.BigIntegerFieldType
@@ -13,13 +12,11 @@ import io.airbyte.cdk.discover.BooleanFieldType
 import io.airbyte.cdk.discover.ByteFieldType
 import io.airbyte.cdk.discover.BytesFieldType
 import io.airbyte.cdk.discover.ClobFieldType
-import io.airbyte.cdk.discover.ColumnMetadata
-import io.airbyte.cdk.discover.DiscoverMapper
-import io.airbyte.cdk.discover.DiscoveredStream
+import io.airbyte.cdk.jdbc.ColumnMetadata
+import io.airbyte.cdk.discover.ColumnMetadataToFieldTypeMapper
 import io.airbyte.cdk.discover.DoubleFieldType
 import io.airbyte.cdk.discover.FloatFieldType
 import io.airbyte.cdk.discover.IntFieldType
-import io.airbyte.cdk.discover.LeafAirbyteType
 import io.airbyte.cdk.discover.LocalDateTimeFieldType
 import io.airbyte.cdk.discover.LocalDateFieldType
 import io.airbyte.cdk.discover.LocalTimeFieldType
@@ -44,6 +41,7 @@ import io.airbyte.cdk.read.stream.Greater
 import io.airbyte.cdk.read.stream.LesserOrEqual
 import io.airbyte.cdk.read.stream.Limit
 import io.airbyte.cdk.read.stream.LimitNode
+import io.airbyte.cdk.read.stream.LimitZero
 import io.airbyte.cdk.read.stream.NoFrom
 import io.airbyte.cdk.read.stream.NoLimit
 import io.airbyte.cdk.read.stream.NoOrderBy
@@ -61,22 +59,17 @@ import io.airbyte.cdk.read.stream.Where
 import io.airbyte.cdk.read.stream.WhereClauseLeafNode
 import io.airbyte.cdk.read.stream.WhereClauseNode
 import io.airbyte.cdk.read.stream.WhereNode
-import io.airbyte.protocol.models.v0.AirbyteStream
-import io.airbyte.protocol.models.v0.SyncMode
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.env.Environment
 import jakarta.inject.Singleton
 import java.sql.JDBCType
 
-/** [DiscoverMapper] and [SelectQueryGenerator] implementation for [TestSource]. */
+/** Stateless connector-specific logic for [TestSource]. */
 @Singleton
 @Requires(env = [Environment.TEST])
 @Secondary
-class TestSourceOperations : DiscoverMapper, SelectQueryGenerator {
-
-    override fun selectFromTableLimit0(table: TableName, columns: List<String>): String =
-        "SELECT ${columns.joinToString()} FROM ${table.fullyQualifiedName()} LIMIT 0"
+class TestSourceOperations : ColumnMetadataToFieldTypeMapper, SelectQueryGenerator {
 
     override fun toFieldType(c: ColumnMetadata): FieldType =
         when (c.type.jdbcType) {
@@ -124,34 +117,6 @@ class TestSourceOperations : DiscoverMapper, SelectQueryGenerator {
 
     private fun TableName.fullyQualifiedName(): String =
         if (schema == null) name else "${schema}.${name}"
-
-    override fun globalAirbyteStream(stream: DiscoveredStream): AirbyteStream =
-        DiscoverMapper.basicAirbyteStream(this, stream).apply {
-            namespace = stream.table.schema
-            supportedSyncModes = listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
-            (jsonSchema["properties"] as ObjectNode).apply {
-                set<ObjectNode>("_ab_cdc_lsn", LeafAirbyteType.NUMBER.asJsonSchema())
-                set<ObjectNode>(
-                    "_ab_cdc_updated_at",
-                    LeafAirbyteType.TIMESTAMP_WITH_TIMEZONE.asJsonSchema()
-                )
-                set<ObjectNode>(
-                    "_ab_cdc_deleted_at",
-                    LeafAirbyteType.TIMESTAMP_WITH_TIMEZONE.asJsonSchema()
-                )
-            }
-            defaultCursorField = listOf("_ab_cdc_lsn")
-            sourceDefinedCursor = true
-        }
-
-    override fun nonGlobalAirbyteStream(stream: DiscoveredStream): AirbyteStream =
-        DiscoverMapper.basicAirbyteStream(this, stream).apply {
-            namespace = stream.table.schema
-            supportedSyncModes = listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
-            if (defaultCursorField.isEmpty()) {
-                supportedSyncModes = listOf(SyncMode.FULL_REFRESH)
-            }
-        }
 
     override fun generateSql(ast: SelectQueryRootNode): SelectQuery =
         SelectQuery(ast.sql(), ast.select.columns, ast.bindings())
@@ -206,6 +171,7 @@ class TestSourceOperations : DiscoverMapper, SelectQueryGenerator {
     fun LimitNode.sql(): String =
         when (this) {
             NoLimit -> ""
+            LimitZero -> "LIMIT 0"
             is Limit -> "LIMIT ${state.current}"
         }
 

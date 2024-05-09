@@ -20,5 +20,24 @@ data object AirbyteCdcLsnMetaField : MetaField {
         get() = "_ab_cdc_lsn"
 
     override val type: FieldType
-        get() = PokemonFieldType
+        get() = StringFieldType
+}
+
+data object AirbyteCdcUpdatedAtMetaField : MetaField {
+
+    override val id: String
+        get() = "_ab_cdc_updated_at"
+
+    override val type: FieldType
+        get() = OffsetDateTimeFieldType
+}
+
+
+data object AirbyteCdcDeletedAtMetaField : MetaField {
+
+    override val id: String
+        get() = "_ab_cdc_deleted_at"
+
+    override val type: FieldType
+        get() = OffsetDateTimeFieldType
 }

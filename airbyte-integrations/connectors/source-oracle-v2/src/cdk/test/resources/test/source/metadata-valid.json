@@ -7,65 +7,11 @@
       "type": "BASE TABLE"
     },
     "value": {
-      "columns": [
-        {
-          "name": "ID",
-          "label": "ID",
-          "type": {
-            "@class": "io.airbyte.cdk.discover.SystemType",
-            "typeName": "UUID",
-            "klazz": "java.util.UUID",
-            "typeCode": -2,
-            "displaySize": 36,
-            "precision": 16,
-            "scale": 0,
-            "signed": false
-          },
-          "caseSensitive": true,
-          "autoIncrement": false,
-          "currency": false,
-          "searchable": true,
-          "nullable": false
-        },
-        {
-          "name": "TS",
-          "label": "TS",
-          "type": {
-            "@class": "io.airbyte.cdk.discover.SystemType",
-            "typeName": "TIMESTAMP WITH TIME ZONE",
-            "klazz": "java.time.OffsetDateTime",
-            "typeCode": 2014,
-            "displaySize": 32,
-            "precision": 32,
-            "scale": 6,
-            "signed": false
-          },
-          "caseSensitive": true,
-          "autoIncrement": false,
-          "currency": false,
-          "searchable": true,
-          "nullable": false
-        },
-        {
-          "name": "MSG",
-          "label": "MSG",
-          "type": {
-            "@class": "io.airbyte.cdk.discover.SystemType",
-            "typeName": "CHARACTER VARYING",
-            "klazz": "java.lang.String",
-            "typeCode": 12,
-            "displaySize": 60,
-            "precision": 60,
-            "scale": 0,
-            "signed": false
-          },
-          "caseSensitive": true,
-          "autoIncrement": false,
-          "currency": false,
-          "searchable": true,
-          "nullable": true
-        }
-      ],
+      "columns": {
+        "ID": "io.airbyte.cdk.discover.StringFieldType",
+        "TS": "io.airbyte.cdk.discover.OffsetDateTimeFieldType",
+        "MSG": "io.airbyte.cdk.discover.StringFieldType"
+      },
       "primaryKeys": [["ID"]]
     }
   },
@@ -77,46 +23,10 @@
       "type": "BASE TABLE"
     },
     "value": {
-      "columns": [
-        {
-          "name": "K",
-          "label": "K",
-          "type": {
-            "@class": "io.airbyte.cdk.discover.SystemType",
-            "typeName": "INTEGER",
-            "klazz": "java.lang.Integer",
-            "typeCode": 4,
-            "displaySize": 11,
-            "precision": 32,
-            "scale": 0,
-            "signed": true
-          },
-          "caseSensitive": true,
-          "autoIncrement": false,
-          "currency": false,
-          "searchable": true,
-          "nullable": false
-        },
-        {
-          "name": "V",
-          "label": "V",
-          "type": {
-            "@class": "io.airbyte.cdk.discover.SystemType",
-            "typeName": "CHARACTER VARYING",
-            "klazz": "java.lang.String",
-            "typeCode": 12,
-            "displaySize": 60,
-            "precision": 60,
-            "scale": 0,
-            "signed": false
-          },
-          "caseSensitive": true,
-          "autoIncrement": false,
-          "currency": false,
-          "searchable": true,
-          "nullable": true
-        }
-      ],
+      "columns": {
+        "K" : "io.airbyte.cdk.discover.IntFieldType",
+        "V" : "io.airbyte.cdk.discover.StringFieldType"
+      },
       "primaryKeys": [["K"]]
     }
   }

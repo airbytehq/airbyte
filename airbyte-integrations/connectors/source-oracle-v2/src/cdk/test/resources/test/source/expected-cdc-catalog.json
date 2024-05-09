@@ -22,7 +22,7 @@
             "airbyte_type": "timestamp_with_timezone"
           },
           "_ab_cdc_lsn": {
-            "type": "number"
+            "type": "string"
           },
           "_ab_cdc_updated_at": {
             "type": "string",
@@ -59,7 +59,7 @@
             "airbyte_type": "integer"
           },
           "_ab_cdc_lsn": {
-            "type": "number"
+            "type": "string"
           },
           "_ab_cdc_updated_at": {
             "type": "string",

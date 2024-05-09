@@ -7,6 +7,6 @@ package io.airbyte.cdk.discover
 /** Essentially a datum for [MetadataQuerier] query results. */
 data class DiscoveredStream(
     val table: TableName,
-    val columnMetadata: List<ColumnMetadata>,
-    val primaryKeyColumnNames: List<List<String>>
+    val columns: List<Field>,
+    val primaryKeyColumnIDs: List<List<String>>
 )

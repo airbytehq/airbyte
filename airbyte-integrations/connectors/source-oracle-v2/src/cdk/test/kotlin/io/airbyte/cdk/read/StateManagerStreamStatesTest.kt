@@ -418,8 +418,7 @@ class StateManagerStreamStatesTest {
                 "type": "string"
             },
             "ID": {
-                "type": "string",
-                "contentEncoding": "base64"
+                "type": "string"
             },
             "TS": {
                 "type": "string",

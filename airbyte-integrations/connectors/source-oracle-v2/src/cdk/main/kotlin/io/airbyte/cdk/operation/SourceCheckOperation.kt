@@ -101,7 +101,7 @@ class SourceCheckOperation<T : ConfigurationJsonObjectBase>(
         log.info { "Discovered ${tableNames.size} table(s)." }
         for (table in tableNames) {
             try {
-                metadataQuerier.columnMetadata(table)
+                metadataQuerier.fields(table)
             } catch (e: SQLException) {
                 log.info {
                     "Query failed with code ${e.errorCode}, SQLState ${e.sqlState};" +

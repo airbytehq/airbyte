@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.discover
+package io.airbyte.cdk.jdbc
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import java.sql.JDBCType

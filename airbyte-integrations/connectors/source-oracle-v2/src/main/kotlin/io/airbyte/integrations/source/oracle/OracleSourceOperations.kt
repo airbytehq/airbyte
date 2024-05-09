@@ -5,21 +5,18 @@
 package io.airbyte.integrations.source.oracle
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
-import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.discover.ArrayFieldType
 import io.airbyte.cdk.discover.BigDecimalFieldType
 import io.airbyte.cdk.discover.BigIntegerFieldType
 import io.airbyte.cdk.discover.BinaryStreamFieldType
 import io.airbyte.cdk.discover.BooleanFieldType
 import io.airbyte.cdk.discover.ClobFieldType
-import io.airbyte.cdk.discover.ColumnMetadata
-import io.airbyte.cdk.discover.DiscoverMapper
-import io.airbyte.cdk.discover.DiscoveredStream
+import io.airbyte.cdk.jdbc.ColumnMetadata
+import io.airbyte.cdk.discover.ColumnMetadataToFieldTypeMapper
 import io.airbyte.cdk.discover.DoubleFieldType
 import io.airbyte.cdk.discover.FloatFieldType
-import io.airbyte.cdk.discover.GenericUserDefinedType
+import io.airbyte.cdk.jdbc.GenericUserDefinedType
 import io.airbyte.cdk.discover.JsonStringFieldType
-import io.airbyte.cdk.discover.LeafAirbyteType
 import io.airbyte.cdk.discover.LocalDateTimeFieldType
 import io.airbyte.cdk.discover.LocalDateFieldType
 import io.airbyte.cdk.discover.LongFieldType
@@ -29,9 +26,9 @@ import io.airbyte.cdk.discover.OffsetDateTimeFieldType
 import io.airbyte.cdk.discover.PokemonFieldType
 import io.airbyte.cdk.discover.ReversibleFieldType
 import io.airbyte.cdk.discover.StringFieldType
-import io.airbyte.cdk.discover.SystemType
+import io.airbyte.cdk.jdbc.SystemType
 import io.airbyte.cdk.discover.TableName
-import io.airbyte.cdk.discover.UserDefinedArray
+import io.airbyte.cdk.jdbc.UserDefinedArray
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.FieldTypeBase
 import io.airbyte.cdk.discover.Field
@@ -43,6 +40,7 @@ import io.airbyte.cdk.read.stream.Greater
 import io.airbyte.cdk.read.stream.LesserOrEqual
 import io.airbyte.cdk.read.stream.Limit
 import io.airbyte.cdk.read.stream.LimitNode
+import io.airbyte.cdk.read.stream.LimitZero
 import io.airbyte.cdk.read.stream.NoFrom
 import io.airbyte.cdk.read.stream.NoLimit
 import io.airbyte.cdk.read.stream.NoOrderBy
@@ -61,21 +59,12 @@ import io.airbyte.cdk.read.stream.WhereClauseLeafNode
 import io.airbyte.cdk.read.stream.WhereClauseNode
 import io.airbyte.cdk.read.stream.WhereNode
 import io.airbyte.commons.jackson.MoreMappers
-import io.airbyte.protocol.models.v0.AirbyteStream
-import io.airbyte.protocol.models.v0.SyncMode
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 
-private val log = KotlinLogging.logger {}
-
 @Singleton
 @Primary
-class OracleSourceOperations : DiscoverMapper, SelectQueryGenerator {
-
-    override fun selectFromTableLimit0(table: TableName, columns: List<String>): String =
-        // Oracle doesn't do LIMIT, instead we need to involve ROWNUM.
-        "SELECT ${columns.joinToString()} FROM ${table.fullyQualifiedName()} WHERE ROWNUM < 1"
+class OracleSourceOperations : ColumnMetadataToFieldTypeMapper, SelectQueryGenerator {
 
     override fun toFieldType(c: ColumnMetadata): FieldType =
         when (val type = c.type) {
@@ -153,54 +142,9 @@ class OracleSourceOperations : DiscoverMapper, SelectQueryGenerator {
             else -> PokemonFieldType
         }
 
-    override fun isPossiblePrimaryKeyElement(c: ColumnMetadata): Boolean =
-        when (toFieldType(c)) {
-            !is ReversibleFieldType -> false
-            BinaryStreamFieldType,
-            ClobFieldType,
-            JsonStringFieldType,
-            NClobFieldType -> false
-            else -> true
-        }
-
-    override fun isPossibleCursor(c: ColumnMetadata): Boolean =
-        isPossiblePrimaryKeyElement(c) &&
-            when (toFieldType(c)) {
-                BooleanFieldType -> false
-                else -> true
-            }
-
     private fun TableName.fullyQualifiedName(): String =
         // The catalog never comes into play with Oracle.
         if (schema == null) name else "${schema}.${name}"
-
-    override fun globalAirbyteStream(stream: DiscoveredStream): AirbyteStream =
-        DiscoverMapper.basicAirbyteStream(this, stream).apply {
-            supportedSyncModes = listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
-            (jsonSchema["properties"] as ObjectNode).apply {
-                set<ObjectNode>("_ab_cdc_lsn", LeafAirbyteType.NUMBER.asJsonSchema())
-                set<ObjectNode>(
-                    "_ab_cdc_updated_at",
-                    LeafAirbyteType.TIMESTAMP_WITH_TIMEZONE.asJsonSchema()
-                )
-                set<ObjectNode>(
-                    "_ab_cdc_deleted_at",
-                    LeafAirbyteType.TIMESTAMP_WITH_TIMEZONE.asJsonSchema()
-                )
-            }
-            defaultCursorField = listOf("_ab_cdc_lsn")
-            sourceDefinedCursor = true
-        }
-
-    override fun nonGlobalAirbyteStream(stream: DiscoveredStream): AirbyteStream =
-        DiscoverMapper.basicAirbyteStream(this, stream).apply {
-            supportedSyncModes =
-                if (defaultCursorField.isEmpty()) {
-                    listOf(SyncMode.FULL_REFRESH)
-                } else {
-                    listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
-                }
-        }
 
     override fun generateSql(ast: SelectQueryRootNode): SelectQuery =
         SelectQuery(ast.sql(), ast.select.columns, ast.bindings())
@@ -208,9 +152,15 @@ class OracleSourceOperations : DiscoverMapper, SelectQueryGenerator {
     fun SelectQueryRootNode.sql(): String {
         val components: List<String> = listOf(select.sql(), from.sql(), where.sql(), orderBy.sql())
         val noLimitSql: String = components.filter { it.isNotBlank() }.joinToString(" ")
-        return when (limit) {
-            NoLimit -> noLimitSql
-            is Limit -> "${select.sql()} FROM ($noLimitSql) WHERE ROWNUM < ?"
+        val limitOperand: String = when (limit) {
+            NoLimit -> return noLimitSql
+            LimitZero -> "1"
+            is Limit -> "?"
+        }
+        return if (where == NoWhere && orderBy == NoOrderBy) {
+            "$noLimitSql WHERE ROWNUM < $limitOperand"
+        } else {
+            "${select.sql()} FROM ($noLimitSql) WHERE ROWNUM < $limitOperand"
         }
     }
 
@@ -269,7 +219,7 @@ class OracleSourceOperations : DiscoverMapper, SelectQueryGenerator {
 
     fun LimitNode.bindings(): List<SelectQuery.Binding> =
         when (this) {
-            is NoLimit -> listOf()
+            NoLimit, LimitZero -> listOf()
             is Limit ->
                 listOf(SelectQuery.Binding(nodeFactory.numberNode(state.current), LongFieldType))
         }

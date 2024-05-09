@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.discover
+package io.airbyte.cdk.jdbc
 
 /**
  *  Data class with one field for each [java.sql.ResultSetMetaData] column method,

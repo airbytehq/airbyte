@@ -14,6 +14,7 @@ import io.airbyte.cdk.read.CursorBasedNonResumableInitialSyncStarting
 import io.airbyte.cdk.read.CursorBasedResumableInitialSyncOngoing
 import io.airbyte.cdk.read.CursorBasedResumableInitialSyncStarting
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.NullFieldType
 import io.airbyte.cdk.read.FullRefreshNonResumableStarting
 import io.airbyte.cdk.read.FullRefreshResumableOngoing
 import io.airbyte.cdk.read.FullRefreshResumableStarting
@@ -21,6 +22,15 @@ import io.airbyte.cdk.read.NonResumableBackfillState
 import io.airbyte.cdk.read.ResumableSelectState
 
 object SelectQueryBuilder {
+
+    fun selectLimit0(table: TableName, columnIDs: List<String>): SelectQueryRootNode =
+        SelectQueryRootNode(
+            SelectColumns(columnIDs.map { Field(it, NullFieldType) }),
+            From(table),
+            NoWhere,
+            NoOrderBy,
+            LimitZero
+        ).optimize()
 
     fun selectMaxCursorValue(table: TableName, cursorColumn: Field): SelectQueryRootNode =
         SelectQueryRootNode(

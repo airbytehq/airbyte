@@ -80,6 +80,8 @@ data class Limit(val state: LimitState) : LimitNode
 
 data object NoLimit : LimitNode
 
+data object LimitZero : LimitNode
+
 fun SelectQueryRootNode.optimize(): SelectQueryRootNode =
     SelectQueryRootNode(select.optimize(), from, where.optimize(), orderBy.optimize(), limit)
 

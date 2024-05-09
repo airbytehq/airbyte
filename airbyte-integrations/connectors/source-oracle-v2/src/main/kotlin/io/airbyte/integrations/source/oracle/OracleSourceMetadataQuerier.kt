@@ -5,17 +5,19 @@
 package io.airbyte.integrations.source.oracle
 
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.cdk.discover.ColumnMetadata
-import io.airbyte.cdk.discover.DiscoverMapper
-import io.airbyte.cdk.discover.GenericUserDefinedType
+import io.airbyte.cdk.jdbc.ColumnMetadata
+import io.airbyte.cdk.discover.ColumnMetadataToFieldTypeMapper
+import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.jdbc.GenericUserDefinedType
 import io.airbyte.cdk.discover.MetadataQuerier
-import io.airbyte.cdk.discover.SourceType
-import io.airbyte.cdk.discover.SystemType
+import io.airbyte.cdk.jdbc.SourceType
+import io.airbyte.cdk.jdbc.SystemType
 import io.airbyte.cdk.discover.TableName
-import io.airbyte.cdk.discover.UserDefinedArray
-import io.airbyte.cdk.discover.UserDefinedType
+import io.airbyte.cdk.jdbc.UserDefinedArray
+import io.airbyte.cdk.jdbc.UserDefinedType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcMetadataQuerier
+import io.airbyte.cdk.read.stream.SelectQueryGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
@@ -28,7 +30,7 @@ import oracle.jdbc.OracleArray
 private val log = KotlinLogging.logger {}
 
 /**
- * Delegates to [JdbcMetadataQuerier] except for [columnMetadata].
+ * Delegates to [JdbcMetadataQuerier] except for [fields].
  *
  * Oracle is annoying when it comes to array types. All array types are user-defined VARRAYS. These
  * do NOT show up in a [java.sql.DatabaseMetaData.getUDTs] query. We therefore need to query
@@ -40,16 +42,16 @@ private val log = KotlinLogging.logger {}
  */
 class OracleSourceMetadataQuerier(val base: JdbcMetadataQuerier) : MetadataQuerier by base {
 
-    override fun columnMetadata(table: TableName): List<ColumnMetadata> =
-        base.columnMetadata(table).map {
-            it.copy(
-                type =
-                    when (it.type) {
-                        is SystemType -> allUDTsByFQName[it.type.typeName] ?: it.type
-                        else -> it.type
-                    }
-            )
-        }
+    override fun fields(table: TableName): List<Field> =
+        base.columnMetadata(table)
+            .map { c: ColumnMetadata ->
+                val udt: UserDefinedType? = when (c.type) {
+                    is SystemType -> allUDTsByFQName[c.type.typeName]
+                    else -> null
+                }
+                c.copy(type = udt ?: c.type)
+            }
+            .map { Field(it.label, base.columnMetadataToFieldTypeMapper.toFieldType(it)) }
 
     val allUDTsByFQName: Map<String, UserDefinedType> by lazy {
         val otherUDTs: List<UserDefinedType> =
@@ -218,12 +220,15 @@ WHERE OWNER IS NOT NULL AND TYPE_NAME IS NOT NULL
     /** Oracle implementation of [MetadataQuerier.Factory]. */
     @Singleton
     @Primary
-    class Factory(override val discoverMapper: DiscoverMapper) : MetadataQuerier.Factory {
+    class Factory(
+        val selectQueryGenerator: SelectQueryGenerator,
+        val columnMetadataToFieldTypeMapper: ColumnMetadataToFieldTypeMapper,
+    ) : MetadataQuerier.Factory {
 
         /** The [SourceConfiguration] is deliberately not injected in order to support tests. */
         override fun session(config: SourceConfiguration): MetadataQuerier {
             val jdbcConnectionFactory = JdbcConnectionFactory(config)
-            val base = JdbcMetadataQuerier(config, discoverMapper, jdbcConnectionFactory)
+            val base = JdbcMetadataQuerier(config, selectQueryGenerator, columnMetadataToFieldTypeMapper, jdbcConnectionFactory)
             return OracleSourceMetadataQuerier(base)
         }
     }
