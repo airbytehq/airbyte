@@ -46,6 +46,7 @@ The Airbyte community also maintains some CDKs:
 Before building a new connector, review
 [Airbyte's data protocol specification](../understanding-airbyte/airbyte-protocol.md).
 :::
+
 ## Adding a new connector
 
 The easiest way to make and start using a connector in your workspace is by using the
