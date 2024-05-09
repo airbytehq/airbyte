@@ -15,15 +15,16 @@ from firebolt.client.auth import Auth, ClientCredentials, UsernamePassword
 from firebolt.db import Connection, connect
 
 
-def _determine_auth(key: str, secret:str) -> Auth:
+def _determine_auth(key: str, secret: str) -> Auth:
     """
     Determine between new auth based on key and secret or legacy email based auth.
     """
-    if '@' in key:
+    if "@" in key:
         # email auth can only be used with UsernamePassword
         return UsernamePassword(key, secret)
     else:
         return ClientCredentials(key, secret)
+
 
 def parse_config(config: json, logger: AirbyteLogger) -> Dict[str, Any]:
     """
@@ -35,8 +36,7 @@ def parse_config(config: json, logger: AirbyteLogger) -> Dict[str, Any]:
     :return: dictionary of firebolt.db.Connection-compatible kwargs
     """
     # We should use client_id/client_secret, this code supports username/password for legacy users
-    auth = _determine_auth(config.get("client_id", config.get("username")),
-                           config.get("client_secret", config.get("password")))
+    auth = _determine_auth(config.get("client_id", config.get("username")), config.get("client_secret", config.get("password")))
     connection_args = {
         "database": config["database"],
         "auth": auth,
