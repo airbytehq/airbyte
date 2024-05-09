@@ -131,6 +131,7 @@ from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMe
 from airbyte_cdk.sources.utils.transform import TypeTransformer
 from isodate import parse_duration
 from pydantic import BaseModel
+from sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
 
 ComponentDefinition = Mapping[str, Any]
 
@@ -605,6 +606,18 @@ class ModelToComponentFactory:
         stop_condition_on_cursor = (
             model.incremental_sync and hasattr(model.incremental_sync, "is_data_feed") and model.incremental_sync.is_data_feed
         )
+        client_side_incremental_sync = None
+        if (
+            model.incremental_sync
+            and hasattr(model.incremental_sync, "is_client_side_incremental")
+            and model.incremental_sync.is_client_side_incremental
+        ):
+            client_side_incremental_sync = {
+                "cursor_field": InterpolatedString.create(model.incremental_sync.cursor_field, parameters=model.parameters).eval(config),
+                "start_date_from_config": InterpolatedString.create(
+                    model.incremental_sync.start_datetime.datetime, parameters=model.parameters
+                ).eval(config),
+            }
         transformations = []
         if model.transformations:
             for transformation_model in model.transformations:
@@ -616,6 +629,7 @@ class ModelToComponentFactory:
             primary_key=primary_key,
             stream_slicer=combined_slicers,
             stop_condition_on_cursor=stop_condition_on_cursor,
+            client_side_incremental_sync=client_side_incremental_sync,
             transformations=transformations,
         )
         cursor_field = model.incremental_sync.cursor_field if model.incremental_sync else None
@@ -950,6 +964,7 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_record_filter(model: RecordFilterModel, config: Config, **kwargs: Any) -> RecordFilter:
+        # TODO: use ClientSideIncrementalRecordFilterDecorator if Datetimestreamslice has flag is_client_side_incremental
         return RecordFilter(condition=model.condition or "", config=config, parameters=model.parameters or {})
 
     @staticmethod
@@ -967,11 +982,16 @@ class ModelToComponentFactory:
         config: Config,
         *,
         transformations: List[RecordTransformation],
+        client_side_incremental_sync: bool = False,
         **kwargs: Any,
     ) -> RecordSelector:
         assert model.schema_normalization is not None  # for mypy
         extractor = self._create_component_from_model(model=model.extractor, config=config)
         record_filter = self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
+        if client_side_incremental_sync:
+            record_filter = ClientSideIncrementalRecordFilterDecorator(
+                record_filter=record_filter, config=config, **client_side_incremental_sync
+            )
         schema_normalization = TypeTransformer(SCHEMA_TRANSFORMER_TYPE_MAPPING[model.schema_normalization])
 
         return RecordSelector(
@@ -1023,10 +1043,16 @@ class ModelToComponentFactory:
         primary_key: Optional[Union[str, List[str], List[List[str]]]],
         stream_slicer: Optional[StreamSlicer],
         stop_condition_on_cursor: bool = False,
+        client_side_incremental_sync: bool = False,
         transformations: List[RecordTransformation],
     ) -> SimpleRetriever:
         requester = self._create_component_from_model(model=model.requester, config=config, name=name)
-        record_selector = self._create_component_from_model(model=model.record_selector, config=config, transformations=transformations)
+        record_selector = self._create_component_from_model(
+            model=model.record_selector,
+            config=config,
+            transformations=transformations,
+            client_side_incremental_sync=client_side_incremental_sync,
+        )
         url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
         stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
         cursor = stream_slicer if isinstance(stream_slicer, Cursor) else None
