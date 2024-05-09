@@ -1469,7 +1469,7 @@ abstract class DestinationAcceptanceTest {
     }
 
     /** Whether the destination should be tested against different namespaces. */
-    protected open fun supportNamespaceTest(): Boolean {
+    open protected fun supportNamespaceTest(): Boolean {
         return false
     }
 
@@ -1571,19 +1571,21 @@ abstract class DestinationAcceptanceTest {
     }
 
     protected val destination: AirbyteDestination
-        get() =
-            DefaultAirbyteDestination(
-                AirbyteIntegrationLauncher(
-                    JOB_ID,
-                    JOB_ATTEMPT,
-                    imageName,
-                    processFactory,
-                    null,
-                    null,
-                    false,
-                    EnvVariableFeatureFlags()
-                )
+        get() {
+            return DefaultAirbyteDestination(
+                integrationLauncher =
+                    AirbyteIntegrationLauncher(
+                        JOB_ID,
+                        JOB_ATTEMPT,
+                        imageName,
+                        processFactory,
+                        null,
+                        null,
+                        false,
+                        EnvVariableFeatureFlags()
+                    )
             )
+        }
 
     @Throws(Exception::class)
     protected fun runSyncAndVerifyStateOutput(

@@ -123,10 +123,10 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                          |
-|:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.2.2 | 2024-04-19 | [36646](https://github.com/airbytehq/airbyte/pull/36646) | Updating to 0.80.0 CDK |
-| 1.2.1 | 2024-04-12 | [36646](https://github.com/airbytehq/airbyte/pull/36646) | schema descriptions |
-| 1.2.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
+| :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.2.2   | 2024-04-19 | [36646](https://github.com/airbytehq/airbyte/pull/36646)   | Updating to 0.80.0 CDK                                                                                                                                           |
+| 1.2.1   | 2024-04-12 | [36646](https://github.com/airbytehq/airbyte/pull/36646)   | schema descriptions                                                                                                                                              |
+| 1.2.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267)   | Pin airbyte-cdk version to `^0`                                                                                                                                  |
 | 1.1.0   | 2024-02-27 | [35656](https://github.com/airbytehq/airbyte/pull/35656)   | Add new fields to streams `board_issues`, `filter_sharing`, `filters`, `issues`, `permission_schemes`, `sprint_issues`, `users_groups_detailed`, and `workflows` |
 | 1.0.2   | 2024-02-12 | [35160](https://github.com/airbytehq/airbyte/pull/35160)   | Manage dependencies with Poetry.                                                                                                                                 |
 | 1.0.1   | 2024-01-24 | [34470](https://github.com/airbytehq/airbyte/pull/34470)   | Add state checkpoint interval for all streams                                                                                                                    |

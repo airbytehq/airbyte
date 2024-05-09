@@ -2,22 +2,22 @@
 
 This page will walk through the process of developing with the Java CDK.
 
-- [Developing with the Java CDK](#developing-with-the-java-cdk)
-  - [Intro to the Java CDK](#intro-to-the-java-cdk)
-    - [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
-    - [How is the CDK published?](#how-is-the-cdk-published)
-  - [Using the Java CDK](#using-the-java-cdk)
-    - [Building the CDK](#building-the-cdk)
-    - [Bumping the CDK version](#bumping-the-cdk-version)
-    - [Publishing the CDK](#publishing-the-cdk)
-  - [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
-    - [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
-    - [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
-    - [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
-    - [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
-    - [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
-  - [Changelog](#changelog)
-    - [Java CDK](#java-cdk)
+* [Developing with the Java CDK](#developing-with-the-java-cdk)
+  * [Intro to the Java CDK](#intro-to-the-java-cdk)
+    * [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
+    * [How is the CDK published?](#how-is-the-cdk-published)
+  * [Using the Java CDK](#using-the-java-cdk)
+    * [Building the CDK](#building-the-cdk)
+    * [Bumping the CDK version](#bumping-the-cdk-version)
+    * [Publishing the CDK](#publishing-the-cdk)
+  * [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
+    * [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
+    * [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
+    * [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
+    * [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
+    * [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
+  * [Changelog](#changelog)
+    * [Java CDK](#java-cdk)
 
 ## Intro to the Java CDK
 
@@ -173,7 +173,18 @@ corresponds to that version.
 ### Java CDK
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
-| :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------| :--------- | :--------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.34.0  | 2024-05-01 | [\#37712](https://github.com/airbytehq/airbyte/pull/37712) | Destinations: Remove incremental T+D                                                                                                                           |
+| 0.33.2  | 2024-05-03 | [\#37824](https://github.com/airbytehq/airbyte/pull/37824) | improve source acceptance tests                                                                                                                                |
+| 0.33.1  | 2024-05-03 | [\#37824](https://github.com/airbytehq/airbyte/pull/37824) | Add a unit test for cursor based sync                                                                                                                          |
+| 0.33.0  | 2024-05-03 | [\#36935](https://github.com/airbytehq/airbyte/pull/36935) | Destinations: Enable non-safe-casting DV2 tests                                                                                                                |
+| 0.32.0  | 2024-05-03 | [\#36929](https://github.com/airbytehq/airbyte/pull/36929) | Destinations: Assorted DV2 changes for mysql                                                                                                                   |
+| 0.31.7  | 2024-05-02 | [\#36910](https://github.com/airbytehq/airbyte/pull/36910) | changes for destination-snowflake                                                                                                                              |
+| 0.31.6  | 2024-05-02 | [\#37746](https://github.com/airbytehq/airbyte/pull/37746) | debuggability improvements.                                                                                                                                    |
+| 0.31.5  | 2024-04-30 | [\#37758](https://github.com/airbytehq/airbyte/pull/37758) | Set debezium max retries to zero                                                                                                                               |
+| 0.31.4  | 2024-04-30 | [\#37754](https://github.com/airbytehq/airbyte/pull/37754) | Add DebeziumEngine notification log                                                                                                                            |
+| 0.31.3  | 2024-04-30 | [\#37726](https://github.com/airbytehq/airbyte/pull/37726) | Remove debezium retries                                                                                                                                        |
+| 0.31.2  | 2024-04-30 | [\#37507](https://github.com/airbytehq/airbyte/pull/37507) | Better error messages when switching between global/per-stream modes.                                                                                          |
 | 0.31.0  | 2024-04-26 | [\#37584](https://github.com/airbytehq/airbyte/pull/37584) | Update S3 destination deps to exclude zookeeper and hadoop-yarn-common                                                                                         |
 | 0.30.11 | 2024-04-25 | [\#36899](https://github.com/airbytehq/airbyte/pull/36899) | changes for bigQuery destination.                                                                                                                              |
 | 0.30.10 | 2024-04-24 | [\#37541](https://github.com/airbytehq/airbyte/pull/37541) | remove excessive logging                                                                                                                                       |

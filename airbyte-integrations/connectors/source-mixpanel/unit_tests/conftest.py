@@ -8,7 +8,7 @@ import pytest
 
 @pytest.fixture
 def start_date():
-    return pendulum.parse("2017-01-25").date()
+    return pendulum.parse("2024-01-25T00:00:00").date()
 
 
 @pytest.fixture
@@ -37,8 +37,3 @@ def config_raw(config):
 @pytest.fixture(autouse=True)
 def patch_time(mocker):
     mocker.patch("time.sleep")
-
-
-@pytest.fixture(autouse=True)
-def disable_cache(mocker):
-    mocker.patch("source_mixpanel.streams.cohorts.Cohorts.use_cache", new_callable=mocker.PropertyMock, return_value=False)
