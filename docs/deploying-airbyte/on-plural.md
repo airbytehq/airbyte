@@ -6,16 +6,17 @@ If you'd prefer to follow along with a video, check out the Plural Airbyte deplo
 
 ## Getting started
 
-1. Create an account on [https://app.plural.sh](https://app.plural.sh).  
+1. Create an account on [https://app.plural.sh](https://app.plural.sh).
 2. Install the Plural CLI by following steps 1, 2, and 3 of the instructions [here](https://docs.plural.sh/getting-started). Through this, you will also configure your cloud provider and the domain name under which your application will be deployed to.
 
 We now need a Git repository to store your Plural configuration in. This will also contain the Helm and Terraform files that Plural will autogenerate for you.
 
 You have two options:
+
 - Run `plural init` in any directory to let Plural initiate an OAuth workflow to create a Git repo for you.
 - Create a Git repo manually, clone it, and run `plural init` inside it.
 
-Running `plural init` will configure your installation and cloud provider for the repo. 
+Running `plural init` will configure your installation and cloud provider for the repo.
 
 ## Installing Airbyte
 
@@ -50,7 +51,7 @@ plural deploy --commit "deploying airbyte"
 
 ## Adding the Plural Console
 
-To make management of your installation as simple as possible, we recommend installing the Plural Console.  The console provides tools to manage resource scaling, receiving automated upgrades, dashboards tailored to your Airbyte installation, and log aggregation. Run:
+To make management of your installation as simple as possible, we recommend installing the Plural Console. The console provides tools to manage resource scaling, receiving automated upgrades, dashboards tailored to your Airbyte installation, and log aggregation. Run:
 
 ```bash
 plural bundle install console console-aws

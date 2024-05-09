@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d913b0f2-cc51-4e55-a44c-8ba1697b9239
-  dockerImageTag: 2.5.2
+  dockerImageTag: 2.5.3
   dockerRepository: airbyte/source-paypal-transaction
   documentationUrl: https://docs.airbyte.com/integrations/sources/paypal-transaction
   githubIssueLabel: source-paypal-transaction
@@ -33,7 +33,12 @@ data:
   releases:
     breakingChanges:
       2.1.0:
-        message: 'Version 2.1.0 changes the format of the state. The format of the cursor changed from "2021-06-18T16:24:13+03:00" to "2021-06-18T16:24:13Z". The state key for the transactions stream changed to "transaction_updated_date" and the key for the balances stream change to "as_of_time". The upgrade is safe, but rolling back is not.'
+        message:
+          'Version 2.1.0 changes the format of the state. The format of the
+          cursor changed from "2021-06-18T16:24:13+03:00" to "2021-06-18T16:24:13Z".
+          The state key for the transactions stream changed to "transaction_updated_date"
+          and the key for the balances stream change to "as_of_time". The upgrade
+          is safe, but rolling back is not.'
         upgradeDeadline: "2023-09-18"
   suggestedStreams:
     streams:

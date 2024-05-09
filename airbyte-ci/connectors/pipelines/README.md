@@ -298,14 +298,14 @@ flowchart TD
 #### Options
 
 | Option                                                  | Multiple | Default value | Description                                                                                                                                                                                              |
-| ------------------------------------------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ------------------------------------------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | `--skip-step/-x`                                        | True     |               | Skip steps by id e.g. `-x unit -x acceptance`                                                                                                                                                            |
 | `--only-step/-k`                                        | True     |               | Only run specific steps by id e.g. `-k unit -k acceptance`                                                                                                                                               |
 | `--fail-fast`                                           | False    | False         | Abort after any tests fail, rather than continuing to run additional tests. Use this setting to confirm a known bug is fixed (or not), or when you only require a pass/fail result.                      |
 | `--code-tests-only`                                     | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development. |
 | `--concurrent-cat`                                      | False    | False         | Make CAT tests run concurrently using pytest-xdist. Be careful about source or destination API rate limits.                                                                                              |
 | `--<step-id>.<extra-parameter>=<extra-parameter-value>` | True     |               | You can pass extra parameters for specific test steps. More details in the extra parameters section below                                                                                                |
-| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use.
+| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
 
 Note:
 
@@ -461,12 +461,12 @@ remoteRegistries:
 
 ### <a id="connectors-up_to_date"></a>`connectors up_to_date` command
 
-Meant to be run on a cron script. 
+Meant to be run on a cron script.
 
 Actions:
 
-* Upgrades dependecies to the current versions
-* Can make a pull request and bump version, changelog
+- Upgrades dependecies to the current versions
+- Can make a pull request and bump version, changelog
 
 ```
 Usage: airbyte-ci connectors up_to_date [OPTIONS]
@@ -484,19 +484,19 @@ Options:
 
 Get source-openweather up to date. If there are changes, bump the version and add to changelog:
 
-* `airbyte-ci connectors --name=source-openweather up_to_date`: upgrades main dependecies
-* `airbyte-ci connectors --name=source-openweather up_to_date --dev`: forces update if there are only dev changes
-* `airbyte-ci connectors --name=source-openweather up_to_date --dep pytest@^8.10 --dep airbyte-cdk@0.80.0`: allows update to toml files as well
-* `airbyte-ci connectors --name=source-openweather up_to_date --pull`: make a pull request for it
+- `airbyte-ci connectors --name=source-openweather up_to_date`: upgrades main dependecies
+- `airbyte-ci connectors --name=source-openweather up_to_date --dev`: forces update if there are only dev changes
+- `airbyte-ci connectors --name=source-openweather up_to_date --dep pytest@^8.10 --dep airbyte-cdk@0.80.0`: allows update to toml files as well
+- `airbyte-ci connectors --name=source-openweather up_to_date --pull`: make a pull request for it
 
- ### Other things it could do
+### Other things it could do
 
-* upgrade it the latest base image
-* make sure it's the newest version of pytest
-* do a `poetry update` to update everything else
-* make the pull requests on a well known branch, replacing the last one if still open
-* bump the toml and metadata and changelog
-* also bump the manifest version of the CDK
+- upgrade it the latest base image
+- make sure it's the newest version of pytest
+- do a `poetry update` to update everything else
+- make the pull requests on a well known branch, replacing the last one if still open
+- bump the toml and metadata and changelog
+- also bump the manifest version of the CDK
 
 ### <a id="connectors-bump_version"></a>`connectors bump_version` command
 
