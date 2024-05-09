@@ -77,3 +77,5 @@ properties:
     default: false
   generated:
     "$ref": GeneratedFields.yaml
+  packageInfo:
+    "$ref": ConnectorPackageInfo.yaml

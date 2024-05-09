@@ -97,6 +97,10 @@ class SourceFileInfo(BaseModel):
     registry_entry_generated_at: Optional[str] = None
 
 
+class ConnectorPackageInfo(BaseModel):
+    cdk_version: Optional[str] = None
+
+
 class SuggestedStreams(BaseModel):
     class Config:
         extra = Extra.allow
@@ -202,6 +206,7 @@ class ConnectorRegistrySourceDefinition(BaseModel):
     releases: Optional[ConnectorReleases] = None
     ab_internal: Optional[AirbyteInternal] = None
     generated: Optional[GeneratedFields] = None
+    packageInfo: Optional[ConnectorPackageInfo] = None
 
 
 class ConnectorRegistryDestinationDefinition(BaseModel):
@@ -239,6 +244,7 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
     ab_internal: Optional[AirbyteInternal] = None
     supportsRefreshes: Optional[bool] = False
     generated: Optional[GeneratedFields] = None
+    packageInfo: Optional[ConnectorPackageInfo] = None
 
 
 class ConnectorRegistryV0(BaseModel):

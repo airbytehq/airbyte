@@ -76,3 +76,5 @@ properties:
     "$ref": AirbyteInternal.yaml
   generated:
     "$ref": GeneratedFields.yaml
+  packageInfo:
+    "$ref": ConnectorPackageInfo.yaml

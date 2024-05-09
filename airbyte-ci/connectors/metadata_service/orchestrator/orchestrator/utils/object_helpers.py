@@ -50,5 +50,8 @@ def default_none_to_dict(value, key, obj):
         key: The key to set in the dictionary.
         obj: The dictionary to set the key in.
     """
+    if obj is None:
+        return
+
     if value is None:
         obj[key] = {}
