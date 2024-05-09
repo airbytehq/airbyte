@@ -87,7 +87,6 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
   }
 
   private Optional<MongoDbStreamState> getCurrentState(Object currentId) {
-    LOGGER.info("*** Current ID : {} {}", currentId, currentId.getClass().getSimpleName());
     final var idType = IdType.findByJavaType(currentId.getClass().getSimpleName())
         .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + currentId.getClass().getSimpleName()));
 
