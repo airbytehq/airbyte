@@ -28,7 +28,7 @@ To review the connection status:
 If the most recent sync failed, you'll see the error message that will help diagnose if the failure is due to a source or destination configuration error. [Reach out](/community/getting-support.md) to us if you need any help to ensure you data continues syncing.
 
 :::info
-If a sync starts to fail, it will automatically be disabled after 100 consecutive failures or 14 consecutive days of failure.
+If a sync starts to fail, it will automatically be disabled after multiple consecutive failures or several consecutive days of failure.
 :::
 
 If a new major version of the connector has been released, you will also see a banner on this page indicating the cutoff date for the version. Airbyte recommends upgrading before the cutoff date to ensure your data continues syncing. If you do not upgrade before the cutoff date, Airbyte will automatically disable your connection.
@@ -47,6 +47,6 @@ The stream status allows you to monitor each stream's latest status. The stream 
 
 Each stream shows the last record loaded to the destination. Toggle the header to display the exact datetime the last record was loaded.
 
-You can [reset](/operator-guides/reset.md) an individual stream without resetting all streams in a connection by clicking the three grey dots next to any stream.
+You can [clear](/operator-guides/reset.md) an individual stream without clearing all streams in a connection by clicking the three grey dots next to any stream.
 
 You can also navigate directly to the stream's configuration by click the three grey dots next to any stream and selecting "Open details" to be redirected to the stream configuration.
