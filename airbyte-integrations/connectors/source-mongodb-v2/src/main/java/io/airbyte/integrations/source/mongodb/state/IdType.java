@@ -7,7 +7,14 @@ package io.airbyte.integrations.source.mongodb.state;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.bson.BsonBinary;
+import org.bson.UuidRepresentation;
+import org.bson.internal.UuidHelper;
+import org.bson.types.Binary;
 import org.bson.types.ObjectId;
+
+import static java.util.Base64.getEncoder;
 
 /**
  * _id field types that are currently supported, potential types are defined <a href=
@@ -19,7 +26,6 @@ public enum IdType {
   STRING("string", "String", s -> s),
   INT("int", "Integer", Integer::valueOf),
   LONG("long", "Long", Long::valueOf),
-//  BINARY("binData", "Binary",UUID::fromString);
   BINARY("binData", "Binary", s -> s);
 
   private static final Map<String, IdType> byBsonType = new HashMap<>();
@@ -75,4 +81,28 @@ public enum IdType {
     return Optional.ofNullable(byJavaType.get(javaType.toLowerCase()));
   }
 
+
+  public static String idToStringRepresenation(final Object currentId, final IdType idType) {
+    final String id;
+    if (idType == IdType.BINARY) {
+      final var binLastId = (Binary) currentId;
+      if (binLastId.getType() == 4) {
+        id = UuidHelper.decodeBinaryToUuid(binLastId.getData(), binLastId.getType(), UuidRepresentation.STANDARD).toString();
+      } else {
+        id = getEncoder().encodeToString(binLastId.getData());
+      }
+    } else {
+      id = currentId.toString();
+    }
+
+    return id;
+  }
+
+  public static BsonBinary parseBinaryIdString(final String id) {
+    try {
+      return new BsonBinary(UUID.fromString(id));
+    } catch (final IllegalArgumentException ex) {
+      return new BsonBinary(Base64.getDecoder().decode(id));
+    }
+  }
 }

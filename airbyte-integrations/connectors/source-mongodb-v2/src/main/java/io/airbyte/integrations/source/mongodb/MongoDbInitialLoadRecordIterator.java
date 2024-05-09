@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mongodb;
 
+import static io.airbyte.integrations.source.mongodb.state.IdType.idToStringRepresenation;
+import static io.airbyte.integrations.source.mongodb.state.IdType.parseBinaryIdString;
 import static io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus.IN_PROGRESS;
 import static java.util.Base64.getEncoder;
 
@@ -88,21 +90,8 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
     LOGGER.info("*** Current ID : {} {}", currentId, currentId.getClass().getSimpleName());
     final var idType = IdType.findByJavaType(currentId.getClass().getSimpleName())
         .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + currentId.getClass().getSimpleName()));
-//    final var id = (idType == IdType.BINARY) ? java.util.Base64.getEncoder().encodeToString(((Binary)currentId).getData()) : currentId.toString();
-    final String id;
-    if (idType == IdType.BINARY) {
-      final var binLastId = (Binary) currentId;
-      if (binLastId.getType() == 4) {
-        id = UuidHelper.decodeBinaryToUuid(binLastId.getData(), binLastId.getType(), UuidRepresentation.STANDARD).toString();
-      } else {
-        id = getEncoder().encodeToString(binLastId.getData());
-      }
-    } else {
-      id = currentId.toString();
-    }
 
-    LOGGER.info("*** id {}", id);
-    final var state = new MongoDbStreamState(id,
+    final var state = new MongoDbStreamState(idToStringRepresenation(currentId, idType),
         IN_PROGRESS,
         idType);
     return Optional.of(state);
@@ -117,7 +106,6 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
 
   private MongoCursor<Document> buildNewQueryIterator() {
     Bson filter = buildFilter();
-    LOGGER.info("*** filter {}", filter);
     return isEnforceSchema ? collection.find()
         .filter(filter)
         .projection(fields)
@@ -148,17 +136,7 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
             case OBJECT_ID -> new BsonObjectId(new ObjectId(state.id()));
             case INT -> new BsonInt32(Integer.parseInt(state.id()));
             case LONG -> new BsonInt64(Long.parseLong(state.id()));
-            case BINARY -> {
-              try {
-                final var uuid = UUID.fromString(state.id());
-                LOGGER.info("*** UUID {}", uuid);
-//                yield new BsonBinary(BsonBinarySubType.UUID_STANDARD, UuidHelper.encodeUuidToBinary(uuid, UuidRepresentation.STANDARD));
-                yield new BsonBinary(uuid);
-              } catch (final Exception ex) {
-                LOGGER.info("*** Base64 {}", Base64.getDecoder().decode(state.id()));
-                yield new BsonBinary(Base64.getDecoder().decode(state.id()));
-              }
-            }
+            case BINARY -> parseBinaryIdString(state.id());
             }))
         // if nothing was found, return a new BsonDocument
         .orElseGet(BsonDocument::new);

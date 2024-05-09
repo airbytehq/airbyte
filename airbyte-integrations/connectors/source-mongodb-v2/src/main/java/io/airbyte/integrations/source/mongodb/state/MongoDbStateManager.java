@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mongodb.state;
 
+import static io.airbyte.integrations.source.mongodb.state.IdType.idToStringRepresenation;
 import static io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus.FULL_REFRESH;
 import static io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus.IN_PROGRESS;
 import static io.airbyte.protocol.models.v0.SyncMode.INCREMENTAL;
@@ -303,19 +304,7 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
         final var finalStateStatus = InitialSnapshotStatus.COMPLETE;
         final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
             .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
-//        final var id = idType == IdType.BINARY ? java.util.Base64.getEncoder().encodeToString(((org.bson.types.Binary) lastId).getData()) : lastId.toString();
-        String id;
-        if (idType == IdType.BINARY) {
-          final var binLastId = (Binary) lastId;
-          if (binLastId.getType() == 4) {
-            id = UuidHelper.decodeBinaryToUuid(binLastId.getData(), binLastId.getType(), UuidRepresentation.STANDARD).toString();
-          } else {
-            id = getEncoder().encodeToString(binLastId.getData());
-          }
-        } else {
-          id = lastId.toString();
-        }
-        final var state = new MongoDbStreamState(id, finalStateStatus, idType);
+        final var state = new MongoDbStreamState(idToStringRepresenation(lastId, idType), finalStateStatus, idType);
 
         updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
       }
