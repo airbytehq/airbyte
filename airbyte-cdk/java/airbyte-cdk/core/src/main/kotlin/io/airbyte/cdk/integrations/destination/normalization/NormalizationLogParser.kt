@@ -127,7 +127,7 @@ class NormalizationLogParser {
                 val errorMap =
                     SentryExceptionHelper.getUsefulErrorMessageAndTypeFromDbtError(dbtErrorStack)
                 val internalMessage =
-                    errorMap!![SentryExceptionHelper.ErrorMapKeys.ERROR_MAP_MESSAGE_KEY]
+                    errorMap[SentryExceptionHelper.ErrorMapKeys.ERROR_MAP_MESSAGE_KEY]
                 val traceMessage =
                     AirbyteMessage()
                         .withType(AirbyteMessage.Type.TRACE)

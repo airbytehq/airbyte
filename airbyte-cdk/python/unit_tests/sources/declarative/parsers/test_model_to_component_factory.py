@@ -3,13 +3,13 @@
 #
 
 # mypy: ignore-errors
-
 import datetime
 from typing import Any, Mapping
 
+import freezegun
 import pytest
 from airbyte_cdk.models import Level
-from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
+from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
     BasicHttpAuthenticator,
@@ -33,6 +33,7 @@ from airbyte_cdk.sources.declarative.models import DatetimeBasedCursor as Dateti
 from airbyte_cdk.sources.declarative.models import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.models import DefaultPaginator as DefaultPaginatorModel
 from airbyte_cdk.sources.declarative.models import HttpRequester as HttpRequesterModel
+from airbyte_cdk.sources.declarative.models import JwtAuthenticator as JwtAuthenticatorModel
 from airbyte_cdk.sources.declarative.models import ListPartitionRouter as ListPartitionRouterModel
 from airbyte_cdk.sources.declarative.models import OAuthAuthenticator as OAuthAuthenticatorModel
 from airbyte_cdk.sources.declarative.models import RecordSelector as RecordSelectorModel
@@ -856,7 +857,7 @@ requester:
     assert selector._request_options_provider._headers_interpolator._interpolator.mapping["header"] == "header_value"
 
 
-def test_create_request_with_leacy_session_authenticator():
+def test_create_request_with_legacy_session_authenticator():
     content = """
 requester:
   type: HttpRequester
@@ -1845,3 +1846,159 @@ def test_create_custom_schema_loader():
     }
     component = factory.create_component(CustomSchemaLoaderModel, definition, {})
     assert isinstance(component, MyCustomSchemaLoader)
+
+
+@freezegun.freeze_time("2021-01-01 00:00:00")
+@pytest.mark.parametrize(
+    "config, manifest, expected",
+    [
+        (
+            {
+                "secret_key": "secret_key",
+            },
+            """
+            authenticator:
+                type: JwtAuthenticator
+                secret_key: "{{ config['secret_key'] }}"
+                algorithm: HS256
+            """,
+            {
+                "secret_key": "secret_key",
+                "algorithm": "HS256",
+                "base64_encode_secret_key": False,
+                "token_duration": 1200,
+                "jwt_headers": {
+                    "typ": "JWT",
+                    "alg": "HS256"
+                },
+                "jwt_payload": {}
+            }
+        ),
+        (
+            {
+                "secret_key": "secret_key",
+                "kid": "test kid",
+                "iss": "test iss",
+                "test": "test custom header",
+            },
+            """
+            authenticator:
+                type: JwtAuthenticator
+                secret_key: "{{ config['secret_key'] }}"
+                base64_encode_secret_key: True
+                algorithm: RS256
+                token_duration: 3600
+                header_prefix: Bearer
+                jwt_headers:
+                    kid: "{{ config['kid'] }}"
+                    cty: "JWT"
+                    typ: "Alt"
+                additional_jwt_headers:
+                    test: "{{ config['test']}}"
+                jwt_payload:
+                    iss: "{{ config['iss'] }}"
+                    sub: "test sub"
+                    aud: "test aud"
+                additional_jwt_payload:
+                    test: "test custom payload"
+            """,
+            {
+                "secret_key": "secret_key",
+                "algorithm": "RS256",
+                "base64_encode_secret_key": True,
+                "token_duration": 3600,
+                "header_prefix": "Bearer",
+                "jwt_headers": {
+                    "kid": "test kid",
+                    "typ": "Alt",
+                    "alg": "RS256",
+                    "cty": "JWT",
+                    "test": "test custom header",
+
+                },
+                "jwt_payload": {
+                    "iss": "test iss",
+                    "sub": "test sub",
+                    "aud": "test aud",
+                    "test": "test custom payload",
+                },
+            }
+        ),
+        (
+            {
+                "secret_key": "secret_key",
+            },
+            """
+            authenticator:
+                type: JwtAuthenticator
+                secret_key: "{{ config['secret_key'] }}"
+                algorithm: HS256
+                additional_jwt_headers:
+                    custom_header: "custom header value"
+                additional_jwt_payload:
+                    custom_payload: "custom payload value"
+            """,
+            {
+                "secret_key": "secret_key",
+                "algorithm": "HS256",
+                "base64_encode_secret_key": False,
+                "token_duration": 1200,
+                "jwt_headers": {
+                    "typ": "JWT",
+                    "alg": "HS256",
+                    "custom_header": "custom header value",
+
+                },
+                "jwt_payload": {
+                    "custom_payload": "custom payload value",
+                },
+            }
+        ),
+        (
+            {
+                "secret_key": "secret_key",
+            },
+            """
+            authenticator:
+                type: JwtAuthenticator
+                secret_key: "{{ config['secret_key'] }}"
+                algorithm: invalid_algorithm
+            """,
+            {
+                "expect_error": True,
+            }
+        ),
+    ],
+)
+def test_create_jwt_authenticator(config, manifest, expected):
+    parsed_manifest = YamlDeclarativeSource._parse(manifest)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+
+    authenticator_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["authenticator"], {})
+
+    if expected.get("expect_error"):
+        with pytest.raises(ValueError):
+            authenticator = factory.create_component(
+                model_type=JwtAuthenticatorModel, component_definition=authenticator_manifest, config=config
+            )
+        return
+
+    authenticator = factory.create_component(
+        model_type=JwtAuthenticatorModel, component_definition=authenticator_manifest, config=config
+    )
+
+    assert isinstance(authenticator, JwtAuthenticator)
+    assert authenticator._secret_key.eval(config) == expected["secret_key"]
+    assert authenticator._algorithm == expected["algorithm"]
+    assert authenticator._base64_encode_secret_key == expected["base64_encode_secret_key"]
+    assert authenticator._token_duration == expected["token_duration"]
+    if "header_prefix" in expected:
+        assert authenticator._header_prefix.eval(config) == expected["header_prefix"]
+    assert authenticator._get_jwt_headers() == expected["jwt_headers"]
+    jwt_payload = expected["jwt_payload"]
+    jwt_payload.update({
+        "iat": int(datetime.datetime.now().timestamp()),
+        "nbf": int(datetime.datetime.now().timestamp()),
+        "exp": int(datetime.datetime.now().timestamp()) + expected["token_duration"]
+    })
+    assert authenticator._get_jwt_payload() == jwt_payload

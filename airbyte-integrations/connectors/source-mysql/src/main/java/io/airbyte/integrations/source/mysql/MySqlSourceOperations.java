@@ -102,53 +102,62 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
     final String columnName = field.getName();
     final MysqlType columnType = field.getMysqlType();
 
-    // https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-type-conversions.html
-    switch (columnType) {
-      case BIT -> {
-        if (field.getLength() == 1L) {
-          // BIT(1) is boolean
-          putBoolean(json, columnName, resultSet, colIndex);
-        } else {
-          putBinary(json, columnName, resultSet, colIndex);
+    // Attempt to access the column. this allows us to know if it is null before we do
+    // type-specific parsing. If the column is null, we will populate the null value and skip attempting
+    // to
+    // parse the column value.
+    resultSet.getObject(colIndex);
+    if (resultSet.wasNull()) {
+      json.putNull(columnName);
+    } else {
+      // https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-type-conversions.html
+      switch (columnType) {
+        case BIT -> {
+          if (field.getLength() == 1L) {
+            // BIT(1) is boolean
+            putBoolean(json, columnName, resultSet, colIndex);
+          } else {
+            putBinary(json, columnName, resultSet, colIndex);
+          }
         }
-      }
-      case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
-      case TINYINT -> {
-        if (field.getLength() == 1L) {
-          // TINYINT(1) is boolean
-          putBoolean(json, columnName, resultSet, colIndex);
-        } else {
-          putShortInt(json, columnName, resultSet, colIndex);
+        case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
+        case TINYINT -> {
+          if (field.getLength() == 1L) {
+            // TINYINT(1) is boolean
+            putBoolean(json, columnName, resultSet, colIndex);
+          } else {
+            putShortInt(json, columnName, resultSet, colIndex);
+          }
         }
-      }
-      case TINYINT_UNSIGNED, YEAR -> putShortInt(json, columnName, resultSet, colIndex);
-      case SMALLINT, SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED -> putInteger(json, columnName, resultSet, colIndex);
-      case INT, INT_UNSIGNED -> {
-        if (field.isUnsigned()) {
-          putBigInt(json, columnName, resultSet, colIndex);
-        } else {
-          putInteger(json, columnName, resultSet, colIndex);
+        case TINYINT_UNSIGNED, YEAR -> putShortInt(json, columnName, resultSet, colIndex);
+        case SMALLINT, SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED -> putInteger(json, columnName, resultSet, colIndex);
+        case INT, INT_UNSIGNED -> {
+          if (field.isUnsigned()) {
+            putBigInt(json, columnName, resultSet, colIndex);
+          } else {
+            putInteger(json, columnName, resultSet, colIndex);
+          }
         }
-      }
-      case BIGINT, BIGINT_UNSIGNED -> putBigInt(json, columnName, resultSet, colIndex);
-      case FLOAT, FLOAT_UNSIGNED -> putFloat(json, columnName, resultSet, colIndex);
-      case DOUBLE, DOUBLE_UNSIGNED -> putDouble(json, columnName, resultSet, colIndex);
-      case DECIMAL, DECIMAL_UNSIGNED -> {
-        if (field.getDecimals() == 0) {
-          putBigInt(json, columnName, resultSet, colIndex);
-        } else {
-          putBigDecimal(json, columnName, resultSet, colIndex);
+        case BIGINT, BIGINT_UNSIGNED -> putBigInt(json, columnName, resultSet, colIndex);
+        case FLOAT, FLOAT_UNSIGNED -> putFloat(json, columnName, resultSet, colIndex);
+        case DOUBLE, DOUBLE_UNSIGNED -> putDouble(json, columnName, resultSet, colIndex);
+        case DECIMAL, DECIMAL_UNSIGNED -> {
+          if (field.getDecimals() == 0) {
+            putBigInt(json, columnName, resultSet, colIndex);
+          } else {
+            putBigDecimal(json, columnName, resultSet, colIndex);
+          }
         }
+        case DATE -> putDate(json, columnName, resultSet, colIndex);
+        case DATETIME -> putTimestamp(json, columnName, resultSet, colIndex);
+        case TIMESTAMP -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
+        case TIME -> putTime(json, columnName, resultSet, colIndex);
+        case CHAR, VARCHAR -> putString(json, columnName, resultSet, colIndex);
+        case TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY, GEOMETRY -> putBinary(json, columnName, resultSet, colIndex);
+        case TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, JSON, ENUM, SET -> putString(json, columnName, resultSet, colIndex);
+        case NULL -> json.set(columnName, NullNode.instance);
+        default -> putDefault(json, columnName, resultSet, colIndex);
       }
-      case DATE -> putDate(json, columnName, resultSet, colIndex);
-      case DATETIME -> putTimestamp(json, columnName, resultSet, colIndex);
-      case TIMESTAMP -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
-      case TIME -> putTime(json, columnName, resultSet, colIndex);
-      case CHAR, VARCHAR -> putString(json, columnName, resultSet, colIndex);
-      case TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY, GEOMETRY -> putBinary(json, columnName, resultSet, colIndex);
-      case TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, JSON, ENUM, SET -> putString(json, columnName, resultSet, colIndex);
-      case NULL -> json.set(columnName, NullNode.instance);
-      default -> putDefault(json, columnName, resultSet, colIndex);
     }
   }
 

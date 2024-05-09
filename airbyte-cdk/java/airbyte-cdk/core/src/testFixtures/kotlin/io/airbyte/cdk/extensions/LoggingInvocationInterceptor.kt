@@ -36,42 +36,55 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
     private class LoggingInvocationInterceptorHandler : InvocationHandler {
         @Throws(Throwable::class)
         override fun invoke(proxy: Any, method: Method, args: Array<Any>): Any? {
-            if (
+            val methodName = method.name
+            val invocationContextClass: Class<*> =
+                when (methodName) {
+                    "interceptDynamicTest" -> DynamicTestInvocationContext::class.java
+                    else -> ReflectiveInvocationContext::class.java
+                }
+            try {
                 LoggingInvocationInterceptor::class
                     .java
                     .getDeclaredMethod(
                         method.name,
                         InvocationInterceptor.Invocation::class.java,
-                        ReflectiveInvocationContext::class.java,
+                        invocationContextClass,
                         ExtensionContext::class.java
-                    ) == null
-            ) {
-                LOGGER!!.error(
+                    )
+            } catch (_: NoSuchMethodException) {
+                LOGGER.error(
                     "Junit LoggingInvocationInterceptor executing unknown interception point {}",
                     method.name
                 )
-                return method.invoke(proxy, *(args!!))
+                return method.invoke(proxy, *(args))
             }
-            val invocation = args!![0] as InvocationInterceptor.Invocation<*>?
-            val invocationContext = args[1] as ReflectiveInvocationContext<*>?
+            val invocation = args[0] as InvocationInterceptor.Invocation<*>?
+            val reflectiveInvocationContext = args[1] as? ReflectiveInvocationContext<*>
             val extensionContext = args[2] as ExtensionContext?
-            val methodName = method.name
-            val logLineSuffix: String?
-            val methodMatcher = methodPattern!!.matcher(methodName)
+            val logLineSuffix: String
+            val methodMatcher = methodPattern.matcher(methodName)
             if (methodName == "interceptDynamicTest") {
                 logLineSuffix =
                     "execution of DynamicTest %s".formatted(extensionContext!!.displayName)
             } else if (methodName == "interceptTestClassConstructor") {
                 logLineSuffix =
-                    "instance creation for %s".formatted(invocationContext!!.targetClass)
+                    "instance creation for %s".formatted(reflectiveInvocationContext!!.targetClass)
             } else if (methodMatcher.matches()) {
                 val interceptedEvent = methodMatcher.group(1)
+                val methodRealClassName =
+                    reflectiveInvocationContext!!.executable!!.declaringClass.simpleName
+                val methodName = reflectiveInvocationContext.executable!!.name
+                val targetClassName = reflectiveInvocationContext.targetClass.simpleName
+                val methodDisplayName =
+                    if (targetClassName == methodRealClassName) methodName
+                    else "$methodName($methodRealClassName)"
                 logLineSuffix =
                     "execution of @%s method %s.%s".formatted(
                         interceptedEvent,
-                        invocationContext!!.executable!!.declaringClass.simpleName,
-                        invocationContext.executable!!.name
+                        targetClassName,
+                        methodDisplayName
                     )
+                TestContext.CURRENT_TEST_NAME.set("$targetClassName.$methodName")
             } else {
                 logLineSuffix = "execution of unknown intercepted call %s".formatted(methodName)
             }
@@ -79,9 +92,9 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
             val timeoutTask = TimeoutInteruptor(currentThread)
             val start = Instant.now()
             try {
-                val timeout = getTimeout(invocationContext)
+                val timeout = reflectiveInvocationContext?.let(::getTimeout)
                 if (timeout != null) {
-                    LOGGER!!.info(
+                    LOGGER.info(
                         "Junit starting {} with timeout of {}",
                         logLineSuffix,
                         DurationFormatUtils.formatDurationWords(timeout.toMillis(), true, true)
@@ -89,7 +102,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                     Timer("TimeoutTimer-" + currentThread.name, true)
                         .schedule(timeoutTask, timeout.toMillis())
                 } else {
-                    LOGGER!!.warn("Junit starting {} with no timeout", logLineSuffix)
+                    LOGGER.warn("Junit starting {} with no timeout", logLineSuffix)
                 }
                 val retVal = invocation!!.proceed()
                 val elapsedMs = Duration.between(start, Instant.now()).toMillis()
@@ -136,7 +149,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                     }
                 }
                 val stackTrace = StringUtils.join(stackToDisplay, "\n    ")
-                LOGGER!!.error(
+                LOGGER.error(
                     "Junit exception throw during {} after {}:\n{}",
                     logLineSuffix,
                     DurationFormatUtils.formatDurationWords(elapsedMs, true, true),
@@ -145,24 +158,29 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                 throw t1
             } finally {
                 timeoutTask.cancel()
+                TestContext.CURRENT_TEST_NAME.set(null)
             }
         }
 
-        private class TimeoutInteruptor(private val parentThread: Thread?) : TimerTask() {
+        private class TimeoutInteruptor(private val parentThread: Thread) : TimerTask() {
             @Volatile var wasTriggered: Boolean = false
 
             override fun run() {
+                LOGGER.info(
+                    "interrupting running task on ${parentThread.name}. Current Stacktrace is ${parentThread.stackTrace.asList()}"
+                )
                 wasTriggered = true
-                parentThread!!.interrupt()
+                parentThread.interrupt()
             }
 
             override fun cancel(): Boolean {
+                LOGGER.info("cancelling timer task on ${parentThread.name}")
                 return super.cancel()
             }
         }
 
         companion object {
-            private val methodPattern: Pattern? = Pattern.compile("intercept(.*)Method")
+            private val methodPattern: Pattern = Pattern.compile("intercept(.*)Method")
 
             private val PATTERN: Pattern =
                 Pattern.compile(
@@ -201,11 +219,11 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                 )
             }
 
-            private fun getTimeout(invocationContext: ReflectiveInvocationContext<*>?): Duration? {
+            private fun getTimeout(invocationContext: ReflectiveInvocationContext<*>): Duration {
                 var timeout: Duration? = null
-                var m = invocationContext!!.executable
+                var m = invocationContext.executable
                 if (m is Method) {
-                    var timeoutAnnotation: Timeout? = m.getAnnotation<Timeout?>(Timeout::class.java)
+                    var timeoutAnnotation: Timeout? = m.getAnnotation(Timeout::class.java)
                     if (timeoutAnnotation == null) {
                         timeoutAnnotation =
                             invocationContext.targetClass.getAnnotation(Timeout::class.java)
@@ -328,9 +346,9 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
     }
 
     companion object {
-        private val LOGGER: Logger? =
+        private val LOGGER: Logger =
             LoggerFactory.getLogger(LoggingInvocationInterceptor::class.java)
-        private val JUNIT_METHOD_EXECUTION_TIMEOUT_PROPERTY_NAME: String? =
+        private val JUNIT_METHOD_EXECUTION_TIMEOUT_PROPERTY_NAME: String =
             "JunitMethodExecutionTimeout"
     }
 }

@@ -1469,7 +1469,7 @@ abstract class DestinationAcceptanceTest {
     }
 
     /** Whether the destination should be tested against different namespaces. */
-    protected fun supportNamespaceTest(): Boolean {
+    open protected fun supportNamespaceTest(): Boolean {
         return false
     }
 
@@ -1485,7 +1485,7 @@ abstract class DestinationAcceptanceTest {
      * normalized namespace when testCaseId = "S3A-1". Find the testCaseId in
      * "namespace_test_cases.json".
      */
-    protected fun assertNamespaceNormalization(
+    protected open fun assertNamespaceNormalization(
         testCaseId: String?,
         expectedNormalizedNamespace: String?,
         actualNormalizedNamespace: String?
@@ -1571,19 +1571,21 @@ abstract class DestinationAcceptanceTest {
     }
 
     protected val destination: AirbyteDestination
-        get() =
-            DefaultAirbyteDestination(
-                AirbyteIntegrationLauncher(
-                    JOB_ID,
-                    JOB_ATTEMPT,
-                    imageName,
-                    processFactory,
-                    null,
-                    null,
-                    false,
-                    EnvVariableFeatureFlags()
-                )
+        get() {
+            return DefaultAirbyteDestination(
+                integrationLauncher =
+                    AirbyteIntegrationLauncher(
+                        JOB_ID,
+                        JOB_ATTEMPT,
+                        imageName,
+                        processFactory,
+                        null,
+                        null,
+                        false,
+                        EnvVariableFeatureFlags()
+                    )
             )
+        }
 
     @Throws(Exception::class)
     protected fun runSyncAndVerifyStateOutput(
@@ -2354,7 +2356,7 @@ abstract class DestinationAcceptanceTest {
         }
 
         private fun <V0, V1> convertProtocolObject(v1: V1, klass: Class<V0>): V0 {
-            return Jsons.`object`(Jsons.jsonNode(v1), klass)
+            return Jsons.`object`(Jsons.jsonNode(v1), klass)!!
         }
     }
 }
