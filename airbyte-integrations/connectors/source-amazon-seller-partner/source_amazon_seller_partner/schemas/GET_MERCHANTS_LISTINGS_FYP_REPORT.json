@@ -4,14 +4,43 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "Status": { "type": ["null", "string"] },
-    "Reason": { "type": ["null", "string"] },
-    "SKU": { "type": ["null", "string"] },
-    "ASIN": { "type": ["null", "string"] },
-    "Product name": { "type": ["null", "string"] },
-    "Condition": { "type": ["null", "string"] },
-    "Status Change Date": { "type": ["null", "string"], "format": "date" },
-    "Issue Description": { "type": ["null", "string"] },
-    "dataEndTime": { "type": ["null", "string"], "format": "date" }
+    "Status": {
+      "description": "Current status of the listing (Active, Inactive, Under Review, etc.)",
+      "type": ["null", "string"]
+    },
+    "Reason": {
+      "description": "Reason for the listing status change or issue",
+      "type": ["null", "string"]
+    },
+    "SKU": {
+      "description": "Stock Keeping Unit for the product",
+      "type": ["null", "string"]
+    },
+    "ASIN": {
+      "description": "Unique Amazon Standard Identification Number for the product",
+      "type": ["null", "string"]
+    },
+    "Product name": {
+      "description": "Name of the product listed",
+      "type": ["null", "string"]
+    },
+    "Condition": {
+      "description": "Condition of the product (New, Used, Refurbished, etc.)",
+      "type": ["null", "string"]
+    },
+    "Status Change Date": {
+      "description": "Date when the status of the listing was last changed",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "Issue Description": {
+      "description": "Description of any issues with the product",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "End time of the report data",
+      "type": ["null", "string"],
+      "format": "date"
+    }
   }
 }

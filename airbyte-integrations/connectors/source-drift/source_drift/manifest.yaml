@@ -33,7 +33,7 @@ definitions:
     type: "DefaultPaginator"
     pagination_strategy:
       type: "CursorPagination"
-      cursor_value: "{{ last_records['next'] }}"
+      cursor_value: "{{ last_record['next'] }}"
     page_token_option:
       type: "RequestPath"
       field_name: "page_token"
@@ -55,6 +55,54 @@ definitions:
     $parameters:
       path: "/accounts"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          ownerId:
+            description: The unique identifier of the account owner
+            type: integer
+          name:
+            description: The name of the account
+            type: string
+          domain:
+            description: The domain associated with the account
+            type: string
+          accountId:
+            description: The unique identifier for the account
+            type: string
+          customProperties:
+            description: Additional custom properties for the account
+            type: array
+            items:
+              description: A custom property for the account
+              type: object
+              properties:
+                label:
+                  description: The label for a custom property
+                  type: string
+                name:
+                  description: The name of the custom property
+                  type: string
+                value:
+                  description: The value of the custom property
+                type:
+                  description: The type of the custom property
+                  type: string
+          deleted:
+            description: Indicates if the account has been deleted
+            type: boolean
+          createDateTime:
+            description: The date and time when the account was created
+            type: integer
+          updateDateTime:
+            description: The date and time when the account was last updated
+            type: integer
+          targeted:
+            description: Indicates if the account is a targeted account
+            type: boolean
   conversations_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -66,6 +114,65 @@ definitions:
     $parameters:
       path: "/conversations"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the conversation.
+            type: integer
+          participants:
+            description: List of participants involved in the conversation
+            type: array
+            items:
+              description: Details of the participants in the conversation.
+              type: integer
+          status:
+            description: The status of the conversation (e.g., open, closed, in progress).
+            type: string
+            enum:
+              - open
+              - closed
+              - pending
+              - bulk_sent
+          contactId:
+            description:
+              The unique identifier of the contact associated with the
+              conversation.
+            type: integer
+          inboxId:
+            description:
+              The unique identifier of the inbox where the conversation
+              belongs.
+            type: integer
+          createdAt:
+            description: The timestamp when the conversation was created.
+            type: integer
+          updatedAt:
+            description: The timestamp when the conversation was last updated.
+            type: integer
+          relatedPlaybookId:
+            description:
+              The unique identifier of the playbook related to the conversation,
+              if any.
+            type:
+              - "null"
+              - string
+          conversationTags:
+            description: Tags associated with the conversation
+            type: array
+            items:
+              description: Properties of each conversation tag
+              type: object
+              properties:
+                color:
+                  type: string
+                  description: HEX value
+                name:
+                  description: The name of the tag associated with the conversation.
+                  type: string
   users_stream:
     $ref: "#/definitions/base_stream"
     name: "users"
@@ -73,6 +180,57 @@ definitions:
     $parameters:
       path: "/users"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the user.
+            type: integer
+          orgId:
+            description: Identifier for the organization the user belongs to.
+            type: integer
+          name:
+            description: User's full name.
+            type: string
+          alias:
+            description: User's alias used for identification.
+            type: string
+          email:
+            description: User's email address.
+            type: string
+          phone:
+            description: User's phone number.
+            type: string
+          locale:
+            description: User's preferred language and region settings.
+            type: string
+          availability:
+            description: User's availability status.
+            type: string
+          role:
+            description: User's role or permission level.
+            type: string
+          timeZone:
+            description: User's preferred time zone.
+            type: string
+          avatarUrl:
+            description: URL for the user's avatar image.
+            type: string
+          verified:
+            description: Flag indicating if the user's account is verified.
+            type: boolean
+          bot:
+            description: Flag indicating if the user is a bot.
+            type: boolean
+          createdAt:
+            description: Timestamp when the user was created.
+            type: integer
+          updatedAt:
+            description: Timestamp when the user was last updated.
+            type: integer
   contacts_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -86,6 +244,44 @@ definitions:
         request_parameters:
           email: "{{ config['email'] }}"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the contact
+            type: integer
+          name:
+            description: Name of the contact
+            type: string
+          attributes:
+            description: Additional details of the contact
+            type: object
+            properties:
+              name:
+                description: Name of the contact
+                type: string
+              email:
+                description: Email address of the contact
+                type: string
+              phone:
+                description: Phone number of the contact
+                type: string
+              tags:
+                description: Tags associated with the contact
+                type: array
+                items:
+                  description: Tag name
+                  type: string
+              events:
+                description: Events related to the contact
+              socialProfiles:
+                description: Social media profiles of the contact
+          createdAt:
+            description: Timestamp of when the contact was created
+            type: integer
   messages_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -111,6 +307,93 @@ definitions:
       partition_router:
         $ref: "#/definitions/messages_partition_router"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier of the message.
+            type: integer
+          orgId:
+            description:
+              Unique identifier of the organization associated with the
+              message.
+            type: integer
+          body:
+            description: The main content/body of the message.
+            type: string
+          author:
+            description: Details about the author of the message.
+            type: object
+            properties:
+              type:
+                description: Type of the author (e.g., user, bot).
+                type: string
+                enum:
+                  - contact
+                  - user
+              id:
+                description: Unique identifier of the author.
+                type: integer
+              bot:
+                description: Boolean flag indicating if the author is a bot.
+                type: boolean
+          type:
+            description: Type of message (e.g., text, image, file).
+            type: string
+          conversationId:
+            description:
+              Unique identifier of the conversation associated with the
+              message.
+            type: integer
+          createdAt:
+            description: Timestamp indicating when the message was created.
+            type: integer
+          buttons:
+            description: Action buttons associated with the message.
+            type: array
+            items:
+              type: object
+              properties:
+                label:
+                  description: Text label displayed on the button.
+                  type: string
+                value:
+                  description:
+                    Value associated with the button (e.g., URL, action
+                    name).
+                  type: string
+                type:
+                  description: Type of button (e.g., call to action, link).
+                  type: string
+                style:
+                  description: Visual style of the button (e.g., primary, secondary).
+                  type: string
+                reaction:
+                  description: Reaction associated with the button click.
+                  type: object
+                  properties:
+                    type:
+                      description: Type of reaction triggered (e.g., message, action).
+                      type: string
+                    message:
+                      description: Message triggered by clicking the button.
+                      type: string
+          context:
+            description: Contextual information related to the message.
+            type: object
+            properties:
+              ip:
+                description: IP address associated with the message.
+                type: string
+              userAgent:
+                description: User agent information of the client device.
+                type: string
+          attributes:
+            description: Additional attributes associated with the message.
+            type: object
 streams:
   - "#/definitions/accounts_stream"
   - "#/definitions/conversations_stream"

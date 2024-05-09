@@ -30,6 +30,7 @@ See `integration_tests/sample_config.json` for a sample config file.
 
 ### Locally running the connector
 
+
 ```
 poetry run source-asana spec
 poetry run source-asana check --config secrets/config.json
@@ -59,6 +60,7 @@ An image will be available on your host with the tag `airbyte/source-asana:dev`.
 ### Running as a docker container
 
 Then run any of the connector commands as follows:
+
 ```
 docker run --rm airbyte/source-asana:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-asana:dev check --config /secrets/config.json
@@ -69,6 +71,7 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 ### Running our CI test suite
 
 You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+
 ```bash
 airbyte-ci connectors --name=source-asana test
 ```
@@ -91,6 +94,7 @@ Please commit the changes to `pyproject.toml` and `poetry.lock` files.
 ## Publishing a new version of the connector
 
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
+
 1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-asana test`
 2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
     - bump the `dockerImageTag` value in in `metadata.yaml`
