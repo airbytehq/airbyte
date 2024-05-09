@@ -154,6 +154,11 @@ def apply_generated_fields(metadata_data: dict, metadata_entry: LatestMetadataEn
     Returns:
         dict: The metadata data field with the generated fields applied.
     """
+<<<<<<< HEAD
+=======
+
+    # get the generated fields from the metadata data if none, create an empty dictionary
+>>>>>>> 46dabe355a (feat(registry): add cdk version)
     generated_fields = metadata_data.get("generated") or {}
 
     # Add the source file metadata
@@ -173,19 +178,19 @@ def apply_generated_fields(metadata_data: dict, metadata_entry: LatestMetadataEn
 
 
 @deep_copy_params
-def apply_package_info_fields(metadata_data: dict, metadata_entry: LatestMetadataEntry) -> dict:
-    """Apply package info fields to the metadata data field.
+def apply_dependency_fields(metadata_data: dict, metadata_entry: LatestMetadataEntry) -> dict:
+    """Apply dependency fields to the metadata data field.
 
     Args:
         metadata_data (dict): The metadata data field.
 
     Returns:
-        dict: The metadata data field with the package info fields applied.
+        dict: The metadata data field with the dependency fields applied.
     """
-    package_info_fields = metadata_data.get("packageInfo") or {}
-    package_info_fields = set_with(package_info_fields, "cdk_version", get_cdk_version(metadata_entry), default_none_to_dict)
+    dependency_fields = metadata_data.get("dependencies") or {}
+    dependency_fields = set_with(dependency_fields, "cdk_version", get_cdk_version(metadata_entry), default_none_to_dict)
 
-    return package_info_fields
+    return dependency_fields
 
 
 @deep_copy_params
@@ -232,7 +237,7 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
     overridden_metadata_data["generated"] = apply_generated_fields(overridden_metadata_data, metadata_entry)
 
     # Add Dependency information
-    overridden_metadata_data["packageInfo"] = apply_package_info_fields(overridden_metadata_data, metadata_entry)
+    overridden_metadata_data["dependencies"] = apply_dependency_fields(overridden_metadata_data, metadata_entry)
 
     # if there is no supportLevel, set it to "community"
     if not overridden_metadata_data.get("supportLevel"):

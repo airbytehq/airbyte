@@ -84,3 +84,28 @@ def construct_registry_entry_write_path(
     overrode_registry_entry_version_write_path = _get_version_specific_registry_entry_file_path(registry_entry, registry_name)
     _check_for_invalid_write_path(overrode_registry_entry_version_write_path)
     return overrode_registry_entry_version_write_path
+
+
+def sanitize_docker_repo_name_for_dependency_file(docker_repo_name: str) -> str:
+    """
+    Remove the "airbyte/" prefix from the docker repository name.
+
+    e.g. airbyte/source-postgres -> source-postgres
+
+    Problem:
+        The dependency file paths are based on the docker repository name without the "airbyte/" prefix where as all other
+        paths are based on the full docker repository name.
+
+        e.g. https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/connector_dependencies/source-pokeapi/0.2.0/dependencies.json
+
+    Long term solution:
+        Move the dependency file paths to be based on the full docker repository name.
+
+    Args:
+        docker_repo_name (str): The docker repository name
+
+    Returns:
+        str: The docker repository name without the "airbyte/" prefix
+    """
+
+    return docker_repo_name.replace("airbyte/", "")
