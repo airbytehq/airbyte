@@ -30,17 +30,17 @@ An API key is required as well as an API application key. See the [Datadog API a
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source. 
-4. Enter your `api_key` - Datadog API key.
-5. Enter your `application_key` - Datadog application key.
-6. Enter your `query` - Optional. Type your query to filter records when collecting data from Logs and AuditLogs stream.
-7. Enter your `limit` - Number of records to collect per request.
-8. Enter your `start_date` - Optional. Start date to filter records when collecting data from Logs and AuditLogs stream.
-9. Enter your `end_date` - Optional. End date to filter records when collecting data from Logs and AuditLogs stream.
-10. Enter your `queries` - Optional. Multiple queries resulting in multiple streams.
-    1. Enter the `name`- Required. Query Name.
-    2. Select the `data_source` - Required. Supported data sources - metrics, cloud_cost, logs, rum.
-    3. Enter the `query`- Required. A classic query string. Example - `"kubernetes_state.node.count{*}"`, `"@type:resource @resource.status_code:>=400 @resource.type:(xhr OR fetch)"`
+2. Set the name for your source.
+3. Enter your `api_key` - Datadog API key.
+4. Enter your `application_key` - Datadog application key.
+5. Enter your `query` - Optional. Type your query to filter records when collecting data from Logs and AuditLogs stream.
+6. Enter your `limit` - Number of records to collect per request.
+7. Enter your `start_date` - Optional. Start date to filter records when collecting data from Logs and AuditLogs stream.
+8. Enter your `end_date` - Optional. End date to filter records when collecting data from Logs and AuditLogs stream.
+9. Enter your `queries` - Optional. Multiple queries resulting in multiple streams.
+   1. Enter the `name`- Required. Query Name.
+   2. Select the `data_source` - Required. Supported data sources - metrics, cloud_cost, logs, rum.
+   3. Enter the `query`- Required. A classic query string. Example - `"kubernetes_state.node.count{*}"`, `"@type:resource @resource.status_code:>=400 @resource.type:(xhr OR fetch)"`
 10. Click **Set up source**.
 
 ## Supported sync modes
@@ -56,18 +56,18 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 
 ## Supported Streams
 
-* [AuditLogs](https://docs.datadoghq.com/api/latest/audit/#search-audit-logs-events)
-* [Dashboards](https://docs.datadoghq.com/api/latest/dashboards/#get-all-dashboards)
-* [Downtimes](https://docs.datadoghq.com/api/latest/downtimes/#get-all-downtimes)
-* [IncidentTeams](https://docs.datadoghq.com/api/latest/incident-teams/#get-a-list-of-all-incident-teams)
-* [Incidents](https://docs.datadoghq.com/api/latest/incidents/#get-a-list-of-incidents)
-* [Logs](https://docs.datadoghq.com/api/latest/logs/#search-logs)
-* [Metrics](https://docs.datadoghq.com/api/latest/metrics/#get-a-list-of-metrics)
-* [Monitors](https://docs.datadoghq.com/api/latest/monitors/#get-all-monitor-details)
-* [ServiceLevelObjectives](https://docs.datadoghq.com/api/latest/service-level-objectives/#get-all-slos)
-* [SyntheticTests](https://docs.datadoghq.com/api/latest/synthetics/#get-the-list-of-all-tests)
-* [Users](https://docs.datadoghq.com/api/latest/users/#list-all-users)
-* [Series](https://docs.datadoghq.com/api/latest/metrics/?code-lang=curl#query-timeseries-data-across-multiple-products)
+- [AuditLogs](https://docs.datadoghq.com/api/latest/audit/#search-audit-logs-events)
+- [Dashboards](https://docs.datadoghq.com/api/latest/dashboards/#get-all-dashboards)
+- [Downtimes](https://docs.datadoghq.com/api/latest/downtimes/#get-all-downtimes)
+- [IncidentTeams](https://docs.datadoghq.com/api/latest/incident-teams/#get-a-list-of-all-incident-teams)
+- [Incidents](https://docs.datadoghq.com/api/latest/incidents/#get-a-list-of-incidents)
+- [Logs](https://docs.datadoghq.com/api/latest/logs/#search-logs)
+- [Metrics](https://docs.datadoghq.com/api/latest/metrics/#get-a-list-of-metrics)
+- [Monitors](https://docs.datadoghq.com/api/latest/monitors/#get-all-monitor-details)
+- [ServiceLevelObjectives](https://docs.datadoghq.com/api/latest/service-level-objectives/#get-all-slos)
+- [SyntheticTests](https://docs.datadoghq.com/api/latest/synthetics/#get-the-list-of-all-tests)
+- [Users](https://docs.datadoghq.com/api/latest/users/#list-all-users)
+- [Series](https://docs.datadoghq.com/api/latest/metrics/?code-lang=curl#query-timeseries-data-across-multiple-products)
 
 ## Changelog
 

@@ -10,10 +10,10 @@
       "type": ["string", "null"]
     },
     "standard": {
-      "type": ["string", "null"]
+      "type": ["boolean", "null"]
     },
     "hidden": {
-      "type": ["string", "null"]
+      "type": ["boolean", "null"]
     },
     "customStatuses": {
       "type": ["array", "null"],
@@ -33,13 +33,13 @@
             "type": ["string", "null"]
           },
           "standard": {
-            "type": ["string", "null"]
+            "type": ["boolean", "null"]
           },
           "group": {
             "type": ["string", "null"]
           },
           "hidden": {
-            "type": ["string", "null"]
+            "type": ["boolean", "null"]
           }
         }
       }

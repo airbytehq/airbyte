@@ -8,17 +8,17 @@ This source retrieves the latests news from the [Newsdata API](https://newsdata.
 
 This source is capable of syncing the following streams:
 
-* `latest`
-* `sources` 
-  - __NOTE__: `category`, `language` and `country` input parameters only accept a single value, not multiple like `latest` stream. 
-  Thus, if several values are supplied, the first one will be the one to be used.
+- `latest`
+- `sources`
+  - **NOTE**: `category`, `language` and `country` input parameters only accept a single value, not multiple like `latest` stream.
+    Thus, if several values are supplied, the first one will be the one to be used.
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
 ### Features
 
 | Feature           | Supported? | Notes |
-|:------------------|------------|:------|
+| :---------------- | ---------- | :---- |
 | Full Refresh Sync | Yes        |       |
 | Incremental Sync  | No         |       |
 
@@ -43,6 +43,9 @@ The following fields are required fields for the connector to work:
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                 |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------|
-| 0.1.0   | 2022-10-21 | [18576](https://github.com/airbytehq/airbyte/pull/18576) | 🎉 New Source: Newsdata |
+| Version | Date       | Pull Request                                             | Subject                                                                         |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.3   | 2024-04-19 | [37203](https://github.com/airbytehq/airbyte/pull/37203) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry.                      |
+| 0.1.2   | 2024-04-15 | [37203](https://github.com/airbytehq/airbyte/pull/37203) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.1.1   | 2024-04-12 | [37203](https://github.com/airbytehq/airbyte/pull/37203) | schema descriptions                                                             |
+| 0.1.0   | 2022-10-21 | [18576](https://github.com/airbytehq/airbyte/pull/18576) | 🎉 New Source: Newsdata                                                         |

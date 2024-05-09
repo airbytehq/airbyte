@@ -10,8 +10,6 @@ import io.airbyte.cdk.integrations.destination.record_buffer.FlushBufferFunction
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve
-import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -46,8 +44,6 @@ object SerialFlush {
         stagingOperations: StagingOperations,
         writeConfigs: List<WriteConfig>,
         catalog: ConfiguredAirbyteCatalog,
-        typerDeduperValve: TypeAndDedupeOperationValve,
-        typerDeduper: TyperDeduper
     ): FlushBufferFunction {
         // TODO: (ryankfu) move this block of code that executes before the lambda to
         // #onStartFunction
@@ -119,10 +115,6 @@ object SerialFlush {
                         writeConfig.outputTableName,
                         schemaName,
                         stagingOperations,
-                        writeConfig.namespace,
-                        writeConfig.streamName,
-                        typerDeduperValve,
-                        typerDeduper
                     )
                 }
             } catch (e: Exception) {

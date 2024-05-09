@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
-  dockerImageTag: 1.0.1
+  dockerImageTag: 1.0.3
   dockerRepository: airbyte/source-recurly
   documentationUrl: https://docs.airbyte.com/integrations/sources/recurly
   githubIssueLabel: source-recurly
@@ -23,8 +23,9 @@ data:
     breakingChanges:
       1.0.0:
         message:
-          Version 1.0.0 introduces a number of schema updates to the Recurly connector.
-          To ensure a smooth upgrade, please refresh your schemas and reset your data before resuming syncs.
+          Version 1.0.0 introduces a number of schema updates to the Recurly
+          connector. To ensure a smooth upgrade, please refresh your schemas and reset
+          your data before resuming syncs.
         upgradeDeadline: "2024-03-05"
   releaseStage: alpha
   remoteRegistries:
