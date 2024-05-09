@@ -20,10 +20,10 @@ If you are not the owner/admin of the Ad account, you must be granted [permissio
 
 A [Facebook app](https://developers.facebook.com/apps/) with the Marketing API enabled and the following permissions:
 
-  - [ads_management](https://developers.facebook.com/docs/permissions#a)
-  - [ads_read](https://developers.facebook.com/docs/permissions#a)
-  - [business_management](https://developers.facebook.com/docs/permissions#b)
-  - [read_insights](https://developers.facebook.com/docs/permissions#r)
+- [ads_management](https://developers.facebook.com/docs/permissions#a)
+- [ads_read](https://developers.facebook.com/docs/permissions#a)
+- [business_management](https://developers.facebook.com/docs/permissions#b)
+- [read_insights](https://developers.facebook.com/docs/permissions#r)
 
 <!-- /env:oss -->
 
@@ -62,9 +62,11 @@ You can use the [Access Token Tool](https://developers.facebook.com/tools/access
 5. To authenticate the connection:
 
    <!-- env:cloud -->
+
    **For Airbyte Cloud**: Click **Authenticate your account** to authorize your Facebook account. Make sure you are logged into the right account, as Airbyte will authenticate the account you are currently logged in to.
    <!-- /env:cloud -->
    <!-- env:oss -->
+
    **For Airbyte Open Source**: In the **Access Token** field, enter the access token you generated with your Facebook app.
    <!-- /env:oss -->
 
@@ -90,21 +92,21 @@ You can use the [Access Token Tool](https://developers.facebook.com/tools/access
 
    To configure Custom Insights:
 
-    1. For **Name**, enter a name for the insight. This will be used as the Airbyte stream name.
-    2. (Optional) For **Level**, enter the level of granularity for the data you want to pull from the Facebook Marketing API (`account`, `ad`, `adset`, `campaign`). Set to `ad` by default.
-    3. (Optional) For **Fields**, use the dropdown list to select the fields you want to pull from the Facebook Marketing API.
-    4. (Optional) For **Breakdowns**, use the dropdown list to select the breakdowns you want to configure.
-    5. (Optional) For **Action Breakdowns**, use the dropdown list to select the action breakdowns you want to configure.
-    6. (Optional) For **Action Report Time**, enter the action report time you want to configure. This value determines the timing used to report action statistics. For example, if a user sees an ad on Jan 1st but converts on Jan 2nd, this value will determine how the action is reported.
+   1. For **Name**, enter a name for the insight. This will be used as the Airbyte stream name.
+   2. (Optional) For **Level**, enter the level of granularity for the data you want to pull from the Facebook Marketing API (`account`, `ad`, `adset`, `campaign`). Set to `ad` by default.
+   3. (Optional) For **Fields**, use the dropdown list to select the fields you want to pull from the Facebook Marketing API.
+   4. (Optional) For **Breakdowns**, use the dropdown list to select the breakdowns you want to configure.
+   5. (Optional) For **Action Breakdowns**, use the dropdown list to select the action breakdowns you want to configure.
+   6. (Optional) For **Action Report Time**, enter the action report time you want to configure. This value determines the timing used to report action statistics. For example, if a user sees an ad on Jan 1st but converts on Jan 2nd, this value will determine how the action is reported.
 
-        - `impression`: Actions are attributed to the time the ad was viewed (Jan 1st).
-        - `conversion`: Actions are attributed to the time the action was taken (Jan 2nd).
-        - `mixed`: Click-through actions are attributed to the time the ad was viewed (Jan 1st), and view-through actions are attributed to the time the action was taken (Jan 2nd).
+      - `impression`: Actions are attributed to the time the ad was viewed (Jan 1st).
+      - `conversion`: Actions are attributed to the time the action was taken (Jan 2nd).
+      - `mixed`: Click-through actions are attributed to the time the ad was viewed (Jan 1st), and view-through actions are attributed to the time the action was taken (Jan 2nd).
 
-    7. (Optional) For **Time Increment**, you may provide a value in days by which to aggregate statistics. The sync will be chunked into intervals of this size. For example, if you set this value to 7, the sync will be chunked into 7-day intervals. The default value is 1 day.
-    8. (Optional) For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate all data.
-    9. (Optional) For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is left blank, Airbyte will replicate the latest data.
-    10. (Optional) For **Custom Insights Lookback Window**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
+   7. (Optional) For **Time Increment**, you may provide a value in days by which to aggregate statistics. The sync will be chunked into intervals of this size. For example, if you set this value to 7, the sync will be chunked into 7-day intervals. The default value is 1 day.
+   8. (Optional) For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate all data.
+   9. (Optional) For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is left blank, Airbyte will replicate the latest data.
+   10. (Optional) For **Custom Insights Lookback Window**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 
    :::warning
    Additional data streams for your Facebook Marketing connector are dynamically generated according to the Custom Insights you specify. If you have an existing Facebook Marketing source and you decide to update or remove some of your Custom Insights, you must also adjust the connections that sync to these streams. Specifically, you should either disable these connections or refresh the source schema associated with them to reflect the changes.
@@ -137,16 +139,16 @@ The Facebook Marketing source connector supports the following sync modes:
 - [Campaigns](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group#fields)
 - [CustomConversions](https://developers.facebook.com/docs/marketing-api/reference/custom-conversion)
 - [CustomAudiences](https://developers.facebook.com/docs/marketing-api/reference/custom-audience)
-:::caution CustomAudiences
-The `rule` field may not be synced for all records because it caused the error message `Please reduce the amount of data...`.
-:::
+  :::caution CustomAudiences
+  The `rule` field may not be synced for all records because it caused the error message `Please reduce the amount of data...`.
+  :::
 - [Images](https://developers.facebook.com/docs/marketing-api/reference/ad-image)
 - [Videos](https://developers.facebook.com/docs/marketing-api/reference/video)
 
 Airbyte also supports the following Prebuilt Facebook Ad Insights Reports:
 
 | Stream                                            |                           Breakdowns                           |                    Action Breakdowns                    |
-|:--------------------------------------------------|:--------------------------------------------------------------:|:-------------------------------------------------------:|
+| :------------------------------------------------ | :------------------------------------------------------------: | :-----------------------------------------------------: |
 | Ad Insights Action Carousel Card                  |                              ---                               | `action_carousel_card_id`, `action_carousel_card_name`  |
 | Ad Insights Action Conversion Device              |                       `device_platform`                        |                      `action_type`                      |
 | Ad Insights Action Product ID                     |                          `product_id`                          |                           ---                           |
@@ -190,7 +192,7 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 ## Data type mapping
 
 | Integration Type | Airbyte Type |
-|:----------------:|:------------:|
+| :--------------: | :----------: |
 |      string      |    string    |
 |      number      |    number    |
 |      array       |    array     |
@@ -200,6 +202,7 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.8   | 2024-05-07 | [37771](https://github.com/airbytehq/airbyte/pull/37771) | Handle errors without API error codes/messages                                                                                                                                                                                                                                                    |
 | 2.1.7   | 2024-04-24 | [36634](https://github.com/airbytehq/airbyte/pull/36634) | Update to CDK 0.80.0                                                                                                                                                                                                                                                                              |
 | 2.1.6   | 2024-04-24 | [36634](https://github.com/airbytehq/airbyte/pull/36634) | Schema descriptions                                                                                                                                                                                                                                                                               |
 | 2.1.5   | 2024-04-17 | [37341](https://github.com/airbytehq/airbyte/pull/37341) | Move rate limit errors to transient errors.                                                                                                                                                                                                                                                       |
@@ -239,7 +242,7 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 | 1.1.2   | 2023-08-03 | [29042](https://github.com/airbytehq/airbyte/pull/29042) | Fix broken `advancedAuth` references for `spec`                                                                                                                                                                                                                                                   |
 | 1.1.1   | 2023-07-26 | [27996](https://github.com/airbytehq/airbyte/pull/27996) | Remove reference to authSpecification                                                                                                                                                                                                                                                             |
 | 1.1.0   | 2023-07-11 | [26345](https://github.com/airbytehq/airbyte/pull/26345) | Add new `action_report_time` attribute to `AdInsights` class                                                                                                                                                                                                                                      |
-| 1.0.1   | 2023-07-07 | [27979](https://github.com/airbytehq/airbyte/pull/27979) | Added the ability to restore the reduced request record limit after the successful retry, and handle the `unknown error`  (code 99) with the retry strategy                                                                                                                                       |
+| 1.0.1   | 2023-07-07 | [27979](https://github.com/airbytehq/airbyte/pull/27979) | Added the ability to restore the reduced request record limit after the successful retry, and handle the `unknown error` (code 99) with the retry strategy                                                                                                                                        |
 | 1.0.0   | 2023-07-05 | [27563](https://github.com/airbytehq/airbyte/pull/27563) | Migrate to FB SDK version 17                                                                                                                                                                                                                                                                      |
 | 0.5.0   | 2023-06-26 | [27728](https://github.com/airbytehq/airbyte/pull/27728) | License Update: Elv2                                                                                                                                                                                                                                                                              |
 | 0.4.3   | 2023-05-12 | [27483](https://github.com/airbytehq/airbyte/pull/27483) | Reduce replication start date by one more day                                                                                                                                                                                                                                                     |
