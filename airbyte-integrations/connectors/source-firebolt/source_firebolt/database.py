@@ -11,8 +11,9 @@ from airbyte_cdk.logger import AirbyteLogger
 from firebolt.async_db import Connection as AsyncConnection
 from firebolt.async_db import connect as async_connect
 from firebolt.client import DEFAULT_API_URL
-from firebolt.client.auth import UsernamePassword, ClientCredentials, Auth
+from firebolt.client.auth import Auth, ClientCredentials, UsernamePassword
 from firebolt.db import Connection, connect
+
 
 def _determine_auth(key: str, secret:str) -> Auth:
     """
