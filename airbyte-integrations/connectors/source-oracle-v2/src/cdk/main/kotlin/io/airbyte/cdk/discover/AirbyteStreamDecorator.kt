@@ -1,12 +1,17 @@
 package io.airbyte.cdk.discover
 
 import com.fasterxml.jackson.databind.node.ObjectNode
-import io.airbyte.cdk.jdbc.ColumnMetadata
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
 import io.micronaut.context.annotation.DefaultImplementation
 import jakarta.inject.Singleton
 
+/**
+ * Stateless object for building an [AirbyteStream] during DISCOVER.
+ *
+ * [DefaultAirbyteStreamDecorator] is the sane default implementation, to be replaced with
+ * connector-specific implementations when required.
+ */
 @DefaultImplementation(DefaultAirbyteStreamDecorator::class)
 interface AirbyteStreamDecorator {
 
@@ -26,9 +31,11 @@ interface AirbyteStreamDecorator {
      * This method does not determine (1), of course, because the source relation keys are defined
      * in the source database itself and are retrieved via [MetadataQuerier.primaryKeys]. Instead,
      * this method determines (2) based on the type information of the column, typically the
-     * [FieldType] objects. For instance if the [ColumnMetadata] does not map to a
-     * [ReversibleFieldType] then the column can't reliably round-trip checkpoint values during a
-     * resumable initial sync.
+     * [FieldType] objects. For instance if the [Field.type] does not map to a
+     * [LosslessFieldType] then the column can't reliably round-trip checkpoint values during a
+     * resumable initial sync. Furthermore, some types like [JsonStringFieldType] aren't comparable
+     * and can't be used in the comparison predicates in the WHERE clause generated for resumable
+     * initial syncs.
      */
     fun isPossiblePrimaryKeyElement(field: Field): Boolean
 
@@ -49,11 +56,11 @@ class DefaultAirbyteStreamDecorator : AirbyteStreamDecorator {
         airbyteStream.apply {
             supportedSyncModes = listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
             (jsonSchema["properties"] as ObjectNode).apply {
-                for (metaField in listOf(AirbyteCdcLsnMetaField, AirbyteCdcUpdatedAtMetaField, AirbyteCdcDeletedAtMetaField)) {
+                for (metaField in CommonMetaField.entries) {
                     set<ObjectNode>(metaField.id, metaField.type.airbyteType.asJsonSchema())
                 }
             }
-            defaultCursorField = listOf(AirbyteCdcLsnMetaField.id)
+            defaultCursorField = listOf(CommonMetaField.CDC_LSN.id)
             sourceDefinedCursor = true
         }
     }
@@ -71,7 +78,8 @@ class DefaultAirbyteStreamDecorator : AirbyteStreamDecorator {
 
     override fun isPossiblePrimaryKeyElement(field: Field): Boolean =
         when (field.type) {
-            !is ReversibleFieldType -> false
+            !is LosslessFieldType -> false
+            // These
             BinaryStreamFieldType,
             CharacterStreamFieldType,
             NCharacterStreamFieldType,

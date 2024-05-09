@@ -69,8 +69,8 @@ class CursorBasedColdStartWorker(
         val cursor: Field =
             (key.configuredCursor ?: key.cursorCandidates.firstOrNull()) as? Field
                 ?: throw IllegalStateException("Stream has no cursor.")
-        val ast: SelectQueryRootNode = SelectQueryBuilder.selectMaxCursorValue(key.table, cursor)
-        val q: SelectQuery = selectQueryGenerator.generateSql(ast)
+        val ast: SelectQueryRootNode = SelectQueryBuilder.maxCursorValue(key.table, cursor)
+        val q: SelectQuery = selectQueryGenerator.generate(ast)
         var maybeRecord: ObjectNode? = null
         selectQuerier.executeQuery(q) { record: ObjectNode ->
             maybeRecord = record
@@ -98,8 +98,8 @@ class CursorBasedWarmStartWorker(
 
     override fun call(): WorkResult<StreamKey, CursorBasedIncrementalStarting, out StreamState> {
         val ast: SelectQueryRootNode =
-            SelectQueryBuilder.selectMaxCursorValue(key.table, input.cursor)
-        val q: SelectQuery = selectQueryGenerator.generateSql(ast)
+            SelectQueryBuilder.maxCursorValue(key.table, input.cursor)
+        val q: SelectQuery = selectQueryGenerator.generate(ast)
         var maybeRecord: ObjectNode? = null
         selectQuerier.executeQuery(q) { record: ObjectNode ->
             maybeRecord = record

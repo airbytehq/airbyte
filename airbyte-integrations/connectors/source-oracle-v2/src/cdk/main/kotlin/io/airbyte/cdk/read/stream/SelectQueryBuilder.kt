@@ -21,9 +21,14 @@ import io.airbyte.cdk.read.FullRefreshResumableStarting
 import io.airbyte.cdk.read.NonResumableBackfillState
 import io.airbyte.cdk.read.ResumableSelectState
 
+/** Connector-agnostic SELECT query builder. */
 object SelectQueryBuilder {
 
-    fun selectLimit0(table: TableName, columnIDs: List<String>): SelectQueryRootNode =
+    /**
+     * Used by [JdbcMetadataQuerier] to discover [JdbcMetadataQuerier.ColumnMetadata] and to
+     * verify table access permissions.
+     */
+    fun limit0(table: TableName, columnIDs: List<String>): SelectQueryRootNode =
         SelectQueryRootNode(
             SelectColumns(columnIDs.map { Field(it, NullFieldType) }),
             From(table),
@@ -32,7 +37,8 @@ object SelectQueryBuilder {
             LimitZero
         ).optimize()
 
-    fun selectMaxCursorValue(table: TableName, cursorColumn: Field): SelectQueryRootNode =
+    /** Used by cursor-based [PrepWorker]s to determine a high-water mark for [cursorColumn].  */
+    fun maxCursorValue(table: TableName, cursorColumn: Field): SelectQueryRootNode =
         SelectQueryRootNode(
                 SelectColumnMaxValue(cursorColumn),
                 From(table),
@@ -42,9 +48,11 @@ object SelectQueryBuilder {
             )
             .optimize()
 
-    fun selectData(state: NonResumableBackfillState): SelectQueryRootNode = state.ast().optimize()
+    /** Used by [NonResumableSelectWorker] to query record data. */
+    fun data(state: NonResumableBackfillState): SelectQueryRootNode = state.ast().optimize()
 
-    fun selectData(state: ResumableSelectState): SelectQueryRootNode = state.ast().optimize()
+    /** Used by [ResumableSelectWorker] to query record data. */
+    fun data(state: ResumableSelectState): SelectQueryRootNode = state.ast().optimize()
 
     private fun NonResumableBackfillState.ast(): SelectQueryRootNode =
         SelectQueryRootNode(

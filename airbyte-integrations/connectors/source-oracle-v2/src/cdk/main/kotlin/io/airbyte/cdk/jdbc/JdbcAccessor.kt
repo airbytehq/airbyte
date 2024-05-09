@@ -19,15 +19,28 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
+/** Combination of [JdbcGetter] and [JdbcSetter]. */
+interface JdbcAccessor<T> : JdbcGetter<T>, JdbcSetter<T>
+
+/**
+ * Thin wrapper around [ResultSet] get* methods, e.g. [ResultSet.getString].
+ *
+ * The caller owns the return value, which is not bound to the transaction.
+ * The implementation handles calling [ResultSet.wasNull].
+ */
 fun interface JdbcGetter<T> {
     fun get(rs: ResultSet, colIdx: Int): T?
 }
 
+/**
+ * Thin wrapper around [PreparedStatement] set* methods, e.g. [PreparedStatement.setString].
+ *
+ * The implementation takes ownership of the argument [value].
+ * The type parameter [T] is typically not nullable as we have no use for [PreparedStatement.setNull] for the queries that we run.
+ */
 fun interface JdbcSetter<T> {
     fun set(stmt: PreparedStatement, paramIdx: Int, value: T)
 }
-
-interface JdbcAccessor<T> : JdbcGetter<T>, JdbcSetter<T>
 
 data object BooleanAccessor : JdbcAccessor<Boolean> {
 
@@ -109,6 +122,7 @@ data object BigDecimalAccessor : JdbcAccessor<BigDecimal> {
     }
 }
 
+/** [BytesAccessor] uses a [ByteBuffer] instead of a [ByteArray] so that Micronaut doesn't go crazy. */
 data object BytesAccessor : JdbcAccessor<ByteBuffer> {
 
     override fun get(rs: ResultSet, colIdx: Int): ByteBuffer? =
@@ -119,6 +133,7 @@ data object BytesAccessor : JdbcAccessor<ByteBuffer> {
     }
 }
 
+/** [BinaryStreamAccessor] uses a [ByteBuffer] instead of a [ByteArray] so that Micronaut doesn't go crazy. */
 data object BinaryStreamAccessor : JdbcAccessor<ByteBuffer> {
 
     override fun get(rs: ResultSet, colIdx: Int): ByteBuffer? =

@@ -4,7 +4,13 @@
 
 package io.airbyte.cdk.read.stream
 
+/**
+ * Connector-specific stateless object which generates a valid [SelectQuery] for the corresponding
+ * source database.
+ *
+ * This interface encapsulates the differences between all the SQL dialects out there.
+ */
 fun interface SelectQueryGenerator {
 
-    fun generateSql(ast: SelectQueryRootNode): SelectQuery
+    fun generate(ast: SelectQueryRootNode): SelectQuery
 }

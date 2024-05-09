@@ -6,7 +6,6 @@ package io.airbyte.cdk.operation
 
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.consumers.OutputConsumer
-import io.airbyte.cdk.discover.DiscoveredStream
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.discover.TableName
@@ -49,11 +48,6 @@ class DiscoverOperation(
         outputConsumer.accept(AirbyteCatalog().withStreams(airbyteStreams))
     }
 
-
-    /**
-     * Utility function to pre-populate an [AirbyteStream] instance using a [DiscoveredStream]
-     * instance regardless of the type of the state.
-     */
     fun toAirbyteStream(discoveredStream: DiscoveredStream): AirbyteStream {
         val allColumnsByID: Map<String, Field> =
             discoveredStream.columns.associateBy { it.id }
@@ -84,4 +78,11 @@ class DiscoverOperation(
         }
         return airbyteStream
     }
+
+    data class DiscoveredStream(
+        val table: TableName,
+        val columns: List<Field>,
+        val primaryKeyColumnIDs: List<List<String>>
+    )
+
 }

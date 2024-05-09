@@ -5,8 +5,8 @@
 package io.airbyte.cdk.jdbc
 
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.cdk.discover.ColumnMetadataToFieldTypeMapper
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.discover.TableName
 import io.airbyte.cdk.read.stream.SelectQueryBuilder
@@ -25,7 +25,7 @@ import java.sql.Statement
 class JdbcMetadataQuerier(
     val config: SourceConfiguration,
     val selectQueryGenerator: SelectQueryGenerator,
-    val columnMetadataToFieldTypeMapper: ColumnMetadataToFieldTypeMapper,
+    val fieldTypeMapper: FieldTypeMapper,
     jdbcConnectionFactory: JdbcConnectionFactory
 ) : MetadataQuerier {
 
@@ -118,6 +118,10 @@ class JdbcMetadataQuerier(
         }
     }
 
+    /**
+     * [memoizedUserDefinedTypes] is not directly used by [JdbcMetadataQuerier].
+     * Instead, it's provided for use by other [MetadataQuerier] implementations which delegate to this.
+     */
     val memoizedUserDefinedTypes: List<UserDefinedType> by lazy {
         log.info { "Querying user-defined types for catalog discovery." }
         try {
@@ -145,16 +149,18 @@ class JdbcMetadataQuerier(
     }
 
     override fun fields(table: TableName): List<Field> =
-        columnMetadata(table).map { Field(it.label, columnMetadataToFieldTypeMapper.toFieldType(it)) }
+        columnMetadata(table).map {
+            Field(it.label, fieldTypeMapper.toFieldType(it))
+        }
 
     fun columnMetadata(table: TableName): List<ColumnMetadata> {
         val columnNames: List<String> = memoizedColumnNames[table] ?: listOf()
         if (columnNames.isEmpty()) {
             return listOf()
         }
-        val selectMany: SelectQueryRootNode = SelectQueryBuilder.selectLimit0(table, columnNames)
+        val selectMany: SelectQueryRootNode = SelectQueryBuilder.limit0(table, columnNames)
         val resultsFromSelectMany: List<ColumnMetadata>? =
-            queryColumnMetadata(conn, selectQueryGenerator.generateSql(selectMany).sql)
+            queryColumnMetadata(conn, selectQueryGenerator.generate(selectMany).sql)
         if (resultsFromSelectMany != null) {
             return resultsFromSelectMany
         }
@@ -162,12 +168,12 @@ class JdbcMetadataQuerier(
             "Not all columns of $table might be accessible, trying each column individually."
         }
         return columnNames.flatMap {
-            val selectOne: SelectQueryRootNode = SelectQueryBuilder.selectLimit0(table, listOf(it))
-            queryColumnMetadata(conn, selectQueryGenerator.generateSql(selectOne).sql) ?: listOf()
+            val selectOne: SelectQueryRootNode = SelectQueryBuilder.limit0(table, listOf(it))
+            queryColumnMetadata(conn, selectQueryGenerator.generate(selectOne).sql) ?: listOf()
         }
     }
 
-    fun queryColumnMetadata(conn: Connection, sql: String): List<ColumnMetadata>? {
+    private fun queryColumnMetadata(conn: Connection, sql: String): List<ColumnMetadata>? {
         log.info { "Querying $sql for catalog discovery." }
         conn.createStatement().use { stmt: Statement ->
             try {
@@ -270,13 +276,41 @@ class JdbcMetadataQuerier(
     @Singleton
     class Factory(
         val selectQueryGenerator: SelectQueryGenerator,
-        val columnMetadataToFieldTypeMapper: ColumnMetadataToFieldTypeMapper,
+        val fieldTypeMapper: FieldTypeMapper,
     ) : MetadataQuerier.Factory {
 
         /** The [SourceConfiguration] is deliberately not injected in order to support tests. */
         override fun session(config: SourceConfiguration): MetadataQuerier {
             val jdbcConnectionFactory = JdbcConnectionFactory(config)
-            return JdbcMetadataQuerier(config, selectQueryGenerator, columnMetadataToFieldTypeMapper, jdbcConnectionFactory)
+            return JdbcMetadataQuerier(config, selectQueryGenerator, fieldTypeMapper, jdbcConnectionFactory)
         }
     }
+
+    /**
+     * Stateless connector-specific object for mapping a [ColumnMetadata] to a [FieldType] during DISCOVER.
+     *
+     * This interface is used by [JdbcMetadataQuerier] to discover the [FieldType]s for all columns
+     * in a table, based on the [ColumnMetadata] that it collects.
+     * The mapping of the latter to the former is many-to-one.
+     */
+    fun interface FieldTypeMapper {
+
+        fun toFieldType(c: ColumnMetadata): FieldType
+
+    }
+
+    /**
+     *  Data class with one field for each [java.sql.ResultSetMetaData] column method,
+     *  assuming that the [SystemType] subtype of [SourceType] is being used.
+     */
+    data class ColumnMetadata(
+        val name: String,
+        val label: String,
+        val type: SourceType,
+        val autoIncrement: Boolean? = null,
+        val caseSensitive: Boolean? = null,
+        val searchable: Boolean? = null,
+        val currency: Boolean? = null,
+        val nullable: Boolean? = null,
+    )
 }

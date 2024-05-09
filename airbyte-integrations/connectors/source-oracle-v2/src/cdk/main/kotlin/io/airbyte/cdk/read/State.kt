@@ -20,7 +20,7 @@ sealed interface StreamState : State<StreamKey>
 
 /**
  * This subset of states can be worked on by a
- * [io.airbyte.cdk.read.stream.NonResumableBackfillWorker].
+ * [io.airbyte.cdk.read.stream.NonResumableSelectWorker].
  */
 sealed interface NonResumableBackfillState : StreamState
 

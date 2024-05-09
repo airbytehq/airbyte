@@ -5,7 +5,10 @@
 package io.airbyte.cdk.read.stream
 
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.jdbc.JdbcSelectQuerier
+import io.micronaut.context.annotation.DefaultImplementation
 
+@DefaultImplementation(JdbcSelectQuerier::class)
 fun interface SelectQuerier {
     fun executeQuery(q: SelectQuery, recordVisitor: (record: ObjectNode) -> Boolean)
 }

@@ -21,12 +21,13 @@ import io.airbyte.cdk.consumers.MultipleTablesFound
 import io.airbyte.cdk.consumers.ResetStream
 import io.airbyte.cdk.consumers.TableHasNoDataColumns
 import io.airbyte.cdk.consumers.TableNotFound
-import io.airbyte.cdk.discover.AirbyteCdcLsnMetaField
 import io.airbyte.cdk.discover.AirbyteType
 import io.airbyte.cdk.discover.ArrayAirbyteType
+import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.FieldOrMetaField
 import io.airbyte.cdk.discover.LeafAirbyteType
+import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.discover.TableName
 import io.airbyte.commons.exceptions.ConfigErrorException
@@ -162,7 +163,7 @@ class StateManagerFactory(
         val actualDataColumns: Map<String, Field> =
             metadataQuerier.fields(table).associateBy { it.id }
         fun dataColumnOrNull(id: String): Field? {
-            if (id.startsWith("_ab_")) {
+            if (MetaField.isMetaFieldID(id)) {
                 // Ignore airbyte metadata columns.
                 // These aren't actually present in the table.
                 return null
@@ -190,7 +191,7 @@ class StateManagerFactory(
         }
         val streamFields: List<Field> =
             expectedSchema.keys.toList()
-                .filterNot { it.startsWith("_ab_") }
+                .filterNot(MetaField::isMetaFieldID)
                 .map { dataColumnOrNull(it) ?: return@toStreamKey null }
         if (streamFields.isEmpty()) {
             handler.accept(TableHasNoDataColumns(name, namespace))
@@ -201,8 +202,8 @@ class StateManagerFactory(
                 it.isEmpty() || it.size < pkColumnIDs.size
             }
         fun cursorOrNull(cursorColumnID: String): FieldOrMetaField? {
-            if (cursorColumnID == "_ab_cdc_lsn") {
-                return AirbyteCdcLsnMetaField
+            if (cursorColumnID == CommonMetaField.CDC_LSN.id) {
+                return CommonMetaField.CDC_LSN
             }
             return dataColumnOrNull(cursorColumnID)
         }

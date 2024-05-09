@@ -19,8 +19,8 @@ import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.jackson.MoreMappers
 
 /**
- * A grab-bag of JSON utilities because the `Jsons` object doesn't yet support mapping to Kotlin
- * data classes. Also includes utilities for JSON schemas.
+ * A grab-bag of JSON utilities because the [io.airbyte.commons.json.Jsons] object doesn't yet
+ * support mapping to Kotlin data classes. Also includes utilities for JSON schemas.
  */
 object JsonUtils {
 

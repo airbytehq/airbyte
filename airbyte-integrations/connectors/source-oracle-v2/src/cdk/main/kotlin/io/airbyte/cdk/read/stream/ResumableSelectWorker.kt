@@ -41,8 +41,8 @@ class ResumableSelectWorker(
         stopping.set(true)
     }
 
-    val dataQueryAst: SelectQueryRootNode = SelectQueryBuilder.selectData(input)
-    val dataQuery: SelectQuery = selectQueryGenerator.generateSql(dataQueryAst)
+    val dataQueryAst: SelectQueryRootNode = SelectQueryBuilder.data(input)
+    val dataQuery: SelectQuery = selectQueryGenerator.generate(dataQueryAst)
     val streamFieldNames: List<String> = key.fields.map { it.id }
     val nodeFactory: JsonNodeFactory = MoreMappers.initMapper().nodeFactory
     val checkpointColumns: List<Field> =

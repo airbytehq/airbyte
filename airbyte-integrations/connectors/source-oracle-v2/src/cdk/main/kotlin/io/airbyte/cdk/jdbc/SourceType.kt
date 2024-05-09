@@ -4,12 +4,10 @@
 
 package io.airbyte.cdk.jdbc
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo
 import java.sql.JDBCType
 import java.sql.Types
 
 /** Supertype for all source database types. */
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS) // annotation required for tests
 sealed interface SourceType {
     val catalog: String?
     val schema: String?
@@ -17,12 +15,7 @@ sealed interface SourceType {
     val klazz: Class<*>?
     val typeCode: Int
     val jdbcType: JDBCType?
-        get() =
-            try {
-                JDBCType.valueOf(typeCode)
-            } catch (e: Exception) {
-                null
-            }
+        get() = JDBCType.entries.find { it.vendorTypeNumber == typeCode }
 }
 
 /** [SystemType] models types defined by the source database itself, i.e. no UDTs. */
@@ -44,10 +37,12 @@ data class SystemType(
 /**
  * Union type for all UDTs.
  *
- * Add more subtypes as needed. The subtypes may overlap, for instance a user-defined array may be
+ * Connectors may define additional implementations.
+ *
+ * The subtypes may overlap, for instance a user-defined array may be
  * represented both as a [UserDefinedArray] and as a [GenericUserDefinedType].
  */
-sealed interface UserDefinedType : SourceType
+interface UserDefinedType : SourceType
 
 /** User-defined array types. */
 data class UserDefinedArray(
@@ -56,7 +51,7 @@ data class UserDefinedArray(
     override val typeName: String,
     override val klazz: Class<*>? = null,
     val elementType: SourceType,
-) : SourceType, UserDefinedType {
+) : UserDefinedType {
 
     override val typeCode: Int
         get() = Types.ARRAY
@@ -71,4 +66,4 @@ data class GenericUserDefinedType(
     override val typeCode: Int,
     val remarks: String? = null,
     val baseTypeCode: Int? = null,
-) : SourceType, UserDefinedType
+) : UserDefinedType

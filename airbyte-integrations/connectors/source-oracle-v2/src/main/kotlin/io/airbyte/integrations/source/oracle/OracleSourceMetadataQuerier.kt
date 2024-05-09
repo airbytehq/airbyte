@@ -5,8 +5,6 @@
 package io.airbyte.integrations.source.oracle
 
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.cdk.jdbc.ColumnMetadata
-import io.airbyte.cdk.discover.ColumnMetadataToFieldTypeMapper
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.GenericUserDefinedType
 import io.airbyte.cdk.discover.MetadataQuerier
@@ -44,14 +42,14 @@ class OracleSourceMetadataQuerier(val base: JdbcMetadataQuerier) : MetadataQueri
 
     override fun fields(table: TableName): List<Field> =
         base.columnMetadata(table)
-            .map { c: ColumnMetadata ->
+            .map { c: JdbcMetadataQuerier.ColumnMetadata ->
                 val udt: UserDefinedType? = when (c.type) {
                     is SystemType -> allUDTsByFQName[c.type.typeName]
                     else -> null
                 }
                 c.copy(type = udt ?: c.type)
             }
-            .map { Field(it.label, base.columnMetadataToFieldTypeMapper.toFieldType(it)) }
+            .map { Field(it.label, base.fieldTypeMapper.toFieldType(it)) }
 
     val allUDTsByFQName: Map<String, UserDefinedType> by lazy {
         val otherUDTs: List<UserDefinedType> =
@@ -222,13 +220,13 @@ WHERE OWNER IS NOT NULL AND TYPE_NAME IS NOT NULL
     @Primary
     class Factory(
         val selectQueryGenerator: SelectQueryGenerator,
-        val columnMetadataToFieldTypeMapper: ColumnMetadataToFieldTypeMapper,
+        val fieldTypeMapper: JdbcMetadataQuerier.FieldTypeMapper,
     ) : MetadataQuerier.Factory {
 
         /** The [SourceConfiguration] is deliberately not injected in order to support tests. */
         override fun session(config: SourceConfiguration): MetadataQuerier {
             val jdbcConnectionFactory = JdbcConnectionFactory(config)
-            val base = JdbcMetadataQuerier(config, selectQueryGenerator, columnMetadataToFieldTypeMapper, jdbcConnectionFactory)
+            val base = JdbcMetadataQuerier(config, selectQueryGenerator, fieldTypeMapper, jdbcConnectionFactory)
             return OracleSourceMetadataQuerier(base)
         }
     }

@@ -69,13 +69,25 @@ import java.time.OffsetTime
 
 /**
  * Root of our own type hierarchy for Airbyte record fields.
+ *
+ * Connectors may define their own concrete implementations.
  */
 interface FieldType : JdbcGetter<JsonNode> {
+
+    /** maps to [io.airbyte.protocol.models.Field.type] */
     val airbyteType: AirbyteType
 }
 
-interface ReversibleFieldType : FieldType, JdbcSetter<JsonNode>
+/**
+ * Subtype of [FieldType] for all [FieldType]s whose Airbyte record values can be turned back
+ * into their original source values. This allows these values to be persisted in an Airbyte state
+ * message.
+ *
+ * Connectors may define their own concrete implementations.
+ */
+interface LosslessFieldType : FieldType, JdbcSetter<JsonNode>
 
+/** Convenience class for defining concrete [FieldType] objects. */
 abstract class FieldTypeBase<R>(
     override val airbyteType: AirbyteType,
     val jdbcGetter: JdbcGetter<out R>,
@@ -88,25 +100,26 @@ abstract class FieldTypeBase<R>(
             else -> jsonEncoder.encode(decoded)
         }
 }
-
-abstract class ReversibleFieldTypeBase<R, W>(
+/** Convenience class for defining concrete [LosslessFieldType] objects. */
+abstract class LosslessFieldTypeBase<R, W>(
     airbyteType: AirbyteType,
     jdbcGetter: JdbcGetter<out R>,
     jsonEncoder: JsonEncoder<R>,
     val jsonDecoder: JsonDecoder<W>,
     val jdbcSetter: JdbcSetter<in W>,
-) : FieldTypeBase<R>(airbyteType, jdbcGetter, jsonEncoder), ReversibleFieldType {
+) : FieldTypeBase<R>(airbyteType, jdbcGetter, jsonEncoder), LosslessFieldType {
 
     override fun set(stmt: PreparedStatement, paramIdx: Int, value: JsonNode) {
         jdbcSetter.set(stmt, paramIdx, jsonDecoder.decode(value))
     }
 }
 
+/** Convenience class for defining concrete [LosslessFieldType] objects. */
 abstract class SymmetricFieldTypeBase<T>(
     airbyteType: AirbyteType,
     jdbcAccessor: JdbcAccessor<T>,
     jsonCodec: JsonCodec<T>,
-) : ReversibleFieldTypeBase<T,T>(airbyteType, jdbcAccessor, jsonCodec, jsonCodec, jdbcAccessor)
+) : LosslessFieldTypeBase<T,T>(airbyteType, jdbcAccessor, jsonCodec, jsonCodec, jdbcAccessor)
 
 data object BooleanFieldType : SymmetricFieldTypeBase<Boolean>(
     LeafAirbyteType.BOOLEAN,
@@ -246,7 +259,7 @@ data object LocalDateTimeFieldType : SymmetricFieldTypeBase<LocalDateTime>(
     LocalDateTimeCodec,
 )
 
-data object OffsetTimeFieldType : ReversibleFieldTypeBase<OffsetTime, OffsetTime>(
+data object OffsetTimeFieldType : LosslessFieldTypeBase<OffsetTime, OffsetTime>(
     LeafAirbyteType.TIME_WITH_TIMEZONE,
     ObjectGetter(OffsetTime::class.java),
     OffsetTimeCodec,
@@ -254,7 +267,7 @@ data object OffsetTimeFieldType : ReversibleFieldTypeBase<OffsetTime, OffsetTime
     AnyAccessor,
 )
 
-data object OffsetDateTimeFieldType : ReversibleFieldTypeBase<OffsetDateTime, OffsetDateTime>(
+data object OffsetDateTimeFieldType : LosslessFieldTypeBase<OffsetDateTime, OffsetDateTime>(
     LeafAirbyteType.TIMESTAMP_WITH_TIMEZONE,
     ObjectGetter(OffsetDateTime::class.java),
     OffsetDateTimeCodec,

@@ -12,8 +12,6 @@ import io.airbyte.cdk.discover.BooleanFieldType
 import io.airbyte.cdk.discover.ByteFieldType
 import io.airbyte.cdk.discover.BytesFieldType
 import io.airbyte.cdk.discover.ClobFieldType
-import io.airbyte.cdk.jdbc.ColumnMetadata
-import io.airbyte.cdk.discover.ColumnMetadataToFieldTypeMapper
 import io.airbyte.cdk.discover.DoubleFieldType
 import io.airbyte.cdk.discover.FloatFieldType
 import io.airbyte.cdk.discover.IntFieldType
@@ -25,7 +23,7 @@ import io.airbyte.cdk.discover.NStringFieldType
 import io.airbyte.cdk.discover.OffsetDateTimeFieldType
 import io.airbyte.cdk.discover.OffsetTimeFieldType
 import io.airbyte.cdk.discover.NullFieldType
-import io.airbyte.cdk.discover.ReversibleFieldType
+import io.airbyte.cdk.discover.LosslessFieldType
 import io.airbyte.cdk.discover.ShortFieldType
 import io.airbyte.cdk.discover.StringFieldType
 import io.airbyte.cdk.discover.TableName
@@ -33,6 +31,7 @@ import io.airbyte.cdk.discover.UrlFieldType
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.PokemonFieldType
 import io.airbyte.cdk.discover.XmlFieldType
+import io.airbyte.cdk.jdbc.JdbcMetadataQuerier
 import io.airbyte.cdk.read.stream.And
 import io.airbyte.cdk.read.stream.Equal
 import io.airbyte.cdk.read.stream.From
@@ -69,9 +68,9 @@ import java.sql.JDBCType
 @Singleton
 @Requires(env = [Environment.TEST])
 @Secondary
-class TestSourceOperations : ColumnMetadataToFieldTypeMapper, SelectQueryGenerator {
+class TestSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator {
 
-    override fun toFieldType(c: ColumnMetadata): FieldType =
+    override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType =
         when (c.type.jdbcType) {
             JDBCType.BIT,
             JDBCType.BOOLEAN -> BooleanFieldType
@@ -118,7 +117,7 @@ class TestSourceOperations : ColumnMetadataToFieldTypeMapper, SelectQueryGenerat
     private fun TableName.fullyQualifiedName(): String =
         if (schema == null) name else "${schema}.${name}"
 
-    override fun generateSql(ast: SelectQueryRootNode): SelectQuery =
+    override fun generate(ast: SelectQueryRootNode): SelectQuery =
         SelectQuery(ast.sql(), ast.select.columns, ast.bindings())
 
     fun SelectQueryRootNode.sql(): String {
@@ -188,7 +187,7 @@ class TestSourceOperations : ColumnMetadataToFieldTypeMapper, SelectQueryGenerat
             is And -> conj.flatMap { it.bindings() }
             is Or -> disj.flatMap { it.bindings() }
             is WhereClauseLeafNode -> {
-                val type = column.type as ReversibleFieldType
+                val type = column.type as LosslessFieldType
                 listOf(SelectQuery.Binding(bindingValue, type))
             }
         }

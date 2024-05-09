@@ -12,14 +12,15 @@ import io.airbyte.cdk.read.stream.SelectQuerier
 import io.airbyte.cdk.read.stream.SelectQuery
 import io.airbyte.commons.jackson.MoreMappers
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Secondary
+import jakarta.inject.Singleton
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 
 private val log = KotlinLogging.logger {}
 
-@Secondary
+/** Default implementation of [SelectQuerier]. */
+@Singleton
 class JdbcSelectQuerier(
     private val jdbcConnectionFactory: JdbcConnectionFactory,
 ) : SelectQuerier {

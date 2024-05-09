@@ -24,7 +24,7 @@ import io.airbyte.cdk.read.NonResumableBackfillState
 import io.airbyte.cdk.read.SerializableStreamState
 import io.airbyte.cdk.read.StreamKey
 import io.airbyte.cdk.read.WorkResult
-import io.airbyte.cdk.read.stream.NonResumableBackfillWorker
+import io.airbyte.cdk.read.stream.NonResumableSelectWorker
 import io.airbyte.cdk.read.stream.SelectQuerier
 import io.airbyte.cdk.test.source.TestSourceConfiguration
 import io.airbyte.cdk.test.source.TestSourceConfigurationFactory
@@ -38,7 +38,7 @@ import io.airbyte.protocol.models.v0.SyncMode
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-class NonResumableBackfillWorkerTest {
+class NonResumableSelectWorkerTest {
 
     val h2 = H2TestFixture()
 
@@ -120,7 +120,7 @@ class NonResumableBackfillWorkerTest {
         val querier: SelectQuerier = JdbcSelectQuerier(JdbcConnectionFactory(config))
         val outputConsumer = BufferingOutputConsumer(TestClockFactory().fixed())
         val result: WorkResult<StreamKey, *, *> =
-            NonResumableBackfillWorker(TestSourceOperations(), querier, outputConsumer, input)
+            NonResumableSelectWorker(TestSourceOperations(), querier, outputConsumer, input)
                 .call()
         Assertions.assertEquals(expectedOutputState, result.output)
         Assertions.assertEquals(

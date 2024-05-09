@@ -11,11 +11,8 @@ import io.airbyte.cdk.discover.BigIntegerFieldType
 import io.airbyte.cdk.discover.BinaryStreamFieldType
 import io.airbyte.cdk.discover.BooleanFieldType
 import io.airbyte.cdk.discover.ClobFieldType
-import io.airbyte.cdk.jdbc.ColumnMetadata
-import io.airbyte.cdk.discover.ColumnMetadataToFieldTypeMapper
 import io.airbyte.cdk.discover.DoubleFieldType
 import io.airbyte.cdk.discover.FloatFieldType
-import io.airbyte.cdk.jdbc.GenericUserDefinedType
 import io.airbyte.cdk.discover.JsonStringFieldType
 import io.airbyte.cdk.discover.LocalDateTimeFieldType
 import io.airbyte.cdk.discover.LocalDateFieldType
@@ -24,7 +21,7 @@ import io.airbyte.cdk.discover.NClobFieldType
 import io.airbyte.cdk.discover.NStringFieldType
 import io.airbyte.cdk.discover.OffsetDateTimeFieldType
 import io.airbyte.cdk.discover.PokemonFieldType
-import io.airbyte.cdk.discover.ReversibleFieldType
+import io.airbyte.cdk.discover.LosslessFieldType
 import io.airbyte.cdk.discover.StringFieldType
 import io.airbyte.cdk.jdbc.SystemType
 import io.airbyte.cdk.discover.TableName
@@ -32,6 +29,8 @@ import io.airbyte.cdk.jdbc.UserDefinedArray
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.FieldTypeBase
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.jdbc.JdbcMetadataQuerier
+import io.airbyte.cdk.jdbc.UserDefinedType
 import io.airbyte.cdk.read.stream.And
 import io.airbyte.cdk.read.stream.Equal
 import io.airbyte.cdk.read.stream.From
@@ -64,19 +63,17 @@ import jakarta.inject.Singleton
 
 @Singleton
 @Primary
-class OracleSourceOperations : ColumnMetadataToFieldTypeMapper, SelectQueryGenerator {
+class OracleSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator {
 
-    override fun toFieldType(c: ColumnMetadata): FieldType =
+    override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType =
         when (val type = c.type) {
-            is UserDefinedArray -> ArrayFieldType(recursiveArrayType(type))
-            is GenericUserDefinedType -> PokemonFieldType
             is SystemType -> leafType(c.type.typeName, type.scale != 0)
+            is UserDefinedArray -> ArrayFieldType(recursiveArrayType(type))
+            is UserDefinedType -> PokemonFieldType
         }
 
     private fun recursiveArrayType(type: UserDefinedArray): FieldTypeBase<*> =
         when (val elementType = type.elementType) {
-            is UserDefinedArray -> ArrayFieldType(recursiveArrayType(elementType))
-            is GenericUserDefinedType -> PokemonFieldType
             is SystemType -> {
                 val leafType: FieldTypeBase<*> =
                     leafType(elementType.typeName, elementType.scale != 0)
@@ -88,6 +85,8 @@ class OracleSourceOperations : ColumnMetadataToFieldTypeMapper, SelectQueryGener
                     leafType
                 }
             }
+            is UserDefinedArray -> ArrayFieldType(recursiveArrayType(elementType))
+            is UserDefinedType -> PokemonFieldType
         }
 
     private fun leafType(typeName: String?, notInteger: Boolean): FieldTypeBase<*> =
@@ -146,7 +145,7 @@ class OracleSourceOperations : ColumnMetadataToFieldTypeMapper, SelectQueryGener
         // The catalog never comes into play with Oracle.
         if (schema == null) name else "${schema}.${name}"
 
-    override fun generateSql(ast: SelectQueryRootNode): SelectQuery =
+    override fun generate(ast: SelectQueryRootNode): SelectQuery =
         SelectQuery(ast.sql(), ast.select.columns, ast.bindings())
 
     fun SelectQueryRootNode.sql(): String {
@@ -212,7 +211,7 @@ class OracleSourceOperations : ColumnMetadataToFieldTypeMapper, SelectQueryGener
             is And -> conj.flatMap { it.bindings() }
             is Or -> disj.flatMap { it.bindings() }
             is WhereClauseLeafNode -> {
-                val type = column.type as ReversibleFieldType
+                val type = column.type as LosslessFieldType
                 listOf(SelectQuery.Binding(bindingValue, type))
             }
         }

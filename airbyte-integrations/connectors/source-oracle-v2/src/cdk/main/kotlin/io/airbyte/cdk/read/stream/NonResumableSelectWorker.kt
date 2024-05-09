@@ -20,7 +20,7 @@ import io.airbyte.cdk.read.completed
 import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 
-class NonResumableBackfillWorker(
+class NonResumableSelectWorker(
     selectQueryGenerator: SelectQueryGenerator,
     val selectQuerier: SelectQuerier,
     val outputConsumer: OutputConsumer,
@@ -29,8 +29,8 @@ class NonResumableBackfillWorker(
 
     override fun signalStop() {} // unstoppable
 
-    val dataQueryAst: SelectQueryRootNode = SelectQueryBuilder.selectData(input)
-    val dataQuery: SelectQuery = selectQueryGenerator.generateSql(dataQueryAst)
+    val dataQueryAst: SelectQueryRootNode = SelectQueryBuilder.data(input)
+    val dataQuery: SelectQuery = selectQueryGenerator.generate(dataQueryAst)
     val streamFieldNames: List<String> = key.fields.map { it.id }
     val nodeFactory: JsonNodeFactory = MoreMappers.initMapper().nodeFactory
 

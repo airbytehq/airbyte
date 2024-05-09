@@ -42,9 +42,9 @@ class JdbcMetadataQuerierTest {
                 actualTableNames.map { it.copy(catalog = null) }
             )
             val tableName: TableName = actualTableNames.first()
-            val expectedColumnMetadata: List<ColumnMetadata> =
+            val expectedColumnMetadata: List<JdbcMetadataQuerier.ColumnMetadata> =
                 listOf(
-                    ColumnMetadata(
+                    JdbcMetadataQuerier.ColumnMetadata(
                         name = "_ROWID_",
                         label = "_ROWID_",
                         type =
@@ -63,7 +63,7 @@ class JdbcMetadataQuerierTest {
                         currency = false,
                         nullable = false,
                     ),
-                    ColumnMetadata(
+                    JdbcMetadataQuerier.ColumnMetadata(
                         name = "K",
                         label = "K",
                         type =
@@ -82,7 +82,7 @@ class JdbcMetadataQuerierTest {
                         currency = false,
                         nullable = false,
                     ),
-                    ColumnMetadata(
+                    JdbcMetadataQuerier.ColumnMetadata(
                         name = "V",
                         label = "V",
                         type =

@@ -6,13 +6,12 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.cdk.jdbc.ColumnMetadata
-import io.airbyte.cdk.discover.ColumnMetadataToFieldTypeMapper
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.jdbc.SystemType
 import io.airbyte.cdk.discover.TableName
 import io.airbyte.cdk.discover.PokemonFieldType
+import io.airbyte.cdk.jdbc.JdbcMetadataQuerier
 import io.airbyte.cdk.operation.CONNECTOR_OPERATION
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
@@ -38,7 +37,7 @@ import java.sql.SQLException
 @Primary
 @Replaces(MetadataQuerier.Factory::class)
 class CatalogDrivenMetadataQuerierFactory(
-    val columnMetadataToFieldTypeMapper: ColumnMetadataToFieldTypeMapper,
+    val fieldTypeMapper: JdbcMetadataQuerier.FieldTypeMapper,
     val catalog: ConfiguredAirbyteCatalog
 ) : MetadataQuerier.Factory {
 
@@ -59,13 +58,13 @@ class CatalogDrivenMetadataQuerierFactory(
                 return jsonSchema.properties().map { (id: String, value: JsonNode) ->
                     JDBCType.entries
                         .map {
-                            ColumnMetadata(
+                            JdbcMetadataQuerier.ColumnMetadata(
                                 name = id,
                                 label = id,
                                 type = SystemType(typeCode = it.vendorTypeNumber)
                             )
                         }
-                        .map { Field(id, columnMetadataToFieldTypeMapper.toFieldType(it)) }
+                        .map { Field(id, fieldTypeMapper.toFieldType(it)) }
                         .find { it.type.airbyteType.asJsonSchema() == value }
                         ?: Field(id, PokemonFieldType)
                 }
