@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.mongodb;
 import static io.airbyte.integrations.source.mongodb.state.IdType.idToStringRepresenation;
 import static io.airbyte.integrations.source.mongodb.state.IdType.parseBinaryIdString;
 import static io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus.IN_PROGRESS;
-import static java.util.Base64.getEncoder;
 
 import com.google.common.collect.AbstractIterator;
 import com.mongodb.client.MongoCollection;
@@ -18,15 +17,9 @@ import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStreamState;
-
-import java.util.Base64;
 import java.util.Optional;
-import java.util.UUID;
-
 import org.bson.*;
 import org.bson.conversions.Bson;
-import org.bson.internal.UuidHelper;
-import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

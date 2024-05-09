@@ -8,16 +8,11 @@ import static io.airbyte.integrations.source.mongodb.state.IdType.BINARY;
 import static org.bson.BsonBinarySubType.UUID_STANDARD;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.UUID;
 import org.bson.BsonBinary;
-import org.bson.BsonBinarySubType;
-import org.bson.BsonInt32;
-import org.bson.UuidRepresentation;
-import org.bson.internal.UuidHelper;
 import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
-
-import java.util.UUID;
 
 class IdTypeTest {
 
@@ -48,9 +43,10 @@ class IdTypeTest {
     assertEquals("1234567890", IdType.idToStringRepresenation(1234567890L, IdType.LONG));
     assertEquals("abcde", IdType.idToStringRepresenation("abcde", IdType.STRING));
     assertEquals("012301230123012301230123", IdType.idToStringRepresenation(new ObjectId("012301230123012301230123"), IdType.OBJECT_ID));
-    assertEquals("AQIDBA==", IdType.idToStringRepresenation(new Binary(new byte[]{1, 2, 3, 4}), BINARY));
+    assertEquals("AQIDBA==", IdType.idToStringRepresenation(new Binary(new byte[] {1, 2, 3, 4}), BINARY));
     assertEquals("74c14d29-3d25-4e59-a621-73895ee859f9",
-            IdType.idToStringRepresenation(new Binary(UUID_STANDARD,
-                    new BsonBinary(UUID.fromString("74C14D29-3D25-4E59-A621-73895EE859F9")).getData()), BINARY));
+        IdType.idToStringRepresenation(new Binary(UUID_STANDARD,
+            new BsonBinary(UUID.fromString("74C14D29-3D25-4E59-A621-73895EE859F9")).getData()), BINARY));
   }
+
 }

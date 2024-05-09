@@ -4,18 +4,15 @@
 
 package io.airbyte.integrations.source.mongodb.state;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import static java.util.Base64.getEncoder;
 
+import java.util.*;
+import java.util.stream.Collectors;
 import org.bson.BsonBinary;
 import org.bson.BsonBinarySubType;
 import org.bson.UuidRepresentation;
 import org.bson.internal.UuidHelper;
 import org.bson.types.Binary;
-import org.bson.types.ObjectId;
-
-import static java.util.Base64.getEncoder;
 
 /**
  * _id field types that are currently supported, potential types are defined <a href=
@@ -75,7 +72,6 @@ public enum IdType {
     return Optional.ofNullable(byJavaType.get(javaType.toLowerCase()));
   }
 
-
   public static String idToStringRepresenation(final Object currentId, final IdType idType) {
     final String id;
     if (idType == IdType.BINARY) {
@@ -99,4 +95,5 @@ public enum IdType {
       return new BsonBinary(Base64.getDecoder().decode(id));
     }
   }
+
 }

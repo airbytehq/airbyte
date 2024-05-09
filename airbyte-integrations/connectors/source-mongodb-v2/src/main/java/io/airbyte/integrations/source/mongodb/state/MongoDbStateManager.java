@@ -8,7 +8,6 @@ import static io.airbyte.integrations.source.mongodb.state.IdType.idToStringRepr
 import static io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus.FULL_REFRESH;
 import static io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus.IN_PROGRESS;
 import static io.airbyte.protocol.models.v0.SyncMode.INCREMENTAL;
-import static java.util.Base64.getEncoder;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -28,9 +27,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.bson.Document;
-import org.bson.UuidRepresentation;
-import org.bson.internal.UuidHelper;
-import org.bson.types.Binary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
