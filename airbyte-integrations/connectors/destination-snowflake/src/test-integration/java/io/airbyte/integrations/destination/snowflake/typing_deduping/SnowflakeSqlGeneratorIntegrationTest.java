@@ -54,6 +54,11 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   private static JdbcDatabase database;
   private static DataSource dataSource;
 
+  @Override
+  protected boolean getSupportsSafeCast() {
+    return true;
+  }
+
   @BeforeAll
   public static void setupSnowflake() {
     final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of("secrets/1s1t_internal_staging_config.json")));
@@ -371,8 +376,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         record -> record.get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID).asText(),
         Function.identity()));
     assertAll(
-        () -> assertEquals(6, v1RawRecords.size()),
-        () -> assertEquals(6, v2RawRecords.size()));
+        () -> assertEquals(5, v1RawRecords.size()),
+        () -> assertEquals(5, v2RawRecords.size()));
     v1RawRecords.forEach(v1Record -> {
       final var v1id = v1Record.get(JavaBaseConstants.COLUMN_NAME_AB_ID.toUpperCase()).asText();
       assertAll(
