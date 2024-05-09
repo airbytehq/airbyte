@@ -26,8 +26,10 @@ data:
   registries:
     cloud:
       enabled: true
+      dockerImageTag: 2.2.0
     oss:
       enabled: true
+      dockerImageTag: 2.2.0
   releaseStage: generally_available
   releases:
     breakingChanges:
