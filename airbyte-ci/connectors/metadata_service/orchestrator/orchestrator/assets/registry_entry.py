@@ -464,7 +464,7 @@ def safe_get_commit_sha(metadata_dict: Union[dict, BaseModel]) -> Optional[str]:
     auto_materialize_policy=AutoMaterializePolicy.eager(max_materializations_per_minute=MAX_METADATA_PARTITION_RUN_REQUEST),
 )
 @sentry.instrument_asset_op
-def metadata_entry(context: OpExecutionContext, airbyte_slack_users: pd.DataFrame) -> Output[Optional[LatestMetadataEntry]]:
+def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadataEntry]]:
     """Parse and compute the LatestMetadataEntry for the given metadata file."""
     etag = context.partition_key
     context.log.info(f"Processing metadata file with etag {etag}")
@@ -474,6 +474,8 @@ def metadata_entry(context: OpExecutionContext, airbyte_slack_users: pd.DataFram
     matching_blob = next((blob for blob in all_metadata_file_blobs if blob.etag == etag), None)
     if not matching_blob:
         raise Exception(f"Could not find blob with etag {etag}")
+
+    airbyte_slack_users = HACKS.get_airbyte_slack_users_from_graph(context)
 
     metadata_dict = yaml_blob_to_dict(matching_blob)
     user_identifier = safe_get_slack_user_identifier(airbyte_slack_users, metadata_dict)
@@ -548,15 +550,15 @@ def metadata_entry(context: OpExecutionContext, airbyte_slack_users: pd.DataFram
     auto_materialize_policy=AutoMaterializePolicy.eager(max_materializations_per_minute=MAX_METADATA_PARTITION_RUN_REQUEST),
 )
 @sentry.instrument_asset_op
-def registry_entry(
-    context: OpExecutionContext, metadata_entry: Optional[LatestMetadataEntry], airbyte_slack_users: pd.DataFrame
-) -> Output[Optional[dict]]:
+def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestMetadataEntry]) -> Output[Optional[dict]]:
     """
     Generate the registry entry files from the given metadata file, and persist it to GCS.
     """
     if not metadata_entry:
         # if the metadata entry is invalid, return an empty dict
         return Output(metadata={"empty_metadata": True}, value=None)
+
+    airbyte_slack_users = HACKS.get_airbyte_slack_users_from_graph(context)
 
     user_identifier = safe_get_slack_user_identifier(airbyte_slack_users, metadata_entry.metadata_definition)
     commit_sha = safe_get_commit_sha(metadata_entry.metadata_definition)

@@ -2,8 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Union
+from typing import Optional, Union
 
+import pandas as pd
+from dagster import OpExecutionContext
 from metadata_service.constants import METADATA_FILE_NAME
 from metadata_service.gcs_upload import get_metadata_remote_file_path
 from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
@@ -109,3 +111,29 @@ def sanitize_docker_repo_name_for_dependency_file(docker_repo_name: str) -> str:
     """
 
     return docker_repo_name.replace("airbyte/", "")
+
+
+def get_airbyte_slack_users_from_graph(context: OpExecutionContext) -> Optional[pd.DataFrame]:
+    """
+    Get the airbyte slack users from the graph.
+
+    Important: Directly relates to the airbyte_slack_users asset. Requires the asset to be materialized in the graph.
+
+    Problem:
+        I guess having dynamic partitioned assets that automatically materialize depending on another asset is a bit too much to ask for.
+
+    Solution:
+        Just get the asset from the graph, but dont declare it as a dependency.
+
+    Context:
+        https://airbytehq-team.slack.com/archives/C048P9GADFW/p1715276222825929
+    """
+    try:
+        from orchestrator import defn
+
+        airbyte_slack_users = defn.load_asset_value("airbyte_slack_users", instance=context.instance)
+        context.log.info(f"Got airbyte slack users from graph: {airbyte_slack_users}")
+        return airbyte_slack_users
+    except Exception as e:
+        context.log.error(f"Failed to get airbyte slack users from graph: {e}")
+        return None
