@@ -1,9 +1,11 @@
 # Changelog
 
 ## 0.88.0
+
 file-based: Increase the maximum parseable field size for CSV files
 
 ## 0.87.0
+
 Python CDK: Allow for configuring resumable full refresh for streams (excluding substreams)
 
 ## 0.86.3

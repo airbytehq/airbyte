@@ -20,6 +20,7 @@ Let's dive into using an example:
 - Assuming we're going to add a new package `airbyte_cdk/new_package`;
 - Let this file contain a few modules: `airbyte_cdk/new_package/module1.py` and `airbyte_cdk/new_package/module2.py`;
 - The above structure should be in `rst` config as:
+
   - Add this block directly into `index.rst`:
 
     ```
