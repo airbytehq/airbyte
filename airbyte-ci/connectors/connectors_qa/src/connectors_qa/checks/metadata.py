@@ -20,11 +20,6 @@ class ValidateMetadata(MetadataCheck):
     description = f"Connectors must have a `{consts.METADATA_FILE_NAME}` file at the root of their directory. This file is used to build our connector registry. Its structure must follow our metadata schema. Field values are also validated. This is to ensure that all connectors have the required metadata fields and that the metadata is valid. More details in this [documentation]({consts.METADATA_DOCUMENTATION_URL})."
 
     def _run(self, connector: Connector) -> CheckResult:
-        if not connector.documentation_file_path or not connector.documentation_file_path.exists():
-            return self.fail(
-                connector=connector,
-                message="User facing documentation file is missing. Please create it",
-            )
         deserialized_metadata, error = validate_and_load(
             connector.metadata_file_path,
             PRE_UPLOAD_VALIDATORS,
