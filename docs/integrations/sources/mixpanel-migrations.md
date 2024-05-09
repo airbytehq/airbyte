@@ -1,5 +1,9 @@
 # Mixpanel Migration Guide
 
+## Upgrading to 3.0.0
+
+In this release, state for CohortMembers is reset and migrated to new empty per-partition state automatically. It means that on next incremental sync there actually will be one full refresh read and new state will be released.
+
 ## Upgrading to 2.0.0
 
 In this release, the default primary key for stream Export has been deleted, allowing users to select the key that best fits their data. Refreshing the source schema and resetting affected streams is necessary only if new primary keys are to be applied following the upgrade.

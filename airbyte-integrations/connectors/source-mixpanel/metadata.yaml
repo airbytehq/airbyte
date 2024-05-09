@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
-  dockerImageTag: 2.3.1
+  dockerImageTag: 3.0.0
   dockerRepository: airbyte/source-mixpanel
   documentationUrl: https://docs.airbyte.com/integrations/sources/mixpanel
   githubIssueLabel: source-mixpanel
@@ -31,6 +31,12 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      3.0.0:
+        message:
+          In this release, state for CohortMembers is reset and migrated to new empty 
+          per-partition state automatically. It means that on next incremental sync 
+          there actually will be one full read and new state will be released.
+        upgradeDeadline: "2024-05-10"
       2.0.0:
         message:
           In this release, the default primary key for stream Export has been
