@@ -63,7 +63,7 @@ pyjwt = "^2.8.0"
 cryptography = "^42.0.5"
 
 [tool.poetry.group.dev.dependencies]
-datamodel_code_generator = "0.11.19"
+datamodel_code_generator = "0.25.4"
 freezegun = "*"
 mypy = "*"
 pandas = "2.0.3"
