@@ -174,7 +174,8 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 ## Changelog
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
-| :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.3   | 2024-05-09 | [#38078](https://github.com/airbytehq/airbyte/pull/38078) | Hide OSS-only streams in report options config for cloud users                                                                                                                      |
 | 4.2.2   | 2024-04-24 | [#36630](https://github.com/airbytehq/airbyte/pull/36630) | Schema descriptions and CDK 0.80.0                                                                                                                                                  |
 | 4.2.1   | 2024-04-08 | [#36895](https://github.com/airbytehq/airbyte/pull/36895) | Fix `reportPeriod` day query params                                                                                                                                                 |
 | 4.2.0   | 2024-03-19 | [#36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                                                                                                     |
