@@ -8,9 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.airbyte.cdk.TestClockFactory
 import io.airbyte.cdk.consumers.BufferingOutputConsumer
-import io.airbyte.cdk.discover.ColumnMetadata
-import io.airbyte.cdk.discover.LeafAirbyteType
-import io.airbyte.cdk.discover.SystemType
+import io.airbyte.cdk.discover.OffsetDateTimeFieldType
+import io.airbyte.cdk.discover.StringFieldType
 import io.airbyte.cdk.discover.TableName
 import io.airbyte.cdk.jdbc.H2TestFixture
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
@@ -22,7 +21,7 @@ import io.airbyte.cdk.read.CursorBasedIncrementalCompleted
 import io.airbyte.cdk.read.CursorBasedIncrementalOngoing
 import io.airbyte.cdk.read.CursorBasedResumableInitialSyncOngoing
 import io.airbyte.cdk.read.CursorBasedResumableInitialSyncStarting
-import io.airbyte.cdk.read.DataColumn
+import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.read.FullRefreshCompleted
 import io.airbyte.cdk.read.FullRefreshResumableOngoing
 import io.airbyte.cdk.read.FullRefreshResumableStarting
@@ -42,7 +41,6 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
-import java.sql.Types
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -87,32 +85,11 @@ class ResumableSelectWorkerTest {
                 ConfiguredAirbyteStream()
                     .withStream(AirbyteStream().withName("EVENTLOG").withNamespace("PUBLIC")),
             table = TableName(schema = "PUBLIC", name = "EVENTLOG", type = ""),
-            dataColumns =
+            fields =
                 listOf(
-                    DataColumn(
-                        ColumnMetadata(
-                            name = "id",
-                            label = "id",
-                            type = SystemType(typeCode = Types.VARCHAR)
-                        ),
-                        LeafAirbyteType.STRING
-                    ),
-                    DataColumn(
-                        ColumnMetadata(
-                            name = "ts",
-                            label = "ts",
-                            type = SystemType(typeCode = Types.TIMESTAMP_WITH_TIMEZONE)
-                        ),
-                        LeafAirbyteType.TIMESTAMP_WITH_TIMEZONE
-                    ),
-                    DataColumn(
-                        ColumnMetadata(
-                            name = "msg",
-                            label = "msg",
-                            type = SystemType(typeCode = Types.VARCHAR)
-                        ),
-                        LeafAirbyteType.STRING
-                    ),
+                    Field("id", StringFieldType),
+                    Field("ts", OffsetDateTimeFieldType),
+                    Field("msg", StringFieldType),
                 ),
             primaryKeyCandidates = listOf(),
             cursorCandidates = listOf(),
@@ -121,18 +98,8 @@ class ResumableSelectWorkerTest {
             configuredCursor = null
         )
 
-    val pk =
-        listOf(
-            DataColumn(
-                ColumnMetadata(
-                    name = "id",
-                    label = "id",
-                    type = SystemType(typeCode = Types.VARCHAR)
-                ),
-                LeafAirbyteType.STRING
-            )
-        )
-    val cursor = key.dataColumns.get(1)
+    val pk = listOf(Field("id", StringFieldType))
+    val cursor = key.fields[1]
     val expectedRow1 = """{"id":"$idInRow1","ts":"$tsInRow1","msg":"foo"}"""
     val expectedRow2 = """{"id":"$idInRow2","ts":"$tsInRow2","msg":"bar"}"""
     val expectedRow3 = """{"id":"$idInRow3","ts":"$tsInRow3","msg":null}"""

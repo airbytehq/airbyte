@@ -6,8 +6,9 @@ package io.airbyte.cdk.jdbc
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
-import io.airbyte.cdk.discover.IntValueType
-import io.airbyte.cdk.discover.StringValueType
+import io.airbyte.cdk.discover.IntFieldType
+import io.airbyte.cdk.discover.StringFieldType
+import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.read.stream.SelectQuerier
 import io.airbyte.cdk.read.stream.SelectQuery
 import io.airbyte.cdk.test.source.TestSourceConfiguration
@@ -34,8 +35,8 @@ class JdbcSelectQuerierTest {
         h2.execute("INSERT INTO kv (k, v) VALUES (1, 'foo'), (2, 'bar'), (3, NULL);")
     }
 
-    val columns: List<SelectQuery.Column> =
-        listOf(SelectQuery.Column("k", IntValueType), SelectQuery.Column("v", StringValueType))
+    val columns: List<Field> =
+        listOf(Field("k", IntFieldType), Field("v", StringFieldType))
 
     @Test
     fun testVanilla() {
@@ -53,7 +54,7 @@ class JdbcSelectQuerierTest {
             SelectQuery(
                 "SELECT k, v FROM kv WHERE k < ?",
                 columns,
-                listOf(SelectQuery.Binding(json(2), IntValueType))
+                listOf(SelectQuery.Binding(json(2), IntFieldType))
             ),
             """{"k":1, "v":"foo"}""",
         )
@@ -62,8 +63,8 @@ class JdbcSelectQuerierTest {
                 "SELECT k, v FROM kv WHERE k > ? AND k < ?",
                 columns,
                 listOf(
-                    SelectQuery.Binding(json(1), IntValueType),
-                    SelectQuery.Binding(json(3), IntValueType),
+                    SelectQuery.Binding(json(1), IntFieldType),
+                    SelectQuery.Binding(json(3), IntFieldType),
                 )
             ),
             """{"k":2, "v":"bar"}""",

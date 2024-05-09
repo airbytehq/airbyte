@@ -11,6 +11,7 @@ import io.airbyte.commons.jackson.MoreMappers
 import java.math.BigDecimal
 import java.net.URI
 import java.net.URL
+import java.nio.ByteBuffer
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -70,15 +71,16 @@ data object TextCodec : JsonCodec<String> {
     }
 }
 
-data object BinaryCodec : JsonCodec<ByteArray> {
+data object BinaryCodec : JsonCodec<ByteBuffer> {
 
-    override fun encode(decoded: ByteArray): JsonNode = JsonCodec.nodeFactory.binaryNode(decoded)
+    override fun encode(decoded: ByteBuffer): JsonNode =
+        JsonCodec.nodeFactory.binaryNode(decoded.array())
 
-    override fun decode(encoded: JsonNode): ByteArray {
+    override fun decode(encoded: JsonNode): ByteBuffer {
         if (!encoded.isBinary) {
             throw IllegalArgumentException("invalid binary value $encoded")
         }
-        return encoded.binaryValue()
+        return ByteBuffer.wrap(encoded.binaryValue())
     }
 }
 

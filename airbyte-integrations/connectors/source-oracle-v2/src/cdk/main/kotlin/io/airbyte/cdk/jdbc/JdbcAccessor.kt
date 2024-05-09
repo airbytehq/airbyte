@@ -7,6 +7,7 @@ package io.airbyte.cdk.jdbc
 import java.io.ByteArrayInputStream
 import java.math.BigDecimal
 import java.net.URL
+import java.nio.ByteBuffer
 import java.sql.Clob
 import java.sql.Date
 import java.sql.NClob
@@ -108,23 +109,25 @@ data object BigDecimalAccessor : JdbcAccessor<BigDecimal> {
     }
 }
 
-data object BytesAccessor : JdbcAccessor<ByteArray> {
+data object BytesAccessor : JdbcAccessor<ByteBuffer> {
 
-    override fun get(rs: ResultSet, colIdx: Int): ByteArray? =
-        rs.getBytes(colIdx)?.takeUnless { rs.wasNull() }
+    override fun get(rs: ResultSet, colIdx: Int): ByteBuffer? =
+        rs.getBytes(colIdx)?.takeUnless { rs.wasNull() }?.let(ByteBuffer::wrap)
 
-    override fun set(stmt: PreparedStatement, paramIdx: Int, value: ByteArray) {
-        stmt.setBytes(paramIdx, value)
+    override fun set(stmt: PreparedStatement, paramIdx: Int, value: ByteBuffer) {
+        stmt.setBytes(paramIdx, value.array())
     }
 }
 
-data object BinaryStreamAccessor : JdbcAccessor<ByteArray> {
+data object BinaryStreamAccessor : JdbcAccessor<ByteBuffer> {
 
-    override fun get(rs: ResultSet, colIdx: Int): ByteArray? =
-        rs.getBinaryStream(colIdx)?.takeUnless { rs.wasNull() }?.use { it.readAllBytes() }
+    override fun get(rs: ResultSet, colIdx: Int): ByteBuffer? =
+        rs.getBinaryStream(colIdx)?.takeUnless { rs.wasNull() }?.use {
+            ByteBuffer.wrap(it.readAllBytes())
+        }
 
-    override fun set(stmt: PreparedStatement, paramIdx: Int, value: ByteArray) {
-        stmt.setBinaryStream(paramIdx, ByteArrayInputStream(value))
+    override fun set(stmt: PreparedStatement, paramIdx: Int, value: ByteBuffer) {
+        stmt.setBinaryStream(paramIdx, ByteArrayInputStream(value.array()))
     }
 }
 

@@ -5,37 +5,37 @@
 package io.airbyte.cdk.test.source
 
 import com.fasterxml.jackson.databind.node.ObjectNode
-import io.airbyte.cdk.discover.ArrayValueType
-import io.airbyte.cdk.discover.BigDecimalValueType
-import io.airbyte.cdk.discover.BigIntegerValueType
-import io.airbyte.cdk.discover.BinaryStreamValueType
-import io.airbyte.cdk.discover.BooleanValueType
-import io.airbyte.cdk.discover.ByteValueType
-import io.airbyte.cdk.discover.BytesValueType
-import io.airbyte.cdk.discover.ClobValueType
+import io.airbyte.cdk.discover.ArrayFieldType
+import io.airbyte.cdk.discover.BigDecimalFieldType
+import io.airbyte.cdk.discover.BigIntegerFieldType
+import io.airbyte.cdk.discover.BinaryStreamFieldType
+import io.airbyte.cdk.discover.BooleanFieldType
+import io.airbyte.cdk.discover.ByteFieldType
+import io.airbyte.cdk.discover.BytesFieldType
+import io.airbyte.cdk.discover.ClobFieldType
 import io.airbyte.cdk.discover.ColumnMetadata
 import io.airbyte.cdk.discover.DiscoverMapper
 import io.airbyte.cdk.discover.DiscoveredStream
-import io.airbyte.cdk.discover.DoubleValueType
-import io.airbyte.cdk.discover.FloatValueType
-import io.airbyte.cdk.discover.IntValueType
+import io.airbyte.cdk.discover.DoubleFieldType
+import io.airbyte.cdk.discover.FloatFieldType
+import io.airbyte.cdk.discover.IntFieldType
 import io.airbyte.cdk.discover.LeafAirbyteType
-import io.airbyte.cdk.discover.LocalDateTimeValueType
-import io.airbyte.cdk.discover.LocalDateValueType
-import io.airbyte.cdk.discover.LocalTimeValueType
-import io.airbyte.cdk.discover.NClobValueType
-import io.airbyte.cdk.discover.NStringValueType
-import io.airbyte.cdk.discover.OffsetDateTimeValueType
-import io.airbyte.cdk.discover.OffsetTimeValueType
-import io.airbyte.cdk.discover.OneWayAnyValueType
-import io.airbyte.cdk.discover.OneWayNullValueType
-import io.airbyte.cdk.discover.ReversibleValueType
-import io.airbyte.cdk.discover.ShortValueType
-import io.airbyte.cdk.discover.StringValueType
+import io.airbyte.cdk.discover.LocalDateTimeFieldType
+import io.airbyte.cdk.discover.LocalDateFieldType
+import io.airbyte.cdk.discover.LocalTimeFieldType
+import io.airbyte.cdk.discover.NClobFieldType
+import io.airbyte.cdk.discover.NStringFieldType
+import io.airbyte.cdk.discover.OffsetDateTimeFieldType
+import io.airbyte.cdk.discover.OffsetTimeFieldType
+import io.airbyte.cdk.discover.NullFieldType
+import io.airbyte.cdk.discover.ReversibleFieldType
+import io.airbyte.cdk.discover.ShortFieldType
+import io.airbyte.cdk.discover.StringFieldType
 import io.airbyte.cdk.discover.TableName
-import io.airbyte.cdk.discover.UrlValueType
-import io.airbyte.cdk.discover.ValueType
-import io.airbyte.cdk.discover.XmlValueType
+import io.airbyte.cdk.discover.UrlFieldType
+import io.airbyte.cdk.discover.FieldType
+import io.airbyte.cdk.discover.PokemonFieldType
+import io.airbyte.cdk.discover.XmlFieldType
 import io.airbyte.cdk.read.stream.And
 import io.airbyte.cdk.read.stream.Equal
 import io.airbyte.cdk.read.stream.From
@@ -78,40 +78,40 @@ class TestSourceOperations : DiscoverMapper, SelectQueryGenerator {
     override fun selectFromTableLimit0(table: TableName, columns: List<String>): String =
         "SELECT ${columns.joinToString()} FROM ${table.fullyQualifiedName()} LIMIT 0"
 
-    override fun columnValueType(c: ColumnMetadata): ValueType<*> =
+    override fun toFieldType(c: ColumnMetadata): FieldType =
         when (c.type.jdbcType) {
             JDBCType.BIT,
-            JDBCType.BOOLEAN -> BooleanValueType
-            JDBCType.TINYINT -> ByteValueType
-            JDBCType.SMALLINT -> ShortValueType
-            JDBCType.INTEGER -> IntValueType
-            JDBCType.BIGINT -> BigIntegerValueType
-            JDBCType.FLOAT -> FloatValueType
-            JDBCType.DOUBLE -> DoubleValueType
+            JDBCType.BOOLEAN -> BooleanFieldType
+            JDBCType.TINYINT -> ByteFieldType
+            JDBCType.SMALLINT -> ShortFieldType
+            JDBCType.INTEGER -> IntFieldType
+            JDBCType.BIGINT -> BigIntegerFieldType
+            JDBCType.FLOAT -> FloatFieldType
+            JDBCType.DOUBLE -> DoubleFieldType
             JDBCType.REAL,
             JDBCType.NUMERIC,
-            JDBCType.DECIMAL -> BigDecimalValueType
+            JDBCType.DECIMAL -> BigDecimalFieldType
             JDBCType.CHAR,
             JDBCType.VARCHAR,
-            JDBCType.LONGVARCHAR -> StringValueType
+            JDBCType.LONGVARCHAR -> StringFieldType
             JDBCType.NCHAR,
             JDBCType.NVARCHAR,
-            JDBCType.LONGNVARCHAR -> NStringValueType
-            JDBCType.DATE -> LocalDateValueType
-            JDBCType.TIME -> LocalTimeValueType
-            JDBCType.TIMESTAMP -> LocalDateTimeValueType
-            JDBCType.TIME_WITH_TIMEZONE -> OffsetTimeValueType
-            JDBCType.TIMESTAMP_WITH_TIMEZONE -> OffsetDateTimeValueType
-            JDBCType.BLOB -> BinaryStreamValueType
+            JDBCType.LONGNVARCHAR -> NStringFieldType
+            JDBCType.DATE -> LocalDateFieldType
+            JDBCType.TIME -> LocalTimeFieldType
+            JDBCType.TIMESTAMP -> LocalDateTimeFieldType
+            JDBCType.TIME_WITH_TIMEZONE -> OffsetTimeFieldType
+            JDBCType.TIMESTAMP_WITH_TIMEZONE -> OffsetDateTimeFieldType
+            JDBCType.BLOB -> BinaryStreamFieldType
             JDBCType.BINARY,
             JDBCType.VARBINARY,
-            JDBCType.LONGVARBINARY -> BytesValueType
-            JDBCType.CLOB -> ClobValueType
-            JDBCType.NCLOB -> NClobValueType
-            JDBCType.DATALINK -> UrlValueType
-            JDBCType.SQLXML -> XmlValueType
-            JDBCType.ARRAY -> ArrayValueType(StringValueType)
-            JDBCType.NULL -> OneWayNullValueType
+            JDBCType.LONGVARBINARY -> BytesFieldType
+            JDBCType.CLOB -> ClobFieldType
+            JDBCType.NCLOB -> NClobFieldType
+            JDBCType.DATALINK -> UrlFieldType
+            JDBCType.SQLXML -> XmlFieldType
+            JDBCType.ARRAY -> ArrayFieldType(StringFieldType)
+            JDBCType.NULL -> NullFieldType
             JDBCType.OTHER,
             JDBCType.JAVA_OBJECT,
             JDBCType.DISTINCT,
@@ -119,7 +119,7 @@ class TestSourceOperations : DiscoverMapper, SelectQueryGenerator {
             JDBCType.REF,
             JDBCType.ROWID,
             JDBCType.REF_CURSOR,
-            null -> OneWayAnyValueType
+            null -> PokemonFieldType
         }
 
     private fun TableName.fullyQualifiedName(): String =
@@ -154,11 +154,7 @@ class TestSourceOperations : DiscoverMapper, SelectQueryGenerator {
         }
 
     override fun generateSql(ast: SelectQueryRootNode): SelectQuery =
-        SelectQuery(
-            ast.sql(),
-            ast.columns(),
-            ast.bindings(),
-        )
+        SelectQuery(ast.sql(), ast.select.columns, ast.bindings())
 
     fun SelectQueryRootNode.sql(): String {
         val components: List<String> =
@@ -213,9 +209,6 @@ class TestSourceOperations : DiscoverMapper, SelectQueryGenerator {
             is Limit -> "LIMIT ${state.current}"
         }
 
-    fun SelectQueryRootNode.columns(): List<SelectQuery.Column> =
-        select.columns.map { SelectQuery.Column(it.id, columnValueType(it.metadata)) }
-
     fun SelectQueryRootNode.bindings(): List<SelectQuery.Binding> = where.bindings()
 
     fun WhereNode.bindings(): List<SelectQuery.Binding> =
@@ -229,7 +222,7 @@ class TestSourceOperations : DiscoverMapper, SelectQueryGenerator {
             is And -> conj.flatMap { it.bindings() }
             is Or -> disj.flatMap { it.bindings() }
             is WhereClauseLeafNode -> {
-                val type = columnValueType(column.metadata) as ReversibleValueType<*, *>
+                val type = column.type as ReversibleFieldType
                 listOf(SelectQuery.Binding(bindingValue, type))
             }
         }

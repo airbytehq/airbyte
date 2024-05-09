@@ -15,17 +15,20 @@ import io.airbyte.cdk.consumers.CatalogValidationFailureHandler
 import io.airbyte.cdk.consumers.ColumnNotFound
 import io.airbyte.cdk.consumers.ColumnTypeMismatch
 import io.airbyte.cdk.consumers.InvalidCursor
+import io.airbyte.cdk.consumers.InvalidIncrementalSyncMode
 import io.airbyte.cdk.consumers.InvalidPrimaryKey
 import io.airbyte.cdk.consumers.MultipleTablesFound
 import io.airbyte.cdk.consumers.ResetStream
 import io.airbyte.cdk.consumers.TableHasNoDataColumns
 import io.airbyte.cdk.consumers.TableNotFound
+import io.airbyte.cdk.discover.AirbyteCdcLsnMetaField
 import io.airbyte.cdk.discover.AirbyteType
-import io.airbyte.cdk.discover.ColumnMetadata
+import io.airbyte.cdk.discover.ArrayAirbyteType
+import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.FieldOrMetaField
 import io.airbyte.cdk.discover.LeafAirbyteType
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.discover.TableName
-import io.airbyte.cdk.discover.ValueType
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -152,81 +155,82 @@ class StateManagerFactory(
                     return null
                 }
             }
-        val expectedColumnLabels: Set<String> =
-            jsonSchemaProperties.fieldNames().asSequence().toSet()
-        val columnMetadata: List<ColumnMetadata> = metadataQuerier.columnMetadata(table)
-        val allDataColumns: Map<String, DataColumn> =
-            columnMetadata
-                .mapNotNull {
-                    jsonSchemaProperties[it.name]?.let { jsonSchema: JsonNode ->
-                        it.label to DataColumn(it, FieldSchema(jsonSchema).asColumnType())
-                    }
+        val expectedSchema: Map<String, AirbyteType> =
+            jsonSchemaProperties.properties().associate { (id: String, schema: JsonNode) ->
+                id to airbyteTypeFromJsonSchema(schema)
+            }
+        val actualDataColumns: Map<String, Field> =
+            metadataQuerier.columnMetadata(table)
+                .map {
+                    Field(it.label, metadataQuerierFactory.discoverMapper.toFieldType(it))
                 }
-                .toMap()
-        fun dataColumnOrNull(columnLabel: String): DataColumn? {
-            if (columnLabel.startsWith("_ab_")) {
+                .associateBy { it.id }
+        fun dataColumnOrNull(id: String): Field? {
+            if (id.startsWith("_ab_")) {
                 // Ignore airbyte metadata columns.
                 // These aren't actually present in the table.
                 return null
             }
-            val column: DataColumn? = allDataColumns[columnLabel]
-            if (column == null) {
-                handler.accept(ColumnNotFound(name, namespace, columnLabel))
+            val actualColumn: Field? = actualDataColumns[id]
+            if (actualColumn == null) {
+                handler.accept(ColumnNotFound(name, namespace, id))
                 return null
             }
-            val discoveredValueType: ValueType<*> =
-                metadataQuerierFactory.discoverMapper.columnValueType(column.metadata)
-            val discoveredAirbyteType: AirbyteType = discoveredValueType.airbyteType
-            if (column.airbyteType != discoveredAirbyteType) {
+            val expectedAirbyteType: AirbyteType = expectedSchema[id] ?: return null
+            val actualAirbyteType: AirbyteType = actualColumn.type.airbyteType
+            if (expectedAirbyteType != actualAirbyteType) {
                 handler.accept(
                     ColumnTypeMismatch(
                         name,
                         namespace,
-                        columnLabel,
-                        column.airbyteType,
-                        discoveredAirbyteType
+                        id,
+                        expectedAirbyteType,
+                        actualAirbyteType
                     )
                 )
                 return null
             }
-            return column
+            return actualColumn
         }
-
-        for (columnLabel in expectedColumnLabels.toList().sorted()) {
-            dataColumnOrNull(columnLabel)
-        }
-        val streamDataColumns: List<DataColumn> =
-            allDataColumns.filterKeys { expectedColumnLabels.contains(it) }.values.toList()
-        if (streamDataColumns.isEmpty()) {
+        val streamFields: List<Field> =
+            expectedSchema.keys.toList()
+                .filterNot { it.startsWith("_ab_") }
+                .map { dataColumnOrNull(it) ?: return@toStreamKey null }
+        if (streamFields.isEmpty()) {
             handler.accept(TableHasNoDataColumns(name, namespace))
             return null
         }
-        fun pkOrNull(pkColumnLabels: List<String>): List<DataColumn>? =
-            pkColumnLabels
-                .mapNotNull {
-                    allDataColumns[it].apply {
-                        if (this == null) handler.accept(ColumnNotFound(name, namespace, it))
-                    }
-                }
-                .takeUnless { it.isEmpty() || it.size < pkColumnLabels.size }
-        fun cursorOrNull(cursorColumnLabel: String): Column? {
-            if (cursorColumnLabel == "_ab_cdc_lsn") {
-                return AirbyteColumn("_ab_cdc_lsn", LeafAirbyteType.STRING)
+        fun pkOrNull(pkColumnIDs: List<String>): List<Field>? =
+            pkColumnIDs.mapNotNull(::dataColumnOrNull).takeUnless {
+                it.isEmpty() || it.size < pkColumnIDs.size
             }
-            return dataColumnOrNull(cursorColumnLabel)
+        fun cursorOrNull(cursorColumnID: String): FieldOrMetaField? {
+            if (cursorColumnID == "_ab_cdc_lsn") {
+                return AirbyteCdcLsnMetaField
+            }
+            return dataColumnOrNull(cursorColumnID)
         }
-        val primaryKeyCandidates: List<List<DataColumn>> =
+        val primaryKeyCandidates: List<List<Field>> =
             stream.sourceDefinedPrimaryKey.mapNotNull(::pkOrNull)
-        val cursorCandidates: List<Column> = stream.defaultCursorField.mapNotNull(::cursorOrNull)
-        val configuredSyncMode: SyncMode = configuredStream.syncMode ?: SyncMode.FULL_REFRESH
-        val configuredPrimaryKey: List<DataColumn>? =
+        val cursorCandidates: List<FieldOrMetaField> = stream.defaultCursorField.mapNotNull(::cursorOrNull)
+        val configuredPrimaryKey: List<Field>? =
             configuredStream.primaryKey?.asSequence()?.mapNotNull(::pkOrNull)?.firstOrNull()
-        val configuredCursor: Column? =
+        val configuredCursor: FieldOrMetaField? =
             configuredStream.cursorField?.asSequence()?.mapNotNull(::cursorOrNull)?.firstOrNull()
+        val configuredSyncMode: SyncMode = when (configuredStream.syncMode) {
+            SyncMode.INCREMENTAL ->
+                if (cursorCandidates.isEmpty()) {
+                    handler.accept(InvalidIncrementalSyncMode(name, namespace))
+                    SyncMode.FULL_REFRESH
+                } else {
+                    SyncMode.INCREMENTAL
+                }
+            else -> SyncMode.FULL_REFRESH
+        }
         return StreamKey(
             configuredStream,
             table,
-            streamDataColumns,
+            streamFields,
             primaryKeyCandidates,
             cursorCandidates,
             configuredSyncMode,
@@ -241,7 +245,7 @@ class StateManagerFactory(
         key: StreamKey,
         stateValue: StreamStateValue?
     ): StreamState {
-        val pk: Map<DataColumn, JsonNode>? = run {
+        val pk: Map<Field, JsonNode>? = run {
             if (stateValue == null) {
                 return@run null
             }
@@ -249,8 +253,8 @@ class StateManagerFactory(
                 return@run mapOf()
             }
             val pkKeys: Set<String> = stateValue.primaryKey.keys
-            val keys: List<DataColumn>? =
-                key.primaryKeyCandidates.find { pk: List<DataColumn> ->
+            val keys: List<Field>? =
+                key.primaryKeyCandidates.find { pk: List<Field> ->
                     pk.map { it.id }.toSet() == stateValue.primaryKey.keys
                 }
             if (keys == null) {
@@ -259,7 +263,7 @@ class StateManagerFactory(
             }
             keys.associateWith { stateValue.primaryKey[it.id]!! }
         }
-        val cursor: Pair<Column, JsonNode>? = run {
+        val cursor: Pair<FieldOrMetaField, JsonNode>? = run {
             if (stateValue == null) {
                 return@run null
             }
@@ -272,7 +276,7 @@ class StateManagerFactory(
                 return@run null
             }
             val cursorLabel: String = cursorKeys.firstOrNull() ?: return@run null
-            val cursorColumn: Column? = key.cursorCandidates.find { it.id == cursorKeys.first() }
+            val cursorColumn: FieldOrMetaField? = key.cursorCandidates.find { it.id == cursorKeys.first() }
             if (cursorColumn == null) {
                 handler.accept(InvalidCursor(key.name, key.namespace, cursorLabel))
                 return@run null
@@ -311,11 +315,11 @@ class StateManagerFactory(
                         config.initialLimit,
                         pk.keys.toList(),
                         pk.values.toList(),
-                        cursor.first as DataColumn,
+                        cursor.first as Field,
                         cursor.second
                     )
                 } else {
-                    CursorBasedIncrementalStarting(key, cursor.first as DataColumn, cursor.second)
+                    CursorBasedIncrementalStarting(key, cursor.first as Field, cursor.second)
                 }
             ReadKind.FULL_REFRESH ->
                 if (pk.isNullOrEmpty()) {
@@ -331,6 +335,52 @@ class StateManagerFactory(
                         pk.values.toList()
                     )
                 }
+        }
+    }
+
+    /**
+     * Recursively re-generates the original [AirbyteType] from a catalog stream field's JSON schema.
+     */
+    private fun airbyteTypeFromJsonSchema(jsonSchema: JsonNode): AirbyteType {
+        fun value(key: String): String = jsonSchema[key]?.asText() ?: ""
+        return when (value("type")) {
+            "array" -> ArrayAirbyteType(airbyteTypeFromJsonSchema(jsonSchema["items"]))
+            "null" -> LeafAirbyteType.NULL
+            "boolean" -> LeafAirbyteType.BOOLEAN
+            "number" ->
+                when (value("airbyte_type")) {
+                    "integer",
+                    "big_integer" -> LeafAirbyteType.INTEGER
+
+                    else -> LeafAirbyteType.NUMBER
+                }
+
+            "string" ->
+                when (value("format")) {
+                    "date" -> LeafAirbyteType.DATE
+                    "date-time" ->
+                        if (value("airbyte_type") == "timestamp_with_timezone") {
+                            LeafAirbyteType.TIMESTAMP_WITH_TIMEZONE
+                        } else {
+                            LeafAirbyteType.TIMESTAMP_WITHOUT_TIMEZONE
+                        }
+
+                    "time" ->
+                        if (value("airbyte_type") == "time_with_timezone") {
+                            LeafAirbyteType.TIME_WITH_TIMEZONE
+                        } else {
+                            LeafAirbyteType.TIME_WITHOUT_TIMEZONE
+                        }
+
+                    else ->
+                        if (value("contentEncoding") == "base64") {
+                            LeafAirbyteType.BINARY
+                        } else {
+                            LeafAirbyteType.STRING
+                        }
+                }
+
+            else -> LeafAirbyteType.JSONB
         }
     }
 

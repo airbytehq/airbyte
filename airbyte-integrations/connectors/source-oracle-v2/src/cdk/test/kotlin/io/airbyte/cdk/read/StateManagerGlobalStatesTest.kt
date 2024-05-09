@@ -193,12 +193,12 @@ class StateManagerGlobalStatesTest {
             actualKvState.key.table
         )
         Assertions.assertEquals(
-            listOf("K", "V"),
-            actualKvState.key.dataColumns.map { it.metadata.name }
+            listOf("V", "K"),
+            actualKvState.key.fields.map { it.id }
         )
         Assertions.assertEquals(
             listOf(listOf("K")),
-            actualKvState.key.primaryKeyCandidates.map { col -> col.map { it.metadata.name } }
+            actualKvState.key.primaryKeyCandidates.map { col -> col.map { it.id } }
         )
         Assertions.assertEquals(listOf("K"), actualKvState.key.cursorCandidates.map { it.id })
         Assertions.assertEquals(SyncMode.INCREMENTAL, actualKvState.key.configuredSyncMode)
@@ -208,12 +208,12 @@ class StateManagerGlobalStatesTest {
             actualEventsState.key.table
         )
         Assertions.assertEquals(
-            listOf("ID", "TS", "MSG"),
-            actualEventsState.key.dataColumns.map { it.metadata.name }
+            listOf("MSG", "ID", "TS"),
+            actualEventsState.key.fields.map { it.id }
         )
         Assertions.assertEquals(
             listOf(listOf("ID")),
-            actualEventsState.key.primaryKeyCandidates.map { col -> col.map { it.metadata.name } }
+            actualEventsState.key.primaryKeyCandidates.map { col -> col.map { it.id } }
         )
         Assertions.assertEquals(
             listOf("ID", "TS"),

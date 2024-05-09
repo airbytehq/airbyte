@@ -6,7 +6,7 @@ package io.airbyte.cdk.read.stream
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.discover.TableName
-import io.airbyte.cdk.read.DataColumn
+import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.read.LimitState
 
 sealed interface AstNode
@@ -20,13 +20,13 @@ data class SelectQueryRootNode(
 )
 
 sealed interface SelectNode : AstNode {
-    val columns: List<DataColumn>
+    val columns: List<Field>
 }
 
-data class SelectColumns(override val columns: List<DataColumn>) : SelectNode
+data class SelectColumns(override val columns: List<Field>) : SelectNode
 
-data class SelectColumnMaxValue(val column: DataColumn) : SelectNode {
-    override val columns: List<DataColumn>
+data class SelectColumnMaxValue(val column: Field) : SelectNode {
+    override val columns: List<Field>
         get() = listOf(column)
 }
 
@@ -49,28 +49,28 @@ data class And(val conj: List<WhereClauseNode>) : WhereClauseNode
 data class Or(val disj: List<WhereClauseNode>) : WhereClauseNode
 
 sealed interface WhereClauseLeafNode : WhereClauseNode {
-    val column: DataColumn
+    val column: Field
     val bindingValue: JsonNode
 }
 
 data class Greater(
-    override val column: DataColumn,
+    override val column: Field,
     override val bindingValue: JsonNode,
 ) : WhereClauseLeafNode
 
 data class LesserOrEqual(
-    override val column: DataColumn,
+    override val column: Field,
     override val bindingValue: JsonNode,
 ) : WhereClauseLeafNode
 
 data class Equal(
-    override val column: DataColumn,
+    override val column: Field,
     override val bindingValue: JsonNode,
 ) : WhereClauseLeafNode
 
 sealed interface OrderByNode : AstNode
 
-data class OrderBy(val columns: List<DataColumn>) : OrderByNode
+data class OrderBy(val columns: List<Field>) : OrderByNode
 
 data object NoOrderBy : OrderByNode
 

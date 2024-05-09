@@ -15,6 +15,7 @@ import io.airbyte.cdk.consumers.InvalidPrimaryKey
 import io.airbyte.cdk.consumers.ResetStream
 import io.airbyte.cdk.consumers.TableHasNoDataColumns
 import io.airbyte.cdk.consumers.TableNotFound
+import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.TableName
 import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
@@ -158,7 +159,7 @@ class StateManagerStreamStatesTest {
         Assertions.assertNotNull(untypedState as? FullRefreshResumableOngoing)
         val state = untypedState as FullRefreshResumableOngoing
         Assertions.assertEquals(LimitState.minimum, state.limit)
-        Assertions.assertEquals(listOf("ID"), state.primaryKey.map { it.metadata.name })
+        Assertions.assertEquals(listOf("ID"), state.primaryKey.map { it.id })
         Assertions.assertEquals(listOf(nodeFactory.textNode(UUID)), state.primaryKeyCheckpoint)
         Assertions.assertEquals(listOf<CatalogValidationFailure>(), handler.get())
         // update state manager with fake work result
@@ -232,7 +233,7 @@ class StateManagerStreamStatesTest {
                 .resumable(
                     LimitState.minimum,
                     state.key.configuredPrimaryKey!!,
-                    state.key.configuredCursor as DataColumn,
+                    state.key.configuredCursor as Field,
                     nodeFactory.textNode(TIMESTAMP)
                 )
                 .output
@@ -385,18 +386,18 @@ class StateManagerStreamStatesTest {
             actualKey.table
         )
         Assertions.assertEquals(
-            listOf("ID", "TS", "MSG"),
-            actualKey.dataColumns.map { it.metadata.name }
+            listOf("MSG", "ID", "TS"),
+            actualKey.fields.map { it.id }
         )
         Assertions.assertEquals(
             listOf(listOf("ID")),
-            actualKey.primaryKeyCandidates.map { col -> col.map { it.metadata.name } }
+            actualKey.primaryKeyCandidates.map { col -> col.map { it.id } }
         )
         Assertions.assertEquals(listOf("ID", "TS"), actualKey.cursorCandidates.map { it.id })
         Assertions.assertEquals(expectedSyncMode, actualKey.configuredSyncMode)
         Assertions.assertEquals(
             expectedPrimaryKey,
-            actualKey.configuredPrimaryKey?.map { it.metadata.name }
+            actualKey.configuredPrimaryKey?.map { it.id }
         )
         Assertions.assertEquals(expectedCursor, actualKey.configuredCursor?.id)
         return actualState

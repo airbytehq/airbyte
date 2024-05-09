@@ -6,34 +6,35 @@ package io.airbyte.integrations.source.oracle
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
-import io.airbyte.cdk.discover.ArrayValueType
-import io.airbyte.cdk.discover.BigDecimalValueType
-import io.airbyte.cdk.discover.BigIntegerValueType
-import io.airbyte.cdk.discover.BinaryStreamValueType
-import io.airbyte.cdk.discover.BooleanValueType
-import io.airbyte.cdk.discover.ClobValueType
+import io.airbyte.cdk.discover.ArrayFieldType
+import io.airbyte.cdk.discover.BigDecimalFieldType
+import io.airbyte.cdk.discover.BigIntegerFieldType
+import io.airbyte.cdk.discover.BinaryStreamFieldType
+import io.airbyte.cdk.discover.BooleanFieldType
+import io.airbyte.cdk.discover.ClobFieldType
 import io.airbyte.cdk.discover.ColumnMetadata
 import io.airbyte.cdk.discover.DiscoverMapper
 import io.airbyte.cdk.discover.DiscoveredStream
-import io.airbyte.cdk.discover.DoubleValueType
-import io.airbyte.cdk.discover.FloatValueType
+import io.airbyte.cdk.discover.DoubleFieldType
+import io.airbyte.cdk.discover.FloatFieldType
 import io.airbyte.cdk.discover.GenericUserDefinedType
-import io.airbyte.cdk.discover.JsonStringValueType
+import io.airbyte.cdk.discover.JsonStringFieldType
 import io.airbyte.cdk.discover.LeafAirbyteType
-import io.airbyte.cdk.discover.LocalDateTimeValueType
-import io.airbyte.cdk.discover.LocalDateValueType
-import io.airbyte.cdk.discover.LongValueType
-import io.airbyte.cdk.discover.NClobValueType
-import io.airbyte.cdk.discover.NStringValueType
-import io.airbyte.cdk.discover.OffsetDateTimeValueType
-import io.airbyte.cdk.discover.OneWayStringValueType
-import io.airbyte.cdk.discover.ReversibleValueType
-import io.airbyte.cdk.discover.StringValueType
+import io.airbyte.cdk.discover.LocalDateTimeFieldType
+import io.airbyte.cdk.discover.LocalDateFieldType
+import io.airbyte.cdk.discover.LongFieldType
+import io.airbyte.cdk.discover.NClobFieldType
+import io.airbyte.cdk.discover.NStringFieldType
+import io.airbyte.cdk.discover.OffsetDateTimeFieldType
+import io.airbyte.cdk.discover.PokemonFieldType
+import io.airbyte.cdk.discover.ReversibleFieldType
+import io.airbyte.cdk.discover.StringFieldType
 import io.airbyte.cdk.discover.SystemType
 import io.airbyte.cdk.discover.TableName
 import io.airbyte.cdk.discover.UserDefinedArray
-import io.airbyte.cdk.discover.ValueType
-import io.airbyte.cdk.read.DataColumn
+import io.airbyte.cdk.discover.FieldType
+import io.airbyte.cdk.discover.FieldTypeBase
+import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.read.stream.And
 import io.airbyte.cdk.read.stream.Equal
 import io.airbyte.cdk.read.stream.From
@@ -76,95 +77,96 @@ class OracleSourceOperations : DiscoverMapper, SelectQueryGenerator {
         // Oracle doesn't do LIMIT, instead we need to involve ROWNUM.
         "SELECT ${columns.joinToString()} FROM ${table.fullyQualifiedName()} WHERE ROWNUM < 1"
 
-    override fun columnValueType(c: ColumnMetadata): ValueType<*> =
+    override fun toFieldType(c: ColumnMetadata): FieldType =
         when (val type = c.type) {
-            is UserDefinedArray -> ArrayValueType(recursiveArrayType(type))
-            is GenericUserDefinedType -> OneWayStringValueType
+            is UserDefinedArray -> ArrayFieldType(recursiveArrayType(type))
+            is GenericUserDefinedType -> PokemonFieldType
             is SystemType -> leafType(c.type.typeName, type.scale != 0)
         }
 
-    private fun recursiveArrayType(type: UserDefinedArray): ValueType<*> =
+    private fun recursiveArrayType(type: UserDefinedArray): FieldTypeBase<*> =
         when (val elementType = type.elementType) {
-            is UserDefinedArray -> ArrayValueType(recursiveArrayType(elementType))
-            is GenericUserDefinedType -> OneWayStringValueType
+            is UserDefinedArray -> ArrayFieldType(recursiveArrayType(elementType))
+            is GenericUserDefinedType -> PokemonFieldType
             is SystemType -> {
-                val leafType: ValueType<*> = leafType(elementType.typeName, elementType.scale != 0)
-                if (leafType == OffsetDateTimeValueType) {
+                val leafType: FieldTypeBase<*> =
+                    leafType(elementType.typeName, elementType.scale != 0)
+                if (leafType == OffsetDateTimeFieldType) {
                     // Oracle's JDBC driver has a bug which prevents object conversions in
                     // ArrayDataResultSet instances. Fall back to strings instead.
-                    OneWayStringValueType
+                    PokemonFieldType
                 } else {
                     leafType
                 }
             }
         }
 
-    private fun leafType(typeName: String?, notInteger: Boolean): ValueType<*> =
+    private fun leafType(typeName: String?, notInteger: Boolean): FieldTypeBase<*> =
         // This mapping includes literals returned by the JDBC driver as well as
         // *_TYPE_NAME column values from queries to ALL_* system tables.
         when (typeName) {
-            "BINARY_FLOAT" -> FloatValueType
-            "BINARY_DOUBLE" -> DoubleValueType
+            "BINARY_FLOAT" -> FloatFieldType
+            "BINARY_DOUBLE" -> DoubleFieldType
             "FLOAT",
             "DOUBLE PRECISION",
-            "REAL" -> BigDecimalValueType
+            "REAL" -> BigDecimalFieldType
             "NUMBER",
             "NUMERIC",
             "DECIMAL",
-            "DEC" -> if (notInteger) BigDecimalValueType else BigIntegerValueType
+            "DEC" -> if (notInteger) BigDecimalFieldType else BigIntegerFieldType
             "INTEGER",
             "INT",
-            "SMALLINT" -> BigIntegerValueType
+            "SMALLINT" -> BigIntegerFieldType
             "BOOLEAN",
-            "BOOL" -> BooleanValueType
+            "BOOL" -> BooleanFieldType
             "CHAR",
             "VARCHAR2",
             "VARCHAR",
             "CHARACTER",
             "CHARACTER VARYING",
-            "CHAR VARYING" -> StringValueType
+            "CHAR VARYING" -> StringFieldType
             "NCHAR",
             "NVARCHAR2",
             "NCHAR VARYING",
             "NATIONAL CHARACTER VARYING",
             "NATIONAL CHARACTER",
             "NATIONAL CHAR VARYING",
-            "NATIONAL CHAR" -> NStringValueType
-            "BLOB" -> BinaryStreamValueType
-            "CLOB" -> ClobValueType
-            "NCLOB" -> NClobValueType
-            "BFILE" -> BinaryStreamValueType
-            "DATE" -> LocalDateValueType
+            "NATIONAL CHAR" -> NStringFieldType
+            "BLOB" -> BinaryStreamFieldType
+            "CLOB" -> ClobFieldType
+            "NCLOB" -> NClobFieldType
+            "BFILE" -> BinaryStreamFieldType
+            "DATE" -> LocalDateFieldType
             "INTERVALDS",
             "INTERVAL DAY TO SECOND",
             "INTERVALYM",
-            "INTERVAL YEAR TO MONTH" -> StringValueType
-            "JSON" -> JsonStringValueType
+            "INTERVAL YEAR TO MONTH" -> StringFieldType
+            "JSON" -> JsonStringFieldType
             "LONG",
             "LONG RAW",
-            "RAW" -> BinaryStreamValueType
+            "RAW" -> BinaryStreamFieldType
             "TIMESTAMP",
             "TIMESTAMP WITH LOCAL TIME ZONE",
-            "TIMESTAMP WITH LOCAL TZ" -> LocalDateTimeValueType
+            "TIMESTAMP WITH LOCAL TZ" -> LocalDateTimeFieldType
             "TIMESTAMP WITH TIME ZONE",
-            "TIMESTAMP WITH TZ" -> OffsetDateTimeValueType
-            else -> OneWayStringValueType
+            "TIMESTAMP WITH TZ" -> OffsetDateTimeFieldType
+            else -> PokemonFieldType
         }
 
     override fun isPossiblePrimaryKeyElement(c: ColumnMetadata): Boolean =
-        when (columnValueType(c)) {
-            !is ReversibleValueType<*, *> -> false
-            BinaryStreamValueType,
-            ClobValueType,
-            JsonStringValueType,
-            NClobValueType -> false
+        when (toFieldType(c)) {
+            !is ReversibleFieldType -> false
+            BinaryStreamFieldType,
+            ClobFieldType,
+            JsonStringFieldType,
+            NClobFieldType -> false
             else -> true
         }
 
     override fun isPossibleCursor(c: ColumnMetadata): Boolean =
         isPossiblePrimaryKeyElement(c) &&
-            when (columnValueType(c)) {
-                BooleanValueType -> false
+            when (toFieldType(c)) {
+                BooleanFieldType -> false
                 else -> true
             }
 
@@ -174,7 +176,6 @@ class OracleSourceOperations : DiscoverMapper, SelectQueryGenerator {
 
     override fun globalAirbyteStream(stream: DiscoveredStream): AirbyteStream =
         DiscoverMapper.basicAirbyteStream(this, stream).apply {
-            namespace = stream.table.schema
             supportedSyncModes = listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
             (jsonSchema["properties"] as ObjectNode).apply {
                 set<ObjectNode>("_ab_cdc_lsn", LeafAirbyteType.NUMBER.asJsonSchema())
@@ -193,7 +194,6 @@ class OracleSourceOperations : DiscoverMapper, SelectQueryGenerator {
 
     override fun nonGlobalAirbyteStream(stream: DiscoveredStream): AirbyteStream =
         DiscoverMapper.basicAirbyteStream(this, stream).apply {
-            namespace = stream.table.schema
             supportedSyncModes =
                 if (defaultCursorField.isEmpty()) {
                     listOf(SyncMode.FULL_REFRESH)
@@ -203,7 +203,7 @@ class OracleSourceOperations : DiscoverMapper, SelectQueryGenerator {
         }
 
     override fun generateSql(ast: SelectQueryRootNode): SelectQuery =
-        SelectQuery(ast.sql(), ast.columns(), ast.bindings())
+        SelectQuery(ast.sql(), ast.select.columns, ast.bindings())
 
     fun SelectQueryRootNode.sql(): String {
         val components: List<String> = listOf(select.sql(), from.sql(), where.sql(), orderBy.sql())
@@ -248,9 +248,6 @@ class OracleSourceOperations : DiscoverMapper, SelectQueryGenerator {
             is OrderBy -> "ORDER BY " + columns.map { it.id }.joinToString(", ")
         }
 
-    fun SelectQueryRootNode.columns(): List<SelectQuery.Column> =
-        select.columns.map { SelectQuery.Column(it.id, columnValueType(it.metadata)) }
-
     fun SelectQueryRootNode.bindings(): List<SelectQuery.Binding> =
         where.bindings() + limit.bindings()
 
@@ -265,7 +262,7 @@ class OracleSourceOperations : DiscoverMapper, SelectQueryGenerator {
             is And -> conj.flatMap { it.bindings() }
             is Or -> disj.flatMap { it.bindings() }
             is WhereClauseLeafNode -> {
-                val type = columnValueType(column.metadata) as ReversibleValueType<*, *>
+                val type = column.type as ReversibleFieldType
                 listOf(SelectQuery.Binding(bindingValue, type))
             }
         }
@@ -274,10 +271,10 @@ class OracleSourceOperations : DiscoverMapper, SelectQueryGenerator {
         when (this) {
             is NoLimit -> listOf()
             is Limit ->
-                listOf(SelectQuery.Binding(nodeFactory.numberNode(state.current), LongValueType))
+                listOf(SelectQuery.Binding(nodeFactory.numberNode(state.current), LongFieldType))
         }
 
-    fun DataColumn.sqlOperand(): String = "?"
+    fun Field.sqlOperand(): String = "?"
 
     private val nodeFactory: JsonNodeFactory = MoreMappers.initMapper().nodeFactory
 }

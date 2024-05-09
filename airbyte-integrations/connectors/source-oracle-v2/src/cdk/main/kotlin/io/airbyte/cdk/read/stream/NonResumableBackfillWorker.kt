@@ -31,7 +31,7 @@ class NonResumableBackfillWorker(
 
     val dataQueryAst: SelectQueryRootNode = SelectQueryBuilder.selectData(input)
     val dataQuery: SelectQuery = selectQueryGenerator.generateSql(dataQueryAst)
-    val streamFieldNames: List<String> = key.dataColumns.map { it.id }
+    val streamFieldNames: List<String> = key.fields.map { it.id }
     val nodeFactory: JsonNodeFactory = MoreMappers.initMapper().nodeFactory
 
     override fun call():

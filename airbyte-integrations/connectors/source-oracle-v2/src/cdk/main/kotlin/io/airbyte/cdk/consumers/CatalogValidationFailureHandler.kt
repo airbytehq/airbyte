@@ -67,6 +67,11 @@ data class InvalidCursor(
     val cursor: String
 ) : CatalogValidationFailure
 
+data class InvalidIncrementalSyncMode(
+    override val streamName: String,
+    override val streamNamespace: String?,
+) : CatalogValidationFailure
+
 data class ResetStream(override val streamName: String, override val streamNamespace: String?) :
     CatalogValidationFailure
 
@@ -90,6 +95,8 @@ private class LoggingCatalogValidationFailureHandler : CatalogValidationFailureH
                 log.warn { "In table ${f.prettyName()}: invalid cursor '${f.cursor}'." }
             is InvalidPrimaryKey ->
                 log.warn { "In table ${f.prettyName()}: invalid primary key '${f.primaryKey}'." }
+            is InvalidIncrementalSyncMode ->
+                log.warn { "In table ${f.prettyName()}: incremental sync not possible." }
             is MultipleTablesFound ->
                 log.warn { "Multiple matching tables found for ${f.prettyName()}: ${f.matches}." }
             is ResetStream -> log.warn { "Resetting stream ${f.prettyName()}." }

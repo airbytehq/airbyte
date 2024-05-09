@@ -7,6 +7,7 @@ package io.airbyte.cdk.read
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.GlobalStateValue
 import io.airbyte.cdk.command.StreamStateValue
+import io.airbyte.cdk.discover.Field
 
 /** Identifies the state of the READ operation for a given [Key]. */
 sealed interface State<K : Key> {
@@ -64,13 +65,13 @@ data class FullRefreshNonResumableStarting(
 data class FullRefreshResumableStarting(
     override val key: StreamKey,
     override val limit: LimitState,
-    val primaryKey: List<DataColumn>
+    val primaryKey: List<Field>
 ) : StreamState, ResumableSelectState
 
 data class FullRefreshResumableOngoing(
     override val key: StreamKey,
     override val limit: LimitState,
-    val primaryKey: List<DataColumn>,
+    val primaryKey: List<Field>,
     val primaryKeyCheckpoint: List<JsonNode>,
 ) : StreamState, ResumableSelectState, SerializableStreamState
 
@@ -84,24 +85,24 @@ data class CursorBasedNotStarted(
 
 data class CursorBasedNonResumableInitialSyncStarting(
     override val key: StreamKey,
-    val cursor: DataColumn,
+    val cursor: Field,
     val cursorCheckpoint: JsonNode,
 ) : StreamState, NonResumableBackfillState
 
 data class CursorBasedResumableInitialSyncStarting(
     override val key: StreamKey,
     override val limit: LimitState,
-    val primaryKey: List<DataColumn>,
-    val cursor: DataColumn,
+    val primaryKey: List<Field>,
+    val cursor: Field,
     val cursorCheckpoint: JsonNode,
 ) : StreamState, ResumableSelectState
 
 data class CursorBasedResumableInitialSyncOngoing(
     override val key: StreamKey,
     override val limit: LimitState,
-    val primaryKey: List<DataColumn>,
+    val primaryKey: List<Field>,
     val primaryKeyCheckpoint: List<JsonNode>,
-    val cursor: DataColumn,
+    val cursor: Field,
     val cursorCheckpoint: JsonNode,
 ) : StreamState, ResumableSelectState, SerializableStreamState
 
@@ -111,21 +112,21 @@ data class CursorBasedInitialSyncEmptyCompleted(
 
 data class CursorBasedIncrementalStarting(
     override val key: StreamKey,
-    val cursor: DataColumn,
+    val cursor: Field,
     val cursorCheckpoint: JsonNode,
 ) : StreamState
 
 data class CursorBasedIncrementalOngoing(
     override val key: StreamKey,
     override val limit: LimitState,
-    val cursor: DataColumn,
+    val cursor: Field,
     val cursorCheckpoint: JsonNode,
     val cursorTarget: JsonNode,
 ) : StreamState, ResumableSelectState, SerializableStreamState
 
 data class CursorBasedIncrementalCompleted(
     override val key: StreamKey,
-    val cursor: DataColumn,
+    val cursor: Field,
     val cursorCheckpoint: JsonNode,
 ) : StreamState, SerializableStreamState
 
@@ -140,13 +141,13 @@ data class CdcNonResumableInitialSyncStarting(
 data class CdcResumableInitialSyncStarting(
     override val key: StreamKey,
     override val limit: LimitState,
-    val primaryKey: List<DataColumn>,
+    val primaryKey: List<Field>,
 ) : StreamState, ResumableSelectState
 
 data class CdcResumableInitialSyncOngoing(
     override val key: StreamKey,
     override val limit: LimitState,
-    val primaryKey: List<DataColumn>,
+    val primaryKey: List<Field>,
     val primaryKeyCheckpoint: List<JsonNode>,
 ) : StreamState, ResumableSelectState, SerializableStreamState
 
@@ -195,7 +196,7 @@ fun CdcOngoing.completed(numRecords: Long) =
 fun FullRefreshNotStarted.nonResumable() =
     WorkResult(this, FullRefreshNonResumableStarting(key), 0L)
 
-fun FullRefreshNotStarted.resumable(limit: LimitState, primaryKey: List<DataColumn>) =
+fun FullRefreshNotStarted.resumable(limit: LimitState, primaryKey: List<Field>) =
     WorkResult(this, FullRefreshResumableStarting(key, limit, primaryKey), 0L)
 
 fun FullRefreshNonResumableStarting.completed(numRecords: Long) =
@@ -230,14 +231,14 @@ fun FullRefreshResumableOngoing.completed(numRecords: Long) =
     WorkResult(this, FullRefreshCompleted(key), numRecords)
 
 fun CursorBasedNotStarted.nonResumable(
-    cursor: DataColumn,
+    cursor: Field,
     cursorCheckpoint: JsonNode,
 ) = WorkResult(this, CursorBasedNonResumableInitialSyncStarting(key, cursor, cursorCheckpoint), 0L)
 
 fun CursorBasedNotStarted.resumable(
     limit: LimitState,
-    primaryKey: List<DataColumn>,
-    cursor: DataColumn,
+    primaryKey: List<Field>,
+    cursor: Field,
     cursorCheckpoint: JsonNode,
 ) =
     WorkResult(
@@ -318,7 +319,7 @@ fun CursorBasedIncrementalOngoing.completed(numRecords: Long) =
 fun CdcInitialSyncNotStarted.nonResumable() =
     WorkResult(this, CdcNonResumableInitialSyncStarting(key), 0L)
 
-fun CdcInitialSyncNotStarted.resumable(limit: LimitState, primaryKey: List<DataColumn>) =
+fun CdcInitialSyncNotStarted.resumable(limit: LimitState, primaryKey: List<Field>) =
     WorkResult(this, CdcResumableInitialSyncStarting(key, limit, primaryKey), 0L)
 
 fun CdcNonResumableInitialSyncStarting.completed(numRecords: Long) =

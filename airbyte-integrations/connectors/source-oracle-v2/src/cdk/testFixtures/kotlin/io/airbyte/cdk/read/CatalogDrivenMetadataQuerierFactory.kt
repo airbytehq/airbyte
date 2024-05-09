@@ -11,7 +11,7 @@ import io.airbyte.cdk.discover.DiscoverMapper
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.discover.SystemType
 import io.airbyte.cdk.discover.TableName
-import io.airbyte.cdk.discover.ValueType
+import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.operation.CONNECTOR_OPERATION
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
@@ -66,8 +66,8 @@ class CatalogDrivenMetadataQuerierFactory(
                             )
                         }
                         .find {
-                            val valueType: ValueType<*> = discoverMapper.columnValueType(it)
-                            valueType.airbyteType.asJsonSchema() == value
+                            val fieldType: FieldType = discoverMapper.toFieldType(it)
+                            fieldType.airbyteType.asJsonSchema() == value
                         }
                         ?: ColumnMetadata(
                             name = field,

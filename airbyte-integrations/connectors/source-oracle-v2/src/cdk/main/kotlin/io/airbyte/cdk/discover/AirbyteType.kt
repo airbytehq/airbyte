@@ -9,7 +9,7 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil
 import io.airbyte.protocol.models.JsonSchemaType
 
-/** Union type which models the Airbyte field schema. */
+/** Union type which models the Airbyte field type schema. */
 sealed interface AirbyteType {
 
     /** Unwraps the underlying Airbyte protocol type object. */

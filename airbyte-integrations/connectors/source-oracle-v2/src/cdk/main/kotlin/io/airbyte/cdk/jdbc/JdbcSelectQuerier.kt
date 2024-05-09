@@ -7,6 +7,7 @@ package io.airbyte.cdk.jdbc
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.read.stream.SelectQuerier
 import io.airbyte.cdk.read.stream.SelectQuery
 import io.airbyte.commons.jackson.MoreMappers
@@ -35,7 +36,7 @@ class JdbcSelectQuerier(
                 stmt.executeQuery().use { rs: ResultSet ->
                     while (rs.next()) {
                         val record: ObjectNode = json.objectNode()
-                        q.columns.forEachIndexed { idx: Int, column: SelectQuery.Column ->
+                        q.columns.forEachIndexed { idx: Int, column: Field ->
                             val colIdx: Int = idx + 1
                             log.info { "Getting value #$colIdx for $column." }
                             record.set<JsonNode>(column.id, column.type.get(rs, colIdx))

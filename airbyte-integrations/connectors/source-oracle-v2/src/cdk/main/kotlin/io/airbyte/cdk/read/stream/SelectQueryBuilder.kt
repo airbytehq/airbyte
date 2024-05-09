@@ -13,7 +13,7 @@ import io.airbyte.cdk.read.CursorBasedIncrementalOngoing
 import io.airbyte.cdk.read.CursorBasedNonResumableInitialSyncStarting
 import io.airbyte.cdk.read.CursorBasedResumableInitialSyncOngoing
 import io.airbyte.cdk.read.CursorBasedResumableInitialSyncStarting
-import io.airbyte.cdk.read.DataColumn
+import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.read.FullRefreshNonResumableStarting
 import io.airbyte.cdk.read.FullRefreshResumableOngoing
 import io.airbyte.cdk.read.FullRefreshResumableStarting
@@ -22,7 +22,7 @@ import io.airbyte.cdk.read.ResumableSelectState
 
 object SelectQueryBuilder {
 
-    fun selectMaxCursorValue(table: TableName, cursorColumn: DataColumn): SelectQueryRootNode =
+    fun selectMaxCursorValue(table: TableName, cursorColumn: Field): SelectQueryRootNode =
         SelectQueryRootNode(
                 SelectColumnMaxValue(cursorColumn),
                 From(table),
@@ -38,7 +38,7 @@ object SelectQueryBuilder {
 
     private fun NonResumableBackfillState.ast(): SelectQueryRootNode =
         SelectQueryRootNode(
-            SelectColumns(key.dataColumns),
+            SelectColumns(key.fields),
             From(key.table),
             when (this) {
                 is FullRefreshNonResumableStarting -> NoWhere
@@ -51,7 +51,7 @@ object SelectQueryBuilder {
         )
 
     private fun ResumableSelectState.ast(): SelectQueryRootNode {
-        val extraColumnCandidates: List<DataColumn> =
+        val extraColumnCandidates: List<Field> =
             when (this) {
                 is CdcResumableInitialSyncStarting -> primaryKey
                 is CdcResumableInitialSyncOngoing -> primaryKey
@@ -83,7 +83,7 @@ object SelectQueryBuilder {
             }
 
         return SelectQueryRootNode(
-            SelectColumns(key.dataColumns + extraColumnCandidates),
+            SelectColumns(key.fields + extraColumnCandidates),
             From(key.table),
             where,
             OrderBy(extraColumnCandidates),
@@ -91,12 +91,12 @@ object SelectQueryBuilder {
         )
     }
 
-    private fun pkClause(pkCols: List<DataColumn>, pkValues: List<JsonNode>): WhereClauseNode {
-        val zipped: List<Pair<DataColumn, JsonNode>> = pkCols.zip(pkValues)
+    private fun pkClause(pkCols: List<Field>, pkValues: List<JsonNode>): WhereClauseNode {
+        val zipped: List<Pair<Field, JsonNode>> = pkCols.zip(pkValues)
         val disj: List<And> =
-            zipped.mapIndexed { idx: Int, (gtCol: DataColumn, gtValue: JsonNode) ->
+            zipped.mapIndexed { idx: Int, (gtCol: Field, gtValue: JsonNode) ->
                 val eqs =
-                    zipped.take(idx).map { (eqCol: DataColumn, eqValue: JsonNode) ->
+                    zipped.take(idx).map { (eqCol: Field, eqValue: JsonNode) ->
                         Equal(eqCol, eqValue)
                     }
                 And(eqs + listOf(Greater(gtCol, gtValue)))

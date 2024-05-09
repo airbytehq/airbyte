@@ -13,7 +13,7 @@ import io.airbyte.cdk.read.CdcResumableInitialSyncStarting
 import io.airbyte.cdk.read.CursorBasedIncrementalOngoing
 import io.airbyte.cdk.read.CursorBasedResumableInitialSyncOngoing
 import io.airbyte.cdk.read.CursorBasedResumableInitialSyncStarting
-import io.airbyte.cdk.read.DataColumn
+import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.read.FullRefreshResumableOngoing
 import io.airbyte.cdk.read.FullRefreshResumableStarting
 import io.airbyte.cdk.read.LimitState
@@ -43,9 +43,9 @@ class ResumableSelectWorker(
 
     val dataQueryAst: SelectQueryRootNode = SelectQueryBuilder.selectData(input)
     val dataQuery: SelectQuery = selectQueryGenerator.generateSql(dataQueryAst)
-    val streamFieldNames: List<String> = key.dataColumns.map { it.id }
+    val streamFieldNames: List<String> = key.fields.map { it.id }
     val nodeFactory: JsonNodeFactory = MoreMappers.initMapper().nodeFactory
-    val checkpointColumns: List<DataColumn> =
+    val checkpointColumns: List<Field> =
         when (input) {
             is FullRefreshResumableStarting -> input.primaryKey
             is FullRefreshResumableOngoing -> input.primaryKey

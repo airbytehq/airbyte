@@ -7,9 +7,8 @@ package io.airbyte.cdk.test.source.stream
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.airbyte.cdk.TestClockFactory
 import io.airbyte.cdk.consumers.BufferingOutputConsumer
-import io.airbyte.cdk.discover.ColumnMetadata
-import io.airbyte.cdk.discover.LeafAirbyteType
-import io.airbyte.cdk.discover.SystemType
+import io.airbyte.cdk.discover.IntFieldType
+import io.airbyte.cdk.discover.StringFieldType
 import io.airbyte.cdk.discover.TableName
 import io.airbyte.cdk.jdbc.H2TestFixture
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
@@ -18,7 +17,7 @@ import io.airbyte.cdk.read.CdcInitialSyncCompleted
 import io.airbyte.cdk.read.CdcNonResumableInitialSyncStarting
 import io.airbyte.cdk.read.CursorBasedIncrementalCompleted
 import io.airbyte.cdk.read.CursorBasedNonResumableInitialSyncStarting
-import io.airbyte.cdk.read.DataColumn
+import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.read.FullRefreshCompleted
 import io.airbyte.cdk.read.FullRefreshNonResumableStarting
 import io.airbyte.cdk.read.NonResumableBackfillState
@@ -36,7 +35,6 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
-import java.sql.Types
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -62,24 +60,10 @@ class NonResumableBackfillWorkerTest {
                 ConfiguredAirbyteStream()
                     .withStream(AirbyteStream().withName("KV").withNamespace("PUBLIC")),
             table = TableName(schema = "PUBLIC", name = "KV", type = ""),
-            dataColumns =
+            fields =
                 listOf(
-                    DataColumn(
-                        ColumnMetadata(
-                            name = "k",
-                            label = "k",
-                            type = SystemType(typeCode = Types.INTEGER)
-                        ),
-                        LeafAirbyteType.INTEGER
-                    ),
-                    DataColumn(
-                        ColumnMetadata(
-                            name = "v",
-                            label = "v",
-                            type = SystemType(typeCode = Types.VARCHAR)
-                        ),
-                        LeafAirbyteType.STRING
-                    )
+                    Field("k", IntFieldType),
+                    Field("v", StringFieldType),
                 ),
             primaryKeyCandidates = listOf(),
             cursorCandidates = listOf(),
@@ -88,7 +72,7 @@ class NonResumableBackfillWorkerTest {
             configuredCursor = null
         )
 
-    val cursor = key.dataColumns.first()
+    val cursor = key.fields.first()
 
     @Test
     fun testFullRefresh() {

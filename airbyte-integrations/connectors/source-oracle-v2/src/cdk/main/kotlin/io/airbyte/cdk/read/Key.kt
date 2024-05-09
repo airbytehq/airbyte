@@ -4,6 +4,8 @@
 
 package io.airbyte.cdk.read
 
+import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.FieldOrMetaField
 import io.airbyte.cdk.discover.TableName
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
@@ -19,12 +21,12 @@ data class GlobalKey(val streamKeys: List<StreamKey>) : Key
 data class StreamKey(
     val configuredStream: ConfiguredAirbyteStream,
     val table: TableName,
-    val dataColumns: List<DataColumn>,
-    val primaryKeyCandidates: List<List<DataColumn>>,
-    val cursorCandidates: List<Column>,
+    val fields: List<Field>,
+    val primaryKeyCandidates: List<List<Field>>,
+    val cursorCandidates: List<FieldOrMetaField>,
     val configuredSyncMode: SyncMode,
-    val configuredPrimaryKey: List<DataColumn>?,
-    val configuredCursor: Column?,
+    val configuredPrimaryKey: List<Field>?,
+    val configuredCursor: FieldOrMetaField?,
 ) : Key {
 
     val stream: AirbyteStream

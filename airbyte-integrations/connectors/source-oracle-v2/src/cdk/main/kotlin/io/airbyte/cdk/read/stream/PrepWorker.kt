@@ -11,7 +11,7 @@ import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.read.CdcInitialSyncNotStarted
 import io.airbyte.cdk.read.CursorBasedIncrementalStarting
 import io.airbyte.cdk.read.CursorBasedNotStarted
-import io.airbyte.cdk.read.DataColumn
+import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.read.FullRefreshNotStarted
 import io.airbyte.cdk.read.StreamKey
 import io.airbyte.cdk.read.StreamState
@@ -32,7 +32,7 @@ class CdcInitialSyncPrepWorker(
 ) : PrepWorker<CdcInitialSyncNotStarted>() {
 
     override fun call(): WorkResult<StreamKey, CdcInitialSyncNotStarted, out StreamState> {
-        val maybePrimaryKey: List<DataColumn>? =
+        val maybePrimaryKey: List<Field>? =
             key.configuredPrimaryKey ?: key.primaryKeyCandidates.firstOrNull()
         if (maybePrimaryKey != null && config.resumablePreferred) {
             return input.resumable(config.initialLimit, maybePrimaryKey)
@@ -47,7 +47,7 @@ class FullRefreshPrepWorker(
 ) : PrepWorker<FullRefreshNotStarted>() {
 
     override fun call(): WorkResult<StreamKey, FullRefreshNotStarted, out StreamState> {
-        val maybePrimaryKey: List<DataColumn>? =
+        val maybePrimaryKey: List<Field>? =
             key.configuredPrimaryKey ?: key.primaryKeyCandidates.firstOrNull()
         if (maybePrimaryKey != null && config.resumablePreferred) {
             return input.resumable(config.initialLimit, maybePrimaryKey)
@@ -64,10 +64,10 @@ class CursorBasedColdStartWorker(
 ) : PrepWorker<CursorBasedNotStarted>() {
 
     override fun call(): WorkResult<StreamKey, CursorBasedNotStarted, out StreamState> {
-        val maybePrimaryKey: List<DataColumn>? =
+        val maybePrimaryKey: List<Field>? =
             key.configuredPrimaryKey ?: key.primaryKeyCandidates.firstOrNull()
-        val cursor: DataColumn =
-            (key.configuredCursor ?: key.cursorCandidates.firstOrNull()) as? DataColumn
+        val cursor: Field =
+            (key.configuredCursor ?: key.cursorCandidates.firstOrNull()) as? Field
                 ?: throw IllegalStateException("Stream has no cursor.")
         val ast: SelectQueryRootNode = SelectQueryBuilder.selectMaxCursorValue(key.table, cursor)
         val q: SelectQuery = selectQueryGenerator.generateSql(ast)

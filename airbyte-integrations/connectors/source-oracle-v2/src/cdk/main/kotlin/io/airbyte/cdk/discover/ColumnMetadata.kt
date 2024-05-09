@@ -4,7 +4,10 @@
 
 package io.airbyte.cdk.discover
 
-/** Data class with one field for each [java.sql.ResultSetMetaData] column method. */
+/**
+ *  Data class with one field for each [java.sql.ResultSetMetaData] column method,
+ *  assuming that the [SystemType] subtype of [SourceType] is being used.
+ */
 data class ColumnMetadata(
     val name: String,
     val label: String,
