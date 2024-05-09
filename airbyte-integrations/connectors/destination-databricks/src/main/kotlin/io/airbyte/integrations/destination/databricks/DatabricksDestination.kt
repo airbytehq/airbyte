@@ -85,7 +85,7 @@ class DatabricksDestination : BaseConnector(), Destination {
             )
 
         try {
-            storageOperations.prepareStage(streamId, DestinationSyncMode.APPEND)
+            storageOperations.prepareStage(streamId, DestinationSyncMode.OVERWRITE)
         } catch (e: Exception) {
             log.error(e) { "Failed to prepare stage as part of CHECK" }
             return AirbyteConnectionStatus()
@@ -98,8 +98,8 @@ class DatabricksDestination : BaseConnector(), Destination {
             writeBuffer.use {
                 it.accept("{\"airbyte_check\":\"passed\"}", "{}", System.currentTimeMillis())
                 it.flush()
+                storageOperations.writeToStage(streamId, writeBuffer)
             }
-            storageOperations.writeToStage(streamId, writeBuffer)
         } catch (e: Exception) {
             log.error(e) { "Failed to write to stage as part of CHECK" }
             return AirbyteConnectionStatus()

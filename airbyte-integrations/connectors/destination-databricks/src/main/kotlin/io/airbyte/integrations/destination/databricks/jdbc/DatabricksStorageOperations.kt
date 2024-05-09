@@ -116,6 +116,7 @@ class DatabricksStorageOperations(
     override fun cleanupStage(streamId: StreamId) {
         if (purgeStagedFiles) {
             // This operation might fail if there are files left over for any reason from COPY step
+            log.info { "Deleting Staging directory ${stagingDirectory(streamId, database)}" }
             workspaceClient.files().deleteDirectory(stagingDirectory(streamId, database))
         }
     }
