@@ -31,7 +31,7 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: "The migration to low-code will result in incremental stream states changing their format by saving them per partition. Additionally, an issue in the `ProjectAvatars` stream has been fixed, where a field was defined as 'project_id,' when in reality, it holds a project key (now it holds project id)."
+        message: "The source Jira connector is being migrated from the Python CDK to our declarative low-code CDK. Due to changes to the incremental stream state, this migration constitutes a breaking change. Additionally, an issue in the `ProjectAvatars` stream has been fixed. After updating, please reset your source before resuming syncs. For more information, see our migration documentation for source Jira."
         upgradeDeadline: "2024-05-15"
         scopedImpact:
           - scopeType: stream

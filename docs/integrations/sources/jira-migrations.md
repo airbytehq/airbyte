@@ -2,9 +2,9 @@
 
 ## Upgrading to 2.0.0
 
-Note: this change is only breaking if you are using the `Issues`, `Boards Issues` or `Sprint Issues` streams in Incremental Sync mode.
+We're continuously striving to enhance the quality and reliability of our connectors at Airbyte. As part of our commitment to delivering exceptional service, we are transitioning source-jira from the Python Connector Development Kit (CDK) to our innovative low-code framework. This is part of a strategic move to streamline many processes across connectors, bolstering maintainability and freeing us to focus more of our efforts on improving the performance and features of our evolving platform and growing catalog. However, due to differences between the Python and low-code CDKs, this migration constitutes a breaking change.
 
-This is a breaking change because the migration to low-code will result in incremental stream states changing their format by saving them per partition. Additionally, an issue in the `Project Avatars` stream has been fixed, where a field was defined as 'project_id,' when in reality, it holds a project key (now it holds project id). Please follow the instructions below to migrate to version 2.0.0:
+To gracefully handle these changes for your existing connections, we highly recommend resetting your data before resuming your data syncs with the new version.
 
 1. Select **Connections** in the main navbar.
 1.1 Select the connection(s) affected by the update.
