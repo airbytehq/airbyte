@@ -33,11 +33,6 @@ data:
   license: MIT
   name: Aws Cloudtrail
   releaseDate: 2021-06-23
-  releaseStage: alpha
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-aws-cloudtrail
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/aws-cloudtrail
   tags:
