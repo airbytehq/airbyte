@@ -14,7 +14,7 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        upgradeDeadline: "2024-04-30"
+        upgradeDeadline: "2024-06-30"
         message:
           "The verison migrates the Xero connector to the low-code framework for greater maintainability.
           !! Important: The authentication scheme is now using access_token instead of Oauth 2.0"
