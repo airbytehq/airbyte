@@ -9,7 +9,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
+from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
@@ -19,14 +19,14 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_nes
     InterpolatedNestedRequestInputProvider,
 )
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_input_provider import InterpolatedRequestInputProvider
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
-from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 
 RequestInput = Union[str, Mapping[str, str]]
 
 
 @dataclass
-class IncrementalSingleSliceCursor(DeclarativeCursor):
+class IncrementalSingleSliceCursor(Cursor):
     cursor_field: Union[InterpolatedString, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]

@@ -2,11 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from dataclasses import dataclass
 from typing import Iterable
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
-from airbyte_cdk.sources.types import StreamSlice
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
 
 class SurveyIdPartitionRouter(SubstreamPartitionRouter):

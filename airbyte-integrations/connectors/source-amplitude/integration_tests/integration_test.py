@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.types import StreamSlice
+from airbyte_cdk.sources.declarative.types import StreamSlice
 from source_amplitude.source import SourceAmplitude
 
 

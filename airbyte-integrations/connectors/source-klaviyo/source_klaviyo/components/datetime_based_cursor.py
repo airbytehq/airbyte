@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Any, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
-from airbyte_cdk.sources.types import StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
 @dataclass

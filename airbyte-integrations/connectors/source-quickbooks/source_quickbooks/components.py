@@ -9,7 +9,7 @@ from dataclasses import dataclass
 
 import dpath.util
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
-from airbyte_cdk.sources.types import Record, StreamSlice
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice
 
 
 class LastRecordDictProxy(abc.MutableMapping):

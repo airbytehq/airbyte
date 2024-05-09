@@ -9,7 +9,7 @@ import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.types import Record
+from airbyte_cdk.sources.declarative.types import Record
 
 
 @dataclass

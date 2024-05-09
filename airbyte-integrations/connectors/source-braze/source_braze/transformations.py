@@ -7,7 +7,7 @@ from typing import Optional
 
 import dpath
 from airbyte_cdk.sources.declarative.transformations import AddFields
-from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 
 
 @dataclass

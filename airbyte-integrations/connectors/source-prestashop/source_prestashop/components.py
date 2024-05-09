@@ -8,7 +8,7 @@ from typing import Any, List, Mapping, Optional, Tuple
 import pendulum
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from pendulum.parsing.exceptions import ParserError
 
 

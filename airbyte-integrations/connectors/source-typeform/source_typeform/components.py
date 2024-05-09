@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.auth.declarative_authenticator import Decla
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
-from airbyte_cdk.sources.types import StreamSlice
+from airbyte_cdk.sources.declarative.types import StreamSlice
 
 
 @dataclass

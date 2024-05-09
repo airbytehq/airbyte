@@ -8,7 +8,7 @@ from typing import Optional
 import dpath.util
 import pendulum
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddFields
-from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 
 
 @dataclass

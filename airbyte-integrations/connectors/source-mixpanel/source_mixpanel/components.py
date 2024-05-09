@@ -9,13 +9,15 @@ import requests
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
+from airbyte_cdk.sources.declarative.models import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import _default_file_path
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 
 from .source import SourceMixpanel
 from .streams.engage import EngageSchema

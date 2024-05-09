@@ -14,7 +14,7 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.types import Config, Record
+from airbyte_cdk.sources.declarative.types import Config, Record
 
 logger = logging.getLogger("airbyte")
 
