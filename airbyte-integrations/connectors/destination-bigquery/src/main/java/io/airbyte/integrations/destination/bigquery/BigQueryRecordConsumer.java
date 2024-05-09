@@ -11,7 +11,6 @@ import io.airbyte.cdk.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
@@ -41,7 +40,6 @@ class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer imple
   private final String defaultDatasetId;
   private AirbyteMessage lastStateMessage = null;
 
-  private final TypeAndDedupeOperationValve streamTDValve = new TypeAndDedupeOperationValve();
   private final ParsedCatalog catalog;
   private final TyperDeduper typerDeduper;
 
@@ -125,7 +123,7 @@ class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer imple
     uploaderMap.forEach((streamId, uploader) -> {
       try {
         uploader.close(hasFailed, outputRecordCollector, lastStateMessage);
-        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName(), true);
+        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
       } catch (final Exception e) {
         exceptionsThrown.add(e);
         LOGGER.error("Exception while closing uploader {}", uploader, e);
