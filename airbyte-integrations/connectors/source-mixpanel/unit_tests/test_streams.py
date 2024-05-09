@@ -185,6 +185,47 @@ def test_engage_stream_incremental(requests_mock, engage_response, config_raw):
     assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"last_seen": "2023-01-01T11:20:47"}
 
 
+
+def test_cohort_members_stream_incremental(requests_mock, engage_response, config_raw):
+    """Cohort_members stream has legacy state but actually it should always return all records
+    because members in cohorts can be updated at any time
+    """
+    engage_properties = {
+        "results": {
+            "$browser": {
+                "count": 124,
+                "type": "string"
+            },
+            "$browser_version": {
+                "count": 124,
+                "type": "string"
+            }
+        }
+    }
+    config_raw['start_date'] = '2022-02-01T00:00:00Z'
+    config_raw['end_date'] = '2024-03-01T00:00:00Z'
+
+    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "cohorts/list", json=[{'id': 1111, "name":'bla'}])
+    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "engage/properties", json=engage_properties)
+    requests_mock.register_uri("POST", MIXPANEL_BASE_URL + "engage?", engage_response)
+
+    stream = init_stream('cohort_members', config=config_raw)
+
+    stream_state = {"last_seen": "2022-02-01T11:20:47"}
+    records = list(read_incremental(stream, stream_state=stream_state, cursor_field=["last_seen"]))
+
+    assert len(records) == 2
+    assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {
+        'states': [
+            {
+                'cursor': {'last_seen': '2023-01-01T11:20:47'},
+                'partition': {'id': 1111, 'parent_slice': {}},
+            }
+        ]
+    }
+
+
+
 @pytest.fixture
 def funnels_response(start_date):
     first_date = start_date + timedelta(days=1)
