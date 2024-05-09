@@ -705,7 +705,7 @@ class BulkSalesforceStream(SalesforceStream):
             stream_name=self.stream_name,
             schema=self.schema,
             sobject_options=self.sobject_options,
-            authenticator=self.authenticator,
+            authenticator=self._session.auth,
         )
         new_cls: Type[SalesforceStream] = RestSalesforceStream
         if isinstance(self, BulkIncrementalSalesforceStream):
