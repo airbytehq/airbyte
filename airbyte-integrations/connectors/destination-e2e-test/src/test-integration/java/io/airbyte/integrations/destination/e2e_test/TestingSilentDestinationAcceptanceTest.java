@@ -65,8 +65,7 @@ public class TestingSilentDestinationAcceptanceTest extends DestinationAcceptanc
   // Skip because `retrieveRecords` returns an empty list at all times.
   @Disabled
   @Test
-  public void testSyncNotFailsWithNewFields() {
-  }
+  public void testSyncNotFailsWithNewFields() {}
 
   @Override
   // This test assumes that dedup support means normalization support.
