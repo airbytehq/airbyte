@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.mongodb;
 
 import static io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus.IN_PROGRESS;
+import static java.util.Base64.getEncoder;
 
 import com.google.common.collect.AbstractIterator;
 import com.mongodb.client.MongoCollection;
@@ -15,14 +16,15 @@ import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStreamState;
+
+import java.util.Base64;
 import java.util.Optional;
-import org.bson.BsonDocument;
-import org.bson.BsonInt32;
-import org.bson.BsonInt64;
-import org.bson.BsonObjectId;
-import org.bson.BsonString;
-import org.bson.Document;
+import java.util.UUID;
+
+import org.bson.*;
 import org.bson.conversions.Bson;
+import org.bson.internal.UuidHelper;
+import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,9 +85,24 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
   }
 
   private Optional<MongoDbStreamState> getCurrentState(Object currentId) {
+    LOGGER.info("*** Current ID : {} {}", currentId, currentId.getClass().getSimpleName());
     final var idType = IdType.findByJavaType(currentId.getClass().getSimpleName())
         .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + currentId.getClass().getSimpleName()));
-    final var state = new MongoDbStreamState(currentId.toString(),
+//    final var id = (idType == IdType.BINARY) ? java.util.Base64.getEncoder().encodeToString(((Binary)currentId).getData()) : currentId.toString();
+    final String id;
+    if (idType == IdType.BINARY) {
+      final var binLastId = (Binary) currentId;
+      if (binLastId.getType() == 4) {
+        id = UuidHelper.decodeBinaryToUuid(binLastId.getData(), binLastId.getType(), UuidRepresentation.STANDARD).toString();
+      } else {
+        id = getEncoder().encodeToString(binLastId.getData());
+      }
+    } else {
+      id = currentId.toString();
+    }
+
+    LOGGER.info("*** id {}", id);
+    final var state = new MongoDbStreamState(id,
         IN_PROGRESS,
         idType);
     return Optional.of(state);
@@ -100,6 +117,7 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
 
   private MongoCursor<Document> buildNewQueryIterator() {
     Bson filter = buildFilter();
+    LOGGER.info("*** filter {}", filter);
     return isEnforceSchema ? collection.find()
         .filter(filter)
         .projection(fields)
@@ -130,6 +148,17 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
             case OBJECT_ID -> new BsonObjectId(new ObjectId(state.id()));
             case INT -> new BsonInt32(Integer.parseInt(state.id()));
             case LONG -> new BsonInt64(Long.parseLong(state.id()));
+            case BINARY -> {
+              try {
+                final var uuid = UUID.fromString(state.id());
+                LOGGER.info("*** UUID {}", uuid);
+//                yield new BsonBinary(BsonBinarySubType.UUID_STANDARD, UuidHelper.encodeUuidToBinary(uuid, UuidRepresentation.STANDARD));
+                yield new BsonBinary(uuid);
+              } catch (final Exception ex) {
+                LOGGER.info("*** Base64 {}", Base64.getDecoder().decode(state.id()));
+                yield new BsonBinary(Base64.getDecoder().decode(state.id()));
+              }
+            }
             }))
         // if nothing was found, return a new BsonDocument
         .orElseGet(BsonDocument::new);

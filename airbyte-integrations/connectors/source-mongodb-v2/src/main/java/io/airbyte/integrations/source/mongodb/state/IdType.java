@@ -4,10 +4,7 @@
 
 package io.airbyte.integrations.source.mongodb.state;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.bson.types.ObjectId;
@@ -21,7 +18,9 @@ public enum IdType {
   OBJECT_ID("objectId", "ObjectId", ObjectId::new),
   STRING("string", "String", s -> s),
   INT("int", "Integer", Integer::valueOf),
-  LONG("long", "Long", Long::valueOf);
+  LONG("long", "Long", Long::valueOf),
+//  BINARY("binData", "Binary",UUID::fromString);
+  BINARY("binData", "Binary", s -> s);
 
   private static final Map<String, IdType> byBsonType = new HashMap<>();
   static {
