@@ -23,4 +23,3 @@ Some sources will have an **Optional Fields** tab. You can open this tab to view
 Once you've filled out all the required fields, click on the **Set up source** button and Airbyte will run a check to verify the connection. Happy replicating!
 
 Can't find the connectors that you want? Try your hand at easily building one yourself using our [Connector Builder](../../connector-development/connector-builder-ui/overview.md)!
-

@@ -1,4 +1,4 @@
-# Lokalise 
+# Lokalise
 
 This page contains the setup guide and reference information for the [Lokalise](https://lokalise.com/) source connector.
 
@@ -24,7 +24,7 @@ You can find your Project ID and find or create an API key within [Lokalise](htt
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source. 
+2. Set the name for your source.
 3. Enter your `project_id` - Lokalise Project ID.
 4. Enter your `api_key` - Lokalise API key with read permissions.
 5. Click **Set up source**.
@@ -42,11 +42,11 @@ The Lokalise source connector supports the following [sync modes](https://docs.a
 
 ## Supported Streams
 
-* [Keys](https://developers.lokalise.com/reference/list-all-keys)
-* [Languages](https://developers.lokalise.com/reference/list-project-languages)
-* [Comments](https://developers.lokalise.com/reference/list-project-comments)
-* [Contributors](https://developers.lokalise.com/reference/list-all-contributors)
-* [Translations](https://developers.lokalise.com/reference/list-all-translations)
+- [Keys](https://developers.lokalise.com/reference/list-all-keys)
+- [Languages](https://developers.lokalise.com/reference/list-project-languages)
+- [Comments](https://developers.lokalise.com/reference/list-project-comments)
+- [Contributors](https://developers.lokalise.com/reference/list-all-contributors)
+- [Translations](https://developers.lokalise.com/reference/list-all-translations)
 
 ## Data type map
 
@@ -59,6 +59,6 @@ The Lokalise source connector supports the following [sync modes](https://docs.a
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                           |
-|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------|
-| 0.1.0   | 2022-10-27 | [18522](https://github.com/airbytehq/airbyte/pull/18522)   | New Source: Lokalise                                |
+| Version | Date       | Pull Request                                             | Subject              |
+| :------ | :--------- | :------------------------------------------------------- | :------------------- |
+| 0.1.0   | 2022-10-27 | [18522](https://github.com/airbytehq/airbyte/pull/18522) | New Source: Lokalise |

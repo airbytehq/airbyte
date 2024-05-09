@@ -1,4 +1,4 @@
-# Outreach Source
+# Outreach source connector
 
 This is the repository for the Outreach configuration based source connector.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/outreach).
@@ -30,7 +30,12 @@ See `sample_files/sample_config.json` for a sample config file.
 
 ### Locally running the connector
 
+
 ```
+poetry run source-outreach spec
+poetry run source-outreach check --config secrets/config.json
+poetry run source-outreach discover --config secrets/config.json
+poetry run source-outreach read --config secrets/config.json --catalog sample_files/configured_catalog.json
 poetry run source-outreach spec
 poetry run source-outreach check --config secrets/config.json
 poetry run source-outreach discover --config secrets/config.json
@@ -57,8 +62,10 @@ An image will be available on your host with the tag `airbyte/source-outreach:de
 
 
 ### Running as a docker container
+### Running as a docker container
 
 Then run any of the connector commands as follows:
+
 ```
 docker run --rm airbyte/source-outreach:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-outreach:dev check --config /secrets/config.json
@@ -68,12 +75,17 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 
 ### Running our CI test suite
 
+### Running our CI test suite
+
 You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+
 ```bash
 airbyte-ci connectors --name=source-outreach test
 ```
 
 ### Customizing acceptance Tests
+
+Customize `acceptance-test-config.yml` file to configure acceptance tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
 
 Customize `acceptance-test-config.yml` file to configure acceptance tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
@@ -91,11 +103,13 @@ Please commit the changes to `pyproject.toml` and `poetry.lock` files.
 ## Publishing a new version of the connector
 
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
+
 1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-outreach test`
 2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
     - bump the `dockerImageTag` value in in `metadata.yaml`
     - bump the `version` value in `pyproject.toml`
 3. Make sure the `metadata.yaml` content is up to date.
+4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/outreach.md`).
 4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/outreach.md`).
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
