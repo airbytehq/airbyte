@@ -8,6 +8,8 @@ from .ConnectorRegistryDestinationDefinition import *
 from .ConnectorRegistrySourceDefinition import *
 from .ConnectorRegistryV0 import *
 from .ConnectorReleases import *
+from .GeneratedFields import *
+from .GitInfo import *
 from .JobType import *
 from .NormalizationDestinationDefinitionConfig import *
 from .RegistryOverrides import *
