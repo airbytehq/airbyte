@@ -10,6 +10,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.DestinationColumns;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
@@ -20,8 +21,10 @@ import io.airbyte.cdk.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.NoOpTyperDeduperWithV1V2Migrations;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
@@ -45,7 +48,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination implements Destination {
+public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination<SnowflakeState> implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeInternalStagingDestination.class);
   public static final String RAW_SCHEMA_OVERRIDE = "raw_data_schema";
@@ -130,13 +133,21 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   }
 
   @Override
-  protected JdbcSqlGenerator getSqlGenerator() {
+  protected JdbcSqlGenerator getSqlGenerator(final JsonNode config) {
     throw new UnsupportedOperationException("Snowflake does not yet use the native JDBC DV2 interface");
   }
 
   @Override
   protected JdbcDestinationHandler<SnowflakeState> getDestinationHandler(String databaseName, JdbcDatabase database, String rawTableSchema) {
     throw new UnsupportedOperationException("Snowflake does not yet use the native JDBC DV2 interface");
+  }
+
+  @Override
+  protected List<Migration<SnowflakeState>> getMigrations(JdbcDatabase database,
+                                                          String databaseName,
+                                                          SqlGenerator sqlGenerator,
+                                                          DestinationHandler<SnowflakeState> destinationHandler) {
+    return List.of();
   }
 
   @Override
@@ -150,7 +161,10 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
       }
     }
 
-    final SnowflakeSqlGenerator sqlGenerator = new SnowflakeSqlGenerator();
+    final int retentionPeriodDays = SnowflakeSqlOperations.getRetentionPeriodDays(
+        config.get(SnowflakeSqlOperations.RETENTION_PERIOD_DAYS_CONFIG_KEY));
+
+    final SnowflakeSqlGenerator sqlGenerator = new SnowflakeSqlGenerator(retentionPeriodDays);
     final ParsedCatalog parsedCatalog;
     final TyperDeduper typerDeduper;
     final JdbcDatabase database = getDatabase(getDataSource(config));
@@ -169,7 +183,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     final SnowflakeV1V2Migrator migrator = new SnowflakeV1V2Migrator(getNamingResolver(), database, databaseName);
     final SnowflakeV2TableMigrator v2TableMigrator = new SnowflakeV2TableMigrator(database, databaseName, sqlGenerator, snowflakeDestinationHandler);
     final boolean disableTypeDedupe = config.has(DISABLE_TYPE_DEDUPE) && config.get(DISABLE_TYPE_DEDUPE).asBoolean(false);
-    final List<Migration<SnowflakeState>> migrations = List.of();
+    final List<Migration<SnowflakeState>> migrations = getMigrations(database, databaseName, sqlGenerator, snowflakeDestinationHandler);
     if (disableTypeDedupe) {
       typerDeduper =
           new NoOpTyperDeduperWithV1V2Migrations<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator, v2TableMigrator, migrations);
@@ -196,7 +210,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         typerDeduper,
         parsedCatalog,
         defaultNamespace,
-        true)
+        DestinationColumns.V2_WITHOUT_META)
         .setBufferMemoryLimit(Optional.of(getSnowflakeBufferMemoryLimit()))
         .setOptimalBatchSizeBytes(
             // The per stream size limit is following recommendations from:

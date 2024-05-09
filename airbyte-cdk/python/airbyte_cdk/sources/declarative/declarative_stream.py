@@ -7,6 +7,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
@@ -34,6 +35,7 @@ class DeclarativeStream(Stream):
     parameters: InitVar[Mapping[str, Any]]
     name: str
     primary_key: Optional[Union[str, List[str], List[List[str]]]]
+    state_migrations: List[StateMigration] = field(repr=True, default_factory=list)
     schema_loader: Optional[SchemaLoader] = None
     _name: str = field(init=False, repr=False, default="")
     _primary_key: str = field(init=False, repr=False, default="")
@@ -75,7 +77,12 @@ class DeclarativeStream(Stream):
     @state.setter
     def state(self, value: MutableMapping[str, Any]) -> None:
         """State setter, accept state serialized by state getter."""
-        self.retriever.state = value
+        state: Mapping[str, Any] = value
+        if self.state_migrations:
+            for migration in self.state_migrations:
+                if migration.should_migrate(state):
+                    state = migration.migrate(state)
+        self.retriever.state = state
 
     def get_updated_state(
         self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
@@ -91,6 +98,12 @@ class DeclarativeStream(Stream):
         cursor = self._stream_cursor_field.eval(self.config)
         return cursor if cursor else []
 
+    @property
+    def is_resumable(self) -> bool:
+        # Declarative sources always implement state getter/setter, but whether it supports checkpointing is based on
+        # if the retriever has a cursor defined.
+        return self.retriever.cursor is not None if hasattr(self.retriever, "cursor") else False
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -101,7 +114,7 @@ class DeclarativeStream(Stream):
         """
         :param: stream_state We knowingly avoid using stream_state as we want cursors to manage their own state.
         """
-        if stream_slice is None:
+        if stream_slice is None or stream_slice == {}:
             # As the parameter is Optional, many would just call `read_records(sync_mode)` during testing without specifying the field
             # As part of the declarative model without custom components, this should never happen as the CDK would wire up a
             # SinglePartitionRouter that would create this StreamSlice properly
