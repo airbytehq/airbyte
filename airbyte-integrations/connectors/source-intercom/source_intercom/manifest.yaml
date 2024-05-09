@@ -1015,9 +1015,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        type:
-          - "null"
-          - object
+        type: object
         properties:
           type:
             description: Type of contact.
