@@ -4,22 +4,29 @@
 
 package io.airbyte.cdk.read
 
-import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.discover.FieldOrMetaField
-import io.airbyte.cdk.discover.TableName
-import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.cdk.source.Field
+import io.airbyte.cdk.source.FieldOrMetaField
+import io.airbyte.cdk.source.TableName
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.airbyte.protocol.models.v0.SyncMode
 
-/** Identifies a partition of the Airbyte RECORD and STATE messages emitted by a READ. */
+/**
+ * [Key] identifies a partition of the work required for a READ operation.
+ *
+ * This effectively allows us to have one thread per [Key] instance and perform READ concurrently.
+ */
 sealed interface Key
 
+/** Acts as a key for [GlobalState]. */
 data class GlobalKey(val streamKeys: List<StreamKey>) : Key
 
+/**
+ * Acts as a key for [StreamState]
+ *
+ * Essentially maps to a [io.airbyte.protocol.models.v0.ConfiguredAirbyteStream].
+ */
 data class StreamKey(
-    val configuredStream: ConfiguredAirbyteStream,
     val table: TableName,
     val fields: List<Field>,
     val primaryKeyCandidates: List<List<Field>>,
@@ -29,17 +36,14 @@ data class StreamKey(
     val configuredCursor: FieldOrMetaField?,
 ) : Key {
 
-    val stream: AirbyteStream
-        get() = configuredStream.stream
-
     val name: String
-        get() = configuredStream.stream.name
+        get() = table.name
 
     val namespace: String?
-        get() = configuredStream.stream.namespace
+        get() = table.schema ?: table.catalog
 
     val namePair: AirbyteStreamNameNamespacePair
-        get() = AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(configuredStream)
+        get() = AirbyteStreamNameNamespacePair(name, namespace)
 
     val streamDescriptor: StreamDescriptor
         get() = StreamDescriptor().withName(name).withNamespace(namespace)

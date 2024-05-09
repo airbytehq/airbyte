@@ -6,6 +6,11 @@ package io.airbyte.cdk.discover
 
 import io.airbyte.cdk.command.JsonUtils
 import io.airbyte.cdk.command.SourceConfiguration
+import io.airbyte.cdk.source.Field
+import io.airbyte.cdk.source.FieldType
+import io.airbyte.cdk.source.MetadataQuerier
+import io.airbyte.cdk.source.StringFieldType
+import io.airbyte.cdk.source.TableName
 import io.airbyte.commons.resources.MoreResources
 import io.micronaut.context.annotation.Replaces
 import io.micronaut.context.annotation.Requires
@@ -34,7 +39,10 @@ class ResourceDrivenMetadataQuerierFactory(
         metadata = level0.mapNotNull { level1: Level1 ->
             level1.value?.let { level2: Level2 ->
                 val columns: List<Field> = level2.columns.map { (id: String, className: String) ->
-                    Field(id, Class.forName(className).kotlin.objectInstance as FieldType)
+                    val fqClassName: String =
+                        if (className.contains('.')) className
+                        else FieldType::class.java.packageName + "." + className
+                    Field(id, Class.forName(fqClassName).kotlin.objectInstance as FieldType)
                 }
                 level1.key to TestTableMetadata(columns, level2.primaryKeys)
             }

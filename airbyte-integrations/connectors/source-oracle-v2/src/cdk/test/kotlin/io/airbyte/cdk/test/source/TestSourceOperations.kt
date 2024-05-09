@@ -4,60 +4,59 @@
 
 package io.airbyte.cdk.test.source
 
-import io.airbyte.cdk.discover.ArrayFieldType
-import io.airbyte.cdk.discover.BigDecimalFieldType
-import io.airbyte.cdk.discover.BigIntegerFieldType
-import io.airbyte.cdk.discover.BinaryStreamFieldType
-import io.airbyte.cdk.discover.BooleanFieldType
-import io.airbyte.cdk.discover.ByteFieldType
-import io.airbyte.cdk.discover.BytesFieldType
-import io.airbyte.cdk.discover.ClobFieldType
-import io.airbyte.cdk.discover.DoubleFieldType
-import io.airbyte.cdk.discover.FloatFieldType
-import io.airbyte.cdk.discover.IntFieldType
-import io.airbyte.cdk.discover.LocalDateTimeFieldType
-import io.airbyte.cdk.discover.LocalDateFieldType
-import io.airbyte.cdk.discover.LocalTimeFieldType
-import io.airbyte.cdk.discover.NClobFieldType
-import io.airbyte.cdk.discover.NStringFieldType
-import io.airbyte.cdk.discover.OffsetDateTimeFieldType
-import io.airbyte.cdk.discover.OffsetTimeFieldType
-import io.airbyte.cdk.discover.NullFieldType
-import io.airbyte.cdk.discover.LosslessFieldType
-import io.airbyte.cdk.discover.ShortFieldType
-import io.airbyte.cdk.discover.StringFieldType
-import io.airbyte.cdk.discover.TableName
-import io.airbyte.cdk.discover.UrlFieldType
-import io.airbyte.cdk.discover.FieldType
-import io.airbyte.cdk.discover.PokemonFieldType
-import io.airbyte.cdk.discover.XmlFieldType
+import io.airbyte.cdk.source.ArrayFieldType
+import io.airbyte.cdk.source.BigDecimalFieldType
+import io.airbyte.cdk.source.BigIntegerFieldType
+import io.airbyte.cdk.source.BinaryStreamFieldType
+import io.airbyte.cdk.source.BooleanFieldType
+import io.airbyte.cdk.source.ByteFieldType
+import io.airbyte.cdk.source.BytesFieldType
+import io.airbyte.cdk.source.ClobFieldType
+import io.airbyte.cdk.source.DoubleFieldType
+import io.airbyte.cdk.source.FloatFieldType
+import io.airbyte.cdk.source.IntFieldType
+import io.airbyte.cdk.source.LocalDateTimeFieldType
+import io.airbyte.cdk.source.LocalDateFieldType
+import io.airbyte.cdk.source.LocalTimeFieldType
+import io.airbyte.cdk.source.NClobFieldType
+import io.airbyte.cdk.source.NStringFieldType
+import io.airbyte.cdk.source.OffsetDateTimeFieldType
+import io.airbyte.cdk.source.OffsetTimeFieldType
+import io.airbyte.cdk.source.NullFieldType
+import io.airbyte.cdk.source.LosslessFieldType
+import io.airbyte.cdk.source.ShortFieldType
+import io.airbyte.cdk.source.StringFieldType
+import io.airbyte.cdk.source.TableName
+import io.airbyte.cdk.source.UrlFieldType
+import io.airbyte.cdk.source.FieldType
+import io.airbyte.cdk.source.PokemonFieldType
+import io.airbyte.cdk.source.XmlFieldType
 import io.airbyte.cdk.jdbc.JdbcMetadataQuerier
-import io.airbyte.cdk.read.stream.And
-import io.airbyte.cdk.read.stream.Equal
-import io.airbyte.cdk.read.stream.From
-import io.airbyte.cdk.read.stream.FromNode
-import io.airbyte.cdk.read.stream.Greater
-import io.airbyte.cdk.read.stream.LesserOrEqual
-import io.airbyte.cdk.read.stream.Limit
-import io.airbyte.cdk.read.stream.LimitNode
-import io.airbyte.cdk.read.stream.LimitZero
-import io.airbyte.cdk.read.stream.NoFrom
-import io.airbyte.cdk.read.stream.NoLimit
-import io.airbyte.cdk.read.stream.NoOrderBy
-import io.airbyte.cdk.read.stream.NoWhere
-import io.airbyte.cdk.read.stream.Or
-import io.airbyte.cdk.read.stream.OrderBy
-import io.airbyte.cdk.read.stream.OrderByNode
-import io.airbyte.cdk.read.stream.SelectColumnMaxValue
-import io.airbyte.cdk.read.stream.SelectColumns
-import io.airbyte.cdk.read.stream.SelectNode
-import io.airbyte.cdk.read.stream.SelectQuery
-import io.airbyte.cdk.read.stream.SelectQueryGenerator
-import io.airbyte.cdk.read.stream.SelectQueryRootNode
-import io.airbyte.cdk.read.stream.Where
-import io.airbyte.cdk.read.stream.WhereClauseLeafNode
-import io.airbyte.cdk.read.stream.WhereClauseNode
-import io.airbyte.cdk.read.stream.WhereNode
+import io.airbyte.cdk.source.select.And
+import io.airbyte.cdk.source.select.Equal
+import io.airbyte.cdk.source.select.From
+import io.airbyte.cdk.source.select.FromNode
+import io.airbyte.cdk.source.select.Greater
+import io.airbyte.cdk.source.select.LesserOrEqual
+import io.airbyte.cdk.source.select.Limit
+import io.airbyte.cdk.source.select.LimitNode
+import io.airbyte.cdk.source.select.NoFrom
+import io.airbyte.cdk.source.select.NoLimit
+import io.airbyte.cdk.source.select.NoOrderBy
+import io.airbyte.cdk.source.select.NoWhere
+import io.airbyte.cdk.source.select.Or
+import io.airbyte.cdk.source.select.OrderBy
+import io.airbyte.cdk.source.select.OrderByNode
+import io.airbyte.cdk.source.select.SelectColumnMaxValue
+import io.airbyte.cdk.source.select.SelectColumns
+import io.airbyte.cdk.source.select.SelectNode
+import io.airbyte.cdk.source.select.SelectQuery
+import io.airbyte.cdk.source.select.SelectQueryGenerator
+import io.airbyte.cdk.source.select.SelectQuerySpec
+import io.airbyte.cdk.source.select.Where
+import io.airbyte.cdk.source.select.WhereClauseLeafNode
+import io.airbyte.cdk.source.select.WhereClauseNode
+import io.airbyte.cdk.source.select.WhereNode
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.env.Environment
@@ -117,10 +116,10 @@ class TestSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGen
     private fun TableName.fullyQualifiedName(): String =
         if (schema == null) name else "${schema}.${name}"
 
-    override fun generate(ast: SelectQueryRootNode): SelectQuery =
+    override fun generate(ast: SelectQuerySpec): SelectQuery =
         SelectQuery(ast.sql(), ast.select.columns, ast.bindings())
 
-    fun SelectQueryRootNode.sql(): String {
+    fun SelectQuerySpec.sql(): String {
         val components: List<String> =
             listOf(select.sql(), from.sql(), where.sql(), orderBy.sql(), limit.sql())
         return components.filter { it.isNotBlank() }.joinToString(" ")
@@ -170,11 +169,10 @@ class TestSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGen
     fun LimitNode.sql(): String =
         when (this) {
             NoLimit -> ""
-            LimitZero -> "LIMIT 0"
-            is Limit -> "LIMIT ${state.current}"
+            is Limit -> "LIMIT $n"
         }
 
-    fun SelectQueryRootNode.bindings(): List<SelectQuery.Binding> = where.bindings()
+    fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> = where.bindings()
 
     fun WhereNode.bindings(): List<SelectQuery.Binding> =
         when (this) {
@@ -188,7 +186,7 @@ class TestSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGen
             is Or -> disj.flatMap { it.bindings() }
             is WhereClauseLeafNode -> {
                 val type = column.type as LosslessFieldType
-                listOf(SelectQuery.Binding(bindingValue, type))
+                listOf(io.airbyte.cdk.source.select.SelectQuery.Binding(bindingValue, type))
             }
         }
 }

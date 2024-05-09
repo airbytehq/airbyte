@@ -5,17 +5,17 @@
 package io.airbyte.integrations.source.oracle
 
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.source.Field
 import io.airbyte.cdk.jdbc.GenericUserDefinedType
-import io.airbyte.cdk.discover.MetadataQuerier
-import io.airbyte.cdk.jdbc.SourceType
+import io.airbyte.cdk.source.MetadataQuerier
+import io.airbyte.cdk.jdbc.SourceDatabaseType
 import io.airbyte.cdk.jdbc.SystemType
-import io.airbyte.cdk.discover.TableName
+import io.airbyte.cdk.source.TableName
 import io.airbyte.cdk.jdbc.UserDefinedArray
 import io.airbyte.cdk.jdbc.UserDefinedType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcMetadataQuerier
-import io.airbyte.cdk.read.stream.SelectQueryGenerator
+import io.airbyte.cdk.source.select.SelectQueryGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
@@ -125,7 +125,7 @@ class OracleSourceMetadataQuerier(val base: JdbcMetadataQuerier) : MetadataQueri
             allRows
                 .filter { it.elemTypeOwner != null && it.elemTypeName != null }
                 .associateBy { "${it.elemTypeOwner!!}.${it.elemTypeName!!}" }
-        fun recurse(elementType: SourceType, row: AllCollTypesRow): UserDefinedArray {
+        fun recurse(elementType: SourceDatabaseType, row: AllCollTypesRow): UserDefinedArray {
             val type =
                 UserDefinedArray(
                     catalog = null,
@@ -143,7 +143,7 @@ class OracleSourceMetadataQuerier(val base: JdbcMetadataQuerier) : MetadataQueri
             .filter { it.elemTypeName != null }
             .filterNot { varrayFQNameSet.contains("${it.elemTypeOwner}.${it.elemTypeName}") }
             .map { row ->
-                val leaf: SourceType =
+                val leaf: SourceDatabaseType =
                     otherUDTsByFQName["${row.elemTypeOwner}.${row.elemTypeName}"]
                         ?: SystemType(
                             typeName = row.elemTypeName!!,

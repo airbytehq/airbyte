@@ -19,15 +19,23 @@ import io.airbyte.cdk.read.ResumableSelectState
 import io.airbyte.cdk.read.StreamKey
 import io.airbyte.cdk.read.StreamState
 import io.airbyte.cdk.read.Worker
+import io.airbyte.cdk.source.select.SelectQuerier
+import io.airbyte.cdk.source.select.SelectQueryGenerator
 import io.micronaut.context.annotation.DefaultImplementation
 import jakarta.inject.Singleton
 
+/** Generates a [Worker] to make progress on a [StreamState]. */
 @DefaultImplementation(DefaultStreamWorkerFactory::class)
 fun interface StreamWorkerFactory {
 
     fun make(input: StreamState): Worker<StreamKey, out StreamState>?
 }
 
+/**
+ * Sane default implementation of [StreamWorkerFactory].
+ *
+ * Some connectors may choose to substitute this for their own implementation.
+ */
 @Singleton
 class DefaultStreamWorkerFactory(
     val config: SourceConfiguration,
@@ -38,7 +46,7 @@ class DefaultStreamWorkerFactory(
 
     override fun make(input: StreamState): Worker<StreamKey, out StreamState>? =
         when (input) {
-            is FullRefreshNotStarted -> FullRefreshPrepWorker(config, input)
+            is FullRefreshNotStarted -> FullRefreshColdStartWorker(config, input)
             is FullRefreshCompleted -> null
             is CursorBasedNotStarted ->
                 CursorBasedColdStartWorker(config, queryBuilder, querier, input)
@@ -46,7 +54,7 @@ class DefaultStreamWorkerFactory(
             is CursorBasedIncrementalStarting ->
                 CursorBasedWarmStartWorker(config, queryBuilder, querier, input)
             is CursorBasedIncrementalCompleted -> null
-            is CdcInitialSyncNotStarted -> CdcInitialSyncPrepWorker(config, input)
+            is CdcInitialSyncNotStarted -> CdcInitialSyncColdStartWorker(config, input)
             is CdcInitialSyncCompleted -> null
             is NonResumableBackfillState ->
                 NonResumableSelectWorker(queryBuilder, querier, outputConsumer, input)

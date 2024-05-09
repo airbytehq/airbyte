@@ -7,9 +7,9 @@ package io.airbyte.cdk.jdbc
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
-import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.read.stream.SelectQuerier
-import io.airbyte.cdk.read.stream.SelectQuery
+import io.airbyte.cdk.source.Field
+import io.airbyte.cdk.source.select.SelectQuerier
+import io.airbyte.cdk.source.select.SelectQuery
 import io.airbyte.commons.jackson.MoreMappers
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
@@ -25,7 +25,7 @@ class JdbcSelectQuerier(
     private val jdbcConnectionFactory: JdbcConnectionFactory,
 ) : SelectQuerier {
 
-    override fun executeQuery(q: SelectQuery, recordVisitor: (record: ObjectNode) -> Boolean) {
+    override fun executeQuery(q: SelectQuery, recordVisitor: SelectQuerier.RecordVisitor) {
         log.info { "Querying ${q.sql}" }
         jdbcConnectionFactory.get().use { conn: Connection ->
             conn.prepareStatement(q.sql).use { stmt: PreparedStatement ->
@@ -42,7 +42,7 @@ class JdbcSelectQuerier(
                             log.info { "Getting value #$colIdx for $column." }
                             record.set<JsonNode>(column.id, column.type.get(rs, colIdx))
                         }
-                        if (recordVisitor(record)) break
+                        if (recordVisitor.visit(record)) break
                     }
                 }
             }

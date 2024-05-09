@@ -2,24 +2,28 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.read.stream
+package io.airbyte.cdk.source.select
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.discover.TableName
-import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.read.LimitState
+import io.airbyte.cdk.source.TableName
+import io.airbyte.cdk.source.Field
 
-sealed interface AstNode
-
-data class SelectQueryRootNode(
+/**
+ * Source-database-agnostic representation of a SELECT query as an abstract syntax tree.
+ * This is tailored to the subset of queries that we actually might run in a source connector.
+ *
+ * See also [optimize] which does a pass to improve the AST.
+ * See also [SelectQueryGenerator] which acts as the "compiler backend" to generate the actual SQL.
+ */
+data class SelectQuerySpec(
     val select: SelectNode,
-    val from: FromNode,
-    val where: WhereNode,
-    val orderBy: OrderByNode,
-    val limit: LimitNode
+    val from: FromNode = NoFrom,
+    val where: WhereNode = NoWhere,
+    val orderBy: OrderByNode = NoOrderBy,
+    val limit: LimitNode = NoLimit,
 )
 
-sealed interface SelectNode : AstNode {
+sealed interface SelectNode {
     val columns: List<Field>
 }
 
@@ -30,19 +34,19 @@ data class SelectColumnMaxValue(val column: Field) : SelectNode {
         get() = listOf(column)
 }
 
-sealed interface FromNode : AstNode
+sealed interface FromNode
 
 data object NoFrom : FromNode
 
 data class From(val table: TableName) : FromNode
 
-sealed interface WhereNode : AstNode
+sealed interface WhereNode
 
 data object NoWhere : WhereNode
 
 data class Where(val clause: WhereClauseNode) : WhereNode
 
-sealed interface WhereClauseNode : AstNode
+sealed interface WhereClauseNode
 
 data class And(val conj: List<WhereClauseNode>) : WhereClauseNode
 
@@ -68,22 +72,20 @@ data class Equal(
     override val bindingValue: JsonNode,
 ) : WhereClauseLeafNode
 
-sealed interface OrderByNode : AstNode
+sealed interface OrderByNode
 
 data class OrderBy(val columns: List<Field>) : OrderByNode
 
 data object NoOrderBy : OrderByNode
 
-sealed interface LimitNode : AstNode
+sealed interface LimitNode
 
-data class Limit(val state: LimitState) : LimitNode
+data class Limit(val n: Long) : LimitNode
 
 data object NoLimit : LimitNode
 
-data object LimitZero : LimitNode
-
-fun SelectQueryRootNode.optimize(): SelectQueryRootNode =
-    SelectQueryRootNode(select.optimize(), from, where.optimize(), orderBy.optimize(), limit)
+fun SelectQuerySpec.optimize(): SelectQuerySpec =
+    SelectQuerySpec(select.optimize(), from, where.optimize(), orderBy.optimize(), limit)
 
 fun SelectNode.optimize(): SelectNode =
     when (this) {

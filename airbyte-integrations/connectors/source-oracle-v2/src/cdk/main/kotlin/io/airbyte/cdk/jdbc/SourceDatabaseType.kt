@@ -8,7 +8,7 @@ import java.sql.JDBCType
 import java.sql.Types
 
 /** Supertype for all source database types. */
-sealed interface SourceType {
+sealed interface SourceDatabaseType {
     val catalog: String?
     val schema: String?
     val typeName: String?
@@ -27,7 +27,7 @@ data class SystemType(
     val displaySize: Int? = null,
     val precision: Int? = null,
     val scale: Int? = null,
-) : SourceType {
+) : SourceDatabaseType {
     override val catalog: String?
         get() = null
     override val schema: String?
@@ -42,7 +42,7 @@ data class SystemType(
  * The subtypes may overlap, for instance a user-defined array may be
  * represented both as a [UserDefinedArray] and as a [GenericUserDefinedType].
  */
-interface UserDefinedType : SourceType
+interface UserDefinedType : SourceDatabaseType
 
 /** User-defined array types. */
 data class UserDefinedArray(
@@ -50,7 +50,7 @@ data class UserDefinedArray(
     override val schema: String? = null,
     override val typeName: String,
     override val klazz: Class<*>? = null,
-    val elementType: SourceType,
+    val elementType: SourceDatabaseType,
 ) : UserDefinedType {
 
     override val typeCode: Int

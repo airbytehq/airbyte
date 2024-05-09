@@ -1,4 +1,4 @@
-package io.airbyte.cdk.discover
+package io.airbyte.cdk.source
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.protocol.models.v0.AirbyteStream
@@ -79,7 +79,6 @@ class DefaultAirbyteStreamDecorator : AirbyteStreamDecorator {
     override fun isPossiblePrimaryKeyElement(field: Field): Boolean =
         when (field.type) {
             !is LosslessFieldType -> false
-            // These
             BinaryStreamFieldType,
             CharacterStreamFieldType,
             NCharacterStreamFieldType,

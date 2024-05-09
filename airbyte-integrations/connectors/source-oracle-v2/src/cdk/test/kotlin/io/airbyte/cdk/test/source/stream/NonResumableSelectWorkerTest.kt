@@ -7,9 +7,9 @@ package io.airbyte.cdk.test.source.stream
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.airbyte.cdk.TestClockFactory
 import io.airbyte.cdk.consumers.BufferingOutputConsumer
-import io.airbyte.cdk.discover.IntFieldType
-import io.airbyte.cdk.discover.StringFieldType
-import io.airbyte.cdk.discover.TableName
+import io.airbyte.cdk.source.IntFieldType
+import io.airbyte.cdk.source.StringFieldType
+import io.airbyte.cdk.source.TableName
 import io.airbyte.cdk.jdbc.H2TestFixture
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcSelectQuerier
@@ -17,7 +17,7 @@ import io.airbyte.cdk.read.CdcInitialSyncCompleted
 import io.airbyte.cdk.read.CdcNonResumableInitialSyncStarting
 import io.airbyte.cdk.read.CursorBasedIncrementalCompleted
 import io.airbyte.cdk.read.CursorBasedNonResumableInitialSyncStarting
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.source.Field
 import io.airbyte.cdk.read.FullRefreshCompleted
 import io.airbyte.cdk.read.FullRefreshNonResumableStarting
 import io.airbyte.cdk.read.NonResumableBackfillState
@@ -25,7 +25,7 @@ import io.airbyte.cdk.read.SerializableStreamState
 import io.airbyte.cdk.read.StreamKey
 import io.airbyte.cdk.read.WorkResult
 import io.airbyte.cdk.read.stream.NonResumableSelectWorker
-import io.airbyte.cdk.read.stream.SelectQuerier
+import io.airbyte.cdk.source.select.SelectQuerier
 import io.airbyte.cdk.test.source.TestSourceConfiguration
 import io.airbyte.cdk.test.source.TestSourceConfigurationFactory
 import io.airbyte.cdk.test.source.TestSourceConfigurationJsonObject
@@ -56,9 +56,6 @@ class NonResumableSelectWorkerTest {
 
     val key =
         StreamKey(
-            configuredStream =
-                ConfiguredAirbyteStream()
-                    .withStream(AirbyteStream().withName("KV").withNamespace("PUBLIC")),
             table = TableName(schema = "PUBLIC", name = "KV", type = ""),
             fields =
                 listOf(

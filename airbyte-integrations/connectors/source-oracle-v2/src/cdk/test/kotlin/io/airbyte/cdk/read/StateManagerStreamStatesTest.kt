@@ -15,8 +15,8 @@ import io.airbyte.cdk.consumers.InvalidPrimaryKey
 import io.airbyte.cdk.consumers.ResetStream
 import io.airbyte.cdk.consumers.TableHasNoDataColumns
 import io.airbyte.cdk.consumers.TableNotFound
-import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.discover.TableName
+import io.airbyte.cdk.source.Field
+import io.airbyte.cdk.source.TableName
 import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -380,7 +380,6 @@ class StateManagerStreamStatesTest {
         Assertions.assertEquals(1, actualCurrentStates.size, actualCurrentStates.keys.toString())
         val actualState: StreamState = untypedState as StreamState
         val actualKey: StreamKey = actualState.key
-        Assertions.assertEquals(Jsons.deserialize(STREAM), Jsons.jsonNode(actualKey.stream))
         Assertions.assertEquals(
             TableName("TESTDB", "PUBLIC", "EVENTS", "BASE TABLE"),
             actualKey.table

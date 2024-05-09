@@ -5,13 +5,17 @@
 package io.airbyte.cdk.jdbc
 
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.discover.FieldType
-import io.airbyte.cdk.discover.MetadataQuerier
-import io.airbyte.cdk.discover.TableName
-import io.airbyte.cdk.read.stream.SelectQueryBuilder
-import io.airbyte.cdk.read.stream.SelectQueryGenerator
-import io.airbyte.cdk.read.stream.SelectQueryRootNode
+import io.airbyte.cdk.source.Field
+import io.airbyte.cdk.source.FieldType
+import io.airbyte.cdk.source.MetadataQuerier
+import io.airbyte.cdk.source.NullFieldType
+import io.airbyte.cdk.source.TableName
+import io.airbyte.cdk.source.select.SelectQueryGenerator
+import io.airbyte.cdk.source.select.From
+import io.airbyte.cdk.source.select.Limit
+import io.airbyte.cdk.source.select.SelectColumns
+import io.airbyte.cdk.source.select.SelectQuerySpec
+import io.airbyte.cdk.source.select.optimize
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.Connection
@@ -158,9 +162,8 @@ class JdbcMetadataQuerier(
         if (columnNames.isEmpty()) {
             return listOf()
         }
-        val selectMany: SelectQueryRootNode = SelectQueryBuilder.limit0(table, columnNames)
         val resultsFromSelectMany: List<ColumnMetadata>? =
-            queryColumnMetadata(conn, selectQueryGenerator.generate(selectMany).sql)
+            queryColumnMetadata(conn, selectLimit0(table, columnNames))
         if (resultsFromSelectMany != null) {
             return resultsFromSelectMany
         }
@@ -168,9 +171,21 @@ class JdbcMetadataQuerier(
             "Not all columns of $table might be accessible, trying each column individually."
         }
         return columnNames.flatMap {
-            val selectOne: SelectQueryRootNode = SelectQueryBuilder.limit0(table, listOf(it))
-            queryColumnMetadata(conn, selectQueryGenerator.generate(selectOne).sql) ?: listOf()
+            queryColumnMetadata(conn, selectLimit0(table, listOf(it))) ?: listOf()
         }
+    }
+
+
+    /**
+     * Generates SQL query used to discover [ColumnMetadata] and to verify table access permissions.
+     */
+    fun selectLimit0(table: TableName, columnIDs: List<String>): String {
+        val querySpec = SelectQuerySpec(
+            SelectColumns(columnIDs.map { Field(it, NullFieldType) }),
+            From(table),
+            limit = Limit(0)
+        )
+        return selectQueryGenerator.generate(querySpec.optimize()).sql
     }
 
     private fun queryColumnMetadata(conn: Connection, sql: String): List<ColumnMetadata>? {
@@ -301,12 +316,12 @@ class JdbcMetadataQuerier(
 
     /**
      *  Data class with one field for each [java.sql.ResultSetMetaData] column method,
-     *  assuming that the [SystemType] subtype of [SourceType] is being used.
+     *  assuming that the [SystemType] subtype of [SourceDatabaseType] is being used.
      */
     data class ColumnMetadata(
         val name: String,
         val label: String,
-        val type: SourceType,
+        val type: SourceDatabaseType,
         val autoIncrement: Boolean? = null,
         val caseSensitive: Boolean? = null,
         val searchable: Boolean? = null,

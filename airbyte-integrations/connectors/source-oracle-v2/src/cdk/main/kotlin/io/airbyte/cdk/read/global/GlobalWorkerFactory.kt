@@ -14,12 +14,18 @@ import io.airbyte.cdk.read.Worker
 import io.micronaut.context.annotation.DefaultImplementation
 import jakarta.inject.Singleton
 
+/** Generates a [Worker] to make progress on a [GlobalState]. */
 @DefaultImplementation(DefaultGlobalWorkerFactory::class)
 fun interface GlobalWorkerFactory {
 
     fun make(input: GlobalState): Worker<GlobalKey, out GlobalState>?
 }
 
+/**
+ * Sane default implementation of [GlobalWorkerFactory].
+ *
+ * Some connectors may choose to substitute this for their own implementation.
+ */
 @Singleton
 class DefaultGlobalWorkerFactory : GlobalWorkerFactory {
 

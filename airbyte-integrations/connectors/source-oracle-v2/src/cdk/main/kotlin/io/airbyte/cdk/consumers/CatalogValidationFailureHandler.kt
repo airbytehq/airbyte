@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.consumers
 
-import io.airbyte.cdk.discover.AirbyteType
-import io.airbyte.cdk.discover.TableName
+import io.airbyte.cdk.data.AirbyteType
+import io.airbyte.cdk.source.TableName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.DefaultImplementation
 import jakarta.inject.Singleton

@@ -5,58 +5,56 @@
 package io.airbyte.integrations.source.oracle
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
-import io.airbyte.cdk.discover.ArrayFieldType
-import io.airbyte.cdk.discover.BigDecimalFieldType
-import io.airbyte.cdk.discover.BigIntegerFieldType
-import io.airbyte.cdk.discover.BinaryStreamFieldType
-import io.airbyte.cdk.discover.BooleanFieldType
-import io.airbyte.cdk.discover.ClobFieldType
-import io.airbyte.cdk.discover.DoubleFieldType
-import io.airbyte.cdk.discover.FloatFieldType
-import io.airbyte.cdk.discover.JsonStringFieldType
-import io.airbyte.cdk.discover.LocalDateTimeFieldType
-import io.airbyte.cdk.discover.LocalDateFieldType
-import io.airbyte.cdk.discover.LongFieldType
-import io.airbyte.cdk.discover.NClobFieldType
-import io.airbyte.cdk.discover.NStringFieldType
-import io.airbyte.cdk.discover.OffsetDateTimeFieldType
-import io.airbyte.cdk.discover.PokemonFieldType
-import io.airbyte.cdk.discover.LosslessFieldType
-import io.airbyte.cdk.discover.StringFieldType
+import io.airbyte.cdk.source.ArrayFieldType
+import io.airbyte.cdk.source.BigDecimalFieldType
+import io.airbyte.cdk.source.BigIntegerFieldType
+import io.airbyte.cdk.source.BinaryStreamFieldType
+import io.airbyte.cdk.source.BooleanFieldType
+import io.airbyte.cdk.source.ClobFieldType
+import io.airbyte.cdk.source.DoubleFieldType
+import io.airbyte.cdk.source.FloatFieldType
+import io.airbyte.cdk.source.JsonStringFieldType
+import io.airbyte.cdk.source.LocalDateTimeFieldType
+import io.airbyte.cdk.source.LocalDateFieldType
+import io.airbyte.cdk.source.LongFieldType
+import io.airbyte.cdk.source.NClobFieldType
+import io.airbyte.cdk.source.NStringFieldType
+import io.airbyte.cdk.source.OffsetDateTimeFieldType
+import io.airbyte.cdk.source.PokemonFieldType
+import io.airbyte.cdk.source.LosslessFieldType
+import io.airbyte.cdk.source.StringFieldType
 import io.airbyte.cdk.jdbc.SystemType
-import io.airbyte.cdk.discover.TableName
+import io.airbyte.cdk.source.TableName
 import io.airbyte.cdk.jdbc.UserDefinedArray
-import io.airbyte.cdk.discover.FieldType
-import io.airbyte.cdk.discover.FieldTypeBase
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.source.FieldType
+import io.airbyte.cdk.source.FieldTypeBase
 import io.airbyte.cdk.jdbc.JdbcMetadataQuerier
 import io.airbyte.cdk.jdbc.UserDefinedType
-import io.airbyte.cdk.read.stream.And
-import io.airbyte.cdk.read.stream.Equal
-import io.airbyte.cdk.read.stream.From
-import io.airbyte.cdk.read.stream.FromNode
-import io.airbyte.cdk.read.stream.Greater
-import io.airbyte.cdk.read.stream.LesserOrEqual
-import io.airbyte.cdk.read.stream.Limit
-import io.airbyte.cdk.read.stream.LimitNode
-import io.airbyte.cdk.read.stream.LimitZero
-import io.airbyte.cdk.read.stream.NoFrom
-import io.airbyte.cdk.read.stream.NoLimit
-import io.airbyte.cdk.read.stream.NoOrderBy
-import io.airbyte.cdk.read.stream.NoWhere
-import io.airbyte.cdk.read.stream.Or
-import io.airbyte.cdk.read.stream.OrderBy
-import io.airbyte.cdk.read.stream.OrderByNode
-import io.airbyte.cdk.read.stream.SelectColumnMaxValue
-import io.airbyte.cdk.read.stream.SelectColumns
-import io.airbyte.cdk.read.stream.SelectNode
-import io.airbyte.cdk.read.stream.SelectQuery
-import io.airbyte.cdk.read.stream.SelectQueryGenerator
-import io.airbyte.cdk.read.stream.SelectQueryRootNode
-import io.airbyte.cdk.read.stream.Where
-import io.airbyte.cdk.read.stream.WhereClauseLeafNode
-import io.airbyte.cdk.read.stream.WhereClauseNode
-import io.airbyte.cdk.read.stream.WhereNode
+import io.airbyte.cdk.source.select.And
+import io.airbyte.cdk.source.select.Equal
+import io.airbyte.cdk.source.select.From
+import io.airbyte.cdk.source.select.FromNode
+import io.airbyte.cdk.source.select.Greater
+import io.airbyte.cdk.source.select.LesserOrEqual
+import io.airbyte.cdk.source.select.Limit
+import io.airbyte.cdk.source.select.LimitNode
+import io.airbyte.cdk.source.select.NoFrom
+import io.airbyte.cdk.source.select.NoLimit
+import io.airbyte.cdk.source.select.NoOrderBy
+import io.airbyte.cdk.source.select.NoWhere
+import io.airbyte.cdk.source.select.Or
+import io.airbyte.cdk.source.select.OrderBy
+import io.airbyte.cdk.source.select.OrderByNode
+import io.airbyte.cdk.source.select.SelectColumnMaxValue
+import io.airbyte.cdk.source.select.SelectColumns
+import io.airbyte.cdk.source.select.SelectNode
+import io.airbyte.cdk.source.select.SelectQuery
+import io.airbyte.cdk.source.select.SelectQueryGenerator
+import io.airbyte.cdk.source.select.SelectQuerySpec
+import io.airbyte.cdk.source.select.Where
+import io.airbyte.cdk.source.select.WhereClauseLeafNode
+import io.airbyte.cdk.source.select.WhereClauseNode
+import io.airbyte.cdk.source.select.WhereNode
 import io.airbyte.commons.jackson.MoreMappers
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
@@ -145,21 +143,21 @@ class OracleSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryG
         // The catalog never comes into play with Oracle.
         if (schema == null) name else "${schema}.${name}"
 
-    override fun generate(ast: SelectQueryRootNode): SelectQuery =
+    override fun generate(ast: SelectQuerySpec): SelectQuery =
         SelectQuery(ast.sql(), ast.select.columns, ast.bindings())
 
-    fun SelectQueryRootNode.sql(): String {
+    fun SelectQuerySpec.sql(): String {
         val components: List<String> = listOf(select.sql(), from.sql(), where.sql(), orderBy.sql())
-        val noLimitSql: String = components.filter { it.isNotBlank() }.joinToString(" ")
-        val limitOperand: String = when (limit) {
-            NoLimit -> return noLimitSql
-            LimitZero -> "1"
-            is Limit -> "?"
+        val sqlWithoutLimit: String = components.filter { it.isNotBlank() }.joinToString(" ")
+        val rownumClause: String = when (limit) {
+            NoLimit -> return sqlWithoutLimit
+            Limit(0) -> "ROWNUM < 1"
+            is Limit -> "ROWNUM <= ?"
         }
         return if (where == NoWhere && orderBy == NoOrderBy) {
-            "$noLimitSql WHERE ROWNUM < $limitOperand"
+            "$sqlWithoutLimit WHERE $rownumClause"
         } else {
-            "${select.sql()} FROM ($noLimitSql) WHERE ROWNUM < $limitOperand"
+            "${select.sql()} FROM ($sqlWithoutLimit) WHERE $rownumClause"
         }
     }
 
@@ -186,9 +184,9 @@ class OracleSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryG
         when (this) {
             is And -> conj.map { it.sql() }.joinToString(") AND (", "(", ")")
             is Or -> disj.map { it.sql() }.joinToString(") OR (", "(", ")")
-            is Equal -> "${column.id} = ${column.sqlOperand()}"
-            is Greater -> "${column.id} > ${column.sqlOperand()}"
-            is LesserOrEqual -> "${column.id} <= ${column.sqlOperand()}"
+            is Equal -> "${column.id} = ?"
+            is Greater -> "${column.id} > ?"
+            is LesserOrEqual -> "${column.id} <= ?"
         }
 
     fun OrderByNode.sql(): String =
@@ -197,7 +195,7 @@ class OracleSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryG
             is OrderBy -> "ORDER BY " + columns.map { it.id }.joinToString(", ")
         }
 
-    fun SelectQueryRootNode.bindings(): List<SelectQuery.Binding> =
+    fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> =
         where.bindings() + limit.bindings()
 
     fun WhereNode.bindings(): List<SelectQuery.Binding> =
@@ -218,12 +216,10 @@ class OracleSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryG
 
     fun LimitNode.bindings(): List<SelectQuery.Binding> =
         when (this) {
-            NoLimit, LimitZero -> listOf()
+            NoLimit, Limit(0) -> listOf()
             is Limit ->
-                listOf(SelectQuery.Binding(nodeFactory.numberNode(state.current), LongFieldType))
+                listOf(SelectQuery.Binding(nodeFactory.numberNode(n), LongFieldType))
         }
-
-    fun Field.sqlOperand(): String = "?"
 
     private val nodeFactory: JsonNodeFactory = MoreMappers.initMapper().nodeFactory
 }

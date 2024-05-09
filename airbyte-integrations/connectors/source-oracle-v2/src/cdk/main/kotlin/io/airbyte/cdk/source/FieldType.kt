@@ -2,9 +2,12 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.discover
+package io.airbyte.cdk.source
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.data.AirbyteType
+import io.airbyte.cdk.data.ArrayAirbyteType
+import io.airbyte.cdk.data.LeafAirbyteType
 import io.airbyte.cdk.jdbc.AnyAccessor
 import io.airbyte.cdk.jdbc.ArrayGetter
 import io.airbyte.cdk.jdbc.BigDecimalAccessor
@@ -32,30 +35,30 @@ import io.airbyte.cdk.jdbc.TimeAccessor
 import io.airbyte.cdk.jdbc.TimestampAccessor
 import io.airbyte.cdk.jdbc.UrlAccessor
 import io.airbyte.cdk.jdbc.XmlAccessor
-import io.airbyte.cdk.read.AnyEncoder
-import io.airbyte.cdk.read.ArrayEncoder
-import io.airbyte.cdk.read.BigDecimalCodec
-import io.airbyte.cdk.read.BigDecimalIntegerCodec
-import io.airbyte.cdk.read.BinaryCodec
-import io.airbyte.cdk.read.BooleanCodec
-import io.airbyte.cdk.read.ByteCodec
-import io.airbyte.cdk.read.DoubleCodec
-import io.airbyte.cdk.read.FloatCodec
-import io.airbyte.cdk.read.IntCodec
-import io.airbyte.cdk.read.JsonCodec
-import io.airbyte.cdk.read.JsonDecoder
-import io.airbyte.cdk.read.JsonEncoder
-import io.airbyte.cdk.read.JsonStringCodec
-import io.airbyte.cdk.read.LocalDateCodec
-import io.airbyte.cdk.read.LocalDateTimeCodec
-import io.airbyte.cdk.read.LocalTimeCodec
-import io.airbyte.cdk.read.LongCodec
-import io.airbyte.cdk.read.NullCodec
-import io.airbyte.cdk.read.OffsetDateTimeCodec
-import io.airbyte.cdk.read.OffsetTimeCodec
-import io.airbyte.cdk.read.ShortCodec
-import io.airbyte.cdk.read.TextCodec
-import io.airbyte.cdk.read.UrlCodec
+import io.airbyte.cdk.data.AnyEncoder
+import io.airbyte.cdk.data.ArrayEncoder
+import io.airbyte.cdk.data.BigDecimalCodec
+import io.airbyte.cdk.data.BigDecimalIntegerCodec
+import io.airbyte.cdk.data.BinaryCodec
+import io.airbyte.cdk.data.BooleanCodec
+import io.airbyte.cdk.data.ByteCodec
+import io.airbyte.cdk.data.DoubleCodec
+import io.airbyte.cdk.data.FloatCodec
+import io.airbyte.cdk.data.IntCodec
+import io.airbyte.cdk.data.JsonCodec
+import io.airbyte.cdk.data.JsonDecoder
+import io.airbyte.cdk.data.JsonEncoder
+import io.airbyte.cdk.data.JsonStringCodec
+import io.airbyte.cdk.data.LocalDateCodec
+import io.airbyte.cdk.data.LocalDateTimeCodec
+import io.airbyte.cdk.data.LocalTimeCodec
+import io.airbyte.cdk.data.LongCodec
+import io.airbyte.cdk.data.NullCodec
+import io.airbyte.cdk.data.OffsetDateTimeCodec
+import io.airbyte.cdk.data.OffsetTimeCodec
+import io.airbyte.cdk.data.ShortCodec
+import io.airbyte.cdk.data.TextCodec
+import io.airbyte.cdk.data.UrlCodec
 import java.math.BigDecimal
 import java.net.URL
 import java.nio.ByteBuffer
@@ -119,7 +122,7 @@ abstract class SymmetricFieldTypeBase<T>(
     airbyteType: AirbyteType,
     jdbcAccessor: JdbcAccessor<T>,
     jsonCodec: JsonCodec<T>,
-) : LosslessFieldTypeBase<T,T>(airbyteType, jdbcAccessor, jsonCodec, jsonCodec, jdbcAccessor)
+) : LosslessFieldTypeBase<T, T>(airbyteType, jdbcAccessor, jsonCodec, jsonCodec, jdbcAccessor)
 
 data object BooleanFieldType : SymmetricFieldTypeBase<Boolean>(
     LeafAirbyteType.BOOLEAN,

@@ -8,9 +8,9 @@
     },
     "value": {
       "columns": {
-        "ID": "io.airbyte.cdk.discover.StringFieldType",
-        "TS": "io.airbyte.cdk.discover.OffsetDateTimeFieldType",
-        "MSG": "io.airbyte.cdk.discover.StringFieldType"
+        "ID": "StringFieldType",
+        "TS": "OffsetDateTimeFieldType",
+        "MSG": "StringFieldType"
       },
       "primaryKeys": [["ID"]]
     }
@@ -24,8 +24,8 @@
     },
     "value": {
       "columns": {
-        "K" : "io.airbyte.cdk.discover.IntFieldType",
-        "V" : "io.airbyte.cdk.discover.StringFieldType"
+        "K" : "IntFieldType",
+        "V" : "StringFieldType"
       },
       "primaryKeys": [["K"]]
     }

@@ -9,8 +9,8 @@ import io.airbyte.cdk.command.ConfigurationJsonObjectBase
 import io.airbyte.cdk.command.ConfigurationJsonObjectSupplier
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.consumers.OutputConsumer
-import io.airbyte.cdk.discover.MetadataQuerier
-import io.airbyte.cdk.discover.TableName
+import io.airbyte.cdk.source.MetadataQuerier
+import io.airbyte.cdk.source.TableName
 import io.airbyte.cdk.integrations.util.ApmTraceUtils
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage

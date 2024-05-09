@@ -8,9 +8,9 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.TestClockFactory
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.consumers.BufferingOutputConsumer
-import io.airbyte.cdk.discover.AirbyteType
-import io.airbyte.cdk.discover.ArrayAirbyteType
-import io.airbyte.cdk.discover.LeafAirbyteType
+import io.airbyte.cdk.data.AirbyteType
+import io.airbyte.cdk.data.ArrayAirbyteType
+import io.airbyte.cdk.data.LeafAirbyteType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -25,6 +25,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DynamicContainer
 import org.junit.jupiter.api.DynamicNode
 import org.junit.jupiter.api.DynamicTest

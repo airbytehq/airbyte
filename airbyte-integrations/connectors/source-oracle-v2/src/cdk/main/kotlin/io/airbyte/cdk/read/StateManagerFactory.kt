@@ -21,15 +21,15 @@ import io.airbyte.cdk.consumers.MultipleTablesFound
 import io.airbyte.cdk.consumers.ResetStream
 import io.airbyte.cdk.consumers.TableHasNoDataColumns
 import io.airbyte.cdk.consumers.TableNotFound
-import io.airbyte.cdk.discover.AirbyteType
-import io.airbyte.cdk.discover.ArrayAirbyteType
-import io.airbyte.cdk.discover.CommonMetaField
-import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.discover.FieldOrMetaField
-import io.airbyte.cdk.discover.LeafAirbyteType
-import io.airbyte.cdk.discover.MetaField
-import io.airbyte.cdk.discover.MetadataQuerier
-import io.airbyte.cdk.discover.TableName
+import io.airbyte.cdk.data.AirbyteType
+import io.airbyte.cdk.data.ArrayAirbyteType
+import io.airbyte.cdk.source.CommonMetaField
+import io.airbyte.cdk.source.Field
+import io.airbyte.cdk.source.FieldOrMetaField
+import io.airbyte.cdk.data.LeafAirbyteType
+import io.airbyte.cdk.source.MetaField
+import io.airbyte.cdk.source.MetadataQuerier
+import io.airbyte.cdk.source.TableName
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -225,7 +225,6 @@ class StateManagerFactory(
             else -> SyncMode.FULL_REFRESH
         }
         return StreamKey(
-            configuredStream,
             table,
             streamFields,
             primaryKeyCandidates,

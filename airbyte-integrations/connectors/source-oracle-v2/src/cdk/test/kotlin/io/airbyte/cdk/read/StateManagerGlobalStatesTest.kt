@@ -11,7 +11,7 @@ import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.StreamStateValue
 import io.airbyte.cdk.consumers.BufferingCatalogValidationFailureHandler
 import io.airbyte.cdk.consumers.CatalogValidationFailure
-import io.airbyte.cdk.discover.TableName
+import io.airbyte.cdk.source.TableName
 import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage

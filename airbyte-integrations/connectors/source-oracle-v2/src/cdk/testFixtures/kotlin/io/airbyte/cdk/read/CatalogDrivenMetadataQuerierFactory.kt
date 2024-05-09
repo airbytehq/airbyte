@@ -6,11 +6,11 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.discover.MetadataQuerier
+import io.airbyte.cdk.source.Field
+import io.airbyte.cdk.source.MetadataQuerier
 import io.airbyte.cdk.jdbc.SystemType
-import io.airbyte.cdk.discover.TableName
-import io.airbyte.cdk.discover.PokemonFieldType
+import io.airbyte.cdk.source.TableName
+import io.airbyte.cdk.source.PokemonFieldType
 import io.airbyte.cdk.jdbc.JdbcMetadataQuerier
 import io.airbyte.cdk.operation.CONNECTOR_OPERATION
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog

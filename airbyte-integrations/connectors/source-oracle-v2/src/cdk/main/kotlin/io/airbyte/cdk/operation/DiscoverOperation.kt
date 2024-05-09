@@ -6,11 +6,11 @@ package io.airbyte.cdk.operation
 
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.consumers.OutputConsumer
-import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.discover.MetadataQuerier
-import io.airbyte.cdk.discover.TableName
+import io.airbyte.cdk.source.Field
+import io.airbyte.cdk.source.MetadataQuerier
+import io.airbyte.cdk.source.TableName
 import io.airbyte.protocol.models.Field as AirbyteField
-import io.airbyte.cdk.discover.AirbyteStreamDecorator
+import io.airbyte.cdk.source.AirbyteStreamDecorator
 import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.CatalogHelpers

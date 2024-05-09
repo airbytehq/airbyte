@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.read
+package io.airbyte.cdk.data
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -20,31 +20,27 @@ import java.time.OffsetTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
+/** Encodes a field value of type [T] as a [JsonNode] for an Airbyte record or state message. */
 fun interface JsonEncoder<T> {
     fun encode(decoded: T): JsonNode
 }
 
+/**
+ * Decodes a field value of type [T] from a [JsonNode] in an Airbyte state message.
+ *
+ * Throws an [IllegalArgumentException] when the decoding fails.
+ * Implementations of [JsonDecoder] should be strict, failure is unexpected.
+ */
 fun interface JsonDecoder<T> {
     fun decode(encoded: JsonNode): T
 }
 
+/** Combines a [JsonEncoder] and a [JsonDecoder]. */
 interface JsonCodec<T> : JsonEncoder<T>, JsonDecoder<T> {
     companion object {
         internal val mapper: ObjectMapper = MoreMappers.initMapper()
         internal val nodeFactory: JsonNodeFactory = mapper.nodeFactory
     }
-}
-
-data object NullCodec : JsonCodec<Any?> {
-
-    override fun encode(decoded: Any?): JsonNode = JsonCodec.nodeFactory.nullNode()
-
-    override fun decode(encoded: JsonNode): Any? = null
-}
-
-data object AnyEncoder : JsonEncoder<Any> {
-
-    override fun encode(decoded: Any): JsonNode = JsonCodec.nodeFactory.textNode(decoded.toString())
 }
 
 data object BooleanCodec : JsonCodec<Boolean> {
@@ -175,20 +171,20 @@ data object FloatCodec : JsonCodec<Float> {
     override fun decode(encoded: JsonNode): Float = DoubleCodec.decode(encoded).toFloat()
 }
 
-data object JsonBytesCodec : JsonCodec<ByteArray> {
+data object JsonBytesCodec : JsonCodec<ByteBuffer> {
 
-    override fun encode(decoded: ByteArray): JsonNode =
+    override fun encode(decoded: ByteBuffer): JsonNode =
         try {
-            JsonCodec.mapper.readTree(decoded)
+            JsonCodec.mapper.readTree(decoded.array())
         } catch (_: Exception) {
-            JsonCodec.nodeFactory.textNode(String(decoded))
+            JsonCodec.nodeFactory.textNode(String(decoded.array()))
         }
 
-    override fun decode(encoded: JsonNode): ByteArray {
+    override fun decode(encoded: JsonNode): ByteBuffer {
         if (!encoded.isObject || !encoded.isArray) {
             throw IllegalArgumentException("invalid object or array value $encoded")
         }
-        return JsonCodec.mapper.writeValueAsBytes(encoded)
+        return ByteBuffer.wrap(JsonCodec.mapper.writeValueAsBytes(encoded))
     }
 }
 
@@ -312,6 +308,18 @@ data object OffsetDateTimeCodec : JsonCodec<OffsetDateTime> {
 
     const val PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX"
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern(PATTERN)
+}
+
+data object NullCodec : JsonCodec<Any?> {
+
+    override fun encode(decoded: Any?): JsonNode = JsonCodec.nodeFactory.nullNode()
+
+    override fun decode(encoded: JsonNode): Any? = null
+}
+
+data object AnyEncoder : JsonEncoder<Any> {
+
+    override fun encode(decoded: Any): JsonNode = JsonCodec.nodeFactory.textNode(decoded.toString())
 }
 
 data class ArrayEncoder<T>(val elementEncoder: JsonEncoder<T>) : JsonEncoder<List<T>> {

@@ -4,10 +4,16 @@
 
 package io.airbyte.cdk.read
 
+/**
+ * Adaptive LIMIT value state, where the value grows or shrinks along the Fibonacci sequence.
+ *
+ * This is a bit more gentle than doubling and halving.
+ */
 data class LimitState(
     val predecessor: Long,
     val current: Long,
 ) {
+    /** Grow the LIMIT value. */
     fun up(): LimitState =
         if (predecessor > current) {
             LimitState(current, predecessor)
@@ -15,6 +21,7 @@ data class LimitState(
             LimitState(current, current + predecessor)
         }
 
+    /** Shrink the LIMIT value, if possible. */
     fun down(): LimitState =
         if (predecessor < current) {
             LimitState(current, predecessor)

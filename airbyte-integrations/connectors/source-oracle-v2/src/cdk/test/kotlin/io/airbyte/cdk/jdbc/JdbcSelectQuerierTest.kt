@@ -6,11 +6,11 @@ package io.airbyte.cdk.jdbc
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
-import io.airbyte.cdk.discover.IntFieldType
-import io.airbyte.cdk.discover.StringFieldType
-import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.read.stream.SelectQuerier
-import io.airbyte.cdk.read.stream.SelectQuery
+import io.airbyte.cdk.source.IntFieldType
+import io.airbyte.cdk.source.StringFieldType
+import io.airbyte.cdk.source.Field
+import io.airbyte.cdk.source.select.SelectQuerier
+import io.airbyte.cdk.source.select.SelectQuery
 import io.airbyte.cdk.test.source.TestSourceConfiguration
 import io.airbyte.cdk.test.source.TestSourceConfigurationFactory
 import io.airbyte.cdk.test.source.TestSourceConfigurationJsonObject

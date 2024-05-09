@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.jdbc
 
-import io.airbyte.cdk.discover.MetadataQuerier
-import io.airbyte.cdk.discover.TableName
+import io.airbyte.cdk.source.MetadataQuerier
+import io.airbyte.cdk.source.TableName
 import io.airbyte.cdk.test.source.TestSourceConfiguration
 import io.airbyte.cdk.test.source.TestSourceConfigurationFactory
 import io.airbyte.cdk.test.source.TestSourceConfigurationJsonObject

@@ -2,11 +2,11 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.read.stream
+package io.airbyte.cdk.source.select
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.discover.LosslessFieldType
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.source.LosslessFieldType
+import io.airbyte.cdk.source.Field
 
 /**
  * Input for [SelectQuerier] which contains a parameterize SQL query along with its parameter

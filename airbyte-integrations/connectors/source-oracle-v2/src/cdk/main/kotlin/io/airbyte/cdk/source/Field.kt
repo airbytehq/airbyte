@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.discover
+package io.airbyte.cdk.source
 
 /** Internal equivalent of a [io.airbyte.protocol.models.Field]. */
 sealed interface FieldOrMetaField {
