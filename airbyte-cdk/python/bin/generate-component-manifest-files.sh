@@ -15,9 +15,9 @@ function main() {
     filename_wo_ext=$(basename "$f" | cut -d . -f 1)
     echo "from .$filename_wo_ext import *" >> "$ROOT_DIR/$OUTPUT_DIR"/__init__.py
 
-    docker run --user "$(id -u):$(id -g)" -v "$ROOT_DIR":/airbyte airbyte/code-generator:dev \
-      --input "/airbyte/$YAML_DIR/$filename_wo_ext.yaml" \
-      --output "/airbyte/$OUTPUT_DIR/$filename_wo_ext.py" \
+    datamodel-codegen \
+      --input "$ROOT_DIR/$YAML_DIR/$filename_wo_ext.yaml" \
+      --output "$ROOT_DIR/$OUTPUT_DIR/$filename_wo_ext.py" \
       --disable-timestamp \
       --enum-field-as-literal one \
       --set-default-enum-member

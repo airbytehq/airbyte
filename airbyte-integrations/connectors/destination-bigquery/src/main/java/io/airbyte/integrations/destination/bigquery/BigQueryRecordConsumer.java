@@ -11,7 +11,6 @@ import io.airbyte.cdk.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
@@ -41,7 +40,6 @@ class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer imple
   private final String defaultDatasetId;
   private AirbyteMessage lastStateMessage = null;
 
-  private final TypeAndDedupeOperationValve streamTDValve = new TypeAndDedupeOperationValve();
   private final ParsedCatalog catalog;
   private final TyperDeduper typerDeduper;
 
@@ -68,11 +66,11 @@ class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer imple
     // Set up our raw tables
     uploaderMap.forEach((streamId, uploader) -> {
       final StreamConfig stream = catalog.getStream(streamId);
-      if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+      if (stream.getDestinationSyncMode() == DestinationSyncMode.OVERWRITE) {
         // For streams in overwrite mode, truncate the raw table.
         // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in
         // 1s1t mode.
-        final TableId rawTableId = TableId.of(stream.id().rawNamespace(), stream.id().rawName());
+        final TableId rawTableId = TableId.of(stream.getId().getRawNamespace(), stream.getId().getRawName());
         bigquery.delete(rawTableId);
         BigQueryUtils.createPartitionedTableIfNotExists(bigquery, rawTableId, DefaultBigQueryRecordFormatter.SCHEMA_V2);
       } else {
@@ -125,7 +123,7 @@ class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer imple
     uploaderMap.forEach((streamId, uploader) -> {
       try {
         uploader.close(hasFailed, outputRecordCollector, lastStateMessage);
-        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName(), true);
+        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
       } catch (final Exception e) {
         exceptionsThrown.add(e);
         LOGGER.error("Exception while closing uploader {}", uploader, e);

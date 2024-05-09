@@ -23,6 +23,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
         ("test_token_not_found", "{{ response.invalid_key }}", None, None, None),
         ("test_static_token_with_stop_condition_false", "token", InterpolatedBoolean("{{False}}", parameters={}), "token", None),
         ("test_static_token_with_stop_condition_true", "token", InterpolatedBoolean("{{True}}", parameters={}), None, None),
+        ("test_static_token_with_string_stop_condition", "token", "{{True}}", None, None),
         (
             "test_token_from_header",
             "{{ headers.next }}",
@@ -79,13 +80,6 @@ def test_last_record_points_to_the_last_item_in_last_records_array():
 
 
 def test_last_record_is_node_if_no_records():
-    strategy = CursorPaginationStrategy(
-        page_size=1,
-        cursor_value="{{ last_record.id }}",
-        config={},
-        parameters={},
-    )
-
-    response = requests.Response()
+    last_records = []
     next_page_token = strategy.next_page_token(response, 0, None)
     assert next_page_token is None

@@ -7,7 +7,6 @@ import logging
 from copy import deepcopy
 from json import JSONDecodeError
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional, Union
-from urllib.parse import parse_qs, urlparse
 
 from airbyte_cdk.connector_builder.models import (
     AuxiliaryRequest,
@@ -29,6 +28,7 @@ from airbyte_protocol.models.airbyte_protocol import (
     AirbyteControlMessage,
     AirbyteLogMessage,
     AirbyteMessage,
+    AirbyteStateMessage,
     AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
     OrchestratorType,
@@ -76,6 +76,7 @@ class MessageGrouper:
         source: DeclarativeSource,
         config: Mapping[str, Any],
         configured_catalog: ConfiguredAirbyteCatalog,
+        state: List[AirbyteStateMessage],
         record_limit: Optional[int] = None,
     ) -> StreamRead:
         if record_limit is not None and not (1 <= record_limit <= self._max_record_limit):
@@ -97,7 +98,7 @@ class MessageGrouper:
         latest_config_update: AirbyteControlMessage = None
         auxiliary_requests = []
         for message_group in self._get_message_groups(
-            self._read_stream(source, config, configured_catalog),
+            self._read_stream(source, config, configured_catalog, state),
             schema_inferrer,
             datetime_format_inferrer,
             record_limit,
@@ -119,7 +120,8 @@ class MessageGrouper:
                 raise ValueError(f"Unknown message group type: {type(message_group)}")
 
         try:
-            configured_stream = configured_catalog.streams[0]  # The connector builder currently only supports reading from a single stream at a time
+            # The connector builder currently only supports reading from a single stream at a time
+            configured_stream = configured_catalog.streams[0]
             schema = schema_inferrer.get_stream_schema(configured_stream.stream.name)
         except SchemaValidationException as exception:
             for validation_error in exception.validation_errors:
@@ -165,6 +167,7 @@ class MessageGrouper:
         current_slice_pages: List[StreamReadPages] = []
         current_page_request: Optional[HttpRequest] = None
         current_page_response: Optional[HttpResponse] = None
+        latest_state_message: Optional[Dict[str, Any]] = None
 
         while records_count < limit and (message := next(messages, None)):
             json_object = self._parse_json(message.log) if message.type == MessageType.LOG else None
@@ -181,7 +184,11 @@ class MessageGrouper:
                 and message.type == MessageType.LOG
                 and message.log.message.startswith(SliceLogger.SLICE_LOG_PREFIX)
             ):
-                yield StreamReadSlices(pages=current_slice_pages, slice_descriptor=current_slice_descriptor)
+                yield StreamReadSlices(
+                    pages=current_slice_pages,
+                    slice_descriptor=current_slice_descriptor,
+                    state=[latest_state_message] if latest_state_message else [],
+                )
                 current_slice_descriptor = self._parse_slice_description(message.log.message)
                 current_slice_pages = []
                 at_least_one_page_in_group = False
@@ -223,10 +230,16 @@ class MessageGrouper:
                 datetime_format_inferrer.accumulate(message.record)
             elif message.type == MessageType.CONTROL and message.control.type == OrchestratorType.CONNECTOR_CONFIG:
                 yield message.control
+            elif message.type == MessageType.STATE:
+                latest_state_message = message.state
         else:
             if current_page_request or current_page_response or current_page_records:
                 self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records)
-                yield StreamReadSlices(pages=current_slice_pages, slice_descriptor=current_slice_descriptor)
+                yield StreamReadSlices(
+                    pages=current_slice_pages,
+                    slice_descriptor=current_slice_descriptor,
+                    state=[latest_state_message] if latest_state_message else [],
+                )
 
     @staticmethod
     def _need_to_close_page(at_least_one_page_in_group: bool, message: AirbyteMessage, json_message: Optional[Dict[str, Any]]) -> bool:
@@ -277,12 +290,16 @@ class MessageGrouper:
         current_page_records.clear()
 
     def _read_stream(
-        self, source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog
+        self,
+        source: DeclarativeSource,
+        config: Mapping[str, Any],
+        configured_catalog: ConfiguredAirbyteCatalog,
+        state: List[AirbyteStateMessage],
     ) -> Iterator[AirbyteMessage]:
         # the generator can raise an exception
         # iterate over the generated messages. if next raise an exception, catch it and yield it as an AirbyteLogMessage
         try:
-            yield from AirbyteEntrypoint(source).read(source.spec(self.logger), config, configured_catalog, {})
+            yield from AirbyteEntrypoint(source).read(source.spec(self.logger), config, configured_catalog, state)
         except Exception as e:
             error_message = f"{e.args[0] if len(e.args) > 0 else str(e)}"
             yield AirbyteTracedException.from_exception(e, message=error_message).as_airbyte_message()
@@ -300,15 +317,12 @@ class MessageGrouper:
 
     @staticmethod
     def _create_request_from_log_message(json_http_message: Dict[str, Any]) -> HttpRequest:
-        url = urlparse(json_http_message.get("url", {}).get("full", ""))
-        full_path = f"{url.scheme}://{url.hostname}{url.path}" if url else ""
+        url = json_http_message.get("url", {}).get("full", "")
         request = json_http_message.get("http", {}).get("request", {})
-        parameters = parse_qs(url.query) or None
         return HttpRequest(
-            url=full_path,
+            url=url,
             http_method=request.get("method", ""),
             headers=request.get("headers"),
-            parameters=parameters,
             body=request.get("body", {}).get("content", ""),
         )
 

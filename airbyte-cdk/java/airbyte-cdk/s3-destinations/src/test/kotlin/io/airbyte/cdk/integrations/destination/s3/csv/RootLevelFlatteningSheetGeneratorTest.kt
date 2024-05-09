@@ -35,7 +35,7 @@ class RootLevelFlatteningSheetGeneratorTest {
                 "b",
                 "c",
             ),
-            sheetGenerator.headerRow,
+            sheetGenerator.getHeaderRow(),
         )
     }
 

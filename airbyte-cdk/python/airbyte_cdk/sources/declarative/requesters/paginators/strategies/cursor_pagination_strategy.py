@@ -55,7 +55,6 @@ class CursorPaginationStrategy(PaginationStrategy):
         # is not indexable or useful for parsing the cursor, so we replace it with the link dictionary from response.links
         headers: Dict[str, Any] = dict(response.headers)
         headers["link"] = response.links
-
         if self._stop_condition:
             should_stop = self._stop_condition.eval(
                 self.config,

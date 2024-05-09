@@ -40,7 +40,7 @@ class AvroSerializedBufferTest() {
     )
     internal fun testSnappyAvroWriter() {
         val config =
-            S3AvroFormatConfig(
+            UploadAvroFormatConfig(
                 Jsons.jsonNode(
                     mapOf(
                         "compression_codec" to mapOf("codec" to "snappy"),
@@ -62,7 +62,7 @@ class AvroSerializedBufferTest() {
     @Throws(Exception::class)
     internal fun testGzipAvroFileWriter() {
         val config =
-            S3AvroFormatConfig(
+            UploadAvroFormatConfig(
                 Jsons.jsonNode(
                     mapOf(
                         "compression_codec" to
@@ -89,7 +89,7 @@ class AvroSerializedBufferTest() {
     @Throws(Exception::class)
     internal fun testUncompressedAvroWriter() {
         val config =
-            S3AvroFormatConfig(
+            UploadAvroFormatConfig(
                 Jsons.jsonNode(
                     mapOf(
                         "compression_codec" to
@@ -164,7 +164,7 @@ class AvroSerializedBufferTest() {
             buffer: BufferStorage,
             minExpectedByte: Long,
             maxExpectedByte: Long,
-            config: S3AvroFormatConfig,
+            config: UploadAvroFormatConfig,
             expectedData: String
         ) {
             val outputFile: File = buffer.file
@@ -184,7 +184,7 @@ class AvroSerializedBufferTest() {
                         writer.byteCount in minExpectedByte..maxExpectedByte,
                         "Expected size between $minExpectedByte and $maxExpectedByte, but actual size was ${writer.byteCount}",
                     )
-                    val `in`: InputStream = writer.inputStream
+                    val `in`: InputStream = writer.inputStream!!
                     DataFileReader(
                             SeekableByteArrayInput(`in`.readAllBytes()),
                             GenericDatumReader<GenericData.Record>(),

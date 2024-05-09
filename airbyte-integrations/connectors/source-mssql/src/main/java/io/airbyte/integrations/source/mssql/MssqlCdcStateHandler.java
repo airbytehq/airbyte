@@ -41,11 +41,10 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
   public AirbyteMessage saveState(final Map<String, String> offset, final SchemaHistory<String> dbHistory) {
     final Map<String, Object> state = new HashMap<>();
     state.put(MSSQL_CDC_OFFSET, offset);
-    state.put(MSSQL_DB_HISTORY, dbHistory.schema());
+    state.put(MSSQL_DB_HISTORY, dbHistory.getSchema());
     state.put(IS_COMPRESSED, dbHistory.isCompressed());
 
     final JsonNode asJson = Jsons.jsonNode(state);
-
     LOGGER.info("debezium state offset: {}", Jsons.jsonNode(offset));
 
     final CdcState cdcState = new CdcState().withState(asJson);

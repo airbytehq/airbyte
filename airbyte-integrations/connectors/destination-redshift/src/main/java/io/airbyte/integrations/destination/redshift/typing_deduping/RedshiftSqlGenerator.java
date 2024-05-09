@@ -98,17 +98,17 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
    */
 
   @Override
-  protected Field<?> castedField(final Field<?> field, final AirbyteType type, final String alias, final boolean useExpensiveSaferCasting) {
+  protected Field<?> castedField(final Field<?> field, final AirbyteType type, final boolean useExpensiveSaferCasting) {
     if (type instanceof final AirbyteProtocolType airbyteProtocolType) {
       switch (airbyteProtocolType) {
         case STRING -> {
           return field(CASE_STATEMENT_SQL_TEMPLATE,
               jsonTypeOf(field).ne("string").and(field.isNotNull()),
               jsonSerialize(field),
-              castedField(field, airbyteProtocolType, useExpensiveSaferCasting)).as(quotedName(alias));
+              castedField(field, airbyteProtocolType, useExpensiveSaferCasting));
         }
         default -> {
-          return castedField(field, airbyteProtocolType, useExpensiveSaferCasting).as(quotedName(alias));
+          return castedField(field, airbyteProtocolType, useExpensiveSaferCasting);
         }
       }
 
@@ -117,12 +117,12 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     return switch (type.getTypeName()) {
       case Struct.TYPE, UnsupportedOneOf.TYPE -> field(CASE_STATEMENT_NO_ELSE_SQL_TEMPLATE,
           jsonTypeOf(field).eq("object"),
-          cast(field, getStructType())).as(quotedName(alias));
+          cast(field, getStructType()));
       case Array.TYPE -> field(CASE_STATEMENT_NO_ELSE_SQL_TEMPLATE,
           jsonTypeOf(field).eq("array"),
-          cast(field, getArrayType())).as(quotedName(alias));
+          cast(field, getArrayType()));
       // No nested Unions supported so this will definitely not result in infinite recursion.
-      case Union.TYPE -> castedField(field, ((Union) type).chooseType(), alias, useExpensiveSaferCasting);
+      case Union.TYPE -> castedField(field, ((Union) type).chooseType(), useExpensiveSaferCasting);
       default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
     };
   }
@@ -133,10 +133,9 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
         .entrySet()
         .stream()
         .map(column -> castedField(
-            field(quotedName(COLUMN_NAME_DATA, column.getKey().originalName())),
+            field(quotedName(COLUMN_NAME_DATA, column.getKey().getOriginalName())),
             column.getValue(),
-            column.getKey().name(),
-            useExpensiveSaferCasting))
+            useExpensiveSaferCasting).as(column.getKey().getName()))
         .collect(Collectors.toList());
   }
 
@@ -170,16 +169,16 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   }
 
   Field<?> toCastingErrorCaseStmt(final ColumnId column, final AirbyteType type) {
-    final Field<?> field = field(quotedName(COLUMN_NAME_DATA, column.originalName()));
+    final Field<?> field = field(quotedName(COLUMN_NAME_DATA, column.getOriginalName()));
     // Just checks if data is not null but casted data is null. This also accounts for conditional
     // casting result of array and struct.
     // TODO: Timestamp format issues can result in null values when cast, add regex check if destination
     // supports regex functions.
     return field(CASE_STATEMENT_SQL_TEMPLATE,
-        field.isNotNull().and(castedField(field, type, column.name(), true).isNull()),
+        field.isNotNull().and(castedField(field, type, true).as(column.getName()).isNull()),
         function("ARRAY", getSuperType(),
             function("JSON_PARSE", getSuperType(), val(
-                "{\"field\": \"" + column.name() + "\", "
+                "{\"field\": \"" + column.getName() + "\", "
                     + "\"change\": \"" + Change.NULLED.value() + "\", "
                     + "\"reason\": \"" + Reason.DESTINATION_TYPECAST_ERROR + "\"}"))),
         field("ARRAY()"));
@@ -219,12 +218,12 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     // literally identical to postgres's getRowNumber implementation, changes here probably should
     // be reflected there
     final List<Field<?>> primaryKeyFields =
-        primaryKeys != null ? primaryKeys.stream().map(columnId -> field(quotedName(columnId.name()))).collect(Collectors.toList())
+        primaryKeys != null ? primaryKeys.stream().map(columnId -> field(quotedName(columnId.getName()))).collect(Collectors.toList())
             : new ArrayList<>();
     final List<Field<?>> orderedFields = new ArrayList<>();
     // We can still use Jooq's field to get the quoted name with raw sql templating.
     // jooq's .desc returns SortField<?> instead of Field<?> and NULLS LAST doesn't work with it
-    cursor.ifPresent(columnId -> orderedFields.add(field("{0} desc NULLS LAST", field(quotedName(columnId.name())))));
+    cursor.ifPresent(columnId -> orderedFields.add(field("{0} desc NULLS LAST", field(quotedName(columnId.getName())))));
     orderedFields.add(field("{0} desc", quotedName(COLUMN_NAME_AB_EXTRACTED_AT)));
     return rowNumber()
         .over()
@@ -235,7 +234,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   @Override
   protected Condition cdcDeletedAtNotNullCondition() {
     return field(name(COLUMN_NAME_AB_LOADED_AT)).isNotNull()
-        .and(function("JSON_TYPEOF", SQLDataType.VARCHAR, field(quotedName(COLUMN_NAME_DATA, cdcDeletedAtColumn.name())))
+        .and(function("JSON_TYPEOF", SQLDataType.VARCHAR, field(quotedName(COLUMN_NAME_DATA, getCdcDeletedAtColumn().getName())))
             .ne("null"));
   }
 

@@ -3,60 +3,78 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the invoice message.",
       "type": ["null", "integer"]
     },
     "parent_id": {
+      "description": "The ID of the parent message if it's a reply or related message.",
       "type": "integer"
     },
     "sent_by": {
+      "description": "The sender of the message.",
       "type": ["null", "string"]
     },
     "sent_by_email": {
+      "description": "Email address of the sender.",
       "type": ["null", "string"]
     },
     "sent_from": {
+      "description": "The display name of the sender.",
       "type": ["null", "string"]
     },
     "sent_from_email": {
+      "description": "Email address used to send the message.",
       "type": ["null", "string"]
     },
     "include_link_to_client_invoice": {
+      "description": "Indicates if a link to the client invoice is included.",
       "type": ["null", "boolean"]
     },
     "send_me_a_copy": {
+      "description": "Option to send a copy of the message to the sender.",
       "type": ["null", "boolean"]
     },
     "thank_you": {
+      "description": "Indicates if the message is a thank you message.",
       "type": ["null", "boolean"]
     },
     "reminder": {
+      "description": "Indicates if the message is a reminder.",
       "type": ["null", "boolean"]
     },
     "send_reminder_on": {
+      "description": "The date to send a reminder for the message.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when the message was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the message was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "attach_pdf": {
+      "description": "Indicates if a PDF file is attached to the message.",
       "type": ["null", "boolean"]
     },
     "event_type": {
+      "description": "The type of event associated with the message.",
       "type": ["null", "string"]
     },
     "recipients": {
+      "description": "List of recipients for the message.",
       "type": ["null", "array"],
       "items": {
         "properties": {
           "email": {
+            "description": "Email address of the recipient.",
             "type": "string"
           },
           "name": {
+            "description": "Name of the recipient.",
             "type": "string"
           }
         },
@@ -64,9 +82,11 @@
       }
     },
     "subject": {
+      "description": "The subject of the invoice message.",
       "type": ["null", "string"]
     },
     "body": {
+      "description": "The content of the invoice message.",
       "type": ["null", "string"]
     }
   }

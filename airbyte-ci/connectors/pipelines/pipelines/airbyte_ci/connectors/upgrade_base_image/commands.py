@@ -25,6 +25,8 @@ async def upgrade_base_image(ctx: click.Context, set_if_not_exists: bool, docker
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],
             git_revision=ctx.obj["git_revision"],
+            diffed_branch=ctx.obj["diffed_branch"],
+            git_repo_url=ctx.obj["git_repo_url"],
             ci_report_bucket=ctx.obj["ci_report_bucket_name"],
             report_output_prefix=ctx.obj["report_output_prefix"],
             use_remote_secrets=ctx.obj["use_remote_secrets"],
