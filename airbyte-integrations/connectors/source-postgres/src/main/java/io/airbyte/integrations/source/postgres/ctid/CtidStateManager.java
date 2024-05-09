@@ -65,6 +65,10 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
     this.fileNodeHandler = fileNodeHandler;
   }
 
+  public FileNodeHandler getFileNodeHandler() {
+    return fileNodeHandler;
+  }
+
   @Override
   public AirbyteStateMessage generateStateMessageAtCheckpoint(final ConfiguredAirbyteStream stream) {
     final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(),

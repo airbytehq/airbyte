@@ -820,11 +820,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   @Override
   public boolean supportResumableFullRefresh(final JdbcDatabase database, final ConfiguredAirbyteStream airbyteStream) {
-    if (!isCdc(database.getSourceConfig())) {
       // finalListOfStreamsToBeSyncedViaCtid will be initialized as part of state manager initialization for non CDC only.
-      if (!finalListOfStreamsToBeSyncedViaCtid.contains(airbyteStream)) {
+      if (!ctidStateManager.getFileNodeHandler().hasFileNode(new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace()))) {
+        LOGGER.info("stream " + airbyteStream + " will not sync in resumeable full refresh mode.");
         return false;
-      }
+
     }
 
     final FileNodeHandler fileNodeHandler =
@@ -836,9 +836,12 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     if (!fileNodeHandler.getFailedToQuery().isEmpty()) {
       if (fileNodeHandler.getFailedToQuery()
           .contains(new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace()))) {
+        LOGGER.info("stream " + airbyteStream + " will not sync in resumeable full refresh mode.");
         return false;
       }
     }
+
+    LOGGER.info("stream " + airbyteStream + " will sync in resumeable full refresh mode.");
 
     return true;
   }
