@@ -17,20 +17,23 @@ import io.airbyte.cdk.integrations.destination.async.deser.AirbyteMessageDeseria
 import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.util.addDefaultNamespaceToStreams
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksDestinationHandler
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksSqlGenerator
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksStorageOperations
 import io.airbyte.integrations.destination.databricks.model.DatabricksConnectorConfig
 import io.airbyte.integrations.destination.databricks.staging.DatabricksFlushFunction
+import io.airbyte.integrations.destination.databricks.staging.SerializableBufferFactory
 import io.airbyte.integrations.destination.databricks.sync.DatabricksSyncOperations
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.function.Consumer
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class DatabricksDestination : BaseConnector(), Destination {
     override fun getConsumer(
@@ -44,11 +47,74 @@ class DatabricksDestination : BaseConnector(), Destination {
     }
 
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
-        // TODO: Add checks for
+        // TODO: Add proper checks for
         //   Check schema permissions, or if raw_override and default already exists
         //   Check catalog permissions to USE catalog
         //   Check CREATE volume, COPY INTO, File upload permissions
         //   Check Table creation, Table drop permissions
+        val connectorConfig = DatabricksConnectorConfig.deserialize(config)
+        val sqlGenerator =
+            DatabricksSqlGenerator(DatabricksNamingTransformer(), connectorConfig.database)
+        val datasource = ConnectorClientsFactory.createDataSource(connectorConfig)
+        val jdbcDatabase = DefaultJdbcDatabase(datasource)
+        val destinationHandler =
+            DatabricksDestinationHandler(connectorConfig.database, jdbcDatabase)
+        val workspaceClient =
+            ConnectorClientsFactory.createWorkspaceClient(
+                connectorConfig.hostname,
+                connectorConfig.authentication
+            )
+        val storageOperations =
+            DatabricksStorageOperations(
+                sqlGenerator,
+                destinationHandler,
+                workspaceClient,
+                connectorConfig.database,
+                connectorConfig.purgeStagingData
+            )
+        val dummyNamespace = connectorConfig.rawSchemaOverride
+        val dummyName = "airbyte_check_test_table"
+        val streamId =
+            StreamId(
+                dummyNamespace,
+                dummyName,
+                dummyNamespace,
+                dummyName,
+                dummyNamespace,
+                dummyName
+            )
+
+        try {
+            storageOperations.prepareStage(streamId, DestinationSyncMode.APPEND)
+        } catch (e: Exception) {
+            log.error(e) { "Failed to prepare stage as part of CHECK" }
+            return AirbyteConnectionStatus()
+                .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                .withMessage("Failed to prepare stage")
+        }
+
+        try {
+            val writeBuffer = SerializableBufferFactory.createBuffer(FileUploadFormat.CSV)
+            writeBuffer.use {
+                it.accept("{\"airbyte_check\":\"passed\"}", "{}", System.currentTimeMillis())
+                it.flush()
+            }
+            storageOperations.writeToStage(streamId, writeBuffer)
+        } catch (e: Exception) {
+            log.error(e) { "Failed to write to stage as part of CHECK" }
+            return AirbyteConnectionStatus()
+                .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                .withMessage("Failed to write to stage")
+        }
+
+        try {
+            storageOperations.cleanupStage(streamId)
+        } catch (e: Exception) {
+            log.error(e) { "Failed to cleanup stage" }
+            return AirbyteConnectionStatus()
+                .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                .withMessage("Failed to cleanup stage")
+        }
 
         return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
     }
@@ -124,7 +190,7 @@ class DatabricksDestination : BaseConnector(), Destination {
 
 fun main(args: Array<String>) {
     val destination = DatabricksDestination()
-    logger.info { "Starting Destination : ${destination.javaClass}" }
+    log.info { "Starting Destination : ${destination.javaClass}" }
     IntegrationRunner(destination).run(args)
-    logger.info { "Completed Destination : ${destination.javaClass}" }
+    log.info { "Completed Destination : ${destination.javaClass}" }
 }

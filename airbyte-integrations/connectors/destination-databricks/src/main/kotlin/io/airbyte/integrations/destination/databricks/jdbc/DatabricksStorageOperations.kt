@@ -108,9 +108,9 @@ class DatabricksStorageOperations(
         workspaceClient.files().createDirectory(stagingDirectory(streamId, database))
     }
 
-    override fun prepareStage(streamConfig: StreamConfig) {
-        prepareStagingTable(streamConfig.id, streamConfig.destinationSyncMode)
-        prepareStagingVolume(streamConfig.id)
+    override fun prepareStage(streamId: StreamId, destinationSyncMode: DestinationSyncMode) {
+        prepareStagingTable(streamId, destinationSyncMode)
+        prepareStagingVolume(streamId)
     }
 
     override fun cleanupStage(streamId: StreamId) {

@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.sync
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
+import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.time.Instant
 import java.util.Optional
 
@@ -18,7 +19,7 @@ interface StorageOperations {
     /**
      * Prepare staging area which cloud be creating any object storage, temp tables or file storage
      */
-    fun prepareStage(streamConfig: StreamConfig)
+    fun prepareStage(streamId: StreamId, destinationSyncMode: DestinationSyncMode)
 
     /** Delete previously staged data, using deterministic information from streamId. */
     fun cleanupStage(streamId: StreamId)

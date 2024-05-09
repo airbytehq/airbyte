@@ -34,7 +34,8 @@ class DatabricksStreamOperations(
         destinationInitialStatus.initialRawTableStatus
     init {
         val stream = destinationInitialStatus.streamConfig
-        storageOperations.prepareStage(stream)
+        storageOperations.prepareStage(stream.id, stream.destinationSyncMode)
+        storageOperations.createFinalSchema(stream.id)
         // Prepare final tables based on sync mode.
         finalTmpTableSuffix = prepareFinalTable(destinationInitialStatus)
     }
@@ -53,7 +54,6 @@ class DatabricksStreamOperations(
             log.info {
                 "Final table does not exist for stream ${initialStatus.streamConfig.id.finalName}, creating."
             }
-            storageOperations.createFinalSchema(stream.id)
             storageOperations.createFinalTable(stream, NO_SUFFIX, false)
             return NO_SUFFIX
         }
