@@ -22,7 +22,7 @@ This source is capable of syncing the following streams:
 ### Features
 
 | Feature           | Supported? \(Yes/No\) | Notes                             |
-|:------------------|:----------------------|:----------------------------------|
+| :---------------- | :-------------------- | :-------------------------------- |
 | Full Refresh Sync | Yes                   |                                   |
 | Incremental Sync  | No                    |                                   |
 | Multiple rings    | No                    | May be implemented in the future. |
@@ -52,5 +52,5 @@ The following fields are required fields for the connector to work:
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject    |
-|:--------|:-----------|:---------------------------------------------------------|:-----------|
+| :------ | :--------- | :------------------------------------------------------- | :--------- |
 | 0.1.0   | 2022-10-20 | [18224](https://github.com/airbytehq/airbyte/pull/18224) | New source |

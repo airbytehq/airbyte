@@ -7,6 +7,7 @@
 import datetime
 import os
 import time
+import traceback
 from abc import ABC, abstractmethod
 from functools import cached_property
 from pathlib import Path
@@ -17,7 +18,7 @@ import requests  # type: ignore
 import semver
 import yaml  # type: ignore
 from dagger import Container, Directory
-from pipelines import hacks
+from pipelines import hacks, main_logger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
@@ -416,12 +417,18 @@ class RegressionTests(Step):
         container = container.with_(hacks.never_fail_exec(self.regression_tests_command()))
         regression_tests_artifacts_dir = str(self.regression_tests_artifacts_dir)
         path_to_report = f"{regression_tests_artifacts_dir}/session_{self.run_id}/report.html"
-        await container.file(path_to_report).export(path_to_report)
 
         exit_code, stdout, stderr = await get_exec_result(container)
 
-        with open(path_to_report, "r") as fp:
-            regression_test_report = fp.read()
+        if "report.html" not in await container.directory(f"{regression_tests_artifacts_dir}/session_{self.run_id}").entries():
+            main_logger.exception(
+                "The report file was not generated, an unhandled error likely happened during regression test execution, please check the step stderr and stdout for more details"
+            )
+            regression_test_report = None
+        else:
+            await container.file(path_to_report).export(path_to_report)
+            with open(path_to_report, "r") as fp:
+                regression_test_report = fp.read()
 
         return StepResult(
             step=self,

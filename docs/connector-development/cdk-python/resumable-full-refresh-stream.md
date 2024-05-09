@@ -19,7 +19,7 @@ values used to checkpoint state in between resumable full refresh sync attempts 
 
 ## Criteria for Resumable Full Refresh
 
-:::warning 
+:::warning
 Resumable full refresh in the Python CDK does not currently support substreams. This work is currently in progress.
 :::
 
@@ -42,7 +42,7 @@ is retried.
 This class mixin adds property `state` with abstract setter and getter.
 The `state` attribute helps the CDK figure out the current state of sync at any moment.
 The setter typically deserializes state saved by CDK and initialize internal state of the stream.
-The getter should serialize internal state of the stream. 
+The getter should serialize internal state of the stream.
 
 ```python
 @property
@@ -88,5 +88,5 @@ in between sync attempts, but deleted at the beginning of new sync jobs.
 
 In summary, a resumable full refresh stream requires:
 
-* to be inherited from `StateMixin` and state methods implemented
-* implementing `Stream.read_records()` to get the Stream's current state, request a single page of records, and update the Stream's state with the next page to fetch or `{}`.
+- to be inherited from `StateMixin` and state methods implemented
+- implementing `Stream.read_records()` to get the Stream's current state, request a single page of records, and update the Stream's state with the next page to fetch or `{}`.
