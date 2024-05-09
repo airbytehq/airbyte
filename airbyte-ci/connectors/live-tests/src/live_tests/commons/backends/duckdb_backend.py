@@ -1,10 +1,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-
+from __future__ import annotations
 
 import logging
 import re
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable, Optional
+from typing import Optional
 
 import duckdb
 from airbyte_protocol.models import AirbyteMessage  # type: ignore

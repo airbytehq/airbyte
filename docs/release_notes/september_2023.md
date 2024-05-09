@@ -1,4 +1,5 @@
 # September 2023
+
 ## airbyte v0.50.24 to v0.50.31
 
 This page includes new features and improvements to the Airbyte Cloud and Airbyte Open Source platforms.
@@ -6,6 +7,7 @@ This page includes new features and improvements to the Airbyte Cloud and Airbyt
 ## ✨ Highlights
 
 This month, we brought 4 new destinations to Airbyte focused on AI. This enables users to seamlessly flow data from 100s of our sources into large language models. Those four destinations are:
+
 - [Qdrant](https://github.com/airbytehq/airbyte/pull/30332)
 - [Choroma](https://github.com/airbytehq/airbyte/pull/30023)
 - [Milvus](https://github.com/airbytehq/airbyte/pull/30023)
@@ -22,7 +24,8 @@ We've also worked on several connector enhancements and additions. To name a few
 - [**Google Ads**](https://github.com/airbytehq/airbyte/pull/28970) now uses the change status to implement an improved incremental sync for Ad Groups and Campaign Criterion streams
 
 Additionally, we added new streams for several connectors to bring in newly available API endpoints and adapt to user feedback, including:
-- [**Github**](https://github.com/airbytehq/airbyte/pull/30823): Issue Timeline and Contributor Activity 
+
+- [**Github**](https://github.com/airbytehq/airbyte/pull/30823): Issue Timeline and Contributor Activity
 - [**JIRA**](https://github.com/airbytehq/airbyte/pull/30755): Issue Types, Project Roles, and Issue Transitions
-- [**Outreach**](https://github.com/airbytehq/airbyte/pull/30639): Call Purposes and Call Dispositions 
+- [**Outreach**](https://github.com/airbytehq/airbyte/pull/30639): Call Purposes and Call Dispositions
 - [**Zendesk**](https://github.com/airbytehq/airbyte/pull/30138): Articles

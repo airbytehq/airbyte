@@ -6,8 +6,9 @@ import os
 import textwrap
 import time
 import webbrowser
+from collections.abc import AsyncGenerator, AsyncIterable, Callable, Generator, Iterable
 from pathlib import Path
-from typing import TYPE_CHECKING, AsyncGenerator, AsyncIterable, Callable, Dict, Generator, Iterable, List, Optional
+from typing import TYPE_CHECKING, Optional
 
 import dagger
 import pytest
@@ -56,53 +57,83 @@ def pytest_addoption(parser: Parser) -> None:
     )
     parser.addoption(
         "--control-version",
-        default="latest",
-        help="The control version used for regression testing. Defaults to latest",
+        help="The control version used for regression testing.",
     )
     parser.addoption(
         "--target-version",
         default="dev",
-        help="The target version used for regression testing. Defaults to latest",
+        help="The target version used for regression testing. Defaults to dev.",
     )
     parser.addoption("--config-path")
     parser.addoption("--catalog-path")
     parser.addoption("--state-path")
     parser.addoption("--connection-id")
     parser.addoption("--pr-url", help="The URL of the PR you are testing")
+    parser.addoption(
+        "--stream",
+        help="The stream to run the tests on. (Can be used multiple times)",
+        action="append",
+    )
+    # Required when running in CI
+    parser.addoption("--run-id", type=str)
+    parser.addoption(
+        "--should-read-with-state",
+        type=bool,
+        help="Whether to run the `read` command with state. \n"
+        "We recommend reading with state to properly test incremental sync. \n"
+        "But if the target version introduces a breaking change in the state, you might want to run without state. \n",
+    )
 
 
 def pytest_configure(config: Config) -> None:
     user_email = get_user_email()
-    prompt_for_confirmation(user_email)
-    track_usage(user_email, vars(config.option))
+    config.stash[stash_keys.RUN_IN_AIRBYTE_CI] = bool(os.getenv("RUN_IN_AIRBYTE_CI", False))
+    config.stash[stash_keys.IS_PRODUCTION_CI] = bool(os.getenv("CI", False))
 
+    if not config.stash[stash_keys.RUN_IN_AIRBYTE_CI]:
+        prompt_for_confirmation(user_email)
+
+    track_usage(
+        "production-ci"
+        if config.stash[stash_keys.IS_PRODUCTION_CI]
+        else "local-ci"
+        if config.stash[stash_keys.RUN_IN_AIRBYTE_CI]
+        else user_email,
+        vars(config.option),
+    )
     config.stash[stash_keys.AIRBYTE_API_KEY] = get_airbyte_api_key()
     config.stash[stash_keys.USER] = user_email
-    start_timestamp = int(time.time())
-    test_artifacts_directory = MAIN_OUTPUT_DIRECTORY / f"session_{start_timestamp}"
+    config.stash[stash_keys.SESSION_RUN_ID] = config.getoption("--run-id") or str(int(time.time()))
+    test_artifacts_directory = get_artifacts_directory(config)
     duckdb_path = test_artifacts_directory / "duckdb.db"
     config.stash[stash_keys.DUCKDB_PATH] = duckdb_path
     test_artifacts_directory.mkdir(parents=True, exist_ok=True)
     dagger_log_path = test_artifacts_directory / "dagger.log"
     config.stash[stash_keys.IS_PERMITTED_BOOL] = False
     report_path = test_artifacts_directory / "report.html"
-    config.stash[stash_keys.SESSION_START_TIMESTAMP] = start_timestamp
+
     config.stash[stash_keys.TEST_ARTIFACT_DIRECTORY] = test_artifacts_directory
     dagger_log_path.touch()
     config.stash[stash_keys.DAGGER_LOG_PATH] = dagger_log_path
     config.stash[stash_keys.PR_URL] = get_option_or_fail(config, "--pr-url")
-    config.stash[stash_keys.CONNECTION_ID] = get_option_or_fail(config, "--connection-id")
-
+    _connection_id = config.getoption("--connection-id")
+    config.stash[stash_keys.AUTO_SELECT_CONNECTION] = _connection_id == "auto"
     config.stash[stash_keys.CONNECTOR_IMAGE] = get_option_or_fail(config, "--connector-image")
-    config.stash[stash_keys.CONTROL_VERSION] = get_option_or_fail(config, "--control-version")
     config.stash[stash_keys.TARGET_VERSION] = get_option_or_fail(config, "--target-version")
-    if config.stash[stash_keys.CONTROL_VERSION] == config.stash[stash_keys.TARGET_VERSION]:
-        pytest.exit(f"Control and target versions are the same: {control_version}. Please provide different versions.")
     custom_source_config_path = config.getoption("--config-path")
     custom_configured_catalog_path = config.getoption("--catalog-path")
     custom_state_path = config.getoption("--state-path")
-    config.stash[stash_keys.SHOULD_READ_WITH_STATE] = prompt_for_read_with_or_without_state()
-    retrieval_reason = f"Running regression tests on connection {config.stash[stash_keys.CONNECTION_ID]} for connector {config.stash[stash_keys.CONNECTOR_IMAGE]} on the control ({config.stash[stash_keys.CONTROL_VERSION]}) and target versions ({config.stash[stash_keys.TARGET_VERSION]})."
+    config.stash[stash_keys.SELECTED_STREAMS] = set(config.getoption("--stream") or [])
+
+    if config.stash[stash_keys.RUN_IN_AIRBYTE_CI]:
+        config.stash[stash_keys.SHOULD_READ_WITH_STATE] = bool(get_option_or_fail(config, "--should-read-with-state"))
+    elif _should_read_with_state := config.getoption("--should-read-with-state"):
+        config.stash[stash_keys.SHOULD_READ_WITH_STATE] = _should_read_with_state
+    else:
+        config.stash[stash_keys.SHOULD_READ_WITH_STATE] = prompt_for_read_with_or_without_state()
+
+    retrieval_reason = f"Running regression tests on connection for connector {config.stash[stash_keys.CONNECTOR_IMAGE]} on target versions ({config.stash[stash_keys.TARGET_VERSION]})."
+
     try:
         config.stash[stash_keys.CONNECTION_OBJECTS] = get_connection_objects(
             {
@@ -115,18 +146,30 @@ def pytest_configure(config: Config) -> None:
                 ConnectionObject.SOURCE_ID,
                 ConnectionObject.DESTINATION_ID,
             },
-            config.stash[stash_keys.CONNECTION_ID],
+            None if _connection_id == "auto" else _connection_id,
             Path(custom_source_config_path) if custom_source_config_path else None,
             Path(custom_configured_catalog_path) if custom_configured_catalog_path else None,
             Path(custom_state_path) if custom_state_path else None,
             retrieval_reason,
             fail_if_missing_objects=False,
             connector_image=config.stash[stash_keys.CONNECTOR_IMAGE],
+            auto_select_connection=config.stash[stash_keys.AUTO_SELECT_CONNECTION],
+            selected_streams=config.stash[stash_keys.SELECTED_STREAMS],
         )
         config.stash[stash_keys.IS_PERMITTED_BOOL] = True
     except (ConnectionNotFoundError, NotPermittedError) as exc:
         clean_up_artifacts(MAIN_OUTPUT_DIRECTORY, LOGGER)
         pytest.exit(str(exc))
+
+    config.stash[stash_keys.CONNECTION_ID] = config.stash[stash_keys.CONNECTION_OBJECTS].connection_id  # type: ignore
+
+    if source_docker_image := config.stash[stash_keys.CONNECTION_OBJECTS].source_docker_image:
+        config.stash[stash_keys.CONTROL_VERSION] = source_docker_image.split(":")[-1]
+    else:
+        config.stash[stash_keys.CONTROL_VERSION] = "latest"
+
+    if config.stash[stash_keys.CONTROL_VERSION] == config.stash[stash_keys.TARGET_VERSION]:
+        pytest.exit(f"Control and target versions are the same: {control_version}. Please provide different versions.")
     if config.stash[stash_keys.CONNECTION_OBJECTS].workspace_id and config.stash[stash_keys.CONNECTION_ID]:
         config.stash[stash_keys.CONNECTION_URL] = build_connection_url(
             config.stash[stash_keys.CONNECTION_OBJECTS].workspace_id,
@@ -141,7 +184,12 @@ def pytest_configure(config: Config) -> None:
     webbrowser.open_new_tab(config.stash[stash_keys.REPORT].path.resolve().as_uri())
 
 
-def pytest_collection_modifyitems(config: pytest.Config, items: List[pytest.Item]) -> None:
+def get_artifacts_directory(config: pytest.Config) -> Path:
+    run_id = config.stash[stash_keys.SESSION_RUN_ID]
+    return MAIN_OUTPUT_DIRECTORY / f"session_{run_id}"
+
+
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     for item in items:
         if config.stash[stash_keys.SHOULD_READ_WITH_STATE] and "without_state" in item.keywords:
             item.add_marker(pytest.mark.skip(reason="Test is marked with without_state marker"))
@@ -162,18 +210,19 @@ def pytest_terminal_summary(terminalreporter: SugarTerminalReporter, exitstatus:
         f"All tests artifacts for this sessions should be available in {config.stash[stash_keys.TEST_ARTIFACT_DIRECTORY].resolve()}"
     )
 
-    try:
-        Prompt.ask(
-            textwrap.dedent(
-                """
-            Test artifacts will be destroyed after this prompt. 
-            Press enter when you're done reading them.
-            🚨 Do not copy them elsewhere on your disk!!! 🚨
-            """
+    if not config.stash[stash_keys.RUN_IN_AIRBYTE_CI]:
+        try:
+            Prompt.ask(
+                textwrap.dedent(
+                    """
+                    Test artifacts will be destroyed after this prompt.
+                    Press enter when you're done reading them.
+                    🚨 Do not copy them elsewhere on your disk!!! 🚨
+                    """
+                )
             )
-        )
-    finally:
-        clean_up_artifacts(MAIN_OUTPUT_DIRECTORY, LOGGER)
+        finally:
+            clean_up_artifacts(MAIN_OUTPUT_DIRECTORY, LOGGER)
 
 
 def pytest_keyboard_interrupt(excinfo: Exception) -> None:
@@ -186,13 +235,7 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo) -> Gener
     outcome = yield
     report = outcome.get_result()
     # This is to add skipped or failed tests due to upstream fixture failures on setup
-    if report.outcome in ["failed", "skipped"]:
-        item.config.stash[stash_keys.REPORT].add_test_result(
-            report,
-            item.function.__doc__,  # type: ignore
-        )
-
-    elif report.when == "call":
+    if report.outcome in ["failed", "skipped"] or report.when == "call":
         item.config.stash[stash_keys.REPORT].add_test_result(
             report,
             item.function.__doc__,  # type: ignore
@@ -254,11 +297,6 @@ def anyio_backend() -> str:
 
 
 @pytest.fixture(scope="session")
-def session_start_timestamp(request: SubRequest) -> int:
-    return request.config.stash[stash_keys.SESSION_START_TIMESTAMP]
-
-
-@pytest.fixture(scope="session")
 def test_artifacts_directory(request: SubRequest) -> Path:
     return request.config.stash[stash_keys.TEST_ARTIFACT_DIRECTORY]
 
@@ -304,9 +342,12 @@ def actor_id(connection_objects: ConnectionObjects, control_connector: Connector
 
 
 @pytest.fixture(scope="session")
-def configured_catalog(
-    connection_objects: ConnectionObjects,
-) -> ConfiguredAirbyteCatalog:
+def selected_streams(request: SubRequest) -> set[str]:
+    return request.config.stash[stash_keys.SELECTED_STREAMS]
+
+
+@pytest.fixture(scope="session")
+def configured_catalog(connection_objects: ConnectionObjects, selected_streams: Optional[set[str]]) -> ConfiguredAirbyteCatalog:
     if not connection_objects.configured_catalog:
         pytest.skip("Catalog is not provided. The catalog fixture can't be used.")
     assert connection_objects.configured_catalog is not None
@@ -316,8 +357,8 @@ def configured_catalog(
 @pytest.fixture(scope="session", autouse=True)
 def primary_keys_per_stream(
     configured_catalog: ConfiguredAirbyteCatalog,
-) -> Dict[str, Optional[List[str]]]:
-    return {stream.stream.name: stream.primary_key[0] if getattr(stream, "primary_key") else None for stream in configured_catalog.streams}
+) -> dict[str, Optional[list[str]]]:
+    return {stream.stream.name: stream.primary_key[0] if stream.primary_key else None for stream in configured_catalog.streams}
 
 
 @pytest.fixture(scope="session")
@@ -328,7 +369,7 @@ def configured_streams(
 
 
 @pytest.fixture(scope="session")
-def state(connection_objects: ConnectionObjects) -> Optional[Dict]:
+def state(connection_objects: ConnectionObjects) -> Optional[dict]:
     return connection_objects.state
 
 

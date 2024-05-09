@@ -8,6 +8,7 @@ This page contains the setup guide and reference information for the Xero source
 - Start Date
 
 **Required list of scopes to sync all streams:**
+
 - accounting.attachments.read
 - accounting.budgets.read
 - accounting.contacts.read
@@ -20,12 +21,14 @@ This page contains the setup guide and reference information for the Xero source
 - offline_access
 
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
 - OAuth 2.0
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 Please follow [instruction](https://developer.xero.com/documentation/guides/oauth2/auth-flow/) to obtain all requirements:
@@ -37,6 +40,7 @@ Please follow [instruction](https://developer.xero.com/documentation/guides/oaut
 ### Step 1: Set up Xero
 
 <!-- env:cloud -->
+
 ### Step 2: Set up the Xero connector in Airbyte
 
 **For Airbyte Cloud:**
@@ -51,6 +55,7 @@ Please follow [instruction](https://developer.xero.com/documentation/guides/oaut
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 1. Create an application in [Xero development center](https://developer.xero.com/app/manage/).
@@ -60,9 +65,9 @@ Please follow [instruction](https://developer.xero.com/documentation/guides/oaut
 
 The Xero source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 
 ## Supported streams
 
