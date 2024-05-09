@@ -9,6 +9,7 @@ import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.exceptions.ConnectionErrorException
 import io.airbyte.commons.exceptions.TransientErrorException
 import io.airbyte.commons.functional.Either
+import java.io.EOFException
 import java.sql.SQLException
 import java.sql.SQLSyntaxErrorException
 import java.util.stream.Collectors
@@ -135,6 +136,11 @@ object ConnectorExceptionUtil {
 
     private fun isConnectionError(e: Throwable?): Boolean {
         return e is ConnectionErrorException
+    }
+
+    private fun isEOFException(e: Throwable?): Boolean {
+        return (e is EOFException) &&
+            e.message!!.lowercase().contains("connection was unexpectedly lost");
     }
 
     private fun isRecoveryConnectionException(e: Throwable?): Boolean {
