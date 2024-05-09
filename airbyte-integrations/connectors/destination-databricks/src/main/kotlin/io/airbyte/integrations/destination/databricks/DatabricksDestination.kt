@@ -55,12 +55,12 @@ class DatabricksDestination : BaseConnector(), Destination {
         val connectorConfig = DatabricksConnectorConfig.deserialize(config)
         val sqlGenerator =
             DatabricksSqlGenerator(DatabricksNamingTransformer(), connectorConfig.database)
-        val datasource = ConnectorClientsFactory.createDataSource(connectorConfig)
+        val datasource = DatabricksConnectorClientsFactory.createDataSource(connectorConfig)
         val jdbcDatabase = DefaultJdbcDatabase(datasource)
         val destinationHandler =
             DatabricksDestinationHandler(connectorConfig.database, jdbcDatabase)
         val workspaceClient =
-            ConnectorClientsFactory.createWorkspaceClient(
+            DatabricksConnectorClientsFactory.createWorkspaceClient(
                 connectorConfig.hostname,
                 connectorConfig.authentication
             )
@@ -136,11 +136,11 @@ class DatabricksDestination : BaseConnector(), Destination {
         val catalogParser = CatalogParser(sqlGenerator, connectorConfig.rawSchemaOverride)
         val parsedCatalog = catalogParser.parseCatalog(catalog)
         val workspaceClient =
-            ConnectorClientsFactory.createWorkspaceClient(
+            DatabricksConnectorClientsFactory.createWorkspaceClient(
                 connectorConfig.hostname,
                 connectorConfig.authentication
             )
-        val datasource = ConnectorClientsFactory.createDataSource(connectorConfig)
+        val datasource = DatabricksConnectorClientsFactory.createDataSource(connectorConfig)
         val jdbcDatabase = DefaultJdbcDatabase(datasource)
         val destinationHandler =
             DatabricksDestinationHandler(connectorConfig.database, jdbcDatabase)

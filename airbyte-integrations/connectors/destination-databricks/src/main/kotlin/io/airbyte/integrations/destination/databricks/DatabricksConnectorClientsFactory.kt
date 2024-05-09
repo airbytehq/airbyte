@@ -13,7 +13,7 @@ import io.airbyte.integrations.destination.databricks.model.DatabricksConnectorC
 import io.airbyte.integrations.destination.databricks.model.OAuth2Authentication
 import javax.sql.DataSource
 
-object ConnectorClientsFactory {
+object DatabricksConnectorClientsFactory {
 
     fun createWorkspaceClient(hostName: String, authentication: Authentication): WorkspaceClient {
         val config =

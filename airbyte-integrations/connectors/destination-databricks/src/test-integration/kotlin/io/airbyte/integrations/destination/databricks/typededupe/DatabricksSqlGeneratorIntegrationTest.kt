@@ -22,7 +22,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
-import io.airbyte.integrations.destination.databricks.ConnectorClientsFactory
+import io.airbyte.integrations.destination.databricks.DatabricksConnectorClientsFactory
 import io.airbyte.integrations.destination.databricks.DatabricksNamingTransformer
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksDestinationHandler
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksSqlGenerator
@@ -54,7 +54,9 @@ class DatabricksSqlGeneratorIntegrationTest :
             val rawConfig = Files.readString(Path.of("secrets/oauth_config.json"))
             connectorConfig = DatabricksConnectorConfig.deserialize(Jsons.deserialize(rawConfig))
             jdbcDatabase =
-                DefaultJdbcDatabase(ConnectorClientsFactory.createDataSource(connectorConfig))
+                DefaultJdbcDatabase(
+                    DatabricksConnectorClientsFactory.createDataSource(connectorConfig)
+                )
             // This will trigger warehouse start
             jdbcDatabase.execute("SELECT 1")
         }
