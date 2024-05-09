@@ -8,6 +8,8 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.airbyte.protocol.models.v0.DestinationSyncMode
+import io.airbyte.protocol.models.v0.SyncMode
 import java.util.List
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertAll
@@ -57,7 +59,7 @@ internal class CatalogParserTest {
             invocation: InvocationOnMock ->
             val originalNamespace = invocation.getArgument<String>(0)
             val originalName = (invocation.getArgument<String>(1))
-            val originalRawNamespace = (invocation.getArgument<String>(1))
+            val originalRawNamespace = (invocation.getArgument<String>(2))
 
             // emulate quoting logic that causes a name collision
             val quotedName = originalName.replace("bar".toRegex(), "")
@@ -77,15 +79,25 @@ internal class CatalogParserTest {
         val parsedCatalog = parser.parseCatalog(catalog)
 
         assertAll(
-            { Assertions.assertEquals("a_abab_foofoo", parsedCatalog.streams.get(0).id.rawName) },
-            { Assertions.assertEquals("foofoo", parsedCatalog.streams.get(0).id.finalName) },
             {
                 Assertions.assertEquals(
-                    "a_abab_foofoo_3fd",
-                    parsedCatalog.streams.get(1).id.rawName
+                    StreamId("a", "foofoo", "airbyte_internal", "a_abab_foofoo", "a", "foobarfoo"),
+                    parsedCatalog.streams[0].id,
                 )
             },
-            { Assertions.assertEquals("foofoo_3fd", parsedCatalog.streams.get(1).id.finalName) }
+            {
+                Assertions.assertEquals(
+                    StreamId(
+                        "a",
+                        "foofoo_3fd",
+                        "airbyte_internal",
+                        "a_abab_foofoo_3fd",
+                        "a",
+                        "foofoo"
+                    ),
+                    parsedCatalog.streams[1].id,
+                )
+            },
         )
     }
 
@@ -186,6 +198,8 @@ internal class CatalogParserTest {
                 .withStream(
                     AirbyteStream().withNamespace(namespace).withName(name).withJsonSchema(schema)
                 )
+                .withSyncMode(SyncMode.INCREMENTAL)
+                .withDestinationSyncMode(DestinationSyncMode.APPEND)
         }
     }
 }

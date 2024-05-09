@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "0.77.2"
+version = "0.80.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "airbyte_cdk-0.77.2-py3-none-any.whl", hash = "sha256:6dffbe0c4b3454a5cdd20525b4f1e9cfef2e80c005b6b30473fc5bf6f75af64e"},
-    {file = "airbyte_cdk-0.77.2.tar.gz", hash = "sha256:84aeb27862a18e135c7bc3a5dfc363037665d428e7495e8824673f853adcca70"},
+    {file = "airbyte_cdk-0.80.0-py3-none-any.whl", hash = "sha256:060e92323a73674fa4e9e2e4a1eb312b9b9d072c9bbe5fa28f54ef21cb4974f3"},
+    {file = "airbyte_cdk-0.80.0.tar.gz", hash = "sha256:1383512a83917fecca5b24cea4c72aa5c561cf96dd464485fbcefda48fe574c5"},
 ]
 
 [package.dependencies]
@@ -32,7 +32,7 @@ requests_cache = "*"
 wcmatch = "8.4"
 
 [package.extras]
-file-based = ["avro (>=1.11.2,<1.12.0)", "fastavro (>=1.8.0,<1.9.0)", "markdown", "pyarrow (>=15.0.0,<15.1.0)", "pytesseract (==0.3.10)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
+file-based = ["avro (>=1.11.2,<1.12.0)", "fastavro (>=1.8.0,<1.9.0)", "markdown", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pyarrow (>=15.0.0,<15.1.0)", "pytesseract (==0.3.10)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
 sphinx-docs = ["Sphinx (>=4.2,<4.3)", "sphinx-rtd-theme (>=1.0,<1.1)"]
 vector-db-based = ["cohere (==4.21)", "langchain (==0.0.271)", "openai[embeddings] (==0.27.9)", "tiktoken (==0.4.0)"]
 
@@ -1028,4 +1028,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,<3.12"
-content-hash = "dedee3fe65d06e7ceb8403980b7cb1fadb463183c7c25b2cda747e60bcd7be03"
+content-hash = "93b64196fc01fe00f7c5d8479d66f4f0ea3ee8a96a646b8fae8d125c1f006ad4"

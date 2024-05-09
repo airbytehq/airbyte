@@ -3,181 +3,240 @@
   "type": "object",
   "properties": {
     "customer.descriptive_name": {
+      "description": "The descriptive name of the customer account.",
       "type": ["null", "string"]
     },
     "ad_group.id": {
+      "description": "The ID of the ad group associated with the data.",
       "type": ["null", "integer"]
     },
     "ad_group.name": {
+      "description": "The name of the ad group associated with the data.",
       "type": ["null", "string"]
     },
     "ad_group.status": {
+      "description": "The status of the ad group.",
       "type": ["null", "string"]
     },
     "segments.ad_network_type": {
+      "description": "The type of ad network.",
       "type": ["null", "string"]
     },
     "segments.product_aggregator_id": {
+      "description": "The ID of the product aggregator.",
       "type": ["null", "integer"]
     },
     "metrics.all_conversions_from_interactions_rate": {
+      "description": "The rate of conversions from interactions.",
       "type": ["null", "number"]
     },
     "metrics.all_conversions_value": {
+      "description": "The total value of all conversions.",
       "type": ["null", "number"]
     },
     "metrics.all_conversions": {
+      "description": "The total number of conversions.",
       "type": ["null", "number"]
     },
     "metrics.average_cpc": {
+      "description": "The average cost per click.",
       "type": ["null", "number"]
     },
     "segments.product_brand": {
+      "description": "The brand of the product.",
       "type": ["null", "string"]
     },
     "campaign.id": {
+      "description": "The ID of the campaign associated with the data.",
       "type": ["null", "integer"]
     },
     "campaign.name": {
+      "description": "The name of the campaign associated with the data.",
       "type": ["null", "string"]
     },
     "campaign.status": {
+      "description": "The status of the campaign.",
       "type": ["null", "string"]
     },
     "segments.product_category_level1": {
+      "description": "The first level product category.",
       "type": ["null", "string"]
     },
     "segments.product_category_level2": {
+      "description": "The second level product category.",
       "type": ["null", "string"]
     },
     "segments.product_category_level3": {
+      "description": "The third level product category.",
       "type": ["null", "string"]
     },
     "segments.product_category_level4": {
+      "description": "The fourth level product category.",
       "type": ["null", "string"]
     },
     "segments.product_category_level5": {
+      "description": "The fifth level product category.",
       "type": ["null", "string"]
     },
     "segments.product_channel": {
+      "description": "The product channel.",
       "type": ["null", "string"]
     },
     "segments.product_channel_exclusivity": {
+      "description": "The product channel exclusivity.",
       "type": ["null", "string"]
     },
     "segments.click_type": {
+      "description": "The type of click.",
       "type": ["null", "string"]
     },
     "metrics.clicks": {
+      "description": "The total number of clicks.",
       "type": ["null", "integer"]
     },
     "metrics.conversions_from_interactions_rate": {
+      "description": "The rate of conversions from interactions.",
       "type": ["null", "number"]
     },
     "metrics.conversions_value": {
+      "description": "The total value of conversions.",
       "type": ["null", "number"]
     },
     "metrics.conversions": {
+      "description": "The total number of conversions.",
       "type": ["null", "number"]
     },
     "metrics.cost_micros": {
+      "description": "The cost in micros.",
       "type": ["null", "integer"]
     },
     "metrics.cost_per_all_conversions": {
+      "description": "The cost per all conversions.",
       "type": ["null", "number"]
     },
     "metrics.cost_per_conversion": {
+      "description": "The cost per conversion.",
       "type": ["null", "number"]
     },
     "segments.product_country": {
+      "description": "The country of the product.",
       "type": ["null", "string"]
     },
     "metrics.cross_device_conversions": {
+      "description": "The number of cross-device conversions.",
       "type": ["null", "number"]
     },
     "metrics.ctr": {
+      "description": "The click-through rate.",
       "type": ["null", "number"]
     },
     "segments.product_custom_attribute0": {
+      "description": "Custom attribute 0 of the product.",
       "type": ["null", "string"]
     },
     "segments.product_custom_attribute1": {
+      "description": "Custom attribute 1 of the product.",
       "type": ["null", "string"]
     },
     "segments.product_custom_attribute2": {
+      "description": "Custom attribute 2 of the product.",
       "type": ["null", "string"]
     },
     "segments.product_custom_attribute3": {
+      "description": "Custom attribute 3 of the product.",
       "type": ["null", "string"]
     },
     "segments.product_custom_attribute4": {
+      "description": "Custom attribute 4 of the product.",
       "type": ["null", "string"]
     },
     "segments.date": {
+      "description": "The date of the data entry.",
       "type": ["null", "string"],
       "format": "date"
     },
     "segments.day_of_week": {
+      "description": "The day of the week.",
       "type": ["null", "string"]
     },
     "segments.device": {
+      "description": "The type of device.",
       "type": ["null", "string"]
     },
     "customer.id": {
+      "description": "The ID of the customer account.",
       "type": ["null", "integer"]
     },
     "metrics.impressions": {
+      "description": "The total number of impressions.",
       "type": ["null", "integer"]
     },
     "segments.product_language": {
+      "description": "The language of the product.",
       "type": ["null", "string"]
     },
     "segments.product_merchant_id": {
+      "description": "The ID of the product merchant.",
       "type": ["null", "integer"]
     },
     "segments.month": {
+      "description": "The month.",
       "type": ["null", "string"]
     },
     "segments.product_item_id": {
+      "description": "The ID of the product item.",
       "type": ["null", "string"]
     },
     "segments.product_condition": {
+      "description": "The condition of the product.",
       "type": ["null", "string"]
     },
     "segments.product_title": {
+      "description": "The title of the product.",
       "type": ["null", "string"]
     },
     "segments.product_type_l1": {
+      "description": "Product type level 1.",
       "type": ["null", "string"]
     },
     "segments.product_type_l2": {
+      "description": "Product type level 2.",
       "type": ["null", "string"]
     },
     "segments.product_type_l3": {
+      "description": "Product type level 3.",
       "type": ["null", "string"]
     },
     "segments.product_type_l4": {
+      "description": "Product type level 4.",
       "type": ["null", "string"]
     },
     "segments.product_type_l5": {
+      "description": "Product type level 5.",
       "type": ["null", "string"]
     },
     "segments.quarter": {
+      "description": "The quarter.",
       "type": ["null", "string"]
     },
     "segments.product_store_id": {
+      "description": "The ID of the product store.",
       "type": ["null", "string"]
     },
     "metrics.value_per_all_conversions": {
+      "description": "The value per all conversions.",
       "type": ["null", "number"]
     },
     "metrics.value_per_conversion": {
+      "description": "The value per conversion.",
       "type": ["null", "number"]
     },
     "segments.week": {
+      "description": "The week.",
       "type": ["null", "string"]
     },
     "segments.year": {
+      "description": "The year.",
       "type": ["null", "integer"]
     }
   }

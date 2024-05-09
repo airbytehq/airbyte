@@ -15,7 +15,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e55879a8-0ef8-4557-abcf-ab34c53ec460
-  dockerImageTag: 4.2.1
+  dockerImageTag: 4.2.2
   dockerRepository: airbyte/source-amazon-seller-partner
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-seller-partner
   githubIssueLabel: source-amazon-seller-partner
@@ -42,19 +42,26 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: "Deprecated FBA reports will be removed permanently from Cloud and Brand Analytics Reports will be removed temporarily. Updates on Brand Analytics Reports can be tracked here: [#32353](https://github.com/airbytehq/airbyte/issues/32353)"
+        message:
+          "Deprecated FBA reports will be removed permanently from Cloud and
+          Brand Analytics Reports will be removed temporarily. Updates on Brand Analytics
+          Reports can be tracked here: [#32353](https://github.com/airbytehq/airbyte/issues/32353)"
         upgradeDeadline: "2023-12-11"
       3.0.0:
         message:
-          Streams `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` now have updated schemas.
-          Streams `GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL`, `GET_LEDGER_DETAIL_VIEW_DATA`, `GET_MERCHANTS_LISTINGS_FYP_REPORT`,
-          `GET_STRANDED_INVENTORY_UI_DATA`, and `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` now have date-time formatted fields.
-          Users will need to refresh the source schemas and reset these streams after upgrading.
+          Streams `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and
+          `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` now have updated
+          schemas. Streams `GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL`, `GET_LEDGER_DETAIL_VIEW_DATA`,
+          `GET_MERCHANTS_LISTINGS_FYP_REPORT`, `GET_STRANDED_INVENTORY_UI_DATA`, and
+          `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` now have date-time formatted fields.
+          Users will need to refresh the source schemas and reset these streams after
+          upgrading.
         upgradeDeadline: "2024-01-12"
       4.0.0:
         message:
-          Stream `GET_FBA_STORAGE_FEE_CHARGES_DATA` schema has been updated to match Amazon Seller Partner.
-          Users will need to refresh the source schema and reset this stream after upgrading.
+          Stream `GET_FBA_STORAGE_FEE_CHARGES_DATA` schema has been updated
+          to match Amazon Seller Partner. Users will need to refresh the source schema
+          and reset this stream after upgrading.
         upgradeDeadline: "2024-03-11"
   supportLevel: certified
   tags:

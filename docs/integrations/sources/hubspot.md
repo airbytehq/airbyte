@@ -11,21 +11,26 @@ This page contains the setup guide and reference information for the [HubSpot](h
 - HubSpot Account
 
 <!-- env:oss -->
+
 - **For Airbyte Open Source**: Private App with Access Token
 <!-- /env:oss -->
 
 ## Setup guide
 
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
 We highly recommend you use OAuth rather than Private App authentication, as it significantly simplifies the setup process.
+
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 We recommend Private App authentication.
+
 <!-- /env:oss -->
 
 More information on HubSpot authentication methods can be found
@@ -34,14 +39,17 @@ More information on HubSpot authentication methods can be found
 ### Step 1: Set up Hubspot
 
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
 **- OAuth** (Recommended)
 
 **- Private App:** If you are using a Private App, you will need to use your Access Token to set up the connector. Please refer to the [official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) for a detailed guide.
+
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 **- Private App setup** (Recommended): If you are authenticating via a Private App, you will need to use your Access Token to set up the connector. Please refer to the [official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) for a detailed guide.
@@ -89,32 +97,34 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
 ### Step 3: Set up the HubSpot source connector in Airbyte
 
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
 1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **HubSpot** from the list of available sources.
 3. Enter a **Source name** of your choosing.
 4. From the **Authentication** dropdown, select your chosen authentication method:
-    - **Recommended:** To authenticate using OAuth, select **OAuth** and click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
-    :::tip HubSpot Authentication issues
-    You might encounter errors during the connection process in the popup window, such as `An invalid scope name was provided`.
-    To resolve this, close the window and attempt authentication again.
-    :::
-    - **Not Recommended:**To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
+   - **Recommended:** To authenticate using OAuth, select **OAuth** and click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
+     :::tip HubSpot Authentication issues
+     You might encounter errors during the connection process in the popup window, such as `An invalid scope name was provided`.
+     To resolve this, close the window and attempt authentication again.
+     :::
+   - **Not Recommended:**To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
 5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
    `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If not set, "2006-06-01T00:00:00Z" (Hubspot creation date) will be used as start date. It's recommended to provide relevant to your data start date value to optimize synchronization.
 6. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 #### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **HubSpot** from the list of available sources.
 3. Enter a **Source name** of your choosing.
 4. From the **Authentication** dropdown, select your chosen authentication method:
-    - **Recommended:** To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
-    - **Not Recommended:**To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
+   - **Recommended:** To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
+   - **Not Recommended:**To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
 5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
    `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If not set, "2006-06-01T00:00:00Z" (Hubspot creation date) will be used as start date. It's recommended to provide relevant to your data start date value to optimize synchronization.
 6. Click **Set up source** and wait for the tests to complete.
@@ -136,6 +146,7 @@ If you set up your connections before April 15th, 2023 (on Airbyte Cloud) or bef
 First you need to give the connector some additional permissions:
 
 <!-- env:cloud -->
+
 - **If you are using OAuth on Airbyte Cloud** go to the Hubspot source settings page in the Airbyte UI and re-authenticate via OAuth to allow Airbyte the permissions to access custom objects.
 <!-- /env:cloud -->
 - **If you are using OAuth on OSS or Private App auth** go into the Hubspot UI where you created your Private App or OAuth application and add the `crm.objects.custom.read` scope to your app's scopes. See HubSpot's instructions [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
@@ -156,7 +167,7 @@ There are two types of incremental sync:
 
 1. Incremental (standard server-side, where API returns only the data updated or generated since the last sync)
 2. Client-Side Incremental (API returns all available data and connector filters out only new records)
-:::
+   :::
 
 ## Supported streams
 
@@ -213,7 +224,6 @@ The HubSpot source connector supports the following streams:
 
 Even though the stream is Incremental, there are some record types that are not affected by the last sync timestamp pointer. For example records of type `CALCULATED` will allways have most recent timestamp equal to the requset time, so whenever you sync there will be a bunch of records in return.
 
-
 ### Notes on the `engagements` stream
 
 1. Objects in the `engagements` stream can have one of the following types: `note`, `email`, `task`, `meeting`, `call`. Depending on the type of engagement, different properties are set for that object in the `engagements_metadata` table in the destination:
@@ -250,78 +260,80 @@ Expand to see details about Hubspot connector limitations and troubleshooting.
 
 The connector is restricted by normal HubSpot [rate limitations](https://legacydocs.hubspot.com/apps/api_guidelines).
 
-| Product tier                | Limits                                   |
-|:----------------------------|:-----------------------------------------|
-| `Free & Starter`            | Burst: 100/10 seconds, Daily: 250,000    |
-| `Professional & Enterprise` | Burst: 150/10 seconds, Daily: 500,000    |
-| `API add-on (any tier)`     | Burst: 200/10 seconds, Daily: 1,000,000  |
-
+| Product tier                | Limits                                  |
+| :-------------------------- | :-------------------------------------- |
+| `Free & Starter`            | Burst: 100/10 seconds, Daily: 250,000   |
+| `Professional & Enterprise` | Burst: 150/10 seconds, Daily: 500,000   |
+| `API add-on (any tier)`     | Burst: 200/10 seconds, Daily: 1,000,000 |
 
 ### Troubleshooting
 
-* Consider checking out the following Hubspot tutorial: [Build a single customer view with open-source tools](https://airbyte.com/tutorials/single-customer-view).
-* **Enabling streams:** Some streams, such as `workflows`, need to be enabled before they can be read using a connector authenticated using an `API Key`. If reading a stream that is not enabled, a log message returned to the output and the sync operation will only sync the other streams available.
+- Consider checking out the following Hubspot tutorial: [Build a single customer view with open-source tools](https://airbyte.com/tutorials/single-customer-view).
+- **Enabling streams:** Some streams, such as `workflows`, need to be enabled before they can be read using a connector authenticated using an `API Key`. If reading a stream that is not enabled, a log message returned to the output and the sync operation will only sync the other streams available.
 
-    Example of the output message when trying to read `workflows` stream with missing permissions for the `API Key`:
+  Example of the output message when trying to read `workflows` stream with missing permissions for the `API Key`:
 
-    ```json
-    {
-        "type": "LOG",
-        "log": {
-            "level": "WARN",
-            "message": "Stream `workflows` cannot be proceed. This API Key (EXAMPLE_API_KEY) does not have proper permissions! (requires any of [automation-access])"
-        }
+  ```json
+  {
+    "type": "LOG",
+    "log": {
+      "level": "WARN",
+      "message": "Stream `workflows` cannot be proceed. This API Key (EXAMPLE_API_KEY) does not have proper permissions! (requires any of [automation-access])"
     }
-    ```
+  }
+  ```
 
-* **Unnesting top level properties**: Since version 1.5.0, in order to not make the users query their destinations for complicated json fields, we duplicate most of nested data as top level fields.
+- **Unnesting top level properties**: Since version 1.5.0, in order to not make the users query their destinations for complicated json fields, we duplicate most of nested data as top level fields.
 
-    For instance:
+  For instance:
 
-    ```json
-    {
-      "id": 1,
-      "updatedAt": "2020-01-01",
-      "properties": {
-        "hs_note_body": "World's best boss",
-        "hs_created_by": "Michael Scott"
-      }
+  ```json
+  {
+    "id": 1,
+    "updatedAt": "2020-01-01",
+    "properties": {
+      "hs_note_body": "World's best boss",
+      "hs_created_by": "Michael Scott"
     }
-    ```
+  }
+  ```
 
-    becomes
+  becomes
 
-    ```json
-    {
-        "id": 1,
-        "updatedAt": "2020-01-01",
-        "properties": {
-          "hs_note_body": "World's best boss",
-          "hs_created_by": "Michael Scott"
-        },
-        "properties_hs_note_body": "World's best boss",
-        "properties_hs_created_by": "Michael Scott"
-    }
-    ```
-* **403 Forbidden Error**
-    * Hubspot has **scopes** for each API call.
-    * Each stream is tied to a scope and will need access to that scope to sync data.
-    * Review the Hubspot OAuth scope documentation [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
-    * Additional permissions:
+  ```json
+  {
+    "id": 1,
+    "updatedAt": "2020-01-01",
+    "properties": {
+      "hs_note_body": "World's best boss",
+      "hs_created_by": "Michael Scott"
+    },
+    "properties_hs_note_body": "World's best boss",
+    "properties_hs_created_by": "Michael Scott"
+  }
+  ```
 
-        `feedback_submissions`: Service Hub Professional account
+- **403 Forbidden Error**
 
-        `marketing_emails`: Market Hub Starter account
+  - Hubspot has **scopes** for each API call.
+  - Each stream is tied to a scope and will need access to that scope to sync data.
+  - Review the Hubspot OAuth scope documentation [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
+  - Additional permissions:
 
-        `workflows`: Sales, Service, and Marketing Hub Professional accounts
-* Check out common troubleshooting issues for the Hubspot source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+    `feedback_submissions`: Service Hub Professional account
+
+    `marketing_emails`: Market Hub Starter account
+
+    `workflows`: Sales, Service, and Marketing Hub Professional accounts
+
+- Check out common troubleshooting issues for the Hubspot source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 4.1.2   | 2024-04-24 | [36642](https://github.com/airbytehq/airbyte/pull/36642) | Schema descriptions and CDK 0.80.0                                                                                                                                               |
 | 4.1.1   | 2024-04-11 | [35945](https://github.com/airbytehq/airbyte/pull/35945) | Add integration tests                                                                                                                                                            |
 | 4.1.0   | 2024-03-27 | [36541](https://github.com/airbytehq/airbyte/pull/36541) | Added test configuration features, fixed type hints                                                                                                                              |
@@ -342,7 +354,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 | 1.6.0   | 2023-10-19 | [31606](https://github.com/airbytehq/airbyte/pull/31606) | Add new field `aifeatures` to the `marketing emails` stream schema                                                                                                               |
 | 1.5.1   | 2023-10-04 | [31050](https://github.com/airbytehq/airbyte/pull/31050) | Add type transformer for `Engagements` stream                                                                                                                                    |
 | 1.5.0   | 2023-09-11 | [30322](https://github.com/airbytehq/airbyte/pull/30322) | Unnest stream schemas                                                                                                                                                            |
-| 1.4.1   | 2023-08-22 | [29715](https://github.com/airbytehq/airbyte/pull/29715) | Fix python package configuration  stream                                                                                                                                         |
+| 1.4.1   | 2023-08-22 | [29715](https://github.com/airbytehq/airbyte/pull/29715) | Fix python package configuration stream                                                                                                                                          |
 | 1.4.0   | 2023-08-11 | [29249](https://github.com/airbytehq/airbyte/pull/29249) | Add `OwnersArchived` stream                                                                                                                                                      |
 | 1.3.3   | 2023-08-10 | [29248](https://github.com/airbytehq/airbyte/pull/29248) | Specify `threadId` in `engagements` stream to type string                                                                                                                        |
 | 1.3.2   | 2023-08-10 | [29326](https://github.com/airbytehq/airbyte/pull/29326) | Add primary keys to streams `ContactLists` and `PropertyHistory`                                                                                                                 |
