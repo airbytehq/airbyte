@@ -4,52 +4,67 @@
   "additionalProperties": true,
   "properties": {
     "account_sid": {
+      "description": "The Twilio account SID of the conversation participant.",
       "type": ["null", "string"]
     },
     "conversation_sid": {
+      "description": "The SID of the conversation the participant belongs to.",
       "type": ["null", "string"]
     },
     "sid": {
+      "description": "The unique SID of the conversation participant.",
       "type": ["null", "string"]
     },
     "identity": {
+      "description": "The identity of the participant in the conversation.",
       "type": ["null", "string"]
     },
     "attributes": {
+      "description": "Additional attributes related to the conversation participant.",
       "type": ["null", "string"]
     },
     "messaging_binding": {
+      "description": "Details about the messaging binding for the conversation participant.",
       "type": ["null", "object"],
       "properties": {
         "type": {
+          "description": "The type of the messaging binding (e.g., SMS, email).",
           "type": ["null", "string"]
         },
         "address": {
+          "description": "The address associated with the participant's messaging binding.",
           "type": ["null", "string"]
         },
         "proxy_address": {
+          "description": "The proxy address for the messaging binding.",
           "type": ["null", "string"]
         }
       }
     },
     "role_sid": {
+      "description": "The SID of the role assigned to the participant in the conversation.",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The date and time when the conversation participant was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when the conversation participant was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "url": {
+      "description": "The URL for accessing more details about the conversation participant.",
       "type": ["null", "string"]
     },
     "last_read_message_index": {
+      "description": "The index of the last message that the participant has read.",
       "type": ["null", "string"]
     },
     "last_read_timestamp": {
+      "description": "The timestamp when the participant last read a message.",
       "type": ["null", "string"]
     }
   }

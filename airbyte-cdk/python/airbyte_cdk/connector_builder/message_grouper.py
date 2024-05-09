@@ -120,7 +120,8 @@ class MessageGrouper:
                 raise ValueError(f"Unknown message group type: {type(message_group)}")
 
         try:
-            configured_stream = configured_catalog.streams[0]  # The connector builder currently only supports reading from a single stream at a time
+            # The connector builder currently only supports reading from a single stream at a time
+            configured_stream = configured_catalog.streams[0]
             schema = schema_inferrer.get_stream_schema(configured_stream.stream.name)
         except SchemaValidationException as exception:
             for validation_error in exception.validation_errors:
@@ -183,7 +184,11 @@ class MessageGrouper:
                 and message.type == MessageType.LOG
                 and message.log.message.startswith(SliceLogger.SLICE_LOG_PREFIX)
             ):
-                yield StreamReadSlices(pages=current_slice_pages, slice_descriptor=current_slice_descriptor, state=[latest_state_message] if latest_state_message else [])
+                yield StreamReadSlices(
+                    pages=current_slice_pages,
+                    slice_descriptor=current_slice_descriptor,
+                    state=[latest_state_message] if latest_state_message else [],
+                )
                 current_slice_descriptor = self._parse_slice_description(message.log.message)
                 current_slice_pages = []
                 at_least_one_page_in_group = False
@@ -230,7 +235,11 @@ class MessageGrouper:
         else:
             if current_page_request or current_page_response or current_page_records:
                 self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records)
-                yield StreamReadSlices(pages=current_slice_pages, slice_descriptor=current_slice_descriptor, state=[latest_state_message] if latest_state_message else [])
+                yield StreamReadSlices(
+                    pages=current_slice_pages,
+                    slice_descriptor=current_slice_descriptor,
+                    state=[latest_state_message] if latest_state_message else [],
+                )
 
     @staticmethod
     def _need_to_close_page(at_least_one_page_in_group: bool, message: AirbyteMessage, json_message: Optional[Dict[str, Any]]) -> bool:
@@ -281,8 +290,11 @@ class MessageGrouper:
         current_page_records.clear()
 
     def _read_stream(
-        self, source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog,
-            state: List[AirbyteStateMessage]
+        self,
+        source: DeclarativeSource,
+        config: Mapping[str, Any],
+        configured_catalog: ConfiguredAirbyteCatalog,
+        state: List[AirbyteStateMessage],
     ) -> Iterator[AirbyteMessage]:
         # the generator can raise an exception
         # iterate over the generated messages. if next raise an exception, catch it and yield it as an AirbyteLogMessage

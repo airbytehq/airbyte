@@ -54,10 +54,13 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
-| 2.2.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
+| 2.3.0   | 2024-04-12 | [36724](https://github.com/airbytehq/airbyte/pull/36724) | Connector migrated to low-code                                                                              |
+| 2.2.2   | 2024-04-19 | [36651](https://github.com/airbytehq/airbyte/pull/36651) | Updating to 0.80.0 CDK                                                                                      |
+| 2.2.1   | 2024-04-12 | [36651](https://github.com/airbytehq/airbyte/pull/36651) | Schema descriptions                                                                                         |
+| 2.2.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                             |
 | 2.1.0   | 2024-02-13 | [35203](https://github.com/airbytehq/airbyte/pull/35203) | Update stream Funnels schema with custom_event_id and custom_event fields                                   |
-| 2.0.2   | 2024-02-12 | [35151](https://github.com/airbytehq/airbyte/pull/35151) | Manage dependencies with Poetry.                                                                            |
+| 2.0.2   | 2024-02-12 | [35151](https://github.com/airbytehq/airbyte/pull/35151) | Manage dependencies with Poetry                                                                             |
 | 2.0.1   | 2024-01-11 | [34147](https://github.com/airbytehq/airbyte/pull/34147) | prepare for airbyte-lib                                                                                     |
 | 2.0.0   | 2023-10-30 | [31955](https://github.com/airbytehq/airbyte/pull/31955) | Delete the default primary key for the Export stream                                                        |
 | 1.0.1   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                             |
@@ -67,7 +70,7 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 | 0.1.39  | 2023-09-15 | [30469](https://github.com/airbytehq/airbyte/pull/30469) | Add default primary key `distinct_id` to `Export` stream                                                    |
 | 0.1.38  | 2023-08-31 | [30028](https://github.com/airbytehq/airbyte/pull/30028) | Handle gracefully project timezone mismatch                                                                 |
 | 0.1.37  | 2023-07-20 | [27932](https://github.com/airbytehq/airbyte/pull/27932) | Fix spec: change start/end date format to `date`                                                            |
-| 0.1.36  | 2023-06-27 | [27752](https://github.com/airbytehq/airbyte/pull/27752) | Partially revert version 0.1.32; Use exponential backoff;                                                   |
+| 0.1.36  | 2023-06-27 | [27752](https://github.com/airbytehq/airbyte/pull/27752) | Partially revert version 0.1.32; Use exponential backoff                                                    |
 | 0.1.35  | 2023-06-12 | [27252](https://github.com/airbytehq/airbyte/pull/27252) | Add should_retry False for 402 error                                                                        |
 | 0.1.34  | 2023-05-15 | [21837](https://github.com/airbytehq/airbyte/pull/21837) | Add "insert_id" field to "export" stream schema                                                             |
 | 0.1.33  | 2023-04-25 | [25543](https://github.com/airbytehq/airbyte/pull/25543) | Set should_retry for 104 error in stream export                                                             |
@@ -77,7 +80,7 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 | 0.1.29  | 2022-11-02 | [18846](https://github.com/airbytehq/airbyte/pull/18846) | For "export" stream make line parsing more robust                                                           |
 | 0.1.28  | 2022-10-06 | [17699](https://github.com/airbytehq/airbyte/pull/17699) | Fix discover step issue cursor field None                                                                   |
 | 0.1.27  | 2022-09-29 | [17415](https://github.com/airbytehq/airbyte/pull/17415) | Disable stream "cohort_members" on discover if not access                                                   |
-| 0.1.26  | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream states.                                                                               |
+| 0.1.26  | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream states                                                                                |
 | 0.1.25  | 2022-09-27 | [17145](https://github.com/airbytehq/airbyte/pull/17145) | Disable streams "export", "engage" on discover if not access                                                |
 | 0.1.24  | 2022-09-26 | [16915](https://github.com/airbytehq/airbyte/pull/16915) | Added Service Accounts support                                                                              |
 | 0.1.23  | 2022-09-18 | [16843](https://github.com/airbytehq/airbyte/pull/16843) | Add stream=True for `export` stream                                                                         |

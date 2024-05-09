@@ -6,7 +6,6 @@ package io.airbyte.integrations.source.mysql.initialsync;
 
 import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcCursorInvalidMessage;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getTableSizeInfoForStreams;
-import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.prettyPrintConfiguredAirbyteStreamList;
 import static io.airbyte.integrations.source.mysql.MySqlSpecConstants.FAIL_SYNC_OPTION;
 import static io.airbyte.integrations.source.mysql.MySqlSpecConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
 import static io.airbyte.integrations.source.mysql.cdc.MysqlCdcStateConstants.MYSQL_CDC_OFFSET;
@@ -73,31 +72,75 @@ public class MySqlInitialReadUtil {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlInitialReadUtil.class);
 
-  /*
-   * Returns the read iterators associated with : 1. Initial cdc read snapshot via primary key
-   * queries. 2. Incremental cdc reads via debezium.
-   *
-   * The initial load iterators need to always be run before the incremental cdc iterators. This is to
-   * prevent advancing the binlog offset in the state before all streams have snapshotted. Otherwise,
-   * there could be data loss.
-   */
-  public static List<AutoCloseableIterator<AirbyteMessage>> getCdcReadIterators(final JdbcDatabase database,
-                                                                                final ConfiguredAirbyteCatalog catalog,
-                                                                                final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
-                                                                                final StateManager stateManager,
-                                                                                final Instant emittedAt,
-                                                                                final String quoteString) {
+  public static Optional<MySqlInitialLoadHandler> getMySqlFullRefreshInitialLoadHandler(final JdbcDatabase database,
+                                                                                        final ConfiguredAirbyteCatalog catalog,
+                                                                                        final MySqlInitialLoadGlobalStateManager initialLoadStateManager,
+                                                                                        final StateManager stateManager,
+                                                                                        final ConfiguredAirbyteStream fullRefreshStream,
+                                                                                        final Instant emittedAt,
+                                                                                        final String quoteString,
+                                                                                        final boolean savedOffsetStillPresentOnServer) {
+    final InitialLoadStreams initialLoadStreams =
+        cdcStreamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
+
+    // State manager will need to know all streams in order to produce a state message
+    // But for initial load handler we only want to produce iterator on the single full refresh stream.
+    if (!initialLoadStreams.streamsForInitialLoad().isEmpty()) {
+
+      // Filter on initialLoadStream
+      var pair = new AirbyteStreamNameNamespacePair(fullRefreshStream.getStream().getName(), fullRefreshStream.getStream().getNamespace());
+      var pkStatus = initialLoadStreams.pairToInitialLoadStatus.get(pair);
+      Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> fullRefreshPkStatus;
+      if (pkStatus == null) {
+        fullRefreshPkStatus = Map.of();
+      } else {
+        fullRefreshPkStatus = Map.of(pair, pkStatus);
+      }
+
+      var fullRefreshStreamInitialLoad = new InitialLoadStreams(List.of(fullRefreshStream),
+          fullRefreshPkStatus);
+      return Optional
+          .of(getMySqlInitialLoadHandler(database, emittedAt, quoteString, fullRefreshStreamInitialLoad, initialLoadStateManager, Optional.empty()));
+    }
+    return Optional.empty();
+  }
+
+  private static MySqlInitialLoadHandler getMySqlInitialLoadHandler(
+                                                                    final JdbcDatabase database,
+                                                                    final Instant emittedAt,
+                                                                    final String quoteString,
+                                                                    final InitialLoadStreams initialLoadStreams,
+                                                                    final MySqlInitialLoadStateManager initialLoadStateManager,
+                                                                    final Optional<CdcMetadataInjector> cdcMetadataInjector) {
     final JsonNode sourceConfig = database.getSourceConfig();
-    final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
-    final Duration subsequentRecordWaitTime = RecordWaitTimeUtil.getSubsequentRecordWaitTime(sourceConfig);
-    LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
-    // Determine the streams that need to be loaded via primary key sync.
-    final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>();
+
+    final MySqlSourceOperations sourceOperations =
+        new MySqlSourceOperations(cdcMetadataInjector);
+    return new MySqlInitialLoadHandler(sourceConfig, database,
+        sourceOperations,
+        quoteString,
+        initialLoadStateManager,
+        Optional.empty(),
+        getTableSizeInfoForStreams(database, initialLoadStreams.streamsForInitialLoad(), quoteString));
+  }
+
+  private static CdcState getDefaultCdcState(final JdbcDatabase database,
+                                             final ConfiguredAirbyteCatalog catalog) {
 
     // Construct the initial state for MySQL. If there is already existing state, we use that instead
     // since that is associated with the debezium
     // state associated with the initial sync.
     final MySqlDebeziumStateUtil mySqlDebeziumStateUtil = new MySqlDebeziumStateUtil();
+    final JsonNode initialDebeziumState = mySqlDebeziumStateUtil.constructInitialDebeziumState(
+        MySqlCdcProperties.getDebeziumProperties(database), catalog, database);
+    return new CdcState().withState(initialDebeziumState);
+  }
+
+  public static boolean isSavedOffsetStillPresentOnServer(final JdbcDatabase database,
+                                                          final ConfiguredAirbyteCatalog catalog,
+                                                          final StateManager stateManager) {
+    final MySqlDebeziumStateUtil mySqlDebeziumStateUtil = new MySqlDebeziumStateUtil();
+    final JsonNode sourceConfig = database.getSourceConfig();
     final JsonNode initialDebeziumState = mySqlDebeziumStateUtil.constructInitialDebeziumState(
         MySqlCdcProperties.getDebeziumProperties(database), catalog, database);
 
@@ -111,7 +154,6 @@ public class MySqlInitialReadUtil {
 
     final boolean savedOffsetStillPresentOnServer =
         savedOffset.isPresent() && mySqlDebeziumStateUtil.savedOffsetStillPresentOnServer(database, savedOffset.get());
-
     if (!savedOffsetStillPresentOnServer) {
       AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcCursorInvalidMessage());
       if (!sourceConfig.get("replication_method").has(INVALID_CDC_CURSOR_POSITION_PROPERTY) || sourceConfig.get("replication_method").get(
@@ -121,46 +163,74 @@ public class MySqlInitialReadUtil {
       }
       LOGGER.warn("Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch");
     }
+    return savedOffsetStillPresentOnServer;
+  }
 
-    final InitialLoadStreams initialLoadStreams = cdcStreamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog,
-        savedOffsetStillPresentOnServer);
+  public static MySqlInitialLoadGlobalStateManager getMySqlInitialLoadGlobalStateManager(final JdbcDatabase database,
+                                                                                         final ConfiguredAirbyteCatalog catalog,
+                                                                                         final StateManager stateManager,
+                                                                                         final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
+                                                                                         final String quoteString,
+                                                                                         final boolean savedOffsetStillPresentOnServer) {
+    final InitialLoadStreams initialLoadStreams =
+        cdcStreamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
 
-    final CdcState stateToBeUsed = (!savedOffsetStillPresentOnServer || (stateManager.getCdcStateManager().getCdcState() == null
-        || stateManager.getCdcStateManager().getCdcState().getState() == null)) ? new CdcState().withState(initialDebeziumState)
-            : stateManager.getCdcStateManager().getCdcState();
+    return new MySqlInitialLoadGlobalStateManager(initialLoadStreams,
+        initPairToPrimaryKeyInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
+        stateManager, catalog, savedOffsetStillPresentOnServer, getDefaultCdcState(database, catalog));
+  }
+
+  /*
+   * Returns the read iterators associated with : 1. Initial cdc read snapshot via primary key
+   * queries. 2. Incremental cdc reads via debezium.
+   *
+   * The initial load iterators need to always be run before the incremental cdc iterators. This is to
+   * prevent advancing the binlog offset in the state before all streams have snapshotted. Otherwise,
+   * there could be data loss.
+   */
+  public static List<AutoCloseableIterator<AirbyteMessage>> getCdcReadIterators(final JdbcDatabase database,
+                                                                                final ConfiguredAirbyteCatalog catalog,
+                                                                                final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
+                                                                                final StateManager stateManager,
+                                                                                final MySqlInitialLoadGlobalStateManager initialLoadGlobalStateManager,
+                                                                                final Instant emittedAt,
+                                                                                final String quoteString,
+                                                                                final boolean savedOffsetStillPresentOnServer) {
+    final JsonNode sourceConfig = database.getSourceConfig();
+    final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
+    LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
+    // Determine the streams that need to be loaded via primary key sync.
+    final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>();
+    final InitialLoadStreams initialLoadStreams =
+        cdcStreamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
 
     final MySqlCdcConnectorMetadataInjector metadataInjector = MySqlCdcConnectorMetadataInjector.getInstance(emittedAt);
+    final CdcState stateToBeUsed;
+    final CdcState cdcState = stateManager.getCdcStateManager().getCdcState();
+    if (!savedOffsetStillPresentOnServer || cdcState == null
+        || cdcState.getState() == null) {
+      stateToBeUsed = getDefaultCdcState(database, catalog);
+    } else {
+      stateToBeUsed = cdcState;
+    }
 
     // If there are streams to sync via primary key load, build the relevant iterators.
     if (!initialLoadStreams.streamsForInitialLoad().isEmpty()) {
-      LOGGER.info("Streams to be synced via primary key : {}", initialLoadStreams.streamsForInitialLoad().size());
-      LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(initialLoadStreams.streamsForInitialLoad()));
-      final MySqlInitialLoadStateManager initialLoadStateManager =
-          new MySqlInitialLoadGlobalStateManager(initialLoadStreams,
-              initPairToPrimaryKeyInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
-              stateToBeUsed, catalog);
+
       final MysqlDebeziumStateAttributes stateAttributes = MySqlDebeziumStateUtil.getStateAttributesFromDB(database);
 
-      final MySqlSourceOperations sourceOperations =
-          new MySqlSourceOperations(
+      final MySqlInitialLoadHandler initialLoadHandler =
+          getMySqlInitialLoadHandler(database, emittedAt, quoteString, initialLoadStreams, initialLoadGlobalStateManager,
               Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
-      final MySqlInitialLoadHandler initialLoadHandler = new MySqlInitialLoadHandler(sourceConfig, database,
-          sourceOperations,
-          quoteString,
-          initialLoadStateManager,
-          namespacePair -> Jsons.emptyObject(),
-          getTableSizeInfoForStreams(database, initialLoadStreams.streamsForInitialLoad(), quoteString));
 
       initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
           tableNameToTable,
           emittedAt));
-    } else {
-      LOGGER.info("No streams will be synced via primary key");
     }
 
     // Build the incremental CDC iterators.
-    final AirbyteDebeziumHandler<MySqlCdcPosition> handler = new AirbyteDebeziumHandler<>(
+    final AirbyteDebeziumHandler<MySqlCdcPosition> handler = new AirbyteDebeziumHandler<MySqlCdcPosition>(
         sourceConfig,
         MySqlCdcTargetPosition.targetPosition(database),
         true,
@@ -194,11 +264,12 @@ public class MySqlInitialReadUtil {
   public static InitialLoadStreams cdcStreamsForInitialPrimaryKeyLoad(final CdcStateManager stateManager,
                                                                       final ConfiguredAirbyteCatalog fullCatalog,
                                                                       final boolean savedOffsetStillPresentOnServer) {
+
     if (!savedOffsetStillPresentOnServer) {
+      // Add a filter here to identify resumable full refresh streams.
       return new InitialLoadStreams(
           fullCatalog.getStreams()
               .stream()
-              .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
               .collect(Collectors.toList()),
           new HashMap<>());
     }
@@ -234,7 +305,8 @@ public class MySqlInitialReadUtil {
         .filter(stream -> streamsStillinPkSync.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
         .forEach(streamsForPkSync::add);
-    final List<ConfiguredAirbyteStream> newlyAddedStreams = identifyStreamsToSnapshot(fullCatalog, stateManager.getInitialStreamsSynced());
+    final List<ConfiguredAirbyteStream> newlyAddedStreams =
+        identifyStreamsToSnapshot(fullCatalog, stateManager.getInitialStreamsSynced());
     streamsForPkSync.addAll(newlyAddedStreams);
 
     return new InitialLoadStreams(streamsForPkSync, pairToInitialLoadStatus);
@@ -276,8 +348,8 @@ public class MySqlInitialReadUtil {
             pairToInitialLoadStatus.put(pair, primaryKeyLoadStatus);
             streamsStillInPkSync.add(pair);
           }
+          alreadySeenStreamPairs.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
         }
-        alreadySeenStreamPairs.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
       });
     }
     final List<ConfiguredAirbyteStream> streamsForPkSync = new ArrayList<>();
@@ -297,12 +369,19 @@ public class MySqlInitialReadUtil {
     return stream.getStream().getSourceDefinedPrimaryKey().size() > 0;
   }
 
+  public static InitialLoadStreams filterStreamInIncrementalMode(final InitialLoadStreams stream) {
+    return new InitialLoadStreams(
+        stream.streamsForInitialLoad.stream().filter(airbyteStream -> airbyteStream.getSyncMode() == SyncMode.INCREMENTAL)
+            .collect(Collectors.toList()),
+        stream.pairToInitialLoadStatus);
+  }
+
   public static List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog,
                                                                         final Set<AirbyteStreamNameNamespacePair> alreadySyncedStreams) {
     final Set<AirbyteStreamNameNamespacePair> allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
     final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySyncedStreams));
+    // Add a filter here to exclude non resumable full refresh streams.
     return catalog.getStreams().stream()
-        .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
         .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
         .collect(Collectors.toList());
@@ -316,7 +395,6 @@ public class MySqlInitialReadUtil {
             .collect(
                 Collectors.toSet());
     return catalog.getStreams().stream()
-        .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
         .filter(stream -> !initialLoadStreamsNamespacePairs.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
         .collect(Collectors.toList());
@@ -336,34 +414,47 @@ public class MySqlInitialReadUtil {
     initialLoadStreams.streamsForInitialLoad().forEach(stream -> {
       final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair =
           new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
-      final PrimaryKeyInfo pkInfo = getPrimaryKeyInfo(database, stream, tableNameToTable, quoteString);
-      pairToPkInfoMap.put(pair, pkInfo);
+      final Optional<PrimaryKeyInfo> pkInfo = getPrimaryKeyInfo(database, stream, tableNameToTable, quoteString);
+      if (pkInfo.isPresent()) {
+        pairToPkInfoMap.put(pair, pkInfo.get());
+      }
     });
     return pairToPkInfoMap;
   }
 
   // Returns the primary key info associated with the stream.
-  private static PrimaryKeyInfo getPrimaryKeyInfo(final JdbcDatabase database,
-                                                  final ConfiguredAirbyteStream stream,
-                                                  final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
-                                                  final String quoteString) {
+  private static Optional<PrimaryKeyInfo> getPrimaryKeyInfo(final JdbcDatabase database,
+                                                            final ConfiguredAirbyteStream stream,
+                                                            final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
+                                                            final String quoteString) {
+    final String fullyQualifiedTableName =
+        DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.getStream().getNamespace(), (stream.getStream().getName()));
+    final TableInfo<CommonField<MysqlType>> table = tableNameToTable
+        .get(fullyQualifiedTableName);
+    return getPrimaryKeyInfo(database, stream, table, quoteString);
+  }
+
+  private static Optional<PrimaryKeyInfo> getPrimaryKeyInfo(final JdbcDatabase database,
+                                                            final ConfiguredAirbyteStream stream,
+                                                            final TableInfo<CommonField<MysqlType>> table,
+                                                            final String quoteString) {
     // For cursor-based syncs, we cannot always assume a primary key field exists. We need to handle the
     // case where it does not exist when we support
     // cursor-based syncs.
     if (stream.getStream().getSourceDefinedPrimaryKey().size() > 1) {
       LOGGER.info("Composite primary key detected for {namespace, stream} : {}, {}", stream.getStream().getNamespace(), stream.getStream().getName());
     }
+    if (stream.getStream().getSourceDefinedPrimaryKey().isEmpty()) {
+      return Optional.empty();
+    }
+
     final String pkFieldName = stream.getStream().getSourceDefinedPrimaryKey().get(0).get(0);
-    final String fullyQualifiedTableName =
-        DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.getStream().getNamespace(), (stream.getStream().getName()));
-    final TableInfo<CommonField<MysqlType>> table = tableNameToTable
-        .get(fullyQualifiedTableName);
     final MysqlType pkFieldType = table.getFields().stream()
         .filter(field -> field.getName().equals(pkFieldName))
         .findFirst().get().getType();
 
     final String pkMaxValue = MySqlQueryUtils.getMaxPkValueForStream(database, stream, pkFieldName, quoteString);
-    return new PrimaryKeyInfo(pkFieldName, pkFieldType, pkMaxValue);
+    return Optional.of(new PrimaryKeyInfo(pkFieldName, pkFieldType, pkMaxValue));
   }
 
   public record InitialLoadStreams(List<ConfiguredAirbyteStream> streamsForInitialLoad,

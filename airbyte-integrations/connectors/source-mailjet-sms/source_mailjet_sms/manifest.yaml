@@ -49,6 +49,50 @@ definitions:
       primary_key: "ID"
       path: "/sms"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          ID:
+            description: Unique identifier for the SMS
+            type: string
+          From:
+            description: The sender's information or number
+            type: string
+          To:
+            description: The recipient's information or number
+            type: string
+          Status:
+            description: The status details of the SMS
+            type: object
+            properties:
+              Code:
+                description: The code representing the status
+                type: number
+              Name:
+                description: Name of the status
+                type: string
+              Description:
+                description: Description of the status
+                type: string
+          Cost:
+            description: The cost details of the SMS
+            type: object
+            properties:
+              Value:
+                description: The value of the cost
+                type: number
+              Currency:
+                description: The currency in which the cost is calculated
+                type: string
+          CreationTS:
+            description: Timestamp of when the SMS was created
+            type: integer
+          SmsCount:
+            description: The number of SMS messages included in the data
+            type: integer
 streams:
   - "#/definitions/sms_stream"
 
