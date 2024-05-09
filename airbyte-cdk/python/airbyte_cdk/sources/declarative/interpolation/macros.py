@@ -4,9 +4,11 @@
 
 import builtins
 import datetime
-import numbers
-from typing import Any, Union
+import typing
+from typing import Union
 
+import isodate
+import pytz
 from dateutil import parser
 from isodate import parse_duration
 
@@ -35,7 +37,7 @@ def today_utc() -> datetime.date:
     return datetime.datetime.now(datetime.timezone.utc).date()
 
 
-def timestamp(dt: Union[numbers.Number, str]) -> Union[float, str]:
+def timestamp(dt: Union[float, str]) -> Union[int, float]:
     """
     Converts a number or a string to a timestamp
 
@@ -48,21 +50,21 @@ def timestamp(dt: Union[numbers.Number, str]) -> Union[float, str]:
     :param dt: datetime to convert to timestamp
     :return: unix timestamp
     """
-    if isinstance(dt, numbers.Number):
-        return int(dt)  # type: ignore[call-overload, no-any-return]
+    if isinstance(dt, (int, float)):
+        return int(dt)
     else:
-        return _str_to_datetime(dt).astimezone(datetime.timezone.utc).timestamp()
+        return _str_to_datetime(dt).astimezone(pytz.utc).timestamp()
 
 
 def _str_to_datetime(s: str) -> datetime.datetime:
     parsed_date = parser.isoparse(s)
     if not parsed_date.tzinfo:
         # Assume UTC if the input does not contain a timezone
-        parsed_date = parsed_date.replace(tzinfo=datetime.timezone.utc)
-    return parsed_date.astimezone(datetime.timezone.utc)  # type: ignore # mypy thinks this returns Any for some reason
+        parsed_date = parsed_date.replace(tzinfo=pytz.utc)
+    return parsed_date.astimezone(pytz.utc)
 
 
-def max(*args: Any) -> Any:
+def max(*args: typing.Any) -> typing.Any:
     """
     Returns biggest object of an iterable, or two or more arguments.
 
@@ -95,7 +97,7 @@ def day_delta(num_days: int, format: str = "%Y-%m-%dT%H:%M:%S.%f%z") -> str:
     return (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=num_days)).strftime(format)
 
 
-def duration(datestring: str) -> datetime.timedelta:
+def duration(datestring: str) -> Union[datetime.timedelta, isodate.Duration]:
     """
     Converts ISO8601 duration to datetime.timedelta
 
@@ -111,10 +113,17 @@ def format_datetime(dt: Union[str, datetime.datetime], format: str) -> str:
 
     Usage:
     `"{{ format_datetime(config.start_date, '%Y-%m-%d') }}"`
+
+    CPython Datetime package has known bug with `stfrtime` method: '%s' formatting uses locale timezone
+    https://github.com/python/cpython/issues/77169
+    https://github.com/python/cpython/issues/56959
     """
     if isinstance(dt, datetime.datetime):
         return dt.strftime(format)
-    return _str_to_datetime(dt).strftime(format)
+    dt_datetime = _str_to_datetime(dt)
+    if format == "%s":
+        return str(int(dt_datetime.timestamp()))
+    return dt_datetime.strftime(format)
 
 
 _macros_list = [now_utc, today_utc, timestamp, max, day_delta, duration, format_datetime]
