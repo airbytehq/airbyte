@@ -47,14 +47,14 @@ This page guides you through the process of setting up the Snapchat Marketing so
    - Locate "code" query parameter in the redirect
    - Exchange code for access token + refresh token
    `text
-   curl -X POST \  
-   -d "code={one_time_use_code}" \  
-   -d "client_id={client_id}" \  
-   -d "client_secret={client_secret}"  \  
-   -d "grant_type=authorization_code"  \  
-   -d "redirect_uri=redirect_uri"  
-   https://accounts.snapchat.com/login/oauth2/access_token
-   `
+curl -X POST \  
+-d "code={one_time_use_code}" \  
+-d "client_id={client_id}" \  
+-d "client_secret={client_secret}"  \  
+-d "grant_type=authorization_code"  \  
+-d "redirect_uri=redirect_uri"  
+https://accounts.snapchat.com/login/oauth2/access_token
+`
    You will receive the API key and refresh token in response. Use this refresh token in the connector specifications.  
    The useful link to Authentication process is [here](https://marketingapi.snapchat.com/docs/#authentication)
    <!-- /env:oss -->
