@@ -9,6 +9,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.bson.BsonBinary;
+import org.bson.BsonBinarySubType;
 import org.bson.UuidRepresentation;
 import org.bson.internal.UuidHelper;
 import org.bson.types.Binary;
@@ -22,11 +23,11 @@ import static java.util.Base64.getEncoder;
  */
 public enum IdType {
 
-  OBJECT_ID("objectId", "ObjectId", ObjectId::new),
-  STRING("string", "String", s -> s),
-  INT("int", "Integer", Integer::valueOf),
-  LONG("long", "Long", Long::valueOf),
-  BINARY("binData", "Binary", s -> s);
+  OBJECT_ID("objectId", "ObjectId"),
+  STRING("string", "String"),
+  INT("int", "Integer"),
+  LONG("long", "Long"),
+  BINARY("binData", "Binary");
 
   private static final Map<String, IdType> byBsonType = new HashMap<>();
   static {
@@ -54,17 +55,10 @@ public enum IdType {
   private final String bsonType;
   /** Java class name type */
   private final String javaType;
-  /** Converter for converting a string value into an appropriate MongoDb type. */
-  private final Function<String, Object> converter;
 
-  IdType(final String bsonType, final String javaType, final Function<String, Object> converter) {
+  IdType(final String bsonType, final String javaType) {
     this.bsonType = bsonType;
     this.javaType = javaType;
-    this.converter = converter;
-  }
-
-  public Object convert(final String t) {
-    return converter.apply(t);
   }
 
   public static Optional<IdType> findByBsonType(final String bsonType) {
@@ -86,7 +80,7 @@ public enum IdType {
     final String id;
     if (idType == IdType.BINARY) {
       final var binLastId = (Binary) currentId;
-      if (binLastId.getType() == 4) {
+      if (binLastId.getType() == BsonBinarySubType.UUID_STANDARD.getValue()) {
         id = UuidHelper.decodeBinaryToUuid(binLastId.getData(), binLastId.getType(), UuidRepresentation.STANDARD).toString();
       } else {
         id = getEncoder().encodeToString(binLastId.getData());

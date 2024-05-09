@@ -207,7 +207,6 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
 
   private AirbyteStreamState generateStreamState(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
                                                  final MongoDbStreamState streamState) {
-    LOGGER.info("*** {} to {}", streamState, Jsons.jsonNode(streamState));
     return new AirbyteStreamState()
         .withStreamDescriptor(
             new StreamDescriptor()
