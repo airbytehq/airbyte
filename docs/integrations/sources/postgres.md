@@ -9,6 +9,8 @@ Airbyte's certified Postgres connector offers the following features:
 
 The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping, and changelogs). See [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting) to troubleshooting issues with the Postgres connector.
 
+**Please note the required minimum platform version is v0.58.0 for this connector.**
+
 ![Airbyte Postgres Connection](https://raw.githubusercontent.com/airbytehq/airbyte/c078e8ed6703020a584d9362efa5665fbe8db77f/docs/integrations/sources/postgres/assets/airbyte_postgres_source.png?raw=true)
 
 ## Quick Start
@@ -304,8 +306,10 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                   |
-|---------|------------|----------------------------------------------------------|-----------------------------------------------------------|
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
+|---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.0   | 2024-04-29 | [37112](https://github.com/airbytehq/airbyte/pull/37112) | resumeable full refresh.                                                                                                                                                   |
+| 3.3.33  | 2024-05-07 | [38030](https://github.com/airbytehq/airbyte/pull/38030) | Mark PG hot standby error as transient.                                                                                                                                    |
 | 3.3.32  | 2024-04-30 | [37758](https://github.com/airbytehq/airbyte/pull/37758) | Correct previous release to disable debezium retries                                                                                                                       |
 | 3.3.31  | 2024-04-30 | [37754](https://github.com/airbytehq/airbyte/pull/37754) | Add CDC logs                                                                                                                                                               |
 | 3.3.30  | 2024-04-30 | [37726](https://github.com/airbytehq/airbyte/pull/37726) | Remove debezium retries                                                                                                                                                    |
@@ -473,7 +477,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | 0.4.39  | 2022-08-02 | [14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiple log bindings                                                                                                                                                  |
 | 0.4.38  | 2022-07-26 | [14362](https://github.com/airbytehq/airbyte/pull/14362) | Integral columns are now discovered as int64 fields.                                                                                                                       |
 | 0.4.37  | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected                                                                                                                |
-| 0.4.36  | 2022-07-21 | [14451](https://github.com/airbytehq/airbyte/pull/14451) | Make initial CDC waiting time configurable (⛔ this version has a bug and will not work; use `0.4.42` instead)                                                             |     |
+| 0.4.36  | 2022-07-21 | [14451](https://github.com/airbytehq/airbyte/pull/14451) | Make initial CDC waiting time configurable (⛔ this version has a bug and will not work; use `0.4.42` instead)                                                             |     
 | 0.4.35  | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors                                                                                                             |
 | 0.4.34  | 2022-07-17 | [13840](https://github.com/airbytehq/airbyte/pull/13840) | Added the ability to connect using different SSL modes and SSL certificates.                                                                                               |
 | 0.4.33  | 2022-07-14 | [14586](https://github.com/airbytehq/airbyte/pull/14586) | Validate source JDBC url parameters                                                                                                                                        |
