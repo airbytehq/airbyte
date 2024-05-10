@@ -307,9 +307,9 @@ class InitialSnapshotHandlerTest {
             NAME_FIELD, NAME5))));
 
     insertDocuments(COLLECTION4, List.of(
-            new Document(Map.of(
-                    CURSOR_FIELD, OBJECT_ID7,
-                    NAME_FIELD, NAME7))));
+        new Document(Map.of(
+            CURSOR_FIELD, OBJECT_ID7,
+            NAME_FIELD, NAME7))));
 
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final MongoDbStateManager ogStateManager = MongoDbStateManager.createStateManager(null, CONFIG);
@@ -498,9 +498,9 @@ class InitialSnapshotHandlerTest {
             NAME_FIELD, NAME4))));
 
     insertDocuments(COLLECTION4, List.of(
-            new Document(Map.of(
-                    CURSOR_FIELD, OBJECT_ID7,
-                    NAME_FIELD, NAME7))));
+        new Document(Map.of(
+            CURSOR_FIELD, OBJECT_ID7,
+            NAME_FIELD, NAME7))));
 
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final MongoDbStateManager ogStateManager = MongoDbStateManager.createStateManager(null, CONFIG);
