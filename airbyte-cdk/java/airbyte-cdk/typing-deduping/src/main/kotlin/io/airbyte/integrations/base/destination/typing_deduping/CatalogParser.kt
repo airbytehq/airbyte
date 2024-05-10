@@ -6,8 +6,11 @@ package io.airbyte.integrations.base.destination.typing_deduping
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler.Companion.addStringForDeinterpolation
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
+import io.airbyte.commons.exceptions.ConfigErrorException
+import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.util.Optional
 import java.util.function.Consumer
 import org.apache.commons.codec.digest.DigestUtils
@@ -18,9 +21,20 @@ class CatalogParser
 @JvmOverloads
 constructor(
     private val sqlGenerator: SqlGenerator,
-    private val rawNamespace: String = JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
+    private val defaultNamespace: String,
+    private val rawNamespace: String = JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE,
 ) {
-    fun parseCatalog(catalog: ConfiguredAirbyteCatalog): ParsedCatalog {
+    fun parseCatalog(orginalCatalog: ConfiguredAirbyteCatalog): ParsedCatalog {
+        // Don't mutate the original catalog, just operate on a copy of it
+        // This is... probably the easiest way we have to deep clone a protocol model object?
+        val catalog = Jsons.clone(orginalCatalog)
+        catalog.streams.onEach {
+            // Overwrite null namespaces
+            if (it.stream.namespace.isNullOrEmpty()) {
+                it.stream.namespace = defaultNamespace
+            }
+        }
+
         // this code is bad and I feel bad
         // it's mostly a port of the old normalization logic to prevent tablename collisions.
         // tbh I have no idea if it works correctly.
@@ -55,13 +69,13 @@ constructor(
                         .substring(0, 3)
                 val newName = "${originalName}_$hash"
                 actualStreamConfig =
-                    StreamConfig(
-                        sqlGenerator.buildStreamId(originalNamespace, newName, rawNamespace),
-                        originalStreamConfig.syncMode,
-                        originalStreamConfig.destinationSyncMode,
-                        originalStreamConfig.primaryKey,
-                        originalStreamConfig.cursor,
-                        originalStreamConfig.columns,
+                    originalStreamConfig.copy(
+                        id =
+                            sqlGenerator.buildStreamId(
+                                originalNamespace,
+                                newName,
+                                rawNamespace,
+                            ),
                     )
             } else {
                 actualStreamConfig = originalStreamConfig
@@ -112,6 +126,18 @@ constructor(
 
     @VisibleForTesting
     fun toStreamConfig(stream: ConfiguredAirbyteStream): StreamConfig {
+        if (stream.generationId == null) {
+            stream.generationId = 0
+            stream.minimumGenerationId = 0
+            stream.syncId = 0
+        }
+        if (
+            stream.minimumGenerationId != 0.toLong() &&
+                stream.minimumGenerationId != stream.generationId
+        ) {
+            throw UnsupportedOperationException("Hybrid refreshes are not yet supported.")
+        }
+
         val airbyteColumns =
             when (
                 val schema: AirbyteType =
@@ -143,11 +169,13 @@ constructor(
 
         return StreamConfig(
             sqlGenerator.buildStreamId(stream.stream.namespace, stream.stream.name, rawNamespace),
-            stream.syncMode,
             stream.destinationSyncMode,
             primaryKey,
             cursor,
-            columns
+            columns,
+            stream.generationId,
+            stream.minimumGenerationId,
+            stream.syncId,
         )
     }
 

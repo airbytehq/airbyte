@@ -5,7 +5,6 @@
 package io.airbyte.cdk.integrations.destination.async
 
 import com.google.common.base.Preconditions
-import com.google.common.base.Strings
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferEnqueue
@@ -28,8 +27,6 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
-import java.util.stream.Collectors
-import kotlin.jvm.optionals.getOrNull
 import org.jetbrains.annotations.VisibleForTesting
 
 private val logger = KotlinLogging.logger {}
@@ -52,7 +49,7 @@ constructor(
     onFlush: DestinationFlushFunction,
     private val catalog: ConfiguredAirbyteCatalog,
     private val bufferManager: BufferManager,
-    private val defaultNamespace: Optional<String>,
+    private val defaultNamespace: String,
     private val flushFailure: FlushFailure = FlushFailure(),
     workerPool: ExecutorService = Executors.newFixedThreadPool(5),
     private val airbyteMessageDeserializer: AirbyteMessageDeserializer =
@@ -79,28 +76,6 @@ constructor(
     private var hasStarted = false
     private var hasClosed = false
     private var hasFailed = false
-
-    internal constructor(
-        outputRecordCollector: Consumer<AirbyteMessage>,
-        onStart: OnStartFunction,
-        onClose: OnCloseFunction,
-        flusher: DestinationFlushFunction,
-        catalog: ConfiguredAirbyteCatalog,
-        bufferManager: BufferManager,
-        flushFailure: FlushFailure,
-        defaultNamespace: Optional<String>,
-    ) : this(
-        outputRecordCollector,
-        onStart,
-        onClose,
-        flusher,
-        catalog,
-        bufferManager,
-        defaultNamespace,
-        flushFailure,
-        Executors.newFixedThreadPool(5),
-        AirbyteMessageDeserializer(),
-    )
 
     @Throws(Exception::class)
     override fun start() {
@@ -130,9 +105,6 @@ constructor(
                 message,
             )
         if (AirbyteMessage.Type.RECORD == partialAirbyteMessage.type) {
-            if (Strings.isNullOrEmpty(partialAirbyteMessage.record?.namespace)) {
-                partialAirbyteMessage.record?.namespace = defaultNamespace.getOrNull()
-            }
             validateRecord(partialAirbyteMessage)
 
             partialAirbyteMessage.record?.streamDescriptor?.let {
@@ -142,7 +114,6 @@ constructor(
         bufferEnqueue.addRecord(
             partialAirbyteMessage,
             sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES,
-            defaultNamespace,
         )
     }
 
@@ -160,18 +131,15 @@ constructor(
         bufferManager.close()
 
         val streamSyncSummaries =
-            streamNames
-                .stream()
-                .collect(
-                    Collectors.toMap(
-                        { streamDescriptor: StreamDescriptor -> streamDescriptor },
-                        { streamDescriptor: StreamDescriptor ->
-                            StreamSyncSummary(
-                                Optional.of(getRecordCounter(streamDescriptor).get()),
-                            )
-                        },
-                    ),
-                )
+            streamNames.associate { streamDescriptor ->
+                StreamDescriptorUtils.withDefaultNamespace(
+                    streamDescriptor,
+                    defaultNamespace,
+                ) to
+                    StreamSyncSummary(
+                        Optional.of(getRecordCounter(streamDescriptor).get()),
+                    )
+            }
         onClose.accept(hasFailed, streamSyncSummaries)
 
         // as this throws an exception, we need to be after all other close functions.

@@ -22,6 +22,7 @@ private val logger = KotlinLogging.logger {}
 class BufferManager
 @JvmOverloads
 constructor(
+    defaultNamespace: String,
     maxMemory: Long = (Runtime.getRuntime().maxMemory() * MEMORY_LIMIT_RATIO).toLong(),
 ) {
     @get:VisibleForTesting val buffers: ConcurrentMap<StreamDescriptor, StreamAwareQueue>
@@ -46,7 +47,7 @@ constructor(
         memoryManager = GlobalMemoryManager(maxMemory)
         this.stateManager = GlobalAsyncStateManager(memoryManager)
         buffers = ConcurrentHashMap()
-        bufferEnqueue = BufferEnqueue(memoryManager, buffers, stateManager)
+        bufferEnqueue = BufferEnqueue(memoryManager, buffers, stateManager, defaultNamespace)
         bufferDequeue = BufferDequeue(memoryManager, buffers, stateManager)
         debugLoop = Executors.newSingleThreadScheduledExecutor()
         debugLoop.scheduleAtFixedRate(
