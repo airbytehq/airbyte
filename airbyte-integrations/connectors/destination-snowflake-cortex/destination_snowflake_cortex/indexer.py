@@ -87,9 +87,9 @@ class SnowflakeCortexIndexer(Indexer):
             stream.stream.json_schema["properties"][PAGE_CONTENT_COLUMN] = {"type": "string"}
             stream.stream.json_schema["properties"][METADATA_COLUMN] = {"type": "object"}
             stream.stream.json_schema["properties"][EMBEDDING_COLUMN] = {"type": "vector_array"}
-            # set primary key, okay to override if already set
-            stream.primary_key = [[DOCUMENT_ID_COLUMN]]
-            # TODO: do we want to set chunk_id as a constraint in the catalog
+            # set primary key only if there are existing primary keys
+            if stream.primary_key:
+                stream.primary_key = [[DOCUMENT_ID_COLUMN]]
         return updated_catalog
 
     def _get_primary_keys(self, stream_name: str) -> Optional[str]:
@@ -163,7 +163,8 @@ class SnowflakeCortexIndexer(Indexer):
             cortex_processor.process_airbyte_messages(airbyte_messages, self.get_write_strategy(stream))
 
     def delete(self, delete_ids, namespace, stream):
-        # TODO: Confirm PyAirbyte SQL processor will handle deletes when needed.
+        # delete is generally used when we use full refresh/overwrite strategy. 
+        # PyAirbyte's sync will take care of overwriting the records. Hence, we don't need to do anything here.
         pass
 
     def check(self) -> Optional[str]:

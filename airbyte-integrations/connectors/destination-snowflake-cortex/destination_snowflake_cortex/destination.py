@@ -3,7 +3,9 @@
 #
 
 
-from typing import Any, Iterable, Mapping
+import os 
+
+from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
@@ -22,7 +24,7 @@ class DestinationSnowflakeCortex(Destination):
     indexer: Indexer
     embedder: Embedder
 
-    def _init_indexer(self, config: ConfigModel, configured_catalog: ConfiguredAirbyteCatalog | None = None):
+    def _init_indexer(self, config: ConfigModel, configured_catalog:  Optional[ConfiguredAirbyteCatalog] = None):
         self.embedder = create_from_config(config.embedding, config.processing)
         self.indexer = SnowflakeCortexIndexer(config.indexing, self.embedder.embedding_dimensions, configured_catalog)
 
@@ -46,6 +48,8 @@ class DestinationSnowflakeCortex(Destination):
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
+        do_not_track = os.environ.get("DO_NOT_TRACK")
+        print(f"Coming in spec. Analytics is {do_not_track}")
         return ConnectorSpecification(
             documentationUrl="https://docs.airbyte.com/integrations/destinations/snowflake-cortex",
             supportsIncremental=True,

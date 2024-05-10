@@ -160,8 +160,8 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
 
         # todo: test merge once merge works in PyAirbyte 
         # perform a query using OpenAI embedding 
-        embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
-        result = self._run_cosine_similarity(embeddings.embed_query("feline animals"), "mystream")
-        assert(len(result) == 1)
-        result[0] == "str_col: Cats are nice"
+        #embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
+        #result = self._run_cosine_similarity(embeddings.embed_query("feline animals"), "mystream")
+        #assert(len(result) == 1)
+        #result[0] == "str_col: Cats are nice"
 

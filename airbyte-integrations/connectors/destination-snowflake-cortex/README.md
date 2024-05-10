@@ -132,10 +132,9 @@ If your connector requires to create or destroy resources for use during accepta
 See [airbyte-ci documentation](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#connectors-test-command)
 
 ## Dependency Management
-All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
-We split dependencies between two groups, dependencies that are:
-* required for your connector to work need to go to `MAIN_REQUIREMENTS` list.
-* required for the testing need to go to `TEST_REQUIREMENTS` list
+All of your dependencies should go in `pyproject.toml`
+* required for your connector to work need to go to `[tool.poetry.dependencies]` list.
+* required for the testing need to go to `[tool.poetry.group.dev.dependencies]` list
 
 ### Publishing a new version of the connector
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
