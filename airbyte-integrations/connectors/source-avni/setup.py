@@ -8,6 +8,7 @@ from setuptools import find_packages, setup
 MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.1",
     "boto3==1.18.0",
+    "pytz==2024.1",
 ]
 
 TEST_REQUIREMENTS = [
