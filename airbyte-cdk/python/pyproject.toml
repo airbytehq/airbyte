@@ -61,6 +61,7 @@ unstructured = { version = "0.10.27", extras = ["docx", "pptx"], optional = true
 "unstructured.pytesseract" = { version = ">=0.3.12", optional = true }
 pyjwt = "^2.8.0"
 cryptography = "^42.0.5"
+pytz = "2024.1"
 
 [tool.poetry.group.dev.dependencies]
 datamodel_code_generator = "0.11.19"
