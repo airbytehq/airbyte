@@ -96,7 +96,7 @@ class S3AvroWriter(
         uploadManager.abort()
     }
 
-    override val fileFormat: FileUploadFormat?
+    override val fileFormat: FileUploadFormat
         get() = FileUploadFormat.AVRO
 
     @Throws(IOException::class)

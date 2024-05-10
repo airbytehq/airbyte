@@ -111,7 +111,7 @@ open class S3DestinationConfig {
         LOGGER.info("Creating S3 client...")
 
         val credentialsProvider = s3CredentialConfig!!.s3CredentialsProvider
-        val credentialType = s3CredentialConfig!!.credentialType
+        val credentialType = s3CredentialConfig.credentialType
 
         if (S3CredentialType.DEFAULT_PROFILE == credentialType) {
             return AmazonS3ClientBuilder.standard()
@@ -145,14 +145,14 @@ open class S3DestinationConfig {
             .build()
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o == null || javaClass != o.javaClass) {
+        if (other == null || javaClass != other.javaClass) {
             return false
         }
-        val that = o as S3DestinationConfig
+        val that = other as S3DestinationConfig
         return endpoint == that.endpoint &&
             bucketName == that.bucketName &&
             bucketPath == that.bucketPath &&
@@ -300,7 +300,7 @@ open class S3DestinationConfig {
                     getProperty(config, S3Constants.S_3_BUCKET_REGION)
                 )
 
-            if (config!!.has(S3Constants.S_3_BUCKET_PATH)) {
+            if (config.has(S3Constants.S_3_BUCKET_PATH)) {
                 builder = builder.withBucketPath(config[S3Constants.S_3_BUCKET_PATH].asText())
             }
 

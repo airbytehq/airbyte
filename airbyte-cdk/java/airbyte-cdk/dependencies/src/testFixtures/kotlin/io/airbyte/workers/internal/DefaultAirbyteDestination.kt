@@ -5,6 +5,7 @@ package io.airbyte.workers.internal
 
 import com.google.common.base.Charsets
 import com.google.common.base.Preconditions
+import io.airbyte.cdk.extensions.TestContext
 import io.airbyte.commons.io.IOs
 import io.airbyte.commons.io.LineGobbler
 import io.airbyte.commons.json.Jsons
@@ -39,7 +40,7 @@ class DefaultAirbyteDestination
 constructor(
     private val integrationLauncher: IntegrationLauncher,
     private val streamFactory: AirbyteStreamFactory =
-        DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER),
+        DefaultAirbyteStreamFactory(createContainerLogMdcBuilder()),
     private val messageWriterFactory: AirbyteMessageBufferedWriterFactory =
         DefaultAirbyteMessageBufferedWriterFactory(),
     private val protocolSerializer: ProtocolSerializer = DefaultProtocolSerializer()
@@ -51,24 +52,18 @@ constructor(
     private var messageIterator: Iterator<AirbyteMessage?>? = null
 
     private var exitValueIsSet = false
-    private var exitValue: Int = 0
-    override fun getExitValue(): Int {
-        Preconditions.checkState(
-            destinationProcess != null,
-            "Destination process is null, cannot retrieve exit value."
-        )
-        Preconditions.checkState(
-            !destinationProcess!!.isAlive,
-            "Destination process is still alive, cannot retrieve exit value."
-        )
-
-        if (!exitValueIsSet) {
-            exitValueIsSet = true
-            exitValue = destinationProcess!!.exitValue()
+    override val exitValue: Int
+        get() {
+            Preconditions.checkState(
+                destinationProcess != null,
+                "Destination process is null, cannot retrieve exit value."
+            )
+            Preconditions.checkState(
+                !destinationProcess!!.isAlive,
+                "Destination process is still alive, cannot retrieve exit value."
+            )
+            return destinationProcess!!.exitValue()
         }
-
-        return exitValue
-    }
 
     @Throws(IOException::class, TestHarnessException::class)
     override fun start(
@@ -93,7 +88,7 @@ constructor(
             destinationProcess!!.errorStream,
             { msg: String? -> LOGGER.error(msg) },
             "airbyte-destination",
-            CONTAINER_LOG_MDC_BUILDER
+            createContainerLogMdcBuilder()
         )
 
         writer =
@@ -185,10 +180,14 @@ constructor(
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(DefaultAirbyteDestination::class.java)
-        val CONTAINER_LOG_MDC_BUILDER: MdcScope.Builder =
-            MdcScope.Builder()
-                .setLogPrefix("destination")
+        fun createContainerLogMdcBuilder(): MdcScope.Builder {
+            val currentTest = TestContext.CURRENT_TEST_NAME.get()
+            val logPrefix =
+                if (currentTest == null) "destination" else "destination(${currentTest})"
+            return MdcScope.Builder()
+                .setLogPrefix(logPrefix)
                 .setPrefixColor(LoggingHelper.Color.YELLOW_BACKGROUND)
+        }
         val IGNORED_EXIT_CODES: Set<Int> =
             setOf(
                 0, // Normal exit
