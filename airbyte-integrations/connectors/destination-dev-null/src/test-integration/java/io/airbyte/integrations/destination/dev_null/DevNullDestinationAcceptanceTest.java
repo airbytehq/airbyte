@@ -14,6 +14,8 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class DevNullDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
