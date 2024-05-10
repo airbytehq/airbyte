@@ -105,7 +105,7 @@ class IncrementalSingleSliceCursor(Cursor):
         if self.is_greater_than_or_equal(record, self._state):
             self._cursor = record_cursor_value
 
-    def close_slice(self, stream_slice: StreamSlice) -> None:
+    def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
         cursor_field = self.cursor_field.eval(self.config)
         self._state[cursor_field] = self._cursor
 
@@ -178,8 +178,8 @@ class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
         # observe the substream
         super().observe(stream_slice, record)
 
-    def close_slice(self, stream_slice: StreamSlice) -> None:
-        super().close_slice(stream_slice=stream_slice)
+    def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
+        super().close_slice(stream_slice, *args)
 
     def stream_slices(self) -> Iterable[Mapping[str, Any]]:
         parent_state = (self._state or {}).get(self.parent_stream_name, {})
