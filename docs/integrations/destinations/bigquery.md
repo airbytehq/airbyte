@@ -220,6 +220,7 @@ tutorials:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.19  | 2024-05-10 | [38125](https://github.com/airbytehq/airbyte/pull/38125)   | adopt latest CDK code                                                                                                                     |
 | 2.4.18  | 2024-05-10 | [38111](https://github.com/airbytehq/airbyte/pull/38111)   | No functional changes, deleting unused code                                                                                                                     |
 | 2.4.17  | 2024-05-09 | [38098](https://github.com/airbytehq/airbyte/pull/38098)   | Internal build structure change                                                                                                                                 |
 | 2.4.16  | 2024-05-08 | [37714](https://github.com/airbytehq/airbyte/pull/37714)   | Adopt CDK 0.34.0                                                                                                                                                |
