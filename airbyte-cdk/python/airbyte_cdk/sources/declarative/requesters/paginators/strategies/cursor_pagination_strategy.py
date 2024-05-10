@@ -40,7 +40,7 @@ class CursorPaginationStrategy(PaginationStrategy):
         else:
             self._cursor_value = self.cursor_value
         if isinstance(self.stop_condition, str):
-            self._stop_condition = InterpolatedBoolean(condition=self.stop_condition, parameters=parameters)
+            self._stop_condition: Optional[InterpolatedBoolean] = InterpolatedBoolean(condition=self.stop_condition, parameters=parameters)
         else:
             self._stop_condition = self.stop_condition
 
