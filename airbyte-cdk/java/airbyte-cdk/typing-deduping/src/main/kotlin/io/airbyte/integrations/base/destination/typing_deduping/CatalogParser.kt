@@ -33,6 +33,12 @@ constructor(
             if (it.stream.namespace.isNullOrEmpty()) {
                 it.stream.namespace = defaultNamespace
             }
+            // The refreshes project is the beginning of the end for OVERWRITE syncs.
+            // The sync mode still exists, but we are fully dependent on min_generation to trigger
+            // overwrite logic.
+            if (it.destinationSyncMode == DestinationSyncMode.OVERWRITE) {
+                it.destinationSyncMode = DestinationSyncMode.APPEND
+            }
         }
 
         // this code is bad and I feel bad
@@ -127,9 +133,10 @@ constructor(
     @VisibleForTesting
     fun toStreamConfig(stream: ConfiguredAirbyteStream): StreamConfig {
         if (stream.generationId == null) {
-            stream.generationId = 0
-            stream.minimumGenerationId = 0
-            stream.syncId = 0
+            // TODO set platform version
+            throw ConfigErrorException(
+                "You must upgrade your platform version to use this connector version. Either downgrade your connector or upgrade platform to X.Y.Z"
+            )
         }
         if (
             stream.minimumGenerationId != 0.toLong() &&
