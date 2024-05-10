@@ -162,13 +162,16 @@ constructor(
 
         bufferManager.close()
 
+        val unsuccessfulStreams = ArrayList<StreamDescriptor>()
         val streamSyncSummaries =
             streamNames.associate { streamDescriptor ->
-                // If we didn't receive a stream status message, assume success.
-                // Platform won't send us any stream status messages yet (since we're not declaring
-                // supportsRefresh in metadata), so we will always hit this case.
+                // If we didn't receive a stream status message, assume failure.
+                // This is possible if e.g. the orchestrator crashes before sending us the message.
                 val terminalStatusFromSource =
-                    terminalStatusesFromSource[streamDescriptor] ?: AirbyteStreamStatus.COMPLETE
+                    terminalStatusesFromSource[streamDescriptor] ?: AirbyteStreamStatus.INCOMPLETE
+                if (terminalStatusFromSource == AirbyteStreamStatus.INCOMPLETE) {
+                    unsuccessfulStreams.add(streamDescriptor)
+                }
                 StreamDescriptorUtils.withDefaultNamespace(
                     streamDescriptor,
                     bufferManager.defaultNamespace,
@@ -183,6 +186,15 @@ constructor(
         // as this throws an exception, we need to be after all other close functions.
         propagateFlushWorkerExceptionIfPresent()
         logger.info { "${AsyncStreamConsumer::class.java} closed" }
+
+        // In principle, platform should detect this.
+        // However, as a backstop, the destination should still do this check.
+        // This handles e.g. platform bugs where we don't receive a stream status message.
+        // In this case, it would be misleading to mark the sync as successful, because e.g. we
+        // maybe didn't commit a truncate.
+        if (unsuccessfulStreams.isNotEmpty()) {
+            throw RuntimeException("Some streams were unsuccessful due to a source error: $unsuccessfulStreams")
+        }
     }
 
     private fun getRecordCounter(streamDescriptor: StreamDescriptor): AtomicLong {
