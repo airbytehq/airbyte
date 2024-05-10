@@ -309,7 +309,7 @@ class RestSalesforceStream(SalesforceStream):
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request = self._create_prepared_request(
             path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            headers=dict(request_headers),
             params=self.request_params(
                 stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, property_chunk=property_chunk
             ),
@@ -365,7 +365,6 @@ class BulkSalesforceStream(SalesforceStream):
         return self._non_retryable_send_http_request(method, url, json, headers, stream)
 
     def _non_retryable_send_http_request(self, method: str, url: str, json: dict = None, headers: dict = None, stream: bool = False):
-        headers = self.authenticator.get_auth_header() if not headers else headers | self.authenticator.get_auth_header()
         response = self._session.request(method, url=url, headers=headers, json=json, stream=stream)
         if response.status_code not in [200, 204]:
             self.logger.error(f"error body: {response.text}, sobject options: {self.sobject_options}")
@@ -706,7 +705,7 @@ class BulkSalesforceStream(SalesforceStream):
             stream_name=self.stream_name,
             schema=self.schema,
             sobject_options=self.sobject_options,
-            authenticator=self.authenticator,
+            authenticator=self._session.auth,
         )
         new_cls: Type[SalesforceStream] = RestSalesforceStream
         if isinstance(self, BulkIncrementalSalesforceStream):
