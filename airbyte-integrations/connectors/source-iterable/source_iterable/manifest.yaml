@@ -290,7 +290,7 @@ streams:
       partition_router: []
     primary_key: []
     incremental_sync:
-      step: P90D
+      step: P30D
       type: DatetimeBasedCursor
       cursor_field: profileUpdatedAt
       end_datetime:
