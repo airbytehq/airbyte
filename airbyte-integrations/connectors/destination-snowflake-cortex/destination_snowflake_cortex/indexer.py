@@ -146,7 +146,6 @@ class SnowflakeCortexIndexer(Indexer):
     def index(self, document_chunks, namespace, stream):
         # get list of airbyte messages from the document chunks
         airbyte_messages = self._get_airbyte_messsages_from_chunks(document_chunks)
-        # assuming it's per stream, let's add a stream specific state message to the list
         # todo: remove state messages and see if things still work
         airbyte_messages.append(self._create_state_message(stream, namespace, {}))
 
