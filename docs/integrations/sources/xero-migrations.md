@@ -14,6 +14,12 @@ Steps to get access_token via postman:
 - Set Client ID, Client secret, Scope defined as your Xero settings
 - Set state as any number Eg: `123`
 - Set Client Authentication as `Send as Basic Auth Header`
-- Click `Get New Access Token` for retrieving access token
+Click `Get New Access Token` for retrieving access token
+
+Then authorize your source with `access_token`.
+1. Go to set up `The Source` page.
+2. Enter your Xero application's access token.
+3. Click `Reset saved source` button. 
+
 
 As Xero API now only supports date-precision instead of second precision filtering through If-Modified-Since header, reads are streamlined to incremental through client side.
