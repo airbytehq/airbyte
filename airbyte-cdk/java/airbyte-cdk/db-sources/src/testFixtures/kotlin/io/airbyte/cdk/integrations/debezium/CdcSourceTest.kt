@@ -770,7 +770,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     // sync, the
     // data is replicated as expected.
     @Throws(Exception::class)
-    fun testCdcAndNonResumableFullRefreshInSameSync() {
+    protected open fun testCdcAndNonResumableFullRefreshInSameSync() {
         val configuredCatalog = Jsons.clone(configuredCatalog)
 
         val MODEL_RECORDS_2: List<JsonNode> =
@@ -789,7 +789,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             createTableSqlFmt(),
             modelsSchema(),
             MODELS_STREAM_NAME_2,
-            columnClause(columns, Optional.of(COL_ID)),
+            columnClause(columns, Optional.empty()),
         )
 
         for (recordJson in MODEL_RECORDS_2) {

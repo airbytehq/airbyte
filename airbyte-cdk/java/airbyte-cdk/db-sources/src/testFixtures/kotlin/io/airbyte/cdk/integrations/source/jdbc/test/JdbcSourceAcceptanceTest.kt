@@ -443,9 +443,10 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         setEmittedAtToNull(actualMessages)
 
         val expectedMessages = airbyteMessagesReadOneColumn
-        Assertions.assertEquals(expectedMessages.size, actualMessages.size)
-        Assertions.assertTrue(expectedMessages.containsAll(actualMessages))
-        Assertions.assertTrue(actualMessages.containsAll(expectedMessages))
+        val actualRecordMessages = filterRecords(actualMessages)
+        Assertions.assertEquals(expectedMessages.size, actualRecordMessages.size)
+        Assertions.assertTrue(expectedMessages.containsAll(actualRecordMessages))
+        Assertions.assertTrue(actualRecordMessages.containsAll(expectedMessages))
     }
 
     protected open val airbyteMessagesReadOneColumn: List<AirbyteMessage>
