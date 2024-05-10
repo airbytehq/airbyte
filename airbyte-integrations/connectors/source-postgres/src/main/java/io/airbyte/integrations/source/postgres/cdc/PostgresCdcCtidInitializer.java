@@ -190,16 +190,23 @@ public class PostgresCdcCtidInitializer {
       streamsUnderVacuum.addAll(streamsUnderVacuum(database,
           ctidStreams.streamsForCtidSync(), quoteString).result());
 
-      final List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
+      List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
           streamsUnderVacuum.isEmpty() ? ctidStreams.streamsForCtidSync()
               : ctidStreams.streamsForCtidSync().stream()
                   .filter(c -> !streamsUnderVacuum.contains(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(c)))
                   .toList();
-      LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
       final FileNodeHandler fileNodeHandler = PostgresQueryUtils.fileNodeForStreams(database,
           finalListOfStreamsToBeSyncedViaCtid,
           quoteString);
       final PostgresCtidHandler ctidHandler;
+      if (!fileNodeHandler.getFailedToQuery().isEmpty()) {
+        finalListOfStreamsToBeSyncedViaCtid = finalListOfStreamsToBeSyncedViaCtid.stream()
+            .filter(stream -> !fileNodeHandler.getFailedToQuery().contains(
+                new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace())))
+            .collect(Collectors.toList());
+      }
+      LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
+
       try {
         ctidHandler =
             createInitialLoader(database, finalListOfStreamsToBeSyncedViaCtid, fileNodeHandler, quoteString, ctidStateManager,
