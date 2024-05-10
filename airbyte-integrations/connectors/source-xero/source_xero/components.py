@@ -23,6 +23,61 @@ from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamSta
 from requests import HTTPError
 
 
+
+class ParseDates:
+    @staticmethod
+    def parse_date(value):
+        # Xero datetimes can be .NET JSON date strings which look like
+        # "/Date(1419937200000+0000)/"
+        # https://developer.xero.com/documentation/api/requests-and-responses
+        pattern = r"Date\((\-?\d+)([-+])?(\d+)?\)"
+        match = re.search(pattern, value)
+        iso8601pattern = r"((\d{4})-([0-2]\d)-0?([0-3]\d)T([0-5]\d):([0-5]\d):([0-6]\d))"
+        if not match:
+            iso8601match = re.search(iso8601pattern, value)
+            if iso8601match:
+                try:
+                    return datetime.strptime(value)
+                except Exception:
+                    return None
+            else:
+                return None
+
+        millis_timestamp, offset_sign, offset = match.groups()
+        if offset:
+            if offset_sign == "+":
+                offset_sign = 1
+            else:
+                offset_sign = -1
+            offset_hours = offset_sign * int(offset[:2])
+            offset_minutes = offset_sign * int(offset[2:])
+        else:
+            offset_hours = 0
+            offset_minutes = 0
+
+        return datetime.fromtimestamp((int(millis_timestamp) / 1000), tz=timezone.utc) + timedelta(
+            hours=offset_hours, minutes=offset_minutes
+        )
+
+    @staticmethod
+    def convert_dates(obj):
+        if isinstance(obj, dict):
+            for key, value in obj.items():
+                if isinstance(value, str):
+                    parsed_value = ParseDates.parse_date(value)
+                    if parsed_value:
+                        if isinstance(parsed_value, date):
+                            parsed_value = datetime.combine(parsed_value, time.min)
+                        parsed_value = parsed_value.replace(tzinfo=timezone.utc)
+                        obj[key] = datetime.isoformat(parsed_value, timespec="seconds")
+                elif isinstance(value, (dict, list)):
+                    ParseDates.convert_dates(value)
+        elif isinstance(obj, list):
+            for i in range(len(obj)):
+                if isinstance(obj[i], (dict, list)):
+                    ParseDates.convert_dates(obj[i])
+
+
 @dataclass
 class CustomExtractor(RecordExtractor):
     field_path: List[Union[InterpolatedString, str]]
@@ -36,39 +91,6 @@ class CustomExtractor(RecordExtractor):
                 self.field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
 
     def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
-        def parse_date(value):
-            # Xero datetimes can be .NET JSON date strings which look like
-            # "/Date(1419937200000+0000)/"
-            # https://developer.xero.com/documentation/api/requests-and-responses
-            pattern = r"Date\((\-?\d+)([-+])?(\d+)?\)"
-            match = re.search(pattern, value)
-            iso8601pattern = r"((\d{4})-([0-2]\d)-0?([0-3]\d)T([0-5]\d):([0-5]\d):([0-6]\d))"
-            if not match:
-                iso8601match = re.search(iso8601pattern, value)
-                if iso8601match:
-                    try:
-                        return datetime.strptime(value)
-                    except Exception:
-                        return None
-                else:
-                    return None
-
-            millis_timestamp, offset_sign, offset = match.groups()
-            if offset:
-                if offset_sign == "+":
-                    offset_sign = 1
-                else:
-                    offset_sign = -1
-                offset_hours = offset_sign * int(offset[:2])
-                offset_minutes = offset_sign * int(offset[2:])
-            else:
-                offset_hours = 0
-                offset_minutes = 0
-
-            return datetime.fromtimestamp((int(millis_timestamp) / 1000), tz=timezone.utc) + timedelta(
-                hours=offset_hours, minutes=offset_minutes
-            )
-
         response_body = self.decoder.decode(response)
         if len(self.field_path) == 0:
             extracted = response_body
@@ -79,24 +101,7 @@ class CustomExtractor(RecordExtractor):
             else:
                 extracted = dpath.util.get(response_body, path, default=[])
 
-        def convert_dates(obj):
-            if isinstance(obj, dict):
-                for key, value in obj.items():
-                    if isinstance(value, str):
-                        parsed_value = parse_date(value)
-                        if parsed_value:
-                            if isinstance(parsed_value, date):
-                                parsed_value = datetime.combine(parsed_value, time.min)
-                            parsed_value = parsed_value.replace(tzinfo=timezone.utc)
-                            obj[key] = datetime.isoformat(parsed_value, timespec="seconds")
-                    elif isinstance(value, (dict, list)):
-                        convert_dates(value)
-            elif isinstance(obj, list):
-                for i in range(len(obj)):
-                    if isinstance(obj[i], (dict, list)):
-                        convert_dates(obj[i])
-
-        convert_dates(extracted)
+        ParseDates.convert_dates(extracted)
 
         if isinstance(extracted, list):
             return extracted

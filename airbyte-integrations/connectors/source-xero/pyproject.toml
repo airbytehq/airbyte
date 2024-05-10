@@ -17,6 +17,7 @@ packages = [ { include = "source_xero" }, {include = "main.py" } ]
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 airbyte-cdk = "^0"
+pytz = "*"
 
 [tool.poetry.scripts]
 source-xero = "source_xero.run:run"
