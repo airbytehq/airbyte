@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import cast
+from typing import cast, Optional
 from unittest.mock import ANY, MagicMock, Mock, call, patch
 
 from airbyte.strategies import WriteStrategy
@@ -18,7 +18,7 @@ from destination_snowflake_cortex.indexer import (
 )
 
 
-def _create_snowflake_cortex_indexer(catalog:ConfiguredAirbyteCatalog | None = None ):
+def _create_snowflake_cortex_indexer(catalog:Optional[ConfiguredAirbyteCatalog] ):
     config = SnowflakeCortexIndexingModel(account="account", username="username", password="password", database="database", warehouse="warehouse", role="role")
     with patch.object(SnowflakeCortexIndexer, '_init_db_connection', side_effect=None):
         indexer = SnowflakeCortexIndexer(config, 3, Mock(ConfiguredAirbyteCatalog) if catalog is None else catalog)
