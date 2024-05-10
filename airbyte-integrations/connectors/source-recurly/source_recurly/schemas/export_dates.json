@@ -3,8 +3,10 @@
   "type": "object",
   "properties": {
     "dates": {
+      "description": "List of export dates",
       "type": ["null", "array"],
       "items": {
+        "description": "Date of the export",
         "type": ["null", "string"],
         "maxLength": 256
       }

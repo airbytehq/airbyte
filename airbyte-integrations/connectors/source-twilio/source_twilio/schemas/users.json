@@ -5,45 +5,59 @@
   "type": ["null", "object"],
   "properties": {
     "is_notifiable": {
+      "description": "Indicates whether the user is set to receive notifications",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when the user was last updated",
       "type": ["null", "string"]
     },
     "is_online": {
+      "description": "Indicates whether the user is currently online",
       "type": ["null", "string"]
     },
     "friendly_name": {
+      "description": "A user-friendly name for the user",
       "type": ["null", "string"]
     },
     "account_sid": {
+      "description": "The unique identifier for the user's account",
       "type": ["null", "string"]
     },
     "url": {
+      "description": "URL to access the user's detailed information",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The date and time when the user was created",
       "type": ["null", "string"]
     },
     "role_sid": {
+      "description": "The unique identifier for the role assigned to the user",
       "type": ["null", "string"]
     },
     "sid": {
+      "description": "The unique identifier for the user",
       "type": ["null", "string"]
     },
     "attributes": {
+      "description": "Additional attributes or metadata associated with the user",
       "type": ["null", "string"]
     },
     "identity": {
+      "description": "The identity or username of the user",
       "type": ["null", "string"]
     },
     "chat_service_sid": {
+      "description": "The unique identifier for the chat service the user is associated with",
       "type": ["null", "string"]
     },
     "links": {
+      "description": "Contains URLs to related resources for the user data.",
       "type": ["null", "object"],
       "properties": {
         "user_conversations": {
+          "description": "URL to retrieve the conversations associated with the user",
           "type": ["null", "string"]
         }
       }

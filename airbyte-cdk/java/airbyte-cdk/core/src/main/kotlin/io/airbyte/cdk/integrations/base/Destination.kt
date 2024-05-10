@@ -11,7 +11,6 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import java.util.function.Consumer
-import lombok.extern.slf4j.Slf4j
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -64,7 +63,6 @@ interface Destination : Integration {
      * Backwards-compatibility wrapper for an AirbyteMessageConsumer. Strips the sizeInBytes
      * argument away from the .accept call.
      */
-    @Slf4j
     class ShimToSerializedAirbyteMessageConsumer(private val consumer: AirbyteMessageConsumer?) :
         SerializedAirbyteMessageConsumer {
         @Throws(Exception::class)

@@ -2,7 +2,7 @@
 
 :::warning
 This tool is in active development. Airbyte strives to provide high quality, reliable software, however there may be
-bugs or usability issues with this command. If you find an issue with the `abctl` command, please report it as a github 
+bugs or usability issues with this command. If you find an issue with the `abctl` command, please report it as a github
 issue [here](https://github.com/airbytehq/airbyte/issues) with the type of "🐛 [abctl] Report an issue with the abctl tool".
 
 :::
@@ -10,7 +10,7 @@ issue [here](https://github.com/airbytehq/airbyte/issues) with the type of "🐛
 :::info
 These instructions have been tested on MacOS, Windows, Ubuntu and Fedora.
 
-This tool is intended to get Airbyte running as quickly as possible with no additional configuration necessary. 
+This tool is intended to get Airbyte running as quickly as possible with no additional configuration necessary.
 Additional configuration options may be added in the future, however, if you need additional configuration options now, use the
 docker compose solution by following the instructions for the `run_ab_platform.sh` script [here](/deploying-airbyte/docker-compose).
 
@@ -23,12 +23,12 @@ Mac users can use Brew to install the `abctl` command
 
 ```bash
 brew tap airbytehq/tap
-brew install abctl 
+brew install abctl
 ```
 
 :::
 
-- Install `Docker Desktop`  \(see [instructions](https://docs.docker.com/desktop/install/mac-install/)\).
+- Install `Docker Desktop` \(see [instructions](https://docs.docker.com/desktop/install/mac-install/)\).
 - After `Docker Desktop` is installed, you must enable `Kubernetes` \(see [instructions](https://docs.docker.com/desktop/kubernetes/)\).
 - If you did not use Brew to install `abctl` then download the latest version of `abctl` from the [releases page](https://github.com/airbytehq/abctl/releases) and run the following command:
 
@@ -37,7 +37,6 @@ Mac users may need to use the finder and Open With > Terminal to run the `abctl`
 users should be able to run the command from the terminal. Airbyte suggests mac users to use `brew` if it is available.
 
 :::
-
 
 ```bash
 ./abctl local install
@@ -57,6 +56,7 @@ ABCTL_LOCAL_INSTALL_USERNAME=bar
 - Start moving some data!
 
 ## Troubleshooting
+
 If you have any questions about the local setup and deployment process, head over to our [Getting Started FAQ](https://github.com/airbytehq/airbyte/discussions/categories/questions) on our Airbyte Forum that answers the following questions and more:
 
 - How long does it take to set up Airbyte?

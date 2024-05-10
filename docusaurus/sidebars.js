@@ -482,18 +482,6 @@ module.exports = {
         "cloud/managing-airbyte-cloud/manage-connection-state",
       ],
     },
-    {
-      type: "category",
-      label: "Workspace Management",
-      items: [
-        "cloud/managing-airbyte-cloud/manage-data-residency",
-        "using-airbyte/workspaces",
-        "cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications",
-        "cloud/managing-airbyte-cloud/manage-credits",
-        "operator-guides/using-custom-connectors",
-        
-      ]
-    },
     sectionHeader("Managing Airbyte"),
     deployAirbyte,
     {
@@ -560,6 +548,18 @@ module.exports = {
         "operator-guides/using-kestra-plugin",
       ],
     },
+    {
+      type: "category",
+      label: "Account Management",
+      items: [
+        "cloud/managing-airbyte-cloud/manage-data-residency",
+        "using-airbyte/workspaces",
+        "cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications",
+        "cloud/managing-airbyte-cloud/manage-credits",
+        "operator-guides/using-custom-connectors",
+        
+      ]
+    },
     sectionHeader("Developer Guides"),
     {
       type: "doc",
@@ -606,6 +606,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/april_2024",
         "release_notes/march_2024",
         "release_notes/february_2024",
         "release_notes/january_2024",

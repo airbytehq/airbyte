@@ -169,3 +169,12 @@ open http://localhost:3000
 ```
 
 And run the `generate_registry` job
+
+## Additional Notes
+
+### Testing Slack Notifications
+You will need to add the following environment variables to your `.env` file:
+
+- `SLACK_TOKEN`: Set to an OAuth token for the [Connector Ops Dagster Bot](https://airbytehq-team.slack.com/apps/A05K845HBE0-connector-ops-dagster-bot?settings=1)
+- `PUBLISH_UPDATE_CHANNEL`: Set to `#test-ci-slack-intergrations`
+- `SLACK_NOTIFICATIONS_DISABLED`: Set to `False`

@@ -113,3 +113,8 @@ properties:
         "$ref": AirbyteInternal.yaml
       remoteRegistries:
         "$ref": RemoteRegistries.yaml
+      supportsRefreshes:
+        type: boolean
+        default: false
+      generated:
+        "$ref": GeneratedFields.yaml
