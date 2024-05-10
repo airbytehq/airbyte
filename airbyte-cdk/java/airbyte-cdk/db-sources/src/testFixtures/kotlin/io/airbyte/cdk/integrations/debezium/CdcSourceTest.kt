@@ -121,9 +121,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         return AirbyteStreamStatusTraceMessage().withStreamDescriptor(io.airbyte.protocol.models.StreamDescriptor().withNamespace(namespace).withName(
             streamName)).withStatus(status)
     }
-    protected open fun assertExpectedTraceMessage(traceMessages: List<AirbyteTraceMessage>) {
-
-    }
 
     protected open fun assertExpectedStateMessagesForFullRefresh(
         stateMessages: List<AirbyteStateMessage>

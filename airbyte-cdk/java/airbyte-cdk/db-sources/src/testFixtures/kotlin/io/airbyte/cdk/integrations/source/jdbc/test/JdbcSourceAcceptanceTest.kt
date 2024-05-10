@@ -9,6 +9,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.factory.DatabaseDriver
 import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.integrations.base.Source
+import io.airbyte.cdk.integrations.debezium.CdcSourceTest
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbState
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState
@@ -16,6 +17,7 @@ import io.airbyte.cdk.testutils.TestDatabase
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.resources.MoreResources
 import io.airbyte.commons.util.MoreIterators
+import io.airbyte.protocol.models.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
@@ -183,6 +185,20 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         // Optionally implement this to speed up test cases which will result in a connection
         // timeout.
     }
+
+    protected open fun assertStreamStatusTraceMessageIndex(idx: Int, allMessages: List<AirbyteMessage>, expectedStreamStatus: AirbyteStreamStatusTraceMessage) {
+        var actualMessage = allMessages[idx]
+        Assertions.assertEquals(actualMessage.type, AirbyteMessage.Type.TRACE)
+        var traceMessage = actualMessage.trace
+        Assertions.assertNotNull(traceMessage.streamStatus)
+        Assertions.assertEquals(expectedStreamStatus, traceMessage.streamStatus)
+    }
+
+    private fun createAirbteStreanStatusTraceMessage(namespace: String, streamName: String, status:AirbyteStreamStatusTraceMessage.AirbyteStreamStatus) : AirbyteStreamStatusTraceMessage {
+        return AirbyteStreamStatusTraceMessage().withStreamDescriptor(io.airbyte.protocol.models.StreamDescriptor().withNamespace(namespace).withName(
+            streamName)).withStatus(status)
+    }
+
 
     @AfterEach
     fun tearDown() {
@@ -417,6 +433,13 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             )
         val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
 
+        assertStreamStatusTraceMessageIndex(0, actualMessages,
+            createAirbteStreanStatusTraceMessage(defaultNamespace,
+                streamName(), AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED))
+        assertStreamStatusTraceMessageIndex(actualMessages.size - 1 , actualMessages,
+            createAirbteStreanStatusTraceMessage(defaultNamespace,
+                streamName(), AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE))
+
         setEmittedAtToNull(actualMessages)
 
         val expectedMessages = airbyteMessagesReadOneColumn
@@ -507,9 +530,21 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         expectedMessages.addAll(getAirbyteMessagesSecondSync(streamName2))
 
-        System.out.println("catalog: " + catalog)
-
         val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
+
+        assertStreamStatusTraceMessageIndex(0, actualMessages,
+            createAirbteStreanStatusTraceMessage(defaultNamespace,
+                streamName(), AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED))
+        assertStreamStatusTraceMessageIndex(0, actualMessages,
+            createAirbteStreanStatusTraceMessage(defaultNamespace,
+                streamName2, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED))
+        assertStreamStatusTraceMessageIndex(actualMessages.size - 1 , actualMessages,
+            createAirbteStreanStatusTraceMessage(defaultNamespace,
+                streamName(), AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE))
+        assertStreamStatusTraceMessageIndex(actualMessages.size - 1 , actualMessages,
+            createAirbteStreanStatusTraceMessage(defaultNamespace,
+                streamName2, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE))
+
         val actualRecordMessages = filterRecords(actualMessages)
 
         setEmittedAtToNull(actualMessages)
