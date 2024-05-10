@@ -3,8 +3,7 @@
 #
 
 
-import os 
-
+import os
 from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk import AirbyteLogger
@@ -24,7 +23,7 @@ class DestinationSnowflakeCortex(Destination):
     indexer: Indexer
     embedder: Embedder
 
-    def _init_indexer(self, config: ConfigModel, configured_catalog:  Optional[ConfiguredAirbyteCatalog] = None):
+    def _init_indexer(self, config: ConfigModel, configured_catalog: Optional[ConfiguredAirbyteCatalog] = None):
         self.embedder = create_from_config(config.embedding, config.processing)
         self.indexer = SnowflakeCortexIndexer(config.indexing, self.embedder.embedding_dimensions, configured_catalog)
 

@@ -163,7 +163,7 @@ class SnowflakeCortexIndexer(Indexer):
             cortex_processor.process_airbyte_messages(airbyte_messages, self.get_write_strategy(stream))
 
     def delete(self, delete_ids, namespace, stream):
-        # delete is generally used when we use full refresh/overwrite strategy. 
+        # delete is generally used when we use full refresh/overwrite strategy.
         # PyAirbyte's sync will take care of overwriting the records. Hence, we don't need to do anything here.
         pass
 
