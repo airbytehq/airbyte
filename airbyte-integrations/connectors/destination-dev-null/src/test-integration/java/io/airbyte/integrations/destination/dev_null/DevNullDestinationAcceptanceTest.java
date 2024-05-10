@@ -59,8 +59,18 @@ public class DevNullDestinationAcceptanceTest extends DestinationAcceptanceTest 
   }
 
   @Override
-  public void testSyncNotFailsWithNewFields() {
-    // Skip because `retrieveRecords` returns an empty list at all times.
+  // Skip because `retrieveRecords` returns an empty list at all times.
+  @Disabled
+  @Test
+  public void testSyncNotFailsWithNewFields() {}
+
+  @Override
+  // This test assumes that dedup support means normalization support.
+  // Override it to do nothing.
+  @Disabled
+  @Test
+  public void testIncrementalDedupeSync() throws Exception {
+    super.testIncrementalDedupeSync();
   }
 
 }
