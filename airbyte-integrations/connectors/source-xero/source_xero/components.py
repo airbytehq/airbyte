@@ -2,26 +2,17 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import base64
-import decimal
 import re
 from dataclasses import InitVar, dataclass
 from datetime import date, datetime, time, timedelta, timezone
-from http import HTTPStatus
-from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Dict, List, Mapping, Union
 
 import dpath.util
-import pendulum
 import requests
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
-from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
-from requests import HTTPError
-
 
 
 class ParseDates:
