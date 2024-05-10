@@ -64,7 +64,7 @@ class BulkStreamTest(TestCase):
         self._http_mocker = HttpMocker()
         self._http_mocker.__enter__()
 
-        given_authentication(self._http_mocker, _CLIENT_ID, _CLIENT_SECRET, _REFRESH_TOKEN, _INSTANCE_URL)
+        given_authentication(self._http_mocker, _CLIENT_ID, _CLIENT_SECRET, _REFRESH_TOKEN, _INSTANCE_URL, _ACCESS_TOKEN)
 
     def tearDown(self) -> None:
         self._http_mocker.__exit__(None, None, None)
@@ -197,7 +197,7 @@ class BulkStreamTest(TestCase):
             JobInfoResponseBuilder().with_id(_JOB_ID).with_state("Failed").build(),
         )
         self._http_mocker.get(
-            create_standard_http_request(_STREAM_NAME, [_A_FIELD_NAME]),
+            create_standard_http_request(_STREAM_NAME, [_A_FIELD_NAME], _ACCESS_TOKEN),
             create_standard_http_response([_A_FIELD_NAME]),
         )
         self._mock_delete_job(_JOB_ID)

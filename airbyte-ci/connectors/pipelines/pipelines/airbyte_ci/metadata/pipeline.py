@@ -11,7 +11,7 @@ from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
 from pipelines.airbyte_ci.steps.poetry import PoetryRunStep
-from pipelines.consts import DOCS_DIRECTORY_ROOT_PATH, INTERNAL_TOOL_PATHS
+from pipelines.consts import DOCS_DIRECTORY_ROOT_PATH, GIT_DIRECTORY_ROOT_PATH, INTERNAL_TOOL_PATHS
 from pipelines.dagger.actions.python.common import with_pip_packages
 from pipelines.dagger.containers.python import with_python_base
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
@@ -82,6 +82,7 @@ class MetadataUpload(SimpleDockerStep):
             title=title,
             context=context,
             paths_to_mount=[
+                MountPath(GIT_DIRECTORY_ROOT_PATH),
                 MountPath(context.connector.metadata_file_path),
                 MountPath(DOCS_DIRECTORY_ROOT_PATH),
                 MountPath(context.connector.icon_path, optional=True),
