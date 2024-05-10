@@ -173,6 +173,7 @@ class InitialSnapshotHandlerTest {
         new Document(Map.of(
             CURSOR_FIELD, OBJECT_ID6,
             NAME_FIELD, NAME6))));
+
     insertDocuments(COLLECTION4, List.of(
         new Document(Map.of(
             CURSOR_FIELD, OBJECT_ID7,
@@ -305,6 +306,11 @@ class InitialSnapshotHandlerTest {
             CURSOR_FIELD, OBJECT_ID5,
             NAME_FIELD, NAME5))));
 
+    insertDocuments(COLLECTION4, List.of(
+            new Document(Map.of(
+                    CURSOR_FIELD, OBJECT_ID7,
+                    NAME_FIELD, NAME7))));
+
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final MongoDbStateManager ogStateManager = MongoDbStateManager.createStateManager(null, CONFIG);
     final MongoDbStateManager stateManager = spy(ogStateManager);
@@ -315,11 +321,12 @@ class InitialSnapshotHandlerTest {
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
         initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), CONFIG);
 
-    assertEquals(iterators.size(), 3);
+    assertEquals(iterators.size(), 4);
 
     final AutoCloseableIterator<AirbyteMessage> collection1 = iterators.get(0);
     final AutoCloseableIterator<AirbyteMessage> collection2 = iterators.get(1);
     final AutoCloseableIterator<AirbyteMessage> collection3 = iterators.get(2);
+    final AutoCloseableIterator<AirbyteMessage> collection4 = iterators.get(3);
 
     // collection1, first document should be skipped
     final AirbyteMessage collection1StreamMessage1 = collection1.next();
@@ -358,6 +365,17 @@ class InitialSnapshotHandlerTest {
     final AirbyteMessage collection3StateMessage = collection3.next();
     assertEquals(Type.STATE, collection3StateMessage.getType(), "State message is expected after all records in a stream are emitted");
     assertFalse(collection3.hasNext());
+
+    // collection4, no documents should be skipped
+    final AirbyteMessage collection4StreamMessage1 = collection4.next();
+    assertEquals(Type.RECORD, collection4StreamMessage1.getType());
+    assertEquals(COLLECTION4, collection4StreamMessage1.getRecord().getStream());
+    assertEquals(OBJECT_ID7_STRING, collection4StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
+    assertEquals(NAME7, collection4StreamMessage1.getRecord().getData().get(NAME_FIELD).asText());
+
+    final AirbyteMessage collection4StateMessage = collection4.next();
+    assertEquals(Type.STATE, collection3StateMessage.getType(), "State message is expected after all records in a stream are emitted");
+    assertFalse(collection4.hasNext());
   }
 
   @Test
@@ -419,11 +437,12 @@ class InitialSnapshotHandlerTest {
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
         initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), CONFIG);
 
-    assertEquals(iterators.size(), 3);
+    assertEquals(iterators.size(), 4);
 
     final AutoCloseableIterator<AirbyteMessage> collection1 = iterators.get(0);
     final AutoCloseableIterator<AirbyteMessage> collection2 = iterators.get(1);
     final AutoCloseableIterator<AirbyteMessage> collection3 = iterators.get(2);
+    final AutoCloseableIterator<AirbyteMessage> collection4 = iterators.get(3);
 
     // collection1
     final AirbyteMessage collection1StreamMessage1 = collection1.next();
@@ -450,6 +469,12 @@ class InitialSnapshotHandlerTest {
     final AirbyteMessage collection3StateMessage = collection3.next();
     assertEquals(Type.STATE, collection3StateMessage.getType(), "State message is expected after all records in a stream are emitted");
     assertFalse(collection3.hasNext());
+
+    // collection4 will generate a final state.
+
+    final AirbyteMessage collection4StateMessage = collection4.next();
+    assertEquals(Type.STATE, collection3StateMessage.getType(), "State message is expected after all records in a stream are emitted");
+    assertFalse(collection4.hasNext());
   }
 
   @Test
@@ -472,6 +497,11 @@ class InitialSnapshotHandlerTest {
             CURSOR_FIELD, OBJECT_ID4_STRING,
             NAME_FIELD, NAME4))));
 
+    insertDocuments(COLLECTION4, List.of(
+            new Document(Map.of(
+                    CURSOR_FIELD, OBJECT_ID7,
+                    NAME_FIELD, NAME7))));
+
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final MongoDbStateManager ogStateManager = MongoDbStateManager.createStateManager(null, CONFIG);
     final MongoDbStateManager stateManager = spy(ogStateManager);
@@ -480,11 +510,12 @@ class InitialSnapshotHandlerTest {
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
         initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), CONFIG);
 
-    assertEquals(iterators.size(), 3);
+    assertEquals(iterators.size(), 4);
 
     final AutoCloseableIterator<AirbyteMessage> collection1 = iterators.get(0);
     final AutoCloseableIterator<AirbyteMessage> collection2 = iterators.get(1);
     final AutoCloseableIterator<AirbyteMessage> collection3 = iterators.get(2);
+    final AutoCloseableIterator<AirbyteMessage> collection4 = iterators.get(3);
 
     // collection1, first document should be skipped
     final AirbyteMessage collection1StreamMessage1 = collection1.next();
@@ -526,6 +557,17 @@ class InitialSnapshotHandlerTest {
     assertEquals(Type.STATE, collection3SateMessage.getType(), "State message is expected after all records in a stream are emitted");
 
     assertFalse(collection3.hasNext());
+
+    // collection4, no documents should be skipped
+    final AirbyteMessage collection4StreamMessage1 = collection4.next();
+    assertEquals(Type.RECORD, collection4StreamMessage1.getType());
+    assertEquals(COLLECTION4, collection4StreamMessage1.getRecord().getStream());
+    assertEquals(OBJECT_ID7_STRING, collection4StreamMessage1.getRecord().getData().get(CURSOR_FIELD).asText());
+
+    final AirbyteMessage collection4SateMessage = collection4.next();
+    assertEquals(Type.STATE, collection3SateMessage.getType(), "State message is expected after all records in a stream are emitted");
+    assertEquals(OBJECT_ID7_STRING, collection4SateMessage.getState().getGlobal().getStreamStates().get(3).getStreamState().get("id").asText());
+    assertFalse(collection4.hasNext());
   }
 
 }
