@@ -74,6 +74,7 @@ class ClientSideIncrementalRecordFilterDecorator:
     def get_state_value(self, stream_state: StreamState, stream_slice: StreamSlice) -> Optional[str]:
         state_value = None
         if stream_state.get("states"):
+            # TODO: pass partition router to class to get partition_id from parent class
             state = [x for x in stream_state.get("states", []) if x["partition"]["id"] == stream_slice.partition["id"]]
             if state:
                 state_value = state[0]["cursor"][self._cursor_field]
