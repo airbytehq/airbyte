@@ -5,12 +5,14 @@
 package io.airbyte.integrations.source.postgres.cdc;
 
 import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcCursorInvalidMessage;
+import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.filterStreamsUnderVacuumForCtidSync;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.streamsUnderVacuum;
 import static io.airbyte.integrations.source.postgres.PostgresSpecConstants.FAIL_SYNC_OPTION;
 import static io.airbyte.integrations.source.postgres.PostgresSpecConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.isDebugMode;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.prettyPrintConfiguredAirbyteStreamList;
 import static io.airbyte.integrations.source.postgres.ctid.CtidUtils.createInitialLoader;
+import static io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils.reclassifyCategorisedCtidStreams;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
@@ -190,16 +192,23 @@ public class PostgresCdcCtidInitializer {
       streamsUnderVacuum.addAll(streamsUnderVacuum(database,
           ctidStreams.streamsForCtidSync(), quoteString).result());
 
-      final List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
+      List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
           streamsUnderVacuum.isEmpty() ? ctidStreams.streamsForCtidSync()
               : ctidStreams.streamsForCtidSync().stream()
                   .filter(c -> !streamsUnderVacuum.contains(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(c)))
                   .toList();
-      LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
       final FileNodeHandler fileNodeHandler = PostgresQueryUtils.fileNodeForStreams(database,
           finalListOfStreamsToBeSyncedViaCtid,
           quoteString);
       final PostgresCtidHandler ctidHandler;
+      if (!fileNodeHandler.getFailedToQuery().isEmpty()) {
+        finalListOfStreamsToBeSyncedViaCtid = finalListOfStreamsToBeSyncedViaCtid.stream()
+            .filter(stream -> !fileNodeHandler.getFailedToQuery().contains(
+              new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace())))
+            .collect(Collectors.toList());
+      }
+      LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
+
       try {
         ctidHandler =
             createInitialLoader(database, finalListOfStreamsToBeSyncedViaCtid, fileNodeHandler, quoteString, ctidStateManager,
