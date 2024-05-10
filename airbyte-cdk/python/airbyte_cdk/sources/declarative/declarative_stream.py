@@ -98,6 +98,12 @@ class DeclarativeStream(Stream):
         cursor = self._stream_cursor_field.eval(self.config)
         return cursor if cursor else []
 
+    @property
+    def is_resumable(self) -> bool:
+        # Declarative sources always implement state getter/setter, but whether it supports checkpointing is based on
+        # if the retriever has a cursor defined.
+        return self.retriever.cursor is not None if hasattr(self.retriever, "cursor") else False
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -108,7 +114,7 @@ class DeclarativeStream(Stream):
         """
         :param: stream_state We knowingly avoid using stream_state as we want cursors to manage their own state.
         """
-        if stream_slice is None:
+        if stream_slice is None or stream_slice == {}:
             # As the parameter is Optional, many would just call `read_records(sync_mode)` during testing without specifying the field
             # As part of the declarative model without custom components, this should never happen as the CDK would wire up a
             # SinglePartitionRouter that would create this StreamSlice properly

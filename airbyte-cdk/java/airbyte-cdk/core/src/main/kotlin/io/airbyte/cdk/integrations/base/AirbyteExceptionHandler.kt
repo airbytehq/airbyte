@@ -5,7 +5,6 @@ package io.airbyte.cdk.integrations.base
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.annotations.VisibleForTesting
-import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil
 import java.util.*
 import java.util.regex.Pattern
 import javax.validation.constraints.NotNull
@@ -28,13 +27,6 @@ class AirbyteExceptionHandler : Thread.UncaughtExceptionHandler {
         // from the spec:
         // https://docs.google.com/document/d/1ctrj3Yh_GjtQ93aND-WH3ocqGxsmxyC3jfiarrF6NY0/edit#
         LOGGER.error(logMessage, throwable)
-
-        val rootThrowable = ConnectorExceptionUtil.getRootConfigError(Exception(throwable))
-
-        if (ConnectorExceptionUtil.isConfigError(rootThrowable)) {
-            terminate()
-        }
-
         // Attempt to deinterpolate the error message before emitting a trace message
         val mangledMessage: String?
         // If any exception in the chain is of a deinterpolatable type, find it and deinterpolate

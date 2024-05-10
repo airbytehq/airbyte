@@ -40,7 +40,7 @@ internal class DefaultJdbcSourceAcceptanceTest :
     JdbcSourceAcceptanceTest<
         DefaultJdbcSourceAcceptanceTest.PostgresTestSource, BareBonesTestDatabase>() {
     override fun config(): JsonNode {
-        return testdb.testConfigBuilder().build()
+        return testdb?.testConfigBuilder()?.build()!!
     }
 
     override fun source(): PostgresTestSource {
@@ -181,12 +181,15 @@ internal class DefaultJdbcSourceAcceptanceTest :
     fun testCustomParametersOverwriteDefaultParametersExpectException() {
         val connectionPropertiesUrl = "ssl=false"
         val config =
-            getConfigWithConnectionProperties(
-                PSQL_CONTAINER,
-                testdb.databaseName,
-                connectionPropertiesUrl
-            )
-        val customParameters = parseJdbcParameters(config, JdbcUtils.CONNECTION_PROPERTIES_KEY, "&")
+            testdb?.let {
+                getConfigWithConnectionProperties(
+                    PSQL_CONTAINER,
+                    it.databaseName,
+                    connectionPropertiesUrl
+                )
+            }
+        val customParameters =
+            parseJdbcParameters(config!!, JdbcUtils.CONNECTION_PROPERTIES_KEY, "&")
         val defaultParameters = mapOf("ssl" to "true", "sslmode" to "require")
         Assertions.assertThrows(IllegalArgumentException::class.java) {
             JdbcDataSourceUtils.assertCustomParametersDontOverwriteDefaultParameters(
