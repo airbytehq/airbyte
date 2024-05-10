@@ -9,7 +9,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.factory.DatabaseDriver
 import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.integrations.base.Source
-import io.airbyte.cdk.integrations.debezium.CdcSourceTest
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbState
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState
@@ -186,7 +185,11 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         // timeout.
     }
 
-    protected open fun assertStreamStatusTraceMessageIndex(idx: Int, allMessages: List<AirbyteMessage>, expectedStreamStatus: AirbyteStreamStatusTraceMessage) {
+    protected open fun assertStreamStatusTraceMessageIndex(
+        idx: Int,
+        allMessages: List<AirbyteMessage>,
+        expectedStreamStatus: AirbyteStreamStatusTraceMessage
+    ) {
         var actualMessage = allMessages[idx]
         Assertions.assertEquals(actualMessage.type, AirbyteMessage.Type.TRACE)
         var traceMessage = actualMessage.trace
@@ -194,11 +197,20 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         Assertions.assertEquals(expectedStreamStatus, traceMessage.streamStatus)
     }
 
-    private fun createAirbteStreanStatusTraceMessage(namespace: String, streamName: String, status:AirbyteStreamStatusTraceMessage.AirbyteStreamStatus) : AirbyteStreamStatusTraceMessage {
-        return AirbyteStreamStatusTraceMessage().withStreamDescriptor(io.airbyte.protocol.models.StreamDescriptor().withNamespace(namespace).withName(
-            streamName)).withStatus(status)
+    private fun createAirbteStreanStatusTraceMessage(
+        namespace: String,
+        streamName: String,
+        status: AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+    ): AirbyteStreamStatusTraceMessage {
+        return AirbyteStreamStatusTraceMessage()
+            .withStreamDescriptor(
+                io.airbyte.protocol.models
+                    .StreamDescriptor()
+                    .withNamespace(namespace)
+                    .withName(streamName)
+            )
+            .withStatus(status)
     }
-
 
     @AfterEach
     fun tearDown() {
@@ -433,12 +445,24 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             )
         val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
 
-        assertStreamStatusTraceMessageIndex(0, actualMessages,
-            createAirbteStreanStatusTraceMessage(defaultNamespace,
-                streamName(), AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED))
-        assertStreamStatusTraceMessageIndex(actualMessages.size - 1 , actualMessages,
-            createAirbteStreanStatusTraceMessage(defaultNamespace,
-                streamName(), AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE))
+        assertStreamStatusTraceMessageIndex(
+            0,
+            actualMessages,
+            createAirbteStreanStatusTraceMessage(
+                defaultNamespace,
+                streamName(),
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED
+            )
+        )
+        assertStreamStatusTraceMessageIndex(
+            actualMessages.size - 1,
+            actualMessages,
+            createAirbteStreanStatusTraceMessage(
+                defaultNamespace,
+                streamName(),
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+            )
+        )
 
         setEmittedAtToNull(actualMessages)
 
@@ -533,18 +557,42 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
 
-        assertStreamStatusTraceMessageIndex(0, actualMessages,
-            createAirbteStreanStatusTraceMessage(defaultNamespace,
-                streamName(), AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED))
-        assertStreamStatusTraceMessageIndex(0, actualMessages,
-            createAirbteStreanStatusTraceMessage(defaultNamespace,
-                streamName2, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED))
-        assertStreamStatusTraceMessageIndex(actualMessages.size - 1 , actualMessages,
-            createAirbteStreanStatusTraceMessage(defaultNamespace,
-                streamName(), AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE))
-        assertStreamStatusTraceMessageIndex(actualMessages.size - 1 , actualMessages,
-            createAirbteStreanStatusTraceMessage(defaultNamespace,
-                streamName2, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE))
+        assertStreamStatusTraceMessageIndex(
+            0,
+            actualMessages,
+            createAirbteStreanStatusTraceMessage(
+                defaultNamespace,
+                streamName(),
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED
+            )
+        )
+        assertStreamStatusTraceMessageIndex(
+            actualMessages.size - 5,
+            actualMessages,
+            createAirbteStreanStatusTraceMessage(
+                defaultNamespace,
+                streamName2,
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED
+            )
+        )
+        assertStreamStatusTraceMessageIndex(
+            actualMessages.size - 6,
+            actualMessages,
+            createAirbteStreanStatusTraceMessage(
+                defaultNamespace,
+                streamName(),
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+            )
+        )
+        assertStreamStatusTraceMessageIndex(
+            actualMessages.size - 1,
+            actualMessages,
+            createAirbteStreanStatusTraceMessage(
+                defaultNamespace,
+                streamName2,
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+            )
+        )
 
         val actualRecordMessages = filterRecords(actualMessages)
 
@@ -773,6 +821,25 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                 )
             )
 
+        assertStreamStatusTraceMessageIndex(
+            0,
+            actualMessagesFirstSync,
+            createAirbteStreanStatusTraceMessage(
+                defaultNamespace,
+                streamName(),
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED
+            )
+        )
+        assertStreamStatusTraceMessageIndex(
+            actualMessagesFirstSync.size - 1,
+            actualMessagesFirstSync,
+            createAirbteStreanStatusTraceMessage(
+                defaultNamespace,
+                streamName(),
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+            )
+        )
+
         val stateAfterFirstSyncOptional =
             actualMessagesFirstSync
                 .stream()
@@ -790,6 +857,25 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                     extractState(stateAfterFirstSyncOptional.get())
                 )
             )
+
+        assertStreamStatusTraceMessageIndex(
+            0,
+            actualMessagesSecondSync,
+            createAirbteStreanStatusTraceMessage(
+                defaultNamespace,
+                streamName(),
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED
+            )
+        )
+        assertStreamStatusTraceMessageIndex(
+            actualMessagesSecondSync.size - 1,
+            actualMessagesSecondSync,
+            createAirbteStreanStatusTraceMessage(
+                defaultNamespace,
+                streamName(),
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+            )
+        )
 
         Assertions.assertEquals(
             2,
