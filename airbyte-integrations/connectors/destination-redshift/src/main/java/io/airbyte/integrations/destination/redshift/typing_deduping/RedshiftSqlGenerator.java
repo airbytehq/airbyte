@@ -98,17 +98,17 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
    */
 
   @Override
-  protected Field<?> castedField(final Field<?> field, final AirbyteType type, final String alias, final boolean useExpensiveSaferCasting) {
+  protected Field<?> castedField(final Field<?> field, final AirbyteType type, final boolean useExpensiveSaferCasting) {
     if (type instanceof final AirbyteProtocolType airbyteProtocolType) {
       switch (airbyteProtocolType) {
         case STRING -> {
           return field(CASE_STATEMENT_SQL_TEMPLATE,
               jsonTypeOf(field).ne("string").and(field.isNotNull()),
               jsonSerialize(field),
-              castedField(field, airbyteProtocolType, useExpensiveSaferCasting)).as(quotedName(alias));
+              castedField(field, airbyteProtocolType, useExpensiveSaferCasting));
         }
         default -> {
-          return castedField(field, airbyteProtocolType, useExpensiveSaferCasting).as(quotedName(alias));
+          return castedField(field, airbyteProtocolType, useExpensiveSaferCasting);
         }
       }
 
@@ -117,12 +117,12 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     return switch (type.getTypeName()) {
       case Struct.TYPE, UnsupportedOneOf.TYPE -> field(CASE_STATEMENT_NO_ELSE_SQL_TEMPLATE,
           jsonTypeOf(field).eq("object"),
-          cast(field, getStructType())).as(quotedName(alias));
+          cast(field, getStructType()));
       case Array.TYPE -> field(CASE_STATEMENT_NO_ELSE_SQL_TEMPLATE,
           jsonTypeOf(field).eq("array"),
-          cast(field, getArrayType())).as(quotedName(alias));
+          cast(field, getArrayType()));
       // No nested Unions supported so this will definitely not result in infinite recursion.
-      case Union.TYPE -> castedField(field, ((Union) type).chooseType(), alias, useExpensiveSaferCasting);
+      case Union.TYPE -> castedField(field, ((Union) type).chooseType(), useExpensiveSaferCasting);
       default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
     };
   }
@@ -135,8 +135,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
         .map(column -> castedField(
             field(quotedName(COLUMN_NAME_DATA, column.getKey().getOriginalName())),
             column.getValue(),
-            column.getKey().getName(),
-            useExpensiveSaferCasting))
+            useExpensiveSaferCasting).as(column.getKey().getName()))
         .collect(Collectors.toList());
   }
 
@@ -176,7 +175,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     // TODO: Timestamp format issues can result in null values when cast, add regex check if destination
     // supports regex functions.
     return field(CASE_STATEMENT_SQL_TEMPLATE,
-        field.isNotNull().and(castedField(field, type, column.getName(), true).isNull()),
+        field.isNotNull().and(castedField(field, type, true).as(column.getName()).isNull()),
         function("ARRAY", getSuperType(),
             function("JSON_PARSE", getSuperType(), val(
                 "{\"field\": \"" + column.getName() + "\", "

@@ -3,35 +3,45 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier for the campaign.",
       "type": ["null", "integer"]
     },
     "createdAt": {
+      "description": "The date and time when the campaign was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "The date and time when the campaign was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "active": {
+      "description": "Indicates whether the campaign is currently active or not.",
       "type": ["null", "boolean"]
     },
     "description": {
+      "description": "A brief description of the campaign.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name of the campaign.",
       "type": ["null", "string"]
     },
     "programId": {
+      "description": "The unique identifier of the program to which the campaign belongs.",
       "type": ["null", "integer"]
     },
     "programName": {
+      "description": "The name of the program to which the campaign belongs.",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "The type of the campaign (e.g., email, social media, event).",
       "type": ["null", "string"]
     },
     "workspaceName": {
+      "description": "The name of the workspace where the campaign is stored.",
       "type": ["null", "string"]
     }
   }
