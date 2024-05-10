@@ -1,6 +1,7 @@
 import click
 import json
 
+# Example usage: python tools/bin/generate_reset_state_command.py ./query_result_2024-05-10T00_19_00.930855Z.json
 def get_stream_condition(stream_state):
     escaped_stream_name = stream_state['stream_descriptor']['name'].replace("'", "''")
     if 'namespace' in stream_state['stream_descriptor']:
