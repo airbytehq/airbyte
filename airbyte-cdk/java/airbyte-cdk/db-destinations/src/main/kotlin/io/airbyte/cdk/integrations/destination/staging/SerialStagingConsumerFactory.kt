@@ -13,14 +13,13 @@ import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializedBufferingStrategy
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.stream.Collectors
@@ -41,7 +40,6 @@ open class SerialStagingConsumerFactory {
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
         purgeStagingData: Boolean,
-        typerDeduperValve: TypeAndDedupeOperationValve,
         typerDeduper: TyperDeduper,
         parsedCatalog: ParsedCatalog,
         defaultNamespace: String?,
@@ -71,8 +69,6 @@ open class SerialStagingConsumerFactory {
                     stagingOperations,
                     writeConfigs,
                     catalog,
-                    typerDeduperValve,
-                    typerDeduper
                 )
             ),
             GeneralStagingFunctions.onCloseFunction(
