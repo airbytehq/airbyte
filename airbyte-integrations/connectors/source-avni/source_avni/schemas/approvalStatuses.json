@@ -22,6 +22,10 @@
         "type": "string",
         "format": "date-time"
       },
+      "last_modified_at": {
+        "type": "string",
+        "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+      },
       "audit": {
         "type": "object",
         "properties": {
