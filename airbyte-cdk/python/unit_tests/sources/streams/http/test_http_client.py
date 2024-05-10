@@ -20,8 +20,6 @@ def test_http_client():
 def test_cache_http_client():
     return HttpClient(name="StubCacheHttpClient", logger=MagicMock(), use_cache=True)
 
-
-
 def test_cache_filename():
     http_client = test_http_client()
     http_client.cache_filename == f"{http_client._name}.sqlite"
@@ -195,10 +193,14 @@ def test_send_ignores_with_ignore_reponse_action_and_returns_response(mocker):
         ]
 )
 def test_raises_backoff_exception_with_retry_response_action(mocker, backoff_time_value, exception_type):
-    http_client = test_http_client()
+    http_client = HttpClient(
+        name="test",
+        logger=MagicMock(),
+        error_handler=HttpStatusErrorHandler(logger=MagicMock(), error_mapping={408: ErrorResolution(ResponseAction.FAIL, FailureType.system_error, "test retry message")}),
+    )
     prepared_request = http_client._create_prepared_request(http_method="get", url="https://test_base_url.com/v1/endpoint")
     mocked_response = MagicMock(spec=requests.Response)
-    mocked_response.status_code = 500
+    mocked_response.status_code = 408
     mocked_response.headers = {}
     http_client._logger.info = MagicMock()
 
@@ -234,27 +236,31 @@ def test_raises_backoff_exception_with_response_with_unmapped_error(mocker, back
 
 def test_send_request_given_retry_response_action_retries_and_returns_valid_response(mocker):
 
-    http_client = test_http_client()
+    http_client = HttpClient(
+        name="test",
+        logger=MagicMock(),
+        error_handler=HttpStatusErrorHandler(logger=MagicMock(), error_mapping={408: ErrorResolution(ResponseAction.RETRY, FailureType.system_error, "test retry message")}),
+    )
     valid_response = MagicMock(spec=requests.Response)
     valid_response.status_code = 200
     valid_response.ok = True
     valid_response.headers = {}
-    call_count = 2
+    call_count = 3
 
-    def update_test_response_action(*args, **kwargs):
+    def update_response(*args, **kwargs):
         if http_client._session.send.call_count == call_count:
             return valid_response
         else:
             retry_response = MagicMock(spec=requests.Response)
             retry_response.ok = False
-            retry_response.status_code = 500
+            retry_response.status_code = 408
             retry_response.headers = {}
             return retry_response
 
     prepared_request = requests.PreparedRequest()
 
     mocker.patch.object(http_client._backoff_strategy, "backoff_time", return_value=0.123)
-    mocker.patch.object(http_client._session, 'send', side_effect=update_test_response_action)
+    mocker.patch.object(http_client._session, 'send', side_effect=update_response)
 
     returned_response = http_client._send_with_retry(prepared_request, request_kwargs={})
 
@@ -310,3 +316,37 @@ def test_send_handles_response_action_given_session_send_raises_request_exceptio
             assert e.internal_message == error_resolution.error_message
             assert e.message == error_resolution.error_message
             assert e.failure_type == error_resolution.failure_type
+
+def test_send_request_given_request_exception_andretry_response_action_retries_and_returns_valid_response(mocker):
+
+    http_client = HttpClient(
+        name="test",
+        logger=MagicMock(),
+        error_handler=HttpStatusErrorHandler(logger=MagicMock(), error_mapping={408: ErrorResolution(ResponseAction.RETRY, FailureType.system_error, "test retry message")}),
+    )
+    valid_response = MagicMock(spec=requests.Response)
+    valid_response.status_code = 200
+    valid_response.ok = True
+    valid_response.headers = {}
+    call_count = 3
+
+    def update_response(*args, **kwargs):
+        if http_client._session.send.call_count == call_count:
+            return valid_response
+        else:
+            retry_response = requests.RequestException()
+            # retry_response.ok = False
+            retry_response.text = "RequestException Test"
+            retry_response.status_code = 408
+            retry_response.headers = {}
+            return retry_response
+
+    prepared_request = requests.PreparedRequest()
+
+    mocker.patch.object(http_client._backoff_strategy, "backoff_time", return_value=0.123)
+    mocker.patch.object(http_client._session, 'send', side_effect=update_response)
+
+    returned_response = http_client._send_with_retry(prepared_request, request_kwargs={})
+
+    assert http_client._session.send.call_count == call_count
+    assert returned_response == valid_response
