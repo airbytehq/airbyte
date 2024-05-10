@@ -1,13 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import datetime
 from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Optional
 
-import pendulum
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
+from sources.declarative.incremental import DatetimeBasedCursor
 
 
 @dataclass
@@ -38,17 +38,22 @@ class RecordFilter:
 
 
 class ClientSideIncrementalRecordFilterDecorator:
-    # TODO: refactor to generalize : current implementation is based on MailChimp
     """
     Filter applied on a list of Records to exclude ones that are older than stream_state/start_date
     config (Config): The user-provided configuration as specified by the source's spec
     """
 
-    def __init__(self, cursor_field: str, record_filter: Optional[RecordFilter], config: Config, start_date_from_config: str):
-        self._cursor_field = cursor_field
+    def __init__(self, date_time_based_cursor: DatetimeBasedCursor, record_filter: Optional[RecordFilter]):
+        self._date_time_based_cursor = date_time_based_cursor
         self._delegate = record_filter
-        self._config = config
-        self._start_date_from_config = start_date_from_config
+
+    @property
+    def _cursor_field(self) -> str:
+        return self._date_time_based_cursor._cursor_field.eval(self._date_time_based_cursor.config)
+
+    @property
+    def _start_date_from_config(self) -> datetime.datetime:
+        return self._date_time_based_cursor._start_datetime.get_datetime(self._date_time_based_cursor.config)
 
     def filter_records(
         self,
@@ -77,8 +82,8 @@ class ClientSideIncrementalRecordFilterDecorator:
         return state_value
 
     def get_filter_date(self, state_value: str) -> str:
-        start_date_parsed = pendulum.parse(self._start_date_from_config) if self._start_date_from_config else None
-        state_date_parsed = pendulum.parse(state_value) if state_value else None
+        start_date_parsed = self._start_date_from_config or None
+        state_date_parsed = self._date_time_based_cursor.parse_date(state_value) if state_value else None
 
         # Return the max of the two dates if both are present. Otherwise return whichever is present, or None.
         if start_date_parsed or state_date_parsed:

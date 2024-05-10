@@ -783,7 +783,7 @@ list_stream:
     assert isinstance(stream.retriever.record_selector.record_filter, ClientSideIncrementalRecordFilterDecorator)
 
 
-def test_given_data_feed_and_cleint_side_incremental_then_raise_error():
+def test_given_data_feed_and_client_side_incremental_then_raise_error():
     content = """
 incremental_sync:
   type: DatetimeBasedCursor

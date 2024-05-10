@@ -614,12 +614,7 @@ class ModelToComponentFactory:
             and hasattr(model.incremental_sync, "is_client_side_incremental")
             and model.incremental_sync.is_client_side_incremental
         ):
-            client_side_incremental_sync = {
-                "cursor_field": InterpolatedString.create(model.incremental_sync.cursor_field, parameters=model.parameters).eval(config),
-                "start_date_from_config": InterpolatedString.create(
-                    model.incremental_sync.start_datetime.datetime, parameters=model.parameters
-                ).eval(config),
-            }
+            client_side_incremental_sync = self._create_component_from_model(model=model.incremental_sync, config=config)
         transformations = []
         if model.transformations:
             for transformation_model in model.transformations:
@@ -984,7 +979,7 @@ class ModelToComponentFactory:
         config: Config,
         *,
         transformations: List[RecordTransformation],
-        client_side_incremental_sync: bool = False,
+        client_side_incremental_sync: DatetimeBasedCursor = None,
         **kwargs: Any,
     ) -> RecordSelector:
         assert model.schema_normalization is not None  # for mypy
@@ -992,7 +987,7 @@ class ModelToComponentFactory:
         record_filter = self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
         if client_side_incremental_sync:
             record_filter = ClientSideIncrementalRecordFilterDecorator(
-                record_filter=record_filter, config=config, **client_side_incremental_sync
+                record_filter=record_filter, date_time_based_cursor=client_side_incremental_sync
             )
         schema_normalization = TypeTransformer(SCHEMA_TRANSFORMER_TYPE_MAPPING[model.schema_normalization])
 
@@ -1045,7 +1040,7 @@ class ModelToComponentFactory:
         primary_key: Optional[Union[str, List[str], List[List[str]]]],
         stream_slicer: Optional[StreamSlicer],
         stop_condition_on_cursor: bool = False,
-        client_side_incremental_sync: bool = False,
+        client_side_incremental_sync: DatetimeBasedCursor = None,
         transformations: List[RecordTransformation],
     ) -> SimpleRetriever:
         requester = self._create_component_from_model(model=model.requester, config=config, name=name)
