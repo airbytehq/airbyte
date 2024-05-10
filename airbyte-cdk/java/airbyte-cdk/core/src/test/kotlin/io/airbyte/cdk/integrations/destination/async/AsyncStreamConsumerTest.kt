@@ -553,8 +553,7 @@ class AsyncStreamConsumerTest {
             ArgumentCaptor.captor()
         Mockito.verify(onClose).accept(any(), capture(captor))
         assertEquals(
-            // All streams have a COMPLETE status.
-            // TODO: change this to INCOMPLETE after we switch the default behavior.
+            // All streams have an INCOMPLETE status.
             mapOf(
                 StreamDescriptor().withNamespace(SCHEMA_NAME).withName(STREAM_NAME) to
                     StreamSyncSummary(

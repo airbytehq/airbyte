@@ -164,11 +164,10 @@ constructor(
 
         val streamSyncSummaries =
             streamNames.associate { streamDescriptor ->
-                // If we didn't receive a stream status message, assume success.
-                // Platform won't send us any stream status messages yet (since we're not declaring
-                // supportsRefresh in metadata), so we will always hit this case.
+                // If we didn't receive a stream status message, assume failure.
+                // This is possible if e.g. the orchestrator crashes before sending us the message.
                 val terminalStatusFromSource =
-                    terminalStatusesFromSource[streamDescriptor] ?: AirbyteStreamStatus.COMPLETE
+                    terminalStatusesFromSource[streamDescriptor] ?: AirbyteStreamStatus.INCOMPLETE
                 StreamDescriptorUtils.withDefaultNamespace(
                     streamDescriptor,
                     bufferManager.defaultNamespace,
