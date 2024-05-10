@@ -959,6 +959,17 @@ files = [
 six = ">=1.5"
 
 [[package]]
+name = "pytz"
+version = "2024.1"
+description = "World timezone definitions, modern and historical"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pytz-2024.1-py2.py3-none-any.whl", hash = "sha256:328171f4e3623139da4983451950b28e95ac706e13f3f2630a879749e7a8b319"},
+    {file = "pytz-2024.1.tar.gz", hash = "sha256:2a29735ea9c18baf14b448846bde5a48030ed267578472d8955cd0e7443a9812"},
+]
+
+[[package]]
 name = "pytzdata"
 version = "2020.1"
 description = "The Olson timezone database for Python."
@@ -1288,4 +1299,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,<3.12"
-content-hash = "acd5908c82765b55ec5859799db1bcbb616d044db689a3ba94346d8b1d2f9b5c"
+content-hash = "67a83243045c60f70d638b9b3ebb6eba78f17110ec53f15b38286a8c17b972a8"
