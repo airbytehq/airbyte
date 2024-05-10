@@ -4,93 +4,120 @@
   "additionalProperties": true,
   "properties": {
     "sid": {
+      "description": "The unique identifier of the conversation_message.",
       "type": ["null", "string"]
     },
     "account_sid": {
+      "description": "The unique identifier of the account associated with the conversation_messages data.",
       "type": ["null", "string"]
     },
     "conversation_sid": {
+      "description": "The unique identifier of the conversation to which the message belongs.",
       "type": ["null", "string"]
     },
     "body": {
+      "description": "The textual content of the conversation message.",
       "type": ["null", "string"]
     },
     "media": {
+      "description": "List of media items attached to the message",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
           "sid": {
+            "description": "The unique identifier of the media content.",
             "type": ["null", "string"]
           },
           "size": {
+            "description": "The size of the media content in bytes.",
             "type": ["null", "integer"]
           },
           "content_type": {
+            "description": "The type of media content attached to the message.",
             "type": ["null", "string"]
           },
           "filename": {
+            "description": "The name of the media file.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "author": {
+      "description": "The author or sender of the conversation message.",
       "type": ["null", "string"]
     },
     "participant_sid": {
+      "description": "The unique identifier of the participant associated with the message.",
       "type": ["null", "string"]
     },
     "attributes": {
+      "description": "Additional attributes or metadata related to the conversation message.",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The date and time when the message was created.",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when the message was last updated.",
       "type": ["null", "string"]
     },
     "index": {
+      "description": "The index of the message within the conversation.",
       "type": ["null", "integer"]
     },
     "delivery": {
+      "description": "Information related to message delivery",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "total": {
+          "description": "Total number of delivery attempts.",
           "type": ["null", "integer"]
         },
         "sent": {
+          "description": "Number of successful delivery attempts.",
           "type": ["null", "string"]
         },
         "delivered": {
+          "description": "Whether the message was successfully delivered.",
           "type": ["null", "string"]
         },
         "read": {
+          "description": "Whether the message has been read by the recipient.",
           "type": ["null", "string"]
         },
         "failed": {
+          "description": "Number of failed delivery attempts.",
           "type": ["null", "string"]
         },
         "undelivered": {
+          "description": "Number of undelivered message attempts.",
           "type": ["null", "string"]
         }
       }
     },
     "content_sid": {
+      "description": "The unique identifier of the content associated with the conversation message.",
       "type": ["null", "string"]
     },
     "url": {
+      "description": "The URL of the conversation message for accessing or viewing.",
       "type": ["null", "string"]
     },
     "links": {
+      "description": "Links related to the conversation",
       "type": ["null", "object"],
       "properties": {
         "delivery_receipts": {
+          "description": "Receipts and status of message delivery.",
           "type": ["null", "string"]
         },
         "channel_metadata": {
+          "description": "Metadata specific to the communication channel.",
           "type": ["null", "string"]
         }
       }

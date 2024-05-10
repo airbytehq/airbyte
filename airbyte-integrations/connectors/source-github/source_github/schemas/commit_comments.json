@@ -3,50 +3,65 @@
   "type": "object",
   "properties": {
     "repository": {
+      "description": "Details of the repository to which the comment belongs",
       "type": "string"
     },
     "html_url": {
+      "description": "The URL to view the comment on GitHub's web interface",
       "type": ["null", "string"]
     },
     "url": {
+      "description": "The API URL to fetch the details of the comment",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier of the comment",
       "type": ["null", "integer"]
     },
     "node_id": {
+      "description": "The globally unique identifier for the comment",
       "type": ["null", "string"]
     },
     "body": {
+      "description": "The content of the comment",
       "type": ["null", "string"]
     },
     "path": {
+      "description": "The file path to which the comment is associated",
       "type": ["null", "string"]
     },
     "position": {
+      "description": "The position in the file at which the comment is located",
       "type": ["null", "integer"]
     },
     "line": {
+      "description": "The line number in the file at which the comment is located",
       "type": ["null", "integer"]
     },
     "commit_id": {
+      "description": "The identifier of the commit to which the comment is associated",
       "type": ["null", "string"]
     },
     "user": {
+      "description": "Details of the user who made the comment",
       "$ref": "user.json"
     },
     "created_at": {
+      "description": "The date and time when the comment was created",
       "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the comment was last updated",
       "type": "string",
       "format": "date-time"
     },
     "author_association": {
+      "description": "The association of the user who made the comment with the repository (e.g., owner, collaborator, member, contributor)",
       "type": ["null", "string"]
     },
     "reactions": {
+      "description": "Reactions (e.g., thumbs up, hooray) associated with the comment",
       "$ref": "reactions.json"
     }
   }
