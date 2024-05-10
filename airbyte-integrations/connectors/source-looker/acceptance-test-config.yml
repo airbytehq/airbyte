@@ -20,7 +20,6 @@ tests:
           "user_attribute_group_values",
           "user_login_lockouts",
           "user_sessions",
-          # <----- just added ------>
           "content_metadata",
           "content_metadata_access",
           "dashboard_elements",

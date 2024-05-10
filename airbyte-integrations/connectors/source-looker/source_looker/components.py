@@ -15,6 +15,16 @@ API_VERSION = "4.0"
 @dataclass
 class LookerAuthenticator(NoAuth):
 
+    """
+    Authenticator that sets the Authorization header on the HTTP requests sent using access token which is updated upon expiration.
+
+    The header is of the form:
+    `"Authorization": "token <access_token>"`
+
+    Attributes:
+        config (Config): The user-provided configuration as specified by the source's spec
+    """
+
     config: Mapping[str, Any]
 
     def __post_init__(self, config):

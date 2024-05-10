@@ -107,6 +107,9 @@ definitions:
       primary_key: []
       retriever:
         $ref: "#/definitions/looker_base_stream/retriever"
+        requester:
+          $ref: "#/definitions/looker_base_stream/retriever/requester"
+          path: looks/{{ stream_partition['id'] }}/run/json
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -119,8 +122,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/run_looks"
-      $parameters:
-        path: looks/{{ stream_partition['id'] }}/run/json
     dashboards:
       $ref: "#/definitions/dashboard_base_stream"
       name: dashboards
@@ -184,6 +185,9 @@ definitions:
       name: role_groups
       retriever:
         $ref: "#/definitions/looker_base_stream/retriever"
+        requester:
+          $ref: "#/definitions/looker_base_stream/retriever/requester"
+          path: /roles/{{ stream_partition['id'] }}/groups
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -196,14 +200,15 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/role_groups"
-      $parameters:
-        path: /roles/{{ stream_partition['id'] }}/groups
     git_branches:
       $ref: "#/definitions/looker_base_stream"
       name: git_branches
       primary_key: []
       retriever:
         $ref: "#/definitions/looker_base_stream/retriever"
+        requester:
+          $ref: "#/definitions/looker_base_stream/retriever/requester"
+          path: /projects/{{ stream_partition['id'] }}/git_branches
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -216,8 +221,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/git_branches"
-      $parameters:
-        path: /projects/{{ stream_partition['id'] }}/git_branches
     integrations:
       $ref: "#/definitions/looker_base_stream"
       name: integrations
@@ -262,6 +265,9 @@ definitions:
       name: project_files
       retriever:
         $ref: "#/definitions/looker_base_stream/retriever"
+        requester:
+          $ref: "#/definitions/looker_base_stream/retriever/requester"
+          path: /projects/{{ stream_partition['id'] }}/files
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -274,8 +280,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/project_files"
-      $parameters:
-        path: /projects/{{ stream_partition['id'] }}/files
     query_history:
       type: DeclarativeStream
       name: query_history
@@ -295,13 +299,6 @@ definitions:
               "query.client_id", "query.model", "query.view", "space.id",
               "look.id", "dashboard.id", "user.id", "history.query_run_count",
               "history.total_runtime",]
-            filters: >-
-              {"query.model": "-EMPTY", "history.runtime": "NOT NULL",
-              "user.is_looker": "No",}
-            # client_id: "AiRbYtE2{{ timestamp(stream_state[''history.created_time'']) }}0"
-            # filter_expression: >-
-            #   ${{history.created_time}} > {date_time({{ format_datetime(stream_state[''history.created_time''], '%Y') }}, {{ format_datetime(stream_state[''history.created_time''], '%m') }},
-            #   {{ format_datetime(stream_state[''history.created_time''], '%d') }}, {{ format_datetime(stream_state[''history.created_time''], '%H') }}, {{ format_datetime(stream_state[''history.created_time''], '%M') }}, {{ format_datetime(stream_state[''history.created_time''], '%S') }})}
         record_selector:
           type: RecordSelector
           extractor:
@@ -315,6 +312,9 @@ definitions:
       name: user_sessions
       retriever:
         $ref: "#/definitions/looker_base_stream/retriever"
+        requester:
+          $ref: "#/definitions/looker_base_stream/retriever/requester"
+          path: /users/{{ stream_partition['id'] }}/sessions
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -327,8 +327,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/user_sessions"
-      $parameters:
-        path: /users/{{ stream_partition['id'] }}/sessions
     board_items:
       $ref: "#/definitions/looker_base_stream"
       name: board_items
@@ -379,6 +377,9 @@ definitions:
       name: content_metadata
       retriever:
         $ref: "#/definitions/looker_base_stream/retriever"
+        requester:
+          $ref: "#/definitions/looker_base_stream/retriever/requester"
+          path: /content_metadata/{{ stream_partition['content_metadata_id'] }}
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -412,13 +413,14 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/content_metadata"
-      $parameters:
-        path: /content_metadata/{{ stream_partition['content_metadata_id'] }}
     folder_ancestors:
       $ref: "#/definitions/looker_base_stream"
       name: folder_ancestors
       retriever:
         $ref: "#/definitions/looker_base_stream/retriever"
+        requester:
+          $ref: "#/definitions/looker_base_stream/retriever/requester"
+          path: /folders/{{ stream_partition['id'] }}/ancestors
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -431,8 +433,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/folder_ancestors"
-      $parameters:
-        path: /folders/{{ stream_partition['id'] }}/ancestors
     integration_hubs:
       $ref: "#/definitions/looker_base_stream"
       name: integration_hubs
@@ -456,6 +456,9 @@ definitions:
       name: dashboard_filters
       retriever:
         $ref: "#/definitions/looker_base_stream/retriever"
+        requester:
+          $ref: "#/definitions/looker_base_stream/retriever/requester"
+          path: /dashboards/{{ stream_partition['id'] }}/dashboard_filters
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -468,13 +471,14 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/dashboard_filters"
-      $parameters:
-        path: /dashboards/{{ stream_partition['id'] }}/dashboard_filters
     dashboard_layouts:
       $ref: "#/definitions/looker_base_stream"
       name: dashboard_layouts
       retriever:
         $ref: "#/definitions/looker_base_stream/retriever"
+        requester:
+          $ref: "#/definitions/looker_base_stream/retriever/requester"
+          path: /dashboards/{{ stream_partition['id'] }}/dashboard_layouts
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -487,8 +491,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/dashboard_layouts"
-      $parameters:
-        path: /dashboards/{{ stream_partition['id'] }}/dashboard_layouts
     board_sections:
       $ref: "#/definitions/looker_base_stream"
       name: board_sections
@@ -503,6 +505,9 @@ definitions:
       name: dashboard_elements
       retriever:
         $ref: "#/definitions/looker_base_stream/retriever"
+        requester:
+          $ref: "#/definitions/looker_base_stream/retriever/requester"
+          path: /dashboards/{{ stream_partition['id'] }}/dashboard_elements
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -515,8 +520,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/dashboard_elements"
-      $parameters:
-        path: /dashboards/{{ stream_partition['id'] }}/dashboard_elements
     user_login_lockouts:
       $ref: "#/definitions/looker_base_stream"
       name: user_login_lockouts
@@ -550,6 +553,9 @@ definitions:
       name: dashboard_layout_components
       retriever:
         $ref: "#/definitions/looker_base_stream/retriever"
+        requester:
+          $ref: "#/definitions/looker_base_stream/retriever/requester"
+          path: /dashboard_layouts/{{ stream_partition['id'] }}/dashboard_layout_components
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -562,13 +568,14 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/dashboard_layout_components"
-      $parameters:
-        path: /dashboard_layouts/{{ stream_partition['id'] }}/dashboard_layout_components
     user_attribute_group_values:
       $ref: "#/definitions/looker_base_stream"
       name: user_attribute_group_values
       retriever:
         $ref: "#/definitions/looker_base_stream/retriever"
+        requester:
+          $ref: "#/definitions/looker_base_stream/retriever/requester"
+          path: /user_attributes/{{ stream_partition['id'] }}/group_values
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -581,8 +588,27 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/user_attribute_group_values"
-      $parameters:
-        path: /user_attributes/{{ stream_partition['id'] }}/group_values
+    user_attribute_values:
+      name: user_attribute_values
+      primary_key: []
+      $ref: "#/definitions/looker_base_stream"
+      retriever:
+        $ref: "#/definitions/looker_base_stream/retriever"
+        requester:
+          $ref: "#/definitions/looker_base_stream/retriever/requester"
+          path: "/users/{{ stream_partition['id'] }}/attribute_values"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: id
+                stream:
+                  $ref: '#/definitions/streams/users'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_attribute_values"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['domain'] }}/api/4.0/
@@ -594,6 +620,7 @@ streams:
   - $ref: "#/definitions/streams/query_history"
   - $ref: "#/definitions/streams/roles"
   - $ref: "#/definitions/streams/user_attributes"
+  - $ref: "#/definitions/streams/user_attribute_values"
   - $ref: "#/definitions/streams/users"
   - $ref: "#/definitions/streams/versions"
   - $ref: "#/definitions/streams/workspaces"
@@ -659,17 +686,13 @@ spec:
           - looker.clientname.com
           - 123.123.124.123:8000
         description: >-
-          Domain for your Looker account, e.g.
-          airbyte.cloud.looker.com,looker.[clientname].com,IP address
+          Domain for your Looker account, e.g. airbyte.cloud.looker.com,looker.[clientname].com,IP address
       client_id:
         type: string
         order: 0
         title: Client ID
         description: >-
-          The Client ID is first part of an API3 key that is specific to each
-          Looker user. See the <a
-          href="https://docs.airbyte.com/integrations/sources/looker">docs</a>
-          for more information on how to generate this key.
+          The Client ID is first part of an API3 key that is specific to each Looker user. See the <a href="https://docs.airbyte.com/integrations/sources/looker">docs</a> for more information on how to generate this key.
       run_look_ids:
         type: array
         items:
@@ -1062,6 +1085,16 @@ schemas:
       {
         "id": { "type": ["null", "string"] },
         "group_id": { "type": ["null", "string"] },
+        "value": { "type": ["null", "string"] },
+      }
+    additionalProperties: true
+  user_attribute_values:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      {
+        "name": { "type": ["null", "string"] },
+        "user_id": { "type": ["null", "string"] },
         "value": { "type": ["null", "string"] },
       }
     additionalProperties: true

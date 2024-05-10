@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 00405b19-9768-4e0c-b1ae-9fc2ee2b2a8c
-  dockerImageTag: 0.3.0
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-looker
   githubIssueLabel: source-looker
   icon: looker.svg
@@ -23,6 +23,11 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: Version 1.0.0 introduces changes to the connection configuration which has been upgraded to the API v4.0 from v3.1. Due to this upgrade, certain streams were affected and schemas changed generally.
+        upgradeDeadline: "2024-05-30"
   documentationUrl: https://docs.airbyte.com/integrations/sources/looker
   tags:
     - language:python
