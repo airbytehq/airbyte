@@ -43,4 +43,4 @@ class YamlDeclarativeSource(ManifestDeclarativeSource):
         :param connection_definition_str: yaml string to parse
         :return: The ConnectionDefinition parsed from connection_definition_str
         """
-        return yaml.safe_load(connection_definition_str)
+        return yaml.safe_load(connection_definition_str)  # type: ignore # yaml.safe_load doesn't return a type but know it is a Mapping
