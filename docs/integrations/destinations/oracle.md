@@ -91,7 +91,7 @@ Airbyte has the ability to connect to the Oracle source with 3 network connectiv
 ## Changelog
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                             |
-|:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| :---------- | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
 | 1.0.0       | 2024-04-11 | [\#36048](https://github.com/airbytehq/airbyte/pull/36048) | Removes Normalization, updates to V2 Raw Table Format                                               |
 | 0.2.0       | 2023-06-27 | [\#27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                |
 | 0.1.19      | 2022-07-26 | [\#10719](https://github.com/airbytehq/airbyte/pull/)      | Destination Oracle: added custom JDBC parameters support.                                           |

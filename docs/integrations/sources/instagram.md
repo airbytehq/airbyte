@@ -84,7 +84,7 @@ The Instagram connector syncs data related to Users, Media, and Stories and thei
 AirbyteRecords are required to conform to the [Airbyte type](https://docs.airbyte.com/understanding-airbyte/supported-data-types/) system. This means that all sources must produce schemas and records within these types and all destinations must handle records that conform to this type system.
 
 | Integration Type | Airbyte Type |
-|:-----------------|:-------------|
+| :--------------- | :----------- |
 | `string`         | `string`     |
 | `number`         | `number`     |
 | `array`          | `array`      |
@@ -105,14 +105,14 @@ Instagram limits the number of requests that can be made at a time. See Facebook
 
 ### Troubleshooting
 
-* Check out common troubleshooting issues for the Instagram source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+- Check out common troubleshooting issues for the Instagram source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
-|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
 | 3.0.7   | 2024-04-19 | [36643](https://github.com/airbytehq/airbyte/pull/36643) | Updating to 0.80.0 CDK                                                                                                    |
 | 3.0.6   | 2024-04-12 | [36643](https://github.com/airbytehq/airbyte/pull/36643) | Schema descriptions                                                                                                       |
 | 3.0.5   | 2024-03-20 | [36314](https://github.com/airbytehq/airbyte/pull/36314) | Unpin CDK version                                                                                                         |
