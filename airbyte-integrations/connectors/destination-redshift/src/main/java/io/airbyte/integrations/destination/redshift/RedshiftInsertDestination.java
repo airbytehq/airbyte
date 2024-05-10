@@ -15,33 +15,49 @@ import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDestinationHandler;
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftRawTableAirbyteMetaMigration;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGenerator;
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftState;
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSuperLimitationTransformer;
 import io.airbyte.integrations.destination.redshift.util.RedshiftUtil;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.sql.DataSource;
 
-public class RedshiftInsertDestination extends AbstractJdbcDestination {
+public class RedshiftInsertDestination extends AbstractJdbcDestination<RedshiftState> {
 
   public static final String DRIVER_CLASS = DatabaseDriver.REDSHIFT.getDriverClassName();
   public static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       JdbcUtils.SSL_KEY, "true",
       "sslfactory", "com.amazon.redshift.ssl.NonValidatingFactory");
 
+  // insert into stmt has ~200 bytes
+  // Per record overhead of ~150 bytes for strings in statement like JSON_PARSE.. uuid etc
+  // If the flush size allows the max batch of 10k records, then net overhead is ~1.5MB.
+  // Lets round it to 2MB for wiggle room and keep a max buffer of 14MB per flush.
+  // This will allow not sending record set larger than 14M limiting the batch insert statement.
+  private static final Long REDSHIFT_OPTIMAL_BATCH_SIZE_FOR_FLUSH = 14 * 1024 * 1024L;
+
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new RedshiftInsertDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public RedshiftInsertDestination() {
-    super(DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations());
+    super(DRIVER_CLASS, REDSHIFT_OPTIMAL_BATCH_SIZE_FOR_FLUSH, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations());
   }
 
   @Override
@@ -84,6 +100,8 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
     // connectTimeout is different from Hikari pool's connectionTimout, driver defaults to 10seconds so
     // increase it to match hikari's default
     connectionOptions.put("connectTimeout", "120");
+    // See RedshiftProperty.LOG_SERVER_ERROR_DETAIL, defaults to true
+    connectionOptions.put("logservererrordetail", "false");
     // HikariPool properties
     // https://github.com/brettwooldridge/HikariCP?tab=readme-ov-file#frequently-used
     // TODO: Change data source factory to configure these properties
@@ -110,13 +128,28 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
   }
 
   @Override
-  protected JdbcSqlGenerator getSqlGenerator() {
+  protected JdbcSqlGenerator getSqlGenerator(final JsonNode config) {
     return new RedshiftSqlGenerator(super.getNamingResolver());
   }
 
   @Override
-  protected JdbcDestinationHandler getDestinationHandler(final String databaseName, final JdbcDatabase database) {
-    return new RedshiftDestinationHandler(databaseName, database);
+  protected JdbcDestinationHandler<RedshiftState> getDestinationHandler(final String databaseName,
+                                                                        final JdbcDatabase database,
+                                                                        String rawTableSchema) {
+    return new RedshiftDestinationHandler(databaseName, database, rawTableSchema);
+  }
+
+  @Override
+  protected List<Migration<RedshiftState>> getMigrations(JdbcDatabase database,
+                                                         String databaseName,
+                                                         SqlGenerator sqlGenerator,
+                                                         DestinationHandler<RedshiftState> destinationHandler) {
+    return List.of(new RedshiftRawTableAirbyteMetaMigration(database, databaseName));
+  }
+
+  @Override
+  protected StreamAwareDataTransformer getDataTransformer(ParsedCatalog parsedCatalog, String defaultNamespace) {
+    return new RedshiftSuperLimitationTransformer(parsedCatalog, defaultNamespace);
   }
 
 }

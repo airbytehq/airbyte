@@ -3,27 +3,28 @@
   "type": "object",
   "properties": {
     "expand": {
-      "type": "string",
-      "description": "Expand options that include additional notification scheme details in the response."
+      "description": "Expand options that include additional notification scheme details in the response.",
+      "type": "string"
     },
     "id": {
-      "type": "integer",
-      "description": "The ID of the notification scheme."
+      "description": "The ID of the notification scheme.",
+      "type": "integer"
     },
     "self": {
+      "description": "",
       "type": "string"
     },
     "name": {
-      "type": "string",
-      "description": "The name of the notification scheme."
+      "description": "The name of the notification scheme.",
+      "type": "string"
     },
     "description": {
-      "type": "string",
-      "description": "The description of the notification scheme."
+      "description": "The description of the notification scheme.",
+      "type": "string"
     },
     "notificationSchemeEvents": {
-      "type": ["array", "null"],
       "description": "The notification events and associated recipients.",
+      "type": ["array", "null"],
       "items": {
         "type": "object",
         "properties": {
@@ -31,16 +32,16 @@
             "type": "object",
             "properties": {
               "id": {
-                "type": "integer",
-                "description": "The ID of the event. The event can be a [Jira system event](https://confluence.atlassian.com/x/8YdKLg#Creatinganotificationscheme-eventsEvents) or a [custom event](https://confluence.atlassian.com/x/AIlKLg)."
+                "description": "The ID of the event. The event can be a Jira system event or a custom event.",
+                "type": "integer"
               },
               "name": {
-                "type": "string",
-                "description": "The name of the event."
+                "description": "The name of the event.",
+                "type": "string"
               },
               "description": {
-                "type": "string",
-                "description": "The description of the event."
+                "description": "The description of the event.",
+                "type": "string"
               }
             }
           },
@@ -50,16 +51,16 @@
               "type": "object",
               "properties": {
                 "expand": {
-                  "type": "string",
-                  "description": "Expand options that include additional event notification details in the response."
+                  "description": "Expand options that include additional event notification details in the response.",
+                  "type": "string"
                 },
                 "id": {
-                  "type": "integer",
-                  "description": "The ID of the notification."
+                  "description": "The ID of the notification.",
+                  "type": "integer"
                 },
                 "notificationType": {
-                  "type": "string",
                   "description": "Identifies the recipients of the notification.",
+                  "type": "string",
                   "enum": [
                     "CurrentAssignee",
                     "Reporter",
@@ -76,20 +77,20 @@
                   ]
                 },
                 "parameter": {
-                  "type": "string",
-                  "description": "The value of the `notificationType`:\n\n *  `User` The `parameter` is the user account ID.\n *  `Group` The `parameter` is the group name.\n *  `ProjectRole` The `parameter` is the project role ID.\n *  `UserCustomField` The `parameter` is the ID of the custom field.\n *  `GroupCustomField` The `parameter` is the ID of the custom field."
+                  "description": "The value of the `notificationType`.",
+                  "type": "string"
                 },
                 "group": {
                   "description": "The specified group.",
                   "type": "object",
                   "properties": {
                     "name": {
-                      "type": "string",
-                      "description": "The name of group."
+                      "description": "The name of group.",
+                      "type": "string"
                     },
                     "self": {
-                      "type": "string",
                       "description": "The URL for these group details.",
+                      "type": "string",
                       "readOnly": true
                     }
                   }
@@ -99,37 +100,37 @@
                   "type": "object",
                   "properties": {
                     "id": {
-                      "type": "string",
-                      "description": "The ID of the field."
+                      "description": "The ID of the field.",
+                      "type": "string"
                     },
                     "key": {
-                      "type": "string",
-                      "description": "The key of the field."
+                      "description": "The key of the field.",
+                      "type": "string"
                     },
                     "name": {
-                      "type": "string",
-                      "description": "The name of the field."
+                      "description": "The name of the field.",
+                      "type": "string"
                     },
                     "custom": {
-                      "type": "boolean",
-                      "description": "Whether the field is a custom field."
+                      "description": "Whether the field is a custom field.",
+                      "type": "boolean"
                     },
                     "orderable": {
-                      "type": "boolean",
-                      "description": "Whether the content of the field can be used to order lists."
+                      "description": "Whether the content of the field can be used to order lists.",
+                      "type": "boolean"
                     },
                     "navigable": {
-                      "type": "boolean",
-                      "description": "Whether the field can be used as a column on the issue navigator."
+                      "description": "Whether the field can be used as a column on the issue navigator.",
+                      "type": "boolean"
                     },
                     "searchable": {
-                      "type": "boolean",
-                      "description": "Whether the content of the field can be searched."
+                      "description": "Whether the content of the field can be searched.",
+                      "type": "boolean"
                     },
                     "clauseNames": {
+                      "description": "The names that can be used to reference the field in an advanced search.",
                       "uniqueItems": true,
                       "type": "array",
-                      "description": "The names that can be used to reference the field in an advanced search. For more information, see [Advanced searching - fields reference](https://confluence.atlassian.com/x/gwORLQ).",
                       "items": {
                         "type": "string"
                       }
@@ -139,8 +140,8 @@
                       "type": "object",
                       "properties": {
                         "type": {
-                          "type": "string",
                           "description": "The type of scope.",
+                          "type": "string",
                           "readOnly": true,
                           "enum": ["PROJECT", "TEMPLATE"]
                         },
@@ -150,33 +151,33 @@
                           "type": "object",
                           "properties": {
                             "self": {
-                              "type": "string",
                               "description": "The URL of the project details.",
+                              "type": "string",
                               "readOnly": true
                             },
                             "id": {
-                              "type": "string",
-                              "description": "The ID of the project."
+                              "description": "The ID of the project.",
+                              "type": "string"
                             },
                             "key": {
-                              "type": "string",
                               "description": "The key of the project.",
+                              "type": "string",
                               "readOnly": true
                             },
                             "name": {
-                              "type": "string",
                               "description": "The name of the project.",
+                              "type": "string",
                               "readOnly": true
                             },
                             "projectTypeKey": {
+                              "description": "The project type of the project.",
                               "type": "string",
-                              "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
                               "readOnly": true,
                               "enum": ["software", "service_desk", "business"]
                             },
                             "simplified": {
-                              "type": "boolean",
                               "description": "Whether or not the project is simplified.",
+                              "type": "boolean",
                               "readOnly": true
                             },
                             "avatarUrls": {
@@ -208,23 +209,23 @@
                               "type": "object",
                               "properties": {
                                 "self": {
-                                  "type": "string",
                                   "description": "The URL of the project category.",
+                                  "type": "string",
                                   "readOnly": true
                                 },
                                 "id": {
-                                  "type": "string",
                                   "description": "The ID of the project category.",
+                                  "type": "string",
                                   "readOnly": true
                                 },
                                 "description": {
-                                  "type": "string",
                                   "description": "The name of the project category.",
+                                  "type": "string",
                                   "readOnly": true
                                 },
                                 "name": {
-                                  "type": "string",
                                   "description": "The description of the project category.",
+                                  "type": "string",
                                   "readOnly": true
                                 }
                               }
@@ -238,34 +239,34 @@
                       "type": "object",
                       "properties": {
                         "type": {
-                          "type": "string",
                           "description": "The data type of the field.",
+                          "type": "string",
                           "readOnly": true
                         },
                         "items": {
-                          "type": "string",
                           "description": "When the data type is an array, the name of the field items within the array.",
+                          "type": "string",
                           "readOnly": true
                         },
                         "system": {
-                          "type": "string",
                           "description": "If the field is a system field, the name of the field.",
+                          "type": "string",
                           "readOnly": true
                         },
                         "custom": {
-                          "type": "string",
                           "description": "If the field is a custom field, the URI of the field.",
+                          "type": "string",
                           "readOnly": true
                         },
                         "customId": {
-                          "type": "integer",
                           "description": "If the field is a custom field, the custom ID of the field.",
+                          "type": "integer",
                           "readOnly": true
                         },
                         "configuration": {
+                          "description": "If the field is a custom field, the configuration of the field.",
                           "type": "object",
                           "additionalProperties": true,
-                          "description": "If the field is a custom field, the configuration of the field.",
                           "readOnly": true
                         }
                       }
@@ -273,52 +274,52 @@
                   }
                 },
                 "emailAddress": {
-                  "type": "string",
-                  "description": "The email address."
+                  "description": "The email address.",
+                  "type": "string"
                 },
                 "projectRole": {
                   "description": "The specified project role.",
                   "type": "object",
                   "properties": {
                     "self": {
-                      "type": "string",
                       "description": "The URL the project role details.",
+                      "type": "string",
                       "readOnly": true
                     },
                     "name": {
-                      "type": "string",
-                      "description": "The name of the project role."
+                      "description": "The name of the project role.",
+                      "type": "string"
                     },
                     "id": {
-                      "type": "integer",
                       "description": "The ID of the project role.",
+                      "type": "integer",
                       "readOnly": true
                     },
                     "description": {
-                      "type": "string",
                       "description": "The description of the project role.",
+                      "type": "string",
                       "readOnly": true
                     },
                     "actors": {
-                      "type": "array",
                       "description": "The list of users who act in this role.",
+                      "type": "array",
                       "readOnly": true,
                       "items": {
                         "type": "object",
                         "properties": {
                           "id": {
-                            "type": "integer",
                             "description": "The ID of the role actor.",
+                            "type": "integer",
                             "readOnly": true
                           },
                           "displayName": {
+                            "description": "The display name of the role actor.",
                             "type": "string",
-                            "description": "The display name of the role actor. For users, depending on the user\u2019s privacy setting, this may return an alternative value for the user's name.",
                             "readOnly": true
                           },
                           "type": {
-                            "type": "string",
                             "description": "The type of role actor.",
+                            "type": "string",
                             "readOnly": true,
                             "enum": [
                               "atlassian-group-role-actor",
@@ -326,13 +327,13 @@
                             ]
                           },
                           "name": {
+                            "description": "This property is no longer available and will be removed from the documentation soon.",
                             "type": "string",
-                            "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
                             "readOnly": true
                           },
                           "avatarUrl": {
-                            "type": "string",
                             "description": "The avatar of the role actor.",
+                            "type": "string",
                             "readOnly": true
                           },
                           "actorUser": {
@@ -340,9 +341,9 @@
                             "type": "object",
                             "properties": {
                               "accountId": {
+                                "description": "The account ID of the user.",
                                 "maxLength": 128,
                                 "type": "string",
-                                "description": "The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*. Returns *unknown* if the record is deleted and corrupted, for example, as the result of a server import.",
                                 "readOnly": true
                               }
                             }
@@ -352,12 +353,12 @@
                             "type": "object",
                             "properties": {
                               "displayName": {
-                                "type": "string",
-                                "description": "The display name of the group."
+                                "description": "The display name of the group.",
+                                "type": "string"
                               },
                               "name": {
-                                "type": "string",
-                                "description": "The name of the group"
+                                "description": "The name of the group",
+                                "type": "string"
                               }
                             }
                           }
@@ -365,7 +366,7 @@
                       }
                     },
                     "scope": {
-                      "description": "The scope of the role. Indicated for roles associated with [next-gen projects](https://confluence.atlassian.com/x/loMyO).",
+                      "description": "The scope of the role.",
                       "readOnly": true,
                       "type": "object",
                       "properties": {
@@ -465,26 +466,26 @@
                       }
                     },
                     "translatedName": {
-                      "type": "string",
-                      "description": "The translated name of the project role."
+                      "description": "The translated name of the project role.",
+                      "type": "string"
                     },
                     "currentUserRole": {
-                      "type": "boolean",
-                      "description": "Whether the calling user is part of this role."
+                      "description": "Whether the calling user is part of this role.",
+                      "type": "boolean"
                     },
                     "admin": {
-                      "type": "boolean",
                       "description": "Whether this role is the admin role for the project.",
+                      "type": "boolean",
                       "readOnly": true
                     },
                     "roleConfigurable": {
-                      "type": "boolean",
                       "description": "Whether the roles are configurable for this project.",
+                      "type": "boolean",
                       "readOnly": true
                     },
                     "default": {
-                      "type": "boolean",
                       "description": "Whether this role is the default role for the project",
+                      "type": "boolean",
                       "readOnly": true
                     }
                   }
@@ -494,28 +495,28 @@
                   "type": "object",
                   "properties": {
                     "self": {
-                      "type": "string",
                       "description": "The URL of the user.",
+                      "type": "string",
                       "readOnly": true
                     },
                     "name": {
+                      "description": "This property is no longer available and will be removed from the documentation soon.",
                       "type": "string",
-                      "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
                       "readOnly": true
                     },
                     "key": {
+                      "description": "This property is no longer available and will be removed from the documentation soon.",
                       "type": "string",
-                      "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
                       "readOnly": true
                     },
                     "accountId": {
+                      "description": "The account ID of the user.",
                       "maxLength": 128,
-                      "type": "string",
-                      "description": "The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*."
+                      "type": "string"
                     },
                     "emailAddress": {
+                      "description": "The email address of the user.",
                       "type": "string",
-                      "description": "The email address of the user. Depending on the user\u2019s privacy settings, this may be returned as null.",
                       "readOnly": true
                     },
                     "avatarUrls": {
@@ -542,23 +543,23 @@
                       }
                     },
                     "displayName": {
+                      "description": "The display name of the user.",
                       "type": "string",
-                      "description": "The display name of the user. Depending on the user\u2019s privacy settings, this may return an alternative value.",
                       "readOnly": true
                     },
                     "active": {
-                      "type": "boolean",
                       "description": "Whether the user is active.",
+                      "type": "boolean",
                       "readOnly": true
                     },
                     "timeZone": {
+                      "description": "The time zone specified in the user's profile.",
                       "type": "string",
-                      "description": "The time zone specified in the user's profile. Depending on the user\u2019s privacy settings, this may be returned as null.",
                       "readOnly": true
                     },
                     "accountType": {
+                      "description": "The type of account represented by this user.",
                       "type": "string",
-                      "description": "The type of account represented by this user. This will be one of 'atlassian' (normal users), 'app' (application user) or 'customer' (Jira Service Desk customer user)",
                       "readOnly": true
                     }
                   }
@@ -574,8 +575,8 @@
       "type": ["object", "null"],
       "properties": {
         "type": {
-          "type": "string",
           "description": "The type of scope.",
+          "type": "string",
           "readOnly": true,
           "enum": ["PROJECT", "TEMPLATE"]
         },
@@ -585,33 +586,33 @@
           "type": "object",
           "properties": {
             "self": {
-              "type": "string",
               "description": "The URL of the project details.",
+              "type": "string",
               "readOnly": true
             },
             "id": {
-              "type": "string",
-              "description": "The ID of the project."
+              "description": "The ID of the project.",
+              "type": "string"
             },
             "key": {
-              "type": "string",
               "description": "The key of the project.",
+              "type": "string",
               "readOnly": true
             },
             "name": {
-              "type": "string",
               "description": "The name of the project.",
+              "type": "string",
               "readOnly": true
             },
             "projectTypeKey": {
+              "description": "The project type of the project.",
               "type": "string",
-              "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
               "readOnly": true,
               "enum": ["software", "service_desk", "business"]
             },
             "simplified": {
-              "type": "boolean",
               "description": "Whether or not the project is simplified.",
+              "type": "boolean",
               "readOnly": true
             },
             "avatarUrls": {
@@ -643,23 +644,23 @@
               "type": "object",
               "properties": {
                 "self": {
-                  "type": "string",
                   "description": "The URL of the project category.",
+                  "type": "string",
                   "readOnly": true
                 },
                 "id": {
-                  "type": "string",
                   "description": "The ID of the project category.",
+                  "type": "string",
                   "readOnly": true
                 },
                 "description": {
-                  "type": "string",
                   "description": "The name of the project category.",
+                  "type": "string",
                   "readOnly": true
                 },
                 "name": {
-                  "type": "string",
                   "description": "The description of the project category.",
+                  "type": "string",
                   "readOnly": true
                 }
               }

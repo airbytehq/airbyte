@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "orchestrator"}]
 
 [tool.poetry.dependencies]
-python = "^3.9, <3.13" # This is set to 3.9 as currently there is an issue when deploying via dagster-cloud where a dependency does not have a prebuild wheel file for 3.10
+python = "^3.9, <3.12" # This is set to 3.9 as currently there is an issue when deploying via dagster-cloud where a dependency does not have a prebuild wheel file for 3.10
 dagit = "^1.5.14"
 dagster = "^1.5.14"
 pandas = "^1.5.3"
@@ -34,7 +34,7 @@ pendulum = "<3.0.0"
 
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.2.2"
+pytest = "^8"
 ptpython = "^3.0.23"
 pdbpp = "^0.10.3"
 
@@ -49,5 +49,5 @@ module_name = "orchestrator"
 test = "pytest tests"
 
 [tool.airbyte_ci]
-extra_poetry_groups = ["dev"]
+optional_poetry_groups = ["dev"]
 poe_tasks = ["test"]

@@ -37,7 +37,7 @@ acceptance_tests:
   incremental:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: 4800
+        timeout_seconds: 6000
         future_state:
           future_state_path: "integration_tests/future_state.json"
   full_refresh:

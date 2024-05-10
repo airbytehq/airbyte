@@ -17,7 +17,6 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/elasticsearch
   tags:
     - language:java
-    - language:python
   ab_internal:
     sl: 100
     ql: 100

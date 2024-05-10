@@ -11,11 +11,11 @@
         "order": 0,
         "pattern_descriptor": "The Ad Account ID must be a number.",
         "examples": ["111111111111111"],
-        "type": "array",
         "minItems": 1,
+        "type": "array",
         "items": {
-          "pattern": "^[0-9]+$",
-          "type": "string"
+          "type": "string",
+          "pattern": "^[0-9]+$"
         },
         "uniqueItems": true
       },
@@ -175,6 +175,7 @@
                   "catalog_segment_value_omni_purchase_roas",
                   "catalog_segment_value_website_purchase_roas",
                   "clicks",
+                  "conversion_lead_rate",
                   "conversion_rate_ranking",
                   "conversion_values",
                   "conversions",
@@ -185,6 +186,7 @@
                   "cost_per_action_type",
                   "cost_per_ad_click",
                   "cost_per_conversion",
+                  "cost_per_conversion_lead",
                   "cost_per_dda_countby_convs",
                   "cost_per_estimated_ad_recallers",
                   "cost_per_inline_link_click",
@@ -229,6 +231,9 @@
                   "interactive_component_tap",
                   "labels",
                   "location",
+                  "marketing_messages_cost_per_delivered",
+                  "marketing_messages_cost_per_link_btn_click",
+                  "marketing_messages_spend",
                   "mobile_app_purchase_roas",
                   "objective",
                   "optimization_goal",
@@ -238,9 +243,6 @@
                   "purchase_roas",
                   "qualifying_question_qualify_answer_rate",
                   "quality_ranking",
-                  "quality_score_ectr",
-                  "quality_score_ecvr",
-                  "quality_score_organic",
                   "reach",
                   "social_spend",
                   "spend",
@@ -309,7 +311,16 @@
                   "image_asset",
                   "impression_device",
                   "is_conversion_id_modeled",
+                  "landing_destination",
                   "link_url_asset",
+                  "marketing_messages_btn_name",
+                  "mdsa_landing_destination",
+                  "media_asset_url",
+                  "media_creator",
+                  "media_destination_url",
+                  "media_format",
+                  "media_origin_url",
+                  "media_text_content",
                   "mmm",
                   "place_page_id",
                   "platform_position",
@@ -320,6 +331,8 @@
                   "region",
                   "skan_campaign_id",
                   "skan_conversion_id",
+                  "skan_version",
+                  "standard_event_content_type",
                   "title_asset",
                   "video_asset"
                 ]
@@ -343,7 +356,8 @@
                   "action_target_id",
                   "action_type",
                   "action_video_sound",
-                  "action_video_type"
+                  "action_video_type",
+                  "standard_event_content_type"
                 ]
               }
             },

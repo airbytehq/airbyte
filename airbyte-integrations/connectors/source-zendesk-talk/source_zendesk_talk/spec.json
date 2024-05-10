@@ -19,29 +19,6 @@
         "description": "Zendesk service provides two authentication methods. Choose between: `OAuth2.0` or `API token`.",
         "oneOf": [
           {
-            "title": "API Token",
-            "type": "object",
-            "required": ["email", "api_token"],
-            "additionalProperties": true,
-            "properties": {
-              "auth_type": {
-                "type": "string",
-                "const": "api_token"
-              },
-              "email": {
-                "title": "Email",
-                "type": "string",
-                "description": "The user email for your Zendesk account."
-              },
-              "api_token": {
-                "title": "API Token",
-                "type": "string",
-                "description": "The value of the API token generated. See the <a href=\"https://docs.airbyte.com/integrations/sources/zendesk-talk\">docs</a> for more information.",
-                "airbyte_secret": true
-              }
-            }
-          },
-          {
             "title": "OAuth2.0",
             "type": "object",
             "required": ["access_token"],
@@ -68,6 +45,29 @@
                 "type": "string",
                 "title": "Client Secret",
                 "description": "Client Secret",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "title": "API Token",
+            "type": "object",
+            "required": ["email", "api_token"],
+            "additionalProperties": true,
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "api_token"
+              },
+              "email": {
+                "title": "Email",
+                "type": "string",
+                "description": "The user email for your Zendesk account."
+              },
+              "api_token": {
+                "title": "API Token",
+                "type": "string",
+                "description": "The value of the API token generated. See the <a href=\"https://docs.airbyte.com/integrations/sources/zendesk-talk\">docs</a> for more information.",
                 "airbyte_secret": true
               }
             }

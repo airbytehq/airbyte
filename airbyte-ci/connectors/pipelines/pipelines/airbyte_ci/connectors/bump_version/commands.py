@@ -24,11 +24,13 @@ async def bump_version(
 
     connectors_contexts = [
         ConnectorContext(
-            pipeline_name=f"Upgrade base image versions of connector {connector.technical_name}",
+            pipeline_name=f"Bump version of connector {connector.technical_name}",
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],
             git_revision=ctx.obj["git_revision"],
+            diffed_branch=ctx.obj["diffed_branch"],
+            git_repo_url=ctx.obj["git_repo_url"],
             ci_report_bucket=ctx.obj["ci_report_bucket_name"],
             report_output_prefix=ctx.obj["report_output_prefix"],
             use_remote_secrets=ctx.obj["use_remote_secrets"],
@@ -42,6 +44,8 @@ async def bump_version(
             enable_report_auto_open=False,
             s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
             s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
+            docker_hub_username=ctx.obj.get("docker_hub_username"),
+            docker_hub_password=ctx.obj.get("docker_hub_password"),
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]

@@ -15,7 +15,6 @@ import io.airbyte.commons.json.Jsons;
 import io.debezium.connector.sqlserver.Lsn;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,8 +25,6 @@ public class MssqlCdcTargetPosition implements CdcTargetPosition<Lsn> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlCdcTargetPosition.class);
 
-  public static final Duration MAX_LSN_QUERY_DELAY = Duration.ZERO;
-  public static final Duration MAX_LSN_QUERY_DELAY_TEST = Duration.ofSeconds(1);
   public final Lsn targetLsn;
 
   public MssqlCdcTargetPosition(final Lsn targetLsn) {
@@ -87,27 +84,24 @@ public class MssqlCdcTargetPosition implements CdcTargetPosition<Lsn> {
       // a chance to catch up. This is important in tests, where reads might occur in quick succession
       // which might leave the CT tables (which Debezium consumes) in a stale state.
       final JsonNode sourceConfig = database.getSourceConfig();
-      final Duration delay = (sourceConfig != null && sourceConfig.has("is_test") && sourceConfig.get("is_test").asBoolean())
-          ? MAX_LSN_QUERY_DELAY_TEST
-          : MAX_LSN_QUERY_DELAY;
       final String maxLsnQuery = """
                                  USE [%s];
-                                 WAITFOR DELAY '%02d:%02d:%02d';
                                  SELECT sys.fn_cdc_get_max_lsn() AS max_lsn;
-                                 """.formatted(dbName, delay.toHours(), delay.toMinutesPart(), delay.toSecondsPart());
+                                 """.formatted(dbName);
       // Query the high-water mark.
       final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
           connection -> connection.createStatement().executeQuery(maxLsnQuery),
           JdbcUtils.getDefaultSourceOperations()::rowToJson);
       Preconditions.checkState(jsonNodes.size() == 1);
+
+      final Lsn maxLsn;
       if (jsonNodes.get(0).get("max_lsn") != null) {
-        final Lsn maxLsn = Lsn.valueOf(jsonNodes.get(0).get("max_lsn").binaryValue());
-        LOGGER.info("identified target lsn: " + maxLsn);
-        return new MssqlCdcTargetPosition(maxLsn);
+        maxLsn = Lsn.valueOf(jsonNodes.get(0).get("max_lsn").binaryValue());
       } else {
-        throw new RuntimeException("SQL returned max LSN as null, this might be because the SQL Server Agent is not running. " +
-            "Please enable the Agent and try again (https://docs.microsoft.com/en-us/sql/ssms/agent/start-stop-or-pause-the-sql-server-agent-service)");
+        maxLsn = Lsn.NULL;
       }
+      LOGGER.info("identified target lsn: " + maxLsn);
+      return new MssqlCdcTargetPosition(maxLsn);
     } catch (final SQLException | IOException e) {
       throw new RuntimeException(e);
     }

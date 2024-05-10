@@ -10,34 +10,27 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.JdbcConnector;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.CertificateKey;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.ContainerModifier;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.TestInstance;
-import org.testcontainers.containers.MSSQLServerContainer;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestInstance(Lifecycle.PER_METHOD)
+@Execution(ExecutionMode.CONCURRENT)
+@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH")
 public class CdcMssqlSslSourceTest extends CdcMssqlSourceTest {
 
   @Override
-  protected MSSQLServerContainer<?> createContainer() {
-    return new MsSQLContainerFactory().exclusive(
-        MsSQLTestDatabase.BaseImage.MSSQL_2022.reference,
-        MsSQLTestDatabase.ContainerModifier.AGENT.methodName,
-        MsSQLTestDatabase.ContainerModifier.WITH_SSL_CERTIFICATES.methodName);
-  }
-
-  @Override
   final protected MsSQLTestDatabase createTestDatabase() {
-    final var testdb = new MsSQLTestDatabase(privateContainer);
-    return testdb
-        .withConnectionProperty("encrypt", "true")
-        .withConnectionProperty("databaseName", testdb.getDatabaseName())
-        .withConnectionProperty("trustServerCertificate", "true")
-        .initialized()
-        .withWaitUntilAgentRunning()
+    final var testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022, ContainerModifier.AGENT, ContainerModifier.WITH_SSL_CERTIFICATES);
+    return testdb.withWaitUntilAgentRunning()
         .withCdc();
   }
 

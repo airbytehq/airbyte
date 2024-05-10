@@ -19,11 +19,10 @@ pluginManagement {
 // as much information as possible.
 plugins {
     id "com.gradle.enterprise" version "3.15.1"
-    id 'com.github.burrunan.s3-build-cache' version "1.5"
+    id 'com.github.burrunan.s3-build-cache' version "1.8.1"
 }
 
-ext.isCiServer = System.getenv().containsKey("CI")
-ext.isAirbyteCI = System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
+final boolean isCI = System.getenv().containsKey("CI") || System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
 
 dependencyResolutionManagement {
     // Set FAIL_ON_PROJECT_REPOS to ensure there are no more `repositories { ... }` blocks than necessary.
@@ -115,27 +114,30 @@ gradleEnterprise {
     buildScan {
         termsOfServiceUrl = "https://gradle.com/terms-of-service"
         termsOfServiceAgree = "yes"
-        uploadInBackground = (!isCiServer && !isAirbyteCI) // Disable in CI or scan URLs may not work.
+        uploadInBackground = !isCI // Disable in CI or scan URLs may not work.
         buildScanPublished { PublishedBuildScan scan ->
             file("scan-journal.log") << "${new Date()} - ${scan.buildScanId} - ${scan.buildScanUri}\n"
         }
     }
 }
 
-if (isCiServer || isAirbyteCI) {
+if (isCI) {
     buildCache {
         local {
             // Local build cache is dangerous as it might produce inconsistent results
             // in case developer modifies files while the build is running
-            enabled = isAirbyteCI
+            enabled = true
+            push = true
         }
         remote(com.github.burrunan.s3cache.AwsS3BuildCache) {
-            region = 'us-west-2' // close to dagger runners
+            enabled = !System.getenv().getOrDefault("S3_BUILD_CACHE_ACCESS_KEY_ID", "").isEmpty()
+            push = true
+            // The 'us-west-2' region was chosen because it was close to our v0.6 dagger runners
+            // we used to maintain in AWS, prior to migrating to v0.9 and to github runners.
+            // This may in fact no longer be the best choice, who knows? It's not terrible, at least.
+            region = 'us-west-2'
             bucket = 'ab-ci-cache'
             prefix = "${System.getProperty('s3BuildCachePrefix', 'connectors')}-ci-cache/"
-            push = isAirbyteCI
-            // Sometimes the env var is set, but with an empty value. Ignore this case.
-            enabled = !System.getenv().getOrDefault("S3_BUILD_CACHE_ACCESS_KEY_ID", "").isEmpty()
         }
     }
 }
@@ -147,7 +149,9 @@ def cdkPath = rootDir.toPath().resolve('airbyte-cdk/java/airbyte-cdk')
 cdkPath.eachDir { dir ->
     def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
     if (buildFiles.length == 1) {
-        include ":airbyte-cdk:java:airbyte-cdk:${dir.getFileName()}"
+        def path = ":airbyte-cdk:java:airbyte-cdk:${dir.getFileName()}"
+        include path
+        project(path).name = "airbyte-cdk-${dir.getFileName()}"
     }
 }
 

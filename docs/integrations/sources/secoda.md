@@ -6,16 +6,16 @@ This source can sync data from the [Secoda API](https://docs.secoda.co/secoda-ap
 
 ## This Source Supports the Following Streams
 
-* collections
-* tables
-* terms
+- collections
+- tables
+- terms
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | No                   |       |
 
 ### Performance considerations
 
@@ -23,10 +23,10 @@ This source can sync data from the [Secoda API](https://docs.secoda.co/secoda-ap
 
 ### Requirements
 
-* API Access
+- API Access
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject                                    |
-| :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
+| Version | Date       | Pull Request                                              | Subject                                  |
+| :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------- |
 | 0.1.0   | 2022-10-27 | [#18378](https://github.com/airbytehq/airbyte/pull/18378) | 🎉 New Source: Secoda API [low-code CDK] |

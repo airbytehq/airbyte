@@ -132,6 +132,27 @@ def test_negative_day_delta():
 
 
 @pytest.mark.parametrize(
+    "test_name, input_value, expected_output",
+    [
+        ("test_string_to_string", "hello world", "hello world"),
+        ("test_int_to_string", 1, "1"),
+        ("test_number_to_string", 1.52, "1.52"),
+        ("test_true_to_string", True, "true"),
+        ("test_false_to_string", False, "false"),
+        ("test_array_to_string", ["hello", "world"], '["hello", "world"]'),
+        ("test_object_to_array", {"hello": "world"}, '{"hello": "world"}'),
+    ]
+)
+def test_to_string(test_name, input_value, expected_output):
+    interpolation = JinjaInterpolation()
+    config = {"key": input_value}
+    template = "{{ config['key'] | string }}"
+    actual_output = interpolation.eval(template, config, {})
+    assert isinstance(actual_output, str)
+    assert actual_output == expected_output
+
+
+@pytest.mark.parametrize(
     "s, expected_value",
     [
         pytest.param("{{ timestamp(1621439283) }}", 1621439283, id="test_timestamp_from_timestamp"),
@@ -231,6 +252,8 @@ def test_undeclared_variables(template_string, expected_error, expected_value):
             "2021-08-31T00:00:00Z",
             id="test_now_utc_with_duration_and_format",
         ),
+        pytest.param("{{ 1 | string }}", "1", id="test_int_to_string"),
+        pytest.param("{{ [\"hello\", \"world\"] | string }}", "[\"hello\", \"world\"]", id="test_array_to_string"),
     ],
 )
 def test_macros_examples(template_string, expected_value):

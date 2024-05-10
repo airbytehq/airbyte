@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from io import TextIOWrapper
 from json import loads
 from os import remove
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Final, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk import AirbyteLogger
 
@@ -25,7 +25,7 @@ class ShopifyBulkRecord:
     buffer: List[MutableMapping[str, Any]] = field(init=False, default_factory=list)
 
     # default logger
-    logger: AirbyteLogger = field(init=False, default=logging.getLogger("airbyte"))
+    logger: Final[AirbyteLogger] = logging.getLogger("airbyte")
 
     def __post_init__(self) -> None:
         self.composition: Optional[Mapping[str, Any]] = self.query.record_composition
