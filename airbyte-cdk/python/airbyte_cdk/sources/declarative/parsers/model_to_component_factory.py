@@ -553,6 +553,8 @@ class ModelToComponentFactory:
         end_datetime: Union[str, MinMaxDatetime, None] = None
         if model.is_data_feed and model.end_datetime:
             raise ValueError("Data feed does not support end_datetime")
+        if model.is_data_feed and model.is_client_side_incremental:
+            raise ValueError("`Client side incremental` cannot be applied with `data feed`. Choose only 1 from them.")
         if model.end_datetime:
             end_datetime = (
                 model.end_datetime if isinstance(model.end_datetime, str) else self.create_min_max_datetime(model.end_datetime, config)

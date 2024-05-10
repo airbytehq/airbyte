@@ -42,8 +42,6 @@ class ClientSideIncrementalRecordFilterDecorator:
     """
     Filter applied on a list of Records to exclude ones that are older than stream_state/start_date
     config (Config): The user-provided configuration as specified by the source's spec
-
-
     """
 
     def __init__(self, cursor_field: str, record_filter: Optional[RecordFilter], config: Config, start_date_from_config: str):
@@ -79,8 +77,8 @@ class ClientSideIncrementalRecordFilterDecorator:
         return state_value
 
     def get_filter_date(self, state_value: str) -> str:
-        start_date_parsed = pendulum.parse(self._start_date_from_config).to_iso8601_string() if self._start_date_from_config else None
-        state_date_parsed = pendulum.parse(state_value).to_iso8601_string() if state_value else None
+        start_date_parsed = pendulum.parse(self._start_date_from_config) if self._start_date_from_config else None
+        state_date_parsed = pendulum.parse(state_value) if state_value else None
 
         # Return the max of the two dates if both are present. Otherwise return whichever is present, or None.
         if start_date_parsed or state_date_parsed:
