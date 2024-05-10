@@ -276,6 +276,7 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                          |
 | :-------------- | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.7.5           | 2024-05-10 | [\#38124](https://github.com/airbytehq/airbyte/pull/38124) | adopt latest CDK                                                                                                                                |
 | 3.7.4           | 2024-05-07 | [\#38052](https://github.com/airbytehq/airbyte/pull/38052) | Revert problematic optimization                                                                                                                                |
 | 3.7.3           | 2024-05-07 | [\#34612](https://github.com/airbytehq/airbyte/pull/34612) | Adopt CDK 0.33.2                                                                                                                                                 |
 | 3.7.2           | 2024-05-06 | [\#37857](https://github.com/airbytehq/airbyte/pull/37857) | Use safe executeMetadata call                                                                                                                                    |
