@@ -15,6 +15,7 @@ from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordEx
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.types import Config
 
+
 class ParseDates:
     @staticmethod
     def parse_date(value):
