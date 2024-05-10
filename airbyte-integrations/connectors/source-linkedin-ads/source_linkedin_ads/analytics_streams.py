@@ -13,7 +13,11 @@ from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils import casing
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_protocol.models import SyncMode
-from source_linkedin_ads.streams import Campaigns, Creatives, IncrementalLinkedinAdsStream
+from source_linkedin_ads.streams import (
+    Campaigns,
+    Creatives,
+    IncrementalLinkedinAdsStream,
+)
 
 from .utils import get_parent_stream_values, transform_data
 
@@ -133,11 +137,21 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
     FIELDS_CHUNK_SIZE = 18
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ad_analytics")
-        schema["properties"].update({self.search_param_value: {"type": ["null", "string"]}})
+        schema = ResourceSchemaLoader(
+            package_name_from_class(self.__class__)
+        ).get_schema("ad_analytics")
+        schema["properties"].update(
+            {self.search_param_value: {"type": ["null", "string"]}}
+        )
         return schema
 
-    def __init__(self, name: str = None, pivot_by: str = None, time_granularity: str = None, **kwargs):
+    def __init__(
+        self,
+        name: str = None,
+        pivot_by: str = None,
+        time_granularity: str = None,
+        **kwargs,
+    ):
         self.user_stream_name = name
         if pivot_by:
             self.pivot_by = pivot_by
@@ -175,10 +189,17 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
     @property
     def base_analytics_params(self) -> MutableMapping[str, Any]:
         """Define the base parameters for analytics streams"""
-        return {"q": "analytics", "pivot": f"(value:{self.pivot_by})", "timeGranularity": f"(value:{self.time_granularity})"}
+        return {
+            "q": "analytics",
+            "pivot": f"(value:{self.pivot_by})",
+            "timeGranularity": f"(value:{self.time_granularity})",
+        }
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         headers = super().request_headers(stream_state, stream_slice, next_page_token)
         return headers | {"X-Restli-Protocol-Version": "2.0.0"}
@@ -191,7 +212,9 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
     ) -> MutableMapping[str, Any]:
         params = self.base_analytics_params
         params.update(**self.update_analytics_params(stream_slice))
-        params[self.search_param] = f"List(urn%3Ali%3A{self.search_param_value}%3A{self.get_primary_key_from_slice(stream_slice)})"
+        params[
+            self.search_param
+        ] = f"List(urn%3Ali%3A{self.search_param_value}%3A{self.get_primary_key_from_slice(stream_slice)})"
         return urlencode(params, safe="():,%")
 
     @staticmethod
@@ -207,13 +230,17 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
             "fields": stream_slice["fields"],
         }
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(
+        self, response: requests.Response
+    ) -> Optional[Mapping[str, Any]]:
         """
         Pagination is not supported
         (See Restrictions: https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?view=li-lms-2023-09&tabs=http#restrictions)
         """
         parsed_response = response.json()
-        is_elements_less_than_limit = len(parsed_response.get("elements")) < self.records_limit
+        is_elements_less_than_limit = (
+            len(parsed_response.get("elements")) < self.records_limit
+        )
 
         # Note: The API might return fewer records than requested within the limits during pagination.
         # This behavior is documented at: https://github.com/airbytehq/airbyte/issues/34164
@@ -236,7 +263,11 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         return stream_slice.get(self.primary_slice_key)
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+        self,
+        *,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, List[Mapping[str, Any]]]]]:
         """
         LinkedIn has a max of 20 fields per request. We make chunks by size of 19 fields to have the `dateRange` be included as well.
@@ -271,10 +302,14 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         }
         """
         parent_stream = self.parent_stream(config=self.config)
-        stream_state = stream_state or {self.cursor_field: self.config.get("start_date")}
+        stream_state = stream_state or {
+            self.cursor_field: self.config.get("start_date")
+        }
         for record in parent_stream.read_records(sync_mode=sync_mode):
             base_slice = get_parent_stream_values(record, self.parent_values_map)
-            for date_slice in self.get_date_slices(stream_state.get(self.cursor_field), self.config.get("end_date")):
+            for date_slice in self.get_date_slices(
+                stream_state.get(self.cursor_field), self.config.get("end_date")
+            ):
                 date_slice_with_fields: List = []
                 for fields_set in self.chunk_analytics_fields():
                     base_slice["fields"] = ",".join(fields_set)
@@ -282,7 +317,9 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
                 yield {"field_date_chunks": date_slice_with_fields}
 
     @staticmethod
-    def get_date_slices(start_date: str, end_date: str = None, window_in_days: int = WINDOW_IN_DAYS) -> Iterable[Mapping[str, Any]]:
+    def get_date_slices(
+        start_date: str, end_date: str = None, window_in_days: int = WINDOW_IN_DAYS
+    ) -> Iterable[Mapping[str, Any]]:
         """
         Produces date slices from start_date to end_date (if specified),
         otherwise end_date will be present time.
@@ -313,7 +350,12 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         Chunks the list of available fields into the chunks of equal size.
         """
         # Make chunks
-        chunks = list((fields[f : f + fields_chunk_size] for f in range(0, len(fields), fields_chunk_size)))
+        chunks = list(
+            (
+                fields[f : f + fields_chunk_size]
+                for f in range(0, len(fields), fields_chunk_size)
+            )
+        )
         # Make sure base_fields are within the chunks
         for chunk in chunks:
             if "dateRange" not in chunk:
@@ -323,20 +365,32 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         yield from chunks
 
     def read_records(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         merged_records = defaultdict(dict)
         for field_slice in stream_slice.get("field_date_chunks", []):
             for rec in super().read_records(stream_slice=field_slice, **kwargs):
-                merged_records[f"{rec[self.cursor_field]}-{rec['pivotValues']}"].update(rec)
+                merged_records[f"{rec[self.cursor_field]}-{rec['pivotValues']}"].update(
+                    rec
+                )
         yield from merged_records.values()
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(
+        self, response: requests.Response, **kwargs
+    ) -> Iterable[Mapping]:
         """
         We need to get out the nested complex data structures for further normalization, so the transform_data method is applied.
         """
         for rec in transform_data(response.json().get("elements")):
-            yield rec | {self.search_param_value: self.get_primary_key_from_slice(kwargs.get("stream_slice")), "pivot": self.pivot_by}
+            yield rec | {
+                self.search_param_value: self.get_primary_key_from_slice(
+                    kwargs.get("stream_slice")
+                ),
+                "pivot": self.pivot_by,
+            }
 
 
 class AdCampaignAnalytics(LinkedInAdsAnalyticsStream):
