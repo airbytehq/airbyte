@@ -79,8 +79,8 @@ class SalesforceErrorHandler(ErrorHandler):
                 and error_code == "TXN_SECURITY_METERING_ERROR"
             ):
                 return ResponseAction.FAIL, FailureType.config_error, 'A transient authentication error occurred. To prevent future syncs from failing, assign the "Exempt from Transaction Security" user permission to the authenticated user.'
-        else:  # FIXME maybe check some statuses of remove retry
-            return ResponseAction.RETRY, FailureType.system_error, f"Unknown error {response}. Attempting to retry in case this would succeed..."
+
+        return ResponseAction.RETRY, FailureType.system_error, f"Unknown error {response}. Attempting to retry in case this would succeed..."  # FIXME maybe check some statuses of remove retry
 
     @staticmethod
     def _is_bulk_job_creation(response: requests.Response) -> bool:

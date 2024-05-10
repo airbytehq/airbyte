@@ -521,7 +521,7 @@ class BulkSalesforceStream(SalesforceStream):
         """
         # set filepath for binary data from response
         tmp_file = str(uuid.uuid4())
-        _, streamed_response = self._http_client.send_request("GET", url, headers={"Accept-Encoding": "gzip"}, stream=True)
+        _, streamed_response = self._http_client.send_request("GET", url, headers={"Accept-Encoding": "gzip"}, request_kwargs={"stream": True})
         with closing(streamed_response) as response, open(
             tmp_file, "wb"
         ) as data_file:
