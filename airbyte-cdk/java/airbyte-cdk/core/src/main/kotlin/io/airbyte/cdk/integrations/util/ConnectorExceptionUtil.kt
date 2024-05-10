@@ -26,6 +26,8 @@ object ConnectorExceptionUtil {
     const val RECOVERY_CONNECTION_ERROR_MESSAGE: String =
         "We're having issues syncing from a Postgres replica that is configured as a hot standby server. " +
             "Please see https://go.airbyte.com/pg-hot-standby-error-message for options and workarounds"
+    const val DATABASE_CONNECTION_ERROR: String =
+        "Encountered an error while connecting to the database error"
 
     @JvmField val HTTP_AUTHENTICATION_ERROR_CODES: List<Int> = ImmutableList.of(401, 403)
 
@@ -36,7 +38,10 @@ object ConnectorExceptionUtil {
     }
 
     fun isTransientError(e: Throwable?): Boolean {
-        return isTransientErrorException(e) || isRecoveryConnectionException(e)
+        return isTransientErrorException(e) ||
+            isRecoveryConnectionException(e) ||
+            isTransientEOFException(e) ||
+            isTransientSQLException(e)
     }
 
     fun getDisplayMessage(e: Throwable?): String? {
@@ -50,6 +55,8 @@ object ConnectorExceptionUtil {
             RECOVERY_CONNECTION_ERROR_MESSAGE
         } else if (isUnknownColumnInFieldListException(e)) {
             e!!.message
+        } else if (isTransientError(e)) {
+            DATABASE_CONNECTION_ERROR
         } else {
             String.format(
                 COMMON_EXCEPTION_MESSAGE_TEMPLATE,
@@ -138,9 +145,14 @@ object ConnectorExceptionUtil {
         return e is ConnectionErrorException
     }
 
-    private fun isEOFException(e: Throwable?): Boolean {
+    private fun isTransientEOFException(e: Throwable?): Boolean {
         return (e is EOFException) &&
-            e.message!!.lowercase().contains("connection was unexpectedly lost");
+            e.message!!.lowercase().contains("connection was unexpectedly lost")
+    }
+
+    private fun isTransientSQLException(e: Throwable?): Boolean {
+        return (e is SQLException) &&
+            e.message!!.lowercase().contains("An I/O error occurred while sending to the backend")
     }
 
     private fun isRecoveryConnectionException(e: Throwable?): Boolean {
