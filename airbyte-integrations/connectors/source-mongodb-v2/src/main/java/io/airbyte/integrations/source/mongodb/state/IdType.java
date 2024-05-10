@@ -72,22 +72,38 @@ public enum IdType {
     return Optional.ofNullable(byJavaType.get(javaType.toLowerCase()));
   }
 
-  public static String idToStringRepresenation(final Object currentId, final IdType idType) {
-    final String id;
+  /**
+   * Convers a collection id to a string representation for use in a saved state. Most types will be
+   * converted to a string, except for Binary types which will be converted to a Base64 encoded
+   * string. and UUIDs which will be converted to a human-readable string.
+   *
+   * @param id an _id field value
+   * @param idType the type of the _id field
+   * @return a string representation of the _id field
+   */
+  public static String idToStringRepresenation(final Object id, final IdType idType) {
+    final String strId;
     if (idType == IdType.BINARY) {
-      final var binLastId = (Binary) currentId;
+      final var binLastId = (Binary) id;
       if (binLastId.getType() == BsonBinarySubType.UUID_STANDARD.getValue()) {
-        id = UuidHelper.decodeBinaryToUuid(binLastId.getData(), binLastId.getType(), UuidRepresentation.STANDARD).toString();
+        strId = UuidHelper.decodeBinaryToUuid(binLastId.getData(), binLastId.getType(), UuidRepresentation.STANDARD).toString();
       } else {
-        id = getEncoder().encodeToString(binLastId.getData());
+        strId = getEncoder().encodeToString(binLastId.getData());
       }
     } else {
-      id = currentId.toString();
+      strId = id.toString();
     }
 
-    return id;
+    return strId;
   }
 
+  /**
+   * Parse a string representation of a binary _id field into a BsonBinary object. The string can be a
+   * UUID or a Base64 encoded string.
+   *
+   * @param id a string representation of an _id field
+   * @return a BsonBinary object
+   */
   public static BsonBinary parseBinaryIdString(final String id) {
     try {
       return new BsonBinary(UUID.fromString(id));
