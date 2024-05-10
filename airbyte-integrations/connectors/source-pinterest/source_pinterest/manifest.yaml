@@ -111,6 +111,8 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: "updated_time"
       datetime_format: "%Y-%m-%d"
+      cursor_datetime_formats:
+        - "%s"
       start_datetime: "{{ config.get('start_date') if config.get('start_date') and config.get('start_date') > day_delta(-89, format='%Y-%m-%d') else day_delta(-89, format='%Y-%m-%d') }}"
 
   base_analytics_stream:
@@ -119,8 +121,10 @@ definitions:
     retriever: "#/definitions/analytics_retriever"
     incremental_sync:
       type: DatetimeBasedCursor
-      cursor_field: "updated_time"
+      cursor_field: "{{ parameters.get('cursor_field', 'updated_time') }}"
       datetime_format: "%Y-%m-%d"
+      cursor_datetime_formats:
+        - "%s"
       start_datetime: "{{ config.get('start_date') if config.get('start_date') and config.get('start_date') > day_delta(-89, format='%Y-%m-%d') else day_delta(-89, format='%Y-%m-%d') }}"
       cursor_granularity: "P1D"
       step: "P30D"
@@ -268,12 +272,76 @@ definitions:
       path: "ad_accounts/{{ stream_slice.id }}/ads{{ '?entity_statuses=' + ','.join(config.get('status')) if config.get('status') else '' }}"
 
   # Analytics streams
+  user_account_analytics_stream:
+    # Docs: https://developers.pinterest.com/docs/api/v5/#operation/user_account/analytics
+    name: "user_account_analytics"
+    $ref: "#/definitions/base_analytics_stream"
+    retriever:
+      $ref: "#/definitions/analytics_retriever"
+      partition_router: []
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["all", "daily_metrics"]
+    $parameters:
+      path: "user_account/analytics"
+      cursor_field: "date"
+
   ad_account_analytics_stream:
     # Docs: https://developers.pinterest.com/docs/api/v5/#operation/ad_account/analytics
     name: "ad_account_analytics"
     $ref: "#/definitions/base_analytics_stream"
     $parameters:
       path: "ad_accounts/{{ stream_slice.id }}/analytics"
+
+  campaign_analytics_stream:
+    # Docs: https://developers.pinterest.com/docs/api/v5/#operation/campaigns/analytics
+    name: "campaign_analytics"
+    $ref: "#/definitions/base_analytics_stream"
+    retriever:
+      $ref: "#/definitions/analytics_retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            stream: "#/definitions/campaigns_stream"
+            partition_field: "id"
+    $parameters:
+      path: "ad_accounts/{{ stream_slice.parent_slice.id }}/campaigns/analytics?campaign_ids={{ stream_slice.id }}"
+
+  ad_group_analytics_stream:
+    # Docs: https://developers.pinterest.com/docs/api/v5/#operation/ad_groups/analytics
+    name: "ad_group_analytics"
+    $ref: "#/definitions/base_analytics_stream"
+    retriever:
+      $ref: "#/definitions/analytics_retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            stream: "#/definitions/ad_groups_stream"
+            partition_field: "id"
+    $parameters:
+      path: "ad_accounts/{{ stream_slice.parent_slice.id }}/ad_groups/analytics?ad_group_ids={{ stream_slice.id }}"
+
+  ad_analytics_stream:
+    # Docs: https://developers.pinterest.com/docs/api/v5/#operation/ads/analytics
+    name: "ad_analytics"
+    $ref: "#/definitions/base_analytics_stream"
+    retriever:
+      $ref: "#/definitions/analytics_retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            stream: "#/definitions/ads_stream"
+            partition_field: "id"
+    $parameters:
+      path: "ad_accounts/{{ stream_slice.parent_slice.id }}/ads/analytics?ad_ids={{ stream_slice.id }}"
 
 streams:
   # Full refresh streams
@@ -296,7 +364,11 @@ streams:
   - "#/definitions/ads_stream"
 
   # Analytics streams
+  - "#/definitions/user_account_analytics_stream"
   - "#/definitions/ad_account_analytics_stream"
+  - "#/definitions/campaign_analytics_stream"
+  - "#/definitions/ad_group_analytics_stream"
+  - "#/definitions/ad_analytics_stream"
 
 check:
   type: CheckStream
