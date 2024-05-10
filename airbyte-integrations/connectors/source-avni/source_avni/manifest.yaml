@@ -29,7 +29,7 @@ definitions:
         field_name: "size"
       pagination_strategy:
         type: "PageIncrement"
-        page_size: 100
+        page_size: 20
       page_token_option:
         type: "RequestOption"
         inject_into: "request_parameter"
@@ -103,17 +103,28 @@ definitions:
     $parameters:
       path: "/encounters"
 
+  approval_status_stream:
+    $ref: "#/definitions/base_stream"
+    name: "approvalStatuses"
+    primary_key: "Entity ID"
+    incremental_sync:
+      $ref: "#/definitions/incremental_base"
+    transformations:
+      $ref: "#/definitions/transformations_base"
+    $parameters:
+      path: "/approvalStatuses"
+
 streams:
   - "#/definitions/subjects_stream"
   - "#/definitions/program_enrolments_stream"
   - "#/definitions/program_encounters_stream"
   - "#/definitions/encounters_stream"
+  - "#/definitions/approval_status_stream"
 
 check:
   type: CheckStream
   stream_names:
     - "subjects"
-
 
 spec:
   type: Spec

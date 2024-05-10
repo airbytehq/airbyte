@@ -1,0 +1,50 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+      "Entity ID": {
+        "type": "string"
+      },
+      "Entity type": {
+        "type": "string"
+      },
+      "Entity type ID": {
+        "type": "string"
+      },
+      "Approval status": {
+        "type": "string"
+      },
+      "Approval status comment": {
+        "type": ["null", "string"]
+      },
+      "Status date time": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "last_modified_at": {
+        "type": "string",
+        "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+      },
+      "audit": {
+        "type": "object",
+        "properties": {
+          "Created at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "Last modified at": {
+            "type": ["null", "string"],
+            "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+          },
+          "Created by": {
+            "type": "string"
+          },
+          "Last modified by": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+  
