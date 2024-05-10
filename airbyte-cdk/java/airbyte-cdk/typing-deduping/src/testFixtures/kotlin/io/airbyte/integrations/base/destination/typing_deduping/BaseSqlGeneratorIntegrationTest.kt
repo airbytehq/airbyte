@@ -222,39 +222,47 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         incrementalDedupStream =
             StreamConfig(
                 streamId,
-                SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND_DEDUP,
                 primaryKey,
                 Optional.of(cursor),
-                COLUMNS
+                COLUMNS,
+                0,
+                0,
+                0,
             )
         incrementalAppendStream =
             StreamConfig(
                 streamId,
-                SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND,
                 primaryKey,
                 Optional.of(cursor),
-                COLUMNS
+                COLUMNS,
+                0,
+                0,
+                0,
             )
 
         cdcIncrementalDedupStream =
             StreamConfig(
                 streamId,
-                SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND_DEDUP,
                 primaryKey,
                 Optional.of(cursor),
-                cdcColumns
+                cdcColumns,
+                0,
+                0,
+                0,
             )
         cdcIncrementalAppendStream =
             StreamConfig(
                 streamId,
-                SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND,
                 primaryKey,
                 Optional.of(cursor),
-                cdcColumns
+                cdcColumns,
+                0,
+                0,
+                0,
             )
 
         LOGGER.info("Running with namespace {}", namespace)
@@ -353,11 +361,13 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val stream =
             StreamConfig(
                 streamId,
-                SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND_DEDUP,
                 incrementalDedupStream.primaryKey,
                 incrementalDedupStream.cursor,
-                incrementalDedupStream.columns
+                incrementalDedupStream.columns,
+                0,
+                0,
+                0,
             )
 
         createRawTable(streamId)
@@ -962,11 +972,13 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val streamConfig =
             StreamConfig(
                 streamId,
-                SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND_DEDUP,
                 primaryKey,
                 Optional.empty(),
-                COLUMNS
+                COLUMNS,
+                0,
+                0,
+                0,
             )
         createRawTable(streamId)
         createFinalTable(streamConfig, "")
@@ -1369,7 +1381,6 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val stream =
             StreamConfig(
                 streamId,
-                SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND_DEDUP,
                 primaryKey,
                 Optional.of(cursor),
@@ -1387,7 +1398,10 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                     generator.buildColumnId("includes$\$doubledollar") to
                         AirbyteProtocolType.STRING,
                     generator.buildColumnId("endswithbackslash\\") to AirbyteProtocolType.STRING
-                )
+                ),
+                0,
+                0,
+                0,
             )
 
         val createTable = generator.createTable(stream, "", false)
@@ -1442,11 +1456,13 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             val stream =
                 StreamConfig(
                     modifiedStreamId,
-                    SyncMode.INCREMENTAL,
                     DestinationSyncMode.APPEND_DEDUP,
                     java.util.List.of(columnId),
                     Optional.of(columnId),
-                    linkedMapOf(columnId to AirbyteProtocolType.STRING)
+                    linkedMapOf(columnId to AirbyteProtocolType.STRING),
+                    0,
+                    0,
+                    0,
                 )
 
             val createTable = generator.createTable(stream, "", false)
@@ -1475,14 +1491,16 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val stream =
             StreamConfig(
                 streamId,
-                SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND,
                 emptyList(),
                 Optional.empty(),
                 linkedMapOf(
                     generator.buildColumnId("current_date") to AirbyteProtocolType.STRING,
                     generator.buildColumnId("join") to AirbyteProtocolType.STRING
-                )
+                ),
+                0,
+                0,
+                0,
             )
 
         val createTable = generator.createTable(stream, "", false)
@@ -1523,11 +1541,13 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val stream =
             StreamConfig(
                 streamId,
-                SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND,
                 emptyList<ColumnId>(),
                 Optional.empty(),
-                LinkedHashMap()
+                LinkedHashMap(),
+                0,
+                0,
+                0,
             )
 
         val createTable = generator.createTable(stream, "", false)
