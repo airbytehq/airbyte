@@ -11,27 +11,34 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
-  dockerImageTag: 2.0.1
+  dockerImageTag: 2.3.0
   dockerRepository: airbyte/source-mixpanel
   documentationUrl: https://docs.airbyte.com/integrations/sources/mixpanel
   githubIssueLabel: source-mixpanel
   icon: mixpanel.svg
   license: MIT
+  maxSecondsBetweenMessages: 3600
   name: Mixpanel
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-mixpanel
   registries:
     cloud:
       enabled: true
+      dockerImageTag: 2.2.0 # temporary pin due to a bug in 2.3.0 https://github.com/airbytehq/airbyte/pull/38106
     oss:
       enabled: true
+      dockerImageTag: 2.2.0 # temporary pin due to a bug in 2.3.0 https://github.com/airbytehq/airbyte/pull/38106
   releaseStage: generally_available
   releases:
     breakingChanges:
       2.0.0:
         message:
-          In this release, the default primary key for stream Export has been deleted,
-          allowing users to select the key that best fits their data.
-          Refreshing the source schema and resetting affected streams is necessary
-          only if new primary keys are to be applied following the upgrade.
+          In this release, the default primary key for stream Export has been
+          deleted, allowing users to select the key that best fits their data. Refreshing
+          the source schema and resetting affected streams is necessary only if new
+          primary keys are to be applied following the upgrade.
         upgradeDeadline: "2023-11-30"
       1.0.0:
         message:
@@ -53,4 +60,5 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

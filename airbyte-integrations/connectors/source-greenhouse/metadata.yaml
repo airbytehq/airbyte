@@ -10,13 +10,18 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
-  dockerImageTag: 0.4.4
+  dockerImageTag: 0.5.3
   dockerRepository: airbyte/source-greenhouse
   documentationUrl: https://docs.airbyte.com/integrations/sources/greenhouse
   githubIssueLabel: source-greenhouse
   icon: greenhouse.svg
   license: MIT
+  maxSecondsBetweenMessages: 10
   name: Greenhouse
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-greenhouse
   registries:
     cloud:
       enabled: true
@@ -25,6 +30,6 @@ data:
   releaseStage: generally_available
   supportLevel: certified
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

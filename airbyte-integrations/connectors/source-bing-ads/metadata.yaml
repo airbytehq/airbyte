@@ -12,17 +12,22 @@ data:
       - api.ads.microsoft.com
       - clientcenter.api.bingads.microsoft.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
-  dockerImageTag: 2.1.2
+  dockerImageTag: 2.6.1
   dockerRepository: airbyte/source-bing-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/bing-ads
   githubIssueLabel: source-bing-ads
   icon: bingads.svg
   license: MIT
+  maxSecondsBetweenMessages: 60
   name: Bing Ads
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-bing-ads
   registries:
     cloud:
       enabled: true
@@ -41,8 +46,12 @@ data:
         upgradeDeadline: "2023-10-25"
       2.0.0:
         message: >
-          Version 2.0.0 updates schemas for all hourly reports (end in report_hourly), and the following streams: Accounts, Campaigns, Search Query Performance Report, AppInstallAds, AppInstallAdLabels, Labels, Campaign Labels, Keyword Labels, Ad Group Labels, Keywords, and Budget Summary Report.
-          Users will need to refresh the source schema and reset affected streams after upgrading.
+          Version 2.0.0 updates schemas for all hourly reports (end in report_hourly),
+          and the following streams: Accounts, Campaigns, Search Query Performance
+          Report, AppInstallAds, AppInstallAdLabels, Labels, Campaign Labels, Keyword
+          Labels, Ad Group Labels, Keywords, and Budget Summary Report.
+          Users will need to refresh the source schema and reset affected streams
+          after upgrading.
         upgradeDeadline: "2023-12-11"
   suggestedStreams:
     streams:
@@ -56,4 +65,5 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:python
 metadataSpecVersion: "1.0"

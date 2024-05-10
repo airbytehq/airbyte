@@ -1,4 +1,4 @@
-name: Airbyte CI - Repository Health Check
+name: Connector Ops CI - Gradle Check
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -20,124 +20,63 @@ on:
       - synchronize
 
 jobs:
-  # In case of self-hosted EC2 errors, remove this block.
-  start-check-runner:
-    name: Start EC2 Runner
-    timeout-minutes: 10
+  changes:
     runs-on: ubuntu-latest
     outputs:
-      label: ${{ steps.start-ec2-runner.outputs.label }}
-      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+      java: ${{ steps.changes.outputs.java }}
+
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v3
-      - name: Check PAT rate limits
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
-      - name: Start AWS Runner
-        id: start-ec2-runner
-        uses: ./.github/actions/start-aws-runner
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@v4
+      - id: changes
+        uses: dorny/paths-filter@v2
         with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          # Use a beefier instance type than the default c5.2xlarge, but with the same per-core cost.
-          # When gradle runs on this instance, it will use up all the available cores anyway.
-          # There should be little to no difference in total cost, however the job latency will be improved.
-          # At the time of this writing, the latency doesn't improve much beyond this instance size (approx 5 minutes).
-          # This is largely thanks to the gradle cache.
-          ec2-instance-type: "c5.4xlarge"
-          github-token: ${{ env.PAT }}
+          # Note: expressions within a filter are OR'ed
+          filters: |
+            java:
+              - '**/*.java'
+              - '**/*.gradle'
+              - '**/*.kt'
+              - 'airbyte-cdk/java/**/*'
 
   run-check:
-    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
-    needs: start-check-runner # required to start the main job when the runner is ready
-    runs-on: ${{ needs.start-check-runner.outputs.label }} # run the job on the newly created runner
+    needs:
+      - changes
+    if: needs.changes.outputs.java == 'true'
+    # As of now, 16 cores seems to be enough.
+    # Any revision upwards should be based on a performance analysis of gradle scans.
+    # See https://github.com/airbytehq/airbyte/pull/36055 for an example of this,
+    # which explains why which we went down from 64 cores to 16.
+    runs-on: connector-test-large
     name: Gradle Check
     timeout-minutes: 30
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v3
-
-      # IMPORTANT! This is nessesary to make sure that a status is reported on the PR
-      # even if the workflow is skipped. If we used github actions filters, the workflow
-      # would not be reported as skipped, but instead would be forever pending.
-      #
-      # I KNOW THIS SOUNDS CRAZY, BUT IT IS TRUE.
-      #
-      # Also it gets worse
-      #
-      # IMPORTANT! DO NOT CHANGE THE QUOTES AROUND THE GLOBS. THEY ARE REQUIRED.
-      # MAKE SURE TO TEST ANY SYNTAX CHANGES BEFORE MERGING.
-      - name: Get changed files
-        uses: tj-actions/changed-files@v39
-        id: changes
-        with:
-          files_yaml: |
-            gradlecheck:
-              - '**/*'
-              - '!**/*.md'
-              - '!.github/*'
-
+        uses: actions/checkout@v4
       - uses: actions/setup-java@v3
         with:
           distribution: "zulu"
-          java-version: "17"
-      - name: Install Pip
-        if: steps.changes.outputs.gradlecheck_any_changed == 'true'
-        run: curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3
-      - name: Install Pyenv
-        if: steps.changes.outputs.gradlecheck_any_changed == 'true'
-        run: python3 -m pip install virtualenv --user
+          java-version: "21"
       - name: Docker login
-        # Some tests use testcontainers which pull images from DockerHub.
-        uses: docker/login-action@v1
+        # We login to benefit from increased rate limits for docker pulls
+        # We can't do it on forks as pull_requests events on forks do not have access to GH secrets
+        if: github.event.pull_request.head.repo.fork != true
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Run Gradle Check
-        if: steps.changes.outputs.gradlecheck_any_changed == 'true'
         uses: burrunan/gradle-cache-action@v1
         env:
           CI: true
         with:
+          job-id: gradle-check
           read-only: ${{ github.ref != 'refs/heads/master' }}
+          gradle-distribution-sha-256-sum-warning: false
+          concurrent: true
           # TODO: be able to remove the skipSlowTests property
-          arguments: --scan --no-daemon --no-watch-fs check -DskipSlowTests=true
-
-  # In case of self-hosted EC2 errors, remove this block.
-  stop-check-runner:
-    name: Stop EC2 Runner
-    timeout-minutes: 10
-    needs:
-      - start-check-runner # required to get output from the start-runner job
-      - run-check # required to wait when the main job is done
-    runs-on: ubuntu-latest
-    # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
-    # Thus, we check for skipped here.
-    if: ${{ always() && needs.start-check-runner.result != 'skipped'}}
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-      - name: Check PAT rate limits
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
-      - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.10
-        with:
-          mode: stop
-          github-token: ${{ env.PAT }}
-          label: ${{ needs.start-check-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-check-runner.outputs.ec2-instance-id }}
+          arguments: --scan check -DskipSlowTests=true
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure
@@ -173,7 +112,7 @@ jobs:
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Match GitHub User to Slack User
         id: match-github-to-slack-user
         uses: ./.github/actions/match-github-to-slack-user
@@ -199,7 +138,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - run-check
-    if: success()
+    if: ${{ success() && github.event.pull_request.head.repo.fork != true }}
     steps:
       - name: Get Previous Workflow Status
         uses: Mercymeilya/last-workflow-status@v0.3

@@ -3,27 +3,35 @@
   "type": "object",
   "properties": {
     "user_id": {
+      "description": "The ID of the user associated with the expense",
       "type": ["null", "integer"]
     },
     "user_name": {
+      "description": "The name of the user associated with the expense",
       "type": ["null", "string"]
     },
     "is_contractor": {
+      "description": "Indicates if the user is a contractor",
       "type": ["null", "boolean"]
     },
     "total_amount": {
+      "description": "The total amount of the expense",
       "type": ["null", "number"]
     },
     "billable_amount": {
+      "description": "The amount that can be billed for the expense",
       "type": ["null", "number"]
     },
     "currency": {
+      "description": "The currency in which the expense is incurred",
       "type": ["null", "string"]
     },
     "from": {
+      "description": "The start date of the expense",
       "type": ["null", "string"]
     },
     "to": {
+      "description": "The end date of the expense",
       "type": ["null", "string"]
     }
   }

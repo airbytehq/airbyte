@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
@@ -20,17 +20,13 @@ class ConnectorBuildOptions(BaseModel):
 
 class ReleaseStage(BaseModel):
     __root__: Literal["alpha", "beta", "generally_available", "custom"] = Field(
-        ...,
-        description="enum that describes a connector's release stage",
-        title="ReleaseStage",
+        ..., description="enum that describes a connector's release stage", title="ReleaseStage"
     )
 
 
 class SupportLevel(BaseModel):
-    __root__: Literal["community", "certified"] = Field(
-        ...,
-        description="enum that describes a connector's release stage",
-        title="SupportLevel",
+    __root__: Literal["community", "certified", "archived"] = Field(
+        ..., description="enum that describes a connector's release stage", title="SupportLevel"
     )
 
 
@@ -52,13 +48,9 @@ class NormalizationDestinationDefinitionConfig(BaseModel):
         ...,
         description="a field indicating the name of the repository to be used for normalization. If the value of the flag is NULL - normalization is not used.",
     )
-    normalizationTag: str = Field(
-        ...,
-        description="a field indicating the tag of the docker repository to be used for normalization.",
-    )
+    normalizationTag: str = Field(..., description="a field indicating the tag of the docker repository to be used for normalization.")
     normalizationIntegrationType: str = Field(
-        ...,
-        description="a field indicating the type of integration dialect to use for normalization.",
+        ..., description="a field indicating the type of integration dialect to use for normalization."
     )
 
 
@@ -83,18 +75,8 @@ class ResourceRequirements(BaseModel):
 
 
 class JobType(BaseModel):
-    __root__: Literal[
-        "get_spec",
-        "check_connection",
-        "discover_schema",
-        "sync",
-        "reset_connection",
-        "connection_updater",
-        "replicate",
-    ] = Field(
-        ...,
-        description="enum that describes the different types of jobs that the platform runs.",
-        title="JobType",
+    __root__: Literal["get_spec", "check_connection", "discover_schema", "sync", "reset_connection", "connection_updater", "replicate"] = (
+        Field(..., description="enum that describes the different types of jobs that the platform runs.", title="JobType")
     )
 
 
@@ -103,11 +85,7 @@ class StreamBreakingChangeScope(BaseModel):
         extra = Extra.forbid
 
     scopeType: Any = Field("stream", const=True)
-    impactedScopes: List[str] = Field(
-        ...,
-        description="List of streams that are impacted by the breaking change.",
-        min_items=1,
-    )
+    impactedScopes: List[str] = Field(..., description="List of streams that are impacted by the breaking change.", min_items=1)
 
 
 class AirbyteInternal(BaseModel):
@@ -126,6 +104,24 @@ class PyPi(BaseModel):
     packageName: str = Field(..., description="The name of the package on PyPi.")
 
 
+class GitInfo(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    commit_sha: Optional[str] = Field(None, description="The git commit sha of the last commit that modified this file.")
+    commit_timestamp: Optional[datetime] = Field(None, description="The git commit timestamp of the last commit that modified this file.")
+    commit_author: Optional[str] = Field(None, description="The git commit author of the last commit that modified this file.")
+    commit_author_email: Optional[str] = Field(None, description="The git commit author email of the last commit that modified this file.")
+
+
+class SourceFileInfo(BaseModel):
+    metadata_etag: Optional[str] = None
+    metadata_file_path: Optional[str] = None
+    metadata_bucket_name: Optional[str] = None
+    metadata_last_modified: Optional[str] = None
+    registry_entry_generated_at: Optional[str] = None
+
+
 class JobTypeResourceLimit(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -135,10 +131,7 @@ class JobTypeResourceLimit(BaseModel):
 
 
 class BreakingChangeScope(BaseModel):
-    __root__: StreamBreakingChangeScope = Field(
-        ...,
-        description="A scope that can be used to limit the impact of a breaking change.",
-    )
+    __root__: StreamBreakingChangeScope = Field(..., description="A scope that can be used to limit the impact of a breaking change.")
 
 
 class RemoteRegistries(BaseModel):
@@ -148,13 +141,17 @@ class RemoteRegistries(BaseModel):
     pypi: Optional[PyPi] = None
 
 
+class GeneratedFields(BaseModel):
+    git: Optional[GitInfo] = None
+    source_file_info: Optional[SourceFileInfo] = None
+
+
 class ActorDefinitionResourceRequirements(BaseModel):
     class Config:
         extra = Extra.forbid
 
     default: Optional[ResourceRequirements] = Field(
-        None,
-        description="if set, these are the requirements that should be set for ALL jobs run for this actor definition.",
+        None, description="if set, these are the requirements that should be set for ALL jobs run for this actor definition."
     )
     jobSpecific: Optional[List[JobTypeResourceLimit]] = None
 
@@ -163,13 +160,8 @@ class VersionBreakingChange(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    upgradeDeadline: date = Field(
-        ...,
-        description="The deadline by which to upgrade before the breaking change takes effect.",
-    )
-    message: str = Field(
-        ..., description="Descriptive message detailing the breaking change."
-    )
+    upgradeDeadline: date = Field(..., description="The deadline by which to upgrade before the breaking change takes effect.")
+    message: str = Field(..., description="Descriptive message detailing the breaking change.")
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
         description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
@@ -205,8 +197,7 @@ class ConnectorBreakingChanges(BaseModel):
         extra = Extra.forbid
 
     __root__: Dict[constr(regex=r"^\d+\.\d+\.\d+$"), VersionBreakingChange] = Field(
-        ...,
-        description="Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade.",
+        ..., description="Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade."
     )
 
 
@@ -246,31 +237,15 @@ class Data(BaseModel):
     documentationUrl: AnyUrl
     githubIssueLabel: str
     maxSecondsBetweenMessages: Optional[int] = Field(
-        None,
-        description="Maximum delay between 2 airbyte protocol messages, in second. The source will timeout if this delay is reached",
+        None, description="Maximum delay between 2 airbyte protocol messages, in second. The source will timeout if this delay is reached"
     )
-    releaseDate: Optional[date] = Field(
-        None,
-        description="The date when this connector was first released, in yyyy-mm-dd format.",
-    )
-    protocolVersion: Optional[str] = Field(
-        None, description="the Airbyte Protocol version supported by the connector"
-    )
-    connectorSubtype: Literal[
-        "api",
-        "database",
-        "datalake",
-        "file",
-        "custom",
-        "message_queue",
-        "unknown",
-        "vectorstore",
-    ]
+    releaseDate: Optional[date] = Field(None, description="The date when this connector was first released, in yyyy-mm-dd format.")
+    protocolVersion: Optional[str] = Field(None, description="the Airbyte Protocol version supported by the connector")
+    connectorSubtype: Literal["api", "database", "datalake", "file", "custom", "message_queue", "unknown", "vectorstore"]
     releaseStage: ReleaseStage
     supportLevel: Optional[SupportLevel] = None
     tags: Optional[List[str]] = Field(
-        [],
-        description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc.",
+        [], description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc."
     )
     registries: Optional[Registry] = None
     allowedHosts: Optional[AllowedHosts] = None
@@ -280,6 +255,8 @@ class Data(BaseModel):
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
     ab_internal: Optional[AirbyteInternal] = None
     remoteRegistries: Optional[RemoteRegistries] = None
+    supportsRefreshes: Optional[bool] = False
+    generated: Optional[GeneratedFields] = None
 
 
 class ConnectorMetadataDefinitionV0(BaseModel):

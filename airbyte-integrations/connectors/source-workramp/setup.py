@@ -16,13 +16,30 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
+    entry_points={
+        "console_scripts": [
+            "source-workramp=source_workramp.run:run",
+        ],
+    },
     name="source_workramp",
     description="Source implementation for Workramp.",
     author="Elliot Trabac",
     author_email="elliot.trabac1@gmail.com",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},
+    package_data={
+        "": [
+            # Include yaml files in the package (if any)
+            "*.yml",
+            "*.yaml",
+            # Include all json files in the package, up to 4 levels deep
+            "*.json",
+            "*/*.json",
+            "*/*/*.json",
+            "*/*/*/*.json",
+            "*/*/*/*/*.json",
+        ]
+    },
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },

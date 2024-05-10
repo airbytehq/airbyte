@@ -10,19 +10,40 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
-  dockerImageTag: 0.3.7
+  dockerImageTag: 1.1.1
   dockerRepository: airbyte/source-slack
   documentationUrl: https://docs.airbyte.com/integrations/sources/slack
   githubIssueLabel: source-slack
   icon: slack.svg
   license: MIT
+  maxSecondsBetweenMessages: 60
   name: Slack
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-slack
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    breakingChanges:
+      1.0.0:
+        message:
+          The source Slack connector is being migrated from the Python CDK
+          to our declarative low-code CDK. Due to changes in the handling of state
+          format for incremental substreams, this migration constitutes a breaking
+          change for the channel_messages stream. Users will need to reset source
+          configuration, refresh the source schema and reset the channel_messages
+          stream after upgrading. For more information, see our migration documentation
+          for source Slack.
+        upgradeDeadline: "2024-04-29"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "channel_messages"
   suggestedStreams:
     streams:
       - users
@@ -33,4 +54,5 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

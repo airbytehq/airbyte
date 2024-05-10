@@ -8,14 +8,22 @@ from pipelines.helpers.execution.run_steps import InvalidStepConfiguration, RunS
 from pipelines.models.contexts.pipeline_context import PipelineContext
 from pipelines.models.steps import Step, StepResult, StepStatus
 
-test_context = PipelineContext(pipeline_name="test", is_local=True, git_branch="test", git_revision="test", report_output_prefix="test")
+test_context = PipelineContext(
+    pipeline_name="test",
+    is_local=True,
+    git_branch="test",
+    git_revision="test",
+    diffed_branch="test",
+    git_repo_url="test",
+    report_output_prefix="test",
+)
 
 
 class TestStep(Step):
     title = "Test Step"
 
     async def _run(self, result_status=StepStatus.SUCCESS) -> StepResult:
-        return StepResult(self, result_status)
+        return StepResult(step=self, status=result_status)
 
 
 @pytest.mark.anyio
@@ -215,7 +223,7 @@ async def test_run_steps_concurrent():
         async def _run(self, name, sleep) -> StepResult:
             await anyio.sleep(sleep)
             ran_at[name] = time.time()
-            return StepResult(self, StepStatus.SUCCESS)
+            return StepResult(step=self, status=StepStatus.SUCCESS)
 
     steps = [
         StepToRun(id="step1", step=SleepStep(test_context), args={"name": "step1", "sleep": 2}),
@@ -242,7 +250,7 @@ async def test_run_steps_concurrency_of_1():
         async def _run(self, name, sleep) -> StepResult:
             ran_at[name] = time.time()
             await anyio.sleep(sleep)
-            return StepResult(self, StepStatus.SUCCESS)
+            return StepResult(step=self, status=StepStatus.SUCCESS)
 
     steps = [
         StepToRun(id="step1", step=SleepStep(test_context), args={"name": "step1", "sleep": 1}),
@@ -269,7 +277,7 @@ async def test_run_steps_sequential():
         async def _run(self, name, sleep) -> StepResult:
             await anyio.sleep(sleep)
             ran_at[name] = time.time()
-            return StepResult(self, StepStatus.SUCCESS)
+            return StepResult(step=self, status=StepStatus.SUCCESS)
 
     steps = [
         [StepToRun(id="step1", step=SleepStep(test_context), args={"name": "step1", "sleep": 1})],
@@ -299,7 +307,7 @@ async def test_run_steps_passes_results():
         StepToRun(
             id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
             step=AcceptanceTests(context, True),
-            args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
+            args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
             depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
         ),
 
@@ -309,23 +317,23 @@ async def test_run_steps_passes_results():
         title = "Test Step"
 
         async def _run(self, arg1, arg2) -> StepResult:
-            output_artifact = f"{arg1}:{arg2}"
-            return StepResult(self, StepStatus.SUCCESS, output_artifact=output_artifact)
+            output = f"{arg1}:{arg2}"
+            return StepResult(step=self, status=StepStatus.SUCCESS, output=output)
 
     async def async_args(results):
-        return {"arg1": results["step2"].output_artifact, "arg2": "4"}
+        return {"arg1": results["step2"].output, "arg2": "4"}
 
     steps = [
         [StepToRun(id="step1", step=Simple(test_context), args={"arg1": "1", "arg2": "2"})],
-        [StepToRun(id="step2", step=Simple(test_context), args=lambda results: {"arg1": results["step1"].output_artifact, "arg2": "3"})],
+        [StepToRun(id="step2", step=Simple(test_context), args=lambda results: {"arg1": results["step1"].output, "arg2": "3"})],
         [StepToRun(id="step3", step=Simple(test_context), args=async_args)],
     ]
 
     results = await run_steps(steps)
 
-    assert results["step1"].output_artifact == "1:2"
-    assert results["step2"].output_artifact == "1:2:3"
-    assert results["step3"].output_artifact == "1:2:3:4"
+    assert results["step1"].output == "1:2"
+    assert results["step2"].output == "1:2:3"
+    assert results["step3"].output == "1:2:3:4"
 
 
 @pytest.mark.anyio

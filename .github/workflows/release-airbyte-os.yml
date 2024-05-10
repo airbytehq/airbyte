@@ -49,7 +49,7 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           distribution: "zulu"
-          java-version: "17"
+          java-version: "21"
 
       - uses: actions/setup-node@v3
         with:
@@ -184,7 +184,7 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           distribution: "zulu"
-          java-version: "17"
+          java-version: "21"
 
       - uses: actions/setup-python@v4
         with:
@@ -197,29 +197,6 @@ jobs:
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
         run: ./tools/bin/release_version_octavia.sh
-
-      - name: Publish Python Package to test.pypi.org
-        if: github.event.inputs.skip-publish-test != 'true'
-        uses: mariamrf/py-package-publish-action@v1.1.0
-        with:
-          # specify the same version as in ~/.python-version
-          python_version: "3.10"
-          pip_version: "23.2"
-          subdir: "octavia-cli/"
-        env:
-          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-          TWINE_REPOSITORY_URL: "https://test.pypi.org/legacy/"
-      - name: Publish Python Package
-        uses: mariamrf/py-package-publish-action@v1.1.0
-        with:
-          # specify the same version as in ~/.python-version
-          python_version: "3.10"
-          pip_version: "23.2"
-          subdir: "octavia-cli/"
-        env:
-          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-release-airbyte-runner:

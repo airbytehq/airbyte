@@ -1,6 +1,6 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
-import {SnowflakeMigrationGenerator, BigQueryMigrationGenerator, RedshiftMigrationGenerator} from './destinations_v2.js'
+import {SnowflakeMigrationGenerator, BigQueryMigrationGenerator, RedshiftMigrationGenerator, PostgresMigrationGenerator} from './destinations_v2.js'
 
 # Upgrading to Destinations V2
 
@@ -53,6 +53,17 @@ Whenever possible, we've taken this opportunity to use the best data type for st
 
 ![Upgrade Path](./assets/airbyte_destinations_v2_upgrade_prompt.png)
 
+:::caution Upgrade Warning
+
+- The upgrading process entails hydrating the v2 format raw table by querying the v1 raw table through a standard query, such as "INSERT INTO v2_raw_table SELECT \* FROM v1_raw_table."
+  The duration of this process can vary significantly based on the data size and may encounter failures contingent on the Destination's capacity to execute the query.
+  In some cases, creating a new Airbyte connection, rather than migrating your existing connection, may be faster. Note that in these cases, all data will be re-imported.
+- Following the successful migration of v1 raw tables to v2, the v1 raw tables will be dropped. However, it is essential to note that if there are any derived objects (materialized views) or referential
+  constraints (foreign keys) linked to the old raw table, this operation may encounter failure, resulting in an unsuccessful upgrade or broken derived objects (like materialized views etc).
+
+If any of the above concerns are applicable to your existing setup, we recommend [Upgrading Connections One by One with Dual-Writing](#upgrading-connections-one-by-one-with-dual-writing) for a more controlled upgrade process
+:::
+
 After upgrading the out-of-date destination to a [Destinations V2 compatible version](#destinations-v2-effective-versions), the following will occur at the next sync **for each connection** sending data to the updated destination:
 
 1. Existing raw tables replicated to this destination will be copied to a new `airbyte_internal` schema.
@@ -72,7 +83,7 @@ Versions are tied to the destination. When you update the destination, **all con
 - [Testing Destinations V2 on a Single Connection](#testing-destinations-v2-for-a-single-connection)
 - [Upgrading Connections One by One Using CDC](#upgrade-paths-for-connections-using-cdc)
 - [Upgrading as a User of Raw Tables](#upgrading-as-a-user-of-raw-tables)
-- [Rolling back to Legacy Normalization](#oss-only-rolling-back-to-legacy-normalization)
+- [Rolling back to Legacy Normalization](#open-source-only-rolling-back-to-legacy-normalization)
 
 ## Advanced Upgrade Paths
 
@@ -108,6 +119,9 @@ These steps allow you to dual-write for connections incrementally syncing data w
   </TabItem>
   <TabItem value="redshift" label="Redshift">
     <RedshiftMigrationGenerator />
+  </TabItem>
+  <TabItem value="postgres" label="Postgres">
+    <PostgresMigrationGenerator />
   </TabItem>
 </Tabs>
 
@@ -158,8 +172,8 @@ For each destination connector, Destinations V2 is effective as of the following
 | --------------------- | --------------------- | -------------------------- | ------------------------ |
 | BigQuery              | 1.10.2                | 2.0.6+                     | November 7, 2023         |
 | Snowflake             | 2.1.7                 | 3.1.0+                     | November 7, 2023         |
-| Redshift              | 0.6.11                | [coming soon] 2.0.0+       | [coming soon] early 2024 |
-| Postgres              | 0.4.0                 | [coming soon] 2.0.0+       | [coming soon] early 2024 |
+| Redshift              | 0.8.0                 | 2.0.0+                     | March 15, 2024           |
+| Postgres              | 0.6.3                 | 2.0.0+                     | May 31, 2024             |
 | MySQL                 | 0.2.0                 | [coming soon] 2.0.0+       | [coming soon] early 2024 |
 
 Note that legacy normalization will be deprecated for ClickHouse, DuckDB, MSSQL, TiDB, and Oracle DB in early 2024. If you wish to add Destinations V2 capability to these destinations, please reference our implementation guide (coming soon).
@@ -168,7 +182,7 @@ Note that legacy normalization will be deprecated for ClickHouse, DuckDB, MSSQL,
 
 If you upgrade to Destinations V2 and start encountering issues, as an Open Source user you can optionally roll back. If you are running an outdated Airbyte Platform version (prior to `v0.50.24`), this may occur more frequently by accidentally upgrading to Destinations V2. However:
 
-- Rolling back will require resetting each of your upgraded connections.
+- Rolling back will require clearing each of your upgraded connections.
 - If you are hoping to receive support from the Airbyte team, you will need to re-upgrade to Destinations V2 by the upgrade deadline.
 
 To roll back, follow these steps:
@@ -176,9 +190,9 @@ To roll back, follow these steps:
 1. In the Airbyte UI, go to the 'Settings page, then to 'Destinations'.
 2. Manually type in the previous destination version you were running, or one of the versions listed in the table above.
 3. Enter this older version to roll back to the previous connector version.
-4. Reset all connections which synced at least once to a previously upgraded destination. To be safe, you may reset all connections sending data to a previously upgraded destination.
+4. Clear all connections which synced at least once to a previously upgraded destination. To be safe, you may clear all connections sending data to a previously upgraded destination.
 
-If you are an Airbyte Cloud customer, and encounter errors while upgrading from a V1 to a V2 destination, please reach out to support. We do not always recommend doing a full reset, depending on the type of error.
+If you are an Airbyte Cloud customer, and encounter errors while upgrading from a V1 to a V2 destination, please reach out to support. We do not always recommend doing a full clear of your entire connection, depending on the type of error.
 
 ## Destinations V2 Implementation Differences
 
@@ -186,8 +200,46 @@ In addition to the changes which apply for all destinations described above, the
 
 ### BigQuery
 
-1. [Object and array properties](https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types) are properly stored as JSON columns. Previously, we had used TEXT, which made querying sub-properties more difficult.
-   - In certain cases, numbers within sub-properties with long decimal values will need to be converted to float representations due to a _quirk_ of Bigquery. Learn more [here](https://github.com/airbytehq/airbyte/issues/29594).
+#### [Object and array properties](https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types) are properly stored as JSON columns
+
+Previously, we had used TEXT, which made querying sub-properties more difficult.
+In certain cases, numbers within sub-properties with long decimal values will need to be converted to float representations due to a _quirk_ of Bigquery. Learn more [here](https://github.com/airbytehq/airbyte/issues/29594).
+
+### Snowflake
+
+#### Explicitly uppercase column names in Final Tables
+
+Snowflake will implicitly uppercase column names if they are not quoted. Airbyte needs to quote the column names because a variety of sources have column/field names which contain special characters that require quoting in Snowflake.
+However, when you quote a column name in Snowflake, it also preserves lowercase naming. During the Snowflake V2 beta, most customers found this behavior unexpected and expected column selection to be case-insensitive for columns without special characters.
+As a result of this feedback, we decided to explicitly uppercase column names in the final tables, which does mean that columns which previous required quoting, now also require you to convert to the upper case version.
+
+For example:
+
+```sql
+-- Snowflake will implicitly uppercase column names which are not quoted
+-- These three queries are equivalent
+SELECT my_column from my_table;
+SELECT MY_COLUMN from MY_TABLE;
+SELECT "MY_COLUMN" from MY_TABLE;
+
+-- However, this query is different, and requires a lowercase column name
+SELECT "my_column" from my_table;
+
+-- Because we are explicitly upper-casing column names, column names containing special characters (like a space)
+-- should now also be uppercase
+
+-- Before v2
+SELECT "my column" from my_table;
+-- After v2
+SELECT "MY COLUMN" from my_table;
+```
+
+### Postgres
+
+#### Preserving mixed case column names in Final Tables
+
+Postgres will implicitly lower case column names with mixed case characters when using unquoted identifiers. Based on feedback, we chose to replace any special
+characters like spaces with underscores and use quoted identifiers to preserve mixed case column names.
 
 ## Updating Downstream Transformations
 

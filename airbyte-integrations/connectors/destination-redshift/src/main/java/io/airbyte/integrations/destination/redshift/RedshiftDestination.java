@@ -69,6 +69,11 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     return originalSpec;
   }
 
+  @Override
+  public boolean isV2Destination() {
+    return true;
+  }
+
   public static void main(final String[] args) throws Exception {
     final Destination destination = new RedshiftDestination();
     LOGGER.info("starting destination: {}", RedshiftDestination.class);

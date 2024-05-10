@@ -27,7 +27,10 @@ class FormatConfiguration:
 FORMATTERS_CONFIGURATIONS: List[FormatConfiguration] = [
     # Run spotless on all java and gradle files.
     FormatConfiguration(
-        Formatter.JAVA, ["**/*.java", "**/*.gradle"], format_java_container, ["mvn -f spotless-maven-pom.xml spotless:apply clean"]
+        Formatter.JAVA,
+        ["**/*.java", "**/*.kt", "**/*.gradle"],
+        format_java_container,
+        ["mvn -f spotless-maven-pom.xml spotless:apply clean"],
     ),
     # Run prettier on all json and yaml files.
     FormatConfiguration(
@@ -39,7 +42,7 @@ FORMATTERS_CONFIGURATIONS: List[FormatConfiguration] = [
     # Add license header to java and python files. The license header is stored in LICENSE_SHORT file.
     FormatConfiguration(
         Formatter.LICENSE,
-        ["**/*.java", "**/*.py"],
+        ["**/*.java", "**/*.kt", "**/*.py"],
         format_license_container,
         [f"addlicense -c 'Airbyte, Inc.' -l apache -v -f {LICENSE_FILE_NAME} ."],
     ),
@@ -48,6 +51,6 @@ FORMATTERS_CONFIGURATIONS: List[FormatConfiguration] = [
         Formatter.PYTHON,
         ["**/*.py"],
         format_python_container,
-        ["poetry run isort --settings-file pyproject.toml .", "poetry run black --config pyproject.toml ."],
+        ["poetry run poe format"],
     ),
 ]

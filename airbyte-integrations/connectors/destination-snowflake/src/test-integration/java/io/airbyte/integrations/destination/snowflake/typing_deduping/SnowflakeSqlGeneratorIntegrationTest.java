@@ -22,12 +22,15 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeTransaction;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase;
-import io.airbyte.integrations.destination.snowflake.SnowflakeTestSourceOperations;
+import io.airbyte.integrations.destination.snowflake.SnowflakeSourceOperations;
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.migrations.SnowflakeState;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -42,13 +45,19 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest<SnowflakeTableDefinition> {
+public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest<SnowflakeState> {
 
   private static String databaseName;
   private static JdbcDatabase database;
   private static DataSource dataSource;
+
+  @Override
+  protected boolean getSupportsSafeCast() {
+    return true;
+  }
 
   @BeforeAll
   public static void setupSnowflake() {
@@ -65,12 +74,12 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
   @Override
   protected SnowflakeSqlGenerator getSqlGenerator() {
-    return new SnowflakeSqlGenerator();
+    return new SnowflakeSqlGenerator(0);
   }
 
   @Override
   protected SnowflakeDestinationHandler getDestinationHandler() {
-    return new SnowflakeDestinationHandler(databaseName, database);
+    return new SnowflakeDestinationHandler(databaseName, database, getNamespace().toUpperCase());
   }
 
   @Override
@@ -107,8 +116,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
     return SnowflakeTestUtils.dumpFinalTable(
         database,
         databaseName,
-        streamId.finalNamespace(),
-        streamId.finalName() + suffix.toUpperCase());
+        streamId.getFinalNamespace(),
+        streamId.getFinalName() + suffix.toUpperCase());
   }
 
   @Override
@@ -120,7 +129,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   protected void insertFinalTableRecords(final boolean includeCdcDeletedAt,
                                          final StreamId streamId,
                                          final String suffix,
-                                         final List<JsonNode> records)
+                                         final List<? extends JsonNode> records)
       throws Exception {
     final List<String> columnNames = includeCdcDeletedAt ? FINAL_TABLE_COLUMN_NAMES_CDC : FINAL_TABLE_COLUMN_NAMES;
     final String cdcDeletedAtName = includeCdcDeletedAt ? ",\"_AB_CDC_DELETED_AT\"" : "";
@@ -201,7 +210,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   }
 
   @Override
-  protected void insertRawTableRecords(final StreamId streamId, final List<JsonNode> records) throws Exception {
+  protected void insertRawTableRecords(final StreamId streamId, final List<? extends JsonNode> records) throws Exception {
     final String recordsText = records.stream()
         // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
         .map(record -> JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES
@@ -244,13 +253,13 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   @Override
   @Test
   public void testCreateTableIncremental() throws Exception {
-    final Sql sql = generator.createTable(incrementalDedupStream, "", false);
-    destinationHandler.execute(sql);
+    final Sql sql = getGenerator().createTable(getIncrementalDedupStream(), "", false);
+    getDestinationHandler().execute(sql);
 
     // Note that USERS_FINAL is uppercased here. This is intentional, because snowflake upcases unquoted
     // identifiers.
     final Optional<String> tableKind =
-        database.queryJsons(String.format("SHOW TABLES LIKE '%s' IN SCHEMA \"%s\";", "USERS_FINAL", namespace.toUpperCase()))
+        database.queryJsons(String.format("SHOW TABLES LIKE '%s' IN SCHEMA \"%s\";", "USERS_FINAL", getNamespace().toUpperCase()))
             .stream().map(record -> record.get("kind").asText())
             .findFirst();
     final Map<String, String> columns = database.queryJsons(
@@ -263,7 +272,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         ORDER BY ordinal_position;
         """,
         databaseName,
-        namespace.toUpperCase(),
+        getNamespace().toUpperCase(),
         "USERS_FINAL").stream()
         .collect(toMap(
             record -> record.get("COLUMN_NAME").asText(),
@@ -312,16 +321,16 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
               %s TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()
             ) data_retention_time_in_days = 0;
         """,
-        v1RawTable.rawNamespace(),
-        v1RawTable.rawNamespace(),
-        v1RawTable.rawName(),
+        v1RawTable.getRawNamespace(),
+        v1RawTable.getRawNamespace(),
+        v1RawTable.getRawName(),
         JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
   }
 
   @Override
-  protected void insertV1RawTableRecords(final StreamId streamId, final List<JsonNode> records) throws Exception {
+  protected void insertV1RawTableRecords(final StreamId streamId, final List<? extends JsonNode> records) throws Exception {
     final var recordsText = records
         .stream()
         .map(record -> JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS
@@ -333,7 +342,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         .map(row -> "(%s)".formatted(row))
         .collect(joining(","));
     final var insert = new StringSubstitutor(Map.of(
-        "v1_raw_table_id", String.join(".", streamId.rawNamespace(), streamId.rawName()),
+        "v1_raw_table_id", String.join(".", streamId.getRawNamespace(), streamId.getRawName()),
         "records", recordsText),
         // Use different delimiters because we're using dollar quotes in the query.
         "#{",
@@ -354,21 +363,21 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         JavaBaseConstants.COLUMN_NAME_DATA).collect(joining(","));
     return database.bufferedResultSetQuery(connection -> connection.createStatement().executeQuery(new StringSubstitutor(Map.of(
         "columns", columns,
-        "table", String.join(".", streamId.rawNamespace(), streamId.rawName()))).replace(
+        "table", String.join(".", streamId.getRawNamespace(), streamId.getRawName()))).replace(
             """
             SELECT ${columns} FROM ${table} ORDER BY _airbyte_emitted_at ASC
             """)),
-        new SnowflakeTestSourceOperations()::rowToJson);
+        new SnowflakeSourceOperations()::rowToJson);
   }
 
   @Override
-  protected void migrationAssertions(final List<JsonNode> v1RawRecords, final List<JsonNode> v2RawRecords) {
+  protected void migrationAssertions(final List<? extends JsonNode> v1RawRecords, final List<? extends JsonNode> v2RawRecords) {
     final var v2RecordMap = v2RawRecords.stream().collect(Collectors.toMap(
         record -> record.get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID).asText(),
         Function.identity()));
     assertAll(
-        () -> assertEquals(6, v1RawRecords.size()),
-        () -> assertEquals(6, v2RawRecords.size()));
+        () -> assertEquals(5, v1RawRecords.size()),
+        () -> assertEquals(5, v2RawRecords.size()));
     v1RawRecords.forEach(v1Record -> {
       final var v1id = v1Record.get(JavaBaseConstants.COLUMN_NAME_AB_ID.toUpperCase()).asText();
       assertAll(
@@ -382,8 +391,15 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
       originalData = originalData.isTextual() ? Jsons.deserializeExact(migratedData.asText()) : originalData;
       // hacky thing because we only care about the data contents.
       // diffRawTableRecords makes some assumptions about the structure of the blob.
-      DIFFER.diffFinalTableRecords(List.of(originalData), List.of(migratedData));
+      getDIFFER().diffFinalTableRecords(List.of(originalData), List.of(migratedData));
     });
+  }
+
+  @Disabled("We removed the optimization to only set the loaded_at column for new records after certain _extracted_at")
+  @Test
+  @Override
+  public void ignoreOldRawRecords() throws Exception {
+    super.ignoreOldRawRecords();
   }
 
   /**
@@ -392,9 +408,9 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
    */
   @Test
   public void ensurePKsAreIndexedUnique() throws Exception {
-    createRawTable(streamId);
+    createRawTable(getStreamId());
     insertRawTableRecords(
-        streamId,
+        getStreamId(),
         List.of(Jsons.deserialize(
             """
             {
@@ -407,13 +423,14 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             }
             """)));
 
-    final Sql createTable = generator.createTable(incrementalDedupStream, "", false);
+    final Sql createTable = getGenerator().createTable(getIncrementalDedupStream(), "", false);
 
     // should be OK with new tables
-    destinationHandler.execute(createTable);
-    final Optional<SnowflakeTableDefinition> existingTableA = destinationHandler.findExistingTable(streamId);
-    assertTrue(generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTableA.get()));
-    destinationHandler.execute(Sql.of("DROP TABLE " + streamId.finalTableId("")));
+    getDestinationHandler().execute(createTable);
+    List<DestinationInitialStatus<SnowflakeState>> initialStates = getDestinationHandler().gatherInitialState(List.of(getIncrementalDedupStream()));
+    assertEquals(1, initialStates.size());
+    assertFalse(initialStates.getFirst().isSchemaMismatch());
+    getDestinationHandler().execute(Sql.of("DROP TABLE " + getStreamId().finalTableId("")));
 
     // Hack the create query to add NOT NULLs to emulate the old behavior
     List<List<String>> createTableModified = createTable.transactions().stream().map(transaction -> transaction.stream()
@@ -423,9 +440,901 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                 : line)
             .collect(joining("\r\n")))
         .toList()).toList();
-    destinationHandler.execute(new Sql(createTableModified));
-    final Optional<SnowflakeTableDefinition> existingTableB = destinationHandler.findExistingTable(streamId);
-    assertFalse(generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTableB.get()));
+    getDestinationHandler().execute(new Sql(createTableModified));
+    initialStates = getDestinationHandler().gatherInitialState(List.of(getIncrementalDedupStream()));
+    assertEquals(1, initialStates.size());
+    assertTrue(initialStates.get(0).isSchemaMismatch());
+  }
+
+  @Test
+  public void dst_test_oldSyncRunsThroughTransition_thenNewSyncRuns_dedup() throws Exception {
+    this.createRawTable(this.getStreamId());
+    this.createFinalTable(this.getIncrementalDedupStream(), "");
+    this.insertRawTableRecords(this.getStreamId(), List.of(
+        // 2 records written by a sync running on the old version of snowflake
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "pre-dst local tz 1",
+                            "_airbyte_extracted_at": "2024-03-10T02:00:00-08:00",
+                            "_airbyte_data": {
+                              "id1": 1,
+                              "id2": 100,
+                              "string": "Alice00"
+                            }
+                          }
+                          """),
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "post-dst local tz 2",
+                            "_airbyte_extracted_at": "2024-03-10T02:01:00-07:00",
+                            "_airbyte_data": {
+                              "id1": 2,
+                              "id2": 100,
+                              "string": "Bob00"
+                            }
+                          }
+                          """),
+        // and 2 records that got successfully loaded.
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "pre-dst local tz 3",
+                            "_airbyte_extracted_at": "2024-03-10T02:00:00-08:00",
+                            "_airbyte_loaded_at": "1970-01-01T00:00:00Z",
+                            "_airbyte_data": {
+                              "id1": 3,
+                              "id2": 100,
+                              "string": "Charlie00"
+                            }
+                          }
+                          """),
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "post-dst local tz 4",
+                            "_airbyte_extracted_at": "2024-03-10T02:01:00-07:00",
+                            "_airbyte_loaded_at": "1970-01-01T00:00:00Z",
+                            "_airbyte_data": {
+                              "id1": 4,
+                              "id2": 100,
+                              "string": "Dave00"
+                            }
+                          }
+                          """)));
+    this.insertFinalTableRecords(false, this.getStreamId(), "", List.of(
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "pre-dst local tz 3",
+                            "_airbyte_extracted_at": "2024-03-10T02:00:00-08:00",
+                            "_airbyte_meta": {"errors": []},
+                            "id1": 3,
+                            "id2": 100,
+                            "string": "Charlie00"
+                          }
+                          """),
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "post-dst local tz 4",
+                            "_airbyte_extracted_at": "2024-03-10T02:01:00-07:00",
+                            "_airbyte_meta": {"errors": []},
+                            "id1": 4,
+                            "id2": 100,
+                            "string": "Dave00"
+                          }
+                          """)));
+    // Gather initial state at the start of our updated sync
+    DestinationInitialStatus<SnowflakeState> initialState =
+        this.getDestinationHandler().gatherInitialState(List.of(this.getIncrementalDedupStream())).getFirst();
+    this.insertRawTableRecords(this.getStreamId(), List.of(
+        // insert raw records with updates
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "post-dst utc 1",
+                            "_airbyte_extracted_at": "2024-03-10T02:02:00Z",
+                            "_airbyte_data": {
+                              "id1": 1,
+                              "id2": 100,
+                              "string": "Alice01"
+                            }
+                          }
+                          """),
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "post-dst utc 2",
+                            "_airbyte_extracted_at": "2024-03-10T02:02:00Z",
+                            "_airbyte_data": {
+                              "id1": 2,
+                              "id2": 100,
+                              "string": "Bob01"
+                            }
+                          }
+                          """),
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "post-dst utc 3",
+                            "_airbyte_extracted_at": "2024-03-10T02:02:00Z",
+                            "_airbyte_data": {
+                              "id1": 3,
+                              "id2": 100,
+                              "string": "Charlie01"
+                            }
+                          }
+                          """),
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "post-dst utc 4",
+                            "_airbyte_extracted_at": "2024-03-10T02:02:00Z",
+                            "_airbyte_data": {
+                              "id1": 4,
+                              "id2": 100,
+                              "string": "Dave01"
+                            }
+                          }
+                          """)));
+
+    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalDedupStream(),
+        initialState.initialRawTableStatus().getMaxProcessedTimestamp(), "");
+
+    getDIFFER().diffFinalTableRecords(
+        List.of(
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "post-dst utc 1",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
+                                "ID1": 1,
+                                "ID2": 100,
+                                "STRING": "Alice01"
+                              }
+                              """),
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "post-dst utc 2",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
+                                "ID1": 2,
+                                "ID2": 100,
+                                "STRING": "Bob01"
+                              }
+                              """),
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "post-dst utc 3",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
+                                "ID1": 3,
+                                "ID2": 100,
+                                "STRING": "Charlie01"
+                              }
+                              """),
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "post-dst utc 4",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
+                                "ID1": 4,
+                                "ID2": 100,
+                                "STRING": "Dave01"
+                              }
+                              """)),
+        this.dumpFinalTableRecords(this.getStreamId(), ""));
+  }
+
+  @Test
+  public void dst_test_oldSyncRunsBeforeTransition_thenNewSyncRunsThroughTransition_dedup() throws Exception {
+    this.createRawTable(this.getStreamId());
+    this.createFinalTable(this.getIncrementalDedupStream(), "");
+    this.insertRawTableRecords(this.getStreamId(), List.of(
+        // record written by a sync running on the old version of snowflake
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "pre-dst local tz 1",
+                            "_airbyte_extracted_at": "2024-03-10T01:59:00-08:00",
+                            "_airbyte_data": {
+                              "id1": 1,
+                              "id2": 100,
+                              "string": "Alice00"
+                            }
+                          }
+                          """)));
+    // Gather initial state at the start of our updated sync
+    DestinationInitialStatus<SnowflakeState> initialState =
+        this.getDestinationHandler().gatherInitialState(List.of(this.getIncrementalDedupStream())).getFirst();
+    this.insertRawTableRecords(this.getStreamId(), List.of(
+        // update the record twice
+        // this never really happens, but verify that it works
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "pre-dst utc 1",
+                            "_airbyte_extracted_at": "2024-03-10T02:00:00Z",
+                            "_airbyte_data": {
+                              "id1": 1,
+                              "id2": 100,
+                              "string": "Alice01"
+                            }
+                          }
+                          """),
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "post-dst utc 1",
+                            "_airbyte_extracted_at": "2024-03-10T02:01:00Z",
+                            "_airbyte_data": {
+                              "id1": 1,
+                              "id2": 100,
+                              "string": "Alice02"
+                            }
+                          }
+                          """)));
+
+    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalDedupStream(),
+        initialState.initialRawTableStatus().getMaxProcessedTimestamp(), "");
+
+    getDIFFER().diffFinalTableRecords(
+        List.of(
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "post-dst utc 1",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:01:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
+                                "ID1": 1,
+                                "ID2": 100,
+                                "STRING": "Alice02"
+                              }
+                              """)),
+        this.dumpFinalTableRecords(this.getStreamId(), ""));
+  }
+
+  @Test
+  public void dst_test_oldSyncRunsBeforeTransition_thenNewSyncRunsBeforeTransition_thenNewSyncRunsThroughTransition_dedup() throws Exception {
+    this.createRawTable(this.getStreamId());
+    this.createFinalTable(this.getIncrementalDedupStream(), "");
+    this.insertRawTableRecords(this.getStreamId(), List.of(
+        // records written by a sync running on the old version of snowflake
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "pre-dst local tz 1",
+                            "_airbyte_extracted_at": "2024-03-10T01:59:00-08:00",
+                            "_airbyte_data": {
+                              "id1": 1,
+                              "id2": 100,
+                              "string": "Alice00"
+                            }
+                          }
+                          """),
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "pre-dst local tz 2",
+                            "_airbyte_extracted_at": "2024-03-10T01:59:00-08:00",
+                            "_airbyte_data": {
+                              "id1": 2,
+                              "id2": 100,
+                              "string": "Bob00"
+                            }
+                          }
+                          """)));
+
+    // Gather initial state at the start of our first new sync
+    DestinationInitialStatus<SnowflakeState> initialState =
+        this.getDestinationHandler().gatherInitialState(List.of(this.getIncrementalDedupStream())).getFirst();
+    this.insertRawTableRecords(this.getStreamId(), List.of(
+        // update the records
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "pre-dst utc 1",
+                            "_airbyte_extracted_at": "2024-03-10T02:00:00Z",
+                            "_airbyte_data": {
+                              "id1": 1,
+                              "id2": 100,
+                              "string": "Alice01"
+                            }
+                          }
+                          """),
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "pre-dst utc 2",
+                            "_airbyte_extracted_at": "2024-03-10T02:00:00Z",
+                            "_airbyte_data": {
+                              "id1": 2,
+                              "id2": 100,
+                              "string": "Bob01"
+                            }
+                          }
+                          """)));
+
+    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalDedupStream(),
+        initialState.initialRawTableStatus().getMaxProcessedTimestamp(), "");
+
+    getDIFFER().diffFinalTableRecords(
+        List.of(
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "pre-dst utc 1",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
+                                "ID1": 1,
+                                "ID2": 100,
+                                "STRING": "Alice01"
+                              }
+                              """),
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "pre-dst utc 2",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
+                                "ID1": 2,
+                                "ID2": 100,
+                                "STRING": "Bob01"
+                              }
+                              """)),
+        this.dumpFinalTableRecords(this.getStreamId(), ""));
+
+    // Gather initial state at the start of our second new sync
+    DestinationInitialStatus<SnowflakeState> initialState2 =
+        this.getDestinationHandler().gatherInitialState(List.of(this.getIncrementalDedupStream())).getFirst();
+    this.insertRawTableRecords(this.getStreamId(), List.of(
+        // update the records again
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "post-dst utc 1",
+                            "_airbyte_extracted_at": "2024-03-10T02:01:00Z",
+                            "_airbyte_data": {
+                              "id1": 1,
+                              "id2": 100,
+                              "string": "Alice02"
+                            }
+                          }
+                          """),
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "post-dst utc 2",
+                            "_airbyte_extracted_at": "2024-03-10T02:01:00Z",
+                            "_airbyte_data": {
+                              "id1": 2,
+                              "id2": 100,
+                              "string": "Bob02"
+                            }
+                          }
+                          """)));
+
+    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalDedupStream(),
+        initialState2.initialRawTableStatus().getMaxProcessedTimestamp(), "");
+
+    getDIFFER().diffFinalTableRecords(
+        List.of(
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "post-dst utc 1",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:01:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
+                                "ID1": 1,
+                                "ID2": 100,
+                                "STRING": "Alice02"
+                              }
+                              """),
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "post-dst utc 2",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:01:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
+                                "ID1": 2,
+                                "ID2": 100,
+                                "STRING": "Bob02"
+                              }
+                              """)),
+        this.dumpFinalTableRecords(this.getStreamId(), ""));
+  }
+
+  @Test
+  public void dst_test_oldSyncRunsThroughTransition_thenNewSyncRuns_append() throws Exception {
+    this.createRawTable(this.getStreamId());
+    this.createFinalTable(this.getIncrementalAppendStream(), "");
+    this.insertRawTableRecords(this.getStreamId(), List.of(
+        // 2 records written by a sync running on the old version of snowflake
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "pre-dst local tz 1",
+                            "_airbyte_extracted_at": "2024-03-10T02:00:00-08:00",
+                            "_airbyte_data": {
+                              "id1": 1,
+                              "id2": 100,
+                              "string": "Alice00"
+                            }
+                          }
+                          """),
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "post-dst local tz 2",
+                            "_airbyte_extracted_at": "2024-03-10T02:01:00-07:00",
+                            "_airbyte_data": {
+                              "id1": 2,
+                              "id2": 100,
+                              "string": "Bob00"
+                            }
+                          }
+                          """),
+        // and 2 records that got successfully loaded with local TZ.
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "pre-dst local tz 3",
+                            "_airbyte_extracted_at": "2024-03-10T02:00:00-08:00",
+                            "_airbyte_loaded_at": "1970-01-01T00:00:00Z",
+                            "_airbyte_data": {
+                              "id1": 3,
+                              "id2": 100,
+                              "string": "Charlie00"
+                            }
+                          }
+                          """),
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "post-dst local tz 4",
+                            "_airbyte_extracted_at": "2024-03-10T02:01:00-07:00",
+                            "_airbyte_loaded_at": "1970-01-01T00:00:00Z",
+                            "_airbyte_data": {
+                              "id1": 4,
+                              "id2": 100,
+                              "string": "Dave00"
+                            }
+                          }
+                          """)));
+    this.insertFinalTableRecords(false, this.getStreamId(), "", List.of(
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "pre-dst local tz 3",
+                            "_airbyte_extracted_at": "2024-03-10T02:00:00-08:00",
+                            "_airbyte_meta": {"errors": []},
+                            "id1": 3,
+                            "id2": 100,
+                            "string": "Charlie00"
+                          }
+                          """),
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "post-dst local tz 4",
+                            "_airbyte_extracted_at": "2024-03-10T02:01:00-07:00",
+                            "_airbyte_meta": {"errors": []},
+                            "id1": 4,
+                            "id2": 100,
+                            "string": "Dave00"
+                          }
+                          """)));
+    // Gather initial state at the start of our updated sync
+    DestinationInitialStatus<SnowflakeState> initialState =
+        this.getDestinationHandler().gatherInitialState(List.of(this.getIncrementalAppendStream())).getFirst();
+    this.insertRawTableRecords(this.getStreamId(), List.of(
+        // insert raw records with updates
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "post-dst utc 1",
+                            "_airbyte_extracted_at": "2024-03-10T02:02:00Z",
+                            "_airbyte_data": {
+                              "id1": 1,
+                              "id2": 100,
+                              "string": "Alice01"
+                            }
+                          }
+                          """),
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "post-dst utc 2",
+                            "_airbyte_extracted_at": "2024-03-10T02:02:00Z",
+                            "_airbyte_data": {
+                              "id1": 2,
+                              "id2": 100,
+                              "string": "Bob01"
+                            }
+                          }
+                          """),
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "post-dst utc 3",
+                            "_airbyte_extracted_at": "2024-03-10T02:02:00Z",
+                            "_airbyte_data": {
+                              "id1": 3,
+                              "id2": 100,
+                              "string": "Charlie01"
+                            }
+                          }
+                          """),
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "post-dst utc 4",
+                            "_airbyte_extracted_at": "2024-03-10T02:02:00Z",
+                            "_airbyte_data": {
+                              "id1": 4,
+                              "id2": 100,
+                              "string": "Dave01"
+                            }
+                          }
+                          """)));
+
+    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalAppendStream(),
+        initialState.initialRawTableStatus().getMaxProcessedTimestamp(), "");
+
+    getDIFFER().diffFinalTableRecords(
+        List.of(
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "pre-dst local tz 1",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
+                                "ID1": 1,
+                                "ID2": 100,
+                                "STRING": "Alice00"
+                              }
+                              """),
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "post-dst utc 1",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
+                                "ID1": 1,
+                                "ID2": 100,
+                                "STRING": "Alice01"
+                              }
+                              """),
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "post-dst local tz 2",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:01:00.000000000Z",
+                                "_AIRBYTE_META": {
+                                  "errors": []
+                                },
+                                "ID1": 2,
+                                "ID2": 100,
+                                "STRING": "Bob00"
+                              }"""),
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "post-dst utc 2",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
+                                "ID1": 2,
+                                "ID2": 100,
+                                "STRING": "Bob01"
+                              }
+                              """),
+            // note local TZ here. This record was loaded by an older version of the connector.
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "pre-dst local tz 3",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00.000000000-08:00",
+                                "_AIRBYTE_META": {
+                                  "errors": []
+                                },
+                                "ID1": 3,
+                                "ID2": 100,
+                                "STRING": "Charlie00"
+                              }"""),
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "post-dst utc 3",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
+                                "ID1": 3,
+                                "ID2": 100,
+                                "STRING": "Charlie01"
+                              }
+                              """),
+            // note local TZ here. This record was loaded by an older version of the connector.
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "post-dst local tz 4",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:01:00.000000000-07:00",
+                                "_AIRBYTE_META": {
+                                  "errors": []
+                                },
+                                "ID1": 4,
+                                "ID2": 100,
+                                "STRING": "Dave00"
+                              }"""),
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "post-dst utc 4",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:02:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
+                                "ID1": 4,
+                                "ID2": 100,
+                                "STRING": "Dave01"
+                              }
+                              """)),
+        this.dumpFinalTableRecords(this.getStreamId(), ""));
+  }
+
+  @Test
+  public void dst_test_oldSyncRunsBeforeTransition_thenNewSyncRunsThroughTransition_append() throws Exception {
+    this.createRawTable(this.getStreamId());
+    this.createFinalTable(this.getIncrementalAppendStream(), "");
+    this.insertRawTableRecords(this.getStreamId(), List.of(
+        // record written by a sync running on the old version of snowflake
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "pre-dst local tz 1",
+                            "_airbyte_extracted_at": "2024-03-10T01:59:00-08:00",
+                            "_airbyte_data": {
+                              "id1": 1,
+                              "id2": 100,
+                              "string": "Alice00"
+                            }
+                          }
+                          """)));
+    // Gather initial state at the start of our updated sync
+    DestinationInitialStatus<SnowflakeState> initialState =
+        this.getDestinationHandler().gatherInitialState(List.of(this.getIncrementalAppendStream())).getFirst();
+    this.insertRawTableRecords(this.getStreamId(), List.of(
+        // update the record twice
+        // this never really happens, but verify that it works
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "pre-dst utc 1",
+                            "_airbyte_extracted_at": "2024-03-10T02:00:00Z",
+                            "_airbyte_data": {
+                              "id1": 1,
+                              "id2": 100,
+                              "string": "Alice01"
+                            }
+                          }
+                          """),
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "post-dst utc 1",
+                            "_airbyte_extracted_at": "2024-03-10T02:01:00Z",
+                            "_airbyte_data": {
+                              "id1": 1,
+                              "id2": 100,
+                              "string": "Alice02"
+                            }
+                          }
+                          """)));
+
+    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalAppendStream(),
+        initialState.initialRawTableStatus().getMaxProcessedTimestamp(), "");
+
+    getDIFFER().diffFinalTableRecords(
+        List.of(
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "pre-dst local tz 1",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T01:59:00.000000000Z",
+                                "_AIRBYTE_META": {
+                                  "errors": []
+                                },
+                                "ID1": 1,
+                                "ID2": 100,
+                                "STRING": "Alice00"
+                              }"""),
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "pre-dst utc 1",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00.000000000Z",
+                                "_AIRBYTE_META": {
+                                  "errors": []
+                                },
+                                "ID1": 1,
+                                "ID2": 100,
+                                "STRING": "Alice01"
+                              }"""),
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "post-dst utc 1",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:01:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
+                                "ID1": 1,
+                                "ID2": 100,
+                                "STRING": "Alice02"
+                              }
+                              """)),
+        this.dumpFinalTableRecords(this.getStreamId(), ""));
+  }
+
+  @Test
+  public void dst_test_oldSyncRunsBeforeTransition_thenNewSyncRunsBeforeTransition_thenNewSyncRunsThroughTransition_append() throws Exception {
+    this.createRawTable(this.getStreamId());
+    this.createFinalTable(this.getIncrementalAppendStream(), "");
+    this.insertRawTableRecords(this.getStreamId(), List.of(
+        // records written by a sync running on the old version of snowflake
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "pre-dst local tz 1",
+                            "_airbyte_extracted_at": "2024-03-10T01:59:00-08:00",
+                            "_airbyte_data": {
+                              "id1": 1,
+                              "id2": 100,
+                              "string": "Alice00"
+                            }
+                          }
+                          """),
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "pre-dst local tz 2",
+                            "_airbyte_extracted_at": "2024-03-10T01:59:00-08:00",
+                            "_airbyte_data": {
+                              "id1": 2,
+                              "id2": 100,
+                              "string": "Bob00"
+                            }
+                          }
+                          """)));
+
+    // Gather initial state at the start of our first new sync
+    DestinationInitialStatus<SnowflakeState> initialState =
+        this.getDestinationHandler().gatherInitialState(List.of(this.getIncrementalAppendStream())).getFirst();
+    this.insertRawTableRecords(this.getStreamId(), List.of(
+        // update the records
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "pre-dst utc 1",
+                            "_airbyte_extracted_at": "2024-03-10T02:00:00Z",
+                            "_airbyte_data": {
+                              "id1": 1,
+                              "id2": 100,
+                              "string": "Alice01"
+                            }
+                          }
+                          """),
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "pre-dst utc 2",
+                            "_airbyte_extracted_at": "2024-03-10T02:00:00Z",
+                            "_airbyte_data": {
+                              "id1": 2,
+                              "id2": 100,
+                              "string": "Bob01"
+                            }
+                          }
+                          """)));
+
+    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalAppendStream(),
+        initialState.initialRawTableStatus().getMaxProcessedTimestamp(), "");
+
+    getDIFFER().diffFinalTableRecords(
+        List.of(
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "pre-dst local tz 1",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T01:59:00.000000000Z",
+                                "_AIRBYTE_META": {
+                                  "errors": []
+                                },
+                                "ID1": 1,
+                                "ID2": 100,
+                                "STRING": "Alice00"
+                              }"""),
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "pre-dst utc 1",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
+                                "ID1": 1,
+                                "ID2": 100,
+                                "STRING": "Alice01"
+                              }
+                              """),
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "pre-dst local tz 2",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T01:59:00.000000000Z",
+                                "_AIRBYTE_META": {
+                                  "errors": []
+                                },
+                                "ID1": 2,
+                                "ID2": 100,
+                                "STRING": "Bob00"
+                              }"""),
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "pre-dst utc 2",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
+                                "ID1": 2,
+                                "ID2": 100,
+                                "STRING": "Bob01"
+                              }
+                              """)),
+        this.dumpFinalTableRecords(this.getStreamId(), ""));
+
+    // Gather initial state at the start of our second new sync
+    DestinationInitialStatus<SnowflakeState> initialState2 =
+        this.getDestinationHandler().gatherInitialState(List.of(this.getIncrementalAppendStream())).getFirst();
+    this.insertRawTableRecords(this.getStreamId(), List.of(
+        // update the records again
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "post-dst utc 1",
+                            "_airbyte_extracted_at": "2024-03-10T02:01:00Z",
+                            "_airbyte_data": {
+                              "id1": 1,
+                              "id2": 100,
+                              "string": "Alice02"
+                            }
+                          }
+                          """),
+        Jsons.deserialize("""
+                          {
+                            "_airbyte_raw_id": "post-dst utc 2",
+                            "_airbyte_extracted_at": "2024-03-10T02:01:00Z",
+                            "_airbyte_data": {
+                              "id1": 2,
+                              "id2": 100,
+                              "string": "Bob02"
+                            }
+                          }
+                          """)));
+
+    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalAppendStream(),
+        initialState2.initialRawTableStatus().getMaxProcessedTimestamp(), "");
+
+    getDIFFER().diffFinalTableRecords(
+        List.of(
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "pre-dst local tz 1",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T01:59:00.000000000Z",
+                                "_AIRBYTE_META": {
+                                  "errors": []
+                                },
+                                "ID1": 1,
+                                "ID2": 100,
+                                "STRING": "Alice00"
+                              }"""),
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "pre-dst utc 1",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00.000000000Z",
+                                "_AIRBYTE_META": {
+                                  "errors": []
+                                },
+                                "ID1": 1,
+                                "ID2": 100,
+                                "STRING": "Alice01"
+                              }"""),
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "post-dst utc 1",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:01:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
+                                "ID1": 1,
+                                "ID2": 100,
+                                "STRING": "Alice02"
+                              }
+                              """),
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "pre-dst local tz 2",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T01:59:00.000000000Z",
+                                "_AIRBYTE_META": {
+                                  "errors": []
+                                },
+                                "ID1": 2,
+                                "ID2": 100,
+                                "STRING": "Bob00"
+                              }"""),
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "pre-dst utc 2",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:00:00.000000000Z",
+                                "_AIRBYTE_META": {
+                                  "errors": []
+                                },
+                                "ID1": 2,
+                                "ID2": 100,
+                                "STRING": "Bob01"
+                              }"""),
+            Jsons.deserialize("""
+                              {
+                                "_AIRBYTE_RAW_ID": "post-dst utc 2",
+                                "_AIRBYTE_EXTRACTED_AT": "2024-03-10T02:01:00.000000000Z",
+                                "_AIRBYTE_META": {"errors": []},
+                                "ID1": 2,
+                                "ID2": 100,
+                                "STRING": "Bob02"
+                              }
+                              """)),
+        this.dumpFinalTableRecords(this.getStreamId(), ""));
+  }
+
+  // This is disabled because snowflake doesn't transform long identifiers
+  @Disabled
+  public void testLongIdentifierHandling() {
+    super.testLongIdentifierHandling();
   }
 
 }

@@ -8,7 +8,7 @@ definitions:
     extractor:
       field_path: ["data"]
   requester:
-    url_base: "https://graph.facebook.com/v15.0"
+    url_base: "https://graph.facebook.com/v19.0"
     http_method: "GET"
     error_handler:
       type: CompositeErrorHandler
@@ -142,7 +142,6 @@ definitions:
               'members',
               'merchant_review_status',
               'messenger_ads_default_icebreakers',
-              'messenger_ads_default_page_welcome_message',
               'messenger_ads_default_quick_replies',
               'messenger_ads_quick_replies_type',
               'mission',
@@ -200,6 +199,7 @@ definitions:
               'whatsapp_number',
               'written_by',
               'albums',
+              'call_to_actions',
               'canvas_elements',
               'events',
               'feed',
@@ -210,7 +210,12 @@ definitions:
               'likes',
               'live_videos',
               'photos',
+              'posts',
               'product_catalogs',
+              'published_posts',
+              'ratings',
+              'tabs', 
+              'tagged',
               'rtb_dynamic_posts',
               'video_lists',
               'videos',

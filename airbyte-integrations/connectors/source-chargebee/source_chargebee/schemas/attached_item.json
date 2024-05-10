@@ -4,66 +4,64 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "description": "Unique identifier for the attached item.",
+      "type": ["string", "null"]
     },
     "parent_item_id": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "description": "Identifier of the parent item to which this attached item is attached.",
+      "type": ["string", "null"]
     },
     "item_id": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "description": "Identifier of the item to which this attached item belongs.",
+      "type": ["string", "null"]
     },
     "type": {
+      "description": "Type of the attached item.",
       "type": ["string", "null"]
     },
     "status": {
+      "description": "Current status of the attached item.",
       "type": ["string", "null"]
     },
     "quantity": {
-      "type": ["integer", "null"],
-      "minimum": 1
+      "description": "Quantity of the attached item included in the parent item.",
+      "type": ["integer", "null"]
     },
     "quantity_in_decimal": {
-      "type": ["string", "null"],
-      "maxLength": 33
+      "description": "Quantity of the attached item in decimal format.",
+      "type": ["string", "null"]
     },
     "billing_cycles": {
-      "type": ["integer", "null"],
-      "minimum": 1
+      "description": "Number of billing cycles associated with the attached item.",
+      "type": ["integer", "null"]
     },
     "charge_on_event": {
+      "description": "Indicates when the attached item should be charged.",
       "type": ["string", "null"]
     },
     "charge_once": {
+      "description": "Flag to determine if the attached item should be charged only once.",
       "type": ["boolean", "null"]
     },
     "created_at": {
+      "description": "Timestamp when the attached item was created.",
       "type": ["integer", "null"]
     },
     "resource_version": {
+      "description": "Version of the attached item resource for tracking changes.",
       "type": ["integer", "null"]
     },
     "updated_at": {
+      "description": "Timestamp when the attached item was last updated.",
       "type": ["integer", "null"]
     },
     "object": {
+      "description": "Type of object representing the attached item.",
       "type": ["string", "null"]
-    }
-  },
-  "custom_fields": {
-    "type": ["null", "array"],
-    "items": {
-      "type": ["null", "object"],
-      "properties": {
-        "name": {
-          "type": ["null", "string"]
-        },
-        "value": {
-          "type": ["null", "string"]
-        }
-      }
+    },
+    "custom_fields": {
+      "description": "Any additional custom fields associated with the attached item.",
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }

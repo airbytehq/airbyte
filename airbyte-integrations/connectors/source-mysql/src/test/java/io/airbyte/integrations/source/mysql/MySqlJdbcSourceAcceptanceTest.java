@@ -90,6 +90,16 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
     return false;
   }
 
+  @Override
+  protected void validateFullRefreshStateMessageReadSuccess(final List<? extends AirbyteStateMessage> stateMessages) {
+    var finalStateMessage = stateMessages.get(stateMessages.size() - 1);
+    assertEquals(
+        finalStateMessage.getStream().getStreamState().get("state_type").textValue(),
+        "primary_key");
+    assertEquals(finalStateMessage.getStream().getStreamState().get("pk_name").textValue(), "id");
+    assertEquals(finalStateMessage.getStream().getStreamState().get("pk_val").textValue(), "3");
+  }
+
   @Test
   @Override
   protected void testReadMultipleTablesIncrementally() throws Exception {
@@ -198,6 +208,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
     // Extract only state messages for each stream
     final List<AirbyteStateMessage> streamOneStateMessagesFromFirstSync = extractStateMessage(messagesFromFirstSync, streamOneName);
     final List<AirbyteStateMessage> streamTwoStateMessagesFromFirstSync = extractStateMessage(messagesFromFirstSync, streamTwoName);
+
     // Extract the incremental states of each stream's first and second state message
     final List<JsonNode> streamOneIncrementalStatesFromFirstSync =
         List.of(streamOneStateMessagesFromFirstSync.get(0).getStream().getStreamState().get("incremental_state"),
@@ -287,7 +298,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
   }
 
   @Test
-  void testSpec() throws Exception {
+  public void testSpec() throws Exception {
     final ConnectorSpecification actual = source().spec();
     final ConnectorSpecification expected = Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
 
@@ -365,6 +376,11 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
     final AirbyteConnectionStatus status = source().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: 08001;"), status.getMessage());
+  }
+
+  @Test
+  public void testFullRefresh() throws Exception {
+
   }
 
   @Override
@@ -478,7 +494,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
 
   // Override from parent class as we're no longer including the legacy Data field.
   @Override
-  protected List<AirbyteMessage> createExpectedTestMessages(final List<DbStreamState> states, final long numRecords) {
+  protected List<AirbyteMessage> createExpectedTestMessages(final List<? extends DbStreamState> states, final long numRecords) {
     return states.stream()
         .map(s -> new AirbyteMessage().withType(Type.STATE)
             .withState(
@@ -492,7 +508,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
   }
 
   @Override
-  protected List<AirbyteStateMessage> createState(final List<DbStreamState> states) {
+  protected List<AirbyteStateMessage> createState(final List<? extends DbStreamState> states) {
     return states.stream()
         .map(s -> new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
             .withStream(new AirbyteStreamState()

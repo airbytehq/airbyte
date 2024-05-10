@@ -3,200 +3,291 @@
   "additionalProperties": true,
   "properties": {
     "assigned_location_id": {
+      "description": "The unique identifier of the assigned location",
       "type": ["null", "integer"]
     },
     "destination": {
+      "description": "Details of the destination where the order is to be fulfilled",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "The unique identifier of the destination",
           "type": ["null", "integer"]
         },
         "address1": {
+          "description": "The primary address of the destination",
           "type": ["null", "string"]
         },
         "address2": {
+          "description": "The secondary address of the destination",
           "type": ["null", "string"]
         },
         "city": {
+          "description": "The city of the destination",
           "type": ["null", "string"]
         },
         "company": {
+          "description": "The name of the company at the destination",
           "type": ["null", "string"]
         },
         "country": {
+          "description": "The country of the destination",
           "type": ["null", "string"]
         },
         "email": {
+          "description": "The email address of the recipient at the destination",
           "type": ["null", "string"]
         },
         "first_name": {
+          "description": "The first name of the recipient at the destination",
           "type": ["null", "string"]
         },
         "last_name": {
+          "description": "The last name of the recipient at the destination",
           "type": ["null", "string"]
         },
         "phone": {
+          "description": "The phone number of the recipient at the destination",
           "type": ["null", "string"]
         },
         "province": {
+          "description": "The province of the destination",
           "type": ["null", "string"]
         },
         "zip": {
+          "description": "The postal code of the destination",
           "type": ["null", "string"]
         }
       }
     },
     "delivery_method": {
+      "description": "Details of the delivery method for the fulfillment order",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "The unique identifier of the delivery method",
           "type": ["null", "integer"]
         },
         "method_type": {
+          "description": "The type of delivery method",
           "type": ["null", "string"]
+        },
+        "min_delivery_date_time": {
+          "description": "The minimum expected delivery date and time",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "max_delivery_date_time": {
+          "description": "The maximum expected delivery date and time",
+          "type": ["null", "string"],
+          "format": "date-time"
         }
       }
     },
     "fulfilled_at": {
+      "description": "The date and time when the fulfillment was completed",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "fulfill_at": {
+      "description": "The date and time when the fulfillment is scheduled to occur",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "fulfill_by": {
+      "description": "The deadline by which the fulfillment must be completed",
       "type": ["null", "string"]
     },
     "international_duties": {
+      "description": "Details of any international duties associated with the fulfillment order",
       "type": ["null", "string"]
     },
     "fulfillment_holds": {
+      "description": "Details of any holds on the fulfillment",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "reason": {
+            "description": "The reason for the hold on the fulfillment",
             "type": ["null", "string"]
           },
           "reason_notes": {
+            "description": "Additional notes regarding the hold on the fulfillment",
             "type": ["null", "string"]
           }
         }
       }
     },
     "id": {
+      "description": "The unique identifier of the fulfillment order",
       "type": ["null", "integer"]
     },
     "line_items": {
+      "description": "Details of the line items in the fulfillment order",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "The unique identifier of the line item",
             "type": ["null", "integer"]
           },
           "shop_id": {
+            "description": "The identifier of the shop where the line item belongs",
             "type": ["null", "integer"]
           },
-          "fullfillment_order_id": {
+          "fulfillment_order_id": {
+            "description": "The identifier of the fulfillment order",
             "type": ["null", "integer"]
           },
           "line_item_id": {
+            "description": "The identifier of the line item in the order",
             "type": ["null", "integer"]
           },
           "inventory_item_id": {
+            "description": "The identifier of the inventory item associated with the line item",
             "type": ["null", "integer"]
           },
           "quantity": {
+            "description": "The quantity of the line item",
             "type": ["null", "integer"]
           },
           "fulfillable_quantity": {
+            "description": "The quantity that can be fulfilled",
             "type": ["null", "integer"]
           },
           "variant_id": {
+            "description": "The identifier of the product variant",
             "type": ["null", "integer"]
           }
         }
       }
     },
     "order_id": {
+      "description": "The identifier of the order associated with the fulfillment",
       "type": ["null", "integer"]
     },
     "request_status": {
+      "description": "The status of any requests associated with the fulfillment order",
       "type": ["null", "string"]
     },
     "shop_id": {
+      "description": "The identifier of the shop that created the fulfillment order",
       "type": ["null", "integer"]
     },
     "status": {
+      "description": "The current status of the fulfillment order",
       "type": ["null", "string"]
     },
     "supported_actions": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
-    },
-    "merchant_requests": {
+      "description": "Actions supported for the fulfillment order",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
+          "action": {
+            "description": "The type of action supported",
+            "type": ["null", "string"]
+          },
+          "external_url": {
+            "description": "The external URL associated with the action",
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "merchant_requests": {
+      "description": "Details of any requests made by the merchant regarding the fulfillment order",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "description": "The unique identifier of the merchant request",
+            "type": ["null", "integer"]
+          },
           "message": {
+            "description": "The message included with the merchant request",
             "type": ["null", "string"]
           },
           "kind": {
+            "description": "The type of request made by the merchant",
             "type": ["null", "string"]
           },
           "request_options": {
-            "type": ["null", "object"]
+            "description": "Additional options provided with the merchant request",
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "notify_customer": {
+                "description": "Whether to notify the customer regarding the request",
+                "type": ["null", "boolean"]
+              }
+            }
           }
         }
       }
     },
     "assigned_location": {
+      "description": "The location to which the fulfillment order is assigned",
       "type": ["null", "object"],
       "properties": {
         "address1": {
+          "description": "The primary address of the assigned location",
           "type": ["null", "string"]
         },
         "address2": {
+          "description": "The secondary address of the assigned location",
           "type": ["null", "string"]
         },
         "city": {
+          "description": "The city of the assigned location",
           "type": ["null", "string"]
         },
         "country_code": {
+          "description": "The country code of the assigned location",
           "type": ["null", "string"]
         },
         "location_id": {
+          "description": "The unique identifier of the assigned location",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "The name of the assigned location",
           "type": ["null", "string"]
         },
         "phone": {
+          "description": "The phone number of the assigned location",
           "type": ["null", "string"]
         },
         "province": {
+          "description": "The province of the assigned location",
           "type": ["null", "string"]
         },
         "zip": {
+          "description": "The postal code of the assigned location",
           "type": ["null", "string"]
         }
       }
     },
     "shop_url": {
+      "description": "The URL of the shop associated with the fulfillment order",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when the fulfillment order was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the fulfillment order was last updated",
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "admin_graphql_api_id": {
+      "description": "The unique identifier of the fulfillment order in the Admin GraphQL API",
+      "type": ["null", "string"]
     }
   }
 }

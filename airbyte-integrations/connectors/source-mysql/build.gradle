@@ -1,24 +1,21 @@
 import org.jsonschema2pojo.SourceType
 
 plugins {
-    id 'application'
     id 'airbyte-java-connector'
     id 'org.jsonschema2pojo' version '1.2.1'
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.11.4'
+    cdkVersionRequired = '0.33.1'
     features = ['db-sources']
     useLocalCdk = false
 }
 
-configurations.all {
-    resolutionStrategy {
-        force libs.jooq
+java {
+    compileJava {
+        options.compilerArgs += "-Xlint:-try,-rawtypes"
     }
 }
-
-
 
 application {
     mainClass = 'io.airbyte.integrations.source.mysql.MySqlSource'
@@ -26,19 +23,14 @@ application {
 }
 
 dependencies {
-    implementation libs.jooq
-
     implementation 'mysql:mysql-connector-java:8.0.30'
-    implementation 'org.apache.commons:commons-lang3:3.11'
-    implementation project(path: ':airbyte-cdk:java:airbyte-cdk:db-sources')
+    implementation 'io.debezium:debezium-embedded:2.4.0.Final'
+    implementation 'io.debezium:debezium-connector-mysql:2.4.0.Final'
 
-    testImplementation 'org.apache.commons:commons-lang3:3.11'
+    testFixturesImplementation 'org.testcontainers:mysql:1.19.0'
+
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
-    testImplementation libs.junit.jupiter.system.stubs
-    testImplementation libs.testcontainers.mysql
-    testFixturesImplementation libs.testcontainers.mysql
-    performanceTestJavaImplementation project(':airbyte-integrations:connectors:source-mysql')
-
+    testImplementation 'org.testcontainers:mysql:1.19.0'
 }
 
 jsonSchema2Pojo {

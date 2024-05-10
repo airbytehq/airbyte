@@ -11,14 +11,18 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 2.2.6
+  dockerImageTag: 2.6.3
   dockerRepository: airbyte/source-zendesk-support
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   githubIssueLabel: source-zendesk-support
   icon: zendesk-support.svg
   license: ELv2
-  maxSecondsBetweenMessages: 10800
+  maxSecondsBetweenMessages: 60
   name: Zendesk Support
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-zendesk-support
   registries:
     cloud:
       enabled: true
@@ -53,4 +57,5 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

@@ -10,13 +10,18 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e7eff203-90bf-43e5-a240-19ea3056c474
-  dockerImageTag: 1.2.3
+  dockerImageTag: 1.2.8
   dockerRepository: airbyte/source-typeform
   documentationUrl: https://docs.airbyte.com/integrations/sources/typeform
   githubIssueLabel: source-typeform
   icon: typeform.svg
   license: MIT
+  maxSecondsBetweenMessages: 1
   name: Typeform
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-typeform
   registries:
     cloud:
       enabled: true
@@ -36,5 +41,6 @@ data:
         upgradeDeadline: "2023-09-25"
   supportLevel: certified
   tags:
-    - language:low-code
+    - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

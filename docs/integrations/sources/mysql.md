@@ -1,17 +1,21 @@
 # MySQL
 
 Airbyte's certified MySQL connector offers the following features:
-* Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) using the [binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html).
-* All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
-* Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
+
+- Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) using the [binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html).
+- All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
+- Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
 
 The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping and changelogs).
+
+**Please note the minimum required platform version is v0.58.0 to run source-mysql 3.4.0.**
 
 ![Airbyte MySQL Connection](https://raw.githubusercontent.com/airbytehq/airbyte/3a9264666b7b9b9d10ef8d174b8454a6c7e57560/docs/integrations/sources/mysql/assets/airbyte_mysql_source.png)
 
 ## Quick Start
 
 Here is an outline of the minimum required steps to configure a MySQL connector:
+
 1. Create a dedicated read-only MySQL user with permissions for replicating data
 2. Create a new MySQL source in the Airbyte UI using CDC logical replication
 3. (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs
@@ -82,18 +86,21 @@ From your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open 
 </HideInUI>
 
 To fill out the required information:
+
 1. Enter the hostname, port number, and name for your MySQL database.
 2. Enter the username and password you created in [Step 1](#step-1-create-a-dedicated-read-only-mysql-user).
 3. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your MySQL database. See [here](#ssl-modes) to learn about other SSL modes and SSH tunneling.
 4. Select `Read Changes using Binary Log (CDC)` from available replication methods.
 
 <!-- env:cloud -->
+
 #### Step 4: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs.
 
 If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in
 our [Airbyte Security docs](../../operating-airbyte/security#network-security-1).
 
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte MySQL source!
+
 <!-- /env:cloud -->
 
 </FieldAnchor>
@@ -103,6 +110,7 @@ Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting t
 ### Change Data Capture \(CDC\)
 
 Airbyte uses logical replication of the [MySQL binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html) to incrementally capture deletes. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/). We generally recommend configure your MySQL source with CDC whenever possible, as it provides:
+
 - A record of deletions, if needed.
 - Scalable replication to large tables (1 TB and more).
 - A reliable cursor not reliant on the nature of your data. For example, if your table has a primary key but doesn't have a reasonable cursor field for incremental syncing \(i.e. `updated_at`\), CDC allows you to sync your table incrementally.
@@ -112,6 +120,7 @@ Airbyte uses logical replication of the [MySQL binlog](https://dev.mysql.com/doc
 ### Standard
 
 Airbyte offers incremental replication using a custom cursor available in your source tables (e.g. `updated_at`). We generally recommend against this replication method, but it is well suited for the following cases:
+
 - Your MySQL server does not expose the binlog.
 - Your data set is small, and you just want snapshot of your table in the destination.
 
@@ -126,6 +135,7 @@ Airbyte offers incremental replication using a custom cursor available in your s
 Airbyte Cloud uses SSL by default. You are not permitted to `disable` SSL while using Airbyte Cloud.
 
 Here is a breakdown of available SSL connection modes:
+
 - `disable` to disable encrypted communication between Airbyte and the source
 - `allow` to enable encrypted communication only when required by the source
 - `prefer` to allow unencrypted communication only when the source doesn't support encryption
@@ -144,14 +154,14 @@ When using an SSH tunnel, you are configuring Airbyte to connect to an intermedi
 To connect to a MySQL server via an SSH tunnel:
 
 1. While setting up the MySQL source connector, from the SSH tunnel dropdown, select:
-    - SSH Key Authentication to use a private as your secret for establishing the SSH tunnel
-    - Password Authentication to use a password as your secret for establishing the SSH Tunnel
+   - SSH Key Authentication to use a private as your secret for establishing the SSH tunnel
+   - Password Authentication to use a password as your secret for establishing the SSH Tunnel
 2. For **SSH Tunnel Jump Server Host**, enter the hostname or IP address for the intermediate (bastion) server that Airbyte will connect to.
 3. For **SSH Connection Port**, enter the port on the bastion server. The default port for SSH connections is 22.
 4. For **SSH Login Username**, enter the username to use when connecting to the bastion server. **Note:** This is the operating system username and not the MySQL username.
 5. For authentication:
-    - If you selected **SSH Key Authentication**, set the **SSH Private Key** to the [private Key](#generating-a-private-key-for-ssh-tunneling) that you are using to create the SSH connection.
-    - If you selected **Password Authentication**, enter the password for the operating system user to connect to the bastion server. **Note:** This is the operating system password and not the MySQL password.
+   - If you selected **SSH Key Authentication**, set the **SSH Private Key** to the [private Key](#generating-a-private-key-for-ssh-tunneling) that you are using to create the SSH connection.
+   - If you selected **Password Authentication**, enter the password for the operating system user to connect to the bastion server. **Note:** This is the operating system password and not the MySQL password.
 
 #### Generating a private key for SSH Tunneling
 
@@ -176,7 +186,6 @@ Any database or table encoding combination of charset and collation is supported
 
 <details>
     <summary>MySQL Data Type Mapping</summary>
-
 
 | MySQL Type                                | Resulting Type         | Notes                                                                                                          |
 | :---------------------------------------- | :--------------------- | :------------------------------------------------------------------------------------------------------------- |
@@ -215,16 +224,40 @@ Any database or table encoding combination of charset and collation is supported
 | `set`                                     | string                 | E.g. `blue,green,yellow`                                                                                       |
 | `geometry`                                | base64 binary string   |                                                                                                                |
 
-
 </details>
 
 ## Changelog
 
-
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
-|:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.3.2   | 2024-01-08 | [33005](https://github.com/airbytehq/airbyte/pull/33005)   | Adding count stats for incremental sync in AirbyteStateMessage
-| 3.3.1   | 2024-01-03 | [33312](https://github.com/airbytehq/airbyte/pull/33312)   | Adding count stats in AirbyteStateMessage |
+|:--------|:-----------| :--------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.2   | 2024-05-07 | [38046](https://github.com/airbytehq/airbyte/pull/38046)   | Resumeable refresh should run only if there is source defined pk.                                                                               |
+| 3.4.1   | 2024-05-03 | [37824](https://github.com/airbytehq/airbyte/pull/37824)   | Fixed a bug on Resumeable full refresh where cursor based source throw NPE.                                                                     |
+| 3.4.0   | 2024-05-02 | [36932](https://github.com/airbytehq/airbyte/pull/36932)   | Resumeable full refresh. Note please upgrade your platform - minimum platform version is 0.58.0.                                                |
+| 3.3.25  | 2024-05-02 | [37781](https://github.com/airbytehq/airbyte/pull/37781)   | Adopt latest CDK.                                                                                                                               |
+| 3.3.24  | 2024-05-01 | [37742](https://github.com/airbytehq/airbyte/pull/37742)   | Adopt latest CDK. Remove Debezium retries.                                                                                                      |
+| 3.3.23  | 2024-04-23 | [37507](https://github.com/airbytehq/airbyte/pull/37507)   | Better errors when user switches from CDC to non-CDC mode.                                                                                      |
+| 3.3.22  | 2024-04-22 | [37541](https://github.com/airbytehq/airbyte/pull/37541)   | Adopt latest CDK. reduce excessive logs.                                                                                                        |
+| 3.3.21  | 2024-04-22 | [37476](https://github.com/airbytehq/airbyte/pull/37476)   | Adopt latest CDK.                                                                                                                               |
+| 3.3.20  | 2024-04-16 | [37111](https://github.com/airbytehq/airbyte/pull/37111)   | Populate null values in record message.                                                                                                         |
+| 3.3.19  | 2024-04-15 | [37328](https://github.com/airbytehq/airbyte/pull/37328)   | Populate airbyte_meta.changes                                                                                                                   |
+| 3.3.18  | 2024-04-15 | [37324](https://github.com/airbytehq/airbyte/pull/37324)   | Refactor source operations.                                                                                                                     |
+| 3.3.17  | 2024-04-10 | [36919](https://github.com/airbytehq/airbyte/pull/36919)   | Fix a bug in conversion of null values.                                                                                                         |
+| 3.3.16  | 2024-04-05 | [36872](https://github.com/airbytehq/airbyte/pull/36872)   | Update to connector's metadat definition.                                                                                                       |
+| 3.3.15  | 2024-04-05 | [36577](https://github.com/airbytehq/airbyte/pull/36577)   | Config error will not send out system trace message                                                                                             |
+| 3.3.14  | 2024-04-04 | [36742](https://github.com/airbytehq/airbyte/pull/36742)   | To use new kotlin CDK                                                                                                                           |
+| 3.3.13  | 2024-02-29 | [35529](https://github.com/airbytehq/airbyte/pull/35529)   | Refactor state iterator messages.                                                                                                               |
+| 3.3.12  | 2024-02-27 | [35675](https://github.com/airbytehq/airbyte/pull/35675)   | Fix invalid cdc error message.                                                                                                                  |
+| 3.3.11  | 2024-02-23 | [35527](https://github.com/airbytehq/airbyte/pull/35527)   | Adopt 0.23.1 and shutdown timeouts.                                                                                                             |
+| 3.3.10  | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569)   | Fix logging bug.                                                                                                                                |
+| 3.3.9   | 2024-02-21 | [35525](https://github.com/airbytehq/airbyte/pull/35338)   | Adopt 0.21.4 and reduce cdc state compression threshold to 1MB.                                                                                 |
+| 3.3.8   | 2024-02-20 | [35338](https://github.com/airbytehq/airbyte/pull/35338)   | Add config to throw an error on invalid CDC position.                                                                                           |
+| 3.3.7   | 2024-02-13 | [35036](https://github.com/airbytehq/airbyte/pull/34751)   | Emit analytics message for invalid CDC cursor.                                                                                                  |
+| 3.3.6   | 2024-02-13 | [34869](https://github.com/airbytehq/airbyte/pull/34573)   | Don't emit state in SourceStateIterator when there is an underlying stream failure.                                                             |
+| 3.3.5   | 2024-02-12 | [34580](https://github.com/airbytehq/airbyte/pull/34580)   | Support special chars in db name                                                                                                                |
+| 3.3.4   | 2024-02-08 | [34750](https://github.com/airbytehq/airbyte/pull/34750)   | Adopt CDK 0.19.0                                                                                                                                |
+| 3.3.3   | 2024-01-26 | [34573](https://github.com/airbytehq/airbyte/pull/34573)   | Adopt CDK v0.16.0.                                                                                                                              |
+| 3.3.2   | 2024-01-08 | [33005](https://github.com/airbytehq/airbyte/pull/33005)   | Adding count stats for incremental sync in AirbyteStateMessage                                                                                  |
+| 3.3.1   | 2024-01-03 | [33312](https://github.com/airbytehq/airbyte/pull/33312)   | Adding count stats in AirbyteStateMessage                                                                                                       |
 | 3.3.0   | 2023-12-19 | [33436](https://github.com/airbytehq/airbyte/pull/33436)   | Remove LEGACY state flag                                                                                                                        |
 | 3.2.4   | 2023-12-12 | [33356](https://github.com/airbytehq/airbyte/pull/33210)   | Support for better debugging tools..                                                                                                            |
 | 3.2.3   | 2023-12-08 | [33210](https://github.com/airbytehq/airbyte/pull/33210)   | Update MySql driver property value for zero date handling.                                                                                      |

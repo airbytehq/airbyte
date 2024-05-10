@@ -6,22 +6,27 @@
 
 import datetime
 import os
+import time
+import traceback
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import Any, ClassVar, List, Optional
+from pathlib import Path
+from textwrap import dedent
+from typing import ClassVar, List, Optional
 
 import requests  # type: ignore
 import semver
 import yaml  # type: ignore
-from connector_ops.utils import Connector  # type: ignore
 from dagger import Container, Directory
-from pipelines import hacks
+from pipelines import hacks, main_logger
+from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.consts import CIContext
+from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
+from pipelines.consts import INTERNAL_TOOL_PATHS, CIContext
 from pipelines.dagger.actions import secrets
-from pipelines.dagger.containers import internal_tools
-from pipelines.helpers.utils import METADATA_FILE_NAME
-from pipelines.models.steps import STEP_PARAMS, Step, StepResult, StepStatus
+from pipelines.dagger.actions.python.poetry import with_poetry
+from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
+from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, StepStatus
 
 
 class VersionCheck(Step, ABC):
@@ -62,11 +67,11 @@ class VersionCheck(Step, ABC):
 
     @property
     def success_result(self) -> StepResult:
-        return StepResult(self, status=StepStatus.SUCCESS)
+        return StepResult(step=self, status=StepStatus.SUCCESS)
 
     @property
     def failure_result(self) -> StepResult:
-        return StepResult(self, status=StepStatus.FAILURE, stderr=self.failure_message)
+        return StepResult(step=self, status=StepStatus.FAILURE, stderr=self.failure_message)
 
     @abstractmethod
     def validate(self) -> StepResult:
@@ -74,13 +79,13 @@ class VersionCheck(Step, ABC):
 
     async def _run(self) -> StepResult:
         if not self.should_run:
-            return StepResult(self, status=StepStatus.SKIPPED, stdout="No modified files required a version bump.")
+            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="No modified files required a version bump.")
         if self.context.ci_context == CIContext.MASTER:
-            return StepResult(self, status=StepStatus.SKIPPED, stdout="Version check are not running in master context.")
+            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="Version check are not running in master context.")
         try:
             return self.validate()
         except (requests.HTTPError, ValueError, TypeError) as e:
-            return StepResult(self, status=StepStatus.FAILURE, stderr=str(e))
+            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
 
 
 class VersionIncrementCheck(VersionCheck):
@@ -119,70 +124,53 @@ class VersionIncrementCheck(VersionCheck):
         return self.success_result
 
 
-class VersionFollowsSemverCheck(VersionCheck):
-    context: ConnectorContext
-    title = "Connector version semver check"
+class QaChecks(SimpleDockerStep):
+    """A step to run QA checks for a connectors.
+    More details in https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/connectors_qa/README.md
+    """
 
-    @property
-    def failure_message(self) -> str:
-        return f"The dockerImageTag in {METADATA_FILE_NAME} is not following semantic versioning or was decremented. Master version is {self.master_connector_version}, current version is {self.current_connector_version}"
+    def __init__(self, context: ConnectorContext) -> None:
+        code_directory = context.connector.code_directory
+        documentation_file_path = context.connector.documentation_file_path
+        migration_guide_file_path = context.connector.migration_guide_file_path
+        icon_path = context.connector.icon_path
+        technical_name = context.connector.technical_name
 
-    def validate(self) -> StepResult:
-        try:
-            if not self.current_connector_version >= self.master_connector_version:
-                return self.failure_result
-        except ValueError:
-            return self.failure_result
-        return self.success_result
+        # When the connector is strict-encrypt, we should run QA checks on the main one as it's the one whose artifacts gets released
+        if context.connector.technical_name.endswith("-strict-encrypt"):
+            technical_name = technical_name.replace("-strict-encrypt", "")
+            code_directory = Path(str(code_directory).replace("-strict-encrypt", ""))
+            if documentation_file_path:
+                documentation_file_path = Path(str(documentation_file_path).replace("-strict-encrypt", ""))
+            if migration_guide_file_path:
+                migration_guide_file_path = Path(str(migration_guide_file_path).replace("-strict-encrypt", ""))
+            if icon_path:
+                icon_path = Path(str(icon_path).replace("-strict-encrypt", ""))
 
-
-class QaChecks(Step):
-    """A step to run QA checks for a connector."""
-
-    context: ConnectorContext
-    title = "QA checks"
-
-    async def _run(self) -> StepResult:
-        """Run QA checks on a connector.
-
-        The QA checks are defined in this module:
-        https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connector_ops/connector_ops/qa_checks.py
-
-        Args:
-            context (ConnectorContext): The current test context, providing a connector object, a dagger client and a repository directory.
-        Returns:
-            StepResult: Failure or success of the QA checks with stdout and stderr.
-        """
-        connector_ops = await internal_tools.with_connector_ops(self.context)
-        include = [
-            str(self.context.connector.code_directory),
-            str(self.context.connector.documentation_file_path),
-            str(self.context.connector.migration_guide_file_path),
-            str(self.context.connector.icon_path),
-        ]
-        if (
-            self.context.connector.technical_name.endswith("strict-encrypt")
-            or self.context.connector.technical_name == "source-file-secure"
-        ):
-            original_connector = Connector(self.context.connector.technical_name.replace("-strict-encrypt", "").replace("-secure", ""))
-            include += [
-                str(original_connector.code_directory),
-                str(original_connector.documentation_file_path),
-                str(original_connector.icon_path),
-                str(original_connector.migration_guide_file_path),
-            ]
-
-        filtered_repo = self.context.get_repo_dir(
-            include=include,
+        super().__init__(
+            title=f"Run QA checks for {technical_name}",
+            context=context,
+            paths_to_mount=[
+                MountPath(code_directory),
+                # These paths are optional
+                # But their absence might make the QA check fail
+                MountPath(documentation_file_path, optional=True),
+                MountPath(migration_guide_file_path, optional=True),
+                MountPath(icon_path, optional=True),
+            ],
+            internal_tools=[
+                MountPath(INTERNAL_TOOL_PATHS.CONNECTORS_QA.value),
+            ],
+            secrets={
+                k: v
+                for k, v in {
+                    "DOCKER_HUB_USERNAME": context.docker_hub_username_secret,
+                    "DOCKER_HUB_PASSWORD": context.docker_hub_password_secret,
+                }.items()
+                if v
+            },
+            command=["connectors-qa", "run", f"--name={technical_name}"],
         )
-
-        qa_checks = (
-            connector_ops.with_mounted_directory("/airbyte", filtered_repo)
-            .with_workdir("/airbyte")
-            .with_exec(["run-qa-checks", f"connectors/{self.context.connector.technical_name}"])
-        )
-
-        return await self.get_step_result(qa_checks)
 
 
 class AcceptanceTests(Step):
@@ -257,7 +245,7 @@ class AcceptanceTests(Step):
         """
 
         if not self.context.connector.acceptance_test_config:
-            return StepResult(self, StepStatus.SKIPPED)
+            return StepResult(step=self, status=StepStatus.SKIPPED)
         connector_dir = await self.context.get_connector_dir()
         cat_container = await self._build_connector_acceptance_test(connector_under_test_container, connector_dir)
         cat_command = await self.get_cat_command(connector_dir)
@@ -272,7 +260,7 @@ class AcceptanceTests(Step):
                     break
         return step_result
 
-    async def get_cache_buster(self) -> str:
+    def get_cache_buster(self) -> str:
         """
         This bursts the CAT cached results everyday and on new version or image size change.
         It's cool because in case of a partially failing nightly build the connectors that already ran CAT won't re-run CAT.
@@ -303,7 +291,7 @@ class AcceptanceTests(Step):
         cat_container = (
             cat_container.with_env_variable("RUN_IN_AIRBYTE_CI", "1")
             .with_exec(["mkdir", "/dagger_share"], skip_entrypoint=True)
-            .with_env_variable("CACHEBUSTER", await self.get_cache_buster())
+            .with_env_variable("CACHEBUSTER", self.get_cache_buster())
             .with_new_file("/tmp/container_id.txt", contents=str(connector_container_id))
             .with_workdir("/test_input")
             .with_mounted_directory("/test_input", test_input)
@@ -320,28 +308,223 @@ class AcceptanceTests(Step):
         return cat_container.with_unix_socket("/var/run/docker.sock", self.context.dagger_client.host().unix_socket("/var/run/docker.sock"))
 
 
-class CheckBaseImageIsUsed(Step):
+class RegressionTests(Step):
+    """A step to run regression tests for a connector."""
+
     context: ConnectorContext
-    title = "Check our base image is used"
+    title = "Regression tests"
+    skipped_exit_code = 5
+    accept_extra_params = True
+    regression_tests_artifacts_dir = Path("/tmp/regression_tests_artifacts")
+    working_directory = "/app"
+    github_user = "octavia-squidington-iii"
+    platform_repo_url = "airbytehq/airbyte-platform-internal"
 
-    async def _run(self, *args: Any, **kwargs: Any) -> StepResult:
-        is_certified = self.context.connector.metadata.get("supportLevel") == "certified"
-        if not is_certified:
-            return self.skip("Connector is not certified, it does not require the use of our base image.")
+    @property
+    def default_params(self) -> STEP_PARAMS:
+        """Default pytest options.
 
-        is_using_base_image = self.context.connector.metadata.get("connectorBuildOptions", {}).get("baseImage") is not None
-        migration_hint = f"Please run 'airbyte-ci connectors --name={self.context.connector.technical_name} migrate_to_base_image <PR NUMBER>' and commit the changes."
-        if not is_using_base_image:
-            return StepResult(
-                self,
-                StepStatus.FAILURE,
-                stdout=f"Connector is certified but does not use our base image. {migration_hint}",
+        Returns:
+            dict: The default pytest options.
+        """
+        return super().default_params | {
+            "-ra": [],  # Show extra test summary info in the report for all but the passed tests
+            "--disable-warnings": [],  # Disable warnings in the pytest report
+            "--durations": ["3"],  # Show the 3 slowest tests in the report
+        }
+
+    def regression_tests_command(self) -> List[str]:
+        """
+        This command:
+
+        1. Starts a Google Cloud SQL proxy running on localhost, which is used by the connection-retriever to connect to postgres.
+        2. Gets the PID of the proxy so it can be killed once done.
+        3. Runs the regression tests.
+        4. Kills the proxy, and waits for it to exit.
+        5. Exits with the regression tests' exit code.
+        We need to explicitly kill the proxy in order to allow the GitHub Action to exit.
+        An alternative that we can consider is to run the proxy as a separate service.
+
+        (See https://docs.dagger.io/manuals/developer/python/328492/services/ and https://cloud.google.com/sql/docs/postgres/sql-proxy#cloud-sql-auth-proxy-docker-image)
+        """
+        run_proxy = "./cloud-sql-proxy prod-ab-cloud-proj:us-west3:prod-pgsql-replica --credentials-file /tmp/credentials.json"
+        run_pytest = " ".join(
+            [
+                "poetry",
+                "run",
+                "pytest",
+                "src/live_tests/regression_tests",
+                "--connector-image",
+                self.connector_image,
+                "--connection-id",
+                self.connection_id or "",
+                "--control-version",
+                self.control_version or "",
+                "--target-version",
+                self.target_version or "",
+                "--pr-url",
+                self.pr_url or "",
+                "--run-id",
+                self.run_id or "",
+                "--should-read-with-state",
+                str(self.should_read_with_state),
+            ]
+        )
+        run_pytest_with_proxy = dedent(
+            f"""
+        {run_proxy} &
+        proxy_pid=$!
+        {run_pytest}
+        pytest_exit=$?
+        kill $proxy_pid
+        wait $proxy_pid
+        exit $pytest_exit
+        """
+        )
+        return ["bash", "-c", f"'{run_pytest_with_proxy}'"]
+
+    def __init__(self, context: ConnectorContext) -> None:
+        """Create a step to run regression tests for a connector.
+
+        Args:
+            context (ConnectorContext): The current test context, providing a connector object, a dagger client and a repository directory.
+        """
+        super().__init__(context)
+        self.connector_image = context.docker_image.split(":")[0]
+        options = self.context.run_step_options.step_params.get(CONNECTOR_TEST_STEP_ID.CONNECTOR_REGRESSION_TESTS, {})
+
+        self.connection_id = self.context.run_step_options.get_item_or_default(options, "connection-id", None)
+        self.pr_url = self.context.run_step_options.get_item_or_default(options, "pr-url", None)
+
+        if not self.connection_id and self.pr_url:
+            raise ValueError("`connection-id` and `pr-url` are required to run regression tests.")
+
+        self.control_version = self.context.run_step_options.get_item_or_default(options, "control-version", "latest")
+        self.target_version = self.context.run_step_options.get_item_or_default(options, "target-version", "dev")
+        self.should_read_with_state = self.context.run_step_options.get_item_or_default(options, "should-read-with-state", True)
+        self.run_id = os.getenv("GITHUB_RUN_ID") or str(int(time.time()))
+
+    async def _run(self, connector_under_test_container: Container) -> StepResult:
+        """Run the regression test suite.
+
+        Args:
+            connector_under_test (Container): The container holding the target connector test image.
+
+        Returns:
+            StepResult: Failure or success of the regression tests with stdout and stderr.
+        """
+        container = await self._build_regression_test_container(await connector_under_test_container.id())
+        container = container.with_(hacks.never_fail_exec(self.regression_tests_command()))
+        regression_tests_artifacts_dir = str(self.regression_tests_artifacts_dir)
+        path_to_report = f"{regression_tests_artifacts_dir}/session_{self.run_id}/report.html"
+
+        exit_code, stdout, stderr = await get_exec_result(container)
+
+        if "report.html" not in await container.directory(f"{regression_tests_artifacts_dir}/session_{self.run_id}").entries():
+            main_logger.exception(
+                "The report file was not generated, an unhandled error likely happened during regression test execution, please check the step stderr and stdout for more details"
             )
-        has_dockerfile = "Dockerfile" in await (await self.context.get_connector_dir(include=["Dockerfile"])).entries()
-        if has_dockerfile:
-            return StepResult(
-                self,
-                StepStatus.FAILURE,
-                stdout=f"Connector is certified but is still using a Dockerfile. {migration_hint}",
+            regression_test_report = None
+        else:
+            await container.file(path_to_report).export(path_to_report)
+            with open(path_to_report, "r") as fp:
+                regression_test_report = fp.read()
+
+        return StepResult(
+            step=self,
+            status=self.get_step_status_from_exit_code(exit_code),
+            stderr=stderr,
+            stdout=stdout,
+            output=container,
+            report=regression_test_report,
+        )
+
+    async def _build_regression_test_container(self, target_container_id: str) -> Container:
+        """Create a container to run regression tests."""
+        container = with_poetry(self.context)
+        container_requirements = ["apt-get", "install", "-y", "git", "curl", "docker.io"]
+        if not self.context.is_ci:
+            # Outside of CI we use ssh to get the connection-retriever package from airbyte-platform-internal
+            container_requirements += ["openssh-client"]
+        container = (
+            container.with_exec(["apt-get", "update"])
+            .with_exec(container_requirements)
+            .with_exec(["bash", "-c", "curl https://sdk.cloud.google.com | bash"])
+            .with_env_variable("PATH", "/root/google-cloud-sdk/bin:$PATH", expand=True)
+            .with_mounted_directory("/app", self.context.live_tests_dir)
+            .with_workdir("/app")
+            # Enable dagger-in-dagger
+            .with_unix_socket("/var/run/docker.sock", self.dagger_client.host().unix_socket("/var/run/docker.sock"))
+            .with_env_variable("RUN_IN_AIRBYTE_CI", "1")
+            # The connector being tested is already built and is stored in a location accessible to an inner dagger kicked off by
+            # regression tests. The connector can be found if you know the container ID, so we write the container ID to a file and put
+            # it in the regression test container. This way regression tests will use the already-built connector instead of trying to
+            # build their own.
+            .with_new_file("/tmp/container_id.txt", contents=str(target_container_id))
+        )
+
+        if self.context.is_ci:
+            container = (
+                container
+                # In CI, use https to get the connection-retriever package from airbyte-platform-internal instead of ssh
+                .with_exec(
+                    [
+                        "sed",
+                        "-i",
+                        "-E",
+                        rf"s,git@github\.com:{self.platform_repo_url},https://github.com/{self.platform_repo_url}.git,",
+                        "pyproject.toml",
+                    ]
+                )
+                .with_exec(
+                    [
+                        "poetry",
+                        "source",
+                        "add",
+                        "--priority=supplemental",
+                        "airbyte-platform-internal-source",
+                        "https://github.com/airbytehq/airbyte-platform-internal.git",
+                    ]
+                )
+                .with_exec(
+                    [
+                        "poetry",
+                        "config",
+                        "http-basic.airbyte-platform-internal-source",
+                        self.github_user,
+                        self.context.ci_github_access_token or "",
+                    ]
+                )
+                # Add GCP credentials from the environment and point google to their location (also required for connection-retriever)
+                .with_new_file("/tmp/credentials.json", contents=os.getenv("GCP_INTEGRATION_TESTER_CREDENTIALS"))
+                .with_env_variable("GOOGLE_APPLICATION_CREDENTIALS", "/tmp/credentials.json")
+                .with_exec(
+                    [
+                        "curl",
+                        "-o",
+                        "cloud-sql-proxy",
+                        "https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.11.0/cloud-sql-proxy.linux.amd64",
+                    ]
+                )
+                .with_exec(
+                    [
+                        "chmod",
+                        "+x",
+                        "cloud-sql-proxy",
+                    ]
+                )
+                .with_env_variable("CI", "1")
             )
-        return StepResult(self, StepStatus.SUCCESS, stdout="Connector is certified and uses our base image.")
+
+        else:
+            container = (
+                container.with_mounted_file("/root/.ssh/id_rsa", self.dagger_client.host().file(str(Path("~/.ssh/id_rsa").expanduser())))
+                .with_mounted_file("/root/.ssh/known_hosts", self.dagger_client.host().file(str(Path("~/.ssh/known_hosts").expanduser())))
+                .with_mounted_file(
+                    "/root/.config/gcloud/application_default_credentials.json",
+                    self.dagger_client.host().file(str(Path("~/.config/gcloud/application_default_credentials.json").expanduser())),
+                )
+            )
+
+        container = container.with_exec(["poetry", "lock", "--no-update"]).with_exec(["poetry", "install"])
+        return container

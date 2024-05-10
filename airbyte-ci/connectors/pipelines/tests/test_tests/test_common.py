@@ -7,6 +7,7 @@ import pathlib
 import time
 from typing import List
 
+import asyncclick as click
 import dagger
 import pytest
 import yaml
@@ -46,6 +47,8 @@ class TestAcceptanceTests:
             connector=ConnectorWithModifiedFiles("source-faker", frozenset()),
             git_branch="test",
             git_revision="test",
+            diffed_branch="test",
+            git_repo_url="test",
             report_output_prefix="test",
             is_local=False,
             use_remote_secrets=True,
@@ -193,6 +196,10 @@ class TestAcceptanceTests:
         env_vars = {await env_var.name(): await env_var.value() for env_var in await cat_container.env_variables()}
         assert "CACHEBUSTER" in env_vars
 
+    @pytest.mark.flaky
+    # This test has shown some flakiness in CI
+    # This should be investigated and fixed
+    # https://github.com/airbytehq/airbyte-internal-issues/issues/6304
     async def test_cat_container_caching(
         self,
         dagger_client,
@@ -208,37 +215,34 @@ class TestAcceptanceTests:
 
         with freeze_time(initial_datetime) as frozen_datetime:
             acceptance_test_step = self.get_patched_acceptance_test_step(dagger_client, mocker, test_context_ci, test_input_dir)
-            cat_container = await acceptance_test_step._build_connector_acceptance_test(
+            first_cat_container = await acceptance_test_step._build_connector_acceptance_test(
                 dummy_connector_under_test_container, test_input_dir
             )
-            cat_container = cat_container.with_exec(["date"])
-            fist_date_result = await cat_container.stdout()
+            fist_date_result = await first_cat_container.with_exec(["date"]).stdout()
 
             frozen_datetime.tick(delta=datetime.timedelta(hours=5))
             # Check that cache is used in the same day
-            cat_container = await acceptance_test_step._build_connector_acceptance_test(
+            second_cat_container = await acceptance_test_step._build_connector_acceptance_test(
                 dummy_connector_under_test_container, test_input_dir
             )
-            cat_container = cat_container.with_exec(["date"])
-            second_date_result = await cat_container.stdout()
+
+            second_date_result = await second_cat_container.with_exec(["date"]).stdout()
             assert fist_date_result == second_date_result
 
             # Check that cache bursted after a day
-            frozen_datetime.tick(delta=datetime.timedelta(days=1, seconds=1))
-            cat_container = await acceptance_test_step._build_connector_acceptance_test(
+            frozen_datetime.tick(delta=datetime.timedelta(days=1, minutes=10))
+            third_cat_container = await acceptance_test_step._build_connector_acceptance_test(
                 dummy_connector_under_test_container, test_input_dir
             )
-            cat_container = cat_container.with_exec(["date"])
-            third_date_result = await cat_container.stdout()
+            third_date_result = await third_cat_container.with_exec(["date"]).stdout()
             assert third_date_result != second_date_result
 
             time.sleep(1)
             # Check that changing the container invalidates the cache
-            cat_container = await acceptance_test_step._build_connector_acceptance_test(
+            fourth_cat_container = await acceptance_test_step._build_connector_acceptance_test(
                 another_dummy_connector_under_test_container, test_input_dir
             )
-            cat_container = cat_container.with_exec(["date"])
-            fourth_date_result = await cat_container.stdout()
+            fourth_date_result = await fourth_cat_container.with_exec(["date"]).stdout()
             assert fourth_date_result != third_date_result
 
     async def test_params(self, dagger_client, mocker, test_context_ci, test_input_dir):
@@ -246,56 +250,3 @@ class TestAcceptanceTests:
         assert set(acceptance_test_step.params_as_cli_options) == {"-ra", "--disable-warnings", "--durations=3"}
         acceptance_test_step.extra_params = {"--durations": ["5"], "--collect-only": []}
         assert set(acceptance_test_step.params_as_cli_options) == {"-ra", "--disable-warnings", "--durations=5", "--collect-only"}
-
-
-class TestCheckBaseImageIsUsed:
-    @pytest.fixture
-    def certified_connector_no_base_image(self, all_connectors):
-        for connector in all_connectors:
-            if connector.metadata.get("supportLevel") == "certified":
-                if connector.metadata.get("connectorBuildOptions", {}).get("baseImage") is None:
-                    return connector
-        pytest.skip("No certified connector without base image found")
-
-    @pytest.fixture
-    def certified_connector_with_base_image(self, all_connectors):
-        for connector in all_connectors:
-            if connector.metadata.get("supportLevel") == "certified":
-                if connector.metadata.get("connectorBuildOptions", {}).get("baseImage") is not None:
-                    return connector
-        pytest.skip("No certified connector with base image found")
-
-    @pytest.fixture
-    def community_connector_no_base_image(self, all_connectors):
-        for connector in all_connectors:
-            if connector.metadata.get("supportLevel") == "community":
-                if connector.metadata.get("connectorBuildOptions", {}).get("baseImage") is None:
-                    return connector
-        pytest.skip("No certified connector without base image found")
-
-    @pytest.fixture
-    def test_context(self, mocker, dagger_client):
-        return mocker.MagicMock(dagger_client=dagger_client)
-
-    async def test_pass_on_community_connector_no_base_image(self, mocker, dagger_client, community_connector_no_base_image):
-        test_context = mocker.MagicMock(dagger_client=dagger_client, connector=community_connector_no_base_image)
-        check_base_image_is_used_step = common.CheckBaseImageIsUsed(test_context)
-        step_result = await check_base_image_is_used_step.run()
-        assert step_result.status == StepStatus.SKIPPED
-
-    async def test_pass_on_certified_connector_with_base_image(self, mocker, dagger_client, certified_connector_with_base_image):
-        dagger_connector_dir = dagger_client.host().directory(str(certified_connector_with_base_image.code_directory))
-        test_context = mocker.MagicMock(
-            dagger_client=dagger_client,
-            connector=certified_connector_with_base_image,
-            get_connector_dir=mocker.AsyncMock(return_value=dagger_connector_dir),
-        )
-        check_base_image_is_used_step = common.CheckBaseImageIsUsed(test_context)
-        step_result = await check_base_image_is_used_step.run()
-        assert step_result.status == StepStatus.SUCCESS
-
-    async def test_fail_on_certified_connector_no_base_image(self, mocker, dagger_client, certified_connector_no_base_image):
-        test_context = mocker.MagicMock(dagger_client=dagger_client, connector=certified_connector_no_base_image)
-        check_base_image_is_used_step = common.CheckBaseImageIsUsed(test_context)
-        step_result = await check_base_image_is_used_step.run()
-        assert step_result.status == StepStatus.FAILURE

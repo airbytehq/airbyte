@@ -4,20 +4,25 @@
 
 import json
 import uuid
-from typing import List, Tuple
+from datetime import datetime
+from typing import Dict, List, Tuple
 
 import anyio
 from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification  # type: ignore
-from dagger import Container, ExecError, File, ImageLayerCompression, QueryError
+from connector_ops.utils import ConnectorLanguage  # type: ignore
+from dagger import Container, ExecError, File, ImageLayerCompression, Platform, QueryError
 from pipelines import consts
 from pipelines.airbyte_ci.connectors.build_image import steps
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.metadata.pipeline import MetadataUpload, MetadataValidation
+from pipelines.airbyte_ci.steps.python_registry import PublishToPythonRegistry, PythonRegistryPublishContext
+from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions.remote_storage import upload_to_gcs
 from pipelines.dagger.actions.system import docker
+from pipelines.helpers.pip import is_package_published
 from pipelines.models.steps import Step, StepResult, StepStatus
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 
 class InvalidSpecOutputError(Exception):
@@ -41,15 +46,89 @@ class CheckConnectorImageDoesNotExist(Step):
             crane_ls_stdout = await crane_ls.stdout()
         except ExecError as e:
             if "NAME_UNKNOWN" in e.stderr:
-                return StepResult(self, status=StepStatus.SUCCESS, stdout=f"The docker repository {docker_repository} does not exist.")
+                return StepResult(step=self, status=StepStatus.SUCCESS, stdout=f"The docker repository {docker_repository} does not exist.")
             else:
-                return StepResult(self, status=StepStatus.FAILURE, stderr=e.stderr, stdout=e.stdout)
+                return StepResult(step=self, status=StepStatus.FAILURE, stderr=e.stderr, stdout=e.stdout)
         else:  # The docker repo exists and ls was successful
             existing_tags = crane_ls_stdout.split("\n")
             docker_tag_already_exists = docker_tag in existing_tags
             if docker_tag_already_exists:
-                return StepResult(self, status=StepStatus.SKIPPED, stderr=f"{self.context.docker_image} already exists.")
-            return StepResult(self, status=StepStatus.SUCCESS, stdout=f"No manifest found for {self.context.docker_image}.")
+                return StepResult(step=self, status=StepStatus.SKIPPED, stderr=f"{self.context.docker_image} already exists.")
+            return StepResult(step=self, status=StepStatus.SUCCESS, stdout=f"No manifest found for {self.context.docker_image}.")
+
+
+class CheckPythonRegistryPackageDoesNotExist(Step):
+    context: PythonRegistryPublishContext
+    title = "Check if the connector is published on python registry"
+
+    async def _run(self) -> StepResult:
+        is_published = is_package_published(
+            self.context.package_metadata.name, self.context.package_metadata.version, self.context.registry_check_url
+        )
+        if is_published:
+            return StepResult(
+                step=self,
+                status=StepStatus.SKIPPED,
+                stderr=f"{self.context.package_metadata.name} already exists in version {self.context.package_metadata.version}.",
+            )
+        else:
+            return StepResult(
+                step=self,
+                status=StepStatus.SUCCESS,
+                stdout=f"{self.context.package_metadata.name} does not exist in version {self.context.package_metadata.version}.",
+            )
+
+
+class ConnectorDependenciesMetadata(BaseModel):
+    connector_technical_name: str
+    connector_repository: str
+    connector_version: str
+    connector_definition_id: str
+    dependencies: List[Dict[str, str]]
+    generation_time: datetime = datetime.utcnow()
+
+
+class UploadDependenciesToMetadataService(Step):
+    context: PublishConnectorContext
+    title = "Upload connector dependencies list to GCS."
+    key_prefix = "connector_dependencies"
+
+    async def _run(self, built_containers_per_platform: Dict[Platform, Container]) -> StepResult:
+        assert self.context.connector.language in [
+            ConnectorLanguage.PYTHON,
+            ConnectorLanguage.LOW_CODE,
+        ], "This step can only run for Python connectors."
+        built_container = built_containers_per_platform[LOCAL_BUILD_PLATFORM]
+        pip_freeze_output = await built_container.with_exec(["pip", "freeze"], skip_entrypoint=True).stdout()
+        dependencies = [
+            {"package_name": line.split("==")[0], "version": line.split("==")[1]} for line in pip_freeze_output.splitlines() if "==" in line
+        ]
+        connector_technical_name = self.context.connector.technical_name
+        connector_version = self.context.metadata["dockerImageTag"]
+        dependencies_metadata = ConnectorDependenciesMetadata(
+            connector_technical_name=connector_technical_name,
+            connector_repository=self.context.metadata["dockerRepository"],
+            connector_version=connector_version,
+            connector_definition_id=self.context.metadata["definitionId"],
+            dependencies=dependencies,
+        ).json()
+        file = (
+            (await self.context.get_connector_dir())
+            .with_new_file("dependencies.json", contents=dependencies_metadata)
+            .file("dependencies.json")
+        )
+        key = f"{self.key_prefix}/{connector_technical_name}/{connector_version}/dependencies.json"
+        exit_code, stdout, stderr = await upload_to_gcs(
+            self.context.dagger_client,
+            file,
+            key,
+            self.context.metadata_bucket_name,
+            self.context.metadata_service_gcs_credentials_secret,
+            flags=['--cache-control="no-cache"'],
+        )
+        if exit_code != 0:
+            return StepResult(step=self, status=StepStatus.FAILURE, stdout=stdout, stderr=stderr)
+        return StepResult(step=self, status=StepStatus.SUCCESS, stdout="Uploaded connector dependencies to metadata service bucket.")
 
 
 class PushConnectorImageToRegistry(Step):
@@ -73,14 +152,14 @@ class PushConnectorImageToRegistry(Step):
                     platform_variants=built_containers_per_platform[1:],
                     forced_compression=ImageLayerCompression.Gzip,
                 )
-            return StepResult(self, status=StepStatus.SUCCESS, stdout=f"Published {image_ref}")
+            return StepResult(step=self, status=StepStatus.SUCCESS, stdout=f"Published {image_ref}")
         except QueryError as e:
             if attempts > 0:
                 self.context.logger.error(str(e))
                 self.context.logger.warn(f"Failed to publish {self.context.docker_image}. Retrying. {attempts} attempts left.")
                 await anyio.sleep(5)
                 return await self._run(built_containers_per_platform, attempts - 1)
-            return StepResult(self, status=StepStatus.FAILURE, stderr=str(e))
+            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
 
 
 class PullConnectorImageFromRegistry(Step):
@@ -121,16 +200,16 @@ class PullConnectorImageFromRegistry(Step):
                     await anyio.sleep(10)
                     return await self._run(attempt - 1)
                 else:
-                    return StepResult(self, status=StepStatus.FAILURE, stderr=f"Failed to pull {self.context.docker_image}")
+                    return StepResult(step=self, status=StepStatus.FAILURE, stderr=f"Failed to pull {self.context.docker_image}")
             if not await self.check_if_image_only_has_gzip_layers():
                 return StepResult(
-                    self,
+                    step=self,
                     status=StepStatus.FAILURE,
                     stderr=f"Image {self.context.docker_image} does not only have gzip compressed layers. Please rebuild the connector with Docker < 21.",
                 )
             else:
                 return StepResult(
-                    self,
+                    step=self,
                     status=StepStatus.SUCCESS,
                     stdout=f"Pulled {self.context.docker_image} and validated it has gzip only compressed layers and we can run spec on it.",
                 )
@@ -138,7 +217,7 @@ class PullConnectorImageFromRegistry(Step):
             if attempt > 0:
                 await anyio.sleep(10)
                 return await self._run(attempt - 1)
-            return StepResult(self, status=StepStatus.FAILURE, stderr=str(e))
+            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
 
 
 class UploadSpecToCache(Step):
@@ -190,7 +269,7 @@ class UploadSpecToCache(Step):
             oss_spec: str = await self._get_connector_spec(built_connector, "OSS")
             cloud_spec: str = await self._get_connector_spec(built_connector, "CLOUD")
         except InvalidSpecOutputError as e:
-            return StepResult(self, status=StepStatus.FAILURE, stderr=str(e))
+            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
 
         specs_to_uploads: List[Tuple[str, File]] = [(self.oss_spec_key, await self._get_spec_as_file(oss_spec))]
 
@@ -207,8 +286,8 @@ class UploadSpecToCache(Step):
                 flags=['--cache-control="no-cache"'],
             )
             if exit_code != 0:
-                return StepResult(self, status=StepStatus.FAILURE, stdout=stdout, stderr=stderr)
-        return StepResult(self, status=StepStatus.SUCCESS, stdout="Uploaded connector spec to spec cache bucket.")
+                return StepResult(step=self, status=StepStatus.FAILURE, stdout=stdout, stderr=stderr)
+        return StepResult(step=self, status=StepStatus.SUCCESS, stdout="Uploaded connector spec to spec cache bucket.")
 
 
 # Pipeline
@@ -258,6 +337,10 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
 
             check_connector_image_results = await CheckConnectorImageDoesNotExist(context).run()
             results.append(check_connector_image_results)
+            python_registry_steps, terminate_early = await _run_python_registry_publish_pipeline(context)
+            results.extend(python_registry_steps)
+            if terminate_early:
+                return create_connector_report(results)
 
             # If the connector image already exists, we don't need to build it, but we still need to upload the metadata file.
             # We also need to upload the spec to the spec cache bucket.
@@ -284,7 +367,11 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             if build_connector_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
 
-            built_connector_platform_variants = list(build_connector_results.output_artifact.values())
+            if context.connector.language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
+                upload_dependencies_step = await UploadDependenciesToMetadataService(context).run(build_connector_results.output)
+                results.append(upload_dependencies_step)
+
+            built_connector_platform_variants = list(build_connector_results.output.values())
             push_connector_image_results = await PushConnectorImageToRegistry(context).run(built_connector_platform_variants)
             results.append(push_connector_image_results)
 
@@ -310,6 +397,43 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             results.append(metadata_upload_results)
             connector_report = create_connector_report(results)
     return connector_report
+
+
+async def _run_python_registry_publish_pipeline(context: PublishConnectorContext) -> Tuple[List[StepResult], bool]:
+    """
+    Run the python registry publish pipeline for a single connector.
+    Return the results of the steps and a boolean indicating whether there was an error and the pipeline should be stopped.
+    """
+    results: List[StepResult] = []
+    # Try to convert the context to a PythonRegistryPublishContext. If it returns None, it means we don't need to publish to a python registry.
+    python_registry_context = await PythonRegistryPublishContext.from_publish_connector_context(context)
+    if not python_registry_context:
+        return results, False
+
+    if not context.python_registry_token or not context.python_registry_url:
+        # If the python registry token or url are not set, we can't publish to the python registry - stop the pipeline.
+        return [
+            StepResult(
+                step=PublishToPythonRegistry(python_registry_context),
+                status=StepStatus.FAILURE,
+                stderr="Pypi publishing is enabled, but python registry token or url are not set.",
+            )
+        ], True
+
+    check_python_registry_package_exists_results = await CheckPythonRegistryPackageDoesNotExist(python_registry_context).run()
+    results.append(check_python_registry_package_exists_results)
+    if check_python_registry_package_exists_results.status is StepStatus.SKIPPED:
+        context.logger.info("The connector version is already published on python registry.")
+    elif check_python_registry_package_exists_results.status is StepStatus.SUCCESS:
+        context.logger.info("The connector version is not published on python registry. Let's build and publish it.")
+        publish_to_python_registry_results = await PublishToPythonRegistry(python_registry_context).run()
+        results.append(publish_to_python_registry_results)
+        if publish_to_python_registry_results.status is StepStatus.FAILURE:
+            return results, True
+    elif check_python_registry_package_exists_results.status is StepStatus.FAILURE:
+        return results, True
+
+    return results, False
 
 
 def reorder_contexts(contexts: List[PublishConnectorContext]) -> List[PublishConnectorContext]:

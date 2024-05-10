@@ -37,6 +37,10 @@ class PublishConnectorContext(ConnectorContext):
         is_local: bool,
         git_branch: str,
         git_revision: str,
+        diffed_branch: str,
+        git_repo_url: str,
+        python_registry_url: str,
+        python_registry_check_url: str,
         gha_workflow_run_url: Optional[str] = None,
         dagger_logs_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
@@ -46,12 +50,16 @@ class PublishConnectorContext(ConnectorContext):
         s3_build_cache_access_key_id: Optional[str] = None,
         s3_build_cache_secret_key: Optional[str] = None,
         use_local_cdk: bool = False,
+        python_registry_token: Optional[str] = None,
     ) -> None:
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
         self.metadata_bucket_name = metadata_bucket_name
         self.spec_cache_gcs_credentials = sanitize_gcs_credentials(spec_cache_gcs_credentials)
         self.metadata_service_gcs_credentials = sanitize_gcs_credentials(metadata_service_gcs_credentials)
+        self.python_registry_token = python_registry_token
+        self.python_registry_url = python_registry_url
+        self.python_registry_check_url = python_registry_check_url
         pipeline_name = f"Publish {connector.technical_name}"
         pipeline_name = pipeline_name + " (pre-release)" if pre_release else pipeline_name
 
@@ -66,6 +74,8 @@ class PublishConnectorContext(ConnectorContext):
             is_local=is_local,
             git_branch=git_branch,
             git_revision=git_revision,
+            diffed_branch=diffed_branch,
+            git_repo_url=git_repo_url,
             gha_workflow_run_url=gha_workflow_run_url,
             dagger_logs_url=dagger_logs_url,
             pipeline_start_timestamp=pipeline_start_timestamp,
@@ -90,11 +100,15 @@ class PublishConnectorContext(ConnectorContext):
         return self.dagger_client.set_secret("spec_cache_gcs_credentials", self.spec_cache_gcs_credentials)
 
     @property
+    def pre_release_suffix(self) -> str:
+        return self.git_revision[:10]
+
+    @property
     def docker_image_tag(self) -> str:
         # get the docker image tag from the parent class
         metadata_tag = super().docker_image_tag
         if self.pre_release:
-            return f"{metadata_tag}-dev.{self.git_revision[:10]}"
+            return f"{metadata_tag}-dev.{self.pre_release_suffix}"
         else:
             return metadata_tag
 
@@ -123,5 +137,5 @@ class PublishConnectorContext(ConnectorContext):
             assert self.report is not None, "Report should be set when state is successful"
             message += f"⏲️ Run duration: {format_duration(self.report.run_duration)}\n"
         if self.state is ContextState.FAILURE:
-            message += "\ncc. <!subteam^S0407GYHW4E>"  # @dev-connector-ops
+            message += "\ncc. <!subteam^S03BQLNTFNC>"
         return message

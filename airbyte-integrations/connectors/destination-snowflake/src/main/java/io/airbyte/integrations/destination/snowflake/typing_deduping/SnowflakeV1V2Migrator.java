@@ -4,8 +4,12 @@
 
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
+import static io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler.*;
+
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition;
+import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseDestinationV1V2Migrator;
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils;
 import io.airbyte.integrations.base.destination.typing_deduping.NamespacedTableName;
@@ -15,7 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.Optional;
 import lombok.SneakyThrows;
 
-public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<SnowflakeTableDefinition> {
+public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefinition> {
 
   private final NamingConventionTransformer namingConventionTransformer;
 
@@ -33,7 +37,7 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
 
   @SneakyThrows
   @Override
-  protected boolean doesAirbyteInternalNamespaceExist(final StreamConfig streamConfig) throws Exception {
+  public boolean doesAirbyteInternalNamespaceExist(final StreamConfig streamConfig) throws Exception {
     return !database
         .queryJsons(
             """
@@ -42,24 +46,24 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
             WHERE schema_name = ?
             AND catalog_name = ?;
             """,
-            streamConfig.id().rawNamespace(),
+            streamConfig.getId().getRawNamespace(),
             databaseName)
         .isEmpty();
   }
 
   @Override
-  protected boolean schemaMatchesExpectation(final SnowflakeTableDefinition existingTable, final Collection<String> columns) {
+  public boolean schemaMatchesExpectation(final TableDefinition existingTable, final Collection<String> columns) {
     return CollectionUtils.containsAllIgnoreCase(existingTable.columns().keySet(), columns);
   }
 
   @SneakyThrows
   @Override
-  protected Optional<SnowflakeTableDefinition> getTableIfExists(final String namespace, final String tableName) throws Exception {
-    // TODO this is mostly copied from SnowflakeDestinationHandler#findExistingTable, we should probably
-    // reuse this logic
+  public Optional<TableDefinition> getTableIfExists(final String namespace, final String tableName) throws Exception {
+    // TODO this looks similar to SnowflakeDestinationHandler#findExistingTables, with a twist;
+    // databaseName not upper-cased and rawNamespace and rawTableName as-is (no uppercase).
     // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC translates
     // VARIANT as VARCHAR
-    final LinkedHashMap<String, SnowflakeColumnDefinition> columns =
+    final LinkedHashMap<String, ColumnDefinition> columns =
         database.queryJsons(
             """
             SELECT column_name, data_type, is_nullable
@@ -75,22 +79,23 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
             .stream()
             .collect(LinkedHashMap::new,
                 (map, row) -> map.put(row.get("COLUMN_NAME").asText(),
-                    new SnowflakeColumnDefinition(row.get("DATA_TYPE").asText(), fromSnowflakeBoolean(row.get("IS_NULLABLE").asText()))),
+                    new ColumnDefinition(row.get("COLUMN_NAME").asText(), row.get("DATA_TYPE").asText(), 0,
+                        fromIsNullableIsoString(row.get("IS_NULLABLE").asText()))),
                 LinkedHashMap::putAll);
     if (columns.isEmpty()) {
       return Optional.empty();
     } else {
-      return Optional.of(new SnowflakeTableDefinition(columns));
+      return Optional.of(new TableDefinition(columns));
     }
   }
 
   @Override
-  protected NamespacedTableName convertToV1RawName(final StreamConfig streamConfig) {
+  public NamespacedTableName convertToV1RawName(final StreamConfig streamConfig) {
     // The implicit upper-casing happens for this in the SqlGenerator
     @SuppressWarnings("deprecation")
-    String tableName = this.namingConventionTransformer.getRawTableName(streamConfig.id().originalName());
+    String tableName = this.namingConventionTransformer.getRawTableName(streamConfig.getId().getOriginalName());
     return new NamespacedTableName(
-        this.namingConventionTransformer.getIdentifier(streamConfig.id().originalNamespace()),
+        this.namingConventionTransformer.getIdentifier(streamConfig.getId().getOriginalNamespace()),
         tableName);
   }
 
@@ -99,14 +104,6 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
     // Previously we were not quoting table names and they were being implicitly upper-cased.
     // In v2 we preserve cases
     return super.doesValidV1RawTableExist(namespace.toUpperCase(), tableName.toUpperCase());
-  }
-
-  /**
-   * In snowflake information_schema tables, booleans return "YES" and "NO", which DataBind doesn't
-   * know how to use
-   */
-  private boolean fromSnowflakeBoolean(final String input) {
-    return input.equalsIgnoreCase("yes");
   }
 
 }

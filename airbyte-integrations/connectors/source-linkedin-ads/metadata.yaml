@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 137ece28-5434-455c-8f34-69dc3782f451
-  dockerImageTag: 0.6.7
+  dockerImageTag: 2.1.2
   dockerRepository: airbyte/source-linkedin-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
   githubIssueLabel: source-linkedin-ads
@@ -19,12 +19,55 @@ data:
   license: MIT
   maxSecondsBetweenMessages: 86400
   name: LinkedIn Ads
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-linkedin-ads
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: This upgrade brings changes in primary key to *-analytics streams.
+        upgradeDeadline: "2024-04-30"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "ad_campaign_analytics"
+              - "ad_creative_analytics"
+              - "ad_impression_device_analytics"
+              - "ad_member_company_size_analytics"
+              - "ad_member_country_analytics"
+              - "ad_member_job_function_analytics"
+              - "ad_member_job_title_analytics"
+              - "ad_member_industry_analytics"
+              - "ad_member_seniority_analytics"
+              - "ad_member_region_analytics"
+              - "ad_member_company_analytics"
+      2.0.0:
+        message:
+          This upgrade changes primary key for *-analytics streams from pivotValues[array
+          of strings] to string_of_pivot_values[string] so that it is compatible with
+          more destination types.
+        upgradeDeadline: "2024-05-14"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "ad_campaign_analytics"
+              - "ad_creative_analytics"
+              - "ad_impression_device_analytics"
+              - "ad_member_company_size_analytics"
+              - "ad_member_country_analytics"
+              - "ad_member_job_function_analytics"
+              - "ad_member_job_title_analytics"
+              - "ad_member_industry_analytics"
+              - "ad_member_seniority_analytics"
+              - "ad_member_region_analytics"
+              - "ad_member_company_analytics"
   suggestedStreams:
     streams:
       - accounts
@@ -37,4 +80,5 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:python
 metadataSpecVersion: "1.0"

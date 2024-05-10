@@ -64,19 +64,19 @@ For more information on Mailchimp API Keys, please refer to the [official Mailch
 The Mailchimp source connector supports the following streams and [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
 
 | Stream                                                                                                             | Full Refresh | Incremental |
-|:-------------------------------------------------------------------------------------------------------------------|:-------------|:------------|
-| [Automations](https://mailchimp.com/developer/marketing/api/automation/list-automations/)                          | ✓            | ✓          |
-| [Campaigns](https://mailchimp.com/developer/marketing/api/campaigns/get-campaign-info/)                            | ✓            | ✓          |
-| [Email Activity](https://mailchimp.com/developer/marketing/api/email-activity-reports/list-email-activity/)        | ✓            | ✓          |
+| :----------------------------------------------------------------------------------------------------------------- | :----------- | :---------- |
+| [Automations](https://mailchimp.com/developer/marketing/api/automation/list-automations/)                          | ✓            | ✓           |
+| [Campaigns](https://mailchimp.com/developer/marketing/api/campaigns/get-campaign-info/)                            | ✓            | ✓           |
+| [Email Activity](https://mailchimp.com/developer/marketing/api/email-activity-reports/list-email-activity/)        | ✓            | ✓           |
 | [Interests](https://mailchimp.com/developer/marketing/api/interests/list-interests-in-category/)                   | ✓            |             |
 | [Interest Categories](https://mailchimp.com/developer/marketing/api/interest-categories/list-interest-categories/) | ✓            |             |
-| [Lists](https://mailchimp.com/developer/api/marketing/lists/get-list-info)                                         | ✓            | ✓          |
-| [List Members](https://mailchimp.com/developer/marketing/api/list-members/list-members-info/)                      | ✓            | ✓          |
-| [Reports](https://mailchimp.com/developer/marketing/api/reports/list-campaign-reports/)                            | ✓            | ✓          |
-| [Segments](https://mailchimp.com/developer/marketing/api/list-segments/list-segments/)                             | ✓            | ✓          |
-| [Segment Members](https://mailchimp.com/developer/marketing/api/list-segment-members/list-members-in-segment/)     | ✓            | ✓          |
+| [Lists](https://mailchimp.com/developer/api/marketing/lists/get-list-info)                                         | ✓            | ✓           |
+| [List Members](https://mailchimp.com/developer/marketing/api/list-members/list-members-info/)                      | ✓            | ✓           |
+| [Reports](https://mailchimp.com/developer/marketing/api/reports/list-campaign-reports/)                            | ✓            | ✓           |
+| [Segments](https://mailchimp.com/developer/marketing/api/list-segments/list-segments/)                             | ✓            | ✓           |
+| [Segment Members](https://mailchimp.com/developer/marketing/api/list-segment-members/list-members-in-segment/)     | ✓            | ✓           |
 | [Tags](https://mailchimp.com/developer/marketing/api/lists-tags-search/search-for-tags-on-a-list-by-name/)         | ✓            |             |
-| [Unsubscribes](https://mailchimp.com/developer/marketing/api/unsub-reports/list-unsubscribed-members/)             | ✓            | ✓          |
+| [Unsubscribes](https://mailchimp.com/developer/marketing/api/unsub-reports/list-unsubscribed-members/)             | ✓            | ✓           |
 
 ### A note on primary keys
 
@@ -89,14 +89,14 @@ All other streams contain an `id` primary key.
 
 ## Data type mapping
 
-| Integration Type           | Airbyte Type              | Notes                                                                               |
-|:---------------------------|:--------------------------|:------------------------------------------------------------------------------------|
-| `array`                    | `array`                   | the type of elements in the array is determined based on the mappings in this table |
-| `string`                   | `string`                  |                                                                                     |
-| `float`, `number`          | `number`                  |                                                                                     |
-| `integer`                  | `integer`                 |                                                                                     |
-| `object`                   | `object`                  | properties within objects are mapped based on the mappings in this table            |
-| `string` (timestamp)       | `timestamp_with_timezone` | Mailchimp timestamps are formatted as `YYYY-MM-DDTHH:MM:SS+00:00`                   |
+| Integration Type     | Airbyte Type              | Notes                                                                               |
+| :------------------- | :------------------------ | :---------------------------------------------------------------------------------- |
+| `array`              | `array`                   | the type of elements in the array is determined based on the mappings in this table |
+| `string`             | `string`                  |                                                                                     |
+| `float`, `number`    | `number`                  |                                                                                     |
+| `integer`            | `integer`                 |                                                                                     |
+| `object`             | `object`                  | properties within objects are mapped based on the mappings in this table            |
+| `string` (timestamp) | `timestamp_with_timezone` | Mailchimp timestamps are formatted as `YYYY-MM-DDTHH:MM:SS+00:00`                   |
 
 ## Limitations & Troubleshooting
 
@@ -122,8 +122,14 @@ Now that you have set up the Mailchimp source connector, check out the following
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
-|---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------|
-| 1.1.1   | 2024-01-11 | [34157](https://github.com/airbytehq/airbyte/pull/34157) | Prepare for airbyte-lib                            |
+| ------- | ---------- | -------------------------------------------------------- | -------------------------------------------------------------------------- |
+| 2.0.3   | 2024-05-02 | [36649](https://github.com/airbytehq/airbyte/pull/36649) | Schema descriptions                                                        |
+| 2.0.2   | 2024-04-25 | [37572](https://github.com/airbytehq/airbyte/pull/37572) | Fixed `start_date` format issue for the `email_activity` stream            |
+| 2.0.1   | 2024-04-19 | [37434](https://github.com/airbytehq/airbyte/pull/37434) | Fixed cursor format for the `email_activity` stream                        |
+| 2.0.0   | 2024-04-01 | [35281](https://github.com/airbytehq/airbyte/pull/35281) | Migrate to Low-Code                                                        |
+| 1.2.0   | 2024-03-28 | [36600](https://github.com/airbytehq/airbyte/pull/36600) | Migrate to latest Airbyte-CDK.                                             |
+| 1.1.2   | 2024-02-09 | [35092](https://github.com/airbytehq/airbyte/pull/35092) | Manage dependencies with Poetry.                                           |
+| 1.1.1   | 2024-01-11 | [34157](https://github.com/airbytehq/airbyte/pull/34157) | Prepare for airbyte-lib                                                    |
 | 1.1.0   | 2023-12-20 | [32852](https://github.com/airbytehq/airbyte/pull/32852) | Add optional start_date for incremental streams                            |
 | 1.0.0   | 2023-12-19 | [32836](https://github.com/airbytehq/airbyte/pull/32836) | Add airbyte-type to `datetime` columns and remove `._links` column         |
 | 0.10.0  | 2023-11-23 | [32782](https://github.com/airbytehq/airbyte/pull/32782) | Add SegmentMembers stream                                                  |
@@ -155,7 +161,7 @@ Now that you have set up the Mailchimp source connector, check out the following
 | 0.2.6   | 2021-07-28 | [5024](https://github.com/airbytehq/airbyte/pull/5024)   | Source Mailchimp: handle records with no no "activity" field in response   |
 | 0.2.5   | 2021-07-08 | [4621](https://github.com/airbytehq/airbyte/pull/4621)   | Mailchimp fix url-base                                                     |
 | 0.2.4   | 2021-06-09 | [4285](https://github.com/airbytehq/airbyte/pull/4285)   | Use datacenter URL parameter from apikey                                   |
-| 0.2.3   | 2021-06-08 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add AIRBYTE\_ENTRYPOINT for Kubernetes support                             |
+| 0.2.3   | 2021-06-08 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add AIRBYTE_ENTRYPOINT for Kubernetes support                              |
 | 0.2.2   | 2021-06-08 | [3415](https://github.com/airbytehq/airbyte/pull/3415)   | Get Members activities                                                     |
 | 0.2.1   | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726)   | Fix base connector versioning                                              |
 | 0.2.0   | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238)   | Protocol allows future/unknown properties                                  |

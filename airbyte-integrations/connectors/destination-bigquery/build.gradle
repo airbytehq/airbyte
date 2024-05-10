@@ -1,15 +1,25 @@
 plugins {
-    id 'application'
     id 'airbyte-java-connector'
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.12.0'
-    features = ['db-destinations', 's3-destinations', 'typing-deduping']
+    cdkVersionRequired = '0.34.0'
+    features = [
+            'db-destinations',
+            'datastore-bigquery',
+            'typing-deduping',
+            'gcs-destinations',
+            'core',
+    ]
     useLocalCdk = false
 }
 
-airbyteJavaConnector.addCdkDependencies()
+java {
+    // TODO: rewrite code to avoid javac wornings in the first place
+    compileJava {
+        options.compilerArgs += "-Xlint:-this-escape"
+    }
+}
 
 application {
     mainClass = 'io.airbyte.integrations.destination.bigquery.BigQueryDestination'
@@ -26,37 +36,7 @@ application {
     ]
 }
 
-airbyteJavaConnector.addCdkDependencies()
-
 dependencies {
-    // TODO: Pull out common classes into CDK instead of depending on another destination
-    implementation project(':airbyte-integrations:connectors:destination-gcs')
-
-    implementation 'com.google.cloud:google-cloud-bigquery:2.31.1'
-    implementation 'org.apache.commons:commons-lang3:3.11'
-    implementation 'org.apache.commons:commons-csv:1.4'
+    implementation 'com.codepoetics:protonpack:1.13'
     implementation 'org.apache.commons:commons-text:1.10.0'
-
-    implementation group: 'com.google.cloud', name: 'google-cloud-storage', version: '2.4.5'
-    implementation group: 'com.codepoetics', name: 'protonpack', version: '1.13'
-
-    implementation (libs.airbyte.protocol) {
-        exclude group: 'io.airbyte', module: 'airbyte-commons'
-    }
-    // implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
-
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery')
-
-    // This dependency is required because GCSOperaitons is leaking S3Client interface to the BigQueryDestination.
-    implementation libs.aws.java.sdk.s3
-}
-
-configurations.all {
-  resolutionStrategy {
-    // at time of writing: deps.toml declares google-cloud-storage 2.17.2
-    // which pulls in google-api-client:2.2.0
-    // which conflicts with google-cloud-bigquery, which requires google-api-client:1.x
-    // google-cloud-storage is OK with downgrading to anything >=1.31.1.
-    force 'com.google.api-client:google-api-client:1.31.5'
-  }
 }

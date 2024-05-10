@@ -80,13 +80,21 @@ https://github.com/airbytehq/airbyte/issues/3549
 4. Enter the name for the BigQuery connector.
 5. For **Project ID**, enter your
    [Google Cloud project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects).
-6. For **Dataset Location**, select the location of your BigQuery dataset. :::warning You cannot
-   change the location later. :::
+6. For **Dataset Location**, select the location of your BigQuery dataset.
+
+:::warning
+You cannot change the location later.
+:::
+
 7. For **Default Dataset ID**, enter the BigQuery
    [Dataset ID](https://cloud.google.com/bigquery/docs/datasets#create-dataset).
 8. For **Loading Method**, select [Standard Inserts](#using-insert) or
-   [GCS Staging](#recommended-using-a-google-cloud-storage-bucket). :::tip We recommend using the
-   GCS Staging option. :::
+   [GCS Staging](#recommended-using-a-google-cloud-storage-bucket).
+
+:::tip
+We recommend using the GCS Staging option.
+:::
+
 9. For **Service Account Key JSON (Required for cloud, optional for open-source)**, enter the Google
    Cloud
    [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
@@ -95,11 +103,13 @@ https://github.com/airbytehq/airbyte/issues/3549
     or **batch** to have
     [BigQuery run batch queries](https://cloud.google.com/bigquery/docs/running-queries#batch).
 
-    :::note Interactive queries are executed as soon as possible and count towards daily concurrent
-    quotas and limits, while batch queries are executed as soon as idle resources are available in
-    the BigQuery shared resource pool. If BigQuery hasn't started the query within 24 hours,
-    BigQuery changes the job priority to interactive. Batch queries don't count towards your
-    concurrent rate limit, making it easier to start many queries at once. :::
+:::note
+Interactive queries are executed as soon as possible and count towards daily concurrent
+quotas and limits, while batch queries are executed as soon as idle resources are available in
+the BigQuery shared resource pool. If BigQuery hasn't started the query within 24 hours,
+BigQuery changes the job priority to interactive. Batch queries don't count towards your
+concurrent rate limit, making it easier to start many queries at once.
+:::
 
 11. For **Google BigQuery Client Chunk Size (Optional)**, use the default value of 15 MiB. Later, if
     you see networking or memory management problems with the sync (specifically on the
@@ -143,7 +153,7 @@ could be subject to change in future versions.
   misformatted or unexpected data. The column type in BigQuery is `JSON`. ... and a column of the
   proper data type for each of the top-level properties from your source's schema. Arrays and
   Objects will remain as JSON columns in BigQuery. Learn more about Typing and Deduping
-  [here](/understanding-airbyte/typing-deduping)
+  [here](/using-airbyte/core-concepts/typing-deduping)
 
 The output tables in BigQuery are partitioned by the Time-unit column `airbyte_extracted_at` at a
 daily granularity and clustered by `airbyte_extracted_at` and the table Primary Keys. Partitions
@@ -209,10 +219,29 @@ tutorials:
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
-|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.3.30  | 2024-01-12 | [34226](https://github.com/airbytehq/airbyte/pull/34226)   | Upgrade CDK to 0.12.0; Cleanup dependencies                                                                                                                     |
-| 2.3.29  | 2024-01-09 | [34003](https://github.com/airbytehq/airbyte/pull/34003)   | Fix loading credentials from GCP Env                                                                                                                            |
-| 2.3.28  | 2024-01-08 | [34021](https://github.com/airbytehq/airbyte/pull/34021)   | Add idempotency ids in dummy insert for check call                                                                                                              |
+| :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.4.17  | 2024-05-09 | [38098](https://github.com/airbytehq/airbyte/pull/38098)   | Internal build structure change                                                                                                                                 |
+| 2.4.16  | 2024-05-08 | [37714](https://github.com/airbytehq/airbyte/pull/37714)   | Adopt CDK 0.34.0                                                                                                                                                |
+| 2.4.15  | 2024-05-07 | [34611](https://github.com/airbytehq/airbyte/pull/34611)   | Adopt CDK 0.33.2                                                                                                                                                |
+| 2.4.14  | 2024-02-25 | [37584](https://github.com/airbytehq/airbyte/pull/37584)   | Remove unused insecure dependencies from CDK                                                                                                                    |
+| 2.4.13  | 2024-02-25 | [36899](https://github.com/airbytehq/airbyte/pull/36899)   | adopt latest CDK                                                                                                                                                |
+| 2.4.12  | 2024-03-04 | [35315](https://github.com/airbytehq/airbyte/pull/35315)   | Adopt CDK 0.23.11                                                                                                                                               |
+| 2.4.11  | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569)   | Fix logging bug.                                                                                                                                                |
+| 2.4.10  | 2024-02-15 | [35240](https://github.com/airbytehq/airbyte/pull/35240)   | Adopt CDK 0.20.9                                                                                                                                                |
+| 2.4.9   | 2024-02-15 | [35285](https://github.com/airbytehq/airbyte/pull/35285)   | Adopt CDK 0.20.8                                                                                                                                                |
+| 2.4.8   | 2024-02-12 | [35144](https://github.com/airbytehq/airbyte/pull/35144)   | Adopt CDK 0.20.2                                                                                                                                                |
+| 2.4.7   | 2024-02-12 | [35111](https://github.com/airbytehq/airbyte/pull/35111)   | Adopt CDK 0.20.1                                                                                                                                                |
+| 2.4.6   | 2024-02-09 | [34575](https://github.com/airbytehq/airbyte/pull/34575)   | Adopt CDK 0.20.0                                                                                                                                                |
+| 2.4.5   | 2024-02-08 | [34745](https://github.com/airbytehq/airbyte/pull/34745)   | Adopt CDK 0.19.0                                                                                                                                                |
+| 2.4.4   | 2024-02-08 | [35027](https://github.com/airbytehq/airbyte/pull/35027)   | Upgrade CDK to 0.17.1                                                                                                                                           |
+| 2.4.3   | 2024-02-01 | [34728](https://github.com/airbytehq/airbyte/pull/34728)   | Upgrade CDK to 0.16.4; Notable changes from 0.14.2, 0.15.1 and 0.16.3                                                                                           |
+| 2.4.2   | 2024-01-24 | [34451](https://github.com/airbytehq/airbyte/pull/34451)   | Improve logging for unparseable input                                                                                                                           |
+| 2.4.1   | 2024-01-24 | [34458](https://github.com/airbytehq/airbyte/pull/34458)   | Improve error reporting                                                                                                                                         |
+| 2.4.0   | 2024-01-24 | [34468](https://github.com/airbytehq/airbyte/pull/34468)   | Upgrade CDK to 0.14.0                                                                                                                                           |
+| 2.3.31  | 2024-01-22 | [\#34023](https://github.com/airbytehq/airbyte/pull/34023) | Combine DDL operations into a single execution                                                                                                                  |
+| 2.3.30  | 2024-01-12 | [\#34226](https://github.com/airbytehq/airbyte/pull/34226) | Upgrade CDK to 0.12.0; Cleanup dependencies                                                                                                                     |
+| 2.3.29  | 2024-01-09 | [\#34003](https://github.com/airbytehq/airbyte/pull/34003) | Fix loading credentials from GCP Env                                                                                                                            |
+| 2.3.28  | 2024-01-08 | [\#34021](https://github.com/airbytehq/airbyte/pull/34021) | Add idempotency ids in dummy insert for check call                                                                                                              |
 | 2.3.27  | 2024-01-05 | [\#33948](https://github.com/airbytehq/airbyte/pull/33948) | Skip retrieving initial table state when setup fails                                                                                                            |
 | 2.3.26  | 2024-01-04 | [\#33730](https://github.com/airbytehq/airbyte/pull/33730) | Internal code structure changes                                                                                                                                 |
 | 2.3.25  | 2023-12-20 | [\#33704](https://github.com/airbytehq/airbyte/pull/33704) | Update to java CDK 0.10.0 (no changes)                                                                                                                          |

@@ -11,13 +11,18 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
-  dockerImageTag: 3.3.1
+  dockerImageTag: 3.4.2
   dockerRepository: airbyte/source-google-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
   githubIssueLabel: source-google-ads
   icon: google-adwords.svg
   license: Elv2
+  maxSecondsBetweenMessages: 86400
   name: Google Ads
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-google-ads
   registries:
     cloud:
       enabled: true
@@ -40,9 +45,11 @@ data:
           upgrading to ensure uninterrupted syncs.
         upgradeDeadline: "2023-11-30"
       3.0.0:
-        message: Google is deprecating v13 of the Google Ads API in January.
-          This release upgrades the Google Ads API to the latest version (v15), which causes changes in several schemas.
-          Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs.
+        message:
+          Google is deprecating v13 of the Google Ads API in January. This
+          release upgrades the Google Ads API to the latest version (v15), which causes
+          changes in several schemas. Users should refresh the source schema and reset
+          affected streams after upgrading to ensure uninterrupted syncs.
         upgradeDeadline: "2024-01-12"
   suggestedStreams:
     streams:
@@ -65,4 +72,5 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:python
 metadataSpecVersion: "1.0"
