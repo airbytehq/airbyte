@@ -30,28 +30,28 @@ definitions:
   base_retriever:
     type: SimpleRetriever
     paginator:
-      $ref: '#/definitions/offset_increment_paginator'
+      $ref: "#/definitions/offset_increment_paginator"
     record_selector:
-      $ref: '#/definitions/selector'
+      $ref: "#/definitions/selector"
   requester:
     type: HttpRequester
     url_base: https://{{ config['domain_name'] }}/wiki/rest/api/
-    path: '{{ parameters.path }}'
+    path: "{{ parameters.path }}"
     http_method: GET
     authenticator:
       type: BasicHttpAuthenticator
-      username: '{{ config[''email''] }}'
-      password: '{{ config[''api_token''] }}'
+      username: "{{ config['email'] }}"
+      password: "{{ config['api_token'] }}"
     request_body_json: {}
     request_headers: {}
   base_stream:
     type: DeclarativeStream
   audit_stream:
-    $ref: '#/definitions/base_stream'
+    $ref: "#/definitions/base_stream"
     retriever:
-      $ref: '#/definitions/base_retriever'
+      $ref: "#/definitions/base_retriever"
       requester:
-        $ref: '#/definitions/requester'
+        $ref: "#/definitions/requester"
         request_parameters: {}
     primary_key: creationDate
     $parameters:
@@ -66,67 +66,67 @@ definitions:
         properties:
           author:
             type:
-              - 'null'
+              - "null"
               - object
             description: The user who triggered the audit event.
           remoteAddress:
             type:
-              - 'null'
+              - "null"
               - string
             description: The IP address from which the audit event originated.
           creationDate:
             type:
-              - 'null'
+              - "null"
               - integer
             description: The date and time when the audit event was created.
           summary:
             type:
-              - 'null'
+              - "null"
               - string
             description: A brief summary or title describing the audit event.
           description:
             type:
-              - 'null'
+              - "null"
               - string
             description: A detailed description of the audit event.
           category:
             type:
-              - 'null'
+              - "null"
               - string
             description: The category under which the audit event falls.
           sysAdmin:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: >-
               Indicates if the user triggering the audit event is a system
               admin.
           superAdmin:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: Indicates if the user triggering the audit event is a super admin.
           affectedObject:
             type:
-              - 'null'
+              - "null"
               - object
             description: The object that was affected by the audit event.
           changedValues:
             type:
-              - 'null'
+              - "null"
               - array
             description: Details of the values that were changed during the audit event.
           associatedObjects:
             type:
-              - 'null'
+              - "null"
               - array
             description: Any associated objects related to the audit event.
   blogposts_stream:
-    $ref: '#/definitions/base_stream'
+    $ref: "#/definitions/base_stream"
     retriever:
-      $ref: '#/definitions/base_retriever'
+      $ref: "#/definitions/base_retriever"
       requester:
-        $ref: '#/definitions/requester'
+        $ref: "#/definitions/requester"
         request_parameters:
           expand: >-
             ["history","history.lastUpdated","history.previousVersion","history.contributors","restrictions.read.restrictions.user","version","descendants.comment","body","body.storage","body.view",]
@@ -151,40 +151,40 @@ definitions:
                   type:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   accountId:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   email:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   publicName:
                     type:
                       - string
-                      - 'null'
+                      - "null"
               when:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 format: date-time
               friendlyWhen:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               message:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               number:
                 type:
                   - integer
-                  - 'null'
+                  - "null"
               minorEdit:
                 type:
                   - boolean
-                  - 'null'
+                  - "null"
               collaborators:
                 type: object
                 properties:
@@ -196,19 +196,19 @@ definitions:
                         type:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         accountId:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         email:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         publicName:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                   userKeys:
                     type: array
                     items:
@@ -237,19 +237,19 @@ definitions:
                   type:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   accountId:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   email:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   publicName:
                     type:
                       - string
-                      - 'null'
+                      - "null"
               createdDate:
                 type: string
                 description: Date and time when the blog post was created
@@ -269,19 +269,19 @@ definitions:
                             type:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                             accountId:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                             email:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                             publicName:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                       userKeys:
                         type: array
                         items:
@@ -295,40 +295,40 @@ definitions:
                       type:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       accountId:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       email:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       publicName:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                   when:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                     format: date-time
                   friendlyWhen:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   message:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   number:
                     type:
                       - integer
-                      - 'null'
+                      - "null"
                   minorEdit:
                     type:
                       - boolean
-                      - 'null'
+                      - "null"
                   collaborators:
                     type: object
                     properties:
@@ -340,19 +340,19 @@ definitions:
                             type:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                             accountId:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                             email:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                             publicName:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                       userKeys:
                         type: array
                         items:
@@ -389,7 +389,7 @@ definitions:
                   operations:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   restrictions:
                     user:
                       type: object
@@ -402,19 +402,19 @@ definitions:
                               type:
                                 type:
                                   - string
-                                  - 'null'
+                                  - "null"
                               accountId:
                                 type:
                                   - string
-                                  - 'null'
+                                  - "null"
                               email:
                                 type:
                                   - string
-                                  - 'null'
+                                  - "null"
                               publicName:
                                 type:
                                   - string
-                                  - 'null'
+                                  - "null"
           _expandable:
             type: object
             description: Expandable details related to the blog post container and space
@@ -438,11 +438,11 @@ definitions:
               webui:
                 type: string
   group_stream:
-    $ref: '#/definitions/base_stream'
+    $ref: "#/definitions/base_stream"
     retriever:
-      $ref: '#/definitions/base_retriever'
+      $ref: "#/definitions/base_retriever"
       requester:
-        $ref: '#/definitions/requester'
+        $ref: "#/definitions/requester"
         request_parameters: {}
     primary_key: id
     $parameters:
@@ -457,30 +457,30 @@ definitions:
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
             description: The type of group, indicating its category or classification.
           id:
             type:
-              - 'null'
+              - "null"
               - string
             description: The unique identifier of the group.
           name:
             type:
-              - 'null'
+              - "null"
               - string
             description: The name of the group.
           _links:
             type:
-              - 'null'
+              - "null"
               - object
             description: A collection of links related to the group entity.
   pages_stream:
-    $ref: '#/definitions/base_stream'
+    $ref: "#/definitions/base_stream"
     retriever:
-      $ref: '#/definitions/base_retriever'
+      $ref: "#/definitions/base_retriever"
       requester:
-        $ref: '#/definitions/requester'
+        $ref: "#/definitions/requester"
         request_parameters:
           expand: >-
             ["history","history.lastUpdated","history.previousVersion","history.contributors","restrictions.read.restrictions.user","version","descendants.comment","body","body.storage","body.view",]
@@ -505,40 +505,40 @@ definitions:
                   type:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   accountId:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   email:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   publicName:
                     type:
                       - string
-                      - 'null'
+                      - "null"
               when:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 format: date-time
               friendlyWhen:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               message:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               number:
                 type:
                   - integer
-                  - 'null'
+                  - "null"
               minorEdit:
                 type:
                   - boolean
-                  - 'null'
+                  - "null"
               collaborators:
                 type: object
                 properties:
@@ -550,19 +550,19 @@ definitions:
                         type:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         accountId:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         email:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         publicName:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                   userKeys:
                     type: array
                     items:
@@ -593,19 +593,19 @@ definitions:
                   type:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   accountId:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   email:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   publicName:
                     type:
                       - string
-                      - 'null'
+                      - "null"
               createdDate:
                 type: string
                 description: Date and time of creation
@@ -626,19 +626,19 @@ definitions:
                             type:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                             accountId:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                             email:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                             publicName:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                       userKeys:
                         type: array
                         items:
@@ -653,40 +653,40 @@ definitions:
                       type:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       accountId:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       email:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                       publicName:
                         type:
                           - string
-                          - 'null'
+                          - "null"
                   when:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                     format: date-time
                   friendlyWhen:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   message:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   number:
                     type:
                       - integer
-                      - 'null'
+                      - "null"
                   minorEdit:
                     type:
                       - boolean
-                      - 'null'
+                      - "null"
                   collaborators:
                     type: object
                     properties:
@@ -698,19 +698,19 @@ definitions:
                             type:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                             accountId:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                             email:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                             publicName:
                               type:
                                 - string
-                                - 'null'
+                                - "null"
                       userKeys:
                         type: array
                         items:
@@ -799,7 +799,7 @@ definitions:
                   operations:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   restrictions:
                     user:
                       type: object
@@ -812,19 +812,19 @@ definitions:
                               type:
                                 type:
                                   - string
-                                  - 'null'
+                                  - "null"
                               accountId:
                                 type:
                                   - string
-                                  - 'null'
+                                  - "null"
                               email:
                                 type:
                                   - string
-                                  - 'null'
+                                  - "null"
                               publicName:
                                 type:
                                   - string
-                                  - 'null'
+                                  - "null"
           _expandable:
             type: object
             description: Expandable URLs related to this page
@@ -852,11 +852,11 @@ definitions:
                 type: string
                 description: Web UI link
   space_stream:
-    $ref: '#/definitions/base_stream'
+    $ref: "#/definitions/base_stream"
     retriever:
-      $ref: '#/definitions/base_retriever'
+      $ref: "#/definitions/base_retriever"
       requester:
-        $ref: '#/definitions/requester'
+        $ref: "#/definitions/requester"
         request_parameters:
           expand: '["permissions","icon","description.plain","description.view"]'
     primary_key: id
@@ -872,61 +872,61 @@ definitions:
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
             description: Type/category of the space.
           id:
             type:
-              - 'null'
+              - "null"
               - integer
             description: Unique identifier for the space.
           key:
             type:
-              - 'null'
+              - "null"
               - string
             description: Key identifier for the space.
           name:
             type:
-              - 'null'
+              - "null"
               - string
             description: Name of the space.
           status:
             type:
-              - 'null'
+              - "null"
               - string
             description: Status information of the space.
           permissions:
             type:
-              - 'null'
+              - "null"
               - array
             description: Permissions related to the space.
           icon:
             type:
-              - 'null'
+              - "null"
               - object
             description: Icon representing the space.
           description:
             type:
-              - 'null'
+              - "null"
               - object
             description: Description of the space.
           _expandable:
             type:
-              - 'null'
+              - "null"
               - object
             description: Expandable information related to the space.
           _links:
             type:
-              - 'null'
+              - "null"
               - object
             description: Links associated with the space.
 
 streams:
-  - '#/definitions/audit_stream'
-  - '#/definitions/blogposts_stream'
-  - '#/definitions/group_stream'
-  - '#/definitions/pages_stream'
-  - '#/definitions/space_stream'
+  - "#/definitions/audit_stream"
+  - "#/definitions/blogposts_stream"
+  - "#/definitions/group_stream"
+  - "#/definitions/pages_stream"
+  - "#/definitions/space_stream"
 
 spec:
   type: Spec
