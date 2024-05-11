@@ -18,14 +18,14 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /ohlcv/{{ config['symbol_id'] }}/history
           http_method: GET
           request_parameters:
-            period_id: '{{ config[''period''] }}'
-            time_start: '{{ config[''start_date''] }}'
-            time_end: '{{ config[''end_date''] }}'
-            limit: '{{ config[''limit''] }}'
+            period_id: "{{ config['period'] }}"
+            time_start: "{{ config['start_date'] }}"
+            time_end: "{{ config['end_date'] }}"
+            limit: "{{ config['limit'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -34,7 +34,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/ohlcv_historical_data'
+          $ref: "#/schemas/ohlcv_historical_data"
     trades_historical_data:
       type: DeclarativeStream
       name: trades_historical_data
@@ -43,14 +43,14 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /trades/{{ config['symbol_id'] }}/history
           http_method: GET
           request_parameters:
-            period_id: '{{ config[''period''] }}'
-            time_start: '{{ config[''start_date''] }}'
-            time_end: '{{ config[''end_date''] }}'
-            limit: '{{ config[''limit''] }}'
+            period_id: "{{ config['period'] }}"
+            time_start: "{{ config['start_date'] }}"
+            time_end: "{{ config['end_date'] }}"
+            limit: "{{ config['limit'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -59,21 +59,21 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/trades_historical_data'
+          $ref: "#/schemas/trades_historical_data"
     quotes_historical_data:
       type: DeclarativeStream
       name: quotes_historical_data
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /quotes/{{ config['symbol_id'] }}/history
           http_method: GET
           request_parameters:
-            period_id: '{{ config[''period''] }}'
-            time_start: '{{ config[''start_date''] }}'
-            time_end: '{{ config[''end_date''] }}'
-            limit: '{{ config[''limit''] }}'
+            period_id: "{{ config['period'] }}"
+            time_start: "{{ config['start_date'] }}"
+            time_end: "{{ config['end_date'] }}"
+            limit: "{{ config['limit'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -82,7 +82,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/quotes_historical_data'
+          $ref: "#/schemas/quotes_historical_data"
   base_requester:
     type: HttpRequester
     url_base: >-
@@ -90,16 +90,16 @@ definitions:
       else 'https://rest-sandbox.coinapi.io/v1' }}
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
       inject_into:
         type: RequestOption
         field_name: X-CoinAPI-Key
         inject_into: header
 
 streams:
-  - $ref: '#/definitions/streams/ohlcv_historical_data'
-  - $ref: '#/definitions/streams/trades_historical_data'
-  - $ref: '#/definitions/streams/quotes_historical_data'
+  - $ref: "#/definitions/streams/ohlcv_historical_data"
+  - $ref: "#/definitions/streams/trades_historical_data"
+  - $ref: "#/definitions/streams/quotes_historical_data"
 
 spec:
   type: Spec
@@ -167,7 +167,6 @@ spec:
         maximum: 100000
         default: 100
 
-
 metadata:
   autoImportSchema:
     ohlcv_historical_data: false
@@ -181,31 +180,31 @@ schemas:
     properties:
       price_close:
         type:
-          - 'null'
+          - "null"
           - number
         description: The closing price of the asset during the specified time period.
       price_high:
         type:
-          - 'null'
+          - "null"
           - number
         description: >-
           The highest price of the asset reached during the specified time
           period.
       price_low:
         type:
-          - 'null'
+          - "null"
           - number
         description: >-
           The lowest price of the asset reached during the specified time
           period.
       price_open:
         type:
-          - 'null'
+          - "null"
           - number
         description: The opening price of the asset for the specified time period.
       time_close:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           The timestamp representing the closing time of the specified period
@@ -213,7 +212,7 @@ schemas:
         format: date-time
       time_open:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           The timestamp representing the opening time of the specified period
@@ -221,7 +220,7 @@ schemas:
         format: date-time
       time_period_end:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           The timestamp representing the end time of the specified time period
@@ -229,7 +228,7 @@ schemas:
         format: date-time
       time_period_start:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           The timestamp representing the start time of the specified time period
@@ -237,12 +236,12 @@ schemas:
         format: date-time
       trades_count:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The total number of trades executed during the specified time period.
       volume_traded:
         type:
-          - 'null'
+          - "null"
           - number
         description: The total volume of the asset traded during the specified time period.
     additionalProperties: true
@@ -252,45 +251,45 @@ schemas:
     properties:
       price:
         type:
-          - 'null'
+          - "null"
           - number
         description: The price at which the trade occurred.
       size:
         type:
-          - 'null'
+          - "null"
           - number
         description: The size or quantity of the trade.
       symbol_id:
         type:
-          - 'null'
+          - "null"
           - string
         description: The unique symbol identifier for the trade.
       taker_side:
         type:
-          - 'null'
+          - "null"
           - string
         description: The side of the trade representing the taker (e.g., buy or sell).
       time_coinapi:
         type:
-          - 'null'
+          - "null"
           - string
         description: The timestamp of the trade in the CoinAPI format.
         format: date-time
       time_exchange:
         type:
-          - 'null'
+          - "null"
           - string
         description: The timestamp of the trade in the exchange's native time format.
         format: date-time
       time_period_end:
         type:
-          - 'null'
+          - "null"
           - string
         description: The end timestamp of the time period to which the trade belongs.
         format: date-time
       uuid:
         type:
-          - 'null'
+          - "null"
           - string
         description: The universally unique identifier associated with the trade.
     additionalProperties: true
@@ -300,38 +299,38 @@ schemas:
     properties:
       ask_price:
         type:
-          - 'null'
+          - "null"
           - number
         description: The asking price for the specified symbol at the given time.
       ask_size:
         type:
-          - 'null'
+          - "null"
           - number
         description: The size of the ask order for the specified symbol at the given time.
       bid_price:
         type:
-          - 'null'
+          - "null"
           - number
         description: The bidding price for the specified symbol at the given time.
       bid_size:
         type:
-          - 'null'
+          - "null"
           - number
         description: The size of the bid order for the specified symbol at the given time.
       symbol_id:
         type:
-          - 'null'
+          - "null"
           - string
         description: A unique identifier for the symbol being quoted.
       time_coinapi:
         type:
-          - 'null'
+          - "null"
           - string
         description: The timestamp when the quote data was received by the CoinAPI service.
         format: date-time
       time_exchange:
         type:
-          - 'null'
+          - "null"
           - string
         description: The timestamp of when the quote data was received by the exchange.
         format: date-time
