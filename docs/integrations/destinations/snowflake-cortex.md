@@ -14,7 +14,7 @@ There are three parts to this:
 To use the Snowflake Cortex destination, you'll need:
 
 - An account with API access for OpenAI or Cohere (depending on which embedding method you want to use)
-- A Snowflake account with the required permissions to create tables and load data
+- A Snowflake account with support for vector type columns
 
 You'll need the following information to configure the destination:
 
@@ -24,7 +24,7 @@ You'll need the following information to configure the destination:
 - **Snowflake Password** - The password for your Snowflake account
 - **Snowflake Database** - The database name in Snowflake to load data into
 - **Snowflake Warehouse** - The warehouse name in Snowflake to use
-- **Snowflake Role** - The role name in Snowflake to use
+- **Snowflake Role** - The role name in Snowflake to use. 
 
 
 ## Features
@@ -69,12 +69,16 @@ For testing purposes, it's also possible to use the [Fake embeddings](https://py
 
 ### Indexing/Data Storage 
 
-To get started, sign up for [Snowflake](https://www.snowflake.com/en/). Ensure you have set a database, and a data wareshouse before running the Snowflake Cortex destination. All streams will be indexed/stored into a table with the same name. In addition. 
-TODO: add what columns are stored and limitations on sizes 
+To get started, sign up for [Snowflake](https://www.snowflake.com/en/). Ensure you have set a database, and a data wareshouse before running the Snowflake Cortex destination. All streams will be indexed/stored into a table with the same name. The table will be created if it doesn't exist. The table will have the following columns: 
+- document_id (string) - the unique identifier of the document, creating from appending the primary keys in the stream schema
+- chunk_id (string) - the unique identifier of the chunk, created by appending the chunk number to the document_id
+- metadata (variant) - the metadata of the document, stored as key-value pairs
+- page_content (string) - the text content of the chunk
+- embedding (vector) - the embedding of the chunk, stored as a list of floats
 
 
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.0.1 | 2024-05-06 | [#37333](https://github.com/airbytehq/airbyte/pull/36807) | Add support for Snowflake as a Vector destination.
+| 0.1.0 | 2024-05-13 | [#37333](https://github.com/airbytehq/airbyte/pull/36807) | Add support for Snowflake as a Vector destination.
