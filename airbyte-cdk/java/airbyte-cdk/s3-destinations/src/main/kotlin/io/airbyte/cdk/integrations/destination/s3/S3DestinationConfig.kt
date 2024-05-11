@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.destination.s3.constant.S3Constants
 import io.airbyte.cdk.integrations.destination.s3.credential.S3AWSDefaultProfileCredentialConfig
 import io.airbyte.cdk.integrations.destination.s3.credential.S3AccessKeyCredentialConfig
+import io.airbyte.cdk.integrations.destination.s3.credential.S3AssumeRoleCredentialConfig
 import io.airbyte.cdk.integrations.destination.s3.credential.S3CredentialConfig
 import io.airbyte.cdk.integrations.destination.s3.credential.S3CredentialType
 import java.util.*
@@ -342,6 +343,10 @@ open class S3DestinationConfig {
                     S3AccessKeyCredentialConfig(
                         getProperty(config, S3Constants.ACCESS_KEY_ID),
                         getProperty(config, S3Constants.SECRET_ACCESS_KEY)
+                    )
+                } else if (config.has(S3Constants.ROLE_ARN)) {
+                    S3AssumeRoleCredentialConfig(
+                        getProperty(config, S3Constants.ROLE_ARN)!!
                     )
                 } else {
                     S3AWSDefaultProfileCredentialConfig()

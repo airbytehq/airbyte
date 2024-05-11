@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.destination.s3.credential
 import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.auth.InstanceProfileCredentialsProvider
 
+// TODO: This is not called anywhere, can it be removed?
 class S3InstanceProfileCredentialConfig : S3CredentialConfig {
     override val credentialType: S3CredentialType
         get() = S3CredentialType.DEFAULT_PROFILE
