@@ -107,10 +107,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
-            name: group
-            path: group
           pagination_strategy:
             type: OffsetIncrement
+            page_size: 25
       schema_loader:
         type: InlineSchemaLoader
         schema:
