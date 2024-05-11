@@ -63,6 +63,7 @@ class SnowflakeInternalStagingSqlOperationsTest {
           skip_header = 0
           FIELD_OPTIONALLY_ENCLOSED_BY = '"'
           NULL_IF=('')
+          error_on_column_count_mismatch=false
         ) files = ('filename1','filename2');""";
     final String actualCopyQuery =
         snowflakeStagingSqlOperations.getCopyQuery(STAGE_NAME, STAGE_PATH, List.of("filename1", "filename2"), "tableName", SCHEMA_NAME);

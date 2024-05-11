@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import logging
 import unittest
 from unittest.mock import Mock
 
@@ -17,15 +17,18 @@ from airbyte_cdk.sources.streams.concurrent.adapters import (
     StreamPartitionGenerator,
 )
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE, StreamAvailable, StreamUnavailable
-from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, NoopCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 _ANY_SYNC_MODE = SyncMode.full_refresh
 _ANY_STATE = {"state_key": "state_value"}
 _ANY_CURSOR_FIELD = ["a", "cursor", "key"]
+_STREAM_NAME = "stream"
+_ANY_CURSOR = Mock(spec=Cursor)
 
 
 @pytest.mark.parametrize(
@@ -77,7 +80,7 @@ def test_stream_partition_generator(sync_mode):
     stream_slices = [{"slice": 1}, {"slice": 2}]
     stream.stream_slices.return_value = stream_slices
 
-    partition_generator = StreamPartitionGenerator(stream, message_repository, _ANY_SYNC_MODE, _ANY_CURSOR_FIELD, _ANY_STATE)
+    partition_generator = StreamPartitionGenerator(stream, message_repository, _ANY_SYNC_MODE, _ANY_CURSOR_FIELD, _ANY_STATE, _ANY_CURSOR)
 
     partitions = list(partition_generator.generate())
     slices = [partition.to_slice() for partition in partitions]
@@ -88,16 +91,21 @@ def test_stream_partition_generator(sync_mode):
 @pytest.mark.parametrize(
     "transformer, expected_records",
     [
-        pytest.param(TypeTransformer(TransformConfig.NoTransform), [Record({"data": "1"}), Record({"data": "2"})], id="test_no_transform"),
+        pytest.param(
+            TypeTransformer(TransformConfig.NoTransform),
+            [Record({"data": "1"}, _STREAM_NAME), Record({"data": "2"}, _STREAM_NAME)],
+            id="test_no_transform",
+        ),
         pytest.param(
             TypeTransformer(TransformConfig.DefaultSchemaNormalization),
-            [Record({"data": 1}), Record({"data": 2})],
+            [Record({"data": 1}, _STREAM_NAME), Record({"data": 2}, _STREAM_NAME)],
             id="test_default_transform",
         ),
     ],
 )
 def test_stream_partition(transformer, expected_records):
     stream = Mock()
+    stream.name = _STREAM_NAME
     stream.get_json_schema.return_value = {"type": "object", "properties": {"data": {"type": ["integer"]}}}
     stream.transformer = transformer
     message_repository = InMemoryMessageRepository()
@@ -105,7 +113,7 @@ def test_stream_partition(transformer, expected_records):
     sync_mode = SyncMode.full_refresh
     cursor_field = None
     state = None
-    partition = StreamPartition(stream, _slice, message_repository, sync_mode, cursor_field, state)
+    partition = StreamPartition(stream, _slice, message_repository, sync_mode, cursor_field, state, _ANY_CURSOR)
 
     a_log_message = AirbyteMessage(
         type=MessageType.LOG,
@@ -139,7 +147,7 @@ def test_stream_partition_raising_exception(exception_type, expected_display_mes
     message_repository = InMemoryMessageRepository()
     _slice = None
 
-    partition = StreamPartition(stream, _slice, message_repository, _ANY_SYNC_MODE, _ANY_CURSOR_FIELD, _ANY_STATE)
+    partition = StreamPartition(stream, _slice, message_repository, _ANY_SYNC_MODE, _ANY_CURSOR_FIELD, _ANY_STATE, _ANY_CURSOR)
 
     stream.read_records.side_effect = Exception()
 
@@ -159,7 +167,7 @@ def test_stream_partition_raising_exception(exception_type, expected_display_mes
 def test_stream_partition_hash(_slice, expected_hash):
     stream = Mock()
     stream.name = "stream"
-    partition = StreamPartition(stream, _slice, Mock(), _ANY_SYNC_MODE, _ANY_CURSOR_FIELD, _ANY_STATE)
+    partition = StreamPartition(stream, _slice, Mock(), _ANY_SYNC_MODE, _ANY_CURSOR_FIELD, _ANY_STATE, _ANY_CURSOR)
 
     _hash = partition.__hash__()
     assert _hash == expected_hash
@@ -176,10 +184,11 @@ class StreamFacadeTest(unittest.TestCase):
         )
         self._legacy_stream = Mock(spec=Stream)
         self._cursor = Mock(spec=Cursor)
-        self._facade = StreamFacade(self._abstract_stream, self._legacy_stream, self._cursor)
         self._logger = Mock()
+        self._slice_logger = Mock()
+        self._slice_logger.should_log_slice_message.return_value = False
+        self._facade = StreamFacade(self._abstract_stream, self._legacy_stream, self._cursor, self._slice_logger, self._logger)
         self._source = Mock()
-        self._max_workers = 10
 
         self._stream = Mock()
         self._stream.primary_key = "id"
@@ -206,12 +215,16 @@ class StreamFacadeTest(unittest.TestCase):
 
     def test_given_cursor_is_noop_when_supports_incremental_then_return_legacy_stream_response(self):
         assert (
-            StreamFacade(self._abstract_stream, self._legacy_stream, Mock(spec=NoopCursor)).supports_incremental
+            StreamFacade(
+                self._abstract_stream, self._legacy_stream, _ANY_CURSOR, Mock(spec=SliceLogger), Mock(spec=logging.Logger)
+            ).supports_incremental
             == self._legacy_stream.supports_incremental
         )
 
     def test_given_cursor_is_not_noop_when_supports_incremental_then_return_true(self):
-        assert StreamFacade(self._abstract_stream, self._legacy_stream, Mock(spec=Cursor)).supports_incremental
+        assert StreamFacade(
+            self._abstract_stream, self._legacy_stream, Mock(spec=Cursor), Mock(spec=SliceLogger), Mock(spec=logging.Logger)
+        ).supports_incremental
 
     def test_check_availability_is_delegated_to_wrapped_stream(self):
         availability = StreamAvailable()
@@ -221,28 +234,24 @@ class StreamFacadeTest(unittest.TestCase):
 
     def test_full_refresh(self):
         expected_stream_data = [{"data": 1}, {"data": 2}]
-        records = [Record(data) for data in expected_stream_data]
-        self._abstract_stream.read.return_value = records
+        records = [Record(data, "stream") for data in expected_stream_data]
+
+        partition = Mock()
+        partition.read.return_value = records
+        self._abstract_stream.generate_partitions.return_value = [partition]
 
         actual_stream_data = list(self._facade.read_records(SyncMode.full_refresh, None, None, None))
 
         assert actual_stream_data == expected_stream_data
 
-    def test_read_records_full_refresh(self):
+    def test_read_records(self):
         expected_stream_data = [{"data": 1}, {"data": 2}]
-        records = [Record(data) for data in expected_stream_data]
-        self._abstract_stream.read.return_value = records
+        records = [Record(data, "stream") for data in expected_stream_data]
+        partition = Mock()
+        partition.read.return_value = records
+        self._abstract_stream.generate_partitions.return_value = [partition]
 
-        actual_stream_data = list(self._facade.read_full_refresh(None, None, None))
-
-        assert actual_stream_data == expected_stream_data
-
-    def test_read_records_incremental(self):
-        expected_stream_data = [{"data": 1}, {"data": 2}]
-        records = [Record(data) for data in expected_stream_data]
-        self._abstract_stream.read.return_value = records
-
-        actual_stream_data = list(self._facade.read_incremental(None, None, None, None, None, None, None))
+        actual_stream_data = list(self._facade.read(None, None, None, None, None, None))
 
         assert actual_stream_data == expected_stream_data
 
@@ -252,7 +261,7 @@ class StreamFacadeTest(unittest.TestCase):
         stream.primary_key = "id"
         stream.cursor_field = "cursor"
 
-        facade = StreamFacade.create_from_stream(stream, self._source, self._logger, self._max_workers, _ANY_STATE, self._cursor)
+        facade = StreamFacade.create_from_stream(stream, self._source, self._logger, _ANY_STATE, self._cursor)
 
         assert facade.name == "stream"
         assert facade.cursor_field == "cursor"
@@ -264,8 +273,8 @@ class StreamFacadeTest(unittest.TestCase):
         stream.primary_key = None
         stream.cursor_field = []
 
-        facade = StreamFacade.create_from_stream(stream, self._source, self._logger, self._max_workers, _ANY_STATE, self._cursor)
-        facade._abstract_stream._primary_key is None
+        facade = StreamFacade.create_from_stream(stream, self._source, self._logger, _ANY_STATE, self._cursor)
+        assert facade._abstract_stream._primary_key == []
 
     def test_create_from_stream_with_composite_primary_key(self):
         stream = Mock()
@@ -273,15 +282,15 @@ class StreamFacadeTest(unittest.TestCase):
         stream.primary_key = ["id", "name"]
         stream.cursor_field = []
 
-        facade = StreamFacade.create_from_stream(stream, self._source, self._logger, self._max_workers, _ANY_STATE, self._cursor)
-        facade._abstract_stream._primary_key == ["id", "name"]
+        facade = StreamFacade.create_from_stream(stream, self._source, self._logger, _ANY_STATE, self._cursor)
+        assert facade._abstract_stream._primary_key == ["id", "name"]
 
     def test_create_from_stream_with_empty_list_cursor(self):
         stream = Mock()
         stream.primary_key = "id"
         stream.cursor_field = []
 
-        facade = StreamFacade.create_from_stream(stream, self._source, self._logger, self._max_workers, _ANY_STATE, self._cursor)
+        facade = StreamFacade.create_from_stream(stream, self._source, self._logger, _ANY_STATE, self._cursor)
 
         assert facade.cursor_field == []
 
@@ -291,7 +300,7 @@ class StreamFacadeTest(unittest.TestCase):
         stream.primary_key = [["field", "id"]]
 
         with self.assertRaises(ValueError):
-            StreamFacade.create_from_stream(stream, self._source, self._logger, self._max_workers, _ANY_STATE, self._cursor)
+            StreamFacade.create_from_stream(stream, self._source, self._logger, _ANY_STATE, self._cursor)
 
     def test_create_from_stream_raises_exception_if_primary_key_has_invalid_type(self):
         stream = Mock()
@@ -299,7 +308,7 @@ class StreamFacadeTest(unittest.TestCase):
         stream.primary_key = 123
 
         with self.assertRaises(ValueError):
-            StreamFacade.create_from_stream(stream, self._source, self._logger, self._max_workers, _ANY_STATE, self._cursor)
+            StreamFacade.create_from_stream(stream, self._source, self._logger, _ANY_STATE, self._cursor)
 
     def test_create_from_stream_raises_exception_if_cursor_field_is_nested(self):
         stream = Mock()
@@ -308,7 +317,7 @@ class StreamFacadeTest(unittest.TestCase):
         stream.cursor_field = ["field", "cursor"]
 
         with self.assertRaises(ValueError):
-            StreamFacade.create_from_stream(stream, self._source, self._logger, self._max_workers, _ANY_STATE, self._cursor)
+            StreamFacade.create_from_stream(stream, self._source, self._logger, _ANY_STATE, self._cursor)
 
     def test_create_from_stream_with_cursor_field_as_list(self):
         stream = Mock()
@@ -316,7 +325,7 @@ class StreamFacadeTest(unittest.TestCase):
         stream.primary_key = "id"
         stream.cursor_field = ["cursor"]
 
-        facade = StreamFacade.create_from_stream(stream, self._source, self._logger, self._max_workers, _ANY_STATE, self._cursor)
+        facade = StreamFacade.create_from_stream(stream, self._source, self._logger, _ANY_STATE, self._cursor)
         assert facade.cursor_field == "cursor"
 
     def test_create_from_stream_none_message_repository(self):
@@ -326,31 +335,31 @@ class StreamFacadeTest(unittest.TestCase):
         self._source.message_repository = None
 
         with self.assertRaises(ValueError):
-            StreamFacade.create_from_stream(self._stream, self._source, self._logger, self._max_workers, {}, self._cursor)
+            StreamFacade.create_from_stream(self._stream, self._source, self._logger, {}, self._cursor)
 
     def test_get_error_display_message_no_display_message(self):
         self._stream.get_error_display_message.return_value = "display_message"
 
-        facade = StreamFacade.create_from_stream(self._stream, self._source, self._logger, self._max_workers, _ANY_STATE, self._cursor)
+        facade = StreamFacade.create_from_stream(self._stream, self._source, self._logger, _ANY_STATE, self._cursor)
 
         expected_display_message = None
         e = Exception()
 
         display_message = facade.get_error_display_message(e)
 
-        assert expected_display_message == display_message
+        assert display_message == expected_display_message
 
     def test_get_error_display_message_with_display_message(self):
         self._stream.get_error_display_message.return_value = "display_message"
 
-        facade = StreamFacade.create_from_stream(self._stream, self._source, self._logger, self._max_workers, _ANY_STATE, self._cursor)
+        facade = StreamFacade.create_from_stream(self._stream, self._source, self._logger, _ANY_STATE, self._cursor)
 
         expected_display_message = "display_message"
         e = ExceptionWithDisplayMessage("display_message")
 
         display_message = facade.get_error_display_message(e)
 
-        assert expected_display_message == display_message
+        assert display_message == expected_display_message
 
 
 @pytest.mark.parametrize(
@@ -364,7 +373,7 @@ def test_get_error_display_message(exception, expected_display_message):
     stream = Mock()
     legacy_stream = Mock()
     cursor = Mock(spec=Cursor)
-    facade = StreamFacade(stream, legacy_stream, cursor)
+    facade = StreamFacade(stream, legacy_stream, cursor, Mock().Mock(), Mock())
 
     display_message = facade.get_error_display_message(exception)
 

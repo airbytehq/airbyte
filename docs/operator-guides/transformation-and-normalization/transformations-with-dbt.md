@@ -1,6 +1,14 @@
+---
+products: oss-*
+---
+
 # Transformations with dbt (Part 2/3)
 
-## Overview
+:::warning
+Normalization and Custom Transformation are deprecated features.
+Destinations using Normalization will be replaced by [Typing and Deduping](/using-airbyte/core-concepts/typing-deduping.md).
+Custom Transformation will be removed on March 31. For more information, visit [here](https://github.com/airbytehq/airbyte/discussions/34860).
+:::
 
 This tutorial will describe how to integrate SQL based transformations with Airbyte syncs using specialized transformation tool: dbt.
 
@@ -184,7 +192,7 @@ from {{ ref('covid_epidemiology_ab3_558') }}
 If you have [dbt installed](https://docs.getdbt.com/dbt-cli/installation/) locally on your machine, you can then view, edit, version, customize, and run the dbt models in your project outside Airbyte syncs.
 
 ```bash
-#!/usr/bin/env bash 
+#!/usr/bin/env bash
 
 dbt deps --profiles-dir=$NORMALIZE_DIR --project-dir=$NORMALIZE_DIR
 dbt run --profiles-dir=$NORMALIZE_DIR --project-dir=$NORMALIZE_DIR --full-refresh
@@ -215,4 +223,3 @@ Done. PASS=1 WARN=0 ERROR=0 SKIP=0 TOTAL=1
 Now, that you've exported the generated normalization models, you can edit and tweak them as necessary.
 
 If you want to know how to push your modifications back to Airbyte and use your updated dbt project during Airbyte syncs, you can continue with the following [tutorial on importing transformations into Airbyte](transformations-with-airbyte.md)...
-

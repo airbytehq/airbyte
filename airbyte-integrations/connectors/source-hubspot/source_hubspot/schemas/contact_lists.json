@@ -3,81 +3,115 @@
   "type": "object",
   "properties": {
     "parentId": {
+      "description": "The ID of the parent list, if applicable.",
       "type": ["null", "integer"]
     },
     "metaData": {
+      "description": "Additional metadata related to the fetched contact lists",
       "type": ["null", "object"],
       "properties": {
         "processing": {
+          "description": "Indicates if the list is currently being processed.",
           "type": ["null", "string"]
         },
         "size": {
+          "description": "The size of the contact list.",
           "type": ["null", "integer"]
         },
         "error": {
+          "description": "Any error associated with the contact list.",
           "type": ["null", "string"]
         },
         "lastProcessingStateChangeAt": {
+          "description": "The timestamp of the last processing state change.",
           "type": ["null", "integer"]
         },
         "lastSizeChangeAt": {
+          "description": "The timestamp of the last size change.",
+          "type": ["null", "integer"]
+        },
+        "listReferencesCount": {
+          "description": "The count of references to the list.",
+          "type": ["null", "integer"]
+        },
+        "parentFolderId": {
+          "description": "The ID of the parent folder containing the list.",
           "type": ["null", "integer"]
         }
       }
     },
     "metaData_processing": {
+      "description": "Processing status related to list metadata.",
       "type": ["null", "string"]
     },
     "metaData_size": {
+      "description": "Size of the list metadata.",
       "type": ["null", "integer"]
     },
     "metaData_error": {
+      "description": "Error information related to list metadata.",
       "type": ["null", "string"]
     },
     "metaData_lastProcessingStateChangeAt": {
+      "description": "Timestamp of the last processing state change for metadata.",
       "type": ["null", "integer"]
     },
     "metaData_lastSizeChangeAt": {
+      "description": "Timestamp of the last size change for metadata.",
       "type": ["null", "integer"]
     },
     "metaData_listReferencesCount": {
+      "description": "References count related to list metadata.",
       "type": ["null", "integer"]
     },
     "metaData_parentFolderId": {
+      "description": "Parent folder ID associated with list metadata.",
       "type": ["null", "integer"]
     },
     "dynamic": {
+      "description": "Identifies if the contact list is dynamic in nature.",
       "type": ["null", "boolean"]
     },
     "name": {
+      "description": "The name or title of the contact list.",
       "type": ["null", "string"]
     },
     "filters": {
+      "description": "Contains filter criteria to fetch contact lists",
       "type": ["null", "array"],
       "items": {
+        "description": "Individual filter items",
         "type": ["null", "array"],
         "items": {
+          "description": "Properties for each filter item",
           "type": ["null", "object"],
           "properties": {
             "filterFamily": {
+              "description": "The family to which the filter belongs.",
               "type": ["null", "string"]
             },
             "withinTimeMode": {
+              "description": "Specifies the time mode within which the filter operates.",
               "type": ["null", "string"]
             },
             "checkPastVersions": {
+              "description": "Specifies if past versions of the filter should be checked.",
               "type": ["null", "boolean"]
             },
             "type": {
+              "description": "The type of filter being used.",
               "type": ["null", "string"]
             },
             "property": {
+              "description": "The property on which the filter is applied.",
               "type": ["null", "string"]
             },
             "value": {
+              "description": "The specific value for the filter.",
               "type": ["null", "string"]
             },
             "operator": {
+              "description": "The operation performed by the filter.",
               "type": ["null", "string"]
             }
           }
@@ -85,45 +119,59 @@
       }
     },
     "ilsFilterBranch": {
+      "description": "Indicates the branch of the filter applied.",
       "type": ["null", "string"]
     },
     "internal": {
+      "description": "Specifies if the contact list is internal (not accessible to customers).",
       "type": ["null", "boolean"]
     },
     "authorId": {
+      "description": "The ID of the user who authored or created the contact list.",
       "type": ["null", "integer"]
     },
     "limitExempt": {
+      "description": "Specifies if any limits are exempted for the contact list.",
       "type": ["null", "boolean"]
     },
     "teamIds": {
+      "description": "The IDs of teams that have access to the contact list.",
       "type": ["null", "array"]
     },
     "portalId": {
+      "description": "The ID of the portal to which the contact list belongs.",
       "type": ["null", "integer"]
     },
     "createdAt": {
+      "description": "The timestamp when the contact list was created.",
       "type": ["null", "integer"]
     },
     "listId": {
+      "description": "The unique ID of the contact list.",
       "type": ["null", "integer"]
     },
     "updatedAt": {
+      "description": "The timestamp of the last update to the contact list.",
       "type": ["null", "integer"]
     },
     "internalListId": {
+      "description": "The internal ID of the contact list.",
       "type": ["null", "integer"]
     },
     "readOnly": {
+      "description": "Specifies if the list is read-only or not.",
       "type": ["null", "boolean"]
     },
     "deleteable": {
+      "description": "Specifies if the contact list can be deleted.",
       "type": ["null", "boolean"]
     },
     "listType": {
+      "description": "Specifies the type of list, e.g., static or dynamic.",
       "type": ["null", "string"]
     },
     "archived": {
+      "description": "Indicates if the contact list is archived or not.",
       "type": ["null", "boolean"]
     }
   }

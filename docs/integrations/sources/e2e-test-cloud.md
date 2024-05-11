@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a mock source for testing the Airbyte pipeline. It can generate arbitrary data streams. It is a subset of what is in [End-to-End Testing Source](e2e-test.md) in Open-Source to avoid Airbyte Cloud users accidentally in curring a huge bill.
+This is a mock source for testing the Airbyte pipeline. It can generate arbitrary data streams. It is a subset of what is in [End-to-End Testing Source](e2e-test.md) in Open Source to avoid Airbyte Cloud users accidentally in curring a huge bill.
 
 ## Mode
 
@@ -28,8 +28,9 @@ Here is its configuration:
 
 The OSS and Cloud variants have the same version number. The Cloud variant was initially released at version `1.0.0`.
 
-| Version | Date       | Pull request                                             | Notes                                               |
-|---------|------------|----------------------------------------------------------|-----------------------------------------------------|
+| Version | Date       | Pull request                                             | Subject                                             |
+| ------- | ---------- | -------------------------------------------------------- | --------------------------------------------------- |
+| 2.2.1   | 2024-02-13 | [35231](https://github.com/airbytehq/airbyte/pull/35231) | Adopt JDK 0.20.4.                                   |
 | 2.1.5   | 2023-10-06 | [31092](https://github.com/airbytehq/airbyte/pull/31092) | Bring in changes from oss                           |
 | 2.1.4   | 2023-03-01 | [23656](https://github.com/airbytehq/airbyte/pull/23656) | Fix inheritance between e2e-test and e2e-test-cloud |
 | 0.1.0   | 2021-07-23 | [9720](https://github.com/airbytehq/airbyte/pull/9720)   | Initial release.                                    |

@@ -46,7 +46,7 @@
                 "airbyte_secret": true
               },
               "access_token": {
-                "description": "Access token fot making authenticated requests.",
+                "description": "Access token for making authenticated requests.",
                 "title": "Access Token",
                 "type": "string",
                 "airbyte_secret": true

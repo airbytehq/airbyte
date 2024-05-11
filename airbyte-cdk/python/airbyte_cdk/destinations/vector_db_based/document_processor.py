@@ -12,9 +12,9 @@ from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigMode
 from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identifier
 from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
-from langchain.document_loaders.base import Document
 from langchain.text_splitter import Language, RecursiveCharacterTextSplitter
 from langchain.utils import stringify_dict
+from langchain_core.documents.base import Document
 
 METADATA_STREAM_FIELD = "_ab_stream"
 METADATA_RECORD_ID_FIELD = "_ab_record_id"
@@ -24,7 +24,7 @@ CDC_DELETED_FIELD = "_ab_cdc_deleted_at"
 
 @dataclass
 class Chunk:
-    page_content: str
+    page_content: Optional[str]
     metadata: Dict[str, Any]
     record: AirbyteRecordMessage
     embedding: Optional[List[float]] = None
@@ -74,6 +74,7 @@ class DocumentProcessor:
                 chunk_overlap=chunk_overlap,
                 separators=[json.loads(s) for s in splitter_config.separators],
                 keep_separator=splitter_config.keep_separator,
+                disallowed_special=(),
             )
         if splitter_config.mode == "markdown":
             return RecursiveCharacterTextSplitter.from_tiktoken_encoder(
@@ -82,12 +83,14 @@ class DocumentProcessor:
                 separators=headers_to_split_on[: splitter_config.split_level],
                 is_separator_regex=True,
                 keep_separator=True,
+                disallowed_special=(),
             )
         if splitter_config.mode == "code":
             return RecursiveCharacterTextSplitter.from_tiktoken_encoder(
                 chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap,
                 separators=RecursiveCharacterTextSplitter.get_separators_for_language(Language(splitter_config.language)),
+                disallowed_special=(),
             )
 
     def __init__(self, config: ProcessingConfigModel, catalog: ConfiguredAirbyteCatalog):

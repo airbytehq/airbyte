@@ -1,5 +1,19 @@
 # Courier
 
+:::warning
+
+## Deprecation Notice
+
+The Courier source connector is scheduled for deprecation on March 5th, 2024 due to incompatibility with upcoming platform updates as we prepare to launch Airbyte 1.0. This means it will no longer be supported or available for use in Airbyte.
+
+This connector does not support new per-stream features which are vital for ensuring data integrity in Airbyte's synchronization processes. Without these capabilities, we cannot enforce our standards of reliability and correctness for data syncing operations.
+
+### Recommended Actions
+
+Users who still wish to sync data from this connector are advised to explore creating a custom connector as an alternative to continue their data synchronization needs. For guidance, please visit our [Custom Connector documentation](https://docs.airbyte.com/connector-development/).
+
+:::
+
 This page contains the setup guide and reference information for the [Courier](https://www.courier.com/) source connector.
 
 ## Prerequisites

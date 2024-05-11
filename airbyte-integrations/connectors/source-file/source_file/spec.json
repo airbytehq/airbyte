@@ -20,6 +20,7 @@
           "jsonl",
           "excel",
           "excel_binary",
+          "fwf",
           "feather",
           "parquet",
           "yaml"

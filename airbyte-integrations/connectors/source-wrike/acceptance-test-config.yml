@@ -18,17 +18,13 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
         empty_streams:
           - name: comments
             bypass_reason: "Sandbox accounts dont have permission for accessing the stream"
-          - name: workflows
-            bypass_reason: "Sandbox accounts can't seed the stream"
-  # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
-  #        expect_records:
-  #          path: "integration_tests/expected_records.jsonl"
-  #          extra_fields: no
-  #          exact_order: no
-  #          extra_records: yes
+          - name: customfields
+            bypass_reason: "Sandbox accounts dont have permission for accessing the stream"
   incremental:
     bypass_reason: "This connector does not implement incremental sync"
   # TODO uncomment this block this block if your connector implements incremental sync:

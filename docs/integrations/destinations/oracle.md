@@ -26,7 +26,7 @@ Enabling normalization will also create normalized, strongly typed tables.
 
 The Oracle connector is currently in Alpha on Airbyte Cloud. Only TLS encrypted connections to your DB can be made from Airbyte Cloud. Other than that, follow the open-source instructions below.
 
-## Getting Started \(Airbyte Open-Source\)
+## Getting Started \(Airbyte Open Source\)
 
 #### Requirements
 
@@ -92,6 +92,7 @@ Airbyte has the ability to connect to the Oracle source with 3 network connectiv
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                             |
 | :---------- | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
+| 1.0.0       | 2024-04-11 | [\#36048](https://github.com/airbytehq/airbyte/pull/36048) | Removes Normalization, updates to V2 Raw Table Format                                               |
 | 0.2.0       | 2023-06-27 | [\#27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                |
 | 0.1.19      | 2022-07-26 | [\#10719](https://github.com/airbytehq/airbyte/pull/)      | Destination Oracle: added custom JDBC parameters support.                                           |
 | 0.1.18      | 2022-07-14 | [\#14618](https://github.com/airbytehq/airbyte/pull/14618) | Removed additionalProperties: false from JDBC destination connectors                                |

@@ -1,12 +1,21 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique ID of the invoice.",
       "type": ["null", "string"],
       "title": "Invoice ID",
       "readOnly": true,
       "maxLength": 13
+    },
+    "uuid": {
+      "description": "The universally unique identifier (UUID) of the invoice.",
+      "type": ["null", "string"]
+    },
+    "object": {
+      "description": "The type of object, in this case, an invoice.",
+      "type": ["null", "string"]
     },
     "type": {
       "title": "Invoice type",
@@ -21,25 +30,14 @@
       "maxLength": 256
     },
     "state": {
+      "description": "The current state of the invoice.",
       "title": "Invoice state",
       "type": ["null", "string"],
       "maxLength": 256
     },
     "account": {
-      "type": "object",
-      "title": "Account mini details",
-      "properties": {
-        "id": {
-          "type": ["null", "string"],
-          "maxLength": 13,
-          "readOnly": true
-        },
-        "code": {
-          "type": ["null", "string"],
-          "description": "The unique identifier of the account.",
-          "maxLength": 50
-        }
-      }
+      "description": "The account associated with the invoice.",
+      "$ref": "account_details.json"
     },
     "billing_info_id": {
       "type": ["null", "string"],
@@ -89,34 +87,41 @@
       "default": 0
     },
     "address": {
+      "description": "The address details related to the invoice recipient.",
       "type": ["null", "object"],
       "properties": {
         "name_on_account": {
+          "description": "The name on the account.",
           "type": ["null", "string"],
           "title": "Name on account",
           "maxLength": 256
         },
         "company": {
+          "description": "The company name in the address.",
           "type": ["null", "string"],
           "title": "Company",
           "maxLength": 256
         },
         "phone": {
+          "description": "The phone number associated with the address.",
           "type": ["null", "string"],
           "title": "Phone number",
           "maxLength": 256
         },
         "street1": {
+          "description": "The first line of the street address.",
           "type": ["null", "string"],
           "title": "Street 1",
           "maxLength": 256
         },
         "street2": {
+          "description": "The second line of the street address.",
           "type": ["null", "string"],
           "title": "Street 2",
           "maxLength": 256
         },
         "city": {
+          "description": "The city in the address.",
           "type": ["null", "string"],
           "title": "City",
           "maxLength": 256
@@ -140,19 +145,23 @@
           "maxLength": 2
         },
         "first_name": {
+          "description": "The first name of the recipient.",
           "type": ["null", "string"],
           "maxLength": 256
         },
         "last_name": {
+          "description": "The last name of the recipient.",
           "type": ["null", "string"],
           "maxLength": 256
         }
       }
     },
     "shipping_address": {
+      "description": "The shipping address details for the invoice delivery.",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "The ID of the shipping address.",
           "type": ["null", "string"],
           "title": "Shipping Address ID",
           "maxLength": 13,
@@ -209,6 +218,7 @@
       "description": "The outstanding balance remaining on this invoice."
     },
     "tax_info": {
+      "description": "Tax information related to the invoice.",
       "type": ["null", "object"],
       "title": "Tax info",
       "properties": {
@@ -224,6 +234,7 @@
           "description": "Provides the tax region applied on an invoice. For U.S. Sales Tax, this will be the 2 letter state code. For EU VAT this will be the 2 letter country code. For all country level tax types, this will display the regional tax, like VAT, GST, or PST."
         },
         "rate": {
+          "description": "The tax rate applied to the invoice.",
           "type": ["null", "number"],
           "format": "float",
           "title": "Rate"
@@ -264,6 +275,10 @@
         }
       }
     },
+    "used_tax_service": {
+      "description": "Indicates if a tax service was used for the invoice.",
+      "type": ["null", "boolean"]
+    },
     "vat_number": {
       "type": ["null", "string"],
       "title": "VAT number",
@@ -289,33 +304,26 @@
       "maxLength": 2048
     },
     "line_items": {
+      "description": "The line items included in the invoice.",
       "type": ["null", "array"],
       "title": "Line Items",
       "items": {
-        "type": ["null", "object"],
-        "title": "Line item",
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Line item ID",
-            "maxLength": 13
-          },
-          "uuid": {
-            "type": "string",
-            "title": "UUID",
-            "description": "The UUID is useful for matching data with the CSV exports and building URLs into Recurly's UI.",
-            "maxLength": 32
-          }
-        }
+        "$ref": "line_items.json"
       }
     },
+    "has_more_line_items": {
+      "description": "Indicates if there are more line items in the invoice.",
+      "type": ["null", "boolean"]
+    },
     "transactions": {
+      "description": "The transactions associated with the invoice.",
       "type": ["null", "array"],
       "title": "Transactions",
       "items": {
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "The ID of a transaction linked to the invoice.",
             "type": "string",
             "title": "Transaction ID",
             "maxLength": 13
@@ -330,12 +338,14 @@
       }
     },
     "credit_payments": {
+      "description": "The credit payments related to the invoice.",
       "type": ["null", "array"],
       "title": "Credit payments",
       "items": {
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "The ID of a credit payment associated with the invoice.",
             "type": "string",
             "title": "Credit Payment ID",
             "maxLength": 13
@@ -350,12 +360,14 @@
       }
     },
     "created_at": {
+      "description": "The date and time when the invoice was created.",
       "type": ["null", "string"],
       "format": "date-time",
       "title": "Created at",
       "readOnly": true
     },
     "updated_at": {
+      "description": "The date and time when the invoice was last updated.",
       "type": ["null", "string"],
       "format": "date-time",
       "title": "Last updated at",
@@ -378,6 +390,18 @@
       "title": "Dunning Campaign ID",
       "description": "Unique ID to identify the dunning campaign used when dunning the invoice. Available when the Dunning Campaigns feature is enabled. For sites without multiple dunning campaigns enabled, this will always be the default dunning campaign.",
       "maxLength": 256
+    },
+    "dunning_events_sent": {
+      "description": "The number of dunning events sent for the invoice.",
+      "type": ["null", "integer"]
+    },
+    "final_dunning_event": {
+      "description": "The final dunning event related to the invoice if applicable.",
+      "type": ["null", "boolean"]
+    },
+    "business_entity_id": {
+      "description": "The business entity ID linked to the invoice.",
+      "type": ["null", "string"]
     }
   }
 }

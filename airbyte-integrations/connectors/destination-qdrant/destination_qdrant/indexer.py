@@ -104,7 +104,8 @@ class QdrantIndexer(Indexer):
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]
             payload = chunk.metadata
-            payload[self.config.text_field] = chunk.page_content
+            if chunk.page_content is not None:
+                payload[self.config.text_field] = chunk.page_content
             entities.append(
                 models.Record(
                     id=str(uuid.uuid4()),

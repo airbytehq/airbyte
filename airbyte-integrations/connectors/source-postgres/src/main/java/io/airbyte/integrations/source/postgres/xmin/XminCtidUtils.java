@@ -10,6 +10,7 @@ import static io.airbyte.integrations.source.postgres.xmin.PostgresXminHandler.s
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.ctid.CtidUtils.CtidStreams;
 import io.airbyte.integrations.source.postgres.ctid.CtidUtils.StreamsCategorised;
@@ -72,7 +73,7 @@ public class XminCtidUtils {
               statesFromXminSync.add(stateMessage);
             }
           } else {
-            throw new RuntimeException("Unknown state type: " + streamState.get(STATE_TYPE_KEY).asText());
+            throw new ConfigErrorException("You've changed replication modes - please reset the streams in this connector");
           }
         } else {
           throw new RuntimeException("State type not present");
@@ -82,7 +83,7 @@ public class XminCtidUtils {
     }
 
     final List<ConfiguredAirbyteStream> newlyAddedIncrementalStreams =
-        identifyNewlyAddedStreams(fullCatalog, alreadySeenStreams, SyncMode.INCREMENTAL);
+        identifyNewlyAddedStreams(fullCatalog, alreadySeenStreams);
     final List<ConfiguredAirbyteStream> streamsForCtidSync = new ArrayList<>();
     fullCatalog.getStreams().stream()
         .filter(stream -> streamsStillInCtidSync.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))

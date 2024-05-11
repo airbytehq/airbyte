@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 import asyncclick as click
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.migrate_to_base_image.pipeline import run_connector_migration_to_base_image_pipeline
@@ -14,23 +15,28 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
     cls=DaggerPipelineCommand,
     short_help="Make the selected connectors use our base image: remove dockerfile, update metadata.yaml and update documentation.",
 )
-@click.argument("pull-request-number", type=str)
+@click.option("--pull-request-number", type=str, required=False, default=None)
 @click.pass_context
 async def migrate_to_base_image(
     ctx: click.Context,
-    pull_request_number: str,
+    pull_request_number: str | None,
 ) -> bool:
-    """Bump a connector version: update metadata.yaml, changelog and delete legacy files."""
+    """
+    Bump a connector version: update metadata.yaml, changelog and delete legacy files.
+    If the `PULL_REQUEST_NUMBER` is not provided, no changelog entry will be added.
+    """
 
     fail_if_missing_docker_hub_creds(ctx)
 
     connectors_contexts = [
         ConnectorContext(
-            pipeline_name=f"Upgrade base image versions of connector {connector.technical_name}",
+            pipeline_name=f"Upgrade connector {connector.technical_name} to use our base image",
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],
             git_revision=ctx.obj["git_revision"],
+            diffed_branch=ctx.obj["diffed_branch"],
+            git_repo_url=ctx.obj["git_repo_url"],
             ci_report_bucket=ctx.obj["ci_report_bucket_name"],
             report_output_prefix=ctx.obj["report_output_prefix"],
             use_remote_secrets=ctx.obj["use_remote_secrets"],

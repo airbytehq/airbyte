@@ -2,98 +2,70 @@
   "type": "object",
   "properties": {
     "account": {
-      "type": "object",
+      "description": "Details about the account associated with the cash balance data.",
+      "type": ["object", "null"],
       "properties": {
         "code": {
-          "type": "string",
-          "example": "ACCOUNT001",
-          "description": "Code that represents the account.",
-          "minLength": 1,
-          "maxLength": 12
+          "description": "The identifier code for the account.",
+          "type": ["string", "null"]
         },
         "statementIdentifier": {
-          "type": ["null", "string"],
-          "example": "Statement identifier",
-          "description": "Account Statement Identifier of the account.",
-          "minLength": 0,
-          "maxLength": 50
+          "description": "The identifier for the cash flow statement.",
+          "type": ["null", "string"]
         },
         "uuid": {
-          "type": "string",
-          "format": "uuid",
-          "example": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-          "description": "Unique internal identifier that represents the account."
+          "description": "The universally unique identifier for the account.",
+          "type": ["string", "null"]
         }
-      },
-      "title": "BK-BankAccountModel"
+      }
     },
     "cashBalance": {
-      "type": "array",
+      "type": ["array", "null"],
       "description": "Cash balance.",
       "items": {
-        "type": "object",
+        "type": ["object", "null"],
         "properties": {
           "amount": {
-            "type": "number",
-            "format": "double",
-            "example": -50000.0,
-            "description": "Cash balance amount of the selected date, Amount can be positive and negative."
+            "type": ["number", "null"]
           },
           "balanceDate": {
-            "type": "object",
+            "type": ["object", "null"],
             "properties": {
               "date": {
-                "type": "string",
-                "format": "date",
-                "example": "2020-05-25",
-                "description": "The date based on which the cash balance is calculated."
+                "type": ["string", "null"]
               },
               "dateType": {
-                "type": "string",
-                "example": "TRANSACTION",
-                "description": "The date type based on which the cash balance is calculated.",
-                "enum": ["TRANSACTION", "VALUE"]
+                "type": ["string", "null"]
               }
-            },
-            "title": "BK-BalanceDateModel"
+            }
           },
           "currencyCode": {
-            "type": "string",
-            "example": "EUR",
-            "description": "Currency code.",
-            "minLength": 1,
-            "maxLength": 3
+            "type": ["string", "null"]
           }
-        },
-        "title": "BK-CashBalanceModel"
+        }
       }
     },
     "cashFlowStatus": {
-      "type": "object",
+      "description": "The current status of cash flow.",
+      "type": ["object", "null"],
       "properties": {
         "actual": {
-          "type": "boolean",
-          "example": false,
-          "description": "Select the status Actual to calculate the cash balance."
+          "description": "The actual cash flow status.",
+          "type": ["boolean", "null"]
         },
         "confirmedForecasts": {
-          "type": "boolean",
-          "example": false,
-          "description": "Select the status Confirmed forecast to calculate the cash balance."
+          "description": "The confirmed cash flow forecasts.",
+          "type": ["boolean", "null"]
         },
         "estimatedForecasts": {
-          "type": "boolean",
-          "example": false,
-          "description": "Select the status Estimated forecast to calculate the cash balance."
+          "description": "The estimated cash flow forecasts.",
+          "type": ["boolean", "null"]
         },
         "intraday": {
-          "type": "boolean",
-          "example": false,
-          "description": "Select the status Intraday to calculate the cash balance."
+          "description": "The intraday cash balance status.",
+          "type": ["boolean", "null"]
         }
-      },
-      "title": "BK-CashFlowStatusModel",
-      "description": "Cash flow status."
+      }
     }
   },
   "title": "BK-AccountCashBalanceModel",

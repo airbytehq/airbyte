@@ -5,7 +5,7 @@
 import logging
 from http import HTTPStatus
 from itertools import chain
-from typing import Any, List, Mapping, Optional, Tuple
+from typing import Any, Generator, List, Mapping, Optional, Tuple
 
 import requests
 from airbyte_cdk.logger import AirbyteLogger
@@ -17,36 +17,59 @@ from source_hubspot.streams import (
     API,
     Campaigns,
     Companies,
+    CompaniesPropertyHistory,
+    CompaniesWebAnalytics,
     ContactLists,
     Contacts,
+    ContactsFormSubmissions,
     ContactsListMemberships,
     ContactsMergedAudit,
+    ContactsPropertyHistory,
+    ContactsWebAnalytics,
     CustomObject,
     DealPipelines,
     Deals,
     DealsArchived,
+    DealsPropertyHistory,
+    DealsWebAnalytics,
     EmailEvents,
     EmailSubscriptions,
     Engagements,
     EngagementsCalls,
+    EngagementsCallsWebAnalytics,
     EngagementsEmails,
+    EngagementsEmailsWebAnalytics,
     EngagementsMeetings,
+    EngagementsMeetingsWebAnalytics,
     EngagementsNotes,
+    EngagementsNotesWebAnalytics,
     EngagementsTasks,
+    EngagementsTasksWebAnalytics,
     Forms,
     FormSubmissions,
     Goals,
+    GoalsWebAnalytics,
     LineItems,
+    LineItemsWebAnalytics,
     MarketingEmails,
     Owners,
     OwnersArchived,
     Products,
-    PropertyHistory,
+    ProductsWebAnalytics,
     SubscriptionChanges,
     TicketPipelines,
     Tickets,
+    TicketsWebAnalytics,
+    WebAnalyticsStream,
     Workflows,
 )
+
+"""
+https://github.com/airbytehq/oncall/issues/3800
+we use start date 2006-01-01  as date of creation of Hubspot to retrieve all data if start date was not provided
+
+"""
+DEFAULT_START_DATE = "2006-06-01T00:00:00Z"
 
 
 class SourceHubspot(AbstractSource):
@@ -89,10 +112,12 @@ class SourceHubspot(AbstractSource):
         return API(credentials=credentials)
 
     def get_common_params(self, config) -> Mapping[str, Any]:
-        start_date = config["start_date"]
+        start_date = config.get("start_date", DEFAULT_START_DATE)
         credentials = config["credentials"]
         api = self.get_api(config=config)
-        return dict(api=api, start_date=start_date, credentials=credentials)
+        # Additional configuration is necessary for testing certain streams due to their specific restrictions.
+        acceptance_test_config = config.get("acceptance_test_config", {})
+        return dict(api=api, start_date=start_date, credentials=credentials, acceptance_test_config=acceptance_test_config)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         credentials = config.get("credentials", {})
@@ -102,6 +127,7 @@ class SourceHubspot(AbstractSource):
             Companies(**common_params),
             ContactLists(**common_params),
             Contacts(**common_params),
+            ContactsFormSubmissions(**common_params),
             ContactsListMemberships(**common_params),
             ContactsMergedAudit(**common_params),
             DealPipelines(**common_params),
@@ -123,12 +149,34 @@ class SourceHubspot(AbstractSource):
             Owners(**common_params),
             OwnersArchived(**common_params),
             Products(**common_params),
-            PropertyHistory(**common_params),
+            ContactsPropertyHistory(**common_params),
+            CompaniesPropertyHistory(**common_params),
+            DealsPropertyHistory(**common_params),
             SubscriptionChanges(**common_params),
             Tickets(**common_params),
             TicketPipelines(**common_params),
             Workflows(**common_params),
         ]
+
+        enable_experimental_streams = "enable_experimental_streams" in config and config["enable_experimental_streams"]
+
+        if enable_experimental_streams:
+            streams.extend(
+                [
+                    ContactsWebAnalytics(**common_params),
+                    CompaniesWebAnalytics(**common_params),
+                    DealsWebAnalytics(**common_params),
+                    TicketsWebAnalytics(**common_params),
+                    EngagementsCallsWebAnalytics(**common_params),
+                    EngagementsEmailsWebAnalytics(**common_params),
+                    EngagementsMeetingsWebAnalytics(**common_params),
+                    EngagementsNotesWebAnalytics(**common_params),
+                    EngagementsTasksWebAnalytics(**common_params),
+                    GoalsWebAnalytics(**common_params),
+                    LineItemsWebAnalytics(**common_params),
+                    ProductsWebAnalytics(**common_params),
+                ]
+            )
 
         api = API(credentials=credentials)
         if api.is_oauth2():
@@ -149,7 +197,15 @@ class SourceHubspot(AbstractSource):
             self.logger.info("No scopes to grant when authenticating with API key.")
             available_streams = streams
 
-        available_streams.extend(self.get_custom_object_streams(api=api, common_params=common_params))
+        custom_object_streams = list(self.get_custom_object_streams(api=api, common_params=common_params))
+        available_streams.extend(custom_object_streams)
+
+        if enable_experimental_streams:
+            custom_objects_web_analytics_streams = self.get_web_analytics_custom_objects_stream(
+                custom_object_stream_instances=custom_object_streams,
+                common_params=common_params,
+            )
+            available_streams.extend(custom_objects_web_analytics_streams)
 
         return available_streams
 
@@ -162,3 +218,24 @@ class SourceHubspot(AbstractSource):
                 custom_properties=custom_properties,
                 **common_params,
             )
+
+    def get_web_analytics_custom_objects_stream(
+        self, custom_object_stream_instances: List[CustomObject], common_params: Any
+    ) -> Generator[WebAnalyticsStream, None, None]:
+        for custom_object_stream_instance in custom_object_stream_instances:
+
+            def __init__(self, **kwargs: Any):
+                parent = custom_object_stream_instance.__class__(
+                    entity=custom_object_stream_instance.entity,
+                    schema=custom_object_stream_instance.schema,
+                    fully_qualified_name=custom_object_stream_instance.fully_qualified_name,
+                    custom_properties=custom_object_stream_instance.custom_properties,
+                    **common_params,
+                )
+                super(self.__class__, self).__init__(parent=parent, **kwargs)
+
+            custom_web_analytics_stream_class = type(
+                f"{custom_object_stream_instance.name.capitalize()}WebAnalytics", (WebAnalyticsStream,), {"__init__": __init__}
+            )
+
+            yield custom_web_analytics_stream_class(**common_params)

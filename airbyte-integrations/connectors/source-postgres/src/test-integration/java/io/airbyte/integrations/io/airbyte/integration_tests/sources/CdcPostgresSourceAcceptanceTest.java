@@ -8,14 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.cdk.testutils.PostgresTestDatabase;
-import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -39,61 +37,32 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
   protected static final String NAMESPACE = "public";
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
-  protected static final int INITIAL_WAITING_SECONDS = 30;
 
   protected PostgresTestDatabase testdb;
-  protected JsonNode config;
-  protected String slotName;
-  protected String publication;
-
-  @Override
-  protected FeatureFlags featureFlags() {
-    return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
-  }
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = PostgresTestDatabase.make(getServerImageName(), "withConf");
-    slotName = testdb.withSuffix("debezium_slot");
-    publication = testdb.withSuffix("publication");
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "CDC")
-        .put("replication_slot", slotName)
-        .put("publication", publication)
-        .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
-        .build());
-
-    config = Jsons.jsonNode(testdb.makeConfigBuilder()
-        .put(JdbcUtils.SCHEMAS_KEY, List.of(NAMESPACE))
-        .put("replication_method", replicationMethod)
-        .put(JdbcUtils.SSL_KEY, false)
-        .put("is_test", true)
-        .build());
-
-    testdb.database.query(ctx -> {
-      ctx.execute("CREATE TABLE id_and_name(id INTEGER  primary key, name VARCHAR(200));");
-      ctx.execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-      ctx.execute("CREATE TABLE starships(id INTEGER primary key, name VARCHAR(200));");
-      ctx.execute("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-      ctx.execute("SELECT pg_create_logical_replication_slot('" + slotName + "', 'pgoutput');");
-      ctx.execute("CREATE PUBLICATION " + publication + " FOR ALL TABLES;");
-      return null;
-    });
+    testdb = PostgresTestDatabase.in(getServerImage(), ContainerModifier.CONF)
+        .with("CREATE TABLE id_and_name(id INTEGER  primary key, name VARCHAR(200));")
+        .with("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');")
+        .with("CREATE TABLE starships(id INTEGER primary key, name VARCHAR(200));")
+        .with("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');")
+        .withReplicationSlot()
+        .withPublicationForAllTables();
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
-    testdb.database.query(ctx -> {
-      ctx.execute("SELECT pg_drop_replication_slot('" + slotName + "');");
-      ctx.execute("DROP PUBLICATION " + publication + " CASCADE;");
-      return null;
-    });
     testdb.close();
   }
 
   @Override
   protected JsonNode getConfig() {
-    return config;
+    return testdb.integrationTestConfigBuilder()
+        .withSchemas(NAMESPACE)
+        .withoutSsl()
+        .withCdcReplication()
+        .build();
   }
 
   @Override
@@ -194,8 +163,8 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
         .isEmpty(), "Records contain unselected columns [%s:%s]".formatted(stream, field));
   }
 
-  protected String getServerImageName() {
-    return "postgres:16-bullseye";
+  protected BaseImage getServerImage() {
+    return BaseImage.POSTGRES_16;
   }
 
 }

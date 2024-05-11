@@ -20,6 +20,8 @@ public class MongoDbCdcProperties {
   static final String HEARTBEAT_INTERVAL_KEY = "heartbeat.interval.ms";
   static final String SNAPSHOT_MODE_KEY = "snapshot.mode";
   static final String SNAPSHOT_MODE_VALUE = "never";
+  static final String CAPTURE_SCOPE_KEY = "capture.scope";
+  static final String CAPTURE_SCOPE_VALUE = "database";
   static final String TOMBSTONE_ON_DELETE_KEY = "tombstones.on.delete";
   static final String TOMBSTONE_ON_DELETE_VALUE = Boolean.FALSE.toString();
 
@@ -33,6 +35,7 @@ public class MongoDbCdcProperties {
 
     props.setProperty(CONNECTOR_CLASS_KEY, CONNECTOR_CLASS_VALUE);
     props.setProperty(SNAPSHOT_MODE_KEY, SNAPSHOT_MODE_VALUE);
+    props.setProperty(CAPTURE_SCOPE_KEY, CAPTURE_SCOPE_VALUE);
     props.setProperty(CAPTURE_MODE_KEY, CAPTURE_MODE_VALUE);
     props.setProperty(HEARTBEAT_INTERVAL_KEY, HEARTBEAT_FREQUENCY_MS);
     props.setProperty(TOMBSTONE_ON_DELETE_KEY, TOMBSTONE_ON_DELETE_VALUE);

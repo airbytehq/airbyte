@@ -34,16 +34,18 @@ You can follow the steps laid out below to create the application and obtain the
 
 1. [Log in to LinkedIn](https://developer.linkedin.com/) with a developer account.
 2. Navigate to the [Apps page](https://www.linkedin.com/developers/apps) and click the **Create App** icon. Fill in the fields below:
-    1. For **App Name**, enter a name.
-    2. For **LinkedIn Page**, enter your company's name or LinkedIn Company Page URL.
-    3. For **Privacy policy URL**, enter the link to your company's privacy policy.
-    4. For **App logo**, upload your company's logo.
-    5. Check **I have read and agree to these terms**, then click **Create App**. LinkedIn redirects you to a page showing the details of your application.
+
+   1. For **App Name**, enter a name.
+   2. For **LinkedIn Page**, enter your company's name or LinkedIn Company Page URL.
+   3. For **Privacy policy URL**, enter the link to your company's privacy policy.
+   4. For **App logo**, upload your company's logo.
+   5. Check **I have read and agree to these terms**, then click **Create App**. LinkedIn redirects you to a page showing the details of your application.
 
 3. You can verify your app using the following steps:
-    1. Click the **Settings** tab. On the **App Settings** section, click **Verify** under **Company**. A popup window will be displayed. To generate the verification URL, click on **Generate URL**, then copy and send the URL to the Page Admin (this may be you). Click on **I'm done**. If you are the administrator of your Page, simply run the URL in a new tab (if not, an administrator will have to do the next step). Click on **Verify**.
 
-    2. To display the Products page, click the **Product** tab. For **Marketing Developer Platform**, click **Request access**. A popup window will be displayed. Review and Select **I have read and agree to these terms**. Finally, click **Request access**.
+   1. Click the **Settings** tab. On the **App Settings** section, click **Verify** under **Company**. A popup window will be displayed. To generate the verification URL, click on **Generate URL**, then copy and send the URL to the Page Admin (this may be you). Click on **I'm done**. If you are the administrator of your Page, simply run the URL in a new tab (if not, an administrator will have to do the next step). Click on **Verify**.
+
+   2. To display the Products page, click the **Product** tab. For **Marketing Developer Platform**, click **Request access**. A popup window will be displayed. Review and Select **I have read and agree to these terms**. Finally, click **Request access**.
 
 #### Authorize your app
 
@@ -52,11 +54,11 @@ You can follow the steps laid out below to create the application and obtain the
 2. Click the **OAuth 2.0 tools** link in the **Understanding authentication and OAuth 2.0** section on the right side of the page.
 3. Click **Create token**.
 4. Select the scopes you want to use for your app. We recommend using the following scopes:
-    - `r_emailaddress`
-    - `r_liteprofile`
-    - `r_ads`
-    - `r_ads_reporting`
-    - `r_organization_social`
+   - `r_emailaddress`
+   - `r_liteprofile`
+   - `r_ads`
+   - `r_ads_reporting`
+   - `r_organization_social`
 5. Click **Request access token**. You will be redirected to an authorization page. Use your LinkedIn credentials to log in and authorize your app and obtain your **Access Token** and **Refresh Token**.
 
 :::caution
@@ -78,18 +80,20 @@ If either of your tokens expire, you can generate new ones by returning to Linke
 5. To authenticate:
 
 <!-- env:cloud -->
+
 #### For Airbyte Cloud
 
 - Select **OAuth2.0** from the Authentication dropdown, then click **Authenticate your LinkedIn Ads account**. Sign in to your account and click **Allow**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 #### For Airbyte Open Source
 
 - Select an option from the Authentication dropdown:
   1. **OAuth2.0:** Enter your **Client ID**, **Client Secret** and **Refresh Token**. Please note that the refresh token expires after 12 months.
   2. **Access Token:** Enter your **Access Token**. Please note that the access token expires after 60 days.
-<!-- /env:oss -->
+  <!-- /env:oss -->
 
 6. For **Start Date**, use the provided datepicker or enter a date programmatically in the format YYYY-MM-DD. Any data before this date will not be replicated.
 7. (Optional) For **Account IDs**, you may optionally provide a space separated list of Account IDs to pull data from. If you do not specify any account IDs, the connector will replicate data from all accounts accessible using your credentials.
@@ -135,7 +139,7 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 
 :::info
 
-For Analytics Streams such as `Ad Analytics by Campaign` and `Ad Analytics by Creative`, the `pivot` column name is renamed to `_pivot` to handle the data normalization correctly and avoid name conflicts with certain destinations.
+For Ad Analytics Streams such as `Ad Analytics by Campaign` and `Ad Analytics by Creative`, the `pivot` column name is renamed to `pivotValue` to handle the data normalization correctly and avoid name conflicts with certain destinations. This field contains the ID of the associated entity as a [URN](https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts/urns). Please refer to the [LinkedIn documentation](https://learn.microsoft.com/en-us/linkedin/marketing/urn-resolution?view=li-lms-2023-05) for the format of the URN value for the Ad Analytics streams.
 
 :::
 
@@ -158,7 +162,7 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 ## Data type map
 
 | Integration Type | Airbyte Type | Notes                       |
-|:-----------------|:-------------|:----------------------------|
+| :--------------- | :----------- | :-------------------------- |
 | `number`         | `number`     | float number                |
 | `integer`        | `integer`    | whole number                |
 | `date`           | `string`     | FORMAT YYYY-MM-DD           |
@@ -170,8 +174,20 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
-| 0.6.4 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| 2.1.2   | 2024-05-07 | [36648](https://github.com/airbytehq/airbyte/pull/36648) | Schema descriptions                                                                                             |
+| 2.1.1   | 2024-05-07 | [38013](https://github.com/airbytehq/airbyte/pull/38013) | Fix an issue where the `Accounts` stream did not correctly handle provided account IDs                          |
+| 2.1.0   | 2024-04-30 | [37573](https://github.com/airbytehq/airbyte/pull/37573) | Update API version to `202404`; add cursor-based pagination                                                     |
+| 2.0.0   | 2024-04-24 | [37531](https://github.com/airbytehq/airbyte/pull/37531) | Change primary key for Analytics Streams                                                                        |
+| 1.0.1   | 2024-03-28 | [34152](https://github.com/airbytehq/airbyte/pull/34152) | Proceed pagination if return less than expected                                                                 |
+| 1.0.0   | 2024-04-10 | [36927](https://github.com/airbytehq/airbyte/pull/36927) | Update primary key for Analytics Streams                                                                        |
+| 0.8.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                                 |
+| 0.7.0   | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures                                                        |
+| 0.6.8   | 2024-02-09 | [35086](https://github.com/airbytehq/airbyte/pull/35086) | Manage dependencies with Poetry                                                                                 |
+| 0.6.7   | 2024-01-11 | [34152](https://github.com/airbytehq/airbyte/pull/34152) | Prepare for airbyte-lib                                                                                         |
+| 0.6.6   | 2024-01-15 | [34222](https://github.com/airbytehq/airbyte/pull/34222) | Use stream slices for Analytics streams                                                                         |
+| 0.6.5   | 2023-12-15 | [33530](https://github.com/airbytehq/airbyte/pull/33530) | Fix typo in `Pivot Category` list                                                                               |
+| 0.6.4   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                 |
 | 0.6.3   | 2023-10-13 | [31396](https://github.com/airbytehq/airbyte/pull/31396) | Fix pagination for reporting                                                                                    |
 | 0.6.2   | 2023-08-23 | [31221](https://github.com/airbytehq/airbyte/pull/31221) | Increase max time between messages to 24 hours                                                                  |
 | 0.6.1   | 2023-08-23 | [29600](https://github.com/airbytehq/airbyte/pull/29600) | Update field descriptions                                                                                       |
@@ -185,8 +201,8 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 | 0.1.16  | 2023-05-24 | [26512](https://github.com/airbytehq/airbyte/pull/26512) | Removed authSpecification from spec.json in favour of advancedAuth                                              |
 | 0.1.15  | 2023-02-13 | [22940](https://github.com/airbytehq/airbyte/pull/22940) | Specified date formatting in specification                                                                      |
 | 0.1.14  | 2023-02-03 | [22361](https://github.com/airbytehq/airbyte/pull/22361) | Turn on default HttpAvailabilityStrategy                                                                        |
-| 0.1.13  | 2023-01-27 | [22013](https://github.com/airbytehq/airbyte/pull/22013) | for adDirectSponsoredContents stream skip accounts which are part of organization                               |
-| 0.1.12  | 2022-10-18 | [18111](https://github.com/airbytehq/airbyte/pull/18111) | for adDirectSponsoredContents stream skip accounts which are part of organization                               |
+| 0.1.13  | 2023-01-27 | [22013](https://github.com/airbytehq/airbyte/pull/22013) | For adDirectSponsoredContents stream skip accounts which are part of organization                               |
+| 0.1.12  | 2022-10-18 | [18111](https://github.com/airbytehq/airbyte/pull/18111) | For adDirectSponsoredContents stream skip accounts which are part of organization                               |
 | 0.1.11  | 2022-10-07 | [17724](https://github.com/airbytehq/airbyte/pull/17724) | Retry 429/5xx errors when refreshing access token                                                               |
 | 0.1.10  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                                                   |
 | 0.1.9   | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas                                                                |

@@ -9,9 +9,9 @@ data:
   name: Rockset
   registries:
     cloud:
-      enabled: false # hide Rockset Destination https://github.com/airbytehq/airbyte-cloud/issues/2615
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/rockset
   tags:
@@ -19,5 +19,5 @@ data:
   ab_internal:
     sl: 100
     ql: 100
-  supportLevel: community
+  supportLevel: archived
 metadataSpecVersion: "1.0"

@@ -4,62 +4,95 @@
   "type": ["null", "object"],
   "properties": {
     "title": {
+      "description": "Title of the attribute definition.",
       "type": ["null", "string"]
     },
     "subject": {
+      "description": "Subject or topic of this attribute definition.",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "Data type of the attribute.",
       "type": ["null", "string"]
     },
     "group": {
+      "description": "The group to which this attribute definition belongs.",
       "type": ["null", "string"]
     },
     "nullable": {
+      "description": "Indicates if this attribute definition can be null.",
       "type": ["null", "boolean"]
     },
     "repeatable": {
+      "description": "Specifies if this attribute definition can be repeated.",
       "type": ["null", "boolean"]
     },
     "operators": {
+      "description": "List of operators allowed for this attribute definition.",
       "type": ["null", "array"],
       "items": {
+        "description": "Operator details.",
         "type": ["null", "object"],
         "properties": {
           "value": {
+            "description": "Value associated with the operator.",
             "type": ["null", "string"]
           },
           "title": {
+            "description": "Title/name of the operator.",
             "type": ["null", "string"]
           },
           "terminal": {
+            "description": "Whether the operator is terminal or not.",
             "type": ["null", "boolean"]
           }
         }
       }
     },
     "values": {
+      "description": "List of values available for this attribute definition.",
       "type": ["null", "array"],
       "items": {
+        "description": "Value details.",
         "type": ["null", "object"],
         "properties": {
           "value": {
+            "description": "Actual value.",
             "type": ["null", "string"]
           },
           "title": {
+            "description": "Title/name of the value.",
             "type": ["null", "string"]
           },
           "enabled": {
+            "description": "Whether the value is enabled or disabled.",
             "type": ["null", "boolean"]
           }
         }
       }
     },
     "condition": {
+      "description": "The condition that needs to be met for this attribute definition.",
       "type": ["null", "string"]
     },
     "confition": {
+      "description": "Missing field description, please add.",
       "type": ["null", "string"]
+    },
+    "metadata": {
+      "description": "Additional metadata related to this attribute definition.",
+      "type": ["null", "object"],
+      "properties": {
+        "collection_key": {
+          "description": "Key for the collection associated with this metadata.",
+          "type": ["null", "string"]
+        },
+        "item_key": {
+          "description": "Key for the item associated with this metadata.",
+          "type": ["null", "string"]
+        }
+      },
+      "additionalProperties": true
     }
   }
 }

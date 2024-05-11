@@ -7,7 +7,7 @@ from logging import Logger
 from types import ModuleType
 from typing import List, Optional
 
-from connector_ops.utils import Connector
+from connector_ops.utils import Connector  # type: ignore
 from dagger import Container
 
 BUILD_CUSTOMIZATION_MODULE_NAME = "build_customization"
@@ -21,11 +21,17 @@ def get_build_customization_module(connector: Connector) -> Optional[ModuleType]
         Optional[ModuleType]: The build_customization.py module if it exists, None otherwise.
     """
     build_customization_spec_path = connector.code_directory / BUILD_CUSTOMIZATION_SPEC_NAME
-    if not build_customization_spec_path.exists():
+
+    if not build_customization_spec_path.exists() or not (
+        build_customization_spec := importlib.util.spec_from_file_location(
+            f"{connector.code_directory.name}_{BUILD_CUSTOMIZATION_MODULE_NAME}", build_customization_spec_path
+        )
+    ):
         return None
-    build_customization_spec = importlib.util.spec_from_file_location(
-        f"{connector.code_directory.name}_{BUILD_CUSTOMIZATION_MODULE_NAME}", build_customization_spec_path
-    )
+
+    if build_customization_spec.loader is None:
+        return None
+
     build_customization_module = importlib.util.module_from_spec(build_customization_spec)
     build_customization_spec.loader.exec_module(build_customization_module)
     return build_customization_module
@@ -41,9 +47,12 @@ def get_main_file_name(connector: Connector) -> str:
         str: The main file name.
     """
     build_customization_module = get_build_customization_module(connector)
-    if hasattr(build_customization_module, "MAIN_FILE_NAME"):
-        return build_customization_module.MAIN_FILE_NAME
-    return DEFAULT_MAIN_FILE_NAME
+
+    return (
+        build_customization_module.MAIN_FILE_NAME
+        if build_customization_module and hasattr(build_customization_module, "MAIN_FILE_NAME")
+        else DEFAULT_MAIN_FILE_NAME
+    )
 
 
 def get_entrypoint(connector: Connector) -> List[str]:
@@ -64,7 +73,7 @@ async def pre_install_hooks(connector: Connector, base_container: Container, log
         Container: The mutated base_container.
     """
     build_customization_module = get_build_customization_module(connector)
-    if hasattr(build_customization_module, "pre_connector_install"):
+    if build_customization_module and hasattr(build_customization_module, "pre_connector_install"):
         base_container = await build_customization_module.pre_connector_install(base_container)
         logger.info(f"Connector {connector.technical_name} pre install hook executed.")
     return base_container
@@ -83,7 +92,7 @@ async def post_install_hooks(connector: Connector, connector_container: Containe
         Container: The mutated connector_container.
     """
     build_customization_module = get_build_customization_module(connector)
-    if hasattr(build_customization_module, "post_connector_install"):
+    if build_customization_module and hasattr(build_customization_module, "post_connector_install"):
         connector_container = await build_customization_module.post_connector_install(connector_container)
         logger.info(f"Connector {connector.technical_name} post install hook executed.")
     return connector_container

@@ -1,40 +1,56 @@
 {
   "properties": {
+    "account_id": {
+      "description": "The unique identifier for the account associated with the activity.",
+      "type": ["null", "string"]
+    },
     "actor_id": {
+      "description": "The unique identifier for the actor (user/page) who performed the activity.",
       "type": ["null", "string"]
     },
     "actor_name": {
+      "description": "The name of the actor (user/page) who performed the activity.",
       "type": ["null", "string"]
     },
     "application_id": {
+      "description": "The unique identifier for the application involved in the activity.",
       "type": ["null", "string"]
     },
     "application_name": {
+      "description": "The name of the application involved in the activity.",
       "type": ["null", "string"]
     },
     "date_time_in_timezone": {
+      "description": "The date and time of the activity adjusted to the timezone.",
       "type": ["null", "string"]
     },
     "event_time": {
+      "description": "The exact date and time when the activity occurred.",
       "type": "string",
       "format": "date-time"
     },
     "event_type": {
+      "description": "The type of event/action performed in the activity.",
       "type": ["null", "string"]
     },
     "extra_data": {
+      "description": "Additional data associated with the activity.",
       "type": ["null", "string"]
     },
     "object_id": {
+      "description": "The unique identifier for the object (post/ad/etc.) related to the activity.",
       "type": ["null", "string"]
     },
     "object_name": {
+      "description": "The name/label of the object related to the activity.",
       "type": ["null", "string"]
     },
     "object_type": {
+      "description": "The type/category of the object related to the activity.",
       "type": ["null", "string"]
     },
     "translated_event_type": {
+      "description": "The translated or localized version of the event type.",
       "type": ["null", "string"]
     }
   },

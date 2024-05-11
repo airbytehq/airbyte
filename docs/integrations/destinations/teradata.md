@@ -26,7 +26,7 @@ You'll need the following information to configure the Teradata destination:
 
 Each stream will be output into its own table in Teradata. Each table will contain 3 columns:
 
-- `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in Teradata is `VARCHAR(256)`.
+- `_airbyte_ab_id`: a unique uuid assigned by Airbyte to each event that is processed. This is the primary index column. The column type in Teradata is `VARCHAR(256)`.
 - `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Teradata is `TIMESTAMP(6)`.
 - `_airbyte_data`: a json blob representing with the event data. The column type in Teradata is `JSON`.
 
@@ -84,9 +84,11 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 ## CHANGELOG
 
-| Version | Date       | Pull Request                                    | Subject                          |
-| :------ | :--------- | :---------------------------------------------- | :------------------------------- |
-| 0.1.3   | 2023-08-17 | https://github.com/airbytehq/airbyte/pull/30740 | Enable custom DBT transformation |
-| 0.1.2   | 2023-08-09 | https://github.com/airbytehq/airbyte/pull/29174 | Small internal refactor          |
-| 0.1.1   | 2023-03-03 | https://github.com/airbytehq/airbyte/pull/21760 | Added SSL support                |
-| 0.1.0   | 2022-12-13 | https://github.com/airbytehq/airbyte/pull/20428 | New Destination Teradata Vantage |
+| Version | Date       | Pull Request                                    | Subject                                                  |
+| :------ | :--------- | :---------------------------------------------- | :------------------------------------------------------- |
+| 0.1.5   | 2024-01-12 | https://github.com/airbytehq/airbyte/pull/33872 | Added Primary Index on \_airbyte_ab_id to fix NoPI issue |
+| 0.1.4   | 2023-12-04 | https://github.com/airbytehq/airbyte/pull/28667 | Make connector available on Airbyte Cloud                |
+| 0.1.3   | 2023-08-17 | https://github.com/airbytehq/airbyte/pull/30740 | Enable custom DBT transformation                         |
+| 0.1.2   | 2023-08-09 | https://github.com/airbytehq/airbyte/pull/29174 | Small internal refactor                                  |
+| 0.1.1   | 2023-03-03 | https://github.com/airbytehq/airbyte/pull/21760 | Added SSL support                                        |
+| 0.1.0   | 2022-12-13 | https://github.com/airbytehq/airbyte/pull/20428 | New Destination Teradata Vantage                         |

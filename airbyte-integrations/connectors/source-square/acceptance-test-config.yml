@@ -32,17 +32,6 @@ acceptance_tests:
             bypass_reason: "Not able to fill stream"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-        ignored_fields:
-          items:
-            - name: version
-              bypass_reason: "Floating data"
-            - name: updated_at
-              bypass_reason: "Floating data"
-          categories:
-            - name: version
-              bypass_reason: "Floating data"
-            - name: updated_at
-              bypass_reason: "Floating data"
         fail_on_extra_columns: false
   incremental:
     tests:

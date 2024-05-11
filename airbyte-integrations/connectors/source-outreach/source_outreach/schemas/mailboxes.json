@@ -4,195 +4,251 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier for the mailbox.",
       "type": "integer"
     },
     "authId": {
+      "description": "Unique identifier for authentication purposes.",
       "type": ["null", "integer"]
     },
     "createdAt": {
+      "description": "Timestamp indicating the creation date and time of the mailbox.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "editable": {
+      "description": "Flag to indicate whether the mailbox is editable.",
       "type": ["null", "boolean"]
     },
     "email": {
+      "description": "Email address associated with the mailbox.",
       "type": ["null", "string"]
     },
     "emailHash": {
+      "description": "Hashed version of the email address for security or identification purposes.",
       "type": ["null", "string"]
     },
     "emailProvider": {
+      "description": "Provider of the email service.",
       "type": ["null", "string"]
     },
     "emailSignature": {
+      "description": "Signature to be included in outgoing emails from the mailbox.",
       "type": ["null", "string"]
     },
     "ewsCustomSearchFolder": {
+      "description": "Custom search folder configuration for Exchange Web Services.",
       "type": ["null", "boolean"]
     },
     "ewsDelegateSync": {
+      "description": "Delegate synchronization settings for Exchange Web Services.",
       "type": ["null", "boolean"]
     },
     "ewsEndpoint": {
+      "description": "Endpoint URL for Exchange Web Services.",
       "type": ["null", "string"]
     },
     "ewsImpersonation": {
+      "description": "Impersonation settings for Exchange Web Services.",
       "type": ["null", "boolean"]
     },
     "ewsSslVerifyMode": {
+      "description": "SSL verification mode for Exchange Web Services.",
       "type": ["null", "integer"]
     },
     "exchangeVersion": {
+      "description": "Version of Exchange server associated with the mailbox.",
       "type": ["null", "string"]
     },
     "imapHost": {
+      "description": "IMAP server host for the mailbox.",
       "type": ["null", "string"]
     },
     "imapPort": {
+      "description": "Port number for IMAP server connection.",
       "type": ["null", "integer"]
     },
     "imapSsl": {
+      "description": "Flag indicating whether SSL is used for IMAP connection.",
       "type": ["null", "boolean"]
     },
     "maxEmailsPerDay": {
+      "description": "Maximum number of emails allowed to be sent per day.",
       "type": ["null", "integer"]
     },
     "maxMailingsPerDay": {
+      "description": "Maximum number of mailings allowed per day.",
       "type": ["null", "integer"]
     },
     "maxMailingsPerWeek": {
+      "description": "Maximum number of mailings allowed per week.",
       "type": ["null", "integer"]
     },
     "optOutMessage": {
+      "description": "Message to be included in opt-out emails from the mailbox.",
       "type": ["null", "string"]
     },
     "optOutSignature": {
+      "description": "Signature to be included in opt-out emails from the mailbox.",
       "type": ["null", "string"]
     },
     "prospectEmailExclusions": {
+      "description": "List of prospect email exclusions for the mailbox.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "providerId": {
+      "description": "Identifier for the email service provider.",
       "type": ["null", "integer"]
     },
     "providerType": {
+      "description": "Type of email service provider.",
       "type": ["null", "string"]
     },
     "sendDisabled": {
+      "description": "Flag indicating whether sending emails is disabled for the mailbox.",
       "type": ["null", "boolean"]
     },
     "sendErroredAt": {
+      "description": "Timestamp indicating the date and time of sending error.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "sendMaxRetries": {
+      "description": "Maximum number of retries allowed for sending emails.",
       "type": ["null", "integer"]
     },
     "sendMethod": {
+      "description": "Method used for sending emails.",
       "type": ["null", "string"]
     },
     "sendPeriod": {
+      "description": "Sending period configuration for emails.",
       "type": ["null", "integer"]
     },
     "sendPermanentErrorAt": {
+      "description": "Timestamp indicating the date and time of a permanent sending error.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "sendRequiresSync": {
+      "description": "Flag indicating whether email sending requires synchronization.",
       "type": ["null", "boolean"]
     },
     "sendSuccessAt": {
+      "description": "Timestamp indicating the date and time of successful email sending.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "sendThreshold": {
+      "description": "Threshold setting for sending emails.",
       "type": ["null", "integer"]
     },
     "sendgridWebhookUrl": {
+      "description": "Webhook URL for SendGrid service.",
       "type": ["null", "string"]
     },
     "smtpHost": {
+      "description": "SMTP server host for the mailbox.",
       "type": ["null", "string"]
     },
     "smtpPort": {
+      "description": "Port number for SMTP server connection.",
       "type": ["null", "integer"]
     },
     "smtpSsl": {
+      "description": "Flag indicating whether SSL is used for SMTP connection.",
       "type": ["null", "boolean"]
     },
     "smtpUsername": {
+      "description": "Username for SMTP server authentication.",
       "type": ["null", "string"]
     },
     "syncActiveFrequency": {
+      "description": "Frequency of active synchronization for the mailbox.",
       "type": ["null", "integer"]
     },
     "syncDisabled": {
+      "description": "Flag indicating whether synchronization is disabled for the mailbox.",
       "type": ["null", "boolean"]
     },
     "syncErroredAt": {
+      "description": "Timestamp indicating the date and time of synchronization error.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "syncFinishedAt": {
+      "description": "Timestamp indicating the date and time of synchronization completion.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "syncMethod": {
+      "description": "Method used for synchronization.",
       "type": ["null", "string"]
     },
     "syncOutreachFolder": {
+      "description": "Outreach folder for synchronization.",
       "type": ["null", "boolean"]
     },
     "syncPassiveFrequency": {
+      "description": "Frequency of passive synchronization for the mailbox.",
       "type": ["null", "integer"]
     },
     "syncPermanentErrorAt": {
+      "description": "Timestamp indicating the date and time of a permanent synchronization error.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "syncSuccessAt": {
+      "description": "Timestamp indicating the date and time of successful synchronization.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "Timestamp indicating the last update date and time of the mailbox.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "userId": {
+      "description": "Identifier of the user associated with the mailbox.",
       "type": ["null", "integer"]
     },
     "username": {
+      "description": "Username associated with the mailbox.",
       "type": ["null", "string"]
     },
     "creator": {
+      "description": "Information about the user who created the mailbox.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "mailAliases": {
+      "description": "List of email aliases associated with the mailbox.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "mailings": {
+      "description": "List of mailings associated with the mailbox.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "updater": {
+      "description": "Information about the user who last updated the mailbox.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "user": {
+      "description": "Information about the user associated with the mailbox.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]

@@ -15,26 +15,18 @@ There are two flavors of connectors for this destination:
 | Namespaces                     | Yes                  |       |
 | SSH Tunnel Connection          | Yes                  |       |
 
-#### Output Schema
-
-Each stream will be output into its own table in MySQL. Each table will contain 3 columns:
-
-- `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in MySQL is `VARCHAR(256)`.
-- `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in MySQL is `TIMESTAMP(6)`.
-- `_airbyte_data`: a json blob representing with the event data. The column type in MySQL is `JSON`.
-
 ## Getting Started \(Airbyte Cloud\)
 
 Airbyte Cloud only supports connecting to your MySQL instance with TLS encryption. Other than that, you can proceed with the open-source instructions below.
 
-## Getting Started \(Airbyte Open-Source\)
+## Getting Started \(Airbyte Open Source\)
 
 ### Requirements
 
 To use the MySQL destination, you'll need:
 
-- To sync data to MySQL **with** normalization MySQL database 8.0.0 or above
-- To sync data to MySQL **without** normalization you'll need MySQL 5.0 or above.
+- To sync data to MySQL **with** typing and deduping: MySQL database 8.0.0 or above
+- To sync data to MySQL **without** typing and deduping: MySQL 5.0 or above.
 
 #### Troubleshooting
 
@@ -116,6 +108,9 @@ Using this feature requires additional configuration, when creating the destinat
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
+| 1.0.0   | 2024-04-26 | [37322](https://github.com/airbytehq/airbyte/pull/37322) | Remove normalization and upgrade to DV2 output format                                               |
+| 0.3.1   | 2024-04-12 | [36926](https://github.com/airbytehq/airbyte/pull/36926) | Upgrade to Kotlin CDK                                                                               |
+| 0.3.0   | 2023-12-18 | [33468](https://github.com/airbytehq/airbyte/pull/33468) | Upgrade to latest Java CDK                                                                          |
 | 0.2.0   | 2023-06-27 | [27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                |
 | 0.1.21  | 2022-09-14 | [15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage                                                                      |
 | 0.1.20  | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors                                              |

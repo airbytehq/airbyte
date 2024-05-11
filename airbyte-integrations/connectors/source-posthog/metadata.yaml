@@ -9,13 +9,17 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: af6d50ee-dddf-4126-a8ee-7faee990774f
-  dockerImageTag: 0.1.15
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-posthog
   documentationUrl: https://docs.airbyte.com/integrations/sources/posthog
   githubIssueLabel: source-posthog
   icon: posthog.svg
   license: MIT
   name: PostHog
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-posthog
   registries:
     cloud:
       enabled: true
@@ -23,7 +27,14 @@ data:
       enabled: true
   releaseStage: beta
   supportLevel: community
+  releases:
+    breakingChanges:
+      1.0.0:
+        message:
+          The `event` field in the `events` stream has been corrected to the proper data type.
+          To apply this change, refresh the schema for the `events` stream and reset your data. For more information [visit](https://docs.airbyte.com/integrations/sources/posthog-migrations)
+        upgradeDeadline: "2024-01-15"
   tags:
-    - language:low-code
+    - cdk:low-code
     - language:python
 metadataSpecVersion: "1.0"

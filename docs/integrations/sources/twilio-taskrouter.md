@@ -19,7 +19,7 @@ See [docs](https://www.twilio.com/docs/taskrouter/api) for more details.
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Twilio connector and select **Twilio Taskrouter** from the <Source/Destination> type dropdown.
+3. On the Set up the source page, enter the name for the Twilio connector and select **Twilio Taskrouter** from the Source/Destination type dropdown.
 4. Enter your `account_sid`.
 5. Enter your `auth_token`.
 6. Click **Set up source**.
@@ -56,6 +56,9 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                             |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------- |
-| 0.1.0   | 2022-11-18 | [18685](https://github.com/airbytehq/airbyte/pull/18685) | 🎉 New Source: Twilio Taskrouter API [low-code cdk] |
+| Version | Date       | Pull Request                                             | Subject                                                                         |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.3   | 2024-04-19 | [37278](https://github.com/airbytehq/airbyte/pull/37278) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry.                      |
+| 0.1.2   | 2024-04-15 | [37278](https://github.com/airbytehq/airbyte/pull/37278) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.1.1   | 2024-04-12 | [37278](https://github.com/airbytehq/airbyte/pull/37278) | schema descriptions                                                             |
+| 0.1.0   | 2022-11-18 | [18685](https://github.com/airbytehq/airbyte/pull/18685) | 🎉 New Source: Twilio Taskrouter API [low-code cdk]                             |
