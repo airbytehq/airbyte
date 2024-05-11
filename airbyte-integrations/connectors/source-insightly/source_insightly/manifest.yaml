@@ -18,12 +18,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /ActivitySets
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -64,7 +64,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/activity_sets'
+          $ref: "#/schemas/activity_sets"
     contacts:
       type: DeclarativeStream
       name: contacts
@@ -73,12 +73,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /Contacts/Search
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -120,22 +120,22 @@ definitions:
         cursor_field: DATE_UPDATED_UTC
         path: /Contacts/Search
         cursor_datetime_formats:
-          - '%Y-%m-%d %H:%M:%S'
-        datetime_format: '%Y-%m-%d %H:%M:%S'
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc() }}'
-          datetime_format: '%Y-%m-%d %H:%M:%S.%f+00:00'
+          datetime: "{{ now_utc() }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P30D
         cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/contacts'
+          $ref: "#/schemas/contacts"
     countries:
       type: DeclarativeStream
       name: countries
@@ -144,12 +144,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /Countries
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -189,7 +189,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/countries'
+          $ref: "#/schemas/countries"
     currencies:
       type: DeclarativeStream
       name: currencies
@@ -198,12 +198,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /Currencies
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -243,7 +243,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/currencies'
+          $ref: "#/schemas/currencies"
     emails:
       type: DeclarativeStream
       name: emails
@@ -252,12 +252,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /Emails/Search
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -297,7 +297,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/emails'
+          $ref: "#/schemas/emails"
     events:
       type: DeclarativeStream
       name: events
@@ -306,12 +306,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /Events/Search
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -353,22 +353,22 @@ definitions:
         cursor_field: DATE_UPDATED_UTC
         path: /Events/Search
         cursor_datetime_formats:
-          - '%Y-%m-%d %H:%M:%S'
-        datetime_format: '%Y-%m-%d %H:%M:%S'
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc() }}'
-          datetime_format: '%Y-%m-%d %H:%M:%S.%f+00:00'
+          datetime: "{{ now_utc() }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P30D
         cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/events'
+          $ref: "#/schemas/events"
     knowledge_article_categories:
       type: DeclarativeStream
       name: knowledge_article_categories
@@ -377,12 +377,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /KnowledgeArticleCategory/Search
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -424,22 +424,22 @@ definitions:
         cursor_field: DATE_UPDATED_UTC
         path: /KnowledgeArticleCategory/Search
         cursor_datetime_formats:
-          - '%Y-%m-%d %H:%M:%S'
-        datetime_format: '%Y-%m-%d %H:%M:%S'
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc() }}'
-          datetime_format: '%Y-%m-%d %H:%M:%S.%f+00:00'
+          datetime: "{{ now_utc() }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P30D
         cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/knowledge_article_categories'
+          $ref: "#/schemas/knowledge_article_categories"
     knowledge_article_folders:
       type: DeclarativeStream
       name: knowledge_article_folders
@@ -448,12 +448,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /KnowledgeArticleFolder/Search
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -495,22 +495,22 @@ definitions:
         cursor_field: DATE_UPDATED_UTC
         path: /KnowledgeArticleFolder/Search
         cursor_datetime_formats:
-          - '%Y-%m-%d %H:%M:%S'
-        datetime_format: '%Y-%m-%d %H:%M:%S'
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc() }}'
-          datetime_format: '%Y-%m-%d %H:%M:%S.%f+00:00'
+          datetime: "{{ now_utc() }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P30D
         cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/knowledge_article_folders'
+          $ref: "#/schemas/knowledge_article_folders"
     knowledge_articles:
       type: DeclarativeStream
       name: knowledge_articles
@@ -519,12 +519,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /KnowledgeArticle/Search
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -566,22 +566,22 @@ definitions:
         cursor_field: DATE_UPDATED_UTC
         path: /KnowledgeArticle/Search
         cursor_datetime_formats:
-          - '%Y-%m-%d %H:%M:%S'
-        datetime_format: '%Y-%m-%d %H:%M:%S'
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc() }}'
-          datetime_format: '%Y-%m-%d %H:%M:%S.%f+00:00'
+          datetime: "{{ now_utc() }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P30D
         cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/knowledge_articles'
+          $ref: "#/schemas/knowledge_articles"
     lead_sources:
       type: DeclarativeStream
       name: lead_sources
@@ -590,12 +590,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /LeadSources
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -635,7 +635,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/lead_sources'
+          $ref: "#/schemas/lead_sources"
     lead_statuses:
       type: DeclarativeStream
       name: lead_statuses
@@ -644,12 +644,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /LeadStatuses
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -689,7 +689,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/lead_statuses'
+          $ref: "#/schemas/lead_statuses"
     milestones:
       type: DeclarativeStream
       name: milestones
@@ -698,12 +698,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /Milestones/Search
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -745,22 +745,22 @@ definitions:
         cursor_field: DATE_UPDATED_UTC
         path: /Milestones/Search
         cursor_datetime_formats:
-          - '%Y-%m-%d %H:%M:%S'
-        datetime_format: '%Y-%m-%d %H:%M:%S'
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc() }}'
-          datetime_format: '%Y-%m-%d %H:%M:%S.%f+00:00'
+          datetime: "{{ now_utc() }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P30D
         cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/milestones'
+          $ref: "#/schemas/milestones"
     notes:
       type: DeclarativeStream
       name: notes
@@ -769,12 +769,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /Notes/Search
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -816,22 +816,22 @@ definitions:
         cursor_field: DATE_UPDATED_UTC
         path: /Notes/Search
         cursor_datetime_formats:
-          - '%Y-%m-%d %H:%M:%S'
-        datetime_format: '%Y-%m-%d %H:%M:%S'
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc() }}'
-          datetime_format: '%Y-%m-%d %H:%M:%S.%f+00:00'
+          datetime: "{{ now_utc() }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P30D
         cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/notes'
+          $ref: "#/schemas/notes"
     opportunities:
       type: DeclarativeStream
       name: opportunities
@@ -840,12 +840,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /Opportunities/Search
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -887,22 +887,22 @@ definitions:
         cursor_field: DATE_UPDATED_UTC
         path: /Opportunities/Search
         cursor_datetime_formats:
-          - '%Y-%m-%d %H:%M:%S'
-        datetime_format: '%Y-%m-%d %H:%M:%S'
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc() }}'
-          datetime_format: '%Y-%m-%d %H:%M:%S.%f+00:00'
+          datetime: "{{ now_utc() }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P30D
         cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/opportunities'
+          $ref: "#/schemas/opportunities"
     opportunity_categories:
       type: DeclarativeStream
       name: opportunity_categories
@@ -911,12 +911,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /OpportunityCategories
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -956,7 +956,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/opportunity_categories'
+          $ref: "#/schemas/opportunity_categories"
     opportunity_state_reasons:
       type: DeclarativeStream
       name: opportunity_state_reasons
@@ -965,12 +965,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /OpportunityStateReasons
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1010,7 +1010,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/opportunity_state_reasons'
+          $ref: "#/schemas/opportunity_state_reasons"
     organisations:
       type: DeclarativeStream
       name: organisations
@@ -1019,12 +1019,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /Organisations/Search
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1066,22 +1066,22 @@ definitions:
         cursor_field: DATE_UPDATED_UTC
         path: /Organisations/Search
         cursor_datetime_formats:
-          - '%Y-%m-%d %H:%M:%S'
-        datetime_format: '%Y-%m-%d %H:%M:%S'
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc() }}'
-          datetime_format: '%Y-%m-%d %H:%M:%S.%f+00:00'
+          datetime: "{{ now_utc() }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P30D
         cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/organisations'
+          $ref: "#/schemas/organisations"
     pipelines:
       type: DeclarativeStream
       name: pipelines
@@ -1090,12 +1090,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /Pipelines
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1135,7 +1135,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/pipelines'
+          $ref: "#/schemas/pipelines"
     pipeline_stages:
       type: DeclarativeStream
       name: pipeline_stages
@@ -1144,12 +1144,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /PipelineStages
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1189,7 +1189,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/pipeline_stages'
+          $ref: "#/schemas/pipeline_stages"
     project_categories:
       type: DeclarativeStream
       name: project_categories
@@ -1198,12 +1198,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /ProjectCategories
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1243,7 +1243,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/project_categories'
+          $ref: "#/schemas/project_categories"
     projects:
       type: DeclarativeStream
       name: projects
@@ -1252,12 +1252,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /Projects/Search
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1299,22 +1299,22 @@ definitions:
         cursor_field: DATE_UPDATED_UTC
         path: /Projects/Search
         cursor_datetime_formats:
-          - '%Y-%m-%d %H:%M:%S'
-        datetime_format: '%Y-%m-%d %H:%M:%S'
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc() }}'
-          datetime_format: '%Y-%m-%d %H:%M:%S.%f+00:00'
+          datetime: "{{ now_utc() }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P30D
         cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/projects'
+          $ref: "#/schemas/projects"
     prospects:
       type: DeclarativeStream
       name: prospects
@@ -1323,12 +1323,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /Prospect/Search
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1370,22 +1370,22 @@ definitions:
         cursor_field: DATE_UPDATED_UTC
         path: /Prospect/Search
         cursor_datetime_formats:
-          - '%Y-%m-%d %H:%M:%S'
-        datetime_format: '%Y-%m-%d %H:%M:%S'
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc() }}'
-          datetime_format: '%Y-%m-%d %H:%M:%S.%f+00:00'
+          datetime: "{{ now_utc() }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P30D
         cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/prospects'
+          $ref: "#/schemas/prospects"
     relationships:
       type: DeclarativeStream
       name: relationships
@@ -1394,12 +1394,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /Relationships
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1439,7 +1439,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/relationships'
+          $ref: "#/schemas/relationships"
     task_categories:
       type: DeclarativeStream
       name: task_categories
@@ -1448,12 +1448,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /TaskCategories
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1493,7 +1493,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/task_categories'
+          $ref: "#/schemas/task_categories"
     tasks:
       type: DeclarativeStream
       name: tasks
@@ -1502,12 +1502,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /Tasks/Search
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1549,22 +1549,22 @@ definitions:
         cursor_field: DATE_UPDATED_UTC
         path: /Tasks/Search
         cursor_datetime_formats:
-          - '%Y-%m-%d %H:%M:%S'
-        datetime_format: '%Y-%m-%d %H:%M:%S'
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc() }}'
-          datetime_format: '%Y-%m-%d %H:%M:%S.%f+00:00'
+          datetime: "{{ now_utc() }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P30D
         cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/tasks'
+          $ref: "#/schemas/tasks"
     team_members:
       type: DeclarativeStream
       name: team_members
@@ -1573,12 +1573,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /TeamMembers
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1618,7 +1618,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/team_members'
+          $ref: "#/schemas/team_members"
     teams:
       type: DeclarativeStream
       name: teams
@@ -1627,12 +1627,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /Teams
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1672,7 +1672,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/teams'
+          $ref: "#/schemas/teams"
     users:
       type: DeclarativeStream
       name: users
@@ -1681,12 +1681,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /Users/Search
           http_method: GET
           request_parameters:
-            count_total: 'True'
-            updated_after_utc: '{{ stream_state[''DATE_UPDATED_UTC''] }}'
+            count_total: "True"
+            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1728,59 +1728,59 @@ definitions:
         cursor_field: DATE_UPDATED_UTC
         path: /Users/Search
         cursor_datetime_formats:
-          - '%Y-%m-%d %H:%M:%S'
-        datetime_format: '%Y-%m-%d %H:%M:%S'
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc() }}'
-          datetime_format: '%Y-%m-%d %H:%M:%S.%f+00:00'
+          datetime: "{{ now_utc() }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P30D
         cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/users'
+          $ref: "#/schemas/users"
   base_requester:
     type: HttpRequester
     url_base: https://api.na1.insightly.com/v3.1/
     authenticator:
       type: BasicHttpAuthenticator
-      username: '{{ config[''token''] }}'
-      password: '{{ config[''nothing''] }}'
+      username: "{{ config['token'] }}"
+      password: "{{ config['nothing'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/activity_sets'
-  - $ref: '#/definitions/streams/contacts'
-  - $ref: '#/definitions/streams/countries'
-  - $ref: '#/definitions/streams/currencies'
-  - $ref: '#/definitions/streams/emails'
-  - $ref: '#/definitions/streams/events'
-  - $ref: '#/definitions/streams/knowledge_article_categories'
-  - $ref: '#/definitions/streams/knowledge_article_folders'
-  - $ref: '#/definitions/streams/knowledge_articles'
-  - $ref: '#/definitions/streams/lead_sources'
-  - $ref: '#/definitions/streams/lead_statuses'
-  - $ref: '#/definitions/streams/milestones'
-  - $ref: '#/definitions/streams/notes'
-  - $ref: '#/definitions/streams/opportunities'
-  - $ref: '#/definitions/streams/opportunity_categories'
-  - $ref: '#/definitions/streams/opportunity_state_reasons'
-  - $ref: '#/definitions/streams/organisations'
-  - $ref: '#/definitions/streams/pipelines'
-  - $ref: '#/definitions/streams/pipeline_stages'
-  - $ref: '#/definitions/streams/project_categories'
-  - $ref: '#/definitions/streams/projects'
-  - $ref: '#/definitions/streams/prospects'
-  - $ref: '#/definitions/streams/relationships'
-  - $ref: '#/definitions/streams/task_categories'
-  - $ref: '#/definitions/streams/tasks'
-  - $ref: '#/definitions/streams/team_members'
-  - $ref: '#/definitions/streams/teams'
-  - $ref: '#/definitions/streams/users'
+  - $ref: "#/definitions/streams/activity_sets"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/countries"
+  - $ref: "#/definitions/streams/currencies"
+  - $ref: "#/definitions/streams/emails"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/knowledge_article_categories"
+  - $ref: "#/definitions/streams/knowledge_article_folders"
+  - $ref: "#/definitions/streams/knowledge_articles"
+  - $ref: "#/definitions/streams/lead_sources"
+  - $ref: "#/definitions/streams/lead_statuses"
+  - $ref: "#/definitions/streams/milestones"
+  - $ref: "#/definitions/streams/notes"
+  - $ref: "#/definitions/streams/opportunities"
+  - $ref: "#/definitions/streams/opportunity_categories"
+  - $ref: "#/definitions/streams/opportunity_state_reasons"
+  - $ref: "#/definitions/streams/organisations"
+  - $ref: "#/definitions/streams/pipelines"
+  - $ref: "#/definitions/streams/pipeline_stages"
+  - $ref: "#/definitions/streams/project_categories"
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/prospects"
+  - $ref: "#/definitions/streams/relationships"
+  - $ref: "#/definitions/streams/task_categories"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/team_members"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/users"
 
 spec:
   type: Spec
@@ -1794,7 +1794,7 @@ spec:
       start_date:
         type:
           - string
-          - 'null'
+          - "null"
         title: Start Date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
@@ -1803,12 +1803,12 @@ spec:
           format YYYY-MM-DDT00:00:00Z. All data generated after this date will
           be replicated. Note that it will be used only for incremental streams.
         examples:
-          - '2021-03-01T00:00:00Z'
+          - "2021-03-01T00:00:00Z"
         order: 0
       token:
         type:
           - string
-          - 'null'
+          - "null"
         title: API Token
         description: Your Insightly API token.
         airbyte_secret: true
@@ -1860,150 +1860,150 @@ schemas:
             ACTIVITYSET_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: ID of the activity set to which the activity belongs
             ACTIVITY_DETAILS:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Details or description of the activity
             ACTIVITY_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: ID of the activity
             ACTIVITY_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Name of the activity
             ACTIVITY_TYPE:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Type of the activity
             ALL_DAY:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Boolean flag indicating if the activity is an all-day event
             ASSIGNED_TEAM_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: ID of the team assigned to the activity
             CATEGORY_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: ID of the category to which the activity belongs
             DUE_DAYS_AFTER_START:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: >-
                 Number of days after the start of the activity by which it is
                 due
             DUE_DAYS_BEFORE_END:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: Number of days before the end of the activity by which it is due
             DURATION:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: Duration of the activity
             EVENT_DAYS_AFTER_START:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: >-
                 Number of days after the start of the activity when the event
                 occurs
             EVENT_DAYS_BEFORE_END:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: >-
                 Number of days before the end of the activity when the event
                 occurs
             EVENT_TIME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Time of the event associated with the activity
             OWNER_USER_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: ID of the user who owns the activity
             OWNER_VISIBLE:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Boolean flag indicating if the activity is visible to the owner
             PUBLICLY_VISIBLE:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Boolean flag indicating if the activity is publicly visible
             REMINDER:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Details about the reminder set for the activity
             REMINDER_DAYS_BEFORE_DUE:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: >-
                 Number of days before the due date when the reminder is
                 triggered
             REMINDER_TIME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Time of day when the reminder is triggered
             RESPONSIBLE_USER_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: ID of the user responsible for the activity
             SKIP_FRI:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Boolean flag indicating if the activity is skipped on Fridays
             SKIP_MON:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Boolean flag indicating if the activity is skipped on Mondays
             SKIP_SAT:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Boolean flag indicating if the activity is skipped on Saturdays
             SKIP_SUN:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Boolean flag indicating if the activity is skipped on Sundays
             SKIP_THU:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Boolean flag indicating if the activity is skipped on Thursdays
             SKIP_TUE:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Boolean flag indicating if the activity is skipped on Tuesdays
             SKIP_WED:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Boolean flag indicating if the activity is skipped on Wednesdays
       ACTIVITYSET_ID:
         type: integer
@@ -2011,37 +2011,37 @@ schemas:
       FOR_CONTACTS:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Activity set associated with contacts
       FOR_LEADS:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Activity set associated with leads
       FOR_OPPORTUNITIES:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Activity set associated with opportunities
       FOR_ORGANISATIONS:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Activity set associated with organizations
       FOR_PROJECTS:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Activity set associated with projects
       NAME:
         type:
           - string
-          - 'null'
+          - "null"
         description: Name of the activity set
       OWNER_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: ID of the user who owns the activity set
     additionalProperties: true
   contacts:
@@ -2052,62 +2052,62 @@ schemas:
       ADDRESS_MAIL_CITY:
         type:
           - string
-          - 'null'
+          - "null"
         description: The city of the mailing address
       ADDRESS_MAIL_COUNTRY:
         type:
           - string
-          - 'null'
+          - "null"
         description: The country of the mailing address
       ADDRESS_MAIL_POSTCODE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The postcode of the mailing address
       ADDRESS_MAIL_STATE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The state of the mailing address
       ADDRESS_MAIL_STREET:
         type:
           - string
-          - 'null'
+          - "null"
         description: The street address of the mailing address
       ADDRESS_OTHER_CITY:
         type:
           - string
-          - 'null'
+          - "null"
         description: The city of the other address
       ADDRESS_OTHER_COUNTRY:
         type:
           - string
-          - 'null'
+          - "null"
         description: The country of the other address
       ADDRESS_OTHER_POSTCODE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The postcode of the other address
       ADDRESS_OTHER_STATE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The state of the other address
       ADDRESS_OTHER_STREET:
         type:
           - string
-          - 'null'
+          - "null"
         description: The street address of the other address
       ASSISTANT_NAME:
         type:
           - string
-          - 'null'
+          - "null"
         description: The name of the contact's assistant
       BACKGROUND:
         type:
           - string
-          - 'null'
+          - "null"
         description: Background information about the contact
       CONTACT_ID:
         type: integer
@@ -2115,7 +2115,7 @@ schemas:
       CREATED_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The user ID of the user who created the contact
       CUSTOMFIELDS:
         type: array
@@ -2126,7 +2126,7 @@ schemas:
             FIELD_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The name of the custom field
             FIELD_VALUE:
               type: object
@@ -2140,75 +2140,75 @@ schemas:
             CREATE_TASK_YEARLY:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Indicates whether a task should be created yearly
             DATE_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: The unique identifier for the date event
             OCCASION_DATE:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The date of the occasion
             OCCASION_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The name of the occasion
             REPEAT_YEARLY:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Indicates if the occasion repeats yearly
       DATE_CREATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time the contact was created in UTC
         format: date-time
       DATE_OF_BIRTH:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date of birth of the contact
       DATE_UPDATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time the contact was last updated in UTC
         format: date-time
       EMAIL_ADDRESS:
         type:
           - string
-          - 'null'
+          - "null"
         description: The email address of the contact
       EMAIL_OPTED_OUT:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Whether the contact has opted out of email communication
       FIRST_NAME:
         type:
           - string
-          - 'null'
+          - "null"
         description: The first name of the contact
       IMAGE_URL:
         type:
           - string
-          - 'null'
+          - "null"
         description: URL of the contact's image
       LAST_ACTIVITY_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time of the last activity related to the contact in UTC
         format: date-time
       LAST_NAME:
         type:
           - string
-          - 'null'
+          - "null"
         description: The last name of the contact
       LINKS:
         type: array
@@ -2219,113 +2219,113 @@ schemas:
             DETAILS:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Details about the link
             IS_FORWARD:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Flag indicating if the link is forward
             LINK_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: Unique identifier for the link
             LINK_OBJECT_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: The ID of the linked object
             LINK_OBJECT_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The name of the linked object
             OBJECT_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: The ID of the object
             OBJECT_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The name of the object
             RELATIONSHIP_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: The ID of the relationship
             ROLE:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The role of the contact in the relationship
       NEXT_ACTIVITY_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time of the next activity related to the contact in UTC
         format: date-time
       ORGANISATION_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the organization the contact is associated with
       OWNER_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the user who owns the contact
       PHONE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The primary phone number of the contact
       PHONE_ASSISTANT:
         type:
           - string
-          - 'null'
+          - "null"
         description: The phone number of the contact's assistant
       PHONE_FAX:
         type:
           - string
-          - 'null'
+          - "null"
         description: The fax number of the contact
       PHONE_HOME:
         type:
           - string
-          - 'null'
+          - "null"
         description: The home phone number of the contact
       PHONE_MOBILE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The mobile phone number of the contact
       PHONE_OTHER:
         type:
           - string
-          - 'null'
+          - "null"
         description: Another phone number of the contact
       SALUTATION:
         type:
           - string
-          - 'null'
+          - "null"
         description: The salutation for the contact
       SOCIAL_FACEBOOK:
         type:
           - string
-          - 'null'
+          - "null"
         description: The Facebook profile of the contact
       SOCIAL_LINKEDIN:
         type:
           - string
-          - 'null'
+          - "null"
         description: The LinkedIn profile of the contact
       SOCIAL_TWITTER:
         type:
           - string
-          - 'null'
+          - "null"
         description: The Twitter profile of the contact
       TAGS:
         type: array
@@ -2336,22 +2336,22 @@ schemas:
             TAG_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The name of the tag associated with the contact
       TITLE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The title of the contact
       VISIBLE_TEAM_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the team the contact is visible to
       VISIBLE_TO:
         type:
           - string
-          - 'null'
+          - "null"
         description: Indicates who the contact is visible to
   countries:
     type: object
@@ -2371,7 +2371,7 @@ schemas:
       CURRENCY_SYMBOL:
         type:
           - string
-          - 'null'
+          - "null"
         description: The symbol used to denote the currency.
     additionalProperties: true
   emails:
@@ -2381,24 +2381,24 @@ schemas:
       CREATED_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the user who created the email
       DATE_CREATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the email record was created
         format: date-time
       EMAIL_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the email was sent/received
         format: date-time
       EMAIL_FROM:
         type:
           - string
-          - 'null'
+          - "null"
         description: The sender of the email
       EMAIL_ID:
         type: integer
@@ -2406,7 +2406,7 @@ schemas:
       FORMAT:
         type:
           - string
-          - 'null'
+          - "null"
         description: The format of the email content
       LINKS:
         type: array
@@ -2417,68 +2417,68 @@ schemas:
             DETAILS:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Details about the link
             IS_FORWARD:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Indicates if the link is a forward link
             LINK_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: The ID of the link
             LINK_OBJECT_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: The ID of the linked object
             LINK_OBJECT_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The name of the linked object
             OBJECT_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: The ID of the object associated with the email
             OBJECT_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The name of the object associated with the email
             RELATIONSHIP_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: The ID representing the relationship with the link
             ROLE:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The role of the linked object
       OWNER_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the user who owns the email
       QUEUED_SEND_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the email was queued for sending
         format: date-time
       SIZE:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The size of the email content
       SUBJECT:
         type:
           - string
-          - 'null'
+          - "null"
         description: The subject of the email
       TAGS:
         type: array
@@ -2489,7 +2489,7 @@ schemas:
             TAG_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The name of the tag
     additionalProperties: true
   events:
@@ -2499,7 +2499,7 @@ schemas:
       ALL_DAY:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Indicates if the event is an all-day event
       CUSTOMFIELDS:
         type: array
@@ -2510,7 +2510,7 @@ schemas:
             FIELD_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Name of the custom field
             FIELD_VALUE:
               type: object
@@ -2518,24 +2518,24 @@ schemas:
       DATE_CREATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: DateTime when the event was created (UTC)
         format: date-time
       DATE_UPDATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: DateTime when the event was last updated (UTC)
         format: date-time
       DETAILS:
         type:
           - string
-          - 'null'
+          - "null"
         description: Additional details of the event
       END_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: End date and time of the event (UTC)
         format: date-time
       EVENT_ID:
@@ -2550,79 +2550,79 @@ schemas:
             DETAILS:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Details of the link
             IS_FORWARD:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Indicates if the link is forward
             LINK_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: Unique identifier for the link
             LINK_OBJECT_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: ID of the linked object
             LINK_OBJECT_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Name of the linked object
             OBJECT_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: ID of the object
             OBJECT_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Name of the object
             RELATIONSHIP_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: ID of the relationship
             ROLE:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Role of the link in the relationship
       LOCATION:
         type:
           - string
-          - 'null'
+          - "null"
         description: Location of the event
       OWNER_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: User ID of the event owner
       REMINDER_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: DateTime when the reminder for the event is set to trigger (UTC)
         format: date-time
       REMINDER_SENT:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Indicates if the reminder for the event has been sent
       START_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: Start date and time of the event (UTC)
         format: date-time
       TITLE:
         type:
           - string
-          - 'null'
+          - "null"
         description: Title of the event
     additionalProperties: true
   knowledge_article_categories:
@@ -2635,29 +2635,29 @@ schemas:
       CATEGORY_NAME:
         type:
           - string
-          - 'null'
+          - "null"
         description: Name of the knowledge article category.
       CREATED_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: Identifier of the user who created the knowledge article category.
       DATE_CREATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: Date and time when the knowledge article category was created.
         format: date-time
       DATE_UPDATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: Date and time when the knowledge article category was last updated.
         format: date-time
       DESCRIPTION:
         type:
           - string
-          - 'null'
+          - "null"
         description: Detailed description of the knowledge article category.
     additionalProperties: true
   knowledge_article_folders:
@@ -2667,27 +2667,27 @@ schemas:
       CATEGORY_ID:
         type:
           - string
-          - 'null'
+          - "null"
         description: >-
           Unique identifier for the knowledge article category to which the
           folder belongs.
       CREATED_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: >-
           Unique identifier of the user who created the knowledge article
           folder.
       DATE_CREATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the knowledge article folder was created.
         format: date-time
       DATE_UPDATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the knowledge article folder was last updated.
         format: date-time
       FOLDER_ID:
@@ -2696,17 +2696,17 @@ schemas:
       FOLDER_NAME:
         type:
           - string
-          - 'null'
+          - "null"
         description: The name of the knowledge article folder.
       ORDER_ARTICLES:
         type:
           - string
-          - 'null'
+          - "null"
         description: Defines the order in which articles appear within the folder.
       VISIBILITY:
         type:
           - string
-          - 'null'
+          - "null"
         description: >-
           Indicates the visibility of the knowledge article folder (e.g.,
           public, private, restricted).
@@ -2718,7 +2718,7 @@ schemas:
       ARCHIVED_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the article was archived in UTC timezone
         format: date-time
       ARTICLE_ID:
@@ -2727,27 +2727,27 @@ schemas:
       ARTICLE_NO:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The article number for reference
       ArticleVersion:
         type:
           - string
-          - 'null'
+          - "null"
         description: The version of the article
       Body:
         type:
           - string
-          - 'null'
+          - "null"
         description: The main content of the knowledge article
       CATEGORY_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The category ID to which the article belongs
       CREATED_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The user ID of the creator of the knowledge article
       CUSTOMFIELDS:
         type: array
@@ -2758,7 +2758,7 @@ schemas:
             FIELD_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Name of the custom field
             FIELD_VALUE:
               type: object
@@ -2766,61 +2766,61 @@ schemas:
       DATE_CREATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the article was created in UTC timezone
         format: date-time
       DATE_UPDATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the article was last updated in UTC timezone
         format: date-time
       DOWNVOTE_COUNT:
         type:
           - integer
-          - 'null'
+          - "null"
         description: Number of downvotes received for the article
       ExternalLinkCount:
         type:
           - string
-          - 'null'
+          - "null"
         description: Number of external links referenced in the article
       FIRST_PUBLISHED_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the article was first published in UTC timezone
         format: date-time
       FOLDER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the folder where the article is stored
       LAST_PUBLISHED_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the article was last published in UTC timezone
         format: date-time
       Language:
         type:
           - string
-          - 'null'
+          - "null"
         description: The language in which the article is written
       OWNER_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The user ID of the owner of the article
       PROMOTED:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Indicates if the article is promoted or not
       Status:
         type:
           - string
-          - 'null'
+          - "null"
         description: The status of the article (e.g., draft, published)
       TAGS:
         type: array
@@ -2831,22 +2831,22 @@ schemas:
             TAG_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The name of the tag
       Title:
         type:
           - string
-          - 'null'
+          - "null"
         description: The title of the knowledge article
       UPVOTE_COUNT:
         type:
           - integer
-          - 'null'
+          - "null"
         description: Number of upvotes received for the article
       URL_SLUG:
         type:
           - string
-          - 'null'
+          - "null"
         description: The URL-friendly slug for the article
     additionalProperties: true
   lead_sources:
@@ -2856,19 +2856,19 @@ schemas:
       DEFAULT_VALUE:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: >-
           The default value for the lead source, used when no specific lead
           source is assigned.
       FIELD_ORDER:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The order in which the lead sources are displayed or prioritized.
       LEAD_SOURCE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The name or label of the lead source.
       LEAD_SOURCE_ID:
         type: integer
@@ -2881,17 +2881,17 @@ schemas:
       DEFAULT_STATUS:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Specifies the default status for leads.
       FIELD_ORDER:
         type:
           - integer
-          - 'null'
+          - "null"
         description: Designates the order of fields for lead status.
       LEAD_STATUS:
         type:
           - string
-          - 'null'
+          - "null"
         description: Represents the name or label of the lead status.
       LEAD_STATUS_ID:
         type: integer
@@ -2899,7 +2899,7 @@ schemas:
       STATUS_TYPE:
         type:
           - integer
-          - 'null'
+          - "null"
         description: Indicates the type or category of the lead status.
     additionalProperties: true
   milestones:
@@ -2909,30 +2909,30 @@ schemas:
       COMPLETED:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Flag indicating if the milestone has been completed or not
       COMPLETED_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: Date and time when the milestone was completed in UTC
         format: date-time
       DATE_CREATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: Date and time when the milestone was created in UTC
         format: date-time
       DATE_UPDATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: Date and time when the milestone was last updated in UTC
         format: date-time
       DUE_DATE:
         type:
           - string
-          - 'null'
+          - "null"
         description: Due date for completion of the milestone
       MILESTONE_ID:
         type: integer
@@ -2940,22 +2940,22 @@ schemas:
       OWNER_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: User ID of the owner of the milestone
       PROJECT_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: Identifier of the project to which the milestone belongs
       RESPONSIBLE_USER:
         type:
           - integer
-          - 'null'
+          - "null"
         description: User responsible for completing the milestone
       TITLE:
         type:
           - string
-          - 'null'
+          - "null"
         description: Title or name of the milestone
     additionalProperties: true
   notes:
@@ -2965,18 +2965,18 @@ schemas:
       BODY:
         type:
           - string
-          - 'null'
+          - "null"
         description: The content or text of the note.
       DATE_CREATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time the note was created in UTC timezone.
         format: date-time
       DATE_UPDATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time the note was last updated in UTC timezone.
         format: date-time
       LINKS:
@@ -2988,47 +2988,47 @@ schemas:
             DETAILS:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Additional details or description for the link.
             IS_FORWARD:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Indicates if the link is forward or backward.
             LINK_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: The ID of the link.
             LINK_OBJECT_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: The ID of the object the link is associated with.
             LINK_OBJECT_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The name of the object the link is associated with.
             OBJECT_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: The ID of the linked object.
             OBJECT_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The name of the linked object.
             RELATIONSHIP_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: The ID of the relationship between the objects.
             ROLE:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The role or type of relationship between the objects.
       NOTE_ID:
         type: integer
@@ -3036,12 +3036,12 @@ schemas:
       OWNER_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the user who owns the note.
       TITLE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The title or subject of the note.
     additionalProperties: true
   opportunities:
@@ -3052,38 +3052,38 @@ schemas:
       ACTUAL_CLOSE_DATE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The actual date when the opportunity was closed
         format: date-time
       BID_AMOUNT:
         type:
           - number
-          - 'null'
+          - "null"
         description: The amount bid for the opportunity
       BID_CURRENCY:
         type:
           - string
-          - 'null'
+          - "null"
         description: The currency used for the bid amount
       BID_DURATION:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The duration for which the bid is valid
       BID_TYPE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The type of bid placed
       CATEGORY_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The category ID associated with the opportunity
       CREATED_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the user who created the opportunity
       CUSTOMFIELDS:
         type: array
@@ -3094,7 +3094,7 @@ schemas:
             FIELD_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Name of the custom field
             FIELD_VALUE:
               type: object
@@ -3102,30 +3102,30 @@ schemas:
       DATE_CREATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the opportunity was created (in UTC)
         format: date-time
       DATE_UPDATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the opportunity was last updated (in UTC)
         format: date-time
       FORECAST_CLOSE_DATE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The forecasted date for closing the opportunity
         format: date-time
       IMAGE_URL:
         type:
           - string
-          - 'null'
+          - "null"
         description: URL of any image associated with the opportunity
       LAST_ACTIVITY_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: >-
           The date and time of the last activity related to the opportunity (in
           UTC)
@@ -3139,58 +3139,58 @@ schemas:
             DETAILS:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Details of the link
             IS_FORWARD:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Indicates if the link is being forwarded
             LINK_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: ID of the linked object
             LINK_OBJECT_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: ID of the linked object
             LINK_OBJECT_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Name of the linked object
             OBJECT_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: ID of the linked object
             OBJECT_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Name of the linked object
             RELATIONSHIP_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: ID of the relationship
             ROLE:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Role of the link
       NEXT_ACTIVITY_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time of the next planned activity (in UTC)
         format: date-time
       OPPORTUNITY_DETAILS:
         type:
           - string
-          - 'null'
+          - "null"
         description: Detailed information about the opportunity
       OPPORTUNITY_ID:
         type: integer
@@ -3198,52 +3198,52 @@ schemas:
       OPPORTUNITY_NAME:
         type:
           - string
-          - 'null'
+          - "null"
         description: The name of the opportunity
       OPPORTUNITY_STATE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The state of the opportunity
       OPPORTUNITY_VALUE:
         type:
           - number
-          - 'null'
+          - "null"
         description: The value associated with the opportunity
       ORGANISATION_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the organization associated with the opportunity
       OWNER_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the user who owns the opportunity
       PIPELINE_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the pipeline the opportunity belongs to
       PRICEBOOK_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the price book associated with the opportunity
       PROBABILITY:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The probability of the opportunity being successful
       RESPONSIBLE_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the user responsible for the opportunity
       STAGE_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the stage the opportunity is in
       TAGS:
         type: array
@@ -3254,19 +3254,19 @@ schemas:
             TAG_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Name of the tag associated with the opportunity
           required:
             - TAG_NAME
       VISIBLE_TEAM_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the team with visibility rights to the opportunity
       VISIBLE_TO:
         type:
           - string
-          - 'null'
+          - "null"
         description: The visibility settings for the opportunity
   opportunity_categories:
     type: object
@@ -3275,12 +3275,12 @@ schemas:
       ACTIVE:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Indicates whether the opportunity category is active or inactive
       BACKGROUND_COLOR:
         type:
           - string
-          - 'null'
+          - "null"
         description: The background color associated with the opportunity category
       CATEGORY_ID:
         type: integer
@@ -3288,7 +3288,7 @@ schemas:
       CATEGORY_NAME:
         type:
           - string
-          - 'null'
+          - "null"
         description: The name or label of the opportunity category
     additionalProperties: true
   opportunity_state_reasons:
@@ -3298,12 +3298,12 @@ schemas:
       FOR_OPPORTUNITY_STATE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The particular opportunity state that the reason applies to.
       STATE_REASON:
         type:
           - string
-          - 'null'
+          - "null"
         description: The reason associated with the opportunity state.
       STATE_REASON_ID:
         type: integer
@@ -3317,62 +3317,62 @@ schemas:
       ADDRESS_BILLING_CITY:
         type:
           - string
-          - 'null'
+          - "null"
         description: The city of the billing address of the organisation.
       ADDRESS_BILLING_COUNTRY:
         type:
           - string
-          - 'null'
+          - "null"
         description: The country of the billing address of the organisation.
       ADDRESS_BILLING_POSTCODE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The postal code of the billing address of the organisation.
       ADDRESS_BILLING_STATE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The state of the billing address of the organisation.
       ADDRESS_BILLING_STREET:
         type:
           - string
-          - 'null'
+          - "null"
         description: The street address of the billing address of the organisation.
       ADDRESS_SHIP_CITY:
         type:
           - string
-          - 'null'
+          - "null"
         description: The city of the shipping address of the organisation.
       ADDRESS_SHIP_COUNTRY:
         type:
           - string
-          - 'null'
+          - "null"
         description: The country of the shipping address of the organisation.
       ADDRESS_SHIP_POSTCODE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The postal code of the shipping address of the organisation.
       ADDRESS_SHIP_STATE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The state of the shipping address of the organisation.
       ADDRESS_SHIP_STREET:
         type:
           - string
-          - 'null'
+          - "null"
         description: The street address of the shipping address of the organisation.
       BACKGROUND:
         type:
           - string
-          - 'null'
+          - "null"
         description: Background information or description about the organisation.
       CREATED_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The user ID of the user who created the organisation record.
       CUSTOMFIELDS:
         type: array
@@ -3383,7 +3383,7 @@ schemas:
             FIELD_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The name of the custom field.
             FIELD_VALUE:
               type: object
@@ -3397,32 +3397,32 @@ schemas:
             CREATE_TASK_YEARLY:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Flag indicating if a task is created yearly.
             DATE_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: The ID of the date record.
             OCCASION_DATE:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The date of a particular occasion.
             OCCASION_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Name of the occasion associated with the date.
             REPEAT_YEARLY:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Flag indicating if the occasion repeats yearly.
       DATE_CREATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: >-
           The date and time when the organisation record was created in
           Coordinated Universal Time (UTC).
@@ -3430,7 +3430,7 @@ schemas:
       DATE_UPDATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: >-
           The date and time when the organisation record was last updated in
           Coordinated Universal Time (UTC).
@@ -3444,22 +3444,22 @@ schemas:
             EMAIL_DOMAIN:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The domain of an email address associated with the organisation.
             EMAIL_DOMAIN_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: The ID of the email domain.
       IMAGE_URL:
         type:
           - string
-          - 'null'
+          - "null"
         description: URL of the image associated with the organisation.
       LAST_ACTIVITY_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: >-
           The date and time of the last activity related to the organisation in
           Coordinated Universal Time (UTC).
@@ -3473,54 +3473,54 @@ schemas:
             DETAILS:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Details of the link.
             IS_FORWARD:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Flag indicating if the link is in a forward direction.
             LINK_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: The ID of the link.
             LINK_OBJECT_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: The ID of the object linked to.
             LINK_OBJECT_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Name of the object linked to.
             OBJECT_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: >-
                 The ID of the organisation or entity the link is associated
                 with.
             OBJECT_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Name of the organisation or entity the link is associated with.
             RELATIONSHIP_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: The ID of the relationship between the linked objects.
             ROLE:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Role of the organisation in the linked relationship.
       NEXT_ACTIVITY_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: >-
           The date and time of the next planned activity related to the
           organisation in Coordinated Universal Time (UTC).
@@ -3531,37 +3531,37 @@ schemas:
       ORGANISATION_NAME:
         type:
           - string
-          - 'null'
+          - "null"
         description: The name of the organisation.
       OWNER_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The user ID of the owner of the organisation.
       PHONE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The phone number associated with the organisation.
       PHONE_FAX:
         type:
           - string
-          - 'null'
+          - "null"
         description: The fax number associated with the organisation.
       SOCIAL_FACEBOOK:
         type:
           - string
-          - 'null'
+          - "null"
         description: Facebook page URL associated with the organisation.
       SOCIAL_LINKEDIN:
         type:
           - string
-          - 'null'
+          - "null"
         description: LinkedIn profile URL associated with the organisation.
       SOCIAL_TWITTER:
         type:
           - string
-          - 'null'
+          - "null"
         description: Twitter handle associated with the organisation.
       TAGS:
         type: array
@@ -3572,22 +3572,22 @@ schemas:
             TAG_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The name of the tag.
       VISIBLE_TEAM_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The team ID that has visibility permission for the organisation.
       VISIBLE_TO:
         type:
           - string
-          - 'null'
+          - "null"
         description: Visibility level of the organisation.
       WEBSITE:
         type:
           - string
-          - 'null'
+          - "null"
         description: Website URL of the organisation.
   pipelines:
     type: object
@@ -3596,17 +3596,17 @@ schemas:
       FOR_OPPORTUNITIES:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Flag indicating if the pipeline is for opportunities
       FOR_PROJECTS:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Flag indicating if the pipeline is for projects
       OWNER_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: Unique identifier of the user who owns the pipeline
       PIPELINE_ID:
         type: integer
@@ -3614,7 +3614,7 @@ schemas:
       PIPELINE_NAME:
         type:
           - string
-          - 'null'
+          - "null"
         description: Name of the pipeline
     additionalProperties: true
   pipeline_stages:
@@ -3624,21 +3624,21 @@ schemas:
       ACTIVITYSET_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: >-
           Unique identifier for the activity set associated with the pipeline
           stage
       OWNER_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: >-
           Unique identifier for the user who owns or is responsible for the
           pipeline stage
       PIPELINE_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: Unique identifier for the pipeline to which the stage belongs
       STAGE_ID:
         type: integer
@@ -3646,12 +3646,12 @@ schemas:
       STAGE_NAME:
         type:
           - string
-          - 'null'
+          - "null"
         description: Name or label for the pipeline stage
       STAGE_ORDER:
         type:
           - integer
-          - 'null'
+          - "null"
         description: >-
           Numerical order value indicating the position of the pipeline stage in
           the pipeline flow
@@ -3663,12 +3663,12 @@ schemas:
       ACTIVE:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Indicates if the project category is currently active or not
       BACKGROUND_COLOR:
         type:
           - string
-          - 'null'
+          - "null"
         description: The background color associated with the project category
       CATEGORY_ID:
         type: integer
@@ -3676,7 +3676,7 @@ schemas:
       CATEGORY_NAME:
         type:
           - string
-          - 'null'
+          - "null"
         description: The name or title of the project category
     additionalProperties: true
   projects:
@@ -3687,18 +3687,18 @@ schemas:
       CATEGORY_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: Unique identifier for the project category.
       COMPLETED_DATE:
         type:
           - string
-          - 'null'
+          - "null"
         description: Date and time when the project was completed.
         format: date-time
       CREATED_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: Unique identifier of the user who created the project.
       CUSTOMFIELDS:
         type: array
@@ -3709,7 +3709,7 @@ schemas:
             FIELD_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Name of the custom field.
             FIELD_VALUE:
               type: object
@@ -3717,24 +3717,24 @@ schemas:
       DATE_CREATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: Date and time when the project was created (in UTC).
         format: date-time
       DATE_UPDATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: Date and time when the project was last updated (in UTC).
         format: date-time
       IMAGE_URL:
         type:
           - string
-          - 'null'
+          - "null"
         description: URL of the image associated with the project.
       LAST_ACTIVITY_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: Date and time of the last activity related to the project (in UTC).
       LINKS:
         type: array
@@ -3745,72 +3745,72 @@ schemas:
             DETAILS:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Details of the link.
             IS_FORWARD:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Flag indicating if the link is forward.
             LINK_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: Unique identifier for the link.
             LINK_OBJECT_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: Unique identifier of the linked object.
             LINK_OBJECT_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Name of the linked object.
             OBJECT_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: Unique identifier of the object.
             OBJECT_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Name of the object.
             RELATIONSHIP_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: Unique identifier for the relationship.
             ROLE:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Role associated with the link.
       NEXT_ACTIVITY_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: Date and time of the next activity related to the project (in UTC).
       OPPORTUNITY_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: Unique identifier of the opportunity associated with the project.
       OWNER_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: Unique identifier of the user who owns the project.
       PIPELINE_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: Unique identifier of the pipeline to which the project belongs.
       PROJECT_DETAILS:
         type:
           - string
-          - 'null'
+          - "null"
         description: Details or description of the project.
       PROJECT_ID:
         type: integer
@@ -3818,28 +3818,28 @@ schemas:
       PROJECT_NAME:
         type:
           - string
-          - 'null'
+          - "null"
         description: Name of the project.
       RESPONSIBLE_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: Unique identifier of the user responsible for the project.
       STAGE_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: Unique identifier of the stage to which the project belongs.
       STARTED_DATE:
         type:
           - string
-          - 'null'
+          - "null"
         description: Date and time when the project was started.
         format: date-time
       STATUS:
         type:
           - string
-          - 'null'
+          - "null"
         description: Status of the project.
       TAGS:
         type: array
@@ -3850,17 +3850,17 @@ schemas:
             TAG_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Name of the tag.
       VISIBLE_TEAM_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: Unique identifier of the team that can view the project.
       VISIBLE_TO:
         type:
           - string
-          - 'null'
+          - "null"
         description: Visibility setting for the project.
   prospects:
     type: object
@@ -3869,37 +3869,37 @@ schemas:
       ADDRESS_CITY:
         type:
           - string
-          - 'null'
+          - "null"
         description: The city where the prospect is located.
       ADDRESS_COUNTRY:
         type:
           - string
-          - 'null'
+          - "null"
         description: The country where the prospect is located.
       ADDRESS_POSTCODE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The postcode of the prospect's address.
       ADDRESS_STATE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The state or region where the prospect is located.
       ADDRESS_STREET:
         type:
           - string
-          - 'null'
+          - "null"
         description: The street address of the prospect.
       CONTACT_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the contact associated with the prospect.
       CREATED_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the user who created the prospect.
       CUSTOMFIELDS:
         type: array
@@ -3910,7 +3910,7 @@ schemas:
             FIELD_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The name of a custom field.
             FIELD_VALUE:
               type: object
@@ -3918,121 +3918,121 @@ schemas:
       DATE_CREATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the prospect was created in UTC.
         format: date-time
       DATE_UPDATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the prospect was last updated in UTC.
         format: date-time
       DESCRIPTION:
         type:
           - string
-          - 'null'
+          - "null"
         description: A description or notes related to the prospect.
       DO_NOT_CALL:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Indicates if the prospect should not be contacted via phone.
       DO_NOT_EMAIL:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Indicates if the prospect should not be contacted via email.
       DO_NOT_SYNC:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Indicates if the prospect should not be synchronized.
       EMAIL_ADDRESS:
         type:
           - string
-          - 'null'
+          - "null"
         description: The email address of the prospect.
       EMPLOYEE_COUNT:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The number of employees in the prospect's organization.
       FAX:
         type:
           - string
-          - 'null'
+          - "null"
         description: The fax number of the prospect.
       FIRST_NAME:
         type:
           - string
-          - 'null'
+          - "null"
         description: The first name of the prospect.
       GRADE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The grade of the prospect.
       GRADE_PROFILE_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the grade profile associated with the prospect.
       INDUSTRY:
         type:
           - string
-          - 'null'
+          - "null"
         description: The industry of the prospect.
       LAST_ACTIVITY_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time of the prospect's last activity in UTC.
         format: date-time
       LAST_NAME:
         type:
           - string
-          - 'null'
+          - "null"
         description: The last name of the prospect.
       LEAD_CONVERSION_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the prospect was converted to a lead in UTC.
         format: date-time
       LEAD_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the lead associated with the prospect.
       MOBILE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The mobile number of the prospect.
       OPTED_OUT:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Indicates if the prospect has opted out of communications.
       ORGANISATION_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the organization associated with the prospect.
       ORGANISATION_NAME:
         type:
           - string
-          - 'null'
+          - "null"
         description: The name of the organization associated with the prospect.
       OWNER_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the user who owns or is responsible for the prospect.
       PHONE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The phone number of the prospect.
       PROSPECT_ID:
         type: integer
@@ -4040,12 +4040,12 @@ schemas:
       SALUTATION:
         type:
           - string
-          - 'null'
+          - "null"
         description: The salutation or title used when addressing the prospect.
       SCORE:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The score assigned to the prospect.
       TAGS:
         type: array
@@ -4056,17 +4056,17 @@ schemas:
             TAG_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The name of a tag associated with the prospect.
       TITLE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The job title of the prospect.
       WEBSITE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The website URL of the prospect's organization.
     additionalProperties: true
   relationships:
@@ -4076,22 +4076,22 @@ schemas:
       FORWARD:
         type:
           - string
-          - 'null'
+          - "null"
         description: The ID of the object on one side of the relationship.
       FORWARD_TITLE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The name or title of the object on one side of the relationship.
       FOR_CONTACTS:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: List of contacts associated with this relationship.
       FOR_ORGANISATIONS:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: List of organizations associated with this relationship.
       RELATIONSHIP_ID:
         type: integer
@@ -4099,12 +4099,12 @@ schemas:
       REVERSE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The ID of the object on the other side of the relationship.
       REVERSE_TITLE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The name or title of the object on the other side of the relationship.
     additionalProperties: true
   task_categories:
@@ -4114,12 +4114,12 @@ schemas:
       ACTIVE:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Flag indicating if the task category is currently active or not.
       BACKGROUND_COLOR:
         type:
           - string
-          - 'null'
+          - "null"
         description: >-
           The background color associated with the task category for visual
           representation.
@@ -4129,7 +4129,7 @@ schemas:
       CATEGORY_NAME:
         type:
           - string
-          - 'null'
+          - "null"
         description: The name or label assigned to the task category.
     additionalProperties: true
   tasks:
@@ -4140,39 +4140,39 @@ schemas:
       ASSIGNED_BY_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The user ID of the individual who assigned the task.
       ASSIGNED_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the task was assigned.
         format: date-time
       ASSIGNED_TEAM_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The team ID to which the task is assigned.
       CATEGORY_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The category ID associated with the task.
       COMPLETED:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Indicates if the task has been completed or not.
       COMPLETED_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the task was completed.
         format: date-time
       CREATED_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The user ID of the user who created the task.
       CUSTOMFIELDS:
         type: array
@@ -4183,7 +4183,7 @@ schemas:
             FIELD_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The name of the custom field.
             FIELD_VALUE:
               type: object
@@ -4191,30 +4191,30 @@ schemas:
       DATE_CREATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the task was created.
         format: date-time
       DATE_UPDATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the task was last updated.
         format: date-time
       DETAILS:
         type:
           - string
-          - 'null'
+          - "null"
         description: Additional details or description of the task.
       DUE_DATE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The deadline or due date for the task.
         format: date-time
       EMAIL_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The email ID associated with the task.
       LINKS:
         type: array
@@ -4225,129 +4225,129 @@ schemas:
             DETAILS:
               type:
                 - string
-                - 'null'
+                - "null"
               description: Details or description of the link.
             IS_FORWARD:
               type:
                 - boolean
-                - 'null'
+                - "null"
               description: Indicates if the link is forward or not.
             LINK_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: The ID of the link.
             LINK_OBJECT_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: The object ID associated with the link.
             LINK_OBJECT_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The name of the object associated with the link.
             OBJECT_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: The ID of the object linked to the task.
             OBJECT_NAME:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The name of the object linked to the task.
             RELATIONSHIP_ID:
               type:
                 - integer
-                - 'null'
+                - "null"
               description: The relationship ID associated with the link.
             ROLE:
               type:
                 - string
-                - 'null'
+                - "null"
               description: The role associated with the link.
       MILESTONE_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The milestone ID associated with the task.
       OPPORTUNITY_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The opportunity ID associated with the task.
       OWNER_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The user ID of the owner of the task.
       OWNER_VISIBLE:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Indicates if the owner is visible or not.
       PARENT_TASK_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The ID of the parent task if this task is a subtask.
       PERCENT_COMPLETE:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The completion percentage of the task.
       PRIORITY:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The priority level of the task.
       PROJECT_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The project ID associated with the task.
       PUBLICLY_VISIBLE:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the task is publicly visible.
       RECURRENCE:
         type:
           - string
-          - 'null'
+          - "null"
         description: Details of any recurring pattern for the task.
       REMINDER_DATE_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time for the reminder of the task.
         format: date-time
       REMINDER_SENT:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Indicates if a reminder has been sent for the task.
       RESPONSIBLE_USER_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The user ID of the individual responsible for the task.
       STAGE_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The stage ID of the task.
       START_DATE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The start date of the task.
         format: date-time
       STATUS:
         type:
           - string
-          - 'null'
+          - "null"
         description: The current status of the task.
       TASK_ID:
         type: integer
@@ -4355,7 +4355,7 @@ schemas:
       TITLE:
         type:
           - string
-          - 'null'
+          - "null"
         description: The title or name of the task.
   team_members:
     type: object
@@ -4367,12 +4367,12 @@ schemas:
       PERMISSION_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The permission level associated with the team member
       TEAM_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The identifier for the team to which the member belongs
     additionalProperties: true
   teams:
@@ -4383,18 +4383,18 @@ schemas:
       ANONYMOUS_TEAM:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Indicates if the team is anonymous or not.
       DATE_CREATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the team was created.
         format: date-time
       DATE_UPDATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the team was last updated.
         format: date-time
       TEAMMEMBERS:
@@ -4406,7 +4406,7 @@ schemas:
       TEAM_NAME:
         type:
           - string
-          - 'null'
+          - "null"
         description: The name of the team.
   users:
     type: object
@@ -4415,99 +4415,99 @@ schemas:
       ACCOUNT_OWNER:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Indicates if the user is the owner of the account
       ACTIVE:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Indicates if the user is currently active
       ADMINISTRATOR:
         type:
           - boolean
-          - 'null'
+          - "null"
         description: Indicates if the user has administrator privileges
       CONTACT_DISPLAY:
         type:
           - string
-          - 'null'
+          - "null"
         description: The display name of the user
       CONTACT_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The unique identifier for the user contact
       CONTACT_ORDER:
         type:
           - string
-          - 'null'
+          - "null"
         description: The order of the contact
       DATE_CREATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the user was created in UTC timezone
         format: date-time
       DATE_UPDATED_UTC:
         type:
           - string
-          - 'null'
+          - "null"
         description: The date and time when the user was last updated in UTC timezone
         format: date-time
       EMAIL_ADDRESS:
         type:
           - string
-          - 'null'
+          - "null"
         description: The email address of the user
       EMAIL_DROPBOX_ADDRESS:
         type:
           - string
-          - 'null'
+          - "null"
         description: The Dropbox email address associated with the user
       EMAIL_DROPBOX_IDENTIFIER:
         type:
           - string
-          - 'null'
+          - "null"
         description: The Dropbox identifier of the user
       FIRST_NAME:
         type:
           - string
-          - 'null'
+          - "null"
         description: The first name of the user
       INSTANCE_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The unique identifier of the instance
       LAST_NAME:
         type:
           - string
-          - 'null'
+          - "null"
         description: The last name of the user
       PROFILE_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The profile identifier of the user
       ROLE_ID:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The role identifier of the user
       TASK_WEEK_START:
         type:
           - integer
-          - 'null'
+          - "null"
         description: The start day of the week for tasks
       TIMEZONE_ID:
         type:
           - string
-          - 'null'
+          - "null"
         description: The timezone identifier of the user
       USER_CURRENCY:
         type:
           - string
-          - 'null'
+          - "null"
         description: The currency used by the user
       USER_ID:
         type: integer
