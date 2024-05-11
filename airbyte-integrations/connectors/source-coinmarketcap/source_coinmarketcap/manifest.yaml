@@ -39,20 +39,12 @@ definitions:
             name: categories
             primary_key: id
             path: /v1/cryptocurrency/categories
-            $parameters:
-              name: categories
-              primary_key: id
-              path: /v1/cryptocurrency/categories
           pagination_strategy:
             type: OffsetIncrement
             page_size: 1000
             name: categories
             primary_key: id
             path: /v1/cryptocurrency/categories
-            $parameters:
-              name: categories
-              primary_key: id
-              path: /v1/cryptocurrency/categories
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -87,20 +79,12 @@ definitions:
             name: listing
             primary_key: id
             path: /v1/cryptocurrency/listings/{{ config['data_type'] or ''}}
-            $parameters:
-              name: listing
-              primary_key: id
-              path: /v1/cryptocurrency/listings/{{ config['data_type'] or ''}}
           pagination_strategy:
             type: OffsetIncrement
             page_size: 1000
             name: listing
             primary_key: id
             path: /v1/cryptocurrency/listings/{{ config['data_type'] or ''}}
-            $parameters:
-              name: listing
-              primary_key: id
-              path: /v1/cryptocurrency/listings/{{ config['data_type'] or ''}}
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -156,20 +140,12 @@ definitions:
             name: fiat
             primary_key: id
             path: /v1/fiat/map
-            $parameters:
-              name: fiat
-              primary_key: id
-              path: /v1/fiat/map
           pagination_strategy:
             type: OffsetIncrement
             page_size: 1000
             name: fiat
             primary_key: id
             path: /v1/fiat/map
-            $parameters:
-              name: fiat
-              primary_key: id
-              path: /v1/fiat/map
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -204,20 +180,12 @@ definitions:
             name: exchange
             primary_key: id
             path: /v1/exchange/map
-            $parameters:
-              name: exchange
-              primary_key: id
-              path: /v1/exchange/map
           pagination_strategy:
             type: OffsetIncrement
             page_size: 1000
             name: exchange
             primary_key: id
             path: /v1/exchange/map
-            $parameters:
-              name: exchange
-              primary_key: id
-              path: /v1/exchange/map
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -231,10 +199,6 @@ definitions:
       name: categories
       primary_key: id
       path: /v1/cryptocurrency/categories
-      $parameters:
-        name: categories
-        primary_key: id
-        path: /v1/cryptocurrency/categories
       inject_into:
         type: RequestOption
         field_name: X-CMC_PRO_API_KEY
