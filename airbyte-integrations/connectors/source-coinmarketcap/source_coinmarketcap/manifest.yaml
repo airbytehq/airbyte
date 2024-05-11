@@ -36,15 +36,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
-            name: categories
-            primary_key: id
-            path: /v1/cryptocurrency/categories
           pagination_strategy:
             type: OffsetIncrement
             page_size: 1000
-            name: categories
-            primary_key: id
-            path: /v1/cryptocurrency/categories
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -76,15 +70,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
-            name: listing
-            primary_key: id
-            path: /v1/cryptocurrency/listings/{{ config['data_type'] or ''}}
           pagination_strategy:
             type: OffsetIncrement
             page_size: 1000
-            name: listing
-            primary_key: id
-            path: /v1/cryptocurrency/listings/{{ config['data_type'] or ''}}
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -137,15 +125,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
-            name: fiat
-            primary_key: id
-            path: /v1/fiat/map
           pagination_strategy:
             type: OffsetIncrement
             page_size: 1000
-            name: fiat
-            primary_key: id
-            path: /v1/fiat/map
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -177,15 +159,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
-            name: exchange
-            primary_key: id
-            path: /v1/exchange/map
           pagination_strategy:
             type: OffsetIncrement
             page_size: 1000
-            name: exchange
-            primary_key: id
-            path: /v1/exchange/map
       schema_loader:
         type: InlineSchemaLoader
         schema:
