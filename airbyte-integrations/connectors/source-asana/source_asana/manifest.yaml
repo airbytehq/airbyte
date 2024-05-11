@@ -36,8 +36,8 @@ definitions:
     error_handler:
       type: DefaultErrorHandler
       backoff_strategies:
-          - type: "WaitTimeFromHeader"
-            header: "Retry-After"
+        - type: "WaitTimeFromHeader"
+          header: "Retry-After"
       response_filters:
         - type: HttpResponseFilter
           action: IGNORE
