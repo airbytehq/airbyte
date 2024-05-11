@@ -6,8 +6,8 @@ import uuid
 from typing import Any, Iterable, Optional
 
 import dpath.util
-from airbyte._processors.sql.snowflakecortex import SnowflakeCortexSqlProcessor
 from airbyte._processors.sql.snowflake import SnowflakeSqlProcessor
+from airbyte._processors.sql.snowflakecortex import SnowflakeCortexSqlProcessor
 from airbyte.caches import SnowflakeCache
 from airbyte.strategies import WriteStrategy
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
@@ -52,8 +52,8 @@ class SnowflakeCortexIndexer(Indexer):
 
     def _init_db_connection(self):
         """
-            Initialize default snowflake connection for checking the connection. We are not initializing the cortex 
-            process here because that needs a catalog.
+        Initialize default snowflake connection for checking the connection. We are not initializing the cortex
+        process here because that needs a catalog.
         """
         self.default_processor = SnowflakeSqlProcessor(cache=self.cache)
 
