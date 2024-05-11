@@ -15,7 +15,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /features
           http_method: GET
         record_selector:
@@ -40,14 +40,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/features_stream'
+          $ref: "#/schemas/features_stream"
     products_stream:
       type: DeclarativeStream
       name: products_stream
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /products
           http_method: GET
         record_selector:
@@ -72,14 +72,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/products_stream'
+          $ref: "#/schemas/products_stream"
     idea_categories_stream:
       type: DeclarativeStream
       name: idea_categories_stream
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /products/{{ stream_partition.id }}/idea_categories
           http_method: GET
         record_selector:
@@ -108,18 +108,18 @@ definitions:
                 parent_key: id
                 partition_field: id
                 stream:
-                  $ref: '#/definitions/streams/products_stream'
+                  $ref: "#/definitions/streams/products_stream"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/idea_categories_stream'
+          $ref: "#/schemas/idea_categories_stream"
     ideas_stream:
       type: DeclarativeStream
       name: ideas_stream
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: ideas
           http_method: GET
         record_selector:
@@ -144,14 +144,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/ideas_stream'
+          $ref: "#/schemas/ideas_stream"
     idea_endorsements_stream:
       type: DeclarativeStream
       name: idea_endorsements_stream
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /ideas/{{ stream_partition.id }}/endorsements
           http_method: GET
         record_selector:
@@ -180,18 +180,18 @@ definitions:
                 parent_key: id
                 partition_field: id
                 stream:
-                  $ref: '#/definitions/streams/ideas_stream'
+                  $ref: "#/definitions/streams/ideas_stream"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/idea_endorsements_stream'
+          $ref: "#/schemas/idea_endorsements_stream"
     idea_comments_stream:
       type: DeclarativeStream
       name: idea_comments_stream
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /ideas/{{ stream_partition.id }}/idea_comments
           http_method: GET
         record_selector:
@@ -220,18 +220,18 @@ definitions:
                 parent_key: id
                 partition_field: id
                 stream:
-                  $ref: '#/definitions/streams/ideas_stream'
+                  $ref: "#/definitions/streams/ideas_stream"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/idea_comments_stream'
+          $ref: "#/schemas/idea_comments_stream"
     users_stream:
       type: DeclarativeStream
       name: users_stream
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: users
           http_method: GET
         record_selector:
@@ -256,14 +256,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/users_stream'
+          $ref: "#/schemas/users_stream"
     goals_stream:
       type: DeclarativeStream
       name: goals_stream
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: goals
           http_method: GET
         record_selector:
@@ -288,7 +288,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/goals_stream'
+          $ref: "#/schemas/goals_stream"
   base_requester:
     type: HttpRequester
     url_base: "{{ config['url'] }}/api/v1"
@@ -297,14 +297,14 @@ definitions:
       api_token: "{{ config['api_key'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/features_stream'
-  - $ref: '#/definitions/streams/products_stream'
-  - $ref: '#/definitions/streams/idea_categories_stream'
-  - $ref: '#/definitions/streams/ideas_stream'
-  - $ref: '#/definitions/streams/idea_endorsements_stream'
-  - $ref: '#/definitions/streams/idea_comments_stream'
-  - $ref: '#/definitions/streams/users_stream'
-  - $ref: '#/definitions/streams/goals_stream'
+  - $ref: "#/definitions/streams/features_stream"
+  - $ref: "#/definitions/streams/products_stream"
+  - $ref: "#/definitions/streams/idea_categories_stream"
+  - $ref: "#/definitions/streams/ideas_stream"
+  - $ref: "#/definitions/streams/idea_endorsements_stream"
+  - $ref: "#/definitions/streams/idea_comments_stream"
+  - $ref: "#/definitions/streams/users_stream"
+  - $ref: "#/definitions/streams/goals_stream"
 
 spec:
   type: Spec
@@ -347,32 +347,32 @@ schemas:
     properties:
       id:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       reference_num:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       name:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       created_at:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       url:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       resource:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       product_id:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
   products_stream:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: "object"
@@ -380,48 +380,48 @@ schemas:
     properties:
       id:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       reference_prefix:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       name:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       product_line:
         type:
-        - "null"
-        - "boolean"
+          - "null"
+          - "boolean"
       created_at:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       workspace_type:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
   idea_categories_stream:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: "object"
     properties:
       id:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       name:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       parent_id:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       created_at:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
   ideas_stream:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: "object"
@@ -429,326 +429,326 @@ schemas:
     properties:
       id:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       name:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       reference_num:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       created_at:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       updated_at:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       workflow_status:
         type:
-        - "null"
-        - "object"
+          - "null"
+          - "object"
         properties:
           id:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           name:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           position:
             type:
-            - "null"
-            - "integer"
+              - "null"
+              - "integer"
           complete:
             type:
-            - "null"
-            - "boolean"
+              - "null"
+              - "boolean"
           color:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
       description:
         type:
-        - "null"
-        - "object"
+          - "null"
+          - "object"
         properties:
           id:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           body:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           created_at:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           attachments:
             type:
-            - "null"
-            - "array"
+              - "null"
+              - "array"
       url:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       resource:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
   idea_endorsements_stream:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: "object"
     properties:
       id:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       idea_id:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       created_at:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       updated_at:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       value:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       link:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       weight:
         type:
-        - "null"
-        - "integer"
+          - "null"
+          - "integer"
       endorsed_by_portal_user:
         type: "object"
         properties:
           id:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           name:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           email:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           created_at:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
       endorsed_by_idea_user:
         type: "object"
         properties:
           id:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           name:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           email:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           created_at:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
       endorsed_by_idea_organization:
         type: "object"
         properties:
           id:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           name:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           created_at:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           url:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           resource:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
       endorsed_by_user:
         type: "object"
         properties:
           id:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           name:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           email:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           created_at:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           updated_at:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
   idea_comments_stream:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: "object"
     properties:
       id:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       idea_id:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       body:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       created_at:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       visibility:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       parent_idea_comment_id:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       idea_commenter_user:
         type: "object"
         properties:
           id:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           name_id:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           email:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           created_at:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           updated_at:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
       idea:
         type: "object"
         properties:
           id:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           reference_num:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           name:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           created_at:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           updated_at:
             type:
-            - "null"
-            - "string"
+              - "null"
+              - "string"
           workflow_status:
             type: "object"
             properties:
               id:
                 type:
-                - "null"
-                - "string"
+                  - "null"
+                  - "string"
               name:
                 type:
-                - "null"
-                - "string"
+                  - "null"
+                  - "string"
               position:
                 type:
-                - "null"
-                - "integer"
+                  - "null"
+                  - "integer"
               complete:
                 type:
-                - "null"
-                - "boolean"
+                  - "null"
+                  - "boolean"
               color:
                 type:
-                - "null"
-                - "string"
+                  - "null"
+                  - "string"
           description:
             type: "object"
             properties:
               id:
                 type:
-                - "null"
-                - "string"
+                  - "null"
+                  - "string"
               body:
                 type:
-                - "null"
-                - "string"
+                  - "null"
+                  - "string"
               created_at:
                 type:
-                - "null"
-                - "string"
+                  - "null"
+                  - "string"
               attachments:
                 type:
-                - "null"
-                - "array"
+                  - "null"
+                  - "array"
             url:
               type:
-              - "null"
-              - "string"
+                - "null"
+                - "string"
             resource:
               type:
-              - "null"
-              - "string"
+                - "null"
+                - "string"
         attachments:
           type:
-          - "null"
-          - "array"
+            - "null"
+            - "array"
       attachments:
         type:
-        - "null"
-        - "array"
+          - "null"
+          - "array"
   users_stream:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: "object"
@@ -756,52 +756,52 @@ schemas:
     properties:
       id:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       name:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       email:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       created_at:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       updated_at:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       accessed_at:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       product_roles:
         type:
-        - "null"
-        - "array"
+          - "null"
+          - "array"
       enabled:
         type:
-        - "null"
-        - "boolean"
+          - "null"
+          - "boolean"
       paid_seat:
         type:
-        - "null"
-        - "boolean"
+          - "null"
+          - "boolean"
       administrator:
         type:
-        - "null"
-        - "boolean"
+          - "null"
+          - "boolean"
       administrator_roles:
         type:
-        - "null"
-        - "object"
+          - "null"
+          - "object"
       identity_provider:
         type:
-        - "null"
-        - "object"
+          - "null"
+          - "object"
   goals_stream:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: "object"
@@ -809,113 +809,113 @@ schemas:
     properties:
       id:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       name:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       reference_num:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       effort:
         type:
-        - "null"
-        - "number"
+          - "null"
+          - "number"
       value:
         type:
-        - "null"
-        - "number"
+          - "null"
+          - "number"
       position:
         type:
-        - "null"
-        - "number"
+          - "null"
+          - "number"
       created_at:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       updated_at:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       product_id:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       progress:
         type:
-        - "null"
-        - "number"
+          - "null"
+          - "number"
       progress_source:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       url:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       resource:
         type:
-        - "null"
-        - "string"
+          - "null"
+          - "string"
       description:
         type:
-        - "null"
-        - "object"
-      success_metric:
-        type:
-        - "null"
-        - "object"
-      project:
-        type:
-        - "null"
-        - "object"
-      timeframe:
-        type:
-        - "null"
-        - "object"
-      initiatives:
-        type:
-        - "null"
-        - "array"
-        items:
-          type:
           - "null"
           - "object"
+      success_metric:
+        type:
+          - "null"
+          - "object"
+      project:
+        type:
+          - "null"
+          - "object"
+      timeframe:
+        type:
+          - "null"
+          - "object"
+      initiatives:
+        type:
+          - "null"
+          - "array"
+        items:
+          type:
+            - "null"
+            - "object"
           additionalProperties: "true"
       comments_count:
         type:
-        - "null"
-        - "integer"
+          - "null"
+          - "integer"
       features:
         type:
-        - "null"
-        - "array"
+          - "null"
+          - "array"
         items:
           type:
-          - "null"
-          - "object"
+            - "null"
+            - "object"
           additionalProperties: "true"
       releases:
         type:
-        - "null"
-        - "array"
+          - "null"
+          - "array"
       custom_fields:
         type:
-        - "null"
-        - "array"
+          - "null"
+          - "array"
       parent:
         type:
-        - "null"
-        - "object"
+          - "null"
+          - "object"
         additionalProperties: "true"
       parents:
         type:
-        - "null"
-        - "array"
+          - "null"
+          - "array"
         items:
           type:
-          - "null"
-          - "object"
+            - "null"
+            - "object"
           additionalProperties: "true"
