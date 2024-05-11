@@ -47,8 +47,6 @@ class DestinationSnowflakeCortex(Destination):
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
-        do_not_track = os.environ.get("DO_NOT_TRACK")
-        print(f"Coming in spec. Analytics is {do_not_track}")
         return ConnectorSpecification(
             documentationUrl="https://docs.airbyte.com/integrations/destinations/snowflake-cortex",
             supportsIncremental=True,

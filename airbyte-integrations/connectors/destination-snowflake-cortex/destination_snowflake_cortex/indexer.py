@@ -6,7 +6,8 @@ import uuid
 from typing import Any, Iterable, Optional
 
 import dpath.util
-from airbyte._processors.sql.snowflakecortex import SnowflakeCortexSqlProcessor, SnowflakeSqlProcessor
+from airbyte._processors.sql.snowflakecortex import SnowflakeCortexSqlProcessor
+from airbyte._processors.sql.snowflake import SnowflakeSqlProcessor
 from airbyte.caches import SnowflakeCache
 from airbyte.strategies import WriteStrategy
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
@@ -36,11 +37,6 @@ class SnowflakeCortexIndexer(Indexer):
 
     def __init__(self, config: SnowflakeCortexIndexingModel, embedding_dimensions: int, configured_catalog: ConfiguredAirbyteCatalog):
         super().__init__(config)
-        self.embedding_dimensions = embedding_dimensions
-        self.catalog = configured_catalog
-        self._init_db_connection(config)
-
-    def _init_db_connection(self, config: SnowflakeCortexIndexingModel):
         account = config.account
         username = config.username
         password = config.password
@@ -50,7 +46,16 @@ class SnowflakeCortexIndexer(Indexer):
         self.cache = SnowflakeCache(
             account=account, username=username, password=password, database=database, warehouse=warehouse, role=role
         )
-        self.defaut_processor = SnowflakeSqlProcessor(cache=self.cache)
+        self.embedding_dimensions = embedding_dimensions
+        self.catalog = configured_catalog
+        self._init_db_connection()
+
+    def _init_db_connection(self):
+        """
+            Initialize default snowflake connection for checking the connection. We are not initializing the cortex 
+            process here because that needs a catalog.
+        """
+        self.default_processor = SnowflakeSqlProcessor(cache=self.cache)
 
     def _get_airbyte_messsages_from_chunks(
         self,
@@ -167,5 +172,5 @@ class SnowflakeCortexIndexer(Indexer):
         pass
 
     def check(self) -> Optional[str]:
-        self.defaut_processor._get_tables_list()
+        self.default_processor._get_tables_list()
         # TODO: check to see if vector type is available in snowflake instance ?

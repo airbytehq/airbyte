@@ -75,54 +75,7 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         conn.commit()
         conn.close()
 
-    def test_cortex_functions_available(self):
-        # Create a cursor object
-        conn = self._get_db_connection()
-        cursor = conn.cursor()
-
-        # Execute the query
-        query = """
-        SELECT SNOWFLAKE.CORTEX.EXTRACT_ANSWER(
-            $$Apple Vision Pro comprises approximately 300 components.[40] It has a curved laminated glass display on the front, an aluminum frame on its sides, a flexible cushion on the inside, and a removable, adjustable headband. The frame contains five sensors, six microphones, and 12 cameras.$$,
-            'How many cameras are there on the product?'
-        ) AS answer
-        """
-        cursor.execute(query)
-        result = cursor.fetchone()
-        if result:
-            print("Answer:", result[0])
-        cursor.close()
-        conn.close()
-
-    def test_get_embeddings_from_documents(self):
-        conn = self._get_db_connection()
-        cur = conn.cursor()
-        page_content_list = ["dogs are number 1", "dogs are number 2", "cats are nummber 1"]
-
-        # Create a temporary table
-        cur.execute("""
-        CREATE TEMPORARY TABLE temp_page_content (
-            page_content STRING
-        )
-        """)
-        # Insert data into the temporary table
-        cur.executemany("INSERT INTO temp_page_content (page_content) VALUES (%s)", page_content_list)
-
-        # Process the data (for example, call a UDF or perform calculations)
-        # Here we're just selecting the processed data as an example
-        cur.execute("""
-        SELECT snowflake.cortex.embed_text('e5-base-v2', page_content) AS embedding
-        FROM temp_page_content
-        """)
-        processed_data = cur.fetchall()
-        #for row in processed_data:
-        #    print(row[0])
-        cur.execute("DROP TABLE temp_page_content")
-        cur.close()
-        conn.close()
-
     def _run_cosine_similarity(self, query_vector, table_name):
-       # Create a cursor object
         conn = self._get_db_connection()
         cursor = conn.cursor()
 
@@ -137,7 +90,6 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         """
         cursor.execute(query)
         result = cursor.fetchone()
-        # Close cursor and connection
         cursor.close()
         conn.close()
         return result
@@ -158,10 +110,56 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         list(destination.write(self.config, append_catalog, [self._record("mystream", "Cats are nice", 6), first_state_message]))
         assert(self._get_record_count("mystream") == 6)
 
-        # todo: test merge once merge works in PyAirbyte 
+        # TODO: add a test for merge 
+        
+        # TODO: uncomment the following before merging 
         # perform a query using OpenAI embedding 
         #embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
         #result = self._run_cosine_similarity(embeddings.embed_query("feline animals"), "mystream")
         #assert(len(result) == 1)
         #result[0] == "str_col: Cats are nice"
+
+
+    """
+    Following tests are not code specific, but are useful to confirm that the Cortex functions are available and behaving as expcected
+    """
+
+    def test_cortex_functions_available(self):
+        conn = self._get_db_connection()
+        cursor = conn.cursor()
+
+        query = """
+        SELECT SNOWFLAKE.CORTEX.EXTRACT_ANSWER(
+            $$Apple Vision Pro comprises approximately 300 components.[40] It has a curved laminated glass display on the front, an aluminum frame on its sides, a flexible cushion on the inside, and a removable, adjustable headband. The frame contains five sensors, six microphones, and 12 cameras.$$,
+            'How many cameras are there on the product?'
+        ) AS answer
+        """
+        try:
+            cursor.execute(query)
+        except Exception as e:
+            self.fail(f"Cortex functions might not be available in database: {e}")
+
+    def test_get_embeddings_using_cortex(self):
+        conn = self._get_db_connection()
+        cur = conn.cursor()
+        page_content_list = ["dogs are number 1", "dogs are number 2", "cats are nummber 1"]
+
+        cur.execute("""
+        CREATE TEMPORARY TABLE temp_page_content (
+            page_content STRING
+        )
+        """)
+        cur.executemany("INSERT INTO temp_page_content (page_content) VALUES (%s)", page_content_list)
+
+        cur.execute("""
+        SELECT snowflake.cortex.embed_text('e5-base-v2', page_content) AS embedding
+        FROM temp_page_content
+        """)
+        processed_data = cur.fetchall()
+        self.assertTrue(processed_data, "No data found in the database")
+        cur.execute("DROP TABLE temp_page_content")
+        cur.close()
+        conn.close()
+
+
 

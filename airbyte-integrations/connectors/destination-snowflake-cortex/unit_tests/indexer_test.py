@@ -17,13 +17,11 @@ from destination_snowflake_cortex.indexer import (
     SnowflakeCortexIndexer,
 )
 
-
 def _create_snowflake_cortex_indexer(catalog:Optional[ConfiguredAirbyteCatalog] ):
     config = SnowflakeCortexIndexingModel(account="account", username="username", password="password", database="database", warehouse="warehouse", role="role")
     with patch.object(SnowflakeCortexIndexer, '_init_db_connection', side_effect=None):
         indexer = SnowflakeCortexIndexer(config, 3, Mock(ConfiguredAirbyteCatalog) if catalog is None else catalog)
     return indexer 
-    
 
 def test_get_airbyte_messsages_from_chunks():
     indexer = _create_snowflake_cortex_indexer(generate_catalog())
@@ -58,9 +56,11 @@ def test_add_columns_to_catalog():
     for stream in updated_catalog.streams:
         assert all(column in stream.stream.json_schema["properties"] 
                    for column in [DOCUMENT_ID_COLUMN, CHUNK_ID_COLUMN, PAGE_CONTENT_COLUMN, METADATA_COLUMN, EMBEDDING_COLUMN])
-        assert(stream.primary_key == [[DOCUMENT_ID_COLUMN]])
+        if stream.stream.name in ['example_stream', 'example_stream2']:
+            assert(stream.primary_key == [[DOCUMENT_ID_COLUMN]])
+        if stream.stream.name == 'example_stream3':
+            assert(stream.primary_key == [])
 
-  
 
 def test_get_primary_keys():
     # case: stream has one primary key 
@@ -124,7 +124,7 @@ def test_get_write_strategy():
     indexer = _create_snowflake_cortex_indexer(generate_catalog())
     assert(indexer.get_write_strategy('example_stream') == WriteStrategy.MERGE)
     assert(indexer.get_write_strategy('example_stream2') == WriteStrategy.REPLACE)
-    assert(indexer.get_write_strategy('example_stream3') == WriteStrategy.AUTO)
+    assert(indexer.get_write_strategy('example_stream3') == WriteStrategy.APPEND)
 
 def test_get_document_id():
     indexer = _create_snowflake_cortex_indexer(generate_catalog())
@@ -152,6 +152,25 @@ def test_get_document_id():
     catalog.streams[0].primary_key = [["int_col"], ["str_col"]]
     indexer = _create_snowflake_cortex_indexer(catalog)
     assert(indexer._create_document_id(message) == "Stream_example_stream_Key_5_Dogs are number 1")
+
+def test_delete():
+    delete_ids = [1, 2, 3]
+    namespace = "test_namespace"
+    stream = "test_stream"
+    indexer = _create_snowflake_cortex_indexer(generate_catalog())
+        
+    indexer.delete(delete_ids, namespace, stream)
+
+
+def test_check():
+    indexer = _create_snowflake_cortex_indexer(generate_catalog())
+    mock_processor = MagicMock()
+    indexer.default_processor = mock_processor
+    mock_processor._get_tables_list.return_value = ["table1", "table2"]
+    result = indexer.check()
+    mock_processor._get_tables_list.assert_called_once()
+    assert result == None
+
 
 def generate_catalog():
     return ConfiguredAirbyteCatalog.parse_obj(
@@ -182,6 +201,19 @@ def generate_catalog():
                     "primary_key": [["int_col"]],
                     "sync_mode": "full_refresh",
                     "destination_sync_mode": "overwrite",
+                },
+                {
+                    "stream": {
+                        "name": "example_stream3",
+                        "json_schema": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": {}},
+                        "supported_sync_modes": ["full_refresh", "incremental"],
+                        "source_defined_cursor": False,
+                        "default_cursor_field": ["column_name"],
+                        "namespace": "ns2",
+                    },
+                    "primary_key": [],
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "append",
                 },
             ]
         }
