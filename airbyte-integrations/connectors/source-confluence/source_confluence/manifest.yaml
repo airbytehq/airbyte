@@ -17,8 +17,8 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
-          path: 'audit'
+          $ref: "#/definitions/base_requester"
+          path: "audit"
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -42,7 +42,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/audit'
+          $ref: "#/schemas/audit"
     blog_posts:
       type: DeclarativeStream
       name: blog_posts
@@ -51,7 +51,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: content?type=blogpost
           http_method: GET
           request_parameters:
@@ -79,7 +79,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/blog_posts'
+          $ref: "#/schemas/blog_posts"
     group:
       type: DeclarativeStream
       name: group
@@ -88,7 +88,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: group
           http_method: GET
         record_selector:
@@ -114,7 +114,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/group'
+          $ref: "#/schemas/group"
     pages:
       type: DeclarativeStream
       name: pages
@@ -123,7 +123,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: content?type=page
           http_method: GET
           request_parameters:
@@ -151,7 +151,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/pages'
+          $ref: "#/schemas/pages"
     space:
       type: DeclarativeStream
       name: space
@@ -160,7 +160,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: space
           http_method: GET
           request_parameters:
@@ -187,21 +187,21 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/space'
+          $ref: "#/schemas/space"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['domain_name'] }}/wiki/rest/api/
     authenticator:
       type: BasicHttpAuthenticator
-      username: '{{ config[''email''] }}'
-      password: '{{ config[''api_token''] }}'
+      username: "{{ config['email'] }}"
+      password: "{{ config['api_token'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/audit'
-  - $ref: '#/definitions/streams/blog_posts'
-  - $ref: '#/definitions/streams/group'
-  - $ref: '#/definitions/streams/pages'
-  - $ref: '#/definitions/streams/space'
+  - $ref: "#/definitions/streams/audit"
+  - $ref: "#/definitions/streams/blog_posts"
+  - $ref: "#/definitions/streams/group"
+  - $ref: "#/definitions/streams/pages"
+  - $ref: "#/definitions/streams/space"
 
 spec:
   type: Spec
@@ -252,57 +252,57 @@ schemas:
     properties:
       affectedObject:
         type:
-          - 'null'
+          - "null"
           - object
         description: The object that was affected by the audit event.
       associatedObjects:
         type:
-          - 'null'
+          - "null"
           - array
         description: Any associated objects related to the audit event.
       author:
         type:
-          - 'null'
+          - "null"
           - object
         description: The user who triggered the audit event.
       category:
         type:
-          - 'null'
+          - "null"
           - string
         description: The category under which the audit event falls.
       changedValues:
         type:
-          - 'null'
+          - "null"
           - array
         description: Details of the values that were changed during the audit event.
       creationDate:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The date and time when the audit event was created.
       description:
         type:
-          - 'null'
+          - "null"
           - string
         description: A detailed description of the audit event.
       remoteAddress:
         type:
-          - 'null'
+          - "null"
           - string
         description: The IP address from which the audit event originated.
       summary:
         type:
-          - 'null'
+          - "null"
           - string
         description: A brief summary or title describing the audit event.
       superAdmin:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the user triggering the audit event is a super admin.
       sysAdmin:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the user triggering the audit event is a system admin.
   blog_posts:
@@ -320,19 +320,19 @@ schemas:
               type:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               accountId:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               email:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               publicName:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           collaborators:
             type: object
             properties:
@@ -348,39 +348,39 @@ schemas:
                     type:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     accountId:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     email:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     publicName:
                       type:
                         - string
-                        - 'null'
+                        - "null"
           friendlyWhen:
             type:
               - string
-              - 'null'
+              - "null"
           message:
             type:
               - string
-              - 'null'
+              - "null"
           minorEdit:
             type:
               - boolean
-              - 'null'
+              - "null"
           number:
             type:
               - integer
-              - 'null'
+              - "null"
           when:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
       type:
         type: string
@@ -452,38 +452,38 @@ schemas:
                         type:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         accountId:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         email:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         publicName:
                           type:
                             - string
-                            - 'null'
+                            - "null"
           createdBy:
             type: object
             properties:
               type:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               accountId:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               email:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               publicName:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           createdDate:
             type: string
             description: Date and time when the blog post was created
@@ -499,19 +499,19 @@ schemas:
                   type:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   accountId:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   email:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   publicName:
                     type:
                       - string
-                      - 'null'
+                      - "null"
               collaborators:
                 type: object
                 properties:
@@ -527,39 +527,39 @@ schemas:
                         type:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         accountId:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         email:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         publicName:
                           type:
                             - string
-                            - 'null'
+                            - "null"
               friendlyWhen:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               message:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               minorEdit:
                 type:
                   - boolean
-                  - 'null'
+                  - "null"
               number:
                 type:
                   - integer
-                  - 'null'
+                  - "null"
               when:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 format: date-time
       id:
         type: string
@@ -574,7 +574,7 @@ schemas:
               operations:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               restrictions:
                 user:
                   type: object
@@ -587,19 +587,19 @@ schemas:
                           type:
                             type:
                               - string
-                              - 'null'
+                              - "null"
                           accountId:
                             type:
                               - string
-                              - 'null'
+                              - "null"
                           email:
                             type:
                               - string
-                              - 'null'
+                              - "null"
                           publicName:
                             type:
                               - string
-                              - 'null'
+                              - "null"
       status:
         type: string
         description: Current status of the blog post (e.g., draft, published).
@@ -613,22 +613,22 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
         description: The type of group, indicating its category or classification.
       _links:
         type:
-          - 'null'
+          - "null"
           - object
         description: A collection of links related to the group entity.
       id:
         type:
-          - 'null'
+          - "null"
           - string
         description: The unique identifier of the group.
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: The name of the group.
   pages:
@@ -646,19 +646,19 @@ schemas:
               type:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               accountId:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               email:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               publicName:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           collaborators:
             type: object
             properties:
@@ -674,39 +674,39 @@ schemas:
                     type:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     accountId:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     email:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                     publicName:
                       type:
                         - string
-                        - 'null'
+                        - "null"
           friendlyWhen:
             type:
               - string
-              - 'null'
+              - "null"
           message:
             type:
               - string
-              - 'null'
+              - "null"
           minorEdit:
             type:
               - boolean
-              - 'null'
+              - "null"
           number:
             type:
               - integer
-              - 'null'
+              - "null"
           when:
             type:
               - string
-              - 'null'
+              - "null"
             format: date-time
       type:
         type: string
@@ -834,19 +834,19 @@ schemas:
                         type:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         accountId:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         email:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         publicName:
                           type:
                             - string
-                            - 'null'
+                            - "null"
           createdBy:
             type: object
             description: Created by user
@@ -854,19 +854,19 @@ schemas:
               type:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               accountId:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               email:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               publicName:
                 type:
                   - string
-                  - 'null'
+                  - "null"
           createdDate:
             type: string
             description: Date and time of creation
@@ -884,19 +884,19 @@ schemas:
                   type:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   accountId:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   email:
                     type:
                       - string
-                      - 'null'
+                      - "null"
                   publicName:
                     type:
                       - string
-                      - 'null'
+                      - "null"
               collaborators:
                 type: object
                 properties:
@@ -912,39 +912,39 @@ schemas:
                         type:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         accountId:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         email:
                           type:
                             - string
-                            - 'null'
+                            - "null"
                         publicName:
                           type:
                             - string
-                            - 'null'
+                            - "null"
               friendlyWhen:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               message:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               minorEdit:
                 type:
                   - boolean
-                  - 'null'
+                  - "null"
               number:
                 type:
                   - integer
-                  - 'null'
+                  - "null"
               when:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 format: date-time
       id:
         type: string
@@ -960,7 +960,7 @@ schemas:
               operations:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               restrictions:
                 user:
                   type: object
@@ -973,19 +973,19 @@ schemas:
                           type:
                             type:
                               - string
-                              - 'null'
+                              - "null"
                           accountId:
                             type:
                               - string
-                              - 'null'
+                              - "null"
                           email:
                             type:
                               - string
-                              - 'null'
+                              - "null"
                           publicName:
                             type:
                               - string
-                              - 'null'
+                              - "null"
       status:
         type: string
         description: Status of the page
@@ -999,51 +999,51 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
         description: Type/category of the space.
       _expandable:
         type:
-          - 'null'
+          - "null"
           - object
         description: Expandable information related to the space.
       _links:
         type:
-          - 'null'
+          - "null"
           - object
         description: Links associated with the space.
       description:
         type:
-          - 'null'
+          - "null"
           - object
         description: Description of the space.
       icon:
         type:
-          - 'null'
+          - "null"
           - object
         description: Icon representing the space.
       id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Unique identifier for the space.
       key:
         type:
-          - 'null'
+          - "null"
           - string
         description: Key identifier for the space.
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Name of the space.
       permissions:
         type:
-          - 'null'
+          - "null"
           - array
         description: Permissions related to the space.
       status:
         type:
-          - 'null'
+          - "null"
           - string
         description: Status information of the space.
