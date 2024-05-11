@@ -110,9 +110,12 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         list(destination.write(self.config, append_catalog, [self._record("mystream", "Cats are nice", 6), first_state_message]))
         assert(self._get_record_count("mystream") == 6)
 
-        # TODO: add a test for merge 
+        # TODO: following ends up calling emulated merge and fails, investigate why
+        #append_dedup_catalog = self._get_configured_catalog(DestinationSyncMode.append_dedup) 
+        #list(destination.write(self.config, append_dedup_catalog, [self._record("mystream", "Cats are nice too", 4), first_state_message]))
+        #assert(self._get_record_count("mystream") == 6)
         
-        # TODO: uncomment the following before merging 
+        # TODO: uncomment and test before merging 
         # perform a query using OpenAI embedding 
         #embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
         #result = self._run_cosine_similarity(embeddings.embed_query("feline animals"), "mystream")

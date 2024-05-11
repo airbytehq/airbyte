@@ -87,6 +87,8 @@ class SnowflakeCortexIndexer(Indexer):
         updated_catalog = self.catalog
         # update each stream in the catalog
         for stream in updated_catalog.streams:
+            # Revisit this - Clear existing properties, if anys, since we are not entirely sure what's in the configured catalog.
+            stream.stream.json_schema["properties"] = {}
             stream.stream.json_schema["properties"][DOCUMENT_ID_COLUMN] = {"type": "string"}
             stream.stream.json_schema["properties"][CHUNK_ID_COLUMN] = {"type": "string"}
             stream.stream.json_schema["properties"][PAGE_CONTENT_COLUMN] = {"type": "string"}
@@ -164,6 +166,9 @@ class SnowflakeCortexIndexer(Indexer):
                 source_name="vector_db_based",
                 stream_names=[stream],
             )
+            print("\n\n\n\n\nProcessing airbyte messages===================================")
+            print(len(airbyte_messages))
+            print(airbyte_messages)
             cortex_processor.process_airbyte_messages(airbyte_messages, self.get_write_strategy(stream))
 
     def delete(self, delete_ids, namespace, stream):
