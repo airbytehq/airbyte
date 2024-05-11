@@ -1,104 +1,123 @@
 # Amazon Ads
+
 This page contains the setup guide and reference information for the Amazon Ads source connector.
 
 ## Prerequisites
 
-* Client ID
-* Client Secret
-* Refresh Token
-* Region
-* Start Date (Optional)
-* Profile IDs (Optional)
-* Marketplace IDs (Optional)
+- Client ID
+- Client Secret
+- Refresh Token
+- Region
+- Start Date (Optional)
+- Profile IDs (Optional)
+- Marketplace IDs (Optional)
 
 ## Setup guide
+
 ### Step 1: Set up Amazon Ads
-Create an [Amazon user](https://www.amazon.com) with access to [Amazon Ads account](https://advertising.amazon.com).
+
+Create an [Amazon user](https://www.amazon.com) with access to an [Amazon Ads account](https://advertising.amazon.com).
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
-To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you must first complete the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview). The onboarding process has several steps and may take several days to complete. After completing all steps you will have to get Amazon client application `Client ID`, `Client Secret` and `Refresh Token`.
+To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you must first complete the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview). The onboarding process has several steps and may take several days to complete. After completing all steps you will have to get the Amazon client application's `Client ID`, `Client Secret` and `Refresh Token`.
+
 <!-- /env:oss -->
 
 ### Step 2: Set up the Amazon Ads connector in Airbyte
 
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Amazon Ads** from the Source type dropdown and enter a name for this connector.
-4. Click `Authenticate your Amazon Ads account`.
+4. Click **Authenticate your Amazon Ads account**.
 5. Log in and Authorize to the Amazon account.
 6. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-7. **Start Date (Optional)** is used for generating reports starting from the specified start date. Should be in YYYY-MM-DD format and not more than 60 days in the past. If not specified today's date is used. The date is treated in the timezone of the processed profile.
-8. **Profile IDs (Optional)** you want to fetch data for. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
+7. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
+8. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 9. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
-10. Click `Set up source`.
+10. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 1. **Client ID** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 2. **Client Secret** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 3. **Refresh Token**. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 4. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-5. **Start Date (Optional)** is used for generating reports starting from the specified start date. Should be in YYYY-MM-DD format and not more than 60 days in the past. If not specified today's date is used. The date is treated in the timezone of the processed profile.
-6. **Profile IDs (Optional)** you want to fetch data for. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
+5. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
+6. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 7. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
 <!-- /env:oss -->
 
+:::note
+The Amazon Ads source connector uses Sponsored Products, Sponsored Brands, and Sponsored Display APIs which are not compatible with agency account type. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
+If you have only agency profile, please use accounts associated with the profile of seller/vendor type.
+:::
+
 ## Supported sync modes
+
 The Amazon Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
- - Full Refresh
- - Incremental
+
+- Full Refresh
+- Incremental
 
 ## Supported Streams
+
 This source is capable of syncing the following streams:
 
-* [Profiles](https://advertising.amazon.com/API/docs/en-us/reference/2/profiles#/Profiles)
-* [Portfolios](https://advertising.amazon.com/API/docs/en-us/reference/2/portfolios#/Portfolios%20extended)
-* [Sponsored Brands Campaigns](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Campaigns)
-* [Sponsored Brands Ad groups](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Ad%20groups)
-* [Sponsored Brands Keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Keywords)
-* [Sponsored Display Campaigns](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Campaigns)
-* [Sponsored Display Ad groups](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Ad%20groups)
-* [Sponsored Display Product Ads](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Product%20ads)
-* [Sponsored Display Targetings](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Targeting)
-* [Sponsored Display Creatives](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Creatives)
-* [Sponsored Display Budget Rules](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi/prod#/BudgetRules/GetSDBudgetRulesForAdvertiser)
-* [Sponsored Products Campaigns](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Campaigns)
-* [Sponsored Products Ad groups](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Ad%20groups)
-* [Sponsored Products Ad Group Bid Recommendations](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Bid%20recommendations/getAdGroupBidRecommendations)
-* [Sponsored Products Ad Group Suggested Keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Suggested%20keywords)
-* [Sponsored Products Keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Keywords)
-* [Sponsored Products Negative keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Negative%20keywords)
-* [Sponsored Products Campaign Negative keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Negative%20keywords)
-* [Sponsored Products Ads](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20ads)
-* [Sponsored Products Targetings](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20targeting)
-* [Brands Reports](https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports)
-* [Brand Video Reports](https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports)
-* [Display Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Reports) (Contextual targeting only)
-* [Products Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Reports)
-* [Attribution Reports](https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/)
+- [Profiles](https://advertising.amazon.com/API/docs/en-us/reference/2/profiles#/Profiles)
+- [Portfolios](https://advertising.amazon.com/API/docs/en-us/reference/2/portfolios#/Portfolios%20extended)
+- [Sponsored Brands Campaigns](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Campaigns)
+- [Sponsored Brands Ad groups](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Ad%20groups)
+- [Sponsored Brands Keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Keywords)
+- [Sponsored Display Campaigns](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Campaigns)
+- [Sponsored Display Ad groups](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Ad%20groups)
+- [Sponsored Display Product Ads](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Product%20ads)
+- [Sponsored Display Targetings](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Targeting)
+- [Sponsored Display Creatives](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Creatives)
+- [Sponsored Display Budget Rules](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi/prod#/BudgetRules/GetSDBudgetRulesForAdvertiser)
+- [Sponsored Products Campaigns](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Campaigns)
+- [Sponsored Products Ad groups](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Ad%20groups)
+- [Sponsored Products Ad Group Bid Recommendations](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Bid%20recommendations/getAdGroupBidRecommendations)
+- [Sponsored Products Ad Group Suggested Keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Suggested%20keywords)
+- [Sponsored Products Keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Keywords)
+- [Sponsored Products Negative keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Negative%20keywords)
+- [Sponsored Products Campaign Negative keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Negative%20keywords)
+- [Sponsored Products Ads](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20ads)
+- [Sponsored Products Targetings](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20targeting)
+- [Brands Reports](https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports)
+- [Brand Video Reports](https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports)
+- [Display Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Reports) (Contextual targeting only)
+- [Products Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Reports)
+- [Attribution Reports](https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/)
+
+:::note
+As of connector version 5.0.0, the `Sponsored Products Ad Group Bid Recommendations` stream provides bid recommendations and impact metrics for an existing automatic targeting ad group. The stream returns bid recommendations for match types `CLOSE_MATCH`, `LOOSE_MATCH`, `SUBSTITUTES`, and `COMPLEMENTS` per theme. For more detail on theme-based bid recommendations, review Amazon's [Theme-base bid suggestions - Quick-start guide](https://advertising.amazon.com/API/docs/en-us/guides/sponsored-products/bid-suggestions/theme-based-bid-suggestions-quickstart-guide).
+:::
 
 ## Connector-specific features and highlights
 
-All the reports are generated relative to the target profile' timezone.
+All the reports are generated relative to the target profile's timezone.
 
-Campaign reports may sometimes have no data or not presenting in records. This can occur when there are no clicks or views associated with the campaigns on the requested day - [details](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v2/faq#why-is-my-report-empty).
+Campaign reports may sometimes have no data or may not be presenting in records. This can occur when there are no clicks or views associated with the campaigns on the requested day - [details](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v2/faq#why-is-my-report-empty).
 
-Report data synchronization only cover the last 60 days - [details](https://advertising.amazon.com/API/docs/en-us/reference/1/reports#parameters).
+Report data synchronization only covers the last 60 days - [details](https://advertising.amazon.com/API/docs/en-us/reference/1/reports#parameters).
 
 ## Performance considerations
 
-Information about expected report generation waiting time you may find [here](https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes).
+Information about expected report generation waiting time can be found [here](https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes).
 
 ### Data type mapping
 
 | Integration Type         | Airbyte Type |
-|:-------------------------|:-------------|
+| :----------------------- | :----------- |
 | `string`                 | `string`     |
 | `int`, `float`, `number` | `number`     |
 | `date`                   | `date`       |
@@ -109,13 +128,22 @@ Information about expected report generation waiting time you may find [here](ht
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
-| 3.4.1 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| 5.0.1   | 2024-04-29 | [37655](https://github.com/airbytehq/airbyte/pull/37655) | Update error messages and spec with info about `agency` profile type.                                           |
+| 5.0.0   | 2024-03-22 | [36169](https://github.com/airbytehq/airbyte/pull/36169) | Update `SponsoredBrand` and `SponsoredProduct` streams due to API endpoint deprecation                          |
+| 4.1.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                                 |
+| 4.0.4   | 2024-02-23 | [35481](https://github.com/airbytehq/airbyte/pull/35481) | Migrate source to `YamlDeclarativeSource` with custom `check_connection`                                        |
+| 4.0.3   | 2024-02-12 | [35180](https://github.com/airbytehq/airbyte/pull/35180) | Manage dependencies with Poetry                                                                                 |
+| 4.0.2   | 2024-02-08 | [35013](https://github.com/airbytehq/airbyte/pull/35013) | Add missing field to `sponsored_display_budget_rules` stream                                                    |
+| 4.0.1   | 2023-12-28 | [33833](https://github.com/airbytehq/airbyte/pull/33833) | Updated oauth spec to put region, so we can choose oauth consent url based on it                                |
+| 4.0.0   | 2023-12-28 | [33817](https://github.com/airbytehq/airbyte/pull/33817) | Fix schema for streams: `SponsoredBrandsAdGroups` and `SponsoredBrandsKeywords`                                 |
+| 3.4.2   | 2023-12-12 | [33361](https://github.com/airbytehq/airbyte/pull/33361) | Fix unexpected crash when handling error messages which don't have `requestId` field                            |
+| 3.4.1   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                 |
 | 3.4.0   | 2023-06-09 | [25913](https://github.com/airbytehq/airbyte/pull/26203) | Add Stream `DisplayCreatives`                                                                                   |
 | 3.3.0   | 2023-09-22 | [30679](https://github.com/airbytehq/airbyte/pull/30679) | Fix unexpected column for `SponsoredProductCampaigns` and `SponsoredBrandsKeywords`                             |
 | 3.2.0   | 2023-09-18 | [30517](https://github.com/airbytehq/airbyte/pull/30517) | Add suggested streams; fix unexpected column issue                                                              |
 | 3.1.2   | 2023-08-16 | [29233](https://github.com/airbytehq/airbyte/pull/29233) | Add filter for Marketplace IDs                                                                                  |
-| 3.1.1   | 2023-08-28 | [29900](https://github.com/airbytehq/airbyte/pull/29900) | Add 404 handling for no assotiated with bid ad groups                                                           |
+| 3.1.1   | 2023-08-28 | [29900](https://github.com/airbytehq/airbyte/pull/29900) | Add 404 handling for no associated with bid ad groups                                                           |
 | 3.1.0   | 2023-08-08 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add `T00030` tactic support for `sponsored_display_report_stream`                                               |
 | 3.0.0   | 2023-07-24 | [27868](https://github.com/airbytehq/airbyte/pull/27868) | Fix attribution report stream schemas                                                                           |
 | 2.3.1   | 2023-07-11 | [28155](https://github.com/airbytehq/airbyte/pull/28155) | Bugfix: validation error when record values are missing                                                         |
@@ -156,7 +184,7 @@ Information about expected report generation waiting time you may find [here](ht
 | 0.1.6   | 2022-04-20 | [11659](https://github.com/airbytehq/airbyte/pull/11659) | Add adId to products report                                                                                     |
 | 0.1.5   | 2022-04-08 | [11430](https://github.com/airbytehq/airbyte/pull/11430) | Add support OAuth2.0                                                                                            |
 | 0.1.4   | 2022-02-21 | [10513](https://github.com/airbytehq/airbyte/pull/10513) | Increasing REPORT_WAIT_TIMEOUT for supporting report generation which takes longer time                         |
-| 0.1.3   | 2021-12-28 | [8388](https://github.com/airbytehq/airbyte/pull/8388)   | Add retry if recoverable error  occured for reporting stream processing                                         |
+| 0.1.3   | 2021-12-28 | [8388](https://github.com/airbytehq/airbyte/pull/8388)   | Add retry if recoverable error occurred for reporting stream processing                                         |
 | 0.1.2   | 2021-10-01 | [6367](https://github.com/airbytehq/airbyte/pull/6461)   | Add option to pull data for different regions. Add option to choose profiles we want to pull data. Add lookback |
 | 0.1.1   | 2021-09-22 | [6367](https://github.com/airbytehq/airbyte/pull/6367)   | Add seller and vendor filters to profiles stream                                                                |
 | 0.1.0   | 2021-08-13 | [5023](https://github.com/airbytehq/airbyte/pull/5023)   | Initial version                                                                                                 |

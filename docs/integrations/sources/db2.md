@@ -12,11 +12,11 @@ The IBM Db2 source does not alter the schema present in your warehouse. Dependin
 
 #### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
-| Namespaces | Yes |  |
+| Feature                   | Supported?\(Yes/No\) | Notes |
+| :------------------------ | :------------------- | :---- |
+| Full Refresh Sync         | Yes                  |       |
+| Incremental - Append Sync | Yes                  |       |
+| Namespaces                | Yes                  |       |
 
 ## Getting started
 
@@ -58,27 +58,30 @@ You can also enter your own password for the keystore, but if you don't, the pas
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-|:--------| :--- | :--- | :--- |
-| 0.1.20  | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212) | Fix silent exception swallowing in StreamingJdbcDatabase                                                                                                                  |
-| 0.1.19  | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760) | Removed redundant date-time datatypes formatting   |
-| 0.1.18  | 2023-03-06 | [23455](https://github.com/airbytehq/airbyte/pull/23455) | For network isolation, source connector accepts a list of hosts it is allowed to connect to |
-| 0.1.17  | 2022-12-14 | [20436](https://github.com/airbytehq/airbyte/pull/20346) | Consolidate date/time values mapping for JDBC sources                          |
-|         | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
-| 0.1.16  | 2022-09-06 | [16354](https://github.com/airbytehq/airbyte/pull/16354) | Add custom JDBC params |
-| 0.1.15  | 2022-09-01 | [16238](https://github.com/airbytehq/airbyte/pull/16238) | Emit state messages more frequently |
-| 0.1.14  | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356) | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |
-| 0.1.13  | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected |
-| 0.1.12  | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors |
-| 0.1.11  | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
-| 0.1.10  | 2022-04-29 | [12480](https://github.com/airbytehq/airbyte/pull/12480) | Query tables with adaptive fetch size to optimize JDBC memory consumption |
-| 0.1.9   | 2022-02-21 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Fixed cursor for old connectors that use non-microsecond format. Now connectors work with both formats |
-| 0.1.8   | 2022-02-18 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Updated timestamp transformation with microseconds |
-| 0.1.7   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |****
-| 0.1.6   | 2022-02-08 | [10173](https://github.com/airbytehq/airbyte/pull/10173) | Improved  discovering tables in case if user does not have permissions to any table |
-| 0.1.5   | 2022-02-01 | [9875](https://github.com/airbytehq/airbyte/pull/9875) | Discover only permitted for user tables |
-| 0.1.4   | 2021-12-30 | [9187](https://github.com/airbytehq/airbyte/pull/9187) [8749](https://github.com/airbytehq/airbyte/pull/8749) | Add support of JdbcType.ARRAY to JdbcSourceOperations. |
-| 0.1.3   | 2021-11-05 | [7670](https://github.com/airbytehq/airbyte/pull/7670) | Updated unique DB2 types transformation |
-| 0.1.2   | 2021-10-25 | [7355](https://github.com/airbytehq/airbyte/pull/7355) | Added ssl support |
-| 0.1.1   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
-| 0.1.0   | 2021-06-22 | [4197](https://github.com/airbytehq/airbyte/pull/4197) | New Source: IBM DB2 |
+| Version | Date       | Pull Request                                                                                                  | Subject                                                                                                                                   |
+| :------ | :--------- | :------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| 0.2.2   | 2024-02-13 | [35233](https://github.com/airbytehq/airbyte/pull/35233)                                                      | Adopt CDK 0.20.4                                                                                                                          |
+| 0.2.1   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453)                                                      | bump CDK version                                                                                                                          |
+| 0.2.0   | 2023-12-18 | [33485](https://github.com/airbytehq/airbyte/pull/33485)                                                      | Remove LEGACY state                                                                                                                       |
+| 0.1.20  | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212)                                                      | Fix silent exception swallowing in StreamingJdbcDatabase                                                                                  |
+| 0.1.19  | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760)                                                      | Removed redundant date-time datatypes formatting                                                                                          |
+| 0.1.18  | 2023-03-06 | [23455](https://github.com/airbytehq/airbyte/pull/23455)                                                      | For network isolation, source connector accepts a list of hosts it is allowed to connect to                                               |
+| 0.1.17  | 2022-12-14 | [20436](https://github.com/airbytehq/airbyte/pull/20346)                                                      | Consolidate date/time values mapping for JDBC sources                                                                                     |
+|         | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238)                                                      | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
+| 0.1.16  | 2022-09-06 | [16354](https://github.com/airbytehq/airbyte/pull/16354)                                                      | Add custom JDBC params                                                                                                                    |
+| 0.1.15  | 2022-09-01 | [16238](https://github.com/airbytehq/airbyte/pull/16238)                                                      | Emit state messages more frequently                                                                                                       |
+| 0.1.14  | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356)                                                      | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field                                 |
+| 0.1.13  | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714)                                                      | Clarified error message when invalid cursor column selected                                                                               |
+| 0.1.12  | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574)                                                      | Removed additionalProperties:false from JDBC source connectors                                                                            |
+| 0.1.11  | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864)                                                      | Updated stacktrace format for any trace message errors                                                                                    |
+| 0.1.10  | 2022-04-29 | [12480](https://github.com/airbytehq/airbyte/pull/12480)                                                      | Query tables with adaptive fetch size to optimize JDBC memory consumption                                                                 |
+| 0.1.9   | 2022-02-21 | [10242](https://github.com/airbytehq/airbyte/pull/10242)                                                      | Fixed cursor for old connectors that use non-microsecond format. Now connectors work with both formats                                    |
+| 0.1.8   | 2022-02-18 | [10242](https://github.com/airbytehq/airbyte/pull/10242)                                                      | Updated timestamp transformation with microseconds                                                                                        |
+| 0.1.7   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256)                                                      | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                                                              | \*\*\*\* |
+| 0.1.6   | 2022-02-08 | [10173](https://github.com/airbytehq/airbyte/pull/10173)                                                      | Improved discovering tables in case if user does not have permissions to any table                                                        |
+| 0.1.5   | 2022-02-01 | [9875](https://github.com/airbytehq/airbyte/pull/9875)                                                        | Discover only permitted for user tables                                                                                                   |
+| 0.1.4   | 2021-12-30 | [9187](https://github.com/airbytehq/airbyte/pull/9187) [8749](https://github.com/airbytehq/airbyte/pull/8749) | Add support of JdbcType.ARRAY to JdbcSourceOperations.                                                                                    |
+| 0.1.3   | 2021-11-05 | [7670](https://github.com/airbytehq/airbyte/pull/7670)                                                        | Updated unique DB2 types transformation                                                                                                   |
+| 0.1.2   | 2021-10-25 | [7355](https://github.com/airbytehq/airbyte/pull/7355)                                                        | Added ssl support                                                                                                                         |
+| 0.1.1   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699)                                                        | Added json config validator                                                                                                               |
+| 0.1.0   | 2021-06-22 | [4197](https://github.com/airbytehq/airbyte/pull/4197)                                                        | New Source: IBM DB2                                                                                                                       |

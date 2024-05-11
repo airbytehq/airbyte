@@ -10,30 +10,30 @@ This source currently has four streams: `current`, `historical`, `forecast`, and
 
 ### Features
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync - (append only) | Yes |
-| Incremental - Append Sync | Yes |
-| Namespaces | No |
+| Feature                           | Supported? |
+| :-------------------------------- | :--------- |
+| Full Refresh Sync - (append only) | Yes        |
+| Incremental - Append Sync         | Yes        |
+| Namespaces                        | No         |
 
 ## Getting started
 
 ### Requirements
 
-* An Weatherstack API key
-* A city or zip code location for which you want to get weather data
-* A historical date to enable the api stream to gather data for a specific date
+- An Weatherstack API key
+- A city or zip code location for which you want to get weather data
+- A historical date to enable the api stream to gather data for a specific date
 
 ### Setup guide
 
 Visit the [Wetherstack](https://weatherstack.com/) to create a user account and obtain an API key. The current and forecast streams are available with the free plan.
 
 ## Rate limiting
+
 The free plan allows 250 calls per month, you won't get beyond these limits with existing Airbyte's sync frequencies.
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.0 | 2022-09-08 | [16473](https://github.com/airbytehq/airbyte/pull/16473) | Initial release |
-
+| Version | Date       | Pull Request                                             | Subject         |
+| :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| 0.1.0   | 2022-09-08 | [16473](https://github.com/airbytehq/airbyte/pull/16473) | Initial release |

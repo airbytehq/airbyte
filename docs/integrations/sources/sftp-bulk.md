@@ -118,8 +118,9 @@ More formats \(e.g. Apache Avro\) will be supported in the future.
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject                       |
-| :------ | :--------- | :-------------------------------------------------------- | :---------------------------- |
-| 0.1.2   | 2023-04-19 | [#19224](https://github.com/airbytehq/airbyte/pull/19224) | Support custom CSV separators |
-| 0.1.1   | 2023-03-17 | [#24180](https://github.com/airbytehq/airbyte/pull/24180) | Fix field order               |
-| 0.1.0   | 2021-24-05 |                                                           | Initial version               |
+| Version | Date       | Pull Request                                             | Subject                                                     |
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
+| 1.0.0   | 2024-03-22 | [36256](https://github.com/airbytehq/airbyte/pull/36256) | Migrate to File-Based CDK. Manage dependencies with Poetry. |
+| 0.1.2   | 2023-04-19 | [19224](https://github.com/airbytehq/airbyte/pull/19224) | Support custom CSV separators                               |
+| 0.1.1   | 2023-03-17 | [24180](https://github.com/airbytehq/airbyte/pull/24180) | Fix field order                                             |
+| 0.1.0   | 2021-24-05 |                                                          | Initial version                                             |

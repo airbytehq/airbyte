@@ -5,19 +5,18 @@
 This source retrieves historical and future TV scheduling data using the
 [TVMaze](https://www.tvmaze.com/) schedule API.
 
-
 ### Output schema
 
 This source is capable of syncing the following streams:
 
-* `domestic`
-* `web`
-* `future`
+- `domestic`
+- `web`
+- `future`
 
 ### Features
 
 | Feature           | Supported? \(Yes/No\) | Notes |
-|:------------------|:----------------------|:------|
+| :---------------- | :-------------------- | :---- |
 | Full Refresh Sync | Yes                   |       |
 | Incremental Sync  | No                    |       |
 
@@ -48,5 +47,5 @@ The following fields are required fields for the connector to work:
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject    |
-|:--------|:-----------|:---------------------------------------------------------|:-----------|
+| :------ | :--------- | :------------------------------------------------------- | :--------- |
 | 0.1.0   | 2022-10-22 | [18333](https://github.com/airbytehq/airbyte/pull/18333) | New source |

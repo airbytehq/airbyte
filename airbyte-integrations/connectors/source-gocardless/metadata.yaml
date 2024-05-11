@@ -8,6 +8,10 @@ data:
   icon: gocardless.svg
   license: MIT
   name: GoCardless
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-gocardless
   registries:
     cloud:
       enabled: false
@@ -16,8 +20,8 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/gocardless
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100

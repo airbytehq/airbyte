@@ -33,7 +33,7 @@ Airbyte Cloud only supports connecting to your MSSQL instance with TLS encryptio
 | Incremental - Append + Deduped | Yes                  |       |
 | Namespaces                     | Yes                  |       |
 
-## Getting Started \(Airbyte Open-Source\)
+## Getting Started \(Airbyte Open Source\)
 
 ### Requirements
 
@@ -116,6 +116,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                             |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
+| 1.0.0   | 2024-04-11 | [\#36050](https://github.com/airbytehq/airbyte/pull/36050) | Update to Dv2 Table Format and Remove normalization                                                 |
 | 0.2.0   | 2023-06-27 | [\#27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                |
 | 0.1.25  | 2023-06-21 | [\#27555](https://github.com/airbytehq/airbyte/pull/27555) | Reduce image size                                                                                   |
 | 0.1.24  | 2023-06-05 | [\#27034](https://github.com/airbytehq/airbyte/pull/27034) | Internal code change for future development (install normalization packages inside connector)       |

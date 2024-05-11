@@ -1,0 +1,29 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "4.0.2"
+name = "source-gitlab"
+description = "Source implementation for GitLab."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/gitlab"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_gitlab"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "0.80.0"
+vcrpy = "==4.1.1"
+
+[tool.poetry.scripts]
+source-gitlab = "source_gitlab.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest-mock = "^3.12.0"
+requests-mock = "^1.9.3"
+pytest = "^6.1"

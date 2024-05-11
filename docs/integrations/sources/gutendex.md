@@ -8,38 +8,59 @@ The Gutendex source can sync data from the [Gutendex API](https://gutendex.com/)
 
 Gutendex requires no access token/API key to make requests.
 The following (optional) parameters can be provided to the connector :-
-___
+
+---
+
 ##### `author_year_start` and `author_year_end`
-Use these to find books with at least one author alive in a given range of years. They must have positive (CE) or negative (BCE) integer values. 
+
+Use these to find books with at least one author alive in a given range of years. They must have positive (CE) or negative (BCE) integer values.
 
 For example, `/books?author_year_start=1800&author_year_end=1899` gives books with authors alive in the 19th Century.
-___
+
+---
+
 ##### `copyright`
+
 Use this to find books with a certain copyright status: true for books with existing copyrights, false for books in the public domain in the USA, or null for books with no available copyright information.
-___
+
+---
+
 ##### `languages`
+
 Use this to find books in any of a list of languages. They must be comma-separated, two-character language codes. For example, `/books?languages=en` gives books in English, and `/books?languages=fr,fi` gives books in either French or Finnish or both.
-___
+
+---
+
 ##### `search`
+
 Use this to search author names and book titles with given words. They must be separated by a space (i.e. %20 in URL-encoded format) and are case-insensitive. For example, `/books?search=dickens%20great` includes Great Expectations by Charles Dickens.
-___
+
+---
+
 ##### `sort`
+
 Use this to sort books: ascending for Project Gutenberg ID numbers from lowest to highest, descending for IDs highest to lowest, or popular (the default) for most popular to least popular by number of downloads.
-___
+
+---
+
 ##### `topic`
+
 Use this to search for a case-insensitive key-phrase in books' bookshelves or subjects. For example, `/books?topic=children` gives books on the "Children's Literature" bookshelf, with the subject "Sick children -- Fiction", and so on.
-___
+
+---
 
 ## Output schema
 
 Lists of book information in the Project Gutenberg database are queried using the API at /books (e.g. gutendex.com/books). Book data will be returned in the format:-
 
-    {
-        "count": <number>,
-        "next": <string or null>,
-        "previous": <string or null>,
-        "results": <array of Books>
-    }
+```
+{
+    "count": <number>,
+    "next": <string or null>,
+    "previous": <string or null>,
+    "results": <array of Books>
+}
+```
 
 where `results` is an array of 0-32 book objects, next and previous are URLs to the next and previous pages of results, and count in the total number of books for the query on all pages combined.
 

@@ -1,0 +1,33 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "2.6.1"
+name = "source-bing-ads"
+description = "Source implementation for Bing Ads."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/bing-ads"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_bing_ads"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+bingads = "==13.0.18.1"
+pandas = "==2.2.0"
+urllib3 = "==1.26.18"
+airbyte-cdk = "0.84.0"
+cached-property = "==1.5.2"
+
+[tool.poetry.scripts]
+source-bing-ads = "source_bing_ads.run:run"
+
+[tool.poetry.group.dev.dependencies]
+freezegun = "^1.4.0"
+pytest-mock = "^3.6.1"
+pytest = "^6.1"
+requests-mock = "^1.9.3"

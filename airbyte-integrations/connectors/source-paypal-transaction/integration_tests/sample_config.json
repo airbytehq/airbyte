@@ -1,6 +1,0 @@
-{
-  "client_id": "PAYPAL_CLIENT_ID",
-  "client_secret": "PAYPAL_SECRET",
-  "start_date": "2021-06-01T00:00:00+00:00",
-  "is_sandbox": false
-}

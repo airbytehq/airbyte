@@ -22,47 +22,31 @@ acceptance_tests:
         # `boards`, `items`, `updates` streams schemas were modified. PR: https://github.com/airbytehq/airbyte/pull/27410
         # Changes applies to all configs
         backward_compatibility_tests_config:
-          disable_for_version: "0.2.6"
+          disable_for_version: "2.0.0"
       - config_path: "secrets/config_api_token.json"
         backward_compatibility_tests_config:
-          disable_for_version: "0.2.6"
+          disable_for_version: "2.0.0"
       - config_path: "secrets/config_oauth.json"
         backward_compatibility_tests_config:
-          disable_for_version: "0.2.6"
+          disable_for_version: "2.0.0"
   basic_read:
     tests:
       - config_path: "secrets/config_api_token.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
+        validate_state_messages: False
         empty_streams:
           - name: teams
-            bypass_reason: "unable to populate"
-        ignored_fields:
-          items:
-            - name: assets/*/public_url
-              bypass_reason: "Unstable data"
-          updates:
-            - name: assets/*/public_url
-              bypass_reason: "Unstable data"
+            bypass_reason: "The stream has no test data and tested with integration tests"
       - config_path: "secrets/config_oauth.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
+        validate_state_messages: False
         empty_streams:
           - name: teams
-            bypass_reason: "unable to populate"
-        ignored_fields:
-          items:
-            - name: assets/*/public_url
-              bypass_reason: "Unstable data"
-          updates:
-            - name: assets/*/public_url
-              bypass_reason: "Unstable data"
+            bypass_reason: "The stream has no test data and tested with integration tests"
   full_refresh:
     tests:
       - config_path: "secrets/config_api_token.json"

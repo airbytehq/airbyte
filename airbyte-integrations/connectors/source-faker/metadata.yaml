@@ -4,10 +4,12 @@ data:
     sl: 100
   allowedHosts:
     hosts: []
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
-  dockerImageTag: 5.0.0
+  dockerImageTag: 6.1.0
   dockerRepository: airbyte/source-faker
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
   githubIssueLabel: source-faker
@@ -30,6 +32,13 @@ data:
           ID and products.year fields are changing to be integers instead of
           floats.
         upgradeDeadline: "2023-08-31"
+      6.0.0:
+        message: Declare 'id' columns as primary keys.
+        upgradeDeadline: "2024-04-01"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-faker
   resourceRequirements:
     jobSpecific:
       - jobType: sync
@@ -44,4 +53,5 @@ data:
   supportLevel: community
   tags:
     - language:python
+    - cdk:python
 metadataSpecVersion: "1.0"

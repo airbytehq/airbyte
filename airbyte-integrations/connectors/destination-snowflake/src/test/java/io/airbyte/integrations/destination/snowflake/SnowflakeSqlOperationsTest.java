@@ -14,9 +14,9 @@ import static org.mockito.Mockito.verify;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.DestinationConfig;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,7 +44,7 @@ class SnowflakeSqlOperationsTest {
           "%s" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
           "%s" TIMESTAMP WITH TIME ZONE DEFAULT NULL,
           "%s" VARIANT
-        ) data_retention_time_in_days = 0;""",
+        ) data_retention_time_in_days = 1;""",
         SCHEMA_NAME,
         TABLE_NAME,
         JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
@@ -63,7 +63,7 @@ class SnowflakeSqlOperationsTest {
 
   @Test
   void insertRecordsInternal() throws SQLException {
-    snowflakeSqlOperations.insertRecordsInternal(db, List.of(new AirbyteRecordMessage()), SCHEMA_NAME, TABLE_NAME);
+    snowflakeSqlOperations.insertRecordsInternal(db, List.of(new PartialAirbyteMessage()), SCHEMA_NAME, TABLE_NAME);
     verify(db, times(1)).execute(any(CheckedConsumer.class));
   }
 

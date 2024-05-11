@@ -1,0 +1,30 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "1.3.3"
+name = "source-pinterest"
+description = "Source implementation for Pinterest."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/pinterest"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_pinterest"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+pendulum = "==2.1.2"
+airbyte-cdk = "0.80.0"
+
+[tool.poetry.scripts]
+source-pinterest = "source_pinterest.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "^1.11.0"
+pytest-mock = "^3.6.1"
+responses = "^0.13.3"
+pytest = "^6.1"

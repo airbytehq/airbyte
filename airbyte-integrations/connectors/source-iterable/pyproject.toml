@@ -1,0 +1,33 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.5.1"
+name = "source-iterable"
+description = "Source implementation for Iterable."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/iterable"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_iterable"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+pendulum = "==2.1.2"
+airbyte-cdk = "0.80.0"
+requests = "==2.31.0"
+python-dateutil = "==2.8.2"
+
+[tool.poetry.scripts]
+source-iterable = "source_iterable.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^6.1"
+pytest-mock = "^3.6.1"
+freezegun = "==1.1.0"
+requests-mock = "^1.9.3"
+responses = "==0.23.1"

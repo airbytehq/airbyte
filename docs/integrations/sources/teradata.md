@@ -6,19 +6,19 @@ This page guides you through the process of setting up the Teradata source conne
 
 To use the Teradata source connector, you'll need:
 
-* Access to a Teradata Vantage instance
+- Access to a Teradata Vantage instance
 
   **Note:** If you need a new instance of Vantage, you can install a free version called Vantage Express in the cloud on [Google Cloud](https://quickstarts.teradata.com/vantage.express.gcp.html), [Azure](https://quickstarts.teradata.com/run-vantage-express-on-microsoft-azure.html), and [AWS](https://quickstarts.teradata.com/run-vantage-express-on-aws.html). You can also run Vantage Express on your local machine using [VMware](https://quickstarts.teradata.com/getting.started.vmware.html), [VirtualBox](https://quickstarts.teradata.com/getting.started.vbox.html), or [UTM](https://quickstarts.teradata.com/getting.started.utm.html).
 
 You'll need the following information to configure the Teradata source:
 
-* **Host** - The host name of the Teradata Vantage instance.
-* **Username**
-* **Password**
-* **Database** - Specify the database (equivalent to schema in some databases i.e. **database_name.table_name** when performing queries).
-* **JDBC URL Params** (optional)
-* **SSL Connection** (optional)
-* **SSL Modes** (optional)
+- **Host** - The host name of the Teradata Vantage instance.
+- **Username**
+- **Password**
+- **Database** - Specify the database (equivalent to schema in some databases i.e. **database_name.table_name** when performing queries).
+- **JDBC URL Params** (optional)
+- **SSL Connection** (optional)
+- **SSL Modes** (optional)
 
 [Refer to this guide for more details](https://downloads.teradata.com/doc/connectivity/jdbc/reference/current/jdbcug_chapter_2.html#BGBHDDGB)
 
@@ -27,7 +27,7 @@ You'll need the following information to configure the Teradata source:
 The Teradata source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature                                        | Supported?                                                 |
-|:-----------------------------------------------|:-----------------------------------------------------------|
+| :--------------------------------------------- | :--------------------------------------------------------- |
 | Full Refresh Sync                              | Yes                                                        |
 | Incremental Sync                               | Yes                                                        |
 | Replicate Incremental Deletes                  | No                                                         |
@@ -61,6 +61,9 @@ You need a Teradata user which has read permissions on the database
 
 ## CHANGELOG
 
-| Version | Date       | Pull Request                                    | Subject                     |
-|:--------|:-----------|:------------------------------------------------|:----------------------------|
-| 0.1.0   | 2022-03-27 | https://github.com/airbytehq/airbyte/pull/24221 | New Source Teradata Vantage |
+| Version | Date       | Pull Request                                             | Subject                     |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
+| 0.2.2   | 2024-02-13 | [35219](https://github.com/airbytehq/airbyte/pull/35219) | Adopt CDK 0.20.4            |
+| 0.2.1   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version            |
+| 0.2.0   | 2023-12-18 | https://github.com/airbytehq/airbyte/pull/33485          | Remove LEGACY state         |
+| 0.1.0   | 2022-03-27 | https://github.com/airbytehq/airbyte/pull/24221          | New Source Teradata Vantage |

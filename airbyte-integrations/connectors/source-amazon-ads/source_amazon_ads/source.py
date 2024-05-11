@@ -50,7 +50,7 @@ CONFIG_DATE_FORMAT = "YYYY-MM-DD"
 
 
 class SourceAmazonAds(AbstractSource):
-    def _validate_and_transform(self, config: Mapping[str, Any]):
+    def _validate_and_transform(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         start_date = config.get("start_date")
         if start_date:
             config["start_date"] = pendulum.from_format(start_date, CONFIG_DATE_FORMAT).date()
@@ -69,7 +69,8 @@ class SourceAmazonAds(AbstractSource):
         """
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
+        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully,
+        (False, error) otherwise.
         """
         try:
             config = self._validate_and_transform(config)
@@ -78,26 +79,29 @@ class SourceAmazonAds(AbstractSource):
         # Check connection by sending list of profiles request. Its most simple
         # request, not require additional parameters and usually has few data
         # in response body.
-        # It doesnt support pagination so there is no sense of reading single
+        # It doesn't support pagination so there is no sense of reading single
         # record, it would fetch all the data anyway.
         profiles_list = Profiles(config, authenticator=self._make_authenticator(config)).get_all_profiles()
         filtered_profiles = self._choose_profiles(config, profiles_list)
         if not filtered_profiles:
-            return False, "No profiles found after filtering by Profile ID and Marketplace ID"
+            return False, (
+                "No profiles with seller or vendor type found after filtering by Profile ID and Marketplace ID."
+                " If you have only agency profile, please use accounts associated with the profile of seller/vendor type."
+            )
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
-        :return list of streams for current source
+        :return: list of streams for current source
         """
         config = self._validate_and_transform(config)
         auth = self._make_authenticator(config)
         stream_args = {"config": config, "authenticator": auth}
         # All data for individual Amazon Ads stream divided into sets of data for
         # each profile. Every API request except profiles has required
-        # paramater passed over "Amazon-Advertising-API-Scope" http header and
-        # should contain profile id. So every stream is dependant on Profiles
+        # parameter passed over "Amazon-Advertising-API-Scope" http header and
+        # should contain profile id. So every stream is dependent on Profiles
         # stream and should have information about all profiles.
         profiles_stream = Profiles(**stream_args)
         profiles_list = profiles_stream.get_all_profiles()

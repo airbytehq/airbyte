@@ -1,6 +1,6 @@
 data:
   ab_internal:
-    ql: 400
+    ql: 200
     sl: 200
   allowedHosts:
     hosts:
@@ -10,20 +10,55 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
-  dockerImageTag: 0.1.20
+  dockerImageTag: 1.0.2
   dockerRepository: airbyte/source-harvest
   documentationUrl: https://docs.airbyte.com/integrations/sources/harvest
   githubIssueLabel: source-harvest
   icon: harvest.svg
   license: MIT
+  maxSecondsBetweenMessages: 15
   name: Harvest
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-harvest
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
+  releases:
+    breakingChanges:
+      1.0.0:
+        message:
+          "Several changes have been made to the Harvest connector. This update
+          requires a reset for the following streams to due an update in the format
+          of state: `expenses_clients`, `expenses_categories`, `expenses_projects`,
+          `expenses_team`, `time_clients`, `time_projects`, `time_tasks`, `time_team`,
+          `uninvoiced`, `estimate_messages`, `invoice_payments`, `invoice_messages`,
+          `project_assignments`."
+        upgradeDeadline: "2024-04-29"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              [
+                "expenses_clients",
+                "expenses_categories",
+                "expenses_projects",
+                "expenses_team",
+                "time_clients",
+                "time_projects",
+                "time_tasks",
+                "time_team",
+                "uninvoiced",
+                "estimate_messages",
+                "invoice_payments",
+                "invoice_messages",
+                "project_assignments",
+              ]
   releaseStage: generally_available
   supportLevel: certified
   tags:
     - language:python
+    - cdk:low-code
 metadataSpecVersion: "1.0"

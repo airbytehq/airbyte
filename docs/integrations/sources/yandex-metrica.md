@@ -20,7 +20,7 @@ This page contains the setup guide and reference information for the Yandex Metr
    - What data do you need?: **Yandex.Metrica**. Read permission will suffice.
 5. Choose your app from [the list](https://oauth.yandex.com/).
    - To create your API key you will need to grab your **ClientID**,
-   - Now to get the API key craft a GET request to an endpoint *https://oauth.yandex.com/authorizE?response_type=token&client_id=\<Your Client ID\>*
+   - Now to get the API key craft a GET request to an endpoint *https://oauth.yandex.com/authorizE?response_type=token&client_id=YOUR_CLIENT_ID*
    - You will receive a response with your **API key**. Save it.
 
 ### Step 2: Set up the Yandex Metrica connector in Airbyte
@@ -87,7 +87,11 @@ Because of the way API works some syncs may take a long time to finish. Timeout 
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                 |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------- |
-| 1.0.0   | 2023-03-20 | [24188](https://github.com/airbytehq/airbyte/pull/24188) | Migrate to Beta; Change state structure |
-| 0.1.0   | 2022-09-09 | [15061](https://github.com/airbytehq/airbyte/pull/15061) | 🎉 New Source: Yandex metrica           |
+| Version | Date       | Pull Request                                             | Subject                                                                         |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.0.4   | 2024-04-19 | [37296](https://github.com/airbytehq/airbyte/pull/37296) | Updating to 0.80.0 CDK                                                          |
+| 1.0.3   | 2024-04-18 | [37296](https://github.com/airbytehq/airbyte/pull/37296) | Manage dependencies with Poetry.                                                |
+| 1.0.2   | 2024-04-15 | [37296](https://github.com/airbytehq/airbyte/pull/37296) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 1.0.1   | 2024-04-12 | [37296](https://github.com/airbytehq/airbyte/pull/37296) | schema descriptions                                                             |
+| 1.0.0   | 2023-03-20 | [24188](https://github.com/airbytehq/airbyte/pull/24188) | Migrate to Beta; Change state structure                                         |
+| 0.1.0   | 2022-09-09 | [15061](https://github.com/airbytehq/airbyte/pull/15061) | 🎉 New Source: Yandex metrica                                                   |

@@ -6,8 +6,6 @@ acceptance_tests:
       - spec_path: "source_zendesk_chat/spec.json"
   connection:
     tests:
-      - config_path: "secrets/config_old.json"
-        status: "succeed"
       - config_path: "secrets/config.json"
         status: "succeed"
       - config_path: "secrets/config_oauth.json"
@@ -23,12 +21,10 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         expect_records:
-          path: "integration_tests/expected_records.txt"
-        fail_on_extra_columns: false
+          path: "integration_tests/expected_records.jsonl"
       - config_path: "secrets/config_oauth.json"
         expect_records:
-          path: "integration_tests/expected_records.txt"
-        fail_on_extra_columns: false
+          path: "integration_tests/expected_records.jsonl"
   incremental:
     tests:
       - config_path: "secrets/config.json"

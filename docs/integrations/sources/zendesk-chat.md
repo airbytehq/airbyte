@@ -80,8 +80,10 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
-| 0.2.1 | 2023-10-20 | [31643](https://github.com/airbytehq/airbyte/pull/31643) | Upgrade base image to airbyte/python-connector-base:1.1.0 |
-| 0.2.0  | 2023-10-11 | [30526](https://github.com/airbytehq/airbyte/pull/30526) | Use the python connector base image, remove dockerfile and implement build_customization.py                                                                   |
+| 0.3.0   | 2024-03-07 | [35867](https://github.com/airbytehq/airbyte/pull/35867) | Migrated to `YamlDeclarativeSource (Low-code)` Airbyte CDK                                                       |
+| 0.2.2   | 2024-02-12 | [35185](https://github.com/airbytehq/airbyte/pull/35185) | Manage dependencies with Poetry.                                                                                 |
+| 0.2.1   | 2023-10-20 | [31643](https://github.com/airbytehq/airbyte/pull/31643) | Upgrade base image to airbyte/python-connector-base:1.1.0                                                        |
+| 0.2.0   | 2023-10-11 | [30526](https://github.com/airbytehq/airbyte/pull/30526) | Use the python connector base image, remove dockerfile and implement build_customization.py                      |
 | 0.1.14  | 2023-02-10 | [24190](https://github.com/airbytehq/airbyte/pull/24190) | Fix remove too high min/max from account stream                                                                  |
 | 0.1.13  | 2023-02-10 | [22819](https://github.com/airbytehq/airbyte/pull/22819) | Specified date formatting in specification                                                                       |
 | 0.1.12  | 2023-01-27 | [22026](https://github.com/airbytehq/airbyte/pull/22026) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                      |

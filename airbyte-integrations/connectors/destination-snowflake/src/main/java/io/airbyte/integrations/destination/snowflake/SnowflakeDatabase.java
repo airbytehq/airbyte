@@ -41,7 +41,6 @@ public class SnowflakeDatabase {
   private static final int PAUSE_BETWEEN_TOKEN_REFRESH_MIN = 7; // snowflake access token TTL is 10min and can't be modified
 
   private static final Duration NETWORK_TIMEOUT = Duration.ofMinutes(1);
-  private static final Duration QUERY_TIMEOUT = Duration.ofHours(3);
   private static final SnowflakeSQLNameTransformer nameTransformer = new SnowflakeSQLNameTransformer();
   private static final String DRIVER_CLASS_NAME = "net.snowflake.client.jdbc.SnowflakeDriver";
 
@@ -123,7 +122,6 @@ public class SnowflakeDatabase {
     properties.put(JdbcUtils.SCHEMA_KEY, nameTransformer.getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText()));
 
     properties.put("networkTimeout", Math.toIntExact(NETWORK_TIMEOUT.toSeconds()));
-    properties.put("queryTimeout", Math.toIntExact(QUERY_TIMEOUT.toSeconds()));
     // allows queries to contain any number of statements.
     properties.put("MULTI_STATEMENT_COUNT", 0);
 
@@ -199,7 +197,7 @@ public class SnowflakeDatabase {
   }
 
   public static JdbcDatabase getDatabase(final DataSource dataSource) {
-    return new DefaultJdbcDatabase(dataSource);
+    return new DefaultJdbcDatabase(dataSource, new SnowflakeSourceOperations());
   }
 
   private static Runnable getRefreshTokenTask(final HikariDataSource dataSource) {
