@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /v1/cryptocurrency/categories
           http_method: GET
         record_selector:
@@ -56,7 +56,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/categories'
+          $ref: "#/schemas/categories"
     listing:
       type: DeclarativeStream
       name: listing
@@ -65,7 +65,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /v1/cryptocurrency/listings/{{ config['data_type'] or ''}}
           http_method: GET
         record_selector:
@@ -104,18 +104,18 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/listing'
+          $ref: "#/schemas/listing"
     quotes:
       type: DeclarativeStream
       name: quotes
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /v1/cryptocurrency/quotes/{{ config['data_type'] or ''}}
           http_method: GET
           request_parameters:
-            symbol: '{{ '',''.join(config.get(''symbols'', [])) }}'
+            symbol: "{{ ','.join(config.get('symbols', [])) }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -125,7 +125,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/quotes'
+          $ref: "#/schemas/quotes"
     fiat:
       type: DeclarativeStream
       name: fiat
@@ -134,7 +134,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /v1/fiat/map
           http_method: GET
         record_selector:
@@ -173,7 +173,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/fiat'
+          $ref: "#/schemas/fiat"
     exchange:
       type: DeclarativeStream
       name: exchange
@@ -182,7 +182,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /v1/exchange/map
           http_method: GET
         record_selector:
@@ -221,13 +221,13 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/exchange'
+          $ref: "#/schemas/exchange"
   base_requester:
     type: HttpRequester
     url_base: https://pro-api.coinmarketcap.com
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
       name: categories
       primary_key: id
       path: /v1/cryptocurrency/categories
@@ -241,11 +241,11 @@ definitions:
         inject_into: header
 
 streams:
-  - $ref: '#/definitions/streams/categories'
-  - $ref: '#/definitions/streams/listing'
-  - $ref: '#/definitions/streams/quotes'
-  - $ref: '#/definitions/streams/fiat'
-  - $ref: '#/definitions/streams/exchange'
+  - $ref: "#/definitions/streams/categories"
+  - $ref: "#/definitions/streams/listing"
+  - $ref: "#/definitions/streams/quotes"
+  - $ref: "#/definitions/streams/fiat"
+  - $ref: "#/definitions/streams/exchange"
 
 spec:
   type: Spec
@@ -306,47 +306,47 @@ schemas:
     properties:
       avg_price_change:
         type:
-          - 'null'
+          - "null"
           - number
       description:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       last_updated:
         type:
-          - 'null'
+          - "null"
           - string
       market_cap:
         type:
-          - 'null'
+          - "null"
           - number
       market_cap_change:
         type:
-          - 'null'
+          - "null"
           - number
       name:
         type:
-          - 'null'
+          - "null"
           - string
       num_tokens:
         type:
-          - 'null'
+          - "null"
           - integer
       title:
         type:
-          - 'null'
+          - "null"
           - string
       volume:
         type:
-          - 'null'
+          - "null"
           - number
       volume_change:
         type:
-          - 'null'
+          - "null"
           - number
   listing:
     type: object
@@ -355,73 +355,73 @@ schemas:
     properties:
       circulating_supply:
         type:
-          - 'null'
+          - "null"
           - number
       cmc_rank:
         type:
-          - 'null'
+          - "null"
           - integer
       date_added:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       last_updated:
         type:
-          - 'null'
+          - "null"
           - string
       max_supply:
         type:
-          - 'null'
+          - "null"
           - number
       name:
         type:
-          - 'null'
+          - "null"
           - string
       num_market_pairs:
         type:
-          - 'null'
+          - "null"
           - integer
       platform:
         type:
-          - 'null'
+          - "null"
           - object
       quote:
         type:
-          - 'null'
+          - "null"
           - object
       self_reported_circulating_supply:
         type:
-          - 'null'
+          - "null"
           - number
       self_reported_market_cap:
         type:
-          - 'null'
+          - "null"
           - number
       slug:
         type:
-          - 'null'
+          - "null"
           - string
       symbol:
         type:
-          - 'null'
+          - "null"
           - string
       tags:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: string
       total_supply:
         type:
-          - 'null'
+          - "null"
           - number
       tvl_ratio:
         type:
-          - 'null'
+          - "null"
           - number
   quotes:
     type: object
@@ -437,15 +437,15 @@ schemas:
         type: integer
       name:
         type:
-          - 'null'
+          - "null"
           - string
       sign:
         type:
-          - 'null'
+          - "null"
           - string
       symbol:
         type:
-          - 'null'
+          - "null"
           - string
   exchange:
     type: object
@@ -454,25 +454,25 @@ schemas:
     properties:
       first_historical_data:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       is_active:
         type:
-          - 'null'
+          - "null"
           - integer
       last_historical_data:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       slug:
         type:
-          - 'null'
+          - "null"
           - string

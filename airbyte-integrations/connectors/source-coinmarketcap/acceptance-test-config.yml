@@ -38,15 +38,15 @@ acceptance_tests:
         timeout_seconds: 1800
         ignored_fields:
           categories:
-            - "avg_price_change"
-            - "market_cap"
-            - "market_cap_change"
-            - "volume"
-            - "volume_change"
-          listing:
-            - "cmc_rank"
-            - "last_updated"
-            - "self_reported_circulating_supply"
-            - "self_reported_market_cap"
-            - "tvl_ratio"
-            - "quote"
+          - name: "avg_price_change"
+          - name: "market_cap"
+          - name: "market_cap_change"
+          - name: "volume"
+          - name: "volume_change"
+        listing:
+          - name: "cmc_rank"
+          - name: "last_updated"
+          - name: "self_reported_circulating_supply"
+          - name: "self_reported_market_cap"
+          - name: "tvl_ratio"
+          - name: "quote"
