@@ -5,7 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - features_stream
+    - products_stream
 
 definitions:
   streams:
@@ -308,6 +308,7 @@ streams:
 
 spec:
   type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/aha
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -343,7 +344,7 @@ schemas:
   features_stream:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: "object"
-    additionalProperties: "true"
+    additionalProperties: true
     properties:
       id:
         type:
@@ -376,7 +377,7 @@ schemas:
   products_stream:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: "object"
-    additionalProperties: "true"
+    additionalProperties: true
     properties:
       id:
         type:
@@ -425,7 +426,7 @@ schemas:
   ideas_stream:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: "object"
-    additionalProperties: "true"
+    additionalProperties: true
     properties:
       id:
         type:
@@ -752,7 +753,7 @@ schemas:
   users_stream:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: "object"
-    additionalProperties: "true"
+    additionalProperties: true
     properties:
       id:
         type:
@@ -805,7 +806,7 @@ schemas:
   goals_stream:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: "object"
-    additionalProperties: "true"
+    additionalProperties: true
     properties:
       id:
         type:
@@ -883,7 +884,7 @@ schemas:
           type:
             - "null"
             - "object"
-          additionalProperties: "true"
+          additionalProperties: true
       comments_count:
         type:
           - "null"
@@ -896,7 +897,7 @@ schemas:
           type:
             - "null"
             - "object"
-          additionalProperties: "true"
+          additionalProperties: true
       releases:
         type:
           - "null"
@@ -909,7 +910,7 @@ schemas:
         type:
           - "null"
           - "object"
-        additionalProperties: "true"
+        additionalProperties: true
       parents:
         type:
           - "null"
@@ -918,4 +919,4 @@ schemas:
           type:
             - "null"
             - "object"
-          additionalProperties: "true"
+          additionalProperties: true
