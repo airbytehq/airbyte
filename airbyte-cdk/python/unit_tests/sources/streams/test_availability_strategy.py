@@ -46,7 +46,7 @@ def test_no_availability_strategy():
 
 def test_availability_strategy():
     class MockAvailabilityStrategy(AvailabilityStrategy):
-        def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, any]:
+        def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Any]:
             if stream.name == "available_stream":
                 return True, None
             return False, f"Could not reach stream '{stream.name}'."

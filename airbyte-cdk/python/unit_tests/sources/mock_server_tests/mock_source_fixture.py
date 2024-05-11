@@ -407,7 +407,7 @@ class JusticeSongs(HttpStream, CheckpointMixin, ABC):
 
 
 class SourceFixture(AbstractSource):
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
