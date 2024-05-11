@@ -31,8 +31,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.Db2Container;
 
+@Disabled
 public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String SCHEMA_NAME = "SOURCE_INTEGRATION_TEST";

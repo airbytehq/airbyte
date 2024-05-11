@@ -8,7 +8,7 @@
     "join_date": { "type": ["null", "string"], "format": "date" },
     "email": { "type": ["null", "string"] },
     "enabled": { "type": ["null", "boolean"] },
-    "id": { "type": ["null", "integer"] },
+    "id": { "type": ["null", "string"] },
     "is_admin": { "type": ["null", "boolean"] },
     "is_guest": { "type": ["null", "boolean"] },
     "is_pending": { "type": ["null", "boolean"] },

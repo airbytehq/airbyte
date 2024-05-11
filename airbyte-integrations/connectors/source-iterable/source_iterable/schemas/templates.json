@@ -1,28 +1,36 @@
 {
   "properties": {
     "templateId": {
+      "description": "The unique identifier for the template.",
       "type": ["null", "number"]
     },
     "createdAt": {
+      "description": "The date and time when the template was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "The date and time when the template was last updated.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name/title of the template.",
       "type": ["null", "string"]
     },
     "creatorUserId": {
+      "description": "The ID of the user who created the template.",
       "type": ["null", "string"]
     },
     "messageTypeId": {
+      "description": "The type of message associated with the template.",
       "type": ["null", "number"]
     },
     "campaignId": {
+      "description": "The unique identifier for the campaign associated with the template.",
       "type": ["null", "number"]
     },
     "clientTemplateId": {
+      "description": "The identifier specific to the client for the template.",
       "type": ["null", "string"]
     }
   },

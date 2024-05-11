@@ -6,18 +6,18 @@ This source can sync data from the [Mailjet Mail API](https://dev.mailjet.com/em
 
 ## This Source Supports the Following Streams
 
-* contact list
-* contacts
-* messages
-* campaigns
-* stats
+- contact list
+- contacts
+- messages
+- campaigns
+- stats
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | No                   |       |
 
 ### Performance considerations
 
@@ -27,12 +27,13 @@ Mailjet APIs are under rate limits for the number of API calls allowed per API k
 
 ### Requirements
 
-* Mailjet Mail API_KEY
-* Mailjet Mail SECRET_KEY
+- Mailjet Mail API_KEY
+- Mailjet Mail SECRET_KEY
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject                                    |
-| :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
-| 0.1.1   | 2022-04-19 | [#24689](https://github.com/airbytehq/airbyte/pull/24689) | Add listrecipient stream |
+| Version | Date       | Pull Request                                              | Subject                                        |
+| :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------- |
+| 0.1.2   | 2022-12-18 | [#30924](https://github.com/airbytehq/airbyte/pull/30924) | Adds Subject field to `message` stream         |
+| 0.1.1   | 2022-04-19 | [#24689](https://github.com/airbytehq/airbyte/pull/24689) | Add listrecipient stream                       |
 | 0.1.0   | 2022-10-26 | [#18332](https://github.com/airbytehq/airbyte/pull/18332) | 🎉 New Source: Mailjet Mail API [low-code CDK] |

@@ -7,8 +7,6 @@ package io.airbyte.integrations.destination.bigquery;
 import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.getJobErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.gax.rpc.HeaderProvider;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryError;
@@ -17,14 +15,13 @@ import com.google.cloud.bigquery.Clustering;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Field;
-import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.InsertAllRequest;
+import com.google.cloud.bigquery.InsertAllRequest.RowToInsert;
 import com.google.cloud.bigquery.InsertAllResponse;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
-import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
@@ -37,17 +34,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -55,8 +46,6 @@ import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.util.Strings;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,14 +95,12 @@ public class BigQueryUtils {
   public static void createSchemaAndTableIfNeeded(final BigQuery bigquery,
                                                   final Set<String> existingSchemas,
                                                   final String schemaName,
-                                                  final TableId tmpTableId,
                                                   final String datasetLocation,
                                                   final Schema schema) {
     if (!existingSchemas.contains(schemaName)) {
       getOrCreateDataset(bigquery, schemaName, datasetLocation);
       existingSchemas.add(schemaName);
     }
-    BigQueryUtils.createPartitionedTableIfNotExists(bigquery, tmpTableId, schema);
   }
 
   public static Dataset getOrCreateDataset(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
@@ -161,13 +148,15 @@ public class BigQueryUtils {
         CHECK_TEST_TMP_TABLE_NAME, testTableSchema);
 
     // Try to make test (dummy records) insert to make sure that user has required permissions
+    // Use ids for BigQuery client to attempt idempotent retries.
+    // See https://github.com/airbytehq/airbyte/issues/33982
     try {
       final InsertAllResponse response =
           bigquery.insertAll(InsertAllRequest
               .newBuilder(test_connection_table_name)
-              .addRow(Map.of("id", 1, "name", "James"))
-              .addRow(Map.of("id", 2, "name", "Eugene"))
-              .addRow(Map.of("id", 3, "name", "Angelina"))
+              .addRow(RowToInsert.of("1", ImmutableMap.of("id", 1, "name", "James")))
+              .addRow(RowToInsert.of("2", ImmutableMap.of("id", 2, "name", "Eugene")))
+              .addRow(RowToInsert.of("3", ImmutableMap.of("id", 3, "name", "Angelina")))
               .build());
 
       if (response.hasErrors()) {
@@ -177,6 +166,7 @@ public class BigQueryUtils {
         }
       }
     } catch (final BigQueryException e) {
+      LOGGER.error("Dummy inserts in check failed", e);
       throw new ConfigErrorException("Failed to check connection: \n" + e.getMessage());
     } finally {
       test_connection_table_name.delete();
@@ -238,7 +228,7 @@ public class BigQueryUtils {
 
   public static JsonNode getGcsJsonNodeConfig(final JsonNode config) {
     final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
-    final JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
+    return Jsons.jsonNode(ImmutableMap.builder()
         .put(BigQueryConsts.GCS_BUCKET_NAME, loadingMethod.get(BigQueryConsts.GCS_BUCKET_NAME))
         .put(BigQueryConsts.GCS_BUCKET_PATH, loadingMethod.get(BigQueryConsts.GCS_BUCKET_PATH))
         .put(BigQueryConsts.GCS_BUCKET_REGION, getDatasetLocation(config))
@@ -248,34 +238,10 @@ public class BigQueryUtils {
             + "  \"flattening\": \"No flattening\"\n"
             + "}"))
         .build());
-
-    // Do not log the gcsJsonNode to avoid accidentally emitting credentials (even at DEBUG/TRACE level)
-    return gcsJsonNode;
-  }
-
-  public static GcsDestinationConfig getGcsAvroDestinationConfig(final JsonNode config) {
-    return GcsDestinationConfig.getGcsDestinationConfig(getGcsAvroJsonNodeConfig(config));
   }
 
   public static GcsDestinationConfig getGcsCsvDestinationConfig(final JsonNode config) {
     return GcsDestinationConfig.getGcsDestinationConfig(getGcsJsonNodeConfig(config));
-  }
-
-  public static JsonNode getGcsAvroJsonNodeConfig(final JsonNode config) {
-    final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
-    final JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.GCS_BUCKET_NAME, loadingMethod.get(BigQueryConsts.GCS_BUCKET_NAME))
-        .put(BigQueryConsts.GCS_BUCKET_PATH, loadingMethod.get(BigQueryConsts.GCS_BUCKET_PATH))
-        .put(BigQueryConsts.GCS_BUCKET_REGION, getDatasetLocation(config))
-        .put(BigQueryConsts.CREDENTIAL, loadingMethod.get(BigQueryConsts.CREDENTIAL))
-        .put(BigQueryConsts.FORMAT, Jsons.deserialize("{\n"
-            + "  \"format_type\": \"AVRO\",\n"
-            + "  \"flattening\": \"No flattening\"\n"
-            + "}"))
-        .build());
-
-    LOGGER.debug("Composed GCS config is: \n" + gcsJsonNode.toPrettyString());
-    return gcsJsonNode;
   }
 
   /**
@@ -316,63 +282,6 @@ public class BigQueryUtils {
     return false;
   }
 
-  static TableDefinition getTableDefinition(final BigQuery bigquery, final String datasetName, final String tableName) {
-    final TableId tableId = TableId.of(datasetName, tableName);
-    return bigquery.getTable(tableId).getDefinition();
-  }
-
-  /**
-   * @param fieldList - the list to be checked
-   * @return The list of fields with datetime format.
-   *
-   */
-  public static List<String> getDateTimeFieldsFromSchema(final FieldList fieldList) {
-    final List<String> dateTimeFields = new ArrayList<>();
-    for (final Field field : fieldList) {
-      if (field.getType().getStandardType().equals(StandardSQLTypeName.DATETIME)) {
-        dateTimeFields.add(field.getName());
-      }
-    }
-    return dateTimeFields;
-  }
-
-  /**
-   * @param dateTimeFields - list contains fields of DATETIME format
-   * @param data - Json will be sent to Google BigData service
-   *
-   *        The special DATETIME format is required to save this type to BigQuery.
-   * @see <a href=
-   *      "https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-json#details_of_loading_json_data">Supported
-   *      Google bigquery datatype</a> This method is responsible to adapt JSON DATETIME to Bigquery
-   */
-  public static void transformJsonDateTimeToBigDataFormat(final List<String> dateTimeFields, final JsonNode data) {
-    dateTimeFields.forEach(e -> {
-      if (data.isObject() && data.findValue(e) != null && !data.get(e).isNull()) {
-        final ObjectNode dataObject = (ObjectNode) data;
-        final JsonNode value = data.findValue(e);
-        if (value.isArray()) {
-          final ArrayNode arrayNode = (ArrayNode) value;
-          final ArrayNode newArrayNode = dataObject.putArray(e);
-          arrayNode.forEach(jsonNode -> newArrayNode.add(getFormattedBigQueryDateTime(jsonNode.asText())));
-        } else if (value.isTextual()) {
-          dataObject.put(e, getFormattedBigQueryDateTime(value.asText()));
-        } else {
-          throw new RuntimeException("Unexpected transformation case");
-        }
-      }
-    });
-  }
-
-  private static String getFormattedBigQueryDateTime(final String dateTimeValue) {
-    return (dateTimeValue != null ? QueryParameterValue
-        .dateTime(new DateTime(convertDateToInstantFormat(dateTimeValue)).withZone(DateTimeZone.UTC).toString(BIG_QUERY_DATETIME_FORMAT)).getValue()
-        : null);
-  }
-
-  public static String sanitizeDatasetId(final String datasetId) {
-    return NAME_TRANSFORMER.getNamespace(datasetId);
-  }
-
   /**
    * Maps Airbyte internal sync modes with that of BigQuery's sync modes (aka Write Disposition)
    *
@@ -391,18 +300,6 @@ public class BigQueryUtils {
         return JobInfo.WriteDisposition.WRITE_APPEND;
       }
       default -> throw new IllegalStateException("Unrecognized destination sync mode: " + syncMode);
-    }
-  }
-
-  public static boolean isUsingJsonCredentials(final JsonNode config) {
-    if (!config.has(BigQueryConsts.CONFIG_CREDS)) {
-      return false;
-    }
-    final JsonNode json = config.get(BigQueryConsts.CONFIG_CREDS);
-    if (json.isTextual()) {
-      return !json.asText().isEmpty();
-    } else {
-      return !Jsons.serialize(json).isEmpty();
     }
   }
 
@@ -468,25 +365,6 @@ public class BigQueryUtils {
     return Optional.ofNullable(System.getenv("WORKER_CONNECTOR_IMAGE"))
         .map(name -> name.replace("airbyte/", Strings.EMPTY).replace(":", "/"))
         .orElse("destination-bigquery");
-  }
-
-  private static String convertDateToInstantFormat(final String data) {
-    Instant instant = null;
-    try {
-
-      final ZonedDateTime zdt = ZonedDateTime.parse(data, formatter);
-      instant = zdt.toLocalDateTime().toInstant(ZoneOffset.UTC);
-      return instant.toString();
-    } catch (final DateTimeParseException e) {
-      try {
-        final LocalDateTime dt = LocalDateTime.parse(data, formatter);
-        instant = dt.toInstant(ZoneOffset.UTC);
-        return instant.toString();
-      } catch (final DateTimeParseException ex) {
-        // no logging since it may generate too much noise
-      }
-    }
-    return instant == null ? null : instant.toString();
   }
 
 }

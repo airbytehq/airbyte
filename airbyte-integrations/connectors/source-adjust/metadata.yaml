@@ -12,6 +12,10 @@ data:
   icon: adjust.svg
   license: MIT
   name: Adjust
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-adjust
   registries:
     cloud:
       enabled: false
@@ -21,4 +25,5 @@ data:
   supportLevel: community
   tags:
     - language:python
+    - cdk:python
 metadataSpecVersion: "1.0"

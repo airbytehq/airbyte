@@ -2,9 +2,13 @@ data:
   allowedHosts:
     hosts:
       - TODO # Please change to the hostname of the source.
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-scaffold-source-python
   registries:
     oss:
-      enabled: false
+      enabled: true
     cloud:
       enabled: false
   connectorBuildOptions:
@@ -27,4 +31,5 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/scaffold-source-python
   tags:
     - language:python
+    - cdk:python
 metadataSpecVersion: "1.0"

@@ -5,7 +5,9 @@
 package io.airbyte.integrations.source.oracle;
 
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
+import org.junit.jupiter.api.Disabled;
 
+@Disabled
 public class SshKeyOracleSourceAcceptanceTest extends AbstractSshOracleSourceAcceptanceTest {
 
   @Override

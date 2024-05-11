@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "MSSQL Source Spec",
     "type": "object",
-    "required": ["host", "port", "database", "username"],
+    "required": ["host", "port", "database", "username", "password"],
     "properties": {
       "host": {
         "description": "The hostname of the database.",
@@ -90,7 +90,7 @@
           {
             "title": "Encrypted (verify certificate)",
             "description": "Verify and use the certificate provided by the server.",
-            "required": ["ssl_method", "trustStoreName", "trustStorePassword"],
+            "required": ["ssl_method"],
             "properties": {
               "ssl_method": {
                 "type": "string",
@@ -100,7 +100,15 @@
                 "title": "Host Name In Certificate",
                 "type": "string",
                 "description": "Specifies the host name of the server. The value of this property must match the subject property of the certificate.",
-                "order": 7
+                "order": 0
+              },
+              "certificate": {
+                "title": "Certificate",
+                "type": "string",
+                "description": "certificate of the server, or of the CA that signed the server certificate",
+                "order": 1,
+                "airbyte_secret": true,
+                "multiline": true
               }
             }
           }
@@ -124,30 +132,31 @@
                 "const": "CDC",
                 "order": 0
               },
-              "data_to_sync": {
-                "title": "Data to Sync",
-                "type": "string",
-                "default": "Existing and New",
-                "enum": ["Existing and New", "New Changes Only"],
-                "description": "What data should be synced under the CDC. \"Existing and New\" will read existing data as a snapshot, and sync new changes through CDC. \"New Changes Only\" will skip the initial snapshot, and only sync new changes through CDC.",
-                "order": 1
-              },
-              "snapshot_isolation": {
-                "title": "Initial Snapshot Isolation Level",
-                "type": "string",
-                "default": "Snapshot",
-                "enum": ["Snapshot", "Read Committed"],
-                "description": "Existing data in the database are synced through an initial snapshot. This parameter controls the isolation level that will be used during the initial snapshotting. If you choose the \"Snapshot\" level, you must enable the <a href=\"https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server\">snapshot isolation mode</a> on the database.",
-                "order": 2
-              },
               "initial_waiting_seconds": {
                 "type": "integer",
                 "title": "Initial Waiting Time in Seconds (Advanced)",
-                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\">initial waiting time</a>.",
+                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 3600 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\">initial waiting time</a>.",
                 "default": 300,
                 "min": 120,
-                "max": 1200,
+                "max": 3600,
                 "order": 3
+              },
+              "invalid_cdc_cursor_position_behavior": {
+                "type": "string",
+                "title": "Invalid CDC position behavior (Advanced)",
+                "description": "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value into the WAL. If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss.",
+                "enum": ["Fail sync", "Re-sync data"],
+                "default": "Fail sync",
+                "order": 4
+              },
+              "queue_size": {
+                "type": "integer",
+                "title": "Size of the queue (Advanced)",
+                "description": "The size of the internal queue. This may interfere with memory consumption and efficiency of the connector, please be careful.",
+                "default": 10000,
+                "order": 5,
+                "min": 1000,
+                "max": 10000
               }
             }
           },
@@ -281,5 +290,7 @@
       }
     }
   },
+  "supportsNormalization": false,
+  "supportsDBT": false,
   "supported_destination_sync_modes": []
 }

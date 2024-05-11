@@ -2,12 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_linnworks import SourceLinnworks
+from source_linnworks.run import run
 
 if __name__ == "__main__":
-    source = SourceLinnworks()
-    launch(source, sys.argv[1:])
+    run()

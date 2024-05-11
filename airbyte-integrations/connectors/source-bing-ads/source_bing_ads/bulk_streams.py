@@ -49,8 +49,10 @@ class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
         self,
         **kwargs: Mapping[str, Any],
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
-            yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
+        accounts = Accounts(self.client, self.config)
+        for _slice in accounts.stream_slices():
+            for account in accounts.read_records(SyncMode.full_refresh, _slice):
+                yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
 
     @property
     def state(self) -> Mapping[str, Any]:
@@ -58,11 +60,17 @@ class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        current_state_value = self._state.get(str(value["Account Id"]), {}).get(self.cursor_field, "")
-        if value[self.cursor_field]:
+        # if key 'Account Id' exists, so we receive a record that should be parsed to state
+        # otherwise state object from connection state was received
+        account_id = value.get("Account Id")
+
+        if account_id and value[self.cursor_field]:
+            current_state_value = self._state.get(str(value["Account Id"]), {}).get(self.cursor_field, "")
             record_state_value = transform_bulk_datetime_format_to_rfc_3339(value[self.cursor_field])
             new_state_value = max(current_state_value, record_state_value)
             self._state.update({str(value["Account Id"]): {self.cursor_field: new_state_value}})
+        else:
+            self._state.update(value)
 
     def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None) -> Optional[pendulum.DateTime]:
         """
@@ -188,3 +196,12 @@ class AdGroupLabels(BingAdsBulkStream):
 
     data_scope = ["EntityData"]
     download_entities = ["AdGroupLabels"]
+
+
+class Budget(BingAdsBulkStream):
+    """
+    https://learn.microsoft.com/en-us/advertising/bulk-service/budget?view=bingads-13&viewFallbackFrom=bingads-13
+    """
+
+    data_scope = ["EntityData"]
+    download_entities = ["Budgets"]

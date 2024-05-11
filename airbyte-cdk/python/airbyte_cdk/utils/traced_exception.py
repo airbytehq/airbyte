@@ -4,6 +4,7 @@
 
 import traceback
 from datetime import datetime
+from typing import Optional
 
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
@@ -12,6 +13,7 @@ from airbyte_cdk.models import (
     AirbyteTraceMessage,
     FailureType,
     Status,
+    StreamDescriptor,
     TraceType,
 )
 from airbyte_cdk.models import Type as MessageType
@@ -25,26 +27,32 @@ class AirbyteTracedException(Exception):
 
     def __init__(
         self,
-        internal_message: str = None,
-        message: str = None,
+        internal_message: Optional[str] = None,
+        message: Optional[str] = None,
         failure_type: FailureType = FailureType.system_error,
-        exception: BaseException = None,
+        exception: Optional[BaseException] = None,
+        stream_descriptor: Optional[StreamDescriptor] = None,
     ):
         """
         :param internal_message: the internal error that caused the failure
         :param message: a user-friendly message that indicates the cause of the error
         :param failure_type: the type of error
         :param exception: the exception that caused the error, from which the stack trace should be retrieved
+        :param stream_descriptor: describe the stream from which the exception comes from
         """
         self.internal_message = internal_message
         self.message = message
         self.failure_type = failure_type
         self._exception = exception
+        self._stream_descriptor = stream_descriptor
         super().__init__(internal_message)
 
-    def as_airbyte_message(self) -> AirbyteMessage:
+    def as_airbyte_message(self, stream_descriptor: Optional[StreamDescriptor] = None) -> AirbyteMessage:
         """
         Builds an AirbyteTraceMessage from the exception
+
+        :param stream_descriptor is deprecated, please use the stream_description in `__init__ or `from_exception`. If many
+          stream_descriptors are defined, the one from `as_airbyte_message` will be discarded.
         """
         now_millis = datetime.now().timestamp() * 1000.0
 
@@ -59,19 +67,20 @@ class AirbyteTracedException(Exception):
                 internal_message=self.internal_message,
                 failure_type=self.failure_type,
                 stack_trace=stack_trace_str,
+                stream_descriptor=self._stream_descriptor if self._stream_descriptor is not None else stream_descriptor,
             ),
         )
 
         return AirbyteMessage(type=MessageType.TRACE, trace=trace_message)
 
-    def as_connection_status_message(self) -> AirbyteMessage:
+    def as_connection_status_message(self) -> Optional[AirbyteMessage]:
         if self.failure_type == FailureType.config_error:
-            output_message = AirbyteMessage(
+            return AirbyteMessage(
                 type=MessageType.CONNECTION_STATUS, connectionStatus=AirbyteConnectionStatus(status=Status.FAILED, message=self.message)
             )
-            return output_message
+        return None
 
-    def emit_message(self):
+    def emit_message(self) -> None:
         """
         Prints the exception as an AirbyteTraceMessage.
         Note that this will be called automatically on uncaught exceptions when using the airbyte_cdk entrypoint.
@@ -81,9 +90,26 @@ class AirbyteTracedException(Exception):
         print(filtered_message)
 
     @classmethod
-    def from_exception(cls, exc: Exception, *args, **kwargs) -> "AirbyteTracedException":
+    def from_exception(cls, exc: BaseException, stream_descriptor: Optional[StreamDescriptor] = None, *args, **kwargs) -> "AirbyteTracedException":  # type: ignore  # ignoring because of args and kwargs
         """
         Helper to create an AirbyteTracedException from an existing exception
         :param exc: the exception that caused the error
+        :param stream_descriptor: describe the stream from which the exception comes from
         """
-        return cls(internal_message=str(exc), exception=exc, *args, **kwargs)
+        return cls(internal_message=str(exc), exception=exc, stream_descriptor=stream_descriptor, *args, **kwargs)  # type: ignore  # ignoring because of args and kwargs
+
+    def as_sanitized_airbyte_message(self, stream_descriptor: Optional[StreamDescriptor] = None) -> AirbyteMessage:
+        """
+        Builds an AirbyteTraceMessage from the exception and sanitizes any secrets from the message body
+
+        :param stream_descriptor is deprecated, please use the stream_description in `__init__ or `from_exception`. If many
+          stream_descriptors are defined, the one from `as_sanitized_airbyte_message` will be discarded.
+        """
+        error_message = self.as_airbyte_message(stream_descriptor=stream_descriptor)
+        if error_message.trace.error.message:
+            error_message.trace.error.message = filter_secrets(error_message.trace.error.message)
+        if error_message.trace.error.internal_message:
+            error_message.trace.error.internal_message = filter_secrets(error_message.trace.error.internal_message)
+        if error_message.trace.error.stack_trace:
+            error_message.trace.error.stack_trace = filter_secrets(error_message.trace.error.stack_trace)
+        return error_message

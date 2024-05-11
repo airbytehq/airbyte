@@ -3,44 +3,52 @@
   "type": "object",
   "properties": {
     "meeting_uuid": {
-      "type": "string"
+      "type": ["null", "string"]
+    },
+    "meeting_id": {
+      "type": ["null", "integer"]
     },
     "customer_key": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "duration": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "failover": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "join_time": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "leave_time": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "registrant_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "user_email": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "user_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "status": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "bo_mtg_id": {
-      "type": "string"
+      "type": ["null", "string"]
+    },
+    "participant_user_id": {
+      "type": ["null", "string"]
+    },
+    "attentiveness_score": {
+      "type": ["null", "string"]
     }
-  },
-  "required": []
+  }
 }

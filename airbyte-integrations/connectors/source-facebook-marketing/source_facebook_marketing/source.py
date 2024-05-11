@@ -14,7 +14,6 @@ from airbyte_cdk.models import (
     DestinationSyncMode,
     FailureType,
     OAuthConfigSpecification,
-    SyncMode,
 )
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -61,7 +60,6 @@ UNSUPPORTED_FIELDS = {"unique_conversions", "unique_ctr", "unique_clicks"}
 
 
 class SourceFacebookMarketing(AbstractSource):
-
     # Skip exceptions on missing streams
     raise_exception_on_missing_stream = False
 
@@ -77,6 +75,9 @@ class SourceFacebookMarketing(AbstractSource):
 
         if config.end_date:
             config.end_date = pendulum.instance(config.end_date)
+
+        config.account_ids = list(config.account_ids)
+
         return config
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -94,17 +95,20 @@ class SourceFacebookMarketing(AbstractSource):
             if config.start_date and config.end_date < config.start_date:
                 return False, "End date must be equal or after start date."
 
-            api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size)
+            api = API(access_token=config.access_token, page_size=config.page_size)
 
-            record_iterator = AdAccount(api=api).read_records(sync_mode=SyncMode.full_refresh, stream_state={})
-            account_info = list(record_iterator)[0]
+            for account_id in config.account_ids:
+                # Get Ad Account to check creds
+                logger.info(f"Attempting to retrieve information for account with ID: {account_id}")
+                ad_account = api.get_account(account_id=account_id)
+                logger.info(f"Successfully retrieved account information for account: {ad_account}")
 
-            if account_info.get("is_personal"):
-                message = (
-                    "The personal ad account you're currently using is not eligible "
-                    "for this operation. Please switch to a business ad account."
-                )
-                return False, message
+                # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
+                for stream in self.get_custom_insights_streams(api, config):
+                    stream.check_breakdowns(account_id=account_id)
+
+        except facebook_business.exceptions.FacebookRequestError as e:
+            return False, e._api_error_message
 
         except AirbyteTracedException as e:
             return False, f"{e.message}. Full error: {e.internal_message}"
@@ -112,12 +116,6 @@ class SourceFacebookMarketing(AbstractSource):
         except Exception as e:
             return False, f"Unexpected error: {repr(e)}"
 
-        # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
-        for stream in self.get_custom_insights_streams(api, config):
-            try:
-                stream.check_breakdowns()
-            except facebook_business.exceptions.FacebookRequestError as e:
-                return False, e._api_error_message
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Type[Stream]]:
@@ -131,32 +129,40 @@ class SourceFacebookMarketing(AbstractSource):
             config.start_date = validate_start_date(config.start_date)
             config.end_date = validate_end_date(config.start_date, config.end_date)
 
-        api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size)
+        api = API(access_token=config.access_token, page_size=config.page_size)
 
         # if start_date not specified then set default start_date for report streams to 2 years ago
         report_start_date = config.start_date or pendulum.now().add(years=-2)
 
         insights_args = dict(
-            api=api, start_date=report_start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window
+            api=api,
+            account_ids=config.account_ids,
+            start_date=report_start_date,
+            end_date=config.end_date,
+            insights_lookback_window=config.insights_lookback_window,
+            insights_job_timeout=config.insights_job_timeout,
         )
         streams = [
-            AdAccount(api=api),
+            AdAccount(api=api, account_ids=config.account_ids),
             AdSets(
                 api=api,
+                account_ids=config.account_ids,
                 start_date=config.start_date,
                 end_date=config.end_date,
-                include_deleted=config.include_deleted,
+                filter_statuses=config.adset_statuses,
                 page_size=config.page_size,
             ),
             Ads(
                 api=api,
+                account_ids=config.account_ids,
                 start_date=config.start_date,
                 end_date=config.end_date,
-                include_deleted=config.include_deleted,
+                filter_statuses=config.ad_statuses,
                 page_size=config.page_size,
             ),
             AdCreatives(
                 api=api,
+                account_ids=config.account_ids,
                 fetch_thumbnail_images=config.fetch_thumbnail_images,
                 page_size=config.page_size,
             ),
@@ -182,40 +188,41 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsDemographicsGender(page_size=config.page_size, **insights_args),
             Campaigns(
                 api=api,
+                account_ids=config.account_ids,
                 start_date=config.start_date,
                 end_date=config.end_date,
-                include_deleted=config.include_deleted,
+                filter_statuses=config.campaign_statuses,
                 page_size=config.page_size,
             ),
             CustomConversions(
                 api=api,
-                include_deleted=config.include_deleted,
+                account_ids=config.account_ids,
                 page_size=config.page_size,
             ),
             CustomAudiences(
                 api=api,
-                include_deleted=config.include_deleted,
+                account_ids=config.account_ids,
                 page_size=config.page_size,
             ),
             Images(
                 api=api,
+                account_ids=config.account_ids,
                 start_date=config.start_date,
                 end_date=config.end_date,
-                include_deleted=config.include_deleted,
                 page_size=config.page_size,
             ),
             Videos(
                 api=api,
+                account_ids=config.account_ids,
                 start_date=config.start_date,
                 end_date=config.end_date,
-                include_deleted=config.include_deleted,
                 page_size=config.page_size,
             ),
             Activities(
                 api=api,
+                account_ids=config.account_ids,
                 start_date=config.start_date,
                 end_date=config.end_date,
-                include_deleted=config.include_deleted,
                 page_size=config.page_size,
             ),
         ]
@@ -247,14 +254,23 @@ class SourceFacebookMarketing(AbstractSource):
                     },
                     complete_oauth_server_input_specification={
                         "type": "object",
-                        "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
+                        "properties": {
+                            "client_id": {"type": "string"},
+                            "client_secret": {"type": "string"},
+                        },
                     },
                     complete_oauth_server_output_specification={
                         "type": "object",
                         "additionalProperties": True,
                         "properties": {
-                            "client_id": {"type": "string", "path_in_connector_config": ["client_id"]},
-                            "client_secret": {"type": "string", "path_in_connector_config": ["client_secret"]},
+                            "client_id": {
+                                "type": "string",
+                                "path_in_connector_config": ["client_id"],
+                            },
+                            "client_secret": {
+                                "type": "string",
+                                "path_in_connector_config": ["client_secret"],
+                            },
                         },
                     },
                 ),
@@ -278,6 +294,7 @@ class SourceFacebookMarketing(AbstractSource):
                 )
             stream = AdsInsights(
                 api=api,
+                account_ids=config.account_ids,
                 name=f"Custom{insight.name}",
                 fields=list(insight_fields),
                 breakdowns=list(set(insight.breakdowns)),
@@ -288,6 +305,7 @@ class SourceFacebookMarketing(AbstractSource):
                 start_date=insight.start_date or config.start_date or pendulum.now().add(years=-2),
                 end_date=insight.end_date or config.end_date,
                 insights_lookback_window=insight.insights_lookback_window or config.insights_lookback_window,
+                insights_job_timeout=insight.insights_job_timeout or config.insights_job_timeout,
                 level=insight.level,
             )
             streams.append(stream)

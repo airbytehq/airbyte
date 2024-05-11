@@ -8,8 +8,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from dagger import Container
 
-MAIN_FILE_NAME = "main_dev.py"
-
 
 async def pre_connector_install(base_image_container: Container) -> Container:
     """This function will run before the connector installation.

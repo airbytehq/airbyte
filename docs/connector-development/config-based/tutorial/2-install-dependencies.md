@@ -1,17 +1,8 @@
 # Step 2: Install dependencies
 
-Let's create a python virtual environment for our source.
-You can do this by executing the following commands from the root of the Airbyte repository.
-
-The command below assume that `python` points to a version of python &gt;=3.9.0. On some systems, `python` points to a Python2 installation and `python3` points to Python3.
-If this is the case on your machine, substitute the `python` commands with `python3`.
-The subsequent `python` invocations will use the virtual environment created for the connector.
-
 ```bash
 cd ../../connectors/source-exchange-rates-tutorial
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+poetry install
 ```
 
 These steps create an initial python environment, and install the dependencies required to run an API Source connector.
@@ -19,7 +10,7 @@ These steps create an initial python environment, and install the dependencies r
 Let's verify everything works as expected by running the Airbyte `spec` operation:
 
 ```bash
-python main.py spec
+poetry run source-exchange-rates-tutorial spec
 ```
 
 You should see an output similar to the one below:

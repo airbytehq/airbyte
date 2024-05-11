@@ -5,91 +5,129 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "Country": {
+      "description": "Country where the product is located",
       "type": ["null", "string"]
     },
     "Product Name": {
+      "description": "Name of the product",
       "type": ["null", "string"]
     },
     "FNSKU": {
+      "description": "Fulfillment Network Stock Keeping Unit",
       "type": ["null", "string"]
     },
     "Merchant SKU": {
+      "description": "Merchant's Stock Keeping Unit",
       "type": ["null", "string"]
     },
     "ASIN": {
+      "description": "Amazon Standard Identification Number of the product",
       "type": ["null", "string"]
     },
     "Condition": {
+      "description": "Condition of the product",
       "type": ["null", "string"]
     },
     "Supplier": {
+      "description": "Supplier of the product",
       "type": ["null", "string"]
     },
     "Supplier part no.": {
+      "description": "Supplier's part number",
       "type": ["null", "string"]
     },
     "Currency code": {
+      "description": "Currency code used for pricing",
       "type": ["null", "string"]
     },
     "Price": {
+      "description": "Price of the product",
       "type": ["null", "string"]
     },
     "Sales last 30 days": {
+      "description": "Number of units sold in the last 30 days",
       "type": ["null", "string"]
     },
     "Units Sold Last 30 Days": {
+      "description": "Detailed information about units sold in the last 30 days",
       "type": ["null", "string"]
     },
     "Total Units": {
+      "description": "Total number of units available",
       "type": ["null", "string"]
     },
     "Inbound": {
+      "description": "Number of units inbound to Amazon's network",
       "type": ["null", "string"]
     },
     "Available": {
+      "description": "Number of units available for sale",
       "type": ["null", "string"]
     },
     "FC transfer": {
+      "description": "Units transferred between fulfillment centers",
       "type": ["null", "string"]
     },
     "FC Processing": {
+      "description": "Units in processing at fulfillment center",
       "type": ["null", "string"]
     },
     "Customer Order": {
+      "description": "Number of customer orders for the product",
       "type": ["null", "string"]
     },
     "Unfulfillable": {
+      "description": "Number of units that are unfulfillable",
       "type": ["null", "string"]
     },
     "Working": {
+      "description": "Number of units that are in working condition",
       "type": ["null", "string"]
     },
     "Shipped": {
+      "description": "Number of units already shipped",
       "type": ["null", "string"]
     },
     "Receiving": {
+      "description": "Units being received by Amazon",
       "type": ["null", "string"]
     },
     "Fulfilled by": {
+      "description": "Fulfillment method used",
       "type": ["null", "string"]
     },
     "Total Days of Supply (including units from open shipments)": {
+      "description": "Total number of days of supply including units from open shipments",
       "type": ["null", "string"]
     },
     "Days of Supply at Amazon Fulfillment Network": {
+      "description": "Number of days of supply at Amazon's fulfillment network",
       "type": ["null", "string"]
     },
     "Alert": {
+      "description": "Indicates if there is any alert or notification related to the product",
       "type": ["null", "string"]
     },
     "Recommended replenishment qty": {
+      "description": "Recommended quantity for replenishment",
       "type": ["null", "string"]
     },
     "Recommended ship date": {
+      "description": "Date suggested for shipping",
       "type": ["null", "string"]
     },
     "Recommended action": {
+      "description": "Suggested action to take based on the data",
       "type": ["null", "string"]
+    },
+    "Unit storage size": {
+      "description": "Size of the storage unit",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "End time of the data collection",
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

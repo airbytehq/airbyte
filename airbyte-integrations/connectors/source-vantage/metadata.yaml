@@ -8,6 +8,10 @@ data:
   icon: vantage.svg
   license: MIT
   name: Vantage
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-vantage
   registries:
     cloud:
       enabled: true
@@ -16,8 +20,8 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/vantage
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100

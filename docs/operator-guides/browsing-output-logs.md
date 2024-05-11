@@ -1,29 +1,54 @@
-# Browsing Output Logs
+---
+products: all
+---
 
-## Overview
+# Browsing logs
 
-This tutorial will describe how to explore Airbyte Workspace folders.
+Airbyte records the full logs as a part of each sync. These logs can be used to understand the underlying operations Airbyte performs to read data from the source and write to the destination as a part of the [Airbyte Protocol](/understanding-airbyte/airbyte-protocol.md). The logs includes many details, including any errors that can be helpful when troubleshooting sync errors.
 
-This is useful if you need to browse the docker volumes where extra output files of Airbyte server and workers are stored since they may not be accessible through the UI.
+:::info
+When using Airbyte Open Source, you can also access additional logs outside of the UI. This is useful if you need to browse the Docker volumes where extra output files of Airbyte server and workers are stored.
+:::
 
-## Exploring the Logs folders
+To find the logs for a connection, navigate to a connection's `Job History` tab to see the latest syncs.
 
-When running a Sync in Airbyte, you have the option to look at the logs in the UI as shown next.
+## View the logs in the UI
 
-### Identifying Workspace IDs
+To open the logs in the UI, select the three grey dots next to a sync and select `View logs`. This will open our full screen in-app log viewer.
 
-In the screenshot below, you can notice the highlighted blue boxes are showing the id numbers that were used for the selected "Attempt" for this sync job.
+:::tip
+If you are troubleshooting a sync error, you can search for `Error`, `Exception`, or `Fail` to find common errors.
+:::
 
-In this case, the job was running in `/tmp/workspace/9/2/` folder since the tab of the third attempt is being selected in the UI \(first attempt would be `/tmp/workspace/9/0/`\).
+The in-app log viewer will only search for instances of the search term within that attempt. To search across all attempts, download the logs locally.
 
-![](../.gitbook/assets/explore_logs.png)
+## Link to a sync job
 
-The highlighted button in the red circle on the right would allow you to download the logs.log file.  
-However, there are actually more files being recorded in the same workspace folder... Thus, we might want to dive deeper to explore these folders and gain a better understanding of what is being run by Airbyte.
+To help others quickly find your job, copy the link to the logs to your clipboard, select the three grey dots next to a sync and select `Copy link to job`.
+
+You can also access the link to a sync job from the in-app log viewer.
+
+## Download the logs
+
+To download a copy of the logs locally, select the three grey dots next to a sync and select `Download logs`.
+
+You can also access the download log button from the in-app log viewer.
+
+:::note
+If a sync was completed across multiple attempts, downloading the logs will union all the logs for all attempts for that job.
+:::
+
+## Exploring Local Logs
+
+<AppliesTo oss />
+
+### Establish the folder directory
+
+In the UI, you can discover the Attempt ID within the sync job. Most jobs will complete in the first attempt, so your folder directory will look like `/tmp/workspace/9/0`. If you sync job completes in multiple attempts, you'll need to define which attempt you're interested in, and note this. For example, for the third attempt, it will look like `/tmp/workspace/9/2/` .
 
 ### Understanding the Docker run commands
 
-Scrolling down a bit more, we can also read the different docker commands being used internally are starting with:
+We can also read the different docker commands being used internally are starting with:
 
 ```text
 docker run --rm -i -v airbyte_workspace:/data -v /tmp/airbyte_local:/local -w /data/9/2 --network host ...
@@ -35,7 +60,7 @@ Following [Docker Volume documentation](https://docs.docker.com/storage/volumes/
 
 ### Opening a Unix shell prompt to browse the Docker volume
 
-For example, we can run any docker container/image to browse the content of this named volume by mounting it similarly, let's use the [busybox](https://hub.docker.com/_/busybox) image.
+For example, we can run any docker container/image to browse the content of this named volume by mounting it similarly. In the example below, the [busybox](https://hub.docker.com/_/busybox) image is used.
 
 ```text
 docker run -it --rm --volume airbyte_workspace:/data busybox
@@ -50,13 +75,15 @@ ls /data/9/2/
 Example Output:
 
 ```text
-catalog.json                  normalize                     tap_config.json
-logs.log                      singer_rendered_catalog.json  target_config.json
+catalog.json
+tap_config.json
+logs.log
+target_config.json
 ```
 
 ### Browsing from the host shell
 
-Or, if you don't want to transfer to a shell prompt inside the docker image, you can simply run Shell commands using docker commands as a proxy like this:
+Or, if you don't want to transfer to a shell prompt inside the docker image, you can run Shell commands using docker commands as a proxy:
 
 ```bash
 docker run -it --rm --volume airbyte_workspace:/data busybox ls /data/9/2
@@ -81,7 +108,7 @@ docker run -it --rm --volume airbyte_workspace:/data busybox cat /data/9/2/catal
 Example Output:
 
 ```text
-{"streams":[{"stream":{"name":"exchange_rate","json_schema":{"type":"object","properties":{"CHF":{"type":"number"},"HRK":{"type":"number"},"date":{"type":"string"},"MXN":{"type":"number"},"ZAR":{"type":"number"},"INR":{"type":"number"},"CNY":{"type":"number"},"THB":{"type":"number"},"AUD":{"type":"number"},"ILS":{"type":"number"},"KRW":{"type":"number"},"JPY":{"type":"number"},"PLN":{"type":"number"},"GBP":{"type":"number"},"IDR":{"type":"number"},"HUF":{"type":"number"},"PHP":{"type":"number"},"TRY":{"type":"number"},"RUB":{"type":"number"},"HKD":{"type":"number"},"ISK":{"type":"number"},"EUR":{"type":"number"},"DKK":{"type":"number"},"CAD":{"type":"number"},"MYR":{"type":"number"},"USD":{"type":"number"},"BGN":{"type":"number"},"NOK":{"type":"number"},"RON":{"type":"number"},"SGD":{"type":"number"},"CZK":{"type":"number"},"SEK":{"type":"number"},"NZD":{"type":"number"},"BRL":{"type":"number"}}},"supported_sync_modes":["full_refresh"],"default_cursor_field":[]},"sync_mode":"full_refresh","cursor_field":[]}]}
+{"streams":[{"stream":{"name":"exchange_rate","json_schema":{"type":"object","properties":{"CHF":{"type":"number"},"HRK":{"type":"number"},"date":{"type":"string"},"MXN":{"type":"number"},"ZAR":{"type":"number"},"INR":{"type":"number"},"CNY":{"type":"number"},"THB":{"type":"number"},"NZD":{"type":"number"},"BRL":{"type":"number"}}},"supported_sync_modes":["full_refresh"],"default_cursor_field":[]},"sync_mode":"full_refresh","cursor_field":[]}]}
 ```
 
 ### Extract catalog.json file from docker volume
@@ -98,6 +125,7 @@ cat catalog.json
 If you are running on Kubernetes, use the following commands instead to browsing and copy the files to your local.
 
 To browse, identify the pod you are interested in and exec into it. You will be presented with a terminal that will accept normal linux commands e.g ls.
+
 ```bash
 kubectl exec -it <pod name> -n <namespace pod is in> -c main bash
 e.g.
@@ -107,13 +135,13 @@ FINISHED_UPLOADING  destination_catalog.json  destination_config.json
 ```
 
 To copy the file on to your local in order to preserve it's contents:
+
 ```bash
 kubectl cp <namespace pods are in>/<normalisation-pod-name>:/config/destination_catalog.json ./catalog.json
 e.g.
 kubectl cp jobs/normalization-worker-3605-0-sxtox:/config/destination_catalog.json ./catalog.json
 cat ./catalog.json
 ```
-
 
 ## CSV or JSON local Destinations: Check local data folder
 
@@ -160,8 +188,8 @@ Note that Docker for Mac is not a real Docker host, now it actually runs a virtu
 
 Here are some related links as references on accessing Docker Volumes:
 
-* on macOS [Using Docker containers in 2019](https://stackoverflow.com/a/55648186)
-* official doc [Use Volume](https://docs.docker.com/storage/volumes/#backup-restore-or-migrate-data-volumes)
+- on macOS [Using Docker containers in 2019](https://stackoverflow.com/a/55648186)
+- official doc [Use Volume](https://docs.docker.com/storage/volumes/#backup-restore-or-migrate-data-volumes)
 
 From these discussions, we've been using on macOS either:
 
@@ -175,4 +203,3 @@ docker volume inspect <volume_name>
 ```
 
 Then look at the `Mountpoint` value, this is where the volume is actually stored in the host filesystem and you can directly retrieve files directly from that folder.
-

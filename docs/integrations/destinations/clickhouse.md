@@ -21,7 +21,7 @@ Each stream will be output into its own table in ClickHouse. Each table will con
 
 Airbyte Cloud only supports connecting to your ClickHouse instance with SSL or TLS encryption, which is supported by [ClickHouse JDBC driver](https://github.com/ClickHouse/clickhouse-jdbc).
 
-## Getting Started \(Airbyte Open-Source\)
+## Getting Started \(Airbyte Open Source\)
 
 #### Requirements
 
@@ -44,6 +44,17 @@ You can create such a user by running:
 
 ```
 GRANT CREATE ON * TO airbyte_user;
+GRANT CREATE ON default * TO airbyte_user;
+GRANT DROP ON * TO airbyte_user;
+GRANT TRUNCATE ON * TO airbyte_user;
+GRANT INSERT ON * TO airbyte_user;
+GRANT SELECT ON * TO airbyte_user;
+GRANT CREATE DATABASE ON airbyte_internal.* TO airbyte_user;
+GRANT CREATE TABLE ON airbyte_internal.* TO airbyte_user;
+GRANT DROP ON airbyte_internal.* TO airbyte_user;
+GRANT TRUNCATE ON airbyte_internal.* TO airbyte_user;
+GRANT INSERT ON airbyte_internal.* TO airbyte_user;
+GRANT SELECT ON airbyte_internal.* TO airbyte_user;
 ```
 
 You can also use a pre-existing user but we highly recommend creating a dedicated user for Airbyte.
@@ -79,6 +90,7 @@ Therefore, Airbyte ClickHouse destination will create tables and schemas using t
 
 | Version | Date       | Pull Request                                               | Subject                                                                                       |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
+| 1.0.0   | 2024-02-07 | [\#34637](https://github.com/airbytehq/airbyte/pull/34637) | Update the raw table schema                                                                   |
 | 0.2.5   | 2023-06-21 | [\#27555](https://github.com/airbytehq/airbyte/pull/27555) | Reduce image size                                                                             |
 | 0.2.4   | 2023-06-05 | [\#27036](https://github.com/airbytehq/airbyte/pull/27036) | Internal code change for future development (install normalization packages inside connector) |
 | 0.2.3   | 2023-04-04 | [\#24604](https://github.com/airbytehq/airbyte/pull/24604) | Support for destination checkpointing                                                         |

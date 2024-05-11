@@ -10,6 +10,7 @@ import pendulum
 import pytest
 import requests
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 from requests import Response
 
 LOGGER = logging.getLogger(__name__)
@@ -81,7 +82,6 @@ class TestOauth2Authenticator:
             "client_id": base64.b64encode(config["client_id"].encode("utf-8")).decode(),
             "client_secret": base64.b64encode(config["client_secret"].encode("utf-8")).decode(),
             "refresh_token": None,
-            "scopes": None,
         }
         assert body == expected
 
@@ -104,7 +104,6 @@ class TestOauth2Authenticator:
             "client_id": "some_client_id",
             "client_secret": "some_client_secret",
             "refresh_token": None,
-            "scopes": None,
         }
         assert body == expected
 
@@ -126,7 +125,6 @@ class TestOauth2Authenticator:
             "client_id": "some_client_id",
             "client_secret": "some_client_secret",
             "refresh_token": None,
-            "scopes": None,
         }
         assert body == expected
 
@@ -167,6 +165,32 @@ class TestOauth2Authenticator:
         token = oauth.refresh_access_token()
 
         assert ("access_token", 1000) == token
+
+        filtered = filter_secrets("access_token")
+        assert filtered == "****"
+
+    def test_refresh_access_token_missing_access_token(self, mocker):
+        oauth = DeclarativeOauth2Authenticator(
+            token_refresh_endpoint="{{ config['refresh_endpoint'] }}",
+            client_id="{{ config['client_id'] }}",
+            client_secret="{{ config['client_secret'] }}",
+            refresh_token="{{ config['refresh_token'] }}",
+            config=config,
+            scopes=["scope1", "scope2"],
+            token_expiry_date="{{ config['token_expiry_date'] }}",
+            refresh_request_body={
+                "custom_field": "{{ config['custom_field'] }}",
+                "another_field": "{{ config['another_field'] }}",
+                "scopes": ["no_override"],
+            },
+            parameters={},
+        )
+
+        resp.status_code = 200
+        mocker.patch.object(resp, "json", return_value={"expires_in": 1000})
+        mocker.patch.object(requests, "request", side_effect=mock_request, autospec=True)
+        with pytest.raises(Exception):
+            oauth.refresh_access_token()
 
     @pytest.mark.parametrize(
         "timestamp, expected_date",
@@ -277,6 +301,28 @@ class TestOauth2Authenticator:
             token = oauth.get_access_token()
             assert "access_token" == token
             assert oauth.get_token_expiry_date() == pendulum.parse(next_day)
+
+    def test_error_handling(self, mocker):
+        oauth = DeclarativeOauth2Authenticator(
+            token_refresh_endpoint="{{ config['refresh_endpoint'] }}",
+            client_id="{{ config['client_id'] }}",
+            client_secret="{{ config['client_secret'] }}",
+            refresh_token="{{ config['refresh_token'] }}",
+            config=config,
+            scopes=["scope1", "scope2"],
+            refresh_request_body={
+                "custom_field": "{{ config['custom_field'] }}",
+                "another_field": "{{ config['another_field'] }}",
+                "scopes": ["no_override"],
+            },
+            parameters={},
+        )
+        resp.status_code = 400
+        mocker.patch.object(resp, "json", return_value={"access_token": "access_token", "expires_in": 123})
+        mocker.patch.object(requests, "request", side_effect=mock_request, autospec=True)
+        with pytest.raises(requests.exceptions.HTTPError) as e:
+            oauth.refresh_access_token()
+            assert e.value.errno == 400
 
 
 def mock_request(method, url, data):

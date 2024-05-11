@@ -4,109 +4,115 @@
   "description": "A summary of an individual campaign's settings and content.",
   "properties": {
     "id": {
+      "description": "A string that uniquely identifies this campaign.",
       "type": "string",
       "title": "Campaign ID",
-      "description": "A string that uniquely identifies this campaign.",
       "readOnly": true
     },
     "web_id": {
+      "description": "The ID used in the Mailchimp web application. View this campaign in your Mailchimp account at `https://{dc}.admin.mailchimp.com/campaigns/show/?id={web_id}`.",
       "type": "integer",
       "title": "Campaign Web ID",
-      "description": "The ID used in the Mailchimp web application. View this campaign in your Mailchimp account at `https://{dc}.admin.mailchimp.com/campaigns/show/?id={web_id}`.",
       "readOnly": true
     },
     "parent_campaign_id": {
-      "type": "string",
-      "title": "Parent Campaign ID",
       "description": "If this campaign is the child of another campaign, this identifies the parent campaign. For Example, for RSS or Automation children.",
+      "type": ["null", "string"],
+      "title": "Parent Campaign ID",
       "readOnly": true
     },
     "type": {
+      "description": "The type of campaign (e.g., 'regular', 'automated', 'plain-text')",
       "$ref": "campaignType.json"
     },
     "create_time": {
+      "description": "The date and time the campaign was created in ISO 8601 format.",
       "type": "string",
       "title": "Create Time",
-      "description": "The date and time the campaign was created in ISO 8601 format.",
-      "readOnly": true
+      "readOnly": true,
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "archive_url": {
-      "type": "string",
-      "title": "Archive URL",
       "description": "The link to the campaign's archive version in ISO 8601 format.",
+      "type": ["null", "string"],
+      "title": "Archive URL",
       "readOnly": true
     },
     "long_archive_url": {
-      "type": "string",
-      "title": "Long Archive URL",
       "description": "The original link to the campaign's archive version.",
+      "type": ["null", "string"],
+      "title": "Long Archive URL",
       "readOnly": true
     },
     "status": {
+      "description": "The current status of the campaign (e.g., 'sent', 'draft', 'scheduled')",
       "$ref": "campaignStatus.json"
     },
     "emails_sent": {
+      "description": "The total number of emails sent for this campaign.",
       "type": "integer",
       "title": "Emails Sent",
-      "description": "The total number of emails sent for this campaign.",
       "readOnly": true
     },
     "send_time": {
-      "type": "string",
-      "title": "Send Time",
       "description": "The date and time a campaign was sent.",
-      "readOnly": true
+      "type": ["null", "string"],
+      "title": "Send Time",
+      "readOnly": true,
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "content_type": {
-      "type": "string",
-      "title": "Content Type",
       "description": "How the campaign's content is put together.",
+      "type": ["null", "string"],
+      "title": "Content Type",
       "enum": ["template", "html", "url", "multichannel"]
     },
     "needs_block_refresh": {
+      "description": "Determines if the campaign needs its blocks refreshed by opening the web-based campaign editor. Deprecated and will always return false.",
       "type": "boolean",
       "title": "Needs Block Refresh",
-      "description": "Determines if the campaign needs its blocks refreshed by opening the web-based campaign editor. Deprecated and will always return false.",
       "readOnly": true
     },
     "resendable": {
+      "description": "Determines if the campaign qualifies to be resent to non-openers.",
       "type": "boolean",
       "title": "Resendable",
-      "description": "Determines if the campaign qualifies to be resent to non-openers.",
       "readOnly": true
     },
     "recipients": {
+      "description": "List settings for the campaign.",
       "type": "object",
       "title": "List",
-      "description": "List settings for the campaign.",
       "properties": {
         "list_id": {
-          "type": "string",
-          "title": "List ID",
-          "description": "The unique list id."
+          "description": "The unique list id.",
+          "type": ["null", "string"],
+          "title": "List ID"
         },
         "list_is_active": {
+          "description": "The status of the list used, namely if it's deleted or disabled.",
           "type": "boolean",
           "title": "List Status",
-          "description": "The status of the list used, namely if it's deleted or disabled.",
           "readOnly": true
         },
         "list_name": {
-          "type": "string",
-          "title": "List Name",
           "description": "The name of the list.",
+          "type": ["null", "string"],
+          "title": "List Name",
           "readOnly": true
         },
         "segment_text": {
-          "type": "string",
-          "title": "Segment Text",
           "description": "A description of the [segment](https://mailchimp.com/help/create-and-send-to-a-segment/) used for the campaign. Formatted as a string marked up with HTML.",
+          "type": ["null", "string"],
+          "title": "Segment Text",
           "readOnly": true
         },
         "recipient_count": {
+          "description": "Count of the recipients on the associated list. Formatted as an integer.",
           "type": "integer",
           "title": "Recipient Count",
-          "description": "Count of the recipients on the associated list. Formatted as an integer.",
           "readOnly": true
         },
         "segment_opts": {
@@ -115,219 +121,221 @@
       }
     },
     "settings": {
+      "description": "The settings for your campaign, including subject, from name, reply-to address, and more.",
       "type": "object",
       "title": "Campaign Settings",
-      "description": "The settings for your campaign, including subject, from name, reply-to address, and more.",
       "properties": {
         "subject_line": {
-          "type": "string",
-          "title": "Campaign Subject Line",
-          "description": "The subject line for the campaign."
+          "description": "The subject line for the campaign.",
+          "type": ["null", "string"],
+          "title": "Campaign Subject Line"
         },
         "preview_text": {
-          "type": "string",
-          "title": "Campaign Preview Text",
-          "description": "The preview text for the campaign."
+          "description": "The preview text for the campaign.",
+          "type": ["null", "string"],
+          "title": "Campaign Preview Text"
         },
         "title": {
-          "type": "string",
-          "title": "Campaign Title",
-          "description": "The title of the campaign."
+          "description": "The title of the campaign.",
+          "type": ["null", "string"],
+          "title": "Campaign Title"
         },
         "from_name": {
-          "type": "string",
-          "title": "From Name",
-          "description": "The 'from' name on the campaign (not an email address)."
+          "description": "The 'from' name on the campaign (not an email address).",
+          "type": ["null", "string"],
+          "title": "From Name"
         },
         "reply_to": {
-          "type": "string",
-          "title": "Reply To Address",
-          "description": "The reply-to email address for the campaign."
+          "description": "The reply-to email address for the campaign.",
+          "type": ["null", "string"],
+          "title": "Reply To Address"
         },
         "use_conversation": {
+          "description": "Use Mailchimp Conversation feature to manage out-of-office replies.",
           "type": "boolean",
-          "title": "Conversation",
-          "description": "Use Mailchimp Conversation feature to manage out-of-office replies."
+          "title": "Conversation"
         },
         "to_name": {
-          "type": "string",
-          "title": "To Name",
-          "description": "The campaign's custom 'To' name. Typically the first name [merge field](https://mailchimp.com/help/getting-started-with-merge-tags/)."
+          "description": "The campaign's custom 'To' name. Typically the first name [merge field](https://mailchimp.com/help/getting-started-with-merge-tags/).",
+          "type": ["null", "string"],
+          "title": "To Name"
         },
         "folder_id": {
-          "type": "string",
-          "title": "Folder ID",
-          "description": "If the campaign is listed in a folder, the id for that folder."
+          "description": "If the campaign is listed in a folder, the id for that folder.",
+          "type": ["null", "string"],
+          "title": "Folder ID"
         },
         "authenticate": {
+          "description": "Whether Mailchimp [authenticated](https://mailchimp.com/help/about-email-authentication/) the campaign. Defaults to `true`.",
           "type": "boolean",
-          "title": "Authentication",
-          "description": "Whether Mailchimp [authenticated](https://mailchimp.com/help/about-email-authentication/) the campaign. Defaults to `true`."
+          "title": "Authentication"
         },
         "auto_footer": {
+          "description": "Automatically append Mailchimp's [default footer](https://mailchimp.com/help/about-campaign-footers/) to the campaign.",
           "type": "boolean",
-          "title": "Auto-Footer",
-          "description": "Automatically append Mailchimp's [default footer](https://mailchimp.com/help/about-campaign-footers/) to the campaign."
+          "title": "Auto-Footer"
         },
         "inline_css": {
+          "description": "Automatically inline the CSS included with the campaign content.",
           "type": "boolean",
-          "title": "Inline CSS",
-          "description": "Automatically inline the CSS included with the campaign content."
+          "title": "Inline CSS"
         },
         "auto_tweet": {
+          "description": "Automatically tweet a link to the [campaign archive](https://mailchimp.com/help/about-email-campaign-archives-and-pages/) page when the campaign is sent.",
           "type": "boolean",
-          "title": "Auto-Tweet",
-          "description": "Automatically tweet a link to the [campaign archive](https://mailchimp.com/help/about-email-campaign-archives-and-pages/) page when the campaign is sent."
+          "title": "Auto-Tweet"
         },
         "auto_fb_post": {
+          "description": "An array of [Facebook](https://mailchimp.com/help/connect-or-disconnect-the-facebook-integration/) page ids to auto-post to.",
           "type": "array",
           "title": "Auto Post to Facebook",
-          "description": "An array of [Facebook](https://mailchimp.com/help/connect-or-disconnect-the-facebook-integration/) page ids to auto-post to.",
           "items": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         },
         "fb_comments": {
+          "description": "Allows Facebook comments on the campaign (also force-enables the Campaign Archive toolbar). Defaults to `true`.",
           "type": "boolean",
-          "title": "Facebook Comments",
-          "description": "Allows Facebook comments on the campaign (also force-enables the Campaign Archive toolbar). Defaults to `true`."
+          "title": "Facebook Comments"
         },
         "timewarp": {
+          "description": "Send this campaign using [Timewarp](https://mailchimp.com/help/use-timewarp/).",
           "type": "boolean",
           "title": "Timewarp Send",
-          "description": "Send this campaign using [Timewarp](https://mailchimp.com/help/use-timewarp/).",
           "readOnly": true
         },
         "template_id": {
+          "description": "The id for the template used in this campaign.",
           "type": "integer",
           "title": "Template ID",
-          "description": "The id for the template used in this campaign.",
           "readOnly": false
         },
         "drag_and_drop": {
+          "description": "Whether the campaign uses the drag-and-drop editor.",
           "type": "boolean",
           "title": "Drag And Drop Campaign",
-          "description": "Whether the campaign uses the drag-and-drop editor.",
           "readOnly": true
         }
       }
     },
     "variate_settings": {
+      "description": "The settings specific to A/B test campaigns.",
       "type": "object",
       "title": "A/B Test Options",
-      "description": "The settings specific to A/B test campaigns.",
       "properties": {
         "winning_combination_id": {
-          "type": "string",
-          "title": "Winning Combination ID",
           "description": "ID for the winning combination.",
+          "type": ["null", "string"],
+          "title": "Winning Combination ID",
           "readOnly": true
         },
         "winning_campaign_id": {
-          "type": "string",
-          "title": "Winning Campaign ID",
           "description": "ID of the campaign that was sent to the remaining recipients based on the winning combination.",
+          "type": ["null", "string"],
+          "title": "Winning Campaign ID",
           "readOnly": true
         },
         "winner_criteria": {
-          "type": "string",
-          "title": "Winning Criteria",
           "description": "The combination that performs the best. This may be determined automatically by click rate, open rate, or total revenue -- or you may choose manually based on the reporting data you find the most valuable. For Multivariate Campaigns testing send_time, winner_criteria is ignored. For Multivariate Campaigns with 'manual' as the winner_criteria, the winner must be chosen in the Mailchimp web application.",
+          "type": ["null", "string"],
+          "title": "Winning Criteria",
           "enum": ["opens", "clicks", "manual", "total_revenue"]
         },
         "wait_time": {
+          "description": "The number of minutes to wait before choosing the winning campaign. The value of wait_time must be greater than 0 and in whole hours, specified in minutes.",
           "type": "integer",
-          "title": "Wait Time",
-          "description": "The number of minutes to wait before choosing the winning campaign. The value of wait_time must be greater than 0 and in whole hours, specified in minutes."
+          "title": "Wait Time"
         },
         "test_size": {
+          "description": "The percentage of recipients to send the test combinations to, must be a value between 10 and 100.",
           "type": "integer",
-          "title": "Test Size",
-          "description": "The percentage of recipients to send the test combinations to, must be a value between 10 and 100."
+          "title": "Test Size"
         },
         "subject_lines": {
+          "description": "The possible subject lines to test. If no subject lines are provided, settings.subject_line will be used.",
           "type": "array",
           "title": "Subject Lines",
-          "description": "The possible subject lines to test. If no subject lines are provided, settings.subject_line will be used.",
           "items": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         },
         "send_times": {
+          "description": "The possible send times to test. The times provided should be in the format YYYY-MM-DD HH:MM:SS. If send_times are provided to test, the test_size will be set to 100% and winner_criteria will be ignored.",
           "type": "array",
           "title": "Send Times",
-          "description": "The possible send times to test. The times provided should be in the format YYYY-MM-DD HH:MM:SS. If send_times are provided to test, the test_size will be set to 100% and winner_criteria will be ignored.",
           "items": {
-            "type": "string"
+            "type": ["null", "string"],
+            "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone"
           }
         },
         "from_names": {
+          "description": "The possible from names. The number of from_names provided must match the number of reply_to_addresses. If no from_names are provided, settings.from_name will be used.",
           "type": "array",
           "title": "From Names",
-          "description": "The possible from names. The number of from_names provided must match the number of reply_to_addresses. If no from_names are provided, settings.from_name will be used.",
           "items": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         },
         "reply_to_addresses": {
+          "description": "The possible reply-to addresses. The number of reply_to_addresses provided must match the number of from_names. If no reply_to_addresses are provided, settings.reply_to will be used.",
           "type": "array",
           "title": "Reply To Addresses",
-          "description": "The possible reply-to addresses. The number of reply_to_addresses provided must match the number of from_names. If no reply_to_addresses are provided, settings.reply_to will be used.",
           "items": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         },
         "contents": {
+          "description": "Descriptions of possible email contents. To set campaign contents, make a PUT request to /campaigns/{campaign_id}/content with the field 'variate_contents'.",
           "type": "array",
           "title": "Content Descriptions",
-          "description": "Descriptions of possible email contents. To set campaign contents, make a PUT request to /campaigns/{campaign_id}/content with the field 'variate_contents'.",
           "items": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "readOnly": true
         },
         "combinations": {
+          "description": "Combinations of possible variables used to build emails.",
           "type": "array",
           "title": "Combinations",
-          "description": "Combinations of possible variables used to build emails.",
           "readOnly": true,
           "items": {
             "type": "object",
             "properties": {
               "id": {
-                "type": "string",
-                "title": "ID",
-                "description": "Unique ID for the combination."
+                "description": "Unique ID for the combination.",
+                "type": ["null", "string"],
+                "title": "ID"
               },
               "subject_line": {
+                "description": "The index of `variate_settings.subject_lines` used.",
                 "type": "integer",
-                "title": "Subject Line",
-                "description": "The index of `variate_settings.subject_lines` used."
+                "title": "Subject Line"
               },
               "send_time": {
+                "description": "The index of `variate_settings.send_times` used.",
                 "type": "integer",
-                "title": "Send Time",
-                "description": "The index of `variate_settings.send_times` used."
+                "title": "Send Time"
               },
               "from_name": {
+                "description": "The index of `variate_settings.from_names` used.",
                 "type": "integer",
-                "title": "From Name",
-                "description": "The index of `variate_settings.from_names` used."
+                "title": "From Name"
               },
               "reply_to": {
+                "description": "The index of `variate_settings.reply_to_addresses` used.",
                 "type": "integer",
-                "title": "Reply To",
-                "description": "The index of `variate_settings.reply_to_addresses` used."
+                "title": "Reply To"
               },
               "content_description": {
+                "description": "The index of `variate_settings.contents` used.",
                 "type": "integer",
-                "title": "Content Description",
-                "description": "The index of `variate_settings.contents` used."
+                "title": "Content Description"
               },
               "recipients": {
+                "description": "The number of recipients for this combination.",
                 "type": "integer",
-                "title": "Recipients",
-                "description": "The number of recipients for this combination."
+                "title": "Recipients"
               }
             }
           }
@@ -335,149 +343,150 @@
       }
     },
     "tracking": {
+      "description": "The tracking options for a campaign.",
       "type": "object",
       "title": "Campaign Tracking Options",
-      "description": "The tracking options for a campaign.",
       "properties": {
         "opens": {
+          "description": "Whether to [track opens](https://mailchimp.com/help/about-open-tracking/). Defaults to `true`. Cannot be set to false for variate campaigns.",
           "type": "boolean",
-          "title": "Opens",
-          "description": "Whether to [track opens](https://mailchimp.com/help/about-open-tracking/). Defaults to `true`. Cannot be set to false for variate campaigns."
+          "title": "Opens"
         },
         "html_clicks": {
+          "description": "Whether to [track clicks](https://mailchimp.com/help/enable-and-view-click-tracking/) in the HTML version of the campaign. Defaults to `true`. Cannot be set to false for variate campaigns.",
           "type": "boolean",
-          "title": "HTML Click Tracking",
-          "description": "Whether to [track clicks](https://mailchimp.com/help/enable-and-view-click-tracking/) in the HTML version of the campaign. Defaults to `true`. Cannot be set to false for variate campaigns."
+          "title": "HTML Click Tracking"
         },
         "text_clicks": {
+          "description": "Whether to [track clicks](https://mailchimp.com/help/enable-and-view-click-tracking/) in the plain-text version of the campaign. Defaults to `true`. Cannot be set to false for variate campaigns.",
           "type": "boolean",
-          "title": "Plain-Text Click Tracking",
-          "description": "Whether to [track clicks](https://mailchimp.com/help/enable-and-view-click-tracking/) in the plain-text version of the campaign. Defaults to `true`. Cannot be set to false for variate campaigns."
+          "title": "Plain-Text Click Tracking"
         },
         "goal_tracking": {
+          "description": "Whether to enable [Goal](https://mailchimp.com/help/about-connected-sites/) tracking.",
           "type": "boolean",
-          "title": "Mailchimp Goal Tracking",
-          "description": "Whether to enable [Goal](https://mailchimp.com/help/about-connected-sites/) tracking."
+          "title": "Mailchimp Goal Tracking"
         },
         "ecomm360": {
+          "description": "Whether to enable [eCommerce360](https://mailchimp.com/help/connect-your-online-store-to-mailchimp/) tracking.",
           "type": "boolean",
-          "title": "E-commerce Tracking",
-          "description": "Whether to enable [eCommerce360](https://mailchimp.com/help/connect-your-online-store-to-mailchimp/) tracking."
+          "title": "E-commerce Tracking"
         },
         "google_analytics": {
-          "type": "string",
-          "title": "Google Analytics Tracking",
-          "description": "The custom slug for [Google Analytics](https://mailchimp.com/help/integrate-google-analytics-with-mailchimp/) tracking (max of 50 bytes)."
+          "description": "The custom slug for [Google Analytics](https://mailchimp.com/help/integrate-google-analytics-with-mailchimp/) tracking (max of 50 bytes).",
+          "type": ["null", "string"],
+          "title": "Google Analytics Tracking"
         },
         "clicktale": {
-          "type": "string",
-          "title": "ClickTale Analytics Tracking",
-          "description": "The custom slug for [ClickTale](https://mailchimp.com/help/additional-tracking-options-for-campaigns/) tracking (max of 50 bytes)."
+          "description": "The custom slug for [ClickTale](https://mailchimp.com/help/additional-tracking-options-for-campaigns/) tracking (max of 50 bytes).",
+          "type": ["null", "string"],
+          "title": "ClickTale Analytics Tracking"
         },
         "salesforce": {
+          "description": "Salesforce tracking options for a campaign. Must be using Mailchimp's built-in [Salesforce integration](https://mailchimp.com/help/integrate-salesforce-with-mailchimp/).",
           "type": "object",
           "title": "Salesforce CRM Tracking",
-          "description": "Salesforce tracking options for a campaign. Must be using Mailchimp's built-in [Salesforce integration](https://mailchimp.com/help/integrate-salesforce-with-mailchimp/).",
           "properties": {
             "campaign": {
+              "description": "Create a campaign in a connected Salesforce account.",
               "type": "boolean",
-              "title": "Salesforce Campaign",
-              "description": "Create a campaign in a connected Salesforce account."
+              "title": "Salesforce Campaign"
             },
             "notes": {
+              "description": "Update contact notes for a campaign based on subscriber email addresses.",
               "type": "boolean",
-              "title": "Salesforce Note",
-              "description": "Update contact notes for a campaign based on subscriber email addresses."
+              "title": "Salesforce Note"
             }
           }
         },
         "capsule": {
+          "description": "Capsule tracking options for a campaign. Must be using Mailchimp's built-in Capsule integration.",
           "type": "object",
           "title": "Capsule CRM Tracking",
-          "description": "Capsule tracking options for a campaign. Must be using Mailchimp's built-in Capsule integration.",
           "properties": {
             "notes": {
+              "description": "Update contact notes for a campaign based on subscriber email addresses.",
               "type": "boolean",
-              "title": "Capsule Note",
-              "description": "Update contact notes for a campaign based on subscriber email addresses."
+              "title": "Capsule Note"
             }
           }
         }
       }
     },
     "rss_opts": {
+      "description": "[RSS](https://mailchimp.com/help/share-your-blog-posts-with-mailchimp/) options for a campaign.",
       "type": "object",
       "title": "RSS Options",
-      "description": "[RSS](https://mailchimp.com/help/share-your-blog-posts-with-mailchimp/) options for a campaign.",
       "properties": {
         "feed_url": {
-          "type": "string",
+          "description": "The URL for the RSS feed.",
+          "type": ["null", "string"],
           "title": "Feed URL",
-          "format": "uri",
-          "description": "The URL for the RSS feed."
+          "format": "uri"
         },
         "frequency": {
-          "type": "string",
-          "title": "Frequency",
           "description": "The frequency of the RSS Campaign.",
+          "type": ["null", "string"],
+          "title": "Frequency",
           "enum": ["daily", "weekly", "monthly"]
         },
         "schedule": {
+          "description": "The schedule for sending the RSS Campaign.",
           "type": "object",
           "title": "Sending Schedule",
-          "description": "The schedule for sending the RSS Campaign.",
           "properties": {
             "hour": {
+              "description": "The hour to send the campaign in local time. Acceptable hours are 0-23. For example, '4' would be 4am in [your account's default time zone](https://mailchimp.com/help/set-account-defaults/).",
               "type": "integer",
               "minimum": 0,
               "maximum": 23,
-              "title": "Sending Hour",
-              "description": "The hour to send the campaign in local time. Acceptable hours are 0-23. For example, '4' would be 4am in [your account's default time zone](https://mailchimp.com/help/set-account-defaults/)."
+              "title": "Sending Hour"
             },
             "daily_send": {
+              "description": "The days of the week to send a daily RSS Campaign.",
               "type": "object",
               "title": "Daily Sending Days",
-              "description": "The days of the week to send a daily RSS Campaign.",
               "properties": {
                 "sunday": {
+                  "description": "Sends the daily RSS Campaign on Sundays.",
                   "type": "boolean",
-                  "title": "Sunday",
-                  "description": "Sends the daily RSS Campaign on Sundays."
+                  "title": "Sunday"
                 },
                 "monday": {
+                  "description": "Sends the daily RSS Campaign on Mondays.",
                   "type": "boolean",
-                  "title": "Monday",
-                  "description": "Sends the daily RSS Campaign on Mondays."
+                  "title": "Monday"
                 },
                 "tuesday": {
+                  "description": "Sends the daily RSS Campaign on Tuesdays.",
                   "type": "boolean",
-                  "title": "tuesday",
-                  "description": "Sends the daily RSS Campaign on Tuesdays."
+                  "title": "tuesday"
                 },
                 "wednesday": {
+                  "description": "Sends the daily RSS Campaign on Wednesdays.",
                   "type": "boolean",
-                  "title": "Monday",
-                  "description": "Sends the daily RSS Campaign on Wednesdays."
+                  "title": "Monday"
                 },
                 "thursday": {
+                  "description": "Sends the daily RSS Campaign on Thursdays.",
                   "type": "boolean",
-                  "title": "Thursday",
-                  "description": "Sends the daily RSS Campaign on Thursdays."
+                  "title": "Thursday"
                 },
                 "friday": {
+                  "description": "Sends the daily RSS Campaign on Fridays.",
                   "type": "boolean",
-                  "title": "Friday",
-                  "description": "Sends the daily RSS Campaign on Fridays."
+                  "title": "Friday"
                 },
                 "saturday": {
+                  "description": "Sends the daily RSS Campaign on Saturdays.",
                   "type": "boolean",
-                  "title": "Saturday",
-                  "description": "Sends the daily RSS Campaign on Saturdays."
+                  "title": "Saturday"
                 }
               }
             },
             "weekly_send_day": {
-              "type": "string",
+              "description": "The day of the week to send a weekly RSS Campaign.",
+              "type": ["null", "string"],
               "enum": [
                 "sunday",
                 "monday",
@@ -487,198 +496,203 @@
                 "friday",
                 "saturday"
               ],
-              "title": "Weekly Sending Day",
-              "description": "The day of the week to send a weekly RSS Campaign."
+              "title": "Weekly Sending Day"
             },
             "monthly_send_date": {
+              "description": "The day of the month to send a monthly RSS Campaign. Acceptable days are 0-31, where '0' is always the last day of a month. Months with fewer than the selected number of days will not have an RSS campaign sent out that day. For example, RSS Campaigns set to send on the 30th will not go out in February.",
               "type": "number",
               "minimum": 0,
               "maximum": 31,
-              "title": "Monthly Sending Day",
-              "description": "The day of the month to send a monthly RSS Campaign. Acceptable days are 0-31, where '0' is always the last day of a month. Months with fewer than the selected number of days will not have an RSS campaign sent out that day. For example, RSS Campaigns set to send on the 30th will not go out in February."
+              "title": "Monthly Sending Day"
             }
           }
         },
         "last_sent": {
-          "type": "string",
-          "title": "Last Sent",
           "description": "The date the campaign was last sent.",
-          "readOnly": true
+          "type": ["null", "string"],
+          "title": "Last Sent",
+          "readOnly": true,
+          "format": "date-time",
+          "airbyte_type": "timestamp_with_timezone"
         },
         "constrain_rss_img": {
+          "description": "Whether to add CSS to images in the RSS feed to constrain their width in campaigns.",
           "type": "boolean",
-          "title": "Constrain RSS Images",
-          "description": "Whether to add CSS to images in the RSS feed to constrain their width in campaigns."
+          "title": "Constrain RSS Images"
         }
       }
     },
     "ab_split_opts": {
+      "description": "[A/B Testing](https://mailchimp.com/help/about-ab-testing-campaigns/) options for a campaign.",
       "type": "object",
       "title": "A/B Testing Options",
-      "description": "[A/B Testing](https://mailchimp.com/help/about-ab-testing-campaigns/) options for a campaign.",
       "readOnly": true,
       "properties": {
         "split_test": {
-          "type": "string",
-          "title": "Split Test",
           "description": "The type of AB split to run.",
+          "type": ["null", "string"],
+          "title": "Split Test",
           "enum": ["subject", "from_name", "schedule"]
         },
         "pick_winner": {
-          "type": "string",
-          "title": "Pick Winner",
           "description": "How we should evaluate a winner. Based on 'opens', 'clicks', or 'manual'.",
+          "type": ["null", "string"],
+          "title": "Pick Winner",
           "enum": ["opens", "clicks", "manual"]
         },
         "wait_units": {
-          "type": "string",
-          "title": "Wait Time",
           "description": "How unit of time for measuring the winner ('hours' or 'days'). This cannot be changed after a campaign is sent.",
+          "type": ["null", "string"],
+          "title": "Wait Time",
           "enum": ["hours", "days"]
         },
         "wait_time": {
+          "description": "The amount of time to wait before picking a winner. This cannot be changed after a campaign is sent.",
           "type": "integer",
-          "title": "Wait Time",
-          "description": "The amount of time to wait before picking a winner. This cannot be changed after a campaign is sent."
+          "title": "Wait Time"
         },
         "split_size": {
+          "description": "The size of the split groups. Campaigns split based on 'schedule' are forced to have a 50/50 split. Valid split integers are between 1-50.",
           "type": "integer",
           "minimum": 1,
           "maximum": 50,
-          "title": "Split Size",
-          "description": "The size of the split groups. Campaigns split based on 'schedule' are forced to have a 50/50 split. Valid split integers are between 1-50."
+          "title": "Split Size"
         },
         "from_name_a": {
-          "type": "string",
-          "title": "From Name Group A",
-          "description": "For campaigns split on 'From Name', the name for Group A."
+          "description": "For campaigns split on 'From Name', the name for Group A.",
+          "type": ["null", "string"],
+          "title": "From Name Group A"
         },
         "from_name_b": {
-          "type": "string",
-          "title": "From Name Group B",
-          "description": "For campaigns split on 'From Name', the name for Group B."
+          "description": "For campaigns split on 'From Name', the name for Group B.",
+          "type": ["null", "string"],
+          "title": "From Name Group B"
         },
         "reply_email_a": {
-          "type": "string",
-          "title": "Reply Email Group A",
-          "description": "For campaigns split on 'From Name', the reply-to address for Group A."
+          "description": "For campaigns split on 'From Name', the reply-to address for Group A.",
+          "type": ["null", "string"],
+          "title": "Reply Email Group A"
         },
         "reply_email_b": {
-          "type": "string",
-          "title": "Reply Email Group B",
-          "description": "For campaigns split on 'From Name', the reply-to address for Group B."
+          "description": "For campaigns split on 'From Name', the reply-to address for Group B.",
+          "type": ["null", "string"],
+          "title": "Reply Email Group B"
         },
         "subject_a": {
-          "type": "string",
-          "title": "Subject Line Group A",
-          "description": "For campaigns split on 'Subject Line', the subject line for Group A."
+          "description": "For campaigns split on 'Subject Line', the subject line for Group A.",
+          "type": ["null", "string"],
+          "title": "Subject Line Group A"
         },
         "subject_b": {
-          "type": "string",
-          "title": "Subject Line Group B",
-          "description": "For campaigns split on 'Subject Line', the subject line for Group B."
+          "description": "For campaigns split on 'Subject Line', the subject line for Group B.",
+          "type": ["null", "string"],
+          "title": "Subject Line Group B"
         },
         "send_time_a": {
-          "type": "string",
-          "title": "Send Time Group A",
-          "description": "The send time for Group A."
+          "description": "The send time for Group A.",
+          "type": ["null", "string"],
+          "format": "date-time",
+          "airbyte_type": "timestamp_with_timezone",
+          "title": "Send Time Group A"
         },
         "send_time_b": {
-          "type": "string",
-          "title": "Send Time Group B",
-          "description": "The send time for Group B."
+          "description": "The send time for Group B.",
+          "type": ["null", "string"],
+          "format": "date-time",
+          "airbyte_type": "timestamp_with_timezone",
+          "title": "Send Time Group B"
         },
         "send_time_winner": {
-          "type": "string",
-          "title": "Send Time Winner",
-          "description": "The send time for the winning version."
+          "description": "The send time for the winning version.",
+          "type": ["null", "string"],
+          "title": "Send Time Winner"
         }
       }
     },
     "social_card": {
+      "description": "The preview for the campaign, rendered by social networks like Facebook and Twitter. [Learn more](https://mailchimp.com/help/enable-and-customize-social-cards/).",
       "type": "object",
       "title": "Campaign Social Card",
-      "description": "The preview for the campaign, rendered by social networks like Facebook and Twitter. [Learn more](https://mailchimp.com/help/enable-and-customize-social-cards/).",
       "properties": {
         "image_url": {
-          "type": "string",
-          "title": "Image URL",
-          "description": "The url for the header image for the card."
+          "description": "The url for the header image for the card.",
+          "type": ["null", "string"],
+          "title": "Image URL"
         },
         "description": {
-          "type": "string",
-          "title": "Campaign Description",
-          "description": "A short summary of the campaign to display."
+          "description": "A short summary of the campaign to display.",
+          "type": ["null", "string"],
+          "title": "Campaign Description"
         },
         "title": {
-          "type": "string",
-          "title": "Title",
-          "description": "The title for the card. Typically the subject line of the campaign."
+          "description": "The title for the card. Typically the subject line of the campaign.",
+          "type": ["null", "string"],
+          "title": "Title"
         }
       }
     },
     "report_summary": {
+      "description": "For sent campaigns, a summary of opens, clicks, and e-commerce data.",
       "type": "object",
       "title": "Campaign Report Summary",
-      "description": "For sent campaigns, a summary of opens, clicks, and e-commerce data.",
       "properties": {
         "opens": {
+          "description": "The total number of opens for a campaign.",
           "type": "integer",
           "title": "Automation Opens",
-          "description": "The total number of opens for a campaign.",
           "readOnly": true
         },
         "unique_opens": {
+          "description": "The number of unique opens.",
           "type": "integer",
           "title": "Unique Opens",
-          "description": "The number of unique opens.",
           "readOnly": true
         },
         "open_rate": {
+          "description": "The number of unique opens divided by the total number of successful deliveries.",
           "type": "number",
           "title": "Open Rate",
-          "description": "The number of unique opens divided by the total number of successful deliveries.",
           "readOnly": true
         },
         "clicks": {
+          "description": "The total number of clicks for an campaign.",
           "type": "integer",
           "title": "Total Clicks",
-          "description": "The total number of clicks for an campaign.",
           "readOnly": true
         },
         "subscriber_clicks": {
+          "description": "The number of unique clicks.",
           "type": "integer",
           "title": "Unique Subscriber Clicks",
-          "description": "The number of unique clicks.",
           "readOnly": true
         },
         "click_rate": {
+          "description": "The number of unique clicks divided by the total number of successful deliveries.",
           "type": "number",
           "title": "Click Rate",
-          "description": "The number of unique clicks divided by the total number of successful deliveries.",
           "readOnly": true
         },
         "ecommerce": {
+          "description": "E-Commerce stats for a campaign.",
           "type": "object",
           "title": "E-Commerce Report",
-          "description": "E-Commerce stats for a campaign.",
           "properties": {
             "total_orders": {
+              "description": "The total orders for a campaign.",
               "type": "integer",
               "title": "Total Orders",
-              "description": "The total orders for a campaign.",
               "readOnly": true
             },
             "total_spent": {
+              "description": "The total spent for a campaign. Calculated as the sum of all order totals with no deductions.",
               "type": "number",
               "title": "Total Spent",
-              "description": "The total spent for a campaign. Calculated as the sum of all order totals with no deductions.",
               "readOnly": true
             },
             "total_revenue": {
+              "description": "The total revenue for a campaign. Calculated as the sum of all order totals minus shipping and tax totals.",
               "type": "number",
               "title": "Total Revenue",
-              "description": "The total revenue for a campaign. Calculated as the sum of all order totals minus shipping and tax totals.",
               "readOnly": true
             }
           }
@@ -686,39 +700,39 @@
       }
     },
     "delivery_status": {
+      "description": "Updates on campaigns in the process of sending.",
       "type": "object",
       "title": "Campaign Delivery Status",
-      "description": "Updates on campaigns in the process of sending.",
       "properties": {
         "enabled": {
+          "description": "Whether Campaign Delivery Status is enabled for this account and campaign.",
           "type": "boolean",
           "title": "Delivery Status Enabled",
-          "description": "Whether Campaign Delivery Status is enabled for this account and campaign.",
           "readOnly": true
         },
         "can_cancel": {
+          "description": "Whether a campaign send can be canceled.",
           "type": "boolean",
           "title": "Campaign Cancelable",
-          "description": "Whether a campaign send can be canceled.",
           "readOnly": true
         },
         "status": {
-          "type": "string",
-          "title": "Campaign Delivery Status",
           "description": "The current state of a campaign delivery.",
+          "type": ["null", "string"],
+          "title": "Campaign Delivery Status",
           "enum": ["delivering", "delivered", "canceling", "canceled"],
           "readOnly": true
         },
         "emails_sent": {
+          "description": "The total number of emails confirmed sent for this campaign so far.",
           "type": "integer",
           "title": "Emails Sent",
-          "description": "The total number of emails confirmed sent for this campaign so far.",
           "readOnly": true
         },
         "emails_canceled": {
+          "description": "The total number of emails canceled for this campaign.",
           "type": "integer",
           "title": "Emails Canceled",
-          "description": "The total number of emails canceled for this campaign.",
           "readOnly": true
         }
       }

@@ -4,9 +4,57 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Dynamodb Source Spec",
     "type": "object",
-    "required": ["access_key_id", "secret_access_key"],
     "additionalProperties": false,
     "properties": {
+      "credentials": {
+        "order": 0,
+        "type": "object",
+        "title": "Credentials",
+        "description": "Credentials for the service",
+        "oneOf": [
+          {
+            "title": "Authenticate via Access Keys",
+            "type": ["null", "object"],
+            "required": ["access_key_id", "secret_access_key"],
+            "additionalProperties": true,
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "User",
+                "order": 0
+              },
+              "access_key_id": {
+                "order": 1,
+                "title": "Dynamodb Key Id",
+                "type": "string",
+                "description": "The access key id to access Dynamodb. Airbyte requires read permissions to the database",
+                "airbyte_secret": true,
+                "examples": ["A012345678910EXAMPLE"]
+              },
+              "secret_access_key": {
+                "order": 2,
+                "title": "Dynamodb Access Key",
+                "type": "string",
+                "description": "The corresponding secret to the access key id.",
+                "airbyte_secret": true,
+                "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Role Based Authentication",
+            "additionalProperties": true,
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Role",
+                "order": 0
+              }
+            }
+          }
+        ]
+      },
       "endpoint": {
         "title": "Dynamodb Endpoint",
         "type": "string",
@@ -21,46 +69,40 @@
         "description": "The region of the Dynamodb database",
         "enum": [
           "",
-          "us-east-1",
-          "us-east-2",
-          "us-west-1",
-          "us-west-2",
           "af-south-1",
           "ap-east-1",
-          "ap-south-1",
           "ap-northeast-1",
           "ap-northeast-2",
           "ap-northeast-3",
+          "ap-south-1",
+          "ap-south-2",
           "ap-southeast-1",
           "ap-southeast-2",
+          "ap-southeast-3",
+          "ap-southeast-4",
           "ca-central-1",
+          "ca-west-1",
           "cn-north-1",
           "cn-northwest-1",
           "eu-central-1",
+          "eu-central-2",
           "eu-north-1",
           "eu-south-1",
+          "eu-south-2",
           "eu-west-1",
           "eu-west-2",
           "eu-west-3",
-          "sa-east-1",
+          "il-central-1",
+          "me-central-1",
           "me-south-1",
+          "sa-east-1",
+          "us-east-1",
+          "us-east-2",
           "us-gov-east-1",
-          "us-gov-west-1"
+          "us-gov-west-1",
+          "us-west-1",
+          "us-west-2"
         ]
-      },
-      "access_key_id": {
-        "title": "Dynamodb Key Id",
-        "type": "string",
-        "description": "The access key id to access Dynamodb. Airbyte requires read permissions to the database",
-        "airbyte_secret": true,
-        "examples": ["A012345678910EXAMPLE"]
-      },
-      "secret_access_key": {
-        "title": "Dynamodb Access Key",
-        "type": "string",
-        "description": "The corresponding secret to the access key id.",
-        "airbyte_secret": true,
-        "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"]
       },
       "reserved_attribute_names": {
         "title": "Reserved attribute names",
@@ -68,6 +110,12 @@
         "description": "Comma separated reserved attribute names present in your tables",
         "airbyte_secret": true,
         "examples": ["name, field_name, field-name"]
+      },
+      "ignore_missing_read_permissions_tables": {
+        "title": "Ignore missing read permissions tables",
+        "type": "boolean",
+        "description": "Ignore tables with missing scan/read permissions",
+        "default": false
       }
     }
   }

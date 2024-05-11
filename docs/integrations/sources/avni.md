@@ -36,7 +36,6 @@ The Avni source connector supports the following[ sync modes](https://docs.airby
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - (Recommended)[ Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
-
 ## Supported Streams
 
 Avni Source connector Support Following Streams:
@@ -46,7 +45,9 @@ Avni Source connector Support Following Streams:
 - **Program Encounter Stream**, This stream provides data about encounters that occur within programs. You can retrieve information about all the encounters that have taken place within programs.
 - **Subject Encounter Stream**, This stream provides data about encounters involving subjects, excluding program encounters. You can obtain information about all the encounters that subjects have had outside of program-encounter.
 
+avirajsingh7 marked this conversation as resolved.
+
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
-| 0.1.0   | 2023-07-27 | [28141](https://github.com/airbytehq/airbyte/pull/28141)   |  Avni Source Connector |
+| 0.1.0 | 2023-09-07 | [30222](https://github.com/airbytehq/airbyte/pull/30222) | Avni Source Connector |

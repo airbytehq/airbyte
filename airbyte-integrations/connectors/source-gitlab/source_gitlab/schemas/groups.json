@@ -3,34 +3,59 @@
   "type": "object",
   "properties": {
     "projects": {
+      "description": "List of projects within the group.",
       "type": ["null", "array"],
       "items": {
         "type": "object",
         "properties": {
           "id": {
+            "description": "Unique identifier of the project.",
             "type": ["null", "integer"]
           },
           "path_with_namespace": {
+            "description": "Path with namespace of the project.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "id": {
+      "description": "Unique identifier for the group.",
+      "type": ["null", "integer"]
+    },
+    "organization_id": {
+      "description": "Identifier of the organization to which the group belongs.",
       "type": ["null", "integer"]
     },
     "default_branch_protection_defaults": {
+      "description": "Default branch protection settings for the group.",
       "type": ["null", "object"],
       "properties": {
         "allow_force_push": {
+          "description": "Indicates if force push is allowed.",
           "type": ["null", "boolean"]
         },
         "allowed_to_merge": {
+          "description": "List of users/groups allowed to merge code.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
             "properties": {
               "access_level": {
+                "description": "Access level for merging code.",
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        },
+        "allowed_to_push": {
+          "description": "List of users/groups allowed to push code.",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "access_level": {
+                "description": "Access level for pushing code.",
                 "type": ["null", "integer"]
               }
             }
@@ -39,111 +64,166 @@
       }
     },
     "web_url": {
+      "description": "URL for accessing the group via web.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the group.",
       "type": ["null", "string"]
     },
     "path": {
+      "description": "Path of the group.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Description of the group.",
       "type": ["null", "string"]
     },
     "visibility": {
+      "description": "Visibility level of the group.",
       "type": ["null", "string", "integer", "boolean"]
     },
     "share_with_group_lock": {
+      "description": "Indicates if sharing with group is locked.",
       "type": ["null", "boolean"]
     },
     "require_two_factor_authentication": {
+      "description": "Indicates if two-factor authentication is required.",
       "type": ["null", "boolean"]
     },
     "two_factor_grace_period": {
+      "description": "Grace period for two-factor authentication.",
       "type": ["null", "integer"]
     },
     "project_creation_level": {
+      "description": "Project creation level for the group.",
       "type": ["null", "string"]
     },
     "auto_devops_enabled": {
+      "description": "Indicates if Auto DevOps is enabled for this group.",
       "type": ["null", "boolean"]
     },
     "subgroup_creation_level": {
+      "description": "Subgroup creation level for the group.",
+      "type": ["null", "string"]
+    },
+    "enabled_git_access_protocol": {
+      "description": "Indicates the enabled Git access protocol for the group.",
       "type": ["null", "string"]
     },
     "emails_disabled": {
+      "description": "Indicates if emails are disabled for the group.",
+      "type": ["null", "boolean"]
+    },
+    "emails_enabled": {
+      "description": "Indicates if emails are enabled for the group.",
       "type": ["null", "boolean"]
     },
     "mentions_disabled": {
+      "description": "Indicates if mentions are disabled for the group.",
       "type": ["null", "boolean"]
     },
     "lfs_enabled": {
+      "description": "Indicates if LFS is enabled for the group.",
       "type": ["null", "boolean"]
     },
     "default_branch_protection": {
+      "description": "Indicates the default branch protection level for the group.",
       "type": ["null", "integer"]
     },
     "avatar_url": {
+      "description": "URL of the group's avatar.",
       "type": ["null", "string"]
     },
     "request_access_enabled": {
+      "description": "Indicates if request access is enabled for the group.",
       "type": ["null", "boolean"]
     },
     "full_name": {
+      "description": "Full name of the group.",
       "type": ["null", "string"]
     },
     "full_path": {
+      "description": "Full path of the group.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "Timestamp when the group was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "parent_id": {
+      "description": "Identifier of the parent group.",
       "type": ["null", "integer"]
     },
     "ldap_cn": {
+      "description": "LDAP CN for the group.",
       "type": ["null", "string"]
     },
     "ldap_access": {
+      "description": "Indicates LDAP access for the group.",
       "type": ["null", "string", "integer", "boolean"]
     },
     "shared_with_groups": {
+      "description": "List of groups with which the group is shared.",
       "type": ["null", "array"]
     },
     "runners_token": {
+      "description": "Token used for shared runners.",
       "type": ["null", "string"]
     },
     "shared_projects": {
+      "description": "List of shared projects.",
       "type": ["null", "array"]
     },
     "shared_runners_minutes_limit": {
+      "description": "Shared runners minutes limit for the group.",
       "type": ["null", "integer"]
     },
     "extra_shared_runners_minutes_limit": {
+      "description": "Extra shared runners minutes limit for the group.",
       "type": ["null", "integer"]
     },
     "prevent_forking_outside_group": {
+      "description": "Indicates if forking outside the group is prevented.",
       "type": ["null", "boolean"]
     },
     "wiki_access_level": {
+      "description": "Access level for wiki in the group.",
       "type": ["null", "string"]
     },
     "marked_for_deletion_on": {
+      "description": "Date when the group was marked for deletion.",
       "type": ["null", "string"],
       "format": "date"
     },
     "prevent_sharing_groups_outside_hierarchy": {
+      "description": "Indicates if sharing groups outside hierarchy is prevented.",
       "type": ["null", "boolean"]
     },
     "membership_lock": {
+      "description": "Indicates if membership is locked for the group.",
       "type": ["null", "boolean"]
     },
     "ip_restriction_ranges": {
+      "description": "IP restriction ranges for the group.",
       "type": ["null", "string"]
     },
     "shared_runners_setting": {
+      "description": "Setting for shared runners.",
       "type": ["null", "string"]
+    },
+    "service_access_tokens_expiration_enforced": {
+      "description": "Indicates if service access tokens expiration is enforced.",
+      "type": ["null", "boolean"]
+    },
+    "lock_math_rendering_limits_enabled": {
+      "description": "Indicates if math rendering limits are locked.",
+      "type": ["null", "boolean"]
+    },
+    "math_rendering_limits_enabled": {
+      "description": "Indicates if math rendering limits are enabled.",
+      "type": ["null", "boolean"]
     }
   }
 }
