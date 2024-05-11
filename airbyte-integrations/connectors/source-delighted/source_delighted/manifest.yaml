@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: people.json
           http_method: GET
           error_handler:
@@ -43,20 +43,20 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ headers[''link''][''next''][''url''] }}'
-            stop_condition: '{{ ''next'' not in headers[''link''] }}'
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
         name: people
         path: people.json
         cursor_datetime_formats:
-          - '%s'
-        datetime_format: '%s'
+          - "%s"
+        datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ format_datetime(config[''since''], ''%Y-%m-%d %H:%M:%S'') }}'
-          datetime_format: '%Y-%m-%d %H:%M:%S'
+          datetime: "{{ format_datetime(config['since'], '%Y-%m-%d %H:%M:%S') }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
           field_name: since
@@ -67,14 +67,14 @@ definitions:
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ today_utc() }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
         step: P1W
         cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/people'
+          $ref: "#/schemas/people"
     unsubscribes:
       type: DeclarativeStream
       name: unsubscribes
@@ -83,7 +83,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: unsubscribes.json
           http_method: GET
           error_handler:
@@ -118,12 +118,12 @@ definitions:
         name: unsubscribes
         path: unsubscribes.json
         cursor_datetime_formats:
-          - '%s'
-        datetime_format: '%s'
+          - "%s"
+        datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ format_datetime(config[''since''], ''%Y-%m-%d %H:%M:%S'') }}'
-          datetime_format: '%Y-%m-%d %H:%M:%S'
+          datetime: "{{ format_datetime(config['since'], '%Y-%m-%d %H:%M:%S') }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
           field_name: since
@@ -134,14 +134,14 @@ definitions:
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ today_utc() }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
         step: P1W
         cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/unsubscribes'
+          $ref: "#/schemas/unsubscribes"
     bounces:
       type: DeclarativeStream
       name: bounces
@@ -150,7 +150,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: bounces.json
           http_method: GET
           error_handler:
@@ -185,12 +185,12 @@ definitions:
         name: bounces
         path: bounces.json
         cursor_datetime_formats:
-          - '%s'
-        datetime_format: '%s'
+          - "%s"
+        datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ format_datetime(config[''since''], ''%Y-%m-%d %H:%M:%S'') }}'
-          datetime_format: '%Y-%m-%d %H:%M:%S'
+          datetime: "{{ format_datetime(config['since'], '%Y-%m-%d %H:%M:%S') }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
           field_name: since
@@ -201,14 +201,14 @@ definitions:
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ today_utc() }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
         step: P1W
         cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/bounces'
+          $ref: "#/schemas/bounces"
     survey_responses:
       type: DeclarativeStream
       name: survey_responses
@@ -217,7 +217,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: survey_responses.json
           http_method: GET
           error_handler:
@@ -252,12 +252,12 @@ definitions:
         name: survey_responses
         path: survey_responses.json
         cursor_datetime_formats:
-          - '%s'
-        datetime_format: '%s'
+          - "%s"
+        datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ format_datetime(config[''since''], ''%Y-%m-%d %H:%M:%S'') }}'
-          datetime_format: '%Y-%m-%d %H:%M:%S'
+          datetime: "{{ format_datetime(config['since'], '%Y-%m-%d %H:%M:%S') }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
           field_name: updated_since
@@ -268,27 +268,27 @@ definitions:
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ today_utc() }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
         step: P1W
         cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/survey_responses'
+          $ref: "#/schemas/survey_responses"
   base_requester:
     type: HttpRequester
     url_base: https://api.delighted.com/v1/
     authenticator:
       type: BasicHttpAuthenticator
-      username: '{{ config[''api_key''] }}'
-      password: '{{ config[''nothing''] }}'
+      username: "{{ config['api_key'] }}"
+      password: "{{ config['nothing'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/people'
-  - $ref: '#/definitions/streams/unsubscribes'
-  - $ref: '#/definitions/streams/bounces'
-  - $ref: '#/definitions/streams/survey_responses'
+  - $ref: "#/definitions/streams/people"
+  - $ref: "#/definitions/streams/unsubscribes"
+  - $ref: "#/definitions/streams/bounces"
+  - $ref: "#/definitions/streams/survey_responses"
 
 spec:
   type: Spec
@@ -298,8 +298,8 @@ spec:
     title: Delighted Spec
     type: object
     required:
-    - since
-    - api_key
+      - since
+      - api_key
     additionalProperties: true
     properties:
       api_key:
@@ -313,8 +313,8 @@ spec:
         type: string
         description: The date from which you'd like to replicate the data
         examples:
-        - '2022-05-30T04:50:23Z'
-        - '2022-05-30 04:50:23'
+          - "2022-05-30T04:50:23Z"
+          - "2022-05-30 04:50:23"
         pattern: "^\\d{4}-\\d{2}-\\d{2}[T ]\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z?$"
         order: 1
         format: date-time
@@ -336,7 +336,7 @@ schemas:
         description: Date and time when the person was created in the system
       email:
         type:
-          - 'null'
+          - "null"
           - string
         description: Email address of the person
       id:
@@ -345,28 +345,28 @@ schemas:
       last_responded_at:
         type:
           - integer
-          - 'null'
+          - "null"
         description: Date and time when the person last responded to a survey
       last_sent_at:
         type:
           - integer
-          - 'null'
+          - "null"
         description: Date and time when the last survey was sent to the person
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Full name of the person
       next_survey_scheduled_at:
         type:
           - integer
-          - 'null'
+          - "null"
         description: >-
           Date and time when the next survey is scheduled to be sent to the
           person
       phone_number:
         type:
-          - 'null'
+          - "null"
           - string
         description: Phone number of the person
     additionalProperties: true
@@ -379,7 +379,7 @@ schemas:
         description: The email address of the subscriber who unsubscribed.
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: The name of the subscriber who unsubscribed, if available.
       person_id:
@@ -401,7 +401,7 @@ schemas:
         description: The email address that experienced the bounce.
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: The name associated with the bounced email, if available.
       person_id:
@@ -415,7 +415,7 @@ schemas:
       additional_answers:
         type:
           - array
-          - 'null'
+          - "null"
         description: Information on additional answers provided in the survey
         items:
           type: object
@@ -443,18 +443,18 @@ schemas:
               properties:
                 free_response:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   description: Free response answer
                 scale:
                   type:
-                    - 'null'
+                    - "null"
                     - integer
                   description: Scale response value
                 select_many:
                   type:
                     - array
-                    - 'null'
+                    - "null"
                   description: Select multiple choice response
                   items:
                     type: object
@@ -468,7 +468,7 @@ schemas:
                 select_one:
                   type:
                     - object
-                    - 'null'
+                    - "null"
                   description: Select single choice response
                   properties:
                     id:
@@ -479,7 +479,7 @@ schemas:
                       description: Text of the choice
       comment:
         type:
-          - 'null'
+          - "null"
           - string
         description: Additional comments provided in the survey response
       created_at:
@@ -502,27 +502,27 @@ schemas:
       person_properties:
         type:
           - object
-          - 'null'
+          - "null"
         description: Additional properties associated with the person
         properties:
           Delighted Browser:
             type:
-              - 'null'
+              - "null"
               - string
             description: Browser used by the person
           Delighted Device Type:
             type:
-              - 'null'
+              - "null"
               - string
             description: Type of device used by the person
           Delighted Operating System:
             type:
-              - 'null'
+              - "null"
               - string
             description: Operating system of the device used by the person
           Delighted Source:
             type:
-              - 'null'
+              - "null"
               - string
             description: Source from where the survey was accessed
       score:
@@ -538,7 +538,7 @@ schemas:
           description: Individual tag for the survey response
       updated_at:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Timestamp of when the survey response was last updated
     additionalProperties: true
