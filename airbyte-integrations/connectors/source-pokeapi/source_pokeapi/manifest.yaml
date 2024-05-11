@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /{{config['pokemon_name']}}
           http_method: GET
         record_selector:
@@ -28,13 +28,13 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/pokemon'
+          $ref: "#/schemas/pokemon"
   base_requester:
     type: HttpRequester
     url_base: https://pokeapi.co/api/v2/pokemon
 
 streams:
-  - $ref: '#/definitions/streams/pokemon'
+  - $ref: "#/definitions/streams/pokemon"
 
 spec:
   type: Spec
@@ -967,392 +967,392 @@ schemas:
     properties:
       abilities:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           additionalProperties: true
           properties:
             ability:
               type:
-                - 'null'
+                - "null"
                 - object
               additionalProperties: true
               properties:
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 url:
                   type:
-                    - 'null'
+                    - "null"
                     - string
             is_hidden:
               type:
-                - 'null'
+                - "null"
                 - boolean
             slot:
               type:
-                - 'null'
+                - "null"
                 - integer
       base_experience:
         type:
-          - 'null'
+          - "null"
           - integer
       forms:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           additionalProperties: true
           properties:
             name:
               type:
-                - 'null'
+                - "null"
                 - string
             url:
               type:
-                - 'null'
+                - "null"
                 - string
       game_indices:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           additionalProperties: true
           properties:
             version:
               type:
-                - 'null'
+                - "null"
                 - object
               additionalProperties: true
               properties:
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 url:
                   type:
-                    - 'null'
+                    - "null"
                     - string
             game_index:
               type:
-                - 'null'
+                - "null"
                 - integer
       height:
         type:
-          - 'null'
+          - "null"
           - integer
       held_items:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           additionalProperties: true
           properties:
             item:
               type:
-                - 'null'
+                - "null"
                 - object
               additionalProperties: true
               properties:
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 url:
                   type:
-                    - 'null'
+                    - "null"
                     - string
             version_details:
               type:
-                - 'null'
+                - "null"
                 - array
               items:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 additionalProperties: true
                 properties:
                   version:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     additionalProperties: true
                     properties:
                       name:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       url:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                   rarity:
                     type:
-                      - 'null'
+                      - "null"
                       - integer
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       is_default:
         type:
-          - 'null'
+          - "null"
           - boolean
       location_area_encounters:
         type:
-          - 'null'
+          - "null"
           - string
       moves:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           additionalProperties: true
           properties:
             move:
               type:
-                - 'null'
+                - "null"
                 - object
               additionalProperties: true
               properties:
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 url:
                   type:
-                    - 'null'
+                    - "null"
                     - string
             version_group_details:
               type:
-                - 'null'
+                - "null"
                 - array
               items:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 additionalProperties: true
                 properties:
                   level_learned_at:
                     type:
-                      - 'null'
+                      - "null"
                       - integer
                   move_learn_method:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     additionalProperties: true
                     properties:
                       name:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       url:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                   version_group:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     additionalProperties: true
                     properties:
                       name:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       url:
                         type:
-                          - 'null'
+                          - "null"
                           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       order:
         type:
-          - 'null'
+          - "null"
           - integer
       past_types:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           additionalProperties: true
           properties:
             generation:
               type:
-                - 'null'
+                - "null"
                 - object
               additionalProperties: true
               properties:
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 url:
                   type:
-                    - 'null'
+                    - "null"
                     - string
             types:
               type:
-                - 'null'
+                - "null"
                 - array
               items:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 additionalProperties: true
                 properties:
                   type:
                     type:
-                      - 'null'
+                      - "null"
                       - object
                     additionalProperties: true
                     properties:
                       name:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                       url:
                         type:
-                          - 'null'
+                          - "null"
                           - string
                   slot:
                     type:
-                      - 'null'
+                      - "null"
                       - integer
       species:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           name:
             type:
-              - 'null'
+              - "null"
               - string
           url:
             type:
-              - 'null'
+              - "null"
               - string
       sprites:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           back_default:
             type:
-              - 'null'
+              - "null"
               - string
           back_female:
             type:
-              - 'null'
+              - "null"
               - string
           back_shiny:
             type:
-              - 'null'
+              - "null"
               - string
           back_shiny_female:
             type:
-              - 'null'
+              - "null"
               - string
           front_default:
             type:
-              - 'null'
+              - "null"
               - string
           front_female:
             type:
-              - 'null'
+              - "null"
               - string
           front_shiny:
             type:
-              - 'null'
+              - "null"
               - string
           front_shiny_female:
             type:
-              - 'null'
+              - "null"
               - string
       stats:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           additionalProperties: true
           properties:
             base_stat:
               type:
-                - 'null'
+                - "null"
                 - integer
             effort:
               type:
-                - 'null'
+                - "null"
                 - integer
             stat:
               type:
-                - 'null'
+                - "null"
                 - object
               additionalProperties: true
               properties:
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 url:
                   type:
-                    - 'null'
+                    - "null"
                     - string
       types:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           additionalProperties: true
           properties:
             type:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 url:
                   type:
-                    - 'null'
+                    - "null"
                     - string
             slot:
               type:
-                - 'null'
+                - "null"
                 - integer
       weight:
         type:
-          - 'null'
+          - "null"
           - integer
