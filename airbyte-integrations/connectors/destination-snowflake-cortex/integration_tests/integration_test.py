@@ -111,9 +111,9 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         assert(self._get_record_count("mystream") == 6)
 
         # TODO: following ends up calling emulated merge and fails, investigate why
-        #append_dedup_catalog = self._get_configured_catalog(DestinationSyncMode.append_dedup) 
-        #list(destination.write(self.config, append_dedup_catalog, [self._record("mystream", "Cats are nice too", 4), first_state_message]))
-        #assert(self._get_record_count("mystream") == 6)
+        append_dedup_catalog = self._get_configured_catalog(DestinationSyncMode.append_dedup) 
+        list(destination.write(self.config, append_dedup_catalog, [self._record("mystream", "Cats are nice too", 4), first_state_message]))
+        assert(self._get_record_count("mystream") == 6)
         
         # TODO: uncomment and test before merging 
         # perform a query using OpenAI embedding 

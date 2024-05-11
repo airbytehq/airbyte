@@ -166,9 +166,6 @@ class SnowflakeCortexIndexer(Indexer):
                 source_name="vector_db_based",
                 stream_names=[stream],
             )
-            print("\n\n\n\n\nProcessing airbyte messages===================================")
-            print(len(airbyte_messages))
-            print(airbyte_messages)
             cortex_processor.process_airbyte_messages(airbyte_messages, self.get_write_strategy(stream))
 
     def delete(self, delete_ids, namespace, stream):
