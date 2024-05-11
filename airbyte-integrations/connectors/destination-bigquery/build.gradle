@@ -11,7 +11,7 @@ airbyteJavaConnector {
             'gcs-destinations',
             'core',
     ]
-    useLocalCdk = false
+    useLocalCdk = true
 }
 
 java {
@@ -22,7 +22,7 @@ java {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.bigquery.BigQueryDestination'
+    mainClass = 'io.airbyte.integrations.destination.bigquery.BigQueryDestinationKt'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
                                  '-XX:NativeMemoryTracking=detail', '-XX:+UnlockDiagnosticVMOptions',
                                  '-XX:GCLockerRetryAllocationCount=100',

@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery.uploader;
 
-import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.printHeapMemoryConsumption;
+import static io.airbyte.integrations.destination.bigquery.BigQueryUtils.printHeapMemoryConsumption;
 
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.StandardTableDefinition;
