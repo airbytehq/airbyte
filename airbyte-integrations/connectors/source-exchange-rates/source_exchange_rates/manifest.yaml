@@ -23,8 +23,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-          record_filter:
-            condition: "{{ record['date'] >= stream_interval['start_time'] }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
