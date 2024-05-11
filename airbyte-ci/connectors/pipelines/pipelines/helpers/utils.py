@@ -11,22 +11,26 @@ import os
 import re
 import sys
 import unicodedata
+import xml.sax.saxutils
 from io import TextIOWrapper
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Tuple
+from typing import TYPE_CHECKING
 
 import anyio
+import asyncclick as click
 import asyncer
-import click
-from dagger import Client, Config, Container, ExecError, File, ImageLayerCompression, QueryError, Secret
+from dagger import Client, Config, Container, Directory, ExecError, File, ImageLayerCompression, Platform, Secret
 from more_itertools import chunked
 
 if TYPE_CHECKING:
+    from typing import Any, Callable, Generator, List, Optional, Set, Tuple
+
     from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
 METADATA_FILE_NAME = "metadata.yaml"
+MANIFEST_FILE_NAME = "manifest.yaml"
 METADATA_ICON_FILE_NAME = "icon.svg"
 DIFF_FILTER = "MADRT"  # Modified, Added, Deleted, Renamed, Type changed
 IGNORED_FILE_EXTENSIONS = [".md"]
@@ -52,7 +56,7 @@ async def check_path_in_workdir(container: Container, path: str) -> bool:
         return False
 
 
-def secret_host_variable(client: Client, name: str, default: str = ""):
+def secret_host_variable(client: Client, name: str, default: str = "") -> Callable[[Container], Container]:
     """Add a host environment variable as a secret in a container.
 
     Example:
@@ -68,7 +72,7 @@ def secret_host_variable(client: Client, name: str, default: str = ""):
         Callable[[Container], Container]: A function that can be used in a `Container.with_()` method.
     """
 
-    def _secret_host_variable(container: Container):
+    def _secret_host_variable(container: Container) -> Container:
         return container.with_secret_variable(name, get_secret_host_variable(client, name, default))
 
     return _secret_host_variable
@@ -99,17 +103,14 @@ async def get_file_contents(container: Container, path: str) -> Optional[str]:
     Returns:
         Optional[str]: The file content if the file exists in the container, None otherwise.
     """
-    try:
-        return await container.file(path).contents()
-    except QueryError as e:
-        if "no such file or directory" not in str(e):
-            # this error could come from a network issue
-            raise
-    return None
+    dir_name, file_name = os.path.split(path)
+    if file_name not in set(await container.directory(dir_name).entries()):
+        return None
+    return await container.file(path).contents()
 
 
 @contextlib.contextmanager
-def catch_exec_error_group():
+def catch_exec_error_group() -> Generator:
     try:
         yield
     except anyio.ExceptionGroup as eg:
@@ -197,7 +198,7 @@ def get_current_epoch_time() -> int:  # noqa D103
     return round(datetime.datetime.utcnow().timestamp())
 
 
-def slugify(value: Any, allow_unicode: bool = False):
+def slugify(value: object, allow_unicode: bool = False) -> str:
     """
     Taken from https://github.com/django/django/blob/master/django/utils/text.py.
 
@@ -257,7 +258,7 @@ def create_and_open_file(file_path: Path) -> TextIOWrapper:
     return file_path.open("w")
 
 
-async def execute_concurrently(steps: List[Callable], concurrency=5):
+async def execute_concurrently(steps: List[Callable], concurrency: int = 5) -> List[Any]:
     tasks = []
     # Asyncer does not have builtin semaphore, so control concurrency via chunks of steps
     # Anyio has semaphores but does not have the soonify method which allow access to results via the value task attribute.
@@ -268,30 +269,32 @@ async def execute_concurrently(steps: List[Callable], concurrency=5):
 
 
 async def export_container_to_tarball(
-    context: ConnectorContext, container: Container, tar_file_name: Optional[str] = None
+    context: ConnectorContext, container: Container, platform: Platform, tar_file_name: Optional[str] = None
 ) -> Tuple[Optional[File], Optional[Path]]:
     """Save the container image to the host filesystem as a tar archive.
 
-    Exporting a container image as a tar archive allows user to have a dagger built container image available on their host filesystem.
-    They can load this tar file to their main docker host with 'docker load'.
-    This mechanism is also used to share dagger built containers with other steps like AcceptanceTest that have their own dockerd service.
-    We 'docker load' this tar file to AcceptanceTest's docker host to make sure the container under test image is available for testing.
+    Exports a container to a tarball file.
+    The tarball file is saved to the host filesystem in the directory specified by the host_image_export_dir_path attribute of the context.
+
+    Args:
+        context (ConnectorContext): The current connector context.
+        container (Container) : The list of container variants to export.
+        platform (Platform): The platform of the container to export.
+        tar_file_name (Optional[str], optional): The name of the tar archive file. Defaults to None.
 
     Returns:
         Tuple[Optional[File], Optional[Path]]: A tuple with the file object holding the tar archive on the host and its path.
     """
-    if tar_file_name is None:
-        tar_file_name = f"{context.connector.technical_name}_{context.git_revision}.tar"
-    tar_file_name = slugify(tar_file_name)
+    tar_file_name = (
+        f"{slugify(context.connector.technical_name)}_{context.git_revision}_{platform.replace('/', '_')}.tar"
+        if tar_file_name is None
+        else tar_file_name
+    )
     local_path = Path(f"{context.host_image_export_dir_path}/{tar_file_name}")
     export_success = await container.export(str(local_path), forced_compression=ImageLayerCompression.Gzip)
     if export_success:
-        exported_file = (
-            context.dagger_client.host().directory(context.host_image_export_dir_path, include=[tar_file_name]).file(tar_file_name)
-        )
-        return exported_file, local_path
-    else:
-        return None, None
+        return context.dagger_client.host().file(str(local_path)), local_path
+    return None, None
 
 
 def format_duration(time_delta: datetime.timedelta) -> str:
@@ -308,20 +311,67 @@ def sh_dash_c(lines: List[str]) -> List[str]:
     return ["sh", "-c", " && ".join(["set -o xtrace"] + lines)]
 
 
-def transform_strs_to_paths(str_paths: List[str]) -> List[Path]:
-    """Transform a list of string paths to a list of Path objects.
+def transform_strs_to_paths(str_paths: Set[str]) -> List[Path]:
+    """Transform a list of string paths to an ordered list of Path objects.
 
     Args:
-        str_paths (List[str]): A list of string paths.
+        str_paths (Set[str]): A set of string paths.
 
     Returns:
         List[Path]: A list of Path objects.
     """
-    return [Path(str_path) for str_path in str_paths]
+    return sorted([Path(str_path) for str_path in str_paths])
 
 
-def fail_if_missing_docker_hub_creds(ctx: click.Context):
+def fail_if_missing_docker_hub_creds(ctx: click.Context) -> None:
     if ctx.obj["docker_hub_username"] is None or ctx.obj["docker_hub_password"] is None:
         raise click.UsageError(
             "You need to be logged to DockerHub registry to run this command. Please set DOCKER_HUB_USERNAME and DOCKER_HUB_PASSWORD environment variables."
         )
+
+
+def java_log_scrub_pattern(secrets_to_mask: List[str]) -> str:
+    """Transforms a list of secrets into a LOG_SCRUB_PATTERN env var value for our log4j test configuration."""
+    # Build a regex pattern that matches any of the secrets to mask.
+    regex_pattern = "|".join(map(re.escape, secrets_to_mask))
+    # Now, make this string safe to consume by the log4j configuration.
+    # Its parser is XML-based so the pattern needs to be escaped again, and carefully.
+    return xml.sax.saxutils.escape(
+        regex_pattern,
+        # Annoyingly, the log4j properties file parser is quite brittle when it comes to
+        # handling log message patterns. In our case the env var is injected like this:
+        #
+        #     ${env:LOG_SCRUB_PATTERN:-defaultvalue}
+        #
+        # We must avoid confusing the parser with curly braces or colons otherwise the
+        # printed log messages will just consist of `%replace`.
+        {
+            "\t": "&#9;",
+            "'": "&apos;",
+            '"': "&quot;",
+            "{": "&#123;",
+            "}": "&#125;",
+            ":": "&#58;",
+        },
+    )
+
+
+def dagger_directory_as_zip_file(dagger_client: Client, directory: Directory, directory_name: str) -> File:
+    """Compress a directory and return a File object representing the zip file.
+
+    Args:
+        dagger_client (Client): The dagger client.
+        directory (Path): The directory to compress.
+        directory_name (str): The name of the directory.
+
+    Returns:
+        File: The File object representing the zip file.
+    """
+    return (
+        dagger_client.container()
+        .from_("alpine:3.19.1")
+        .with_exec(sh_dash_c(["apk update", "apk add zip"]))
+        .with_mounted_directory(f"/{directory_name}", directory)
+        .with_exec(["zip", "-r", "/zipped.zip", f"/{directory_name}"])
+        .file("/zipped.zip")
+    )

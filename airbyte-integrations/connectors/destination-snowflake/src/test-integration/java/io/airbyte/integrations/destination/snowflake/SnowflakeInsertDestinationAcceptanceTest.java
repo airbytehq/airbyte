@@ -122,8 +122,8 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
                                            final String namespace,
                                            final JsonNode streamSchema)
       throws Exception {
-    final StreamId streamId = new SnowflakeSqlGenerator().buildStreamId(namespace, streamName, JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE);
-    return retrieveRecordsFromTable(streamId.rawName(), streamId.rawNamespace())
+    final StreamId streamId = new SnowflakeSqlGenerator(0).buildStreamId(namespace, streamName, JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE);
+    return retrieveRecordsFromTable(streamId.getRawName(), streamId.getRawNamespace())
         .stream()
         .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
@@ -170,7 +170,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
                     JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT));
           }
         },
-        new SnowflakeTestSourceOperations()::rowToJson);
+        new SnowflakeSourceOperations()::rowToJson);
   }
 
   // for each test we create a new schema in the database. run the test in there and then remove it.
@@ -190,8 +190,8 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    TEST_SCHEMAS.add(config.get("schema").asText());
-    for (final String schema : TEST_SCHEMAS) {
+    getTestSchemas().add(config.get("schema").asText());
+    for (final String schema : getTestSchemas()) {
       // we need to wrap namespaces in quotes, but that means we have to manually upcase them.
       // thanks, v1 destinations!
       // this probably doesn't actually work, because v1 destinations are mangling namespaces and names

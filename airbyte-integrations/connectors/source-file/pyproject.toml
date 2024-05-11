@@ -1,0 +1,48 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.5.1"
+name = "source-file"
+description = "Source implementation for File"
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/file"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_file"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+html5lib = "==1.1"
+beautifulsoup4 = "==4.11.1"
+openpyxl = "==3.1.0"
+google-cloud-storage = "==2.5.0"
+pandas = "2.2.2"
+airbyte-cdk = "^0"
+paramiko = "==2.11.0"
+xlrd = "==2.0.1"
+boto3 = "==1.21.21"
+pyarrow = "14.0.2"
+s3fs = "==2022.7.1"
+lxml = "==4.9.1"
+gcsfs = "==2022.7.1"
+pyxlsb = "==1.0.10"
+genson = "==1.2.2"
+fastparquet = "^2024.2.0"
+
+[tool.poetry.scripts]
+source-file = "source_file.run:run"
+
+[tool.poetry.dependencies.smart-open]
+extras = [ "all",]
+version = "==6.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest-mock = "^3.6.1"
+pytest = "==6.2.5"
+requests-mock = "^1.9.3"
+pytest-docker = "==2.0.1"

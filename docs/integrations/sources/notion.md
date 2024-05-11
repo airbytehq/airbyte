@@ -14,9 +14,11 @@ To authenticate the Notion source connector, you need to use **one** of the foll
 - Access Token
 
 <!-- env:cloud -->
+
 :::note
 **For Airbyte Cloud users:** We highly recommend using OAuth2.0 authorization to connect to Notion, as this method significantly simplifies the setup process. If you use OAuth2.0 authorization in Airbyte Cloud, you do **not** need to create and configure a new integration in Notion. Instead, you can proceed straight to [setting up the connector in Airbyte](#step-3-set-up-the-notion-connector-in-airbyte).
 :::
+
 <!-- /env:cloud -->
 
 We have provided a quick setup guide for creating an integration in Notion below. If you would like more detailed information and context on Notion integrations, or experience any difficulties with the integration setup process, please refer to the [official Notion documentation](https://developers.notion.com/docs).
@@ -66,6 +68,7 @@ If you are authenticating via OAuth2.0 for **Airbyte Open Source**, you will nee
 5. Choose the method of authentication from the dropdown menu:
 
 <!-- env:cloud -->
+
 #### Authentication for Airbyte Cloud
 
 - **OAuth2.0** (Recommended): Click **Authenticate your Notion account**. When the popup appears, click **Select pages**. Check the pages you want to give Airbyte access to, and click **Allow access**.
@@ -73,6 +76,7 @@ If you are authenticating via OAuth2.0 for **Airbyte Open Source**, you will nee
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 #### Authentication for Airbyte Open Source
 
 - **Access Token**: Copy and paste the Access Token found in the **Secrets** tab of your private integration's page.
@@ -87,12 +91,12 @@ If you are authenticating via OAuth2.0 for **Airbyte Open Source**, you will nee
 The Notion source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Stream    | Full Refresh (Overwrite/Append) | Incremental (Append/Append + Deduped) |
-|-----------|:------------:|:-----------:|
-| Blocks    | ✓           | ✓           |
-| Comments  | ✓           | ✓           |
-| Databases | ✓           | ✓           |
-| Pages     | ✓           | ✓           |
-| Users     | ✓           |             |
+| --------- | :-----------------------------: | :-----------------------------------: |
+| Blocks    |                ✓                |                   ✓                   |
+| Comments  |                ✓                |                   ✓                   |
+| Databases |                ✓                |                   ✓                   |
+| Pages     |                ✓                |                   ✓                   |
+| Users     |                ✓                |                                       |
 
 ## Supported Streams
 
@@ -110,42 +114,47 @@ The connector is restricted by Notion [request limits](https://developers.notion
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                            |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------- |
-| 2.0.8   | 2023-11-01 | [31899](https://github.com/airbytehq/airbyte/pull/31899) | Fix `table_row.cells` property in `Blocks` stream  |
-| 2.0.7   | 2023-10-31 | [32004](https://github.com/airtybehq/airbyte/pull/32004) | Reduce page_size on 504 errors                     |
-| 2.0.6   | 2023-10-25 | [31825](https://github.com/airbytehq/airbyte/pull/31825) | Increase max_retries on retryable errors           |
-| 2.0.5   | 2023-10-23 | [31742](https://github.com/airbytehq/airbyte/pull/31742) | Add 'synced_block' property to Blocks schema       |
-| 2.0.4   | 2023-10-19 | [31625](https://github.com/airbytehq/airbyte/pull/31625) | Fix check_connection method                        |
-| 2.0.3   | 2023-10-19 | [31612](https://github.com/airbytehq/airbyte/pull/31612) | Add exponential backoff for 500 errors             |
-| 2.0.2   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 2.0.1   | 2023-10-17 | [31507](https://github.com/airbytehq/airbyte/pull/31507) | Add start_date validation checks                   |
-| 2.0.0   | 2023-10-09 | [30587](https://github.com/airbytehq/airbyte/pull/30587) | Source-wide schema update                          |
-| 1.3.0   | 2023-10-09 | [30324](https://github.com/airbytehq/airbyte/pull/30324) | Add `Comments` stream                              |
-| 1.2.2   | 2023-10-09 | [30780](https://github.com/airbytehq/airbyte/pull/30780) | Update Start Date in config to optional field      |
-| 1.2.1   | 2023-10-08 | [30750](https://github.com/airbytehq/airbyte/pull/30750) | Add availability strategy                          |
-| 1.2.0   | 2023-10-04 | [31053](https://github.com/airbytehq/airbyte/pull/31053) | Add undeclared fields for blocks and pages streams |
-| 1.1.2   | 2023-08-30 | [29999](https://github.com/airbytehq/airbyte/pull/29999) | Update error handling during connection check      |
-| 1.1.1   | 2023-06-14 | [26535](https://github.com/airbytehq/airbyte/pull/26535) | Migrate from deprecated `authSpecification` to `advancedAuth` |
-| 1.1.0   | 2023-06-08 | [27170](https://github.com/airbytehq/airbyte/pull/27170) | Fix typo in `blocks` schema                        |
-| 1.0.9   | 2023-06-08 | [27062](https://github.com/airbytehq/airbyte/pull/27062) | Skip streams with `invalid_start_cursor` error     |
-| 1.0.8   | 2023-06-07 | [27073](https://github.com/airbytehq/airbyte/pull/27073) | Add empty results handling for stream `Blocks`     |
-| 1.0.7   | 2023-06-06 | [27060](https://github.com/airbytehq/airbyte/pull/27060) | Add skipping 404 error in `Blocks` stream          |
-| 1.0.6   | 2023-05-18 | [26286](https://github.com/airbytehq/airbyte/pull/26286) | Add `parent` field to `Blocks` stream              |
-| 1.0.5   | 2023-05-01 | [25709](https://github.com/airbytehq/airbyte/pull/25709) | Fixed `ai_block is unsupported by API` issue, while fetching `Blocks` stream |
-| 1.0.4   | 2023-04-11 | [25041](https://github.com/airbytehq/airbyte/pull/25041) | Improve error handling for API /search             |
-| 1.0.3   | 2023-03-02 | [22931](https://github.com/airbytehq/airbyte/pull/22931) | Specified date formatting in specification         |
-| 1.0.2   | 2023-02-24 | [23437](https://github.com/airbytehq/airbyte/pull/23437) | Add retry for 400 error (validation_error)         |
-| 1.0.1   | 2023-01-27 | [22018](https://github.com/airbytehq/airbyte/pull/22018) | Set `AvailabilityStrategy` for streams explicitly to `None` |
-| 1.0.0   | 2022-12-19 | [20639](https://github.com/airbytehq/airbyte/pull/20639) | Fix `Pages` stream schema                          |
-| 0.1.10  | 2022-09-28 | [17298](https://github.com/airbytehq/airbyte/pull/17298) | Use "Retry-After" header for backoff               |
-| 0.1.9   | 2022-09-16 | [16799](https://github.com/airbytehq/airbyte/pull/16799) | Migrate to per-stream state                        |
-| 0.1.8   | 2022-09-05 | [16272](https://github.com/airbytehq/airbyte/pull/16272) | Update spec description to include working timestamp example    |
-| 0.1.7   | 2022-07-26 | [15042](https://github.com/airbytehq/airbyte/pull/15042) | Update `additionalProperties` field to true from shared schemas |
-| 0.1.6   | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas and spec       |
-| 0.1.5   | 2022-07-14 | [14706](https://github.com/airbytehq/airbyte/pull/14706) | Added OAuth2.0 authentication                      |
-| 0.1.4   | 2022-07-07 | [14505](https://github.com/airbytehq/airbyte/pull/14505) | Fixed bug when normalization didn't run through    |
-| 0.1.3   | 2022-04-22 | [11452](https://github.com/airbytehq/airbyte/pull/11452) | Use pagination for User stream                     |
-| 0.1.2   | 2022-01-11 | [9084](https://github.com/airbytehq/airbyte/pull/9084)   | Fix documentation URL                              |
-| 0.1.1   | 2021-12-30 | [9207](https://github.com/airbytehq/airbyte/pull/9207)   | Update connector fields title/description          |
-| 0.1.0   | 2021-10-17 | [7092](https://github.com/airbytehq/airbyte/pull/7092)   | Initial Release                                    |
+| Version | Date       | Pull Request                                             | Subject                                                                                              |
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| 3.0.1   | 2024-04-24 | [36653](https://github.com/airbytehq/airbyte/pull/36653) | Schema descriptions and CDK 0.80.0                                                                   |
+| 3.0.0   | 2024-04-12 | [35794](https://github.com/airbytehq/airbyte/pull/35974) | Migrate to low-code CDK (python CDK for Blocks stream)                                               |
+| 2.2.0   | 2024-04-08 | [36890](https://github.com/airbytehq/airbyte/pull/36890) | Unpin CDK version                                                                                    |
+| 2.1.0   | 2024-02-19 | [35409](https://github.com/airbytehq/airbyte/pull/35409) | Update users stream schema with bot type info fields and block schema with mention type info fields. |
+| 2.0.9   | 2024-02-12 | [35155](https://github.com/airbytehq/airbyte/pull/35155) | Manage dependencies with Poetry.                                                                     |
+| 2.0.8   | 2023-11-01 | [31899](https://github.com/airbytehq/airbyte/pull/31899) | Fix `table_row.cells` property in `Blocks` stream                                                    |
+| 2.0.7   | 2023-10-31 | [32004](https://github.com/airtybehq/airbyte/pull/32004) | Reduce page_size on 504 errors                                                                       |
+| 2.0.6   | 2023-10-25 | [31825](https://github.com/airbytehq/airbyte/pull/31825) | Increase max_retries on retryable errors                                                             |
+| 2.0.5   | 2023-10-23 | [31742](https://github.com/airbytehq/airbyte/pull/31742) | Add 'synced_block' property to Blocks schema                                                         |
+| 2.0.4   | 2023-10-19 | [31625](https://github.com/airbytehq/airbyte/pull/31625) | Fix check_connection method                                                                          |
+| 2.0.3   | 2023-10-19 | [31612](https://github.com/airbytehq/airbyte/pull/31612) | Add exponential backoff for 500 errors                                                               |
+| 2.0.2   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                      |
+| 2.0.1   | 2023-10-17 | [31507](https://github.com/airbytehq/airbyte/pull/31507) | Add start_date validation checks                                                                     |
+| 2.0.0   | 2023-10-09 | [30587](https://github.com/airbytehq/airbyte/pull/30587) | Source-wide schema update                                                                            |
+| 1.3.0   | 2023-10-09 | [30324](https://github.com/airbytehq/airbyte/pull/30324) | Add `Comments` stream                                                                                |
+| 1.2.2   | 2023-10-09 | [30780](https://github.com/airbytehq/airbyte/pull/30780) | Update Start Date in config to optional field                                                        |
+| 1.2.1   | 2023-10-08 | [30750](https://github.com/airbytehq/airbyte/pull/30750) | Add availability strategy                                                                            |
+| 1.2.0   | 2023-10-04 | [31053](https://github.com/airbytehq/airbyte/pull/31053) | Add undeclared fields for blocks and pages streams                                                   |
+| 1.1.2   | 2023-08-30 | [29999](https://github.com/airbytehq/airbyte/pull/29999) | Update error handling during connection check                                                        |
+| 1.1.1   | 2023-06-14 | [26535](https://github.com/airbytehq/airbyte/pull/26535) | Migrate from deprecated `authSpecification` to `advancedAuth`                                        |
+| 1.1.0   | 2023-06-08 | [27170](https://github.com/airbytehq/airbyte/pull/27170) | Fix typo in `blocks` schema                                                                          |
+| 1.0.9   | 2023-06-08 | [27062](https://github.com/airbytehq/airbyte/pull/27062) | Skip streams with `invalid_start_cursor` error                                                       |
+| 1.0.8   | 2023-06-07 | [27073](https://github.com/airbytehq/airbyte/pull/27073) | Add empty results handling for stream `Blocks`                                                       |
+| 1.0.7   | 2023-06-06 | [27060](https://github.com/airbytehq/airbyte/pull/27060) | Add skipping 404 error in `Blocks` stream                                                            |
+| 1.0.6   | 2023-05-18 | [26286](https://github.com/airbytehq/airbyte/pull/26286) | Add `parent` field to `Blocks` stream                                                                |
+| 1.0.5   | 2023-05-01 | [25709](https://github.com/airbytehq/airbyte/pull/25709) | Fixed `ai_block is unsupported by API` issue, while fetching `Blocks` stream                         |
+| 1.0.4   | 2023-04-11 | [25041](https://github.com/airbytehq/airbyte/pull/25041) | Improve error handling for API /search                                                               |
+| 1.0.3   | 2023-03-02 | [22931](https://github.com/airbytehq/airbyte/pull/22931) | Specified date formatting in specification                                                           |
+| 1.0.2   | 2023-02-24 | [23437](https://github.com/airbytehq/airbyte/pull/23437) | Add retry for 400 error (validation_error)                                                           |
+| 1.0.1   | 2023-01-27 | [22018](https://github.com/airbytehq/airbyte/pull/22018) | Set `AvailabilityStrategy` for streams explicitly to `None`                                          |
+| 1.0.0   | 2022-12-19 | [20639](https://github.com/airbytehq/airbyte/pull/20639) | Fix `Pages` stream schema                                                                            |
+| 0.1.10  | 2022-09-28 | [17298](https://github.com/airbytehq/airbyte/pull/17298) | Use "Retry-After" header for backoff                                                                 |
+| 0.1.9   | 2022-09-16 | [16799](https://github.com/airbytehq/airbyte/pull/16799) | Migrate to per-stream state                                                                          |
+| 0.1.8   | 2022-09-05 | [16272](https://github.com/airbytehq/airbyte/pull/16272) | Update spec description to include working timestamp example                                         |
+| 0.1.7   | 2022-07-26 | [15042](https://github.com/airbytehq/airbyte/pull/15042) | Update `additionalProperties` field to true from shared schemas                                      |
+| 0.1.6   | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas and spec                                            |
+| 0.1.5   | 2022-07-14 | [14706](https://github.com/airbytehq/airbyte/pull/14706) | Added OAuth2.0 authentication                                                                        |
+| 0.1.4   | 2022-07-07 | [14505](https://github.com/airbytehq/airbyte/pull/14505) | Fixed bug when normalization didn't run through                                                      |
+| 0.1.3   | 2022-04-22 | [11452](https://github.com/airbytehq/airbyte/pull/11452) | Use pagination for User stream                                                                       |
+| 0.1.2   | 2022-01-11 | [9084](https://github.com/airbytehq/airbyte/pull/9084)   | Fix documentation URL                                                                                |
+| 0.1.1   | 2021-12-30 | [9207](https://github.com/airbytehq/airbyte/pull/9207)   | Update connector fields title/description                                                            |
+| 0.1.0   | 2021-10-17 | [7092](https://github.com/airbytehq/airbyte/pull/7092)   | Initial Release                                                                                      |

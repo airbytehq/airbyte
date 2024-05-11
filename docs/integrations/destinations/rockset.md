@@ -23,7 +23,7 @@
 | api_server | string | api URL to rockset, specifying http protocol                     |
 | workspace  | string | workspace under which rockset collections will be added/modified |
 
-## Getting Started \(Airbyte Open-Source / Airbyte Cloud\)
+## Getting Started \(Airbyte Open Source / Airbyte Cloud\)
 
 #### Requirements
 

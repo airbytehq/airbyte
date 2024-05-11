@@ -9,7 +9,6 @@ from time import sleep
 
 import backoff
 import pendulum
-from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookResponse
@@ -35,7 +34,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
     # see `_should_restore_page_size` method docstring for more info.
     # attribute to handle the reduced request limit
     request_record_limit_is_reduced: bool = False
-    # attribute to save the status of last successfull call
+    # attribute to save the status of the last successful call
     last_api_call_is_successful: bool = False
 
     @dataclass
@@ -109,7 +108,10 @@ class MyFacebookAdsApi(FacebookAdsApi):
             if "headers" not in record:
                 continue
             headers = {header["name"].lower(): header["value"] for header in record["headers"]}
-            usage_from_response, pause_interval_from_response = self._parse_call_rate_header(headers)
+            (
+                usage_from_response,
+                pause_interval_from_response,
+            ) = self._parse_call_rate_header(headers)
             usage = max(usage, usage_from_response)
             pause_interval = max(pause_interval_from_response, pause_interval)
         return usage, pause_interval
@@ -144,7 +146,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
     def _should_restore_default_page_size(self, params):
         """
-        Track the state of the `request_record_limit_is_reduced` and `last_api_call_is_successfull`,
+        Track the state of the `request_record_limit_is_reduced` and `last_api_call_is_successful`,
         based on the logic from `@backoff_policy` (common.py > `reduce_request_record_limit` and `revert_request_record_limit`)
         """
         params = True if params else False
@@ -173,8 +175,8 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
-    def __init__(self, account_id: str, access_token: str, page_size: int = 100):
-        self._account_id = account_id
+    def __init__(self, access_token: str, page_size: int = 100):
+        self._accounts = {}
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
         # adding the default page size from config to the api base class
@@ -183,10 +185,12 @@ class API:
         # set the default API client to Facebook lib.
         FacebookAdsApi.set_default_api(self.api)
 
-    @cached_property
-    def account(self) -> AdAccount:
-        """Find current account"""
-        return self._find_account(self._account_id)
+    def get_account(self, account_id: str) -> AdAccount:
+        """Get AdAccount object by id"""
+        if account_id in self._accounts:
+            return self._accounts[account_id]
+        self._accounts[account_id] = self._find_account(account_id)
+        return self._accounts[account_id]
 
     @staticmethod
     def _find_account(account_id: str) -> AdAccount:

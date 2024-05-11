@@ -10,12 +10,41 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 
 #### Features
 
-| Feature                        | Support | Notes                                                                                                                                                                                               |
-| :----------------------------- | :-----: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured bucket path.                                                                                                                |
-| Incremental - Append Sync      |   ✅    | Warning: Airbyte provides at-least-once delivery. Depending on your source, you may see duplicated data. Learn more [here](/understanding-airbyte/connections/incremental-append#inclusive-cursors) |
-| Incremental - Append + Deduped |   ❌    |                                                                                                                                                                                                     |
-| Namespaces                     |   ❌    | Setting a specific bucket path is equivalent to having separate namespaces.                                                                                                                         |
+| Feature                        | Support | Notes                                                                                                                                                                                                    |
+| :----------------------------- | :-----: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured bucket path.                                                                                                                     |
+| Incremental - Append Sync      |   ✅    | Warning: Airbyte provides at-least-once delivery. Depending on your source, you may see duplicated data. Learn more [here](/using-airbyte/core-concepts/sync-modes/incremental-append#inclusive-cursors) |
+| Incremental - Append + Deduped |   ❌    |                                                                                                                                                                                                          |
+| Namespaces                     |   ❌    | Setting a specific bucket path is equivalent to having separate namespaces.                                                                                                                              |
+
+## Getting started
+
+### Requirements
+
+1. Allow connections from Airbyte server to your GCS cluster \(if they exist in separate VPCs\).
+2. An GCP bucket with credentials \(for the COPY strategy\).
+
+### Setup guide
+
+- Fill up GCS info
+  - **GCS Bucket Name**
+    - See [this](https://cloud.google.com/storage/docs/creating-buckets) for instructions on how to create a GCS bucket. The bucket cannot have a retention policy. Set Protection Tools to none or Object versioning.
+  - **GCS Bucket Region**
+  - **HMAC Key Access ID**
+    - See [this](https://cloud.google.com/storage/docs/authentication/managing-hmackeys) on how to generate an access key. For more information on hmac keys please reference the [GCP docs](https://cloud.google.com/storage/docs/authentication/hmackeys)
+    - We recommend creating an Airbyte-specific user or service account. This user or account will require the following permissions for the bucket:
+      ```
+      storage.multipartUploads.abort
+      storage.multipartUploads.create
+      storage.objects.create
+      storage.objects.delete
+      storage.objects.get
+      storage.objects.list
+      ```
+      You can set those by going to the permissions tab in the GCS bucket and adding the appropriate the email address of the service account or user and adding the aforementioned permissions.
+  - **Secret Access Key**
+    - Corresponding key to the above access ID.
+- Make sure your GCS bucket is accessible from the machine running Airbyte. This depends on your networking setup. The easiest way to verify if Airbyte is able to connect to your GCS bucket is via the check connection tool in the UI.
 
 ## Configuration
 
@@ -204,39 +233,12 @@ These parameters are related to the `ParquetOutputFormat`. See the [Java doc](ht
 
 Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
 
-## Getting started
-
-### Requirements
-
-1. Allow connections from Airbyte server to your GCS cluster \(if they exist in separate VPCs\).
-2. An GCP bucket with credentials \(for the COPY strategy\).
-
-### Setup guide
-
-- Fill up GCS info
-  - **GCS Bucket Name**
-    - See [this](https://cloud.google.com/storage/docs/creating-buckets) for instructions on how to create a GCS bucket. The bucket cannot have a retention policy. Set Protection Tools to none or Object versioning.
-  - **GCS Bucket Region**
-  - **HMAC Key Access ID**
-    - See [this](https://cloud.google.com/storage/docs/authentication/managing-hmackeys) on how to generate an access key. For more information on hmac keys please reference the [GCP docs](https://cloud.google.com/storage/docs/authentication/hmackeys)
-    - We recommend creating an Airbyte-specific user or service account. This user or account will require the following permissions for the bucket:
-      ```
-      storage.multipartUploads.abort
-      storage.multipartUploads.create
-      storage.objects.create
-      storage.objects.delete
-      storage.objects.get
-      storage.objects.list
-      ```
-      You can set those by going to the permissions tab in the GCS bucket and adding the appropriate the email address of the service account or user and adding the aforementioned permissions.
-  - **Secret Access Key**
-    - Corresponding key to the above access ID.
-- Make sure your GCS bucket is accessible from the machine running Airbyte. This depends on your networking setup. The easiest way to verify if Airbyte is able to connect to your GCS bucket is via the check connection tool in the UI.
-
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- |
+| 0.4.6   | 2024-02-15 | [35285](https://github.com/airbytehq/airbyte/pull/35285)   | Adopt CDK 0.20.8                                                                                                           |
+| 0.4.5   | 2024-02-08 | [34745](https://github.com/airbytehq/airbyte/pull/34745)   | Adopt CDK 0.19.0                                                                                                           |
 | 0.4.4   | 2023-07-14 | [#28345](https://github.com/airbytehq/airbyte/pull/28345)  | Increment patch to trigger a rebuild                                                                                       |
 | 0.4.3   | 2023-07-05 | [#27936](https://github.com/airbytehq/airbyte/pull/27936)  | Internal code update                                                                                                       |
 | 0.4.2   | 2023-06-30 | [#27891](https://github.com/airbytehq/airbyte/pull/27891)  | Internal code update                                                                                                       |

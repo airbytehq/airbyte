@@ -1,6 +1,9 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import datetime
+
+import asyncclick as click
 import pytest
 import requests
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
@@ -39,9 +42,12 @@ def context_with_setup(dagger_client, python_connector_with_setup_not_latest_cdk
         connector=python_connector_with_setup_not_latest_cdk,
         git_branch="test",
         git_revision="test",
+        diffed_branch="test",
+        git_repo_url="test",
         report_output_prefix="test",
         is_local=True,
         use_remote_secrets=False,
+        pipeline_start_timestamp=datetime.datetime.now().isoformat(),
     )
     context.dagger_client = dagger_client
     return context
@@ -61,7 +67,9 @@ async def test_with_python_connector_installed_from_setup(context_with_setup, py
     )
     # Uninstall and reinstall the latest cdk version
     cdk_install_latest_output = (
-        await container.with_exec(["pip", "uninstall", "-y", f"airbyte-cdk=={latest_cdk_version}"], skip_entrypoint=True)
+        await container.with_env_variable("CACHEBUSTER", datetime.datetime.now().isoformat())
+        # .with_exec(["pip", "install", f"airbyte-cdk=={latest_cdk_version}"], skip_entrypoint=True)
+        .with_exec(["pip", "uninstall", "-y", f"airbyte-cdk=={latest_cdk_version}"], skip_entrypoint=True)
         .with_exec(["pip", "install", f"airbyte-cdk=={latest_cdk_version}"], skip_entrypoint=True)
         .stdout()
     )

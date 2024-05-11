@@ -4,13 +4,17 @@ description: Missing a connector?
 
 # Custom or New Connector
 
-If you'd like to **ask for a new connector,** you can request it directly [here](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=area%2Fintegration%2C+new-integration&template=new-integration-request.md&title=).
+If you'd like to **ask for a new connector,** you can request it directly [here](https://github.com/airbytehq/airbyte/discussions/new?category=new-connector-request).
 
 If you'd like to build new connectors and **make them part of the pool of pre-built connectors on Airbyte,** first a big thank you. We invite you to check our [contributing guide on building connectors](../contributing-to-airbyte/README.md).
 
 If you'd like to build new connectors, or update existing ones, **for your own usage,** without contributing to the Airbyte codebase, read along.
 
 ## Developing your own connector
+
+:::info
+Custom connectors are currently exclusive to Airbyte Open-Source deployments. However, there are plans for their release on Airbyte Cloud, scheduled for January 2024. You can track the progress on this development [here](https://github.com/orgs/airbytehq/projects/37?pane=issue&itemId=45471174).
+:::
 
 It's easy to code your own connectors on Airbyte. Here is a link to instruct on how to code new sources and destinations: [building new connectors](../connector-development/README.md)
 
@@ -34,7 +38,7 @@ Once this is filled, you will see your connector in the UI and your team will be
 
 Note that this new connector could just be an updated version of an existing connector that you adapted to your specific edge case. Anything is possible!
 
-When using Airbyte on Kubernetes, the repository name must be a valid Kubernetes name. That is, it must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character (e.g. 'my-name',  or '123-abc'). Other names will work locally on Docker but cause an error on Kubernetes (Internal Server Error: Get Spec job failed).
+When using Airbyte on Kubernetes, the repository name must be a valid Kubernetes name. That is, it must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character (e.g. 'my-name', or '123-abc'). Other names will work locally on Docker but cause an error on Kubernetes (Internal Server Error: Get Spec job failed).
 
 ## Upgrading a connector
 
@@ -43,4 +47,3 @@ To upgrade your connector version, go to the admin panel in the left hand side o
 ![](../.gitbook/assets/upgrading_connector_admin_panel.png)
 
 To browse the available connector versions, simply click on the relevant link in the `Image` column to navigate to the connector's DockerHub page. From there, simply click on the `Tags` section in the top bar.
-

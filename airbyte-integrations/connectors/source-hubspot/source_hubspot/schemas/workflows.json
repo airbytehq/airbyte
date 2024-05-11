@@ -3,155 +3,233 @@
   "type": ["null", "object"],
   "properties": {
     "name": {
+      "description": "Name of the workflow",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier of the workflow",
       "type": ["null", "integer"]
     },
     "type": {
+      "description": "Type of the workflow",
       "type": ["null", "string"]
     },
     "enabled": {
+      "description": "Flag indicating if the workflow is enabled",
       "type": ["null", "boolean"]
     },
     "insertedAt": {
+      "description": "Timestamp when the workflow was inserted",
       "type": ["null", "integer"]
     },
     "updatedAt": {
+      "description": "Timestamp when the workflow was last updated",
       "type": ["null", "integer"]
     },
     "personaTagIds": {
+      "description": "IDs of persona tags associated with the workflow",
       "type": ["null", "array"],
       "items": {
+        "description": "Individual persona tag ID",
         "type": ["null", "integer"]
       }
     },
     "contactListIds": {
+      "description": "IDs of contact lists associated with the workflow",
       "type": ["null", "object"],
       "properties": {
         "enrolled": {
+          "description": "ID of the contact list containing enrolled contacts",
           "type": ["null", "integer"]
         },
         "active": {
+          "description": "ID of the contact list containing active contacts",
           "type": ["null", "integer"]
         },
         "steps": {
+          "description": "List of steps within the workflow",
           "type": ["null", "array"],
           "items": {
+            "description": "Individual step details",
             "type": ["null", "string"]
           }
+        },
+        "completed": {
+          "description": "ID of the contact list containing completed contacts",
+          "type": ["null", "integer"]
+        },
+        "succeeded": {
+          "description": "ID of the contact list containing succeeded contacts",
+          "type": ["null", "integer"]
         }
       }
     },
     "contactListIds_enrolled": {
+      "description": "ID of the contact list containing enrolled contacts",
       "type": ["null", "integer"]
     },
     "contactListIds_active": {
+      "description": "ID of the contact list containing active contacts",
       "type": ["null", "integer"]
     },
     "contactListIds_completed": {
+      "description": "ID of the contact list containing completed contacts",
       "type": ["null", "integer"]
     },
     "contactListIds_succeeded": {
+      "description": "ID of the contact list containing succeeded contacts",
       "type": ["null", "integer"]
     },
     "contactListIds_steps": {
+      "description": "List of steps within the workflow",
       "type": ["null", "array"],
       "items": {
+        "description": "Individual step details",
         "type": ["null", "string"]
       }
     },
     "lastUpdatedByUserId": {
+      "description": "ID of the user who last updated the workflow",
       "type": ["null", "integer"]
     },
     "contactCounts": {
+      "description": "Counts of contacts in various stages within the workflow",
       "type": ["null", "object"],
       "properties": {
         "active": {
+          "description": "Count of contacts currently active in the workflow",
           "type": ["null", "integer"]
         },
         "enrolled": {
+          "description": "Count of contacts enrolled in the workflow",
           "type": ["null", "integer"]
         }
       }
     },
     "description": {
+      "description": "Description of the workflow",
       "type": ["null", "string"]
     },
     "originalAuthorUserId": {
+      "description": "ID of the original author of the workflow",
       "type": ["null", "integer"]
     },
     "migrationStatus": {
+      "description": "Status and details of workflow migration",
       "type": ["null", "object"],
       "properties": {
         "enrollmentMigrationStatus": {
+          "description": "Enrollment migration status",
           "type": ["null", "string"]
         },
         "enrollmentMigrationTimestamp": {
+          "description": "Timestamp of enrollment migration",
           "type": ["null", "integer"]
         },
         "flowId": {
+          "description": "ID of the flow",
           "type": ["null", "integer"]
         },
         "lastSuccessfulMigrationTimestamp": {
+          "description": "Timestamp of last successful migration",
           "type": ["null", "integer"]
         },
         "migrationStatus": {
+          "description": "Overall migration status",
           "type": ["null", "string"]
         },
         "platformOwnsActions": {
+          "description": "Flag indicating if the platform owns actions",
           "type": ["null", "boolean"]
         },
         "portalId": {
+          "description": "ID of the portal",
           "type": ["null", "integer"]
         },
         "workflowId": {
+          "description": "ID of the workflow",
           "type": ["null", "integer"]
         }
       }
     },
     "updateSource": {
+      "description": "Details of the workflow update source",
       "type": ["null", "object"],
       "properties": {
         "sourceApplication": {
+          "description": "Application details of the workflow update source",
           "properties": {
-            "serviceName": { "type": ["null", "string"] },
-            "source": { "type": ["null", "string"] }
+            "serviceName": {
+              "description": "Name of the service",
+              "type": ["null", "string"]
+            },
+            "source": {
+              "description": "Source details",
+              "type": ["null", "string"]
+            }
           }
         },
-        "updatedAt": { "type": ["null", "integer"] },
+        "updatedAt": {
+          "description": "Timestamp of workflow update",
+          "type": ["null", "integer"]
+        },
         "updatedByUser": {
+          "description": "Details of the user who updated the workflow",
           "properties": {
-            "userEmail": { "type": ["null", "string"] },
-            "userId": { "type": ["null", "integer"] }
+            "userEmail": {
+              "description": "Email address of the user",
+              "type": ["null", "string"]
+            },
+            "userId": {
+              "description": "ID of the user",
+              "type": ["null", "integer"]
+            }
           }
         }
       }
     },
     "creationSource": {
+      "description": "Details of the workflow creation source",
       "type": ["null", "object"],
       "properties": {
         "clonedFromWorkflowId": {
+          "description": "ID of the workflow that was cloned",
           "type": ["null", "integer"]
         },
         "createdAt": {
+          "description": "Timestamp of workflow creation",
           "type": ["null", "integer"]
         },
         "createdByUser": {
+          "description": "Details of the user who created the workflow",
           "properties": {
-            "userEmail": { "type": ["null", "string"] },
-            "userId": { "type": ["null", "integer"] }
+            "userEmail": {
+              "description": "Email address of the user",
+              "type": ["null", "string"]
+            },
+            "userId": {
+              "description": "ID of the user",
+              "type": ["null", "integer"]
+            }
           }
         },
         "sourceApplication": {
+          "description": "Application details of the workflow source",
           "properties": {
-            "serviceName": { "type": ["null", "string"] },
-            "source": { "type": ["null", "string"] }
+            "serviceName": {
+              "description": "Name of the service",
+              "type": ["null", "string"]
+            },
+            "source": {
+              "description": "Source details",
+              "type": ["null", "string"]
+            }
           }
         }
       }
     },
     "portalId": {
+      "description": "ID of the portal associated with the workflow",
       "type": ["null", "integer"]
     }
   }

@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "type": "object",
+  "properties": {
+    "assignee_id": {
+      "description": "The ID of the user assigned to the task",
+      "type": ["null", "string"]
+    },
+    "assigner_id": {
+      "description": "The ID of the user who assigned the task",
+      "type": ["null", "string"]
+    },
+    "comment_count": {
+      "description": "The total number of comments on the task",
+      "type": ["null", "integer"]
+    },
+    "content": {
+      "description": "The title or content of the task",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "The timestamp of when the task was created",
+      "type": ["null", "string"]
+    },
+    "creator_id": {
+      "description": "The ID of the user who created the task",
+      "type": ["null", "string"]
+    },
+    "description": {
+      "description": "Additional details or notes about the task",
+      "type": ["null", "string"]
+    },
+    "due": {
+      "description": "The due date/time of the task",
+      "anyOf": [
+        {
+          "type": ["null", "object"]
+        },
+        {
+          "properties": {
+            "date": {
+              "type": ["null", "string"]
+            },
+            "is_recurring": {
+              "type": ["null", "boolean"]
+            },
+            "lang": {
+              "type": ["null", "string"]
+            },
+            "string": {
+              "type": ["null", "string"]
+            }
+          },
+          "type": ["null", "object"]
+        }
+      ]
+    },
+    "id": {
+      "description": "The unique identifier of the task",
+      "type": ["null", "string"]
+    },
+    "is_completed": {
+      "description": "Flag indicating if the task is completed or not",
+      "type": ["null", "boolean"]
+    },
+    "labels": {
+      "description": "List of labels associated with the task",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "order": {
+      "description": "The order or position of the task within a project or section",
+      "type": ["null", "integer"]
+    },
+    "parent_id": {
+      "description": "The ID of the parent task if the task is a subtask",
+      "type": ["null", "string"]
+    },
+    "priority": {
+      "description": "The priority level of the task",
+      "type": ["null", "integer"]
+    },
+    "project_id": {
+      "description": "The ID of the project to which the task belongs",
+      "type": ["null", "string"]
+    },
+    "section_id": {
+      "description": "The ID of the section within a project in which the task is located",
+      "type": ["null", "string"]
+    },
+    "url": {
+      "description": "The URL link to view the task",
+      "type": ["null", "string"]
+    }
+  }
+}

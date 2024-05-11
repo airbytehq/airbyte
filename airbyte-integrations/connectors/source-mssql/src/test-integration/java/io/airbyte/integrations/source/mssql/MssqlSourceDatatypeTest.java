@@ -5,70 +5,22 @@
 package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.Database;
-import io.airbyte.cdk.db.factory.DSLContextFactory;
-import io.airbyte.cdk.db.factory.DataSourceFactory;
-import io.airbyte.cdk.db.factory.DatabaseDriver;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.cdk.integrations.util.HostPortResolver;
-import io.airbyte.commons.json.Jsons;
-import java.util.Map;
-import org.jooq.DSLContext;
-import org.testcontainers.containers.MSSQLServerContainer;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 
 public class MssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
 
   @Override
-  protected Database setupDatabase() throws Exception {
-    container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest")
-        .acceptLicense();
-    container.start();
-
-    final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
-        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
-        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .build());
-
-    dslContext = getDslContext(configWithoutDbName);
-    final Database database = getDatabase(dslContext);
-    database.query(ctx -> {
-      ctx.fetch(String.format("CREATE DATABASE %s;", DB_NAME));
-      ctx.fetch(String.format("USE %s;", DB_NAME));
-      return null;
-    });
-
-    config = Jsons.clone(configWithoutDbName);
-    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, DB_NAME);
-    ((ObjectNode) config).put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "unencrypted")));
-
-    return database;
-  }
-
-  private static DSLContext getDslContext(final JsonNode config) {
-    return DSLContextFactory.create(DataSourceFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d;",
-            container.getHost(),
-            container.getFirstMappedPort()),
-        Map.of("encrypt", "false")), null);
-  }
-
-  private static Database getDatabase(final DSLContext dslContext) {
-    return new Database(dslContext);
+  protected Database setupDatabase() {
+    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022);
+    return testdb.getDatabase();
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
-    dslContext.close();
-    container.stop();
-    container.close();
+  protected JsonNode getConfig() {
+    return testdb.integrationTestConfigBuilder()
+        .withoutSsl()
+        .build();
   }
 
   @Override

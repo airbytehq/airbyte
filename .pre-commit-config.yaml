@@ -1,66 +1,10 @@
-default_language_version:
-  python: python3
-
 repos:
-  - repo: https://github.com/johann-petrak/licenseheaders.git
-    rev: v0.8.8
-    hooks:
-      - id: licenseheaders
-        args:
-          ["--tmpl=LICENSE_SHORT", "--ext=py", "-x=**/models/__init__.py", "-f"]
-  - repo: https://github.com/psf/black
-    rev: 22.3.0
-    hooks:
-      - id: black
-        args: ["--config", "pyproject.toml"]
-  - repo: https://github.com/timothycrosley/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        args:
-          [
-            "--settings-file",
-            "pyproject.toml",
-            "--dont-follow-links",
-            "--jobs=-1",
-          ]
-        additional_dependencies: ["colorama"]
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.5.0
-    hooks:
-      - id: prettier
-        types_or: [yaml, json]
-        exclude: |
-          (?x)^.*(
-              .github/|
-              .gitlab-ci.yml
-          ).?$
-
-  - repo: https://github.com/csachs/pyproject-flake8
-    rev: v6.0.0
-    hooks:
-      - id: pyproject-flake8
-        args: ["--config", "pyproject.toml"]
-        additional_dependencies: ["mccabe"]
-        alias: flake8
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.930
-    hooks:
-      - id: mypy
-        args: ["--config-file", "pyproject.toml"]
-        exclude: |
-          (?x)^.*(
-              octavia-cli/unit_tests/|
-          ).?$
   - repo: local
     hooks:
-      - id: spec-linter
-        name: validate connectors spec files
+      - id: format-fix-all-on-push
+        always_run: true
+        entry: airbyte-ci --disable-update-check format fix all
         language: system
-        entry: python tools/git_hooks/spec_linter.py
-        files: ^.*/spec.json$
-        exclude: |
-          (?x)^.*(
-              /connectors/destination-e2e-test|
-              /connectors/source-e2e-test
-          ).*$
+        name: Run airbyte-ci format fix on git push (~30s)
+        pass_filenames: false
+        stages: [push]

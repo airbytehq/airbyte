@@ -11,7 +11,7 @@
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": ["null", "integer"] }
+          "id": { "type": ["null", "string"] }
         }
       }
     }

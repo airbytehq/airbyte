@@ -103,17 +103,20 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                              |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------- |
-| `3.0.0` | 2023-09-26 | [30770](https://github.com/airbytehq/airbyte/pull/30770) | Update schema to use `number` instead of `integer`                   |
-| `2.0.5` | 2023-09-26 | [30766](https://github.com/airbytehq/airbyte/pull/30766) | Fix improperly named keyword argument                                |
-| `2.0.4` | 2023-06-28 | [27803](https://github.com/airbytehq/airbyte/pull/27803) | Update following state breaking changes                              |
-| `2.0.3` | 2023-06-08 | [27148](https://github.com/airbytehq/airbyte/pull/27148) | Update description and example values of a Start Date in spec.json   |
-| `2.0.2` | 2023-06-07 | [26722](https://github.com/airbytehq/airbyte/pull/27053) | Update CDK version and adjust authenticator configuration            |
-| `2.0.1` | 2023-05-28 | [26722](https://github.com/airbytehq/airbyte/pull/26722) | Change datatype for undisclosed amount field in payments             |
-| `2.0.0` | 2023-04-11 | [25045](https://github.com/airbytehq/airbyte/pull/25045) | Fix datetime format, disable OAuth button in cloud                   |
-| `1.0.0` | 2023-03-20 | [24324](https://github.com/airbytehq/airbyte/pull/24324) | Migrate to Low-Code                                                  |
-| `0.1.5` | 2022-02-17 | [10346](https://github.com/airbytehq/airbyte/pull/10346) | Update label `Quickbooks` -> `QuickBooks`                            |
-| `0.1.4` | 2021-12-20 | [8960](https://github.com/airbytehq/airbyte/pull/8960)   | Update connector fields title/description                            |
-| `0.1.3` | 2021-08-10 | [4986](https://github.com/airbytehq/airbyte/pull/4986)   | Using number data type for decimal fields instead string             |
-| `0.1.2` | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539)   | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support                      |
+| Version | Date       | Pull Request                                             | Subject                                                            |
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------- |
+| `3.0.3` | 2024-03-22 | [36389](https://github.com/airbytehq/airbyte/pull/36389) | Add refresh token updater and add missing properties to streams    |
+| `3.0.2` | 2024-02-20 | [32236](https://github.com/airbytehq/airbyte/pull/32236) | Small typo in spec correction                                      |
+| `3.0.1` | 2023-11-06 | [32236](https://github.com/airbytehq/airbyte/pull/32236) | Upgrade to `airbyte-cdk>=0.52.10` to resolve refresh token issues  |
+| `3.0.0` | 2023-09-26 | [30770](https://github.com/airbytehq/airbyte/pull/30770) | Update schema to use `number` instead of `integer`                 |
+| `2.0.5` | 2023-09-26 | [30766](https://github.com/airbytehq/airbyte/pull/30766) | Fix improperly named keyword argument                              |
+| `2.0.4` | 2023-06-28 | [27803](https://github.com/airbytehq/airbyte/pull/27803) | Update following state breaking changes                            |
+| `2.0.3` | 2023-06-08 | [27148](https://github.com/airbytehq/airbyte/pull/27148) | Update description and example values of a Start Date in spec.json |
+| `2.0.2` | 2023-06-07 | [26722](https://github.com/airbytehq/airbyte/pull/27053) | Update CDK version and adjust authenticator configuration          |
+| `2.0.1` | 2023-05-28 | [26722](https://github.com/airbytehq/airbyte/pull/26722) | Change datatype for undisclosed amount field in payments           |
+| `2.0.0` | 2023-04-11 | [25045](https://github.com/airbytehq/airbyte/pull/25045) | Fix datetime format, disable OAuth button in cloud                 |
+| `1.0.0` | 2023-03-20 | [24324](https://github.com/airbytehq/airbyte/pull/24324) | Migrate to Low-Code                                                |
+| `0.1.5` | 2022-02-17 | [10346](https://github.com/airbytehq/airbyte/pull/10346) | Update label `Quickbooks` -> `QuickBooks`                          |
+| `0.1.4` | 2021-12-20 | [8960](https://github.com/airbytehq/airbyte/pull/8960)   | Update connector fields title/description                          |
+| `0.1.3` | 2021-08-10 | [4986](https://github.com/airbytehq/airbyte/pull/4986)   | Using number data type for decimal fields instead string           |
+| `0.1.2` | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539)   | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support                    |

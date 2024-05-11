@@ -9,9 +9,10 @@ import re
 import uuid
 from collections import defaultdict
 from logging import getLogger
-from typing import Any, Iterable, Mapping
+from typing import Any, Dict, Iterable, List, Mapping
 
 import duckdb
+import pyarrow as pa
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
@@ -81,10 +82,12 @@ class DestinationDuckdb(Destination):
 
         # Get and register auth token if applicable
         motherduck_api_key = str(config.get(CONFIG_MOTHERDUCK_API_KEY, ""))
+        duckdb_config = {}
         if motherduck_api_key:
-            os.environ["motherduck_token"] = motherduck_api_key
+            duckdb_config["motherduck_token"] = motherduck_api_key
+            duckdb_config["custom_user_agent"] = "airbyte"
 
-        con = duckdb.connect(database=path, read_only=False)
+        con = duckdb.connect(database=path, read_only=False, config=duckdb_config)
 
         con.execute(f"CREATE SCHEMA IF NOT EXISTS {schema_name}")
 
@@ -107,53 +110,58 @@ class DestinationDuckdb(Destination):
 
             con.execute(query)
 
-        buffer = defaultdict(list)
+        buffer = defaultdict(lambda: defaultdict(list))
 
         for message in input_messages:
             if message.type == Type.STATE:
                 # flush the buffer
                 for stream_name in buffer.keys():
                     logger.info(f"flushing buffer for state: {message}")
-                    table_name = f"_airbyte_raw_{stream_name}"
-                    query = f"""
-                    INSERT INTO {schema_name}.{table_name}
-                      (_airbyte_ab_id, _airbyte_emitted_at, _airbyte_data)
-                    VALUES (?,?,?)
-                    """
-                    con.executemany(query, buffer[stream_name])
+                    DestinationDuckdb._safe_write(con=con, buffer=buffer, schema_name=schema_name, stream_name=stream_name)
 
-                con.commit()
-                buffer = defaultdict(list)
+                buffer = defaultdict(lambda: defaultdict(list))
 
                 yield message
             elif message.type == Type.RECORD:
                 data = message.record.data
-                stream = message.record.stream
-                if stream not in streams:
-                    logger.debug(f"Stream {stream} was not present in configured streams, skipping")
+                stream_name = message.record.stream
+                if stream_name not in streams:
+                    logger.debug(f"Stream {stream_name} was not present in configured streams, skipping")
                     continue
-
                 # add to buffer
-                buffer[stream].append(
-                    (
-                        str(uuid.uuid4()),
-                        datetime.datetime.now().isoformat(),
-                        json.dumps(data),
-                    )
-                )
+                buffer[stream_name]["_airbyte_ab_id"].append(str(uuid.uuid4()))
+                buffer[stream_name]["_airbyte_emitted_at"].append(datetime.datetime.now().isoformat())
+                buffer[stream_name]["_airbyte_data"].append(json.dumps(data))
+
             else:
                 logger.info(f"Message type {message.type} not supported, skipping")
 
         # flush any remaining messages
         for stream_name in buffer.keys():
-            table_name = f"_airbyte_raw_{stream_name}"
+            DestinationDuckdb._safe_write(con=con, buffer=buffer, schema_name=schema_name, stream_name=stream_name)
+
+    @staticmethod
+    def _safe_write(*, con: duckdb.DuckDBPyConnection, buffer: Dict[str, Dict[str, List[Any]]], schema_name: str, stream_name: str):
+        table_name = f"_airbyte_raw_{stream_name}"
+        try:
+            pa_table = pa.Table.from_pydict(buffer[stream_name])
+        except:
+            logger.exception(
+                f"Writing with pyarrow view failed, falling back to writing with executemany. Expect some performance degradation."
+            )
             query = f"""
             INSERT INTO {schema_name}.{table_name}
+                (_airbyte_ab_id, _airbyte_emitted_at, _airbyte_data)
             VALUES (?,?,?)
             """
-
-            con.executemany(query, buffer[stream_name])
-            con.commit()
+            entries_to_write = buffer[stream_name]
+            con.executemany(
+                query, zip(entries_to_write["_airbyte_ab_id"], entries_to_write["_airbyte_emitted_at"], entries_to_write["_airbyte_data"])
+            )
+        else:
+            # DuckDB will automatically find and SELECT from the `pa_table`
+            # local variable defined above.
+            con.sql(f"INSERT INTO {schema_name}.{table_name} SELECT * FROM pa_table")
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
@@ -175,10 +183,12 @@ class DestinationDuckdb(Destination):
                 logger.info(f"Using DuckDB file at {path}")
                 os.makedirs(os.path.dirname(path), exist_ok=True)
 
+            duckdb_config = {}
             if CONFIG_MOTHERDUCK_API_KEY in config:
-                os.environ["motherduck_token"] = str(config[CONFIG_MOTHERDUCK_API_KEY])
+                duckdb_config["motherduck_token"] = str(config[CONFIG_MOTHERDUCK_API_KEY])
+                duckdb_config["custom_user_agent"] = "airbyte"
 
-            con = duckdb.connect(database=path, read_only=False)
+            con = duckdb.connect(database=path, read_only=False, config=duckdb_config)
             con.execute("SELECT 1;")
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)

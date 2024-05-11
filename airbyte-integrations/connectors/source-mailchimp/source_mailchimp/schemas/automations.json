@@ -5,120 +5,163 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier for the automation",
       "type": ["null", "string"]
     },
     "create_time": {
-      "type": ["null", "string"]
+      "description": "The timestamp when the automation was created",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte-type": "timestamp_with_timezone"
     },
     "start_time": {
-      "type": ["null", "string"]
+      "description": "The timestamp when the automation started",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "status": {
+      "description": "Current status of the automation",
       "type": ["null", "string"]
     },
     "emails_sent": {
+      "description": "The number of emails sent as part of the automation",
       "type": ["null", "number"]
     },
     "recipients": {
+      "description": "Details about the recipients of the automation",
       "type": ["null", "object"],
       "properties": {
         "list_id": {
+          "description": "The ID of the recipient list",
           "type": ["null", "string"]
         },
         "list_is_active": {
+          "description": "Indicates if the recipient list is active",
           "type": ["null", "boolean"]
         },
         "list_name": {
+          "description": "The name of the recipient list",
           "type": ["null", "string"]
         },
         "segment_opts": {
+          "description": "Options related to segmenting recipients",
           "type": ["null", "object"],
           "properties": {
             "saved_segment_id": {
+              "description": "The ID of the saved segment",
               "type": ["null", "number"]
             },
             "match": {
+              "description": "Matching criteria for segmenting recipients",
               "type": ["null", "string"]
             },
             "conditions": {
+              "description": "Conditions for segmenting recipients",
               "type": ["null", "array"],
-              "items": {}
+              "items": {
+                "type": ["null", "object"],
+                "additionalProperties": true
+              }
             }
           }
         },
         "store_id": {
+          "description": "The ID of the store associated with recipients",
           "type": ["null", "string"]
         }
       }
     },
     "settings": {
+      "description": "Settings related to the automation",
       "type": ["null", "object"],
       "properties": {
         "title": {
+          "description": "Title of the automation",
           "type": ["null", "string"]
         },
         "from_name": {
+          "description": "Sender's name",
           "type": ["null", "string"]
         },
         "reply_to": {
+          "description": "Email address for replies",
           "type": ["null", "string"]
         },
         "use_conversation": {
+          "description": "Enable conversation tracking",
           "type": ["null", "boolean"]
         },
         "to_name": {
+          "description": "Recipient's name field",
           "type": ["null", "string"]
         },
         "authenticate": {
+          "description": "Indicates if authentication is set",
           "type": ["null", "boolean"]
         },
         "auto_footer": {
+          "description": "Automatically add footer to emails",
           "type": ["null", "boolean"]
         },
         "inline_css": {
+          "description": "Include inline CSS in emails",
           "type": ["null", "boolean"]
         }
       }
     },
     "tracking": {
+      "description": "Tracking settings for the automation",
       "type": ["null", "object"],
       "properties": {
         "opens": {
+          "description": "Open tracking status",
           "type": ["null", "boolean"]
         },
         "html_clicks": {
+          "description": "HTML click tracking status",
           "type": ["null", "boolean"]
         },
         "text_clicks": {
+          "description": "Text click tracking status",
           "type": ["null", "boolean"]
         },
         "goal_tracking": {
+          "description": "Goal tracking setup status",
           "type": ["null", "boolean"]
         },
         "ecomm360": {
+          "description": "Ecommerce tracking status",
           "type": ["null", "boolean"]
         },
         "google_analytics": {
+          "description": "Google Analytics tracking status",
           "type": ["null", "string"]
         },
         "clicktale": {
+          "description": "Clicktale tracking status",
           "type": ["null", "string"]
         },
         "salesforce": {
+          "description": "Salesforce tracking details",
           "type": ["null", "object"],
           "properties": {
             "campaign": {
+              "description": "Salesforce campaign tracking status",
               "type": ["null", "boolean"]
             },
             "notes": {
+              "description": "Additional notes for Salesforce tracking",
               "type": ["null", "boolean"]
             }
           }
         },
         "capsule": {
+          "description": "Notes related to capsule tracking",
           "type": ["null", "object"],
           "properties": {
             "notes": {
+              "description": "Additional notes for capsule tracking",
               "type": ["null", "boolean"]
             }
           }
@@ -126,27 +169,34 @@
       }
     },
     "trigger_settings": {
+      "description": "Settings related to the triggers of the automation",
       "type": ["null", "object"],
       "properties": {
         "workflow_type": {
+          "description": "Type of workflow",
           "type": ["null", "string"]
         },
         "workflow_title": {
+          "description": "Title of the workflow",
           "type": ["null", "string"]
         },
         "runtime": {
+          "description": "Runtime settings for the automation",
           "type": ["null", "object"],
           "properties": {
             "days": {
+              "description": "Days of the week for triggering the automation",
               "type": ["null", "array"],
               "items": {
                 "type": ["null", "string"]
               }
             },
             "hours": {
+              "description": "Hourly trigger settings",
               "type": ["null", "object"],
               "properties": {
                 "type": {
+                  "description": "Type of hourly triggering",
                   "type": ["null", "string"]
                 }
               }
@@ -154,53 +204,38 @@
           }
         },
         "workflow_emails_count": {
+          "description": "Number of emails in the workflow",
           "type": ["null", "number"]
         }
       }
     },
     "report_summary": {
+      "description": "Summary of the report generated for the automation",
       "type": ["null", "object"],
       "properties": {
         "opens": {
+          "description": "The total number of opens generated",
           "type": ["null", "number"]
         },
         "unique_opens": {
+          "description": "Number of unique opens recorded",
           "type": ["null", "number"]
         },
         "open_rate": {
+          "description": "The open rate for the automation",
           "type": ["null", "number"]
         },
         "clicks": {
+          "description": "The total number of clicks generated",
           "type": ["null", "number"]
         },
         "subscriber_clicks": {
+          "description": "Number of clicks per subscriber",
           "type": ["null", "number"]
         },
         "click_rate": {
+          "description": "The click-through rate for the automation",
           "type": ["null", "number"]
-        }
-      }
-    },
-    "_links": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "rel": {
-            "type": ["null", "string"]
-          },
-          "href": {
-            "type": ["null", "string"]
-          },
-          "method": {
-            "type": ["null", "string"]
-          },
-          "targetSchema": {
-            "type": ["null", "string"]
-          },
-          "schema": {
-            "type": ["null", "string"]
-          }
         }
       }
     }

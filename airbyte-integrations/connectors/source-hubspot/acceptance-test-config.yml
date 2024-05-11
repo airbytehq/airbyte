@@ -20,157 +20,44 @@ acceptance_tests:
     tests:
       - config_path: secrets/config_oauth.json
         backward_compatibility_tests_config:
-          disable_for_version: 1.4.1
+          disable_for_version: 1.9.0
   basic_read:
     tests:
       - config_path: secrets/config_oauth.json
         expect_records:
           path: integration_tests/expected_records.jsonl
-          extra_records: yes
         timeout_seconds: 3600
         empty_streams:
-          - name: form_submissions
-            bypass_reason: Unable to populate
-          - name: ticket_pipelines
-            bypass_reason: Unable to populate
-          - name: engagements_meetings
-            bypass_reason: Unable to populate
-          - name: engagements_emails
-            bypass_reason: Unable to populate
           - name: engagements_calls
-            bypass_reason: Unable to populate
-          - name: quotes
-            bypass_reason: Unable to populate
-          - name: deals_archived
-            bypass_reason: Unable to populate
+            bypass_reason: Unable to populate (cost $20/month) - covered by integration tests
           - name: owners_archived
-            bypass_reason: unable to populate
-        ignored_fields:
-          contact_lists:
-            - name: ilsFilterBranch
-              bypass_reason: Floating fields order
-          companies:
-            - name: properties_hs_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties_hs_was_imported
-              bypass_reason: attribute is not stable
-            - name: properties/hs_was_imported
-              bypass_reason: attribute is not stable
-          contacts:
-            - name: properties_hs_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties_hs_time_in_subscriber
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_time_in_subscriber
-              bypass_reason: Hubspot time depend on current time
-            - name: properties_hs_latest_source_timestamp
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_latest_source_timestamp
-              bypass_reason: Hubspot time depend on current time
-            - name: properties_hs_predictivescoringtier
-              bypass_reason: Hubspot prediction changes
-            - name: properties/hs_predictivescoringtier
-              bypass_reason: Hubspot prediction changes
-            - name: properties_lastmodifieddate
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/lastmodifieddate
-              bypass_reason: Hubspot time depend on current time
-            - name: properties_hs_time_in_lead
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_time_in_lead
-              bypass_reason: Hubspot time depend on current time
-            - name: properties_hs_time_in_opportunity
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_time_in_opportunity
-              bypass_reason: Hubspot time depend on current time
-            - name: properties_hs_was_imported
-              bypass_reason: attribute is not stable
-            - name: properties/hs_was_imported
-              bypass_reason: attribute is not stable
-            - name: updatedAt
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_v2_cumulative_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_v2_latest_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties_hs_v2_cumulative_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties_hs_v2_latest_time_*
-              bypass_reason: Hubspot time depend on current time
-          deals:
-            - name: properties_hs_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties_hs_acv
-              bypass_reason: value can be an integer or float
-            - name: properties/hs_acv
-              bypass_reason: value can be an integer or float
-            - name: properties_hs_arr
-              bypass_reason: value can be an integer or float
-            - name: properties/hs_arr
-              bypass_reason: value can be an integer or float
-            - name: properties_hs_mrr
-              bypass_reason: value can be an integer or float
-            - name: properties/hs_mrr
-              bypass_reason: value can be an integer or float
-            - name: properties_hs_tcv
-              bypass_reason: value can be an integer or float
-            - name: properties/hs_tcv
-              bypass_reason: value can be an integer or float
-            - name: properties_hs_num_of_associated_line_items
-              bypass_reason: value can be an integer or float
-            - name: properties/hs_num_of_associated_line_items
-              bypass_reason: value can be an integer or float
-          deals_archived:
-            - name: properties_hs_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties_hs_acv
-              bypass_reason: value can be an integer or float
-            - name: properties/hs_acv
-              bypass_reason: value can be an integer or float
-            - name: properties_hs_arr
-              bypass_reason: value can be an integer or float
-            - name: properties/hs_arr
-              bypass_reason: value can be an integer or float
-            - name: properties_hs_mrr
-              bypass_reason: value can be an integer or float
-            - name: properties/hs_mrr
-              bypass_reason: value can be an integer or float
-            - name: properties_hs_tcv
-              bypass_reason: value can be an integer or float
-            - name: properties/hs_tcv
-              bypass_reason: value can be an integer or float
-            - name: properties_hs_num_of_associated_line_items
-              bypass_reason: value can be an integer or float
-            - name: properties/hs_num_of_associated_line_items
-              bypass_reason: value can be an integer or float
-          tickets:
-            - name: properties_hs_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_time_*
-              bypass_reason: Hubspot time depend on current time
-          goals:
-            - name: properties_hs_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_time_*
-              bypass_reason: Hubspot time depend on current time
-            - name: properties_hs_lastmodifieddate
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_lastmodifieddate
-              bypass_reason: Hubspot time depend on current time
-            - name: properties_hs_kpi_value_last_calculated_at
-              bypass_reason: Hubspot time depend on current time
-            - name: properties/hs_kpi_value_last_calculated_at
-              bypass_reason: Hubspot time depend on current time
-            - name: updatedAt
-              bypass_reason: field changes too often
+            bypass_reason: Unable to populate - covered by integration tests
+          - name: tickets_web_analytics
+            bypass_reason: Unable to populate - covered by integration tests
+          - name: deals_web_analytics
+            bypass_reason: Unable to populate - covered by integration tests
+          - name: companies_web_analytics
+            bypass_reason: Unable to populate - covered by integration tests
+          - name: engagements_calls_web_analytics
+            bypass_reason: Unable to populate - covered by integration tests
+          - name: engagements_emails_web_analytics
+            bypass_reason: Unable to populate - covered by integration tests
+          - name: engagements_meetings_web_analytics
+            bypass_reason: Unable to populate - covered by integration tests
+          - name: engagements_notes_web_analytics
+            bypass_reason: Unable to populate - covered by integration tests
+          - name: engagements_tasks_web_analytics
+            bypass_reason: Unable to populate - covered by integration tests
+          - name: goals_web_analytics
+            bypass_reason: Unable to populate - covered by integration tests
+          - name: line_items_web_analytics
+            bypass_reason: Unable to populate - covered by integration tests
+          - name: products_web_analytics
+            bypass_reason: Unable to populate - covered by integration tests
+          - name: pets_web_analytics
+            bypass_reason: Unable to populate - covered by integration tests
+          - name: cars_web_analytics
+            bypass_reason: Unable to populate - covered by integration tests
   full_refresh:
     tests:
       - config_path: secrets/config.json
@@ -209,9 +96,51 @@ acceptance_tests:
               bypass_reason: Hubspot time depend on current time
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
+      - config_path: secrets/config_oauth_no_start_date.json
+        configured_catalog_path: sample_files/full_refresh_oauth_catalog.json
+        ignored_fields:
+          contact_lists:
+            - name: ilsFilterBranch
+              bypass_reason: Floating fields order
+          companies:
+            - name: properties_hs_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_time_*
+              bypass_reason: Hubspot time depend on current time
+          contacts:
+            - name: properties_hs_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_v2_cumulative_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_v2_latest_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties_hs_v2_cumulative_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties_hs_v2_latest_time_*
+              bypass_reason: Hubspot time depend on current time
+          deals:
+            - name: properties_hs_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_time_*
+              bypass_reason: Hubspot time depend on current time
+          tickets:
+            - name: properties_hs_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_time_*
+              bypass_reason: Hubspot time depend on current time
   incremental:
-    tests:
-      - config_path: secrets/config_oauth.json
-        configured_catalog_path: sample_files/incremental_catalog.json
-        future_state:
-          future_state_path: integration_tests/abnormal_state.json
+    # Waiting for CAT incremental fix: https://github.com/airbytehq/airbyte/pull/36814
+    bypass_reason: It takes incredible amount of time to complete
+    # tests:
+    #   - config_path: secrets/config_oauth.json
+    #     configured_catalog_path: sample_files/incremental_catalog.json
+    #     future_state:
+    #       future_state_path: integration_tests/abnormal_state.json
+    #     timeout_seconds: 7200
+    #   - config_path: secrets/config_oauth_no_start_date.json
+    #     configured_catalog_path: sample_files/incremental_catalog.json
+    #     future_state:
+    #       future_state_path: integration_tests/abnormal_state.json
+    #     timeout_seconds: 7200

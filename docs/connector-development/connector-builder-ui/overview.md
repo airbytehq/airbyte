@@ -8,14 +8,14 @@ The connector builder UI is in beta, which means it’s still in active developm
 Developer updates will be announced via our #help-connector-development Slack channel. If you are using the CDK, please join to stay up to date on changes and issues.
 :::
 
-
 ## When should I use the connector builder?
 
 The connector builder is the right tool if the following points are met:
-* You want to integrate with a JSON-based HTTP API as a source of records
-* The API you want to integrate with doesn't exist yet as a connector in the [connector catalog](/category/sources).
-* The API is suitable for the connector builder as per the
-[compatibility guide](./connector-builder-compatibility.md).
+
+- You want to integrate with a JSON-based HTTP API as a source of records
+- The API you want to integrate with doesn't exist yet as a connector in the [connector catalog](/integrations/sources/).
+- The API is suitable for the connector builder as per the
+  [compatibility guide](./connector-builder-compatibility.md).
 
 ## Getting started
 
@@ -73,17 +73,19 @@ A lot of [Airbyte-managed connectors](https://github.com/airbytehq/airbyte/tree/
 These `manifest.yaml` files can easily be imported and explored in the builder.
 
 To do so, follow these steps:
-* Navigate to a `manifest.yaml` file of a connector on Github
-* Download the raw file
-* Go to the connector builder
-* Create a new connector with the button in the top right
-* Pick the "Import a YAML manifest" option
-* Select the downloaded file
-* Change and test the connector
+
+- Navigate to a `manifest.yaml` file of a connector on Github
+- Download the raw file
+- Go to the connector builder
+- Create a new connector with the button in the top right
+- Pick the "Import a YAML manifest" option
+- Select the downloaded file
+- Change and test the connector
 
 The following connectors are good showcases for real-world use cases:
-* The [Pendo.io API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-pendo/source_pendo/manifest.yaml) is a simple connector implementing multiple streams and API-key based authentication
-* The [News API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-news-api/source_news_api/manifest.yaml) implements pagination and user-configurable request parameters
-* The [CoinGecko API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-coingecko-coins/source_coingecko_coins/manifest.yaml) implements incremental syncs
+
+- The [Pendo.io API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-pendo/source_pendo/manifest.yaml) is a simple connector implementing multiple streams and API-key based authentication
+- The [News API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-news-api/source_news_api/manifest.yaml) implements pagination and user-configurable request parameters
+- The [CoinGecko API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-coingecko-coins/source_coingecko_coins/manifest.yaml) implements incremental syncs
 
 Note: Not all `manifest.yaml` files can be edited and tested in the connector builder because some are using [custom python classes](https://docs.airbyte.com/connector-development/config-based/advanced-topics#custom-components) which isn't supported yet.

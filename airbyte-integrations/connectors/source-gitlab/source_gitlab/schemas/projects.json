@@ -3,377 +3,513 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "ID of the project",
       "type": ["null", "integer"]
     },
     "description": {
+      "description": "Description of the project",
       "type": ["null", "string"]
     },
     "description_html": {
+      "description": "HTML formatted project description",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the project",
       "type": ["null", "string"]
     },
     "name_with_namespace": {
+      "description": "Name of the project with namespace",
       "type": ["null", "string"]
     },
     "path": {
+      "description": "Path of the project",
       "type": ["null", "string"]
     },
     "path_with_namespace": {
+      "description": "Path of the project with namespace",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "Date and time of project creation",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Date and time of last update",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "default_branch": {
+      "description": "Default branch of the project",
       "type": ["null", "string"]
     },
     "tag_list": {
+      "description": "List of tags associated with the project",
       "type": ["null", "array"],
       "items": {
+        "description": "Tag item",
         "type": ["null", "string"]
       }
     },
     "topics": {
+      "description": "Topics associated with the project",
       "type": ["null", "array"]
     },
     "ssh_url_to_repo": {
+      "description": "SSH URL to project repository",
       "type": ["null", "string"]
     },
     "http_url_to_repo": {
+      "description": "HTTP URL to project repository",
       "type": ["null", "string"]
     },
     "web_url": {
+      "description": "URL of the project",
       "type": ["null", "string"]
     },
     "readme_url": {
+      "description": "URL for project readme",
       "type": ["null", "string"]
     },
     "avatar_url": {
+      "description": "URL for project avatar",
       "type": ["null", "string"]
     },
     "forks_count": {
+      "description": "Number of forks for the project",
       "type": ["null", "integer"]
     },
     "star_count": {
+      "description": "Number of stars for the project",
       "type": ["null", "integer"]
     },
     "last_activity_at": {
+      "description": "Date and time of last activity",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "namespace": {
+      "description": "Namespace details",
       "type": "object",
       "properties": {
         "id": {
+          "description": "ID of the namespace",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "Name of the namespace",
           "type": ["null", "string"]
         },
         "path": {
+          "description": "Path of the namespace",
           "type": ["null", "string"]
         },
         "kind": {
+          "description": "Kind of namespace",
           "type": ["null", "string"]
         },
         "full_path": {
+          "description": "Full path of the namespace",
           "type": ["null", "string"]
         },
         "parent_id": {
+          "description": "ID of the parent namespace",
           "type": ["null", "integer"]
         },
         "avatar_url": {
+          "description": "URL for namespace avatar",
           "type": ["null", "string"]
         },
         "web_url": {
+          "description": "Web URL of the namespace",
           "type": ["null", "string"]
         }
       }
     },
     "container_registry_image_prefix": {
+      "description": "Prefix for container registry images",
       "type": ["null", "string"]
     },
     "_links": {
+      "description": "Links related to the project",
       "type": "object",
       "properties": {
         "self": {
+          "description": "URL for the project itself",
           "type": ["null", "string"]
         },
         "issues": {
+          "description": "URL for project issues",
           "type": ["null", "string"]
         },
         "merge_requests": {
+          "description": "URL for project merge requests",
           "type": ["null", "string"]
         },
         "repo_branches": {
+          "description": "URL for project repository branches",
           "type": ["null", "string"]
         },
         "labels": {
+          "description": "URL for project labels",
           "type": ["null", "string"]
         },
         "events": {
+          "description": "URL for events related to the project",
           "type": ["null", "string"]
         },
         "members": {
+          "description": "URL for project members",
+          "type": ["null", "string"]
+        },
+        "cluster_agents": {
+          "description": "URL for cluster agents",
           "type": ["null", "string"]
         }
       }
     },
     "packages_enabled": {
+      "description": "Flag indicating if packages are enabled",
       "type": ["null", "boolean"]
     },
     "empty_repo": {
+      "description": "Flag indicating if repository is empty",
       "type": ["null", "boolean"]
     },
     "archived": {
+      "description": "Flag indicating if project is archived",
       "type": ["null", "boolean"]
     },
     "visibility": {
+      "description": "Visibility level of the project",
       "type": ["null", "string"]
     },
     "resolve_outdated_diff_discussions": {
+      "description": "Resolve outdated diff discussions",
       "type": ["null", "boolean"]
     },
     "container_registry_enabled": {
+      "description": "Flag indicating if container registry is enabled",
       "type": ["null", "boolean"]
     },
     "container_expiration_policy": {
+      "description": "Container expiration policy details",
       "type": ["null", "object"],
       "properties": {
         "cadence": {
+          "description": "Expiration cadence",
           "type": ["null", "string"]
         },
         "enabled": {
+          "description": "Flag indicating if expiration policy is enabled",
           "type": ["null", "boolean"]
         },
         "keep_n": {
+          "description": "Number of containers to keep",
           "type": ["null", "integer"]
         },
         "older_than": {
+          "description": "Age threshold for expiration",
           "type": ["null", "string"]
         },
         "name_regex": {
+          "description": "Regex for container name",
           "type": ["null", "string"]
         },
         "name_regex_keep": {
+          "description": "Regex for container name to keep",
           "type": ["null", "string"]
         },
         "next_run_at": {
+          "description": "Next scheduled run for expiration policy",
           "type": ["null", "string"],
           "format": "date-time"
         }
       }
     },
     "issues_enabled": {
+      "description": "Flag indicating if issues are enabled",
       "type": ["null", "boolean"]
     },
     "merge_requests_enabled": {
+      "description": "Flag indicating if merge requests are enabled",
       "type": ["null", "boolean"]
     },
     "wiki_enabled": {
+      "description": "Flag indicating if wiki is enabled",
       "type": ["null", "boolean"]
     },
     "jobs_enabled": {
+      "description": "Flag indicating if jobs are enabled",
       "type": ["null", "boolean"]
     },
     "snippets_enabled": {
+      "description": "Flag indicating if snippets are enabled",
       "type": ["null", "boolean"]
     },
     "service_desk_enabled": {
+      "description": "Flag indicating if service desk is enabled",
       "type": ["null", "boolean"]
     },
     "service_desk_address": {
+      "description": "Address for service desk",
       "type": ["null", "string"]
     },
     "can_create_merge_request_in": {
+      "description": "Locations where merge requests can be created",
       "type": ["null", "boolean"]
     },
     "issues_access_level": {
+      "description": "Access level for issues",
       "type": ["null", "string"]
     },
     "repository_access_level": {
+      "description": "Access level for repository",
       "type": ["null", "string"]
     },
     "merge_requests_access_level": {
+      "description": "Access level for merge requests",
       "type": ["null", "string"]
     },
     "forking_access_level": {
+      "description": "Access level for forking projects",
       "type": ["null", "string"]
     },
     "wiki_access_level": {
+      "description": "Access level for wiki",
       "type": ["null", "string"]
     },
     "builds_access_level": {
+      "description": "Access level for builds",
       "type": ["null", "string"]
     },
     "snippets_access_level": {
+      "description": "Access level for snippets",
       "type": ["null", "string"]
     },
     "pages_access_level": {
+      "description": "Access level for project pages",
       "type": ["null", "string"]
     },
     "operations_access_level": {
+      "description": "Access level for operations",
       "type": ["null", "string"]
     },
     "analytics_access_level": {
+      "description": "Access level for analytics",
       "type": ["null", "string"]
     },
     "emails_disabled": {
+      "description": "Flag indicating if emails are disabled",
       "type": ["null", "boolean"]
     },
     "shared_runners_enabled": {
+      "description": "Flag indicating if shared runners are enabled",
       "type": ["null", "boolean"]
     },
     "lfs_enabled": {
+      "description": "Flag indicating if Git LFS is enabled",
       "type": ["null", "boolean"]
     },
     "creator_id": {
+      "description": "ID of the project creator",
       "type": ["null", "integer"]
     },
     "import_status": {
+      "description": "Status of project import",
       "type": ["null", "string"]
     },
     "import_error": {
+      "description": "Error message if import failed",
       "type": ["null", "string", "boolean"]
     },
     "open_issues_count": {
+      "description": "Count of open issues",
       "type": ["null", "integer"]
     },
     "runners_token": {
+      "description": "Token for runners",
       "type": ["null", "string"]
     },
     "ci_default_git_depth": {
+      "description": "Default git depth for CI",
       "type": ["null", "integer"]
     },
     "ci_forward_deployment_enabled": {
+      "description": "Flag for forward deployment enabled in CI",
       "type": ["null", "boolean"]
     },
     "public_jobs": {
+      "description": "Flag indicating if jobs are public",
       "type": ["null", "boolean"]
     },
     "build_git_strategy": {
+      "description": "Git strategy for build",
       "type": ["null", "string"]
     },
     "build_timeout": {
+      "description": "Timeout for build",
       "type": ["null", "integer"]
     },
     "auto_cancel_pending_pipelines": {
+      "description": "Automatically cancel pending pipelines",
       "type": ["null", "string"]
     },
     "build_coverage_regex": {
+      "description": "Regex for build coverage",
       "type": ["null", "string"]
     },
     "ci_config_path": {
+      "description": "Path for CI configuration",
       "type": ["null", "string"]
     },
     "shared_with_groups": {
+      "description": "List of groups with which project is shared",
       "type": ["null", "array"]
     },
     "only_allow_merge_if_pipeline_succeeds": {
+      "description": "Only allow merge if pipeline succeeds",
       "type": ["null", "boolean"]
     },
     "allow_merge_on_skipped_pipeline": {
+      "description": "Allow merge on skipped pipeline",
       "type": ["null", "boolean"]
     },
     "restrict_user_defined_variables": {
+      "description": "Restrict user-defined variables",
       "type": ["null", "boolean"]
     },
     "request_access_enabled": {
+      "description": "Flag indicating if request access is enabled",
       "type": ["null", "boolean"]
     },
     "only_allow_merge_if_all_discussions_are_resolved": {
+      "description": "Only allow merge if all discussions are resolved",
       "type": ["null", "boolean"]
     },
     "remove_source_branch_after_merge": {
+      "description": "Remove source branch after merge",
       "type": ["null", "boolean"]
     },
     "printing_merge_request_link_enabled": {
+      "description": "Enable printing merge request link",
       "type": ["null", "boolean"]
     },
     "merge_method": {
+      "description": "Method used for merges",
       "type": ["null", "string"]
     },
     "suggestion_commit_message": {
+      "description": "Commit message suggestion",
       "type": ["null", "string"]
     },
     "statistics": {
+      "description": "Project statistics",
       "type": "object",
       "properties": {
         "commit_count": {
+          "description": "Number of commits",
           "type": ["null", "integer"]
         },
         "storage_size": {
+          "description": "Total storage size",
           "type": ["null", "integer"]
         },
         "repository_size": {
+          "description": "Size of repository",
           "type": ["null", "integer"]
         },
         "wiki_size": {
+          "description": "Size of wiki",
           "type": ["null", "integer"]
         },
         "lfs_objects_size": {
+          "description": "Size of LFS objects",
           "type": ["null", "integer"]
         },
         "job_artifacts_size": {
+          "description": "Size of job artifacts",
           "type": ["null", "integer"]
         },
         "snippets_size": {
+          "description": "Size of snippets",
           "type": ["null", "integer"]
         },
         "packages_size": {
+          "description": "Size of packages",
+          "type": ["null", "integer"]
+        },
+        "container_registry_size": {
+          "description": "Size of container registry",
+          "type": ["null", "integer"]
+        },
+        "pipeline_artifacts_size": {
+          "description": "Size of pipeline artifacts",
+          "type": ["null", "integer"]
+        },
+        "uploads_size": {
+          "description": "Size of uploads",
           "type": ["null", "integer"]
         }
       }
     },
     "auto_devops_enabled": {
+      "description": "Flag indicating if Auto DevOps is enabled",
       "type": ["null", "boolean"]
     },
     "auto_devops_deploy_strategy": {
+      "description": "Auto DevOps deployment strategy",
       "type": ["null", "string"]
     },
     "autoclose_referenced_issues": {
+      "description": "Automatically close referenced issues",
       "type": ["null", "boolean"]
     },
     "external_authorization_classification_label": {
+      "description": "Label for external authorization classification",
       "type": ["null", "string"]
     },
     "requirements_enabled": {
+      "description": "Flag indicating if requirements are enabled",
       "type": ["null", "boolean"]
     },
     "security_and_compliance_enabled": {
+      "description": "Flag indicating if security and compliance are enabled",
       "type": ["null", "boolean"]
     },
     "compliance_frameworks": {
+      "description": "Compliance frameworks associated with the project",
       "type": ["null", "array"]
     },
     "permissions": {
+      "description": "Permissions for project access",
       "type": "object",
       "properties": {
         "project_access": {
+          "description": "Project access level",
           "type": ["null", "object"],
           "properties": {
             "access_level": {
+              "description": "Access level for project",
               "type": ["null", "integer"]
             },
             "notification_level": {
+              "description": "Notification level for project",
               "type": ["null", "integer"]
             }
           }
         },
         "group_access": {
+          "description": "Group access level",
           "type": ["null", "object"],
           "properties": {
             "access_level": {
+              "description": "Access level for groups",
               "type": ["null", "integer"]
             },
             "notification_level": {
+              "description": "Notification level for groups",
               "type": ["null", "integer"]
             }
           }
@@ -381,107 +517,161 @@
       }
     },
     "feature_flags_access_level": {
+      "description": "Access level for feature flags",
       "type": ["null", "string"]
     },
     "group_runners_enabled": {
+      "description": "Flag indicating if group runners are enabled",
       "type": ["null", "boolean"]
     },
     "enforce_auth_checks_on_uploads": {
+      "description": "Enforce authentication checks on uploads",
       "type": ["null", "boolean"]
     },
     "monitor_access_level": {
+      "description": "Access level for monitoring tools",
       "type": ["null", "string"]
     },
     "container_registry_access_level": {
+      "description": "Access level for container registry",
       "type": ["null", "string"]
     },
     "import_type": {
+      "description": "Type of project import",
       "type": ["null", "string"]
     },
     "ci_job_token_scope_enabled": {
+      "description": "Enable job token scope in CI",
       "type": ["null", "boolean"]
     },
     "requirements_access_level": {
+      "description": "Access level for requirements",
       "type": ["null", "string"]
     },
     "releases_access_level": {
+      "description": "Access level for project releases",
       "type": ["null", "string"]
     },
     "runner_token_expiration_interval": {
+      "description": "Token expiration interval for runners",
       "type": ["null", "string"]
     },
     "squash_option": {
+      "description": "Squash option for merges",
       "type": ["null", "string"]
     },
     "squash_commit_template": {
+      "description": "Template for squash commits",
       "type": ["null", "string"]
     },
     "issue_branch_template": {
+      "description": "Template for issue branches",
       "type": ["null", "string"]
     },
     "keep_latest_artifact": {
+      "description": "Keep latest artifact",
       "type": ["null", "boolean"]
     },
     "import_url": {
+      "description": "URL for project import",
       "type": ["null", "string"]
     },
     "ci_separated_caches": {
+      "description": "Use separated caches in CI",
       "type": ["null", "boolean"]
     },
     "security_and_compliance_access_level": {
+      "description": "Access level for security and compliance",
       "type": ["null", "string"]
     },
     "infrastructure_access_level": {
+      "description": "Access level for infrastructure settings",
       "type": ["null", "string"]
     },
     "merge_commit_template": {
+      "description": "Template for merge commits",
       "type": ["null", "string"]
     },
     "ci_allow_fork_pipelines_to_run_in_parent_project": {
+      "description": "Allow fork pipelines to run in parent project",
       "type": ["null", "boolean"]
     },
     "environments_access_level": {
+      "description": "Access level for environments",
       "type": ["null", "string"]
     },
     "approvals_before_merge": {
+      "description": "Number of approvals required before merge",
       "type": ["null", "integer"]
     },
     "marked_for_deletion_at": {
+      "description": "Date marked for deletion",
       "type": ["null", "string"],
       "format": "date"
     },
     "merge_trains_enabled": {
+      "description": "Flag indicating if merge trains are enabled",
       "type": ["null", "boolean"]
     },
     "mirror": {
+      "description": "Flag indicating if project is mirrored",
       "type": ["null", "boolean"]
     },
     "issues_template": {
+      "description": "Template for issues",
       "type": ["null", "string"]
     },
     "merge_pipelines_enabled": {
+      "description": "Flag indicating if merge pipelines are enabled",
       "type": ["null", "boolean"]
     },
     "merge_requests_template": {
+      "description": "Template for merge requests",
       "type": ["null", "string"]
     },
     "allow_pipeline_trigger_approve_deployment": {
+      "description": "Allow pipeline trigger to approve deployment",
       "type": ["null", "boolean"]
     },
     "marked_for_deletion_on": {
+      "description": "Date marked for deletion",
       "type": ["null", "string"],
       "format": "date"
     },
     "ci_forward_deployment_rollback_allowed": {
+      "description": "Allow rollback in forward deployment CI",
       "type": ["null", "boolean"]
     },
     "emails_enabled": {
+      "description": "Flag indicating if emails are enabled",
       "type": ["null", "boolean"]
     },
     "model_experiments_access_level": {
+      "description": "Access level for model experiments",
       "type": ["null", "string"]
     },
     "merge_trains_skip_train_allowed": {
+      "description": "Allow skipping merge trains",
+      "type": ["null", "boolean"]
+    },
+    "code_suggestions": {
+      "description": "Enable code suggestions",
+      "type": ["null", "boolean"]
+    },
+    "model_registry_access_level": {
+      "description": "Access level for model registry",
+      "type": ["null", "string"]
+    },
+    "ci_restrict_pipeline_cancellation_role": {
+      "description": "Role allowed to restrict pipeline cancellation in CI",
+      "type": ["null", "string"]
+    },
+    "repository_object_format": {
+      "description": "Format of repository object",
+      "type": ["null", "string"]
+    },
+    "warn_about_potentially_unwanted_characters": {
+      "description": "Warn about potentially unwanted characters",
       "type": ["null", "boolean"]
     }
   }

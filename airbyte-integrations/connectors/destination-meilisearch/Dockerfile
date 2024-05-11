@@ -34,5 +34,5 @@ COPY destination_meilisearch ./destination_meilisearch
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=1.0.0
+LABEL io.airbyte.version=1.0.2
 LABEL io.airbyte.name=airbyte/destination-meilisearch
