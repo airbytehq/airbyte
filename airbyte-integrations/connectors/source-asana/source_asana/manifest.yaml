@@ -35,18 +35,18 @@ definitions:
       $ref: "#/definitions/selective_authenticator"
     error_handler:
       type: DefaultErrorHandler
+      backoff_strategies:
+          - type: "WaitTimeFromHeader"
+            header: "Retry-After"
       response_filters:
         - type: HttpResponseFilter
           action: IGNORE
-          predicate: >-
-            {{ 'App Only access is not allowed' in response
-            }}
           http_codes:
             - 403
+            - 402
             - 404
             - 412
             - 451
-          error_message: Resource is forbidden
 
   token_paginator_base:
     type: DefaultPaginator
@@ -100,6 +100,10 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         use_cache: true
+        request_parameters:
+          workspace: "{{ stream_slice['workspace_gid'] }}"
+      partition_router:
+        $ref: "#/definitions/workspaces_partition_router"
     $parameters:
       path: "/projects"
 
