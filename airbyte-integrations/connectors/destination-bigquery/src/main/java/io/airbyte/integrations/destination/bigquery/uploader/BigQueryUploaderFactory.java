@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.bigquery.uploader;
 
 import static io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.*;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.FormatOptions;
@@ -50,7 +49,7 @@ public class BigQueryUploaderFactory {
   public static BigQueryDirectUploader getUploader(final UploaderConfig uploaderConfig)
       throws IOException {
     final String dataset = uploaderConfig.getParsedStream().getId().getRawNamespace();
-    final String datasetLocation = BigQueryUtils.getDatasetLocation(uploaderConfig.getConfig());
+    final String datasetLocation = uploaderConfig.getDatasetLocation();
     final Set<String> existingDatasets = new HashSet<>();
 
     final BigQueryRecordFormatter recordFormatter = uploaderConfig.getFormatter();
@@ -64,15 +63,14 @@ public class BigQueryUploaderFactory {
         datasetLocation);
 
     return getBigQueryDirectUploader(
-        uploaderConfig.getConfig(),
+        uploaderConfig.getBigQueryClientChunkSize(),
         targetTable,
         uploaderConfig.getBigQuery(),
         datasetLocation,
         recordFormatter);
   }
 
-  private static BigQueryDirectUploader getBigQueryDirectUploader(
-                                                                  final JsonNode config,
+  private static BigQueryDirectUploader getBigQueryDirectUploader(final Integer bigQueryClientChunkSize,
                                                                   final TableId targetTable,
                                                                   final BigQuery bigQuery,
                                                                   final String datasetLocation,
@@ -105,10 +103,8 @@ public class BigQueryUploaderFactory {
     }
 
     // this this optional value. If not set - use default client's value (15MiG)
-    final Integer bigQueryClientChunkSizeFomConfig =
-        BigQueryUtils.getBigQueryClientChunkSize(config);
-    if (bigQueryClientChunkSizeFomConfig != null) {
-      writer.setChunkSize(bigQueryClientChunkSizeFomConfig);
+    if (bigQueryClientChunkSize != null) {
+      writer.setChunkSize(bigQueryClientChunkSize);
     }
 
     return new BigQueryDirectUploader(

@@ -20,7 +20,6 @@ import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.joda.time.DateTime;
@@ -46,7 +45,7 @@ public class BigQueryGcsOperations {
                                final StandardNameTransformer gcsNameTransformer,
                                final GcsDestinationConfig gcsConfig,
                                final GcsStorageOperations gcsStorageOperations,
-                               final String datasetLocation,
+                               final String datasetLocation, // TODO: Is this information same as GcsConfig.bucketRegion?
                                final UUID randomStagingId,
                                final DateTime syncDatetime,
                                final boolean keepStagingFiles) {
@@ -155,16 +154,6 @@ public class BigQueryGcsOperations {
               tableId, datasetId),
           e);
     }
-  }
-
-  @Deprecated
-  public void cleanUpStage(final String datasetId, final String stream, final List<String> stagedFiles) {
-    if (keepStagingFiles) {
-      return;
-    }
-
-    LOGGER.info("Deleting staging files for stream {} (dataset {}): {}", stream, datasetId, stagedFiles);
-    gcsStorageOperations.cleanUpBucketObject(getStagingRootPath(datasetId, stream), stagedFiles);
   }
 
   public void dropTableIfExists(final String datasetId, final TableId tableId) {
