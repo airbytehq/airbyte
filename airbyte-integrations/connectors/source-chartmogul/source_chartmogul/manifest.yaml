@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /v1/customers
           http_method: GET
         record_selector:
@@ -43,7 +43,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/customers'
+          $ref: "#/schemas/customers"
     activities:
       type: DeclarativeStream
       name: activities
@@ -52,11 +52,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /v1/activities
           http_method: GET
           request_parameters:
-            start-date: '{{ config.start_date }}'
+            start-date: "{{ config.start_date }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -76,12 +76,12 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 200
-            cursor_value: '{{ response[''entries''][-1][''uuid''] }}'
-            stop_condition: '{{ not response.has_more }}'
+            cursor_value: "{{ response['entries'][-1]['uuid'] }}"
+            stop_condition: "{{ not response.has_more }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/activities'
+          $ref: "#/schemas/activities"
     customer_daily_count:
       type: DeclarativeStream
       name: customer_daily_count
@@ -90,12 +90,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /v1/metrics/customer-count
           http_method: GET
           request_parameters:
-            start-date: '{{ format_datetime(config[''start_date''], ''%Y-%m-%d'') }}'
-            end-date: '{{ now_utc().strftime(''%Y-%m-%d'') }}'
+            start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+            end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
             interval: day
         record_selector:
           type: RecordSelector
@@ -106,7 +106,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/customer_daily_count'
+          $ref: "#/schemas/customer_daily_count"
     customer_weekly_count:
       type: DeclarativeStream
       name: customer_weekly_count
@@ -115,12 +115,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /v1/metrics/customer-count
           http_method: GET
           request_parameters:
-            start-date: '{{ format_datetime(config[''start_date''], ''%Y-%m-%d'') }}'
-            end-date: '{{ now_utc().strftime(''%Y-%m-%d'') }}'
+            start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+            end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
             interval: week
         record_selector:
           type: RecordSelector
@@ -131,7 +131,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/customer_weekly_count'
+          $ref: "#/schemas/customer_weekly_count"
     customer_monthly_count:
       type: DeclarativeStream
       name: customer_monthly_count
@@ -140,12 +140,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /v1/metrics/customer-count
           http_method: GET
           request_parameters:
-            start-date: '{{ format_datetime(config[''start_date''], ''%Y-%m-%d'') }}'
-            end-date: '{{ now_utc().strftime(''%Y-%m-%d'') }}'
+            start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+            end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
             interval: month
         record_selector:
           type: RecordSelector
@@ -156,7 +156,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/customer_monthly_count'
+          $ref: "#/schemas/customer_monthly_count"
     customer_quarterly_count:
       type: DeclarativeStream
       name: customer_quarterly_count
@@ -165,12 +165,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /v1/metrics/customer-count
           http_method: GET
           request_parameters:
-            start-date: '{{ format_datetime(config[''start_date''], ''%Y-%m-%d'') }}'
-            end-date: '{{ now_utc().strftime(''%Y-%m-%d'') }}'
+            start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+            end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
             interval: quarter
         record_selector:
           type: RecordSelector
@@ -181,22 +181,22 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/customer_quarterly_count'
+          $ref: "#/schemas/customer_quarterly_count"
   base_requester:
     type: HttpRequester
     url_base: https://api.chartmogul.com
     authenticator:
       type: BasicHttpAuthenticator
-      username: '{{ config[''api_key''] }}'
-      password: '{{ config[''api_key''] }}'
+      username: "{{ config['api_key'] }}"
+      password: "{{ config['api_key'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/customers'
-  - $ref: '#/definitions/streams/activities'
-  - $ref: '#/definitions/streams/customer_daily_count'
-  - $ref: '#/definitions/streams/customer_weekly_count'
-  - $ref: '#/definitions/streams/customer_monthly_count'
-  - $ref: '#/definitions/streams/customer_quarterly_count'
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/activities"
+  - $ref: "#/definitions/streams/customer_daily_count"
+  - $ref: "#/definitions/streams/customer_weekly_count"
+  - $ref: "#/definitions/streams/customer_monthly_count"
+  - $ref: "#/definitions/streams/customer_quarterly_count"
 
 spec:
   type: Spec
@@ -225,7 +225,7 @@ spec:
           UTC date and time in the format 2017-01-25T00:00:00Z. When feasible,
           any data before this date will not be replicated.
         examples:
-          - '2017-01-25T00:00:00Z'
+          - "2017-01-25T00:00:00Z"
         order: 1
         format: date-time
     additionalProperties: true
@@ -247,158 +247,158 @@ schemas:
     properties:
       address:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           address_zip:
             type:
-              - 'null'
+              - "null"
               - string
           city:
             type:
-              - 'null'
+              - "null"
               - string
           country:
             type:
-              - 'null'
+              - "null"
               - string
           state:
             type:
-              - 'null'
+              - "null"
               - string
       arr:
         type:
-          - 'null'
+          - "null"
           - integer
       attributes:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           clearbit:
             type:
-              - 'null'
+              - "null"
               - object
             properties: {}
           custom:
             type:
-              - 'null'
+              - "null"
               - object
             properties: {}
           stripe:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               brandID:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               brandName:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               createdAt:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               platformName:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           tags:
             type:
-              - 'null'
+              - "null"
               - array
       billing-system-type:
         type:
-          - 'null'
+          - "null"
           - string
       billing-system-url:
         type:
-          - 'null'
+          - "null"
           - string
       chartmogul-url:
         type:
-          - 'null'
+          - "null"
           - string
       city:
         type:
-          - 'null'
+          - "null"
           - string
       company:
         type:
-          - 'null'
+          - "null"
           - string
       country:
         type:
-          - 'null'
+          - "null"
           - string
       currency:
         type:
-          - 'null'
+          - "null"
           - string
       currency-sign:
         type:
-          - 'null'
+          - "null"
           - string
       customer_since:
         type:
-          - 'null'
+          - "null"
           - string
       data_source_uuid:
         type:
-          - 'null'
+          - "null"
           - string
       data_source_uuids:
         type:
-          - 'null'
+          - "null"
           - array
       email:
         type:
-          - 'null'
+          - "null"
           - string
       external_id:
         type:
-          - 'null'
+          - "null"
           - string
       external_ids:
         type:
-          - 'null'
+          - "null"
           - array
       free_trial_started_at:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
           - integer
       lead_created_at:
         type:
-          - 'null'
+          - "null"
           - string
       mrr:
         type:
-          - 'null'
+          - "null"
           - integer
       name:
         type:
-          - 'null'
+          - "null"
           - string
       state:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
       uuid:
         type:
           - string
       zip:
         type:
-          - 'null'
+          - "null"
           - string
     required:
       - id
@@ -409,59 +409,59 @@ schemas:
     properties:
       description:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       activity-mrr-movement:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       activity-mrr:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       activity-arr:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       currency:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       subscription-external-id:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       plan-external-id:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       customer-name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       customer-uuid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       customer-external-id:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       billing-connector-uuid:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       uuid:
         type:
-        - string
+          - string
     required:
       - uuid
   customer_daily_count:
@@ -471,10 +471,10 @@ schemas:
     properties:
       date:
         type:
-        - string
+          - string
       customers:
         type:
-        - integer
+          - integer
     required:
       - date
   customer_weekly_count:
@@ -484,10 +484,10 @@ schemas:
     properties:
       date:
         type:
-        - string
+          - string
       customers:
         type:
-        - integer
+          - integer
     required:
       - date
   customer_monthly_count:
@@ -497,10 +497,10 @@ schemas:
     properties:
       date:
         type:
-        - string
+          - string
       customers:
         type:
-        - integer
+          - integer
     required:
       - date
   customer_quarterly_count:
@@ -510,9 +510,9 @@ schemas:
     properties:
       date:
         type:
-        - string
+          - string
       customers:
         type:
-        - integer
+          - integer
     required:
       - date
