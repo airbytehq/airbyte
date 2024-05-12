@@ -15,12 +15,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /runPagespeed
           http_method: GET
           request_parameters:
-            key: '{{ config[''api_key''] }}'
-            category: '{{ config[''categories''] }}'
+            key: "{{ config['api_key'] }}"
+            category: "{{ config['categories'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -28,14 +28,14 @@ definitions:
             field_path: []
         partition_router:
           - type: ListPartitionRouter
-            values: '{{ config[''urls''] }}'
+            values: "{{ config['urls'] }}"
             cursor_field: url
             request_option:
               type: RequestOption
               field_name: url
               inject_into: request_parameter
           - type: ListPartitionRouter
-            values: '{{ config[''strategies''] }}'
+            values: "{{ config['strategies'] }}"
             cursor_field: strategy
             request_option:
               type: RequestOption
@@ -46,17 +46,17 @@ definitions:
           fields:
             - path:
                 - strategy
-              value: '{{ stream_slice.strategy }}'
+              value: "{{ stream_slice.strategy }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/pagespeed'
+          $ref: "#/schemas/pagespeed"
   base_requester:
     type: HttpRequester
     url_base: https://www.googleapis.com/pagespeedonline/v5/
 
 streams:
-  - $ref: '#/definitions/streams/pagespeed'
+  - $ref: "#/definitions/streams/pagespeed"
 
 spec:
   type: Spec
