@@ -853,9 +853,192 @@ schemas:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      billable:
+        description: Indicates if the time entry is billable or not
+        type:
+          - "null"
+          - boolean
+      customFieldValues:
+        description: Values for custom fields related to the time entry
+        type:
+          - "null"
+          - array
+      description:
+        description: Description or notes about the time entry
+        type:
+          - "null"
+          - string
+      id:
+        description: Unique identifier for the time entry
+        type:
+          - "null"
+          - string
+      isLocked:
+        description: Indicates if the time entry is locked or not
+        type:
+          - "null"
+          - boolean
+      kioskId:
+        description: Identifier for the kiosk associated with the time entry
+        type:
+          - "null"
+          - string
+      projectId:
+        description: Unique identifier for the project related to the time entry
+        type:
+          - "null"
+          - string
+      tagIds:
+        description: Identifiers of tags associated with the time entry
+        anyOf:
+          - type: "null"
+          - items:
+              type:
+                - "null"
+                - string
+            type:
+              - "null"
+              - array
+      taskId:
+        description: Unique identifier for the task related to the time entry
+        type:
+          - "null"
+          - string
+      timeInterval:
+        description: Represents the time interval for the time entry
+        properties:
+          duration:
+            description: Duration of the time entry
+            type:
+              - "null"
+              - string
+          end:
+            description: End timestamp of the time entry
+            type:
+              - "null"
+              - string
+          start:
+            description: Start timestamp of the time entry
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      type:
+        description: Type of the time entry (e.g., time, leave, holiday)
+        type:
+          - "null"
+          - string
+      userId:
+        description: Unique identifier for the user associated with the time entry
+        type:
+          - "null"
+          - string
+      workspaceId:
+        description: Unique identifier for the workspace of the time entry
+        type:
+          - "null"
+          - string
   tasks:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties: 
+      budgetEstimate:
+        description: Estimated budget for the task.
+        type:
+          - "null"
+          - number
+      assigneeId:
+        description: The unique identifier of the user assigned to the task.
+        type:
+          - "null"
+          - string
+      assigneeIds:
+        description: The list of unique identifiers of users assigned to the task.
+        items:
+          description: Unique identifier of a user.
+          type:
+            - "null"
+            - string
+        type:
+          - "null"
+          - array
+      billable:
+        description: Indicates whether the task is billable or not.
+        type:
+          - "null"
+          - boolean
+      costRate:
+        description: Cost rate associated with the task.
+        anyOf:
+          - type: "null"
+          - type: string
+          - properties:
+              amount:
+                type:
+                  - "null"
+                  - string
+                  - integer
+              currency:
+                type:
+                  - "null"
+                  - string
+            type:
+              - "null"
+              - object
+      duration:
+        description: Total duration of the task.
+        type:
+          - "null"
+          - string
+      estimate:
+        description: Estimated time required to complete the task.
+        type:
+          - "null"
+          - string
+      hourlyRate:
+        description: Hourly rate for billing purposes.
+        anyOf:
+          - type: "null"
+          - properties:
+              amount:
+                type:
+                  - "null"
+                  - integer
+              currency:
+                type:
+                  - "null"
+                  - string
+            type:
+              - "null"
+              - object
+      id:
+        description: Unique identifier of the task.
+        type:
+          - "null"
+          - string
+      name:
+        description: Name or title of the task.
+        type:
+          - "null"
+          - string
+      projectId:
+        description: Unique identifier of the project the task belongs to.
+        type:
+          - "null"
+          - string
+      status:
+        description: Current status of the task.
+        type:
+          - "null"
+          - string
+      userGroupIds:
+        description:
+          List of unique identifiers of user groups associated with
+          the task.
+        type:
+          - "null"
+          - array
