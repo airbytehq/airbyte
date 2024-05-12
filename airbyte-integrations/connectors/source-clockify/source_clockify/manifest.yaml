@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: workspaces/{{ config['workspace_id'] }}/users
           http_method: GET
         record_selector:
@@ -47,7 +47,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/users'
+          $ref: "#/schemas/users"
     projects:
       type: DeclarativeStream
       name: projects
@@ -56,7 +56,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: workspaces/{{ config['workspace_id'] }}/projects
           http_method: GET
         record_selector:
@@ -86,7 +86,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/projects'
+          $ref: "#/schemas/projects"
     clients:
       type: DeclarativeStream
       name: clients
@@ -95,7 +95,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: workspaces/{{ config['workspace_id'] }}/clients
           http_method: GET
         record_selector:
@@ -125,7 +125,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/clients'
+          $ref: "#/schemas/clients"
     tags:
       type: DeclarativeStream
       name: tags
@@ -134,7 +134,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: workspaces/{{ config['workspace_id'] }}/tags
           http_method: GET
         record_selector:
@@ -164,7 +164,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/tags'
+          $ref: "#/schemas/tags"
     user_groups:
       type: DeclarativeStream
       name: user_groups
@@ -173,7 +173,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: workspaces/{{ config['workspace_id'] }}/user-groups
           http_method: GET
         record_selector:
@@ -203,7 +203,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/user_groups'
+          $ref: "#/schemas/user_groups"
     time_entries:
       type: DeclarativeStream
       name: time_entries
@@ -212,7 +212,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: >-
             workspaces/{{ config['workspace_id'] }}/user/{{
             stream_partition.user_id}}/time-entries
@@ -248,11 +248,11 @@ definitions:
                 parent_key: id
                 partition_field: user_id
                 stream:
-                  $ref: '#/definitions/streams/users'
+                  $ref: "#/definitions/streams/users"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/time_entries'
+          $ref: "#/schemas/time_entries"
     tasks:
       type: DeclarativeStream
       name: tasks
@@ -261,7 +261,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: >-
             workspaces/{{ config['workspace_id'] }}/projects/{{
             stream_partition.project_id}}/tasks
@@ -297,17 +297,17 @@ definitions:
                 parent_key: id
                 partition_field: project_id
                 stream:
-                  $ref: '#/definitions/streams/projects'
+                  $ref: "#/definitions/streams/projects"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/tasks'
+          $ref: "#/schemas/tasks"
   base_requester:
     type: HttpRequester
     url_base: https://api.clockify.me/api/v1/
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
       path: workspaces/{{ config['workspace_id'] }}/users
       inject_into:
         type: RequestOption
@@ -320,13 +320,13 @@ definitions:
         path: workspaces/{{ config['workspace_id'] }}/users
 
 streams:
-  - $ref: '#/definitions/streams/users'
-  - $ref: '#/definitions/streams/projects'
-  - $ref: '#/definitions/streams/clients'
-  - $ref: '#/definitions/streams/tags'
-  - $ref: '#/definitions/streams/user_groups'
-  - $ref: '#/definitions/streams/time_entries'
-  - $ref: '#/definitions/streams/tasks'
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/clients"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/user_groups"
+  - $ref: "#/definitions/streams/time_entries"
+  - $ref: "#/definitions/streams/tasks"
 
 spec:
   type: Spec
@@ -379,209 +379,209 @@ schemas:
     properties:
       activeWorkspace:
         type:
-          - 'null'
+          - "null"
           - string
         description: The ID of the active workspace for the user.
       customFields:
         type:
-          - 'null'
+          - "null"
           - array
         description: Any custom fields associated with the user's profile.
       defaultWorkspace:
         type:
-          - 'null'
+          - "null"
           - string
         description: The default workspace ID for the user.
       email:
         type:
-          - 'null'
+          - "null"
           - string
         description: The email address of the user.
       id:
         type:
-          - 'null'
+          - "null"
           - string
         description: The unique identifier of the user.
       memberships:
         type:
-          - 'null'
+          - "null"
           - array
         description: List of memberships the user belongs to.
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: The name of the user.
       profilePicture:
         type:
-          - 'null'
+          - "null"
           - string
         description: URL to the user's profile picture.
       settings:
         type:
-          - 'null'
+          - "null"
           - object
         description: User-specific settings for the user account.
         properties:
           alerts:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: User's alerts settings.
           approval:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: User's approval settings.
           collapseAllProjectLists:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: User's preference for collapsing all project lists.
           dashboardPinToTop:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: User's preference for pinning dashboard to the top.
           dashboardSelection:
             type:
-              - 'null'
+              - "null"
               - string
             description: User's dashboard selection.
           dashboardViewType:
             type:
-              - 'null'
+              - "null"
               - string
             description: User's preferred dashboard view type.
           dateFormat:
             type:
-              - 'null'
+              - "null"
               - string
             description: User's preferred date format.
           groupSimilarEntriesDisabled:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: User's preference for grouping similar entries.
           isCompactViewOn:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: User's preference for compact view.
           lang:
             type:
-              - 'null'
+              - "null"
               - string
             description: User's preferred language.
           longRunning:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: User's long running settings.
           multiFactorEnabled:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: Whether multi-factor authentication is enabled.
           myStartOfDay:
             type:
-              - 'null'
+              - "null"
               - string
             description: User's start of day setting.
           onboarding:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: User's onboarding settings.
           projectListCollapse:
             type:
-              - 'null'
+              - "null"
               - integer
             description: User's project list collapse setting.
           projectPickerTaskFilter:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: User's task filter for project picker.
           pto:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: User's PTO settings.
           reminders:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: User's reminder settings.
           scheduledReports:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: User's scheduled reports settings.
           scheduling:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: User's scheduling settings.
           sendNewsletter:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: User's preference for receiving newsletters.
           showOnlyWorkingDays:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: User's preference for showing only working days.
           summaryReportSettings:
             type:
-              - 'null'
+              - "null"
               - object
             description: Settings for summary report.
             properties:
               group:
                 type:
-                  - 'null'
+                  - "null"
                   - string
                 description: Group setting for summary report.
               subgroup:
                 type:
-                  - 'null'
+                  - "null"
                   - string
                 description: Subgroup setting for summary report.
           theme:
             type:
-              - 'null'
+              - "null"
               - string
             description: User's preferred theme.
           timeFormat:
             type:
-              - 'null'
+              - "null"
               - string
             description: User's preferred time format.
           timeTrackingManual:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: User's manual time tracking settings.
           timeZone:
             type:
-              - 'null'
+              - "null"
               - string
             description: User's preferred time zone.
           weekStart:
             type:
-              - 'null'
+              - "null"
               - string
             description: User's preferred start of the week.
           weeklyUpdates:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: User's settings for receiving weekly updates.
       status:
         type:
-          - 'null'
+          - "null"
           - string
         description: User's status.
   projects:
@@ -591,80 +591,80 @@ schemas:
     properties:
       archived:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the project is archived or not.
       billable:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the project is billable or not.
       budgetEstimate:
         anyOf:
-          - type: 'null'
+          - type: "null"
           - type: integer
           - type:
-              - 'null'
+              - "null"
               - object
             properties:
               type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               active:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               estimate:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               resetOption:
                 type:
-                  - 'null'
+                  - "null"
                   - string
         description: The estimated budget for the project.
       clientId:
         type:
-          - 'null'
+          - "null"
           - string
         description: The ID of the client associated with the project.
       clientName:
         type:
-          - 'null'
+          - "null"
           - string
         description: The name of the client associated with the project.
       color:
         type:
-          - 'null'
+          - "null"
           - string
         description: Color code used to visually identify the project.
       costRate:
         anyOf:
-          - type: 'null'
+          - type: "null"
           - type: string
           - type:
-              - 'null'
+              - "null"
               - object
             properties:
               amount:
                 type:
-                  - 'null'
+                  - "null"
                   - string
                   - integer
               currency:
                 type:
-                  - 'null'
+                  - "null"
                   - string
         description: Cost rate for the project.
       duration:
         type:
-          - 'null'
+          - "null"
           - string
         description: Total duration tracked for the project.
       estimate:
         type:
-          - 'null'
+          - "null"
           - object
         description: Project estimation details.
         properties:
@@ -676,129 +676,129 @@ schemas:
             description: Estimated time for the project.
       hourlyRate:
         type:
-          - 'null'
+          - "null"
           - object
         description: Hourly rate for the project.
         properties:
           amount:
             type:
-              - 'null'
+              - "null"
               - integer
             description: Hourly rate amount.
           currency:
             type:
-              - 'null'
+              - "null"
               - string
             description: Currency of the hourly rate.
       id:
         type:
-          - 'null'
+          - "null"
           - string
         description: Unique identifier for the project.
       memberships:
         type:
-          - 'null'
+          - "null"
           - array
         description: List of project memberships.
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             costRate:
               type:
-                - 'null'
+                - "null"
               description: Cost rate for the membership.
             hourlyRate:
               anyOf:
-                - type: 'null'
+                - type: "null"
                 - type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     amount:
                       type:
-                        - 'null'
+                        - "null"
                         - integer
                     currency:
                       type:
-                        - 'null'
+                        - "null"
                         - string
               description: Hourly rate for the membership.
             membershipStatus:
               type:
-                - 'null'
+                - "null"
                 - string
               description: Status of the membership.
             membershipType:
               type:
-                - 'null'
+                - "null"
                 - string
               description: Type of membership.
             targetId:
               type:
-                - 'null'
+                - "null"
                 - string
               description: ID of the target associated with the membership.
             userId:
               type:
-                - 'null'
+                - "null"
                 - string
               description: ID of the user associated with the membership.
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Name of the project.
       note:
         type:
-          - 'null'
+          - "null"
           - string
         description: Additional notes or comments related to the project.
       public:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the project is public or private.
       template:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the project is a template or not.
       timeEstimate:
         type:
-          - 'null'
+          - "null"
           - object
         description: Time estimation details for the project.
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
             description: Type of time estimation (e.g., hours, days).
           active:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: Indicates if the time estimate is active or not.
           estimate:
             type:
-              - 'null'
+              - "null"
               - string
             description: Estimated time for the project.
           includeNonBillable:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: Indicates if non-billable time is included in the estimate.
           resetOption:
             type:
-              - 'null'
+              - "null"
               - string
             description: Option to reset the time estimate.
       workspaceId:
         type:
-          - 'null'
+          - "null"
           - string
         description: ID of the workspace to which the project belongs.
   clients:
@@ -808,37 +808,37 @@ schemas:
     properties:
       address:
         type:
-          - 'null'
+          - "null"
           - string
         description: Client's physical address.
       archived:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the client is archived (true) or active (false).
       email:
         type:
-          - 'null'
+          - "null"
           - string
         description: Client's contact email address.
       id:
         type:
-          - 'null'
+          - "null"
           - string
         description: Unique identifier for the client.
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Name of the client.
       note:
         type:
-          - 'null'
+          - "null"
           - string
         description: Additional notes related to the client.
       workspaceId:
         type:
-          - 'null'
+          - "null"
           - string
         description: Identifier for the workspace to which the client belongs.
   tags:
@@ -848,22 +848,22 @@ schemas:
     properties:
       archived:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the tag is archived or active.
       id:
         type:
-          - 'null'
+          - "null"
           - string
         description: Unique identifier for the tag.
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Name of the tag.
       workspaceId:
         type:
-          - 'null'
+          - "null"
           - string
         description: Identifier of the workspace to which the tag belongs.
   user_groups:
@@ -873,27 +873,27 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
         description: Unique identifier for the user group.
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Name of the user group.
       userIds:
         type:
-          - 'null'
+          - "null"
           - array
         description: List of user IDs belonging to the user group.
         items:
           type:
-            - 'null'
+            - "null"
             - string
           description: User ID of a member in the group.
       workspaceId:
         type:
-          - 'null'
+          - "null"
           - string
         description: Identifier for the workspace to which the user group belongs.
   time_entries:
