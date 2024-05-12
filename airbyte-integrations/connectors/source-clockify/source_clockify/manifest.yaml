@@ -35,15 +35,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page-size
-            path: workspaces/{{ config['workspace_id'] }}/users
-            $parameters:
-              path: workspaces/{{ config['workspace_id'] }}/users
           pagination_strategy:
             type: PageIncrement
             page_size: 50
-            path: workspaces/{{ config['workspace_id'] }}/users
-            $parameters:
-              path: workspaces/{{ config['workspace_id'] }}/users
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -74,15 +68,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page-size
-            path: workspaces/{{ config['workspace_id'] }}/projects
-            $parameters:
-              path: workspaces/{{ config['workspace_id'] }}/projects
           pagination_strategy:
             type: PageIncrement
             page_size: 50
-            path: workspaces/{{ config['workspace_id'] }}/projects
-            $parameters:
-              path: workspaces/{{ config['workspace_id'] }}/projects
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -113,15 +101,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page-size
-            path: workspaces/{{ config['workspace_id'] }}/clients
-            $parameters:
-              path: workspaces/{{ config['workspace_id'] }}/clients
           pagination_strategy:
             type: PageIncrement
             page_size: 50
-            path: workspaces/{{ config['workspace_id'] }}/clients
-            $parameters:
-              path: workspaces/{{ config['workspace_id'] }}/clients
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -152,15 +134,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page-size
-            path: workspaces/{{ config['workspace_id'] }}/tags
-            $parameters:
-              path: workspaces/{{ config['workspace_id'] }}/tags
           pagination_strategy:
             type: PageIncrement
             page_size: 50
-            path: workspaces/{{ config['workspace_id'] }}/tags
-            $parameters:
-              path: workspaces/{{ config['workspace_id'] }}/tags
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -191,15 +167,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page-size
-            path: workspaces/{{ config['workspace_id'] }}/user-groups
-            $parameters:
-              path: workspaces/{{ config['workspace_id'] }}/user-groups
           pagination_strategy:
             type: PageIncrement
             page_size: 50
-            path: workspaces/{{ config['workspace_id'] }}/user-groups
-            $parameters:
-              path: workspaces/{{ config['workspace_id'] }}/user-groups
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -232,15 +202,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page-size
-            path: workspaces/{{ config['workspace_id'] }}/user-groups
-            $parameters:
-              path: workspaces/{{ config['workspace_id'] }}/user-groups
           pagination_strategy:
             type: PageIncrement
             page_size: 50
-            path: workspaces/{{ config['workspace_id'] }}/user-groups
-            $parameters:
-              path: workspaces/{{ config['workspace_id'] }}/user-groups
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -281,15 +245,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page-size
-            path: workspaces/{{ config['workspace_id'] }}/user-groups
-            $parameters:
-              path: workspaces/{{ config['workspace_id'] }}/user-groups
           pagination_strategy:
             type: PageIncrement
             page_size: 50
-            path: workspaces/{{ config['workspace_id'] }}/user-groups
-            $parameters:
-              path: workspaces/{{ config['workspace_id'] }}/user-groups
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -313,11 +271,6 @@ definitions:
         type: RequestOption
         field_name: X-Api-Key
         inject_into: header
-        path: workspaces/{{ config['workspace_id'] }}/users
-        $parameters:
-          path: workspaces/{{ config['workspace_id'] }}/users
-      $parameters:
-        path: workspaces/{{ config['workspace_id'] }}/users
 
 streams:
   - $ref: "#/definitions/streams/users"
