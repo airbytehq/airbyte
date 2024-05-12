@@ -400,8 +400,6 @@ schemas:
         type:
           - "null"
           - string
-    required:
-      - id
   activities:
     "$schema": http://json-schema.org/draft-07/schema#
     type: object
@@ -462,8 +460,6 @@ schemas:
       uuid:
         type:
           - string
-    required:
-      - uuid
   customer_daily_count:
     "$schema": http://json-schema.org/draft-07/schema#
     type: object
@@ -475,8 +471,6 @@ schemas:
       customers:
         type:
           - integer
-    required:
-      - date
   customer_weekly_count:
     "$schema": http://json-schema.org/draft-07/schema#
     type: object
@@ -488,8 +482,6 @@ schemas:
       customers:
         type:
           - integer
-    required:
-      - date
   customer_monthly_count:
     "$schema": http://json-schema.org/draft-07/schema#
     type: object
@@ -501,8 +493,6 @@ schemas:
       customers:
         type:
           - integer
-    required:
-      - date
   customer_quarterly_count:
     "$schema": http://json-schema.org/draft-07/schema#
     type: object
@@ -514,5 +504,3 @@ schemas:
       customers:
         type:
           - integer
-    required:
-      - date
