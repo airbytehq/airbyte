@@ -46,14 +46,14 @@ definitions:
           fields:
             - path:
                 - strategy
-              value: "{{ stream_slice.strategy }}"
+              value: "{{ stream_partition.strategy }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/pagespeed"
   base_requester:
     type: HttpRequester
-    url_base: https://www.googleapis.com/pagespeedonline/v5/
+    url_base: https://www.googleapis.com/pagespeedonline/v5
 
 streams:
   - $ref: "#/definitions/streams/pagespeed"
