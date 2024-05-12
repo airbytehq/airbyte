@@ -23,7 +23,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /calls
           http_method: GET
         record_selector:
@@ -48,14 +48,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/calls'
+          $ref: "#/schemas/calls"
     company:
       type: DeclarativeStream
       name: company
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /company
           http_method: GET
         record_selector:
@@ -80,14 +80,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/company'
+          $ref: "#/schemas/company"
     contacts:
       type: DeclarativeStream
       name: contacts
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /contacts
           http_method: GET
         record_selector:
@@ -112,7 +112,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/contacts'
+          $ref: "#/schemas/contacts"
     numbers:
       type: DeclarativeStream
       name: numbers
@@ -121,7 +121,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /numbers
           http_method: GET
         record_selector:
@@ -148,22 +148,22 @@ definitions:
         cursor_field: created_at
         lookback_window: P31D
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%f%z'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ today_utc() }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
         step: P1M
         cursor_granularity: PT0.000001S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/numbers'
+          $ref: "#/schemas/numbers"
     tags:
       type: DeclarativeStream
       name: tags
@@ -172,7 +172,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /tags
           http_method: GET
         record_selector:
@@ -197,7 +197,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/tags'
+          $ref: "#/schemas/tags"
     users:
       type: DeclarativeStream
       name: users
@@ -206,7 +206,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /users
           http_method: GET
         record_selector:
@@ -218,7 +218,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/users'
+          $ref: "#/schemas/users"
     user_availability:
       type: DeclarativeStream
       name: user_availability
@@ -227,7 +227,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /users/availabilities
           http_method: GET
         record_selector:
@@ -239,7 +239,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/user_availability'
+          $ref: "#/schemas/user_availability"
     teams:
       type: DeclarativeStream
       name: teams
@@ -248,7 +248,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /teams
           http_method: GET
         record_selector:
@@ -275,22 +275,22 @@ definitions:
         cursor_field: created_at
         lookback_window: P31D
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%f%z'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ today_utc() }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
         step: P1M
         cursor_granularity: PT0.000001S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/teams'
+          $ref: "#/schemas/teams"
     webhooks:
       type: DeclarativeStream
       name: webhooks
@@ -299,7 +299,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /webhooks
           http_method: GET
         record_selector:
@@ -324,7 +324,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/webhooks'
+          $ref: "#/schemas/webhooks"
   base_requester:
     type: HttpRequester
     url_base: https://api.aircall.io/v1
@@ -334,15 +334,15 @@ definitions:
       password: "{{ config['api_token'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/calls'
-  - $ref: '#/definitions/streams/company'
-  - $ref: '#/definitions/streams/contacts'
-  - $ref: '#/definitions/streams/numbers'
-  - $ref: '#/definitions/streams/tags'
-  - $ref: '#/definitions/streams/users'
-  - $ref: '#/definitions/streams/user_availability'
-  - $ref: '#/definitions/streams/teams'
-  - $ref: '#/definitions/streams/webhooks'
+  - $ref: "#/definitions/streams/calls"
+  - $ref: "#/definitions/streams/company"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/numbers"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/user_availability"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/webhooks"
 
 spec:
   type: Spec
@@ -379,7 +379,7 @@ spec:
           from.
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$
         examples:
-          - '2022-03-01T00:00:00.000Z'
+          - "2022-03-01T00:00:00.000Z"
         format: date-time
         order: 2
     additionalProperties: true
@@ -405,315 +405,315 @@ schemas:
     properties:
       id:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       country_code_a2:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       pricing_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       direct_link:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       direction:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       status:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       missed_call_reason:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       started_at:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       answered_at:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       ended_at:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       duration:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       voicemail:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       recording:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       asset:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       raw_digits:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       user:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           id:
             type:
-            - 'null'
-            - number
+              - "null"
+              - number
           direct_link:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           email:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           available:
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           availability_status:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           created_at:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           time_zone:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           language:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       contact:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       archived:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       assigned_to:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       transferred_by:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       transferred_to:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       cost:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       number:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           id:
             type:
-            - 'null'
-            - number
+              - "null"
+              - number
           direct_link:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           name:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           digits:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           created_at:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           country:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           time_zone:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           open:
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           availability_status:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           is_ivr:
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           live_recording_activated:
             type:
-            - 'null'
-            - boolean
+              - "null"
+              - boolean
           priority:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       comments:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             id:
               type:
-              - 'null'
-              - number
+                - "null"
+                - number
             content:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             posted_at:
               type:
-              - 'null'
-              - number
+                - "null"
+                - number
             posted_by:
               type:
-              - 'null'
-              - object
+                - "null"
+                - object
               properties:
                 id:
                   type:
-                  - 'null'
-                  - number
+                    - "null"
+                    - number
                 direct_link:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 name:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 email:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 available:
                   type:
-                  - 'null'
-                  - boolean
+                    - "null"
+                    - boolean
                 availability_status:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 created_at:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
       tags:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             id:
               type:
-              - 'null'
-              - number
+                - "null"
+                - number
             name:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             created_at:
               type:
-              - 'null'
-              - number
+                - "null"
+                - number
             tagged_by:
               type:
-              - 'null'
-              - object
+                - "null"
+                - object
               properties:
                 id:
                   type:
-                  - 'null'
-                  - number
+                    - "null"
+                    - number
                 direct_link:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 name:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 email:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 available:
                   type:
-                  - 'null'
-                  - boolean
+                    - "null"
+                    - boolean
                 availability_status:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
                 created_at:
                   type:
-                  - 'null'
-                  - string
+                    - "null"
+                    - string
       teams:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             id:
               type:
-              - 'null'
-              - number
+                - "null"
+                - number
             name:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             direct_link:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             created_at:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
   company:
     "$schema": http://json-schema.org/draft-07/schema#
     title: Company schema
@@ -722,16 +722,16 @@ schemas:
     properties:
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       users_count:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       numbers_count:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
   contacts:
     "$schema": http://json-schema.org/draft-07/schema#
     title: Contacts Schema
@@ -740,82 +740,82 @@ schemas:
     properties:
       id:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       first_name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       last_name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       company_name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       information:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       is_shared:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       direct_link:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       created_at:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       updated_at:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       phone_numbers:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             id:
               type:
-              - 'null'
-              - number
+                - "null"
+                - number
             label:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             value:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
       emails:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             id:
               type:
-              - 'null'
-              - number
+                - "null"
+                - number
             label:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             value:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
   numbers:
     "$schema": http://json-schema.org/draft-07/schema#
     title: Numbers Schema
@@ -824,109 +824,109 @@ schemas:
     properties:
       id:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       direct_link:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       digits:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       country:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       time_zone:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       open:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       availability_status:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       is_ivr:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       live_recording_activated:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       priority:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       messages:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           welcome:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           waiting:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           ivr:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           voicemail:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           closed:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           callback_later:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           unanswered_call:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           after_hours:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           ringing_tone:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       wrap_up_time:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       available:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       language:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       email:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       created_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
   tags:
     "$schema": http://json-schema.org/draft-07/schema#
@@ -936,20 +936,20 @@ schemas:
     properties:
       id:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       color:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       description:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
   users:
     "$schema": http://json-schema.org/draft-07/schema#
     title: Users
@@ -958,44 +958,44 @@ schemas:
     properties:
       id:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       direct_link:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       email:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       available:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       availability_status:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       created_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       time_zone:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       language:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       wrap_up_time:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
   user_availability:
     "$schema": http://json-schema.org/draft-07/schema#
     title: Users Availiablity
@@ -1004,12 +1004,12 @@ schemas:
     properties:
       availability:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       id:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
   teams:
     "$schema": http://json-schema.org/draft-07/schema#
     title: Teams
@@ -1018,54 +1018,54 @@ schemas:
     properties:
       id:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       direct_link:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       created_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       users:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - object
+            - "null"
+            - object
           properties:
             id:
               type:
-              - 'null'
-              - number
+                - "null"
+                - number
             direct_link:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             name:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             email:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             created_at:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
             time_zone:
               type:
-              - 'null'
-              - string
+                - "null"
+                - string
   webhooks:
     "$schema": http://json-schema.org/draft-07/schema#
     title: Webhooks Schema
@@ -1074,34 +1074,34 @@ schemas:
     properties:
       id:
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       direct_link:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       created_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       url:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       active:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       token:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       events:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - string
+            - "null"
+            - string
