@@ -29,6 +29,11 @@ data:
   license: MIT
   name: Chartmogul
   releaseDate: 2022-01-10
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "This version separates the `customer_count` stream into multiple streams (daily, weekly, monthly, quarterly). Users previously using the `customer_count` stream will need to run a reset to enable the new streams and continue syncing."
+        upgradeDeadline: "2023-11-29"
   releaseStage: beta
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/chartmogul
