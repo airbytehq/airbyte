@@ -175,4 +175,4 @@ class SnowflakeCortexIndexer(Indexer):
 
     def check(self) -> Optional[str]:
         self.default_processor._get_tables_list()
-        # TODO: check to see if vector type is available in snowflake instance ?
+        # TODO: check to see if vector type is available in snowflake instance
