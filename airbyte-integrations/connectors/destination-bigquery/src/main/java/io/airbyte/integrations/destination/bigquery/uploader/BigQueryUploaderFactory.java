@@ -47,7 +47,7 @@ public class BigQueryUploaderFactory {
                                                  More details:
                                                  """;
 
-  public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig)
+  public static BigQueryDirectUploader getUploader(final UploaderConfig uploaderConfig)
       throws IOException {
     final String dataset = uploaderConfig.getParsedStream().getId().getRawNamespace();
     final String datasetLocation = BigQueryUtils.getDatasetLocation(uploaderConfig.getConfig());

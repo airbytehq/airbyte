@@ -1,10 +1,10 @@
 # Issues and Requests
 
 ## Report a Bug
+
 Bug reports help us make Airbyte better for everyone. We provide a preconfigured template for bugs to make it very clear what information we need.
 
 ‌Please search within our [already reported bugs](https://github.com/airbytehq/airbyte/issues?q=is%3Aissue+is%3Aopen+label%3Atype%2Fbug) before raising a new one to make sure you're not raising a duplicate.
-
 
 ## Request new Features or Connector
 

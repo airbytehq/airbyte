@@ -5,75 +5,99 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "sku": {
+      "description": "Stock Keeping Unit code for the product",
       "type": ["null", "string"]
     },
     "asin": {
+      "description": "Amazon Standard Identification Number for the product",
       "type": ["null", "string"]
     },
     "price": {
+      "description": "Current price of the product",
       "type": ["null", "string"]
     },
     "quantity": {
+      "description": "Available quantity of the product",
       "type": ["null", "string"]
     },
     "Business Price": {
+      "description": "The price set by the business for the listing",
       "type": ["null", "string"]
     },
     "Quantity Price Type": {
+      "description": "Type of pricing strategy used for quantity pricing",
       "type": ["null", "string"]
     },
     "Quantity Lower Bound 1": {
+      "description": "Minimum quantity threshold for pricing tier 1",
       "type": ["null", "string"]
     },
     "Quantity Price 1": {
+      "description": "Price for products in quantity tier 1",
       "type": ["null", "string"]
     },
     "Quantity Lower Bound 2": {
+      "description": "Minimum quantity threshold for pricing tier 2",
       "type": ["null", "string"]
     },
     "Quantity Price 2": {
+      "description": "Price for products in quantity tier 2",
       "type": ["null", "string"]
     },
     "Quantity Lower Bound 3": {
+      "description": "Minimum quantity threshold for pricing tier 3",
       "type": ["null", "string"]
     },
     "Quantity Price 3": {
+      "description": "Price for products in quantity tier 3",
       "type": ["null", "string"]
     },
     "Quantity Lower Bound 4": {
+      "description": "Minimum quantity threshold for pricing tier 4",
       "type": ["null", "string"]
     },
     "Quantity Price 4": {
+      "description": "Price for products in quantity tier 4",
       "type": ["null", "string"]
     },
     "Quantity Lower Bound 5": {
+      "description": "Minimum quantity threshold for pricing tier 5",
       "type": ["null", "string"]
     },
     "Quantity Price 5": {
+      "description": "Price for products in quantity tier 5",
       "type": ["null", "string"]
     },
     "Progressive Price Type": {
+      "description": "Type of pricing strategy used for progressive pricing",
       "type": ["null", "string"]
     },
     "Progressive Lower Bound 1": {
+      "description": "Minimum threshold for progressive pricing tier 1",
       "type": ["null", "string"]
     },
     "Progressive Price 1": {
+      "description": "Price for products in progressive tier 1",
       "type": ["null", "string"]
     },
     "Progressive Lower Bound 2": {
+      "description": "Minimum threshold for progressive pricing tier 2",
       "type": ["null", "string"]
     },
     "Progressive Price 2": {
+      "description": "Price for products in progressive tier 2",
       "type": ["null", "string"]
     },
     "Progressive Lower Bound 3": {
+      "description": "Minimum threshold for progressive pricing tier 3",
       "type": ["null", "string"]
     },
     "Progressive Price 3": {
+      "description": "Price for products in progressive tier 3",
       "type": ["null", "string"]
     },
     "dataEndTime": {
+      "description": "End time of the data entry",
       "type": ["null", "string"],
       "format": "date"
     }

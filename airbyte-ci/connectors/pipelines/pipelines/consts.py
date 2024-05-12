@@ -42,6 +42,7 @@ DOCKER_REGISTRY_MIRROR_URL = os.getenv("DOCKER_REGISTRY_MIRROR_URL")
 DOCKER_REGISTRY_ADDRESS = "docker.io"
 DOCKER_VAR_LIB_VOLUME_NAME = "docker-cache"
 GIT_IMAGE = "alpine/git:latest"
+GIT_DIRECTORY_ROOT_PATH = ".git"
 GRADLE_CACHE_PATH = "/root/.gradle/caches"
 GRADLE_BUILD_CACHE_PATH = f"{GRADLE_CACHE_PATH}/build-cache-1"
 GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH = "/root/gradle_dependency_cache"

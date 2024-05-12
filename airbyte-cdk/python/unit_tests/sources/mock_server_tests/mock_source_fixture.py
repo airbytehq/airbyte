@@ -10,7 +10,7 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 import pendulum
 import requests
 from airbyte_cdk.sources import AbstractSource, Source
-from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams import CheckpointMixin, IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
@@ -55,7 +55,9 @@ class IntegrationStream(HttpStream, ABC):
         has_more = response.json().get("has_more")
         if has_more:
             self.current_page += 1
-            return {"next_page": self.current_page}
+            return {"page": self.current_page}
+        else:
+            return None
 
 
 class IncrementalIntegrationStream(IntegrationStream, IncrementalMixin, ABC):
@@ -300,12 +302,122 @@ class Dividers(IntegrationStream):
         return {"category": stream_slice.get("divide_category")}
 
 
+class JusticeSongs(HttpStream, CheckpointMixin, ABC):
+    url_base = "https://api.airbyte-test.com/v1/"
+    primary_key = "id"
+
+    def __init__(self, config: Mapping[str, Any], **kwargs):
+        super().__init__(**kwargs)
+        self._state: MutableMapping[str, Any] = {}
+
+    def path(self, **kwargs) -> str:
+        return "justice_songs"
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": True,
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "album": {
+                    "type": "string"
+                }
+            }
+        }
+
+    @property
+    def availability_strategy(self) -> HttpAvailabilityStrategy:
+        return FixtureAvailabilityStrategy()
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        data = response.json().get("data", [])
+        yield from data
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]) -> None:
+        self._state = value
+
+    def request_params(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        return {
+            "page": next_page_token.get("page")
+        }
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        yield from self._read_page(cursor_field, stream_slice, stream_state)
+
+    def _read_page(
+        self,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        next_page_token = stream_slice
+        request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        request_params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+
+        request = self._create_prepared_request(
+            path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            params=request_params,
+            json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+        )
+        request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+
+        response = self._send_request(request, request_kwargs)
+        yield from self.parse_response(response=response)
+
+        self.next_page_token(response)
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        current_page = self._state.get("page") or 0
+        has_more = response.json().get("has_more")
+        if has_more:
+            self._state = {"page": current_page + 1}
+        else:
+            self._state = None
+
+
 class SourceFixture(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [Dividers(config=config), Legacies(config=config), Planets(config=config), Users(config=config)]
+        return [
+            Dividers(config=config),
+            JusticeSongs(config=config),
+            Legacies(config=config),
+            Planets(config=config),
+            Users(config=config),
+        ]
 
     def spec(self, logger: logging.Logger) -> ConnectorSpecification:
         return ConnectorSpecification(

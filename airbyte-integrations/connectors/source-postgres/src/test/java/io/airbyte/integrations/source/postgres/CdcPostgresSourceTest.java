@@ -74,6 +74,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
 @Order(1)
+@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH")
 public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, PostgresTestDatabase> {
 
   protected BaseImage postgresImage;
@@ -98,6 +99,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   @Override
   protected PostgresSource source() {
     return new PostgresSource();
+  }
+
+  @Override
+  protected boolean supportResumableFullRefresh() {
+    return true;
   }
 
   @Override
@@ -239,6 +245,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
       }
     }
   }
+
+  @Override
+  @Test
+  protected void testCdcAndNonResumableFullRefreshInSameSync() throws Exception {}
 
   @Override
   protected void assertStateMessagesForNewTableSnapshotTest(final List<? extends AirbyteStateMessage> stateMessages,
