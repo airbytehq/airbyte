@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /v3/organizations
           http_method: GET
         record_selector:
@@ -29,14 +29,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/organizations'
+          $ref: "#/schemas/organizations"
     projects:
       type: DeclarativeStream
       name: projects
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /v3/organizations/{{ stream_slice.id }}/projects
           http_method: GET
         record_selector:
@@ -65,11 +65,11 @@ definitions:
                 parent_key: id
                 partition_field: id
                 stream:
-                  $ref: '#/definitions/streams/organizations'
+                  $ref: "#/definitions/streams/organizations"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/projects'
+          $ref: "#/schemas/projects"
     k6-tests:
       type: DeclarativeStream
       name: k6-tests
@@ -78,7 +78,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: loadtests/v2/tests
           http_method: GET
         record_selector:
@@ -103,18 +103,18 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/k6-tests'
+          $ref: "#/schemas/k6-tests"
   base_requester:
     type: HttpRequester
     url_base: https://api.k6.io
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config[''api_token''] }}'
+      api_token: "{{ config['api_token'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/organizations'
-  - $ref: '#/definitions/streams/projects'
-  - $ref: '#/definitions/streams/k6-tests'
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/k6-tests"
 
 spec:
   type: Spec
