@@ -945,7 +945,7 @@ schemas:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: 
+    properties:
       budgetEstimate:
         description: Estimated budget for the task.
         type:
@@ -1036,8 +1036,7 @@ schemas:
           - "null"
           - string
       userGroupIds:
-        description:
-          List of unique identifiers of user groups associated with
+        description: List of unique identifiers of user groups associated with
           the task.
         type:
           - "null"
