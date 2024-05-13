@@ -7,8 +7,9 @@ import os
 import urllib
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping, Optional, Tuple, Union, List
+from typing import Any, Mapping, Optional, Tuple, Union
 
+import backoff
 import requests
 import requests_cache
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
@@ -28,10 +29,9 @@ from .error_handlers import (
     ResponseAction,
 )
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
-from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
+from .rate_limiting import http_client_default_backoff_handler, user_defined_backoff_handler
 
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
-
 
 class HttpClient:
 
@@ -150,7 +150,7 @@ class HttpClient:
         max_time = self._backoff_strategy.max_time or self._DEFAULT_MAX_TIME  # type: ignore # max_time is included in default implemention but optional
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
-        backoff_handler = default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self._DEFAULT_RETRY_FACTOR)
+        backoff_handler = http_client_default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self._DEFAULT_RETRY_FACTOR)
         # backoff handlers wrap _send, so it will always return a response
         response = backoff_handler(user_backoff_handler)(request, request_kwargs)
 

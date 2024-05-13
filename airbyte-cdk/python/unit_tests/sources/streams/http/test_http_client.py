@@ -245,7 +245,7 @@ def test_send_request_given_retry_response_action_retries_and_returns_valid_resp
     valid_response.status_code = 200
     valid_response.ok = True
     valid_response.headers = {}
-    call_count = 3
+    call_count = 2
 
     def update_response(*args, **kwargs):
         if http_client._session.send.call_count == call_count:
@@ -259,7 +259,6 @@ def test_send_request_given_retry_response_action_retries_and_returns_valid_resp
 
     prepared_request = requests.PreparedRequest()
 
-    mocker.patch.object(http_client._backoff_strategy, "backoff_time", return_value=0.123)
     mocker.patch.object(http_client._session, 'send', side_effect=update_response)
 
     returned_response = http_client._send_with_retry(prepared_request, request_kwargs={})
@@ -331,7 +330,7 @@ def test_send_request_given_request_exception_and_retry_response_action_retries_
     valid_response.status_code = 200
     valid_response.ok = True
     valid_response.headers = {}
-    call_count = 3
+    call_count = 2
 
     def update_response(*args, **kwargs):
         if http_client._session.send.call_count == call_count:
@@ -341,7 +340,6 @@ def test_send_request_given_request_exception_and_retry_response_action_retries_
 
     prepared_request = requests.PreparedRequest()
 
-    mocker.patch.object(http_client._backoff_strategy, "backoff_time", return_value=0.123)
     mocker.patch.object(http_client._session, 'send', side_effect=update_response)
 
     returned_response = http_client._send_with_retry(prepared_request, request_kwargs={})

@@ -61,6 +61,33 @@ def default_backoff_handler(
         **kwargs,
     )
 
+def http_client_default_backoff_handler(
+    max_tries: Optional[int], factor: float, max_time: Optional[int] = None, **kwargs: Any
+) -> Callable[[SendRequestCallableType], SendRequestCallableType]:
+    def log_retry_attempt(details: Mapping[str, Any]) -> None:
+        _, exc, _ = sys.exc_info()
+        if isinstance(exc, RequestException) and exc.response:
+            logger.info(f"Status code: {exc.response.status_code}, Response Content: {exc.response.content}")
+        logger.info(
+            f"Caught retryable error '{str(exc)}' after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+        )
+
+    def should_give_up(exc: Exception) -> bool:
+        # If made it here, the ResponseAction was RETRY and therefore should not give up
+        return False
+
+    return backoff.on_exception(
+        backoff.expo,
+        TRANSIENT_EXCEPTIONS,
+        jitter=None,
+        on_backoff=log_retry_attempt,
+        giveup=should_give_up,
+        max_tries=max_tries,
+        max_time=max_time,
+        factor=factor,
+        **kwargs,
+    )
+
 
 def user_defined_backoff_handler(
     max_tries: Optional[int], max_time: Optional[int] = None, **kwargs: Any
