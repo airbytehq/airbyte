@@ -24,6 +24,32 @@ generate_registry_entry = define_asset_job(
 )
 
 
+@op(required_resource_keys={"all_metadata_file_blobs"})
+def remove_stale_metadata_partitions_op(context):
+    """
+    This op is responsible for polling for new metadata files and adding their etag to the dynamic partition.
+    """
+    all_metadata_file_blobs = context.resources.all_metadata_file_blobs
+    partition_name = registry_entry.metadata_partitions_def.name
+
+    all_fresh_etags = [blob.etag for blob in all_metadata_file_blobs]
+
+    all_etag_partitions = context.instance.get_dynamic_partitions(partition_name)
+
+    for stale_etag in [etag for etag in all_etag_partitions if etag not in all_fresh_etags]:
+        context.log.info(f"Removing stale etag: {stale_etag}")
+        context.instance.delete_dynamic_partition(partition_name, stale_etag)
+        context.log.info(f"Removed stale etag: {stale_etag}")
+
+
+@job(tags={"dagster/priority": HIGH_QUEUE_PRIORITY})
+def remove_stale_metadata_partitions():
+    """
+    This job is responsible for removing stale metadata partitions (metadata files or versions of files that no longer exist).
+    """
+    remove_stale_metadata_partitions_op()
+
+
 @op(required_resource_keys={"slack", "all_metadata_file_blobs"})
 def add_new_metadata_partitions_op(context):
     """
