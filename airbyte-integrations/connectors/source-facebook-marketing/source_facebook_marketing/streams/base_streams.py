@@ -57,10 +57,6 @@ class FBMarketingStream(ConcurrentStream, ABC):
         self._filter_statuses = filter_statuses or []
         self._fields = None
 
-    @property
-    def state_checkpoint_interval(self) -> Optional[int]:
-        return 500
-
     def fields(self, **kwargs) -> List[str]:
         """List of fields that we want to query, for now just all properties from stream's schema"""
         if self._fields:
