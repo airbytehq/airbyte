@@ -80,6 +80,12 @@ class TestDestinationPinecone(unittest.TestCase):
         result = destination.check(self.logger, bad_config)
         self.assertEqual(result.status, Status.FAILED)
 
+    def test_check_with_init_indexer_errors(self):
+        destination = DestinationPinecone()
+        with patch("destination_pinecone.destination.PineconeIndexer", side_effect=Exception("Indexer Error")):
+            result = destination.check(self.logger, self.config)
+        self.assertEqual(result.status, Status.FAILED)
+
     @patch("destination_pinecone.destination.Writer")
     @patch("destination_pinecone.destination.PineconeIndexer")
     @patch("destination_pinecone.destination.create_from_config")
