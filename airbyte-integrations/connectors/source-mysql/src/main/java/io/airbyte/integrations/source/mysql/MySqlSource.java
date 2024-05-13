@@ -186,9 +186,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         && !airbyteStream.getStream().getSourceDefinedPrimaryKey().isEmpty()) {
       return true;
     }
-    if (airbyteStream.getPrimaryKey() != null && !airbyteStream.getPrimaryKey().isEmpty()) {
-      return true;
-    }
 
     return false;
   }

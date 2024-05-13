@@ -40,7 +40,7 @@ import org.mockito.Mockito
         "The static variables are updated in subclasses for convenience, and cannot be final."
 )
 abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
-    @JvmField protected var testdb: T = createTestDatabase()
+    @JvmField protected var testdb: T? = null
 
     protected fun streamName(): String {
         return TABLE_NAME
@@ -120,60 +120,60 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             testdb!!.with("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'")
         }
         testdb
-            .with(
+            ?.with(
                 createTableQuery(
                     getFullyQualifiedTableName(TABLE_NAME),
                     COLUMN_CLAUSE_WITH_PK,
                     primaryKeyClause(listOf("id"))
                 )
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(id, name, updated_at) VALUES (1, 'picard', '2004-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME)
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(id, name, updated_at) VALUES (2, 'crusher', '2005-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME)
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(id, name, updated_at) VALUES (3, 'vash', '2006-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME)
             )
-            .with(
+            ?.with(
                 createTableQuery(
                     getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK),
                     COLUMN_CLAUSE_WITHOUT_PK,
                     ""
                 )
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(id, name, updated_at) VALUES (1, 'picard', '2004-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(id, name, updated_at) VALUES (2, 'crusher', '2005-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(id, name, updated_at) VALUES (3, 'vash', '2006-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)
             )
-            .with(
+            ?.with(
                 createTableQuery(
                     getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK),
                     COLUMN_CLAUSE_WITH_COMPOSITE_PK,
                     primaryKeyClause(listOf("first_name", "last_name"))
                 )
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(first_name, last_name, updated_at) VALUES ('first', 'picard', '2004-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(first_name, last_name, updated_at) VALUES ('second', 'crusher', '2005-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(first_name, last_name, updated_at) VALUES ('third', 'vash', '2006-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)
             )
@@ -420,9 +420,10 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         setEmittedAtToNull(actualMessages)
 
         val expectedMessages = airbyteMessagesReadOneColumn
-        Assertions.assertEquals(expectedMessages.size, actualMessages.size)
-        Assertions.assertTrue(expectedMessages.containsAll(actualMessages))
-        Assertions.assertTrue(actualMessages.containsAll(expectedMessages))
+        val actualRecordMessages = filterRecords(actualMessages)
+        Assertions.assertEquals(expectedMessages.size, actualRecordMessages.size)
+        Assertions.assertTrue(expectedMessages.containsAll(actualRecordMessages))
+        Assertions.assertTrue(actualRecordMessages.containsAll(expectedMessages))
     }
 
     protected open val airbyteMessagesReadOneColumn: List<AirbyteMessage>
@@ -506,8 +507,6 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         catalog.streams.add(airbyteStream2)
 
         expectedMessages.addAll(getAirbyteMessagesSecondSync(streamName2))
-
-        System.out.println("catalog: " + catalog)
 
         val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
         val actualRecordMessages = filterRecords(actualMessages)
@@ -774,11 +773,11 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected open fun executeStatementReadIncrementallyTwice() {
         testdb
-            .with(
+            ?.with(
                 "INSERT INTO %s (id, name, updated_at) VALUES (4, 'riker', '2006-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME)
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s (id, name, updated_at) VALUES (5, 'data', '2006-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME)
             )

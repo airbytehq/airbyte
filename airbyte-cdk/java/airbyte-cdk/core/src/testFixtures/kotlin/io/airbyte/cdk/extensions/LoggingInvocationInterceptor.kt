@@ -36,16 +36,22 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
     private class LoggingInvocationInterceptorHandler : InvocationHandler {
         @Throws(Throwable::class)
         override fun invoke(proxy: Any, method: Method, args: Array<Any>): Any? {
-            if (
+            val methodName = method.name
+            val invocationContextClass: Class<*> =
+                when (methodName) {
+                    "interceptDynamicTest" -> DynamicTestInvocationContext::class.java
+                    else -> ReflectiveInvocationContext::class.java
+                }
+            try {
                 LoggingInvocationInterceptor::class
                     .java
                     .getDeclaredMethod(
                         method.name,
                         InvocationInterceptor.Invocation::class.java,
-                        ReflectiveInvocationContext::class.java,
+                        invocationContextClass,
                         ExtensionContext::class.java
-                    ) == null
-            ) {
+                    )
+            } catch (_: NoSuchMethodException) {
                 LOGGER.error(
                     "Junit LoggingInvocationInterceptor executing unknown interception point {}",
                     method.name
@@ -53,9 +59,8 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                 return method.invoke(proxy, *(args))
             }
             val invocation = args[0] as InvocationInterceptor.Invocation<*>?
-            val invocationContext = args[1] as ReflectiveInvocationContext<*>
+            val reflectiveInvocationContext = args[1] as? ReflectiveInvocationContext<*>
             val extensionContext = args[2] as ExtensionContext?
-            val methodName = method.name
             val logLineSuffix: String
             val methodMatcher = methodPattern.matcher(methodName)
             if (methodName == "interceptDynamicTest") {
@@ -63,12 +68,13 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                     "execution of DynamicTest %s".formatted(extensionContext!!.displayName)
             } else if (methodName == "interceptTestClassConstructor") {
                 logLineSuffix =
-                    "instance creation for %s".formatted(invocationContext!!.targetClass)
+                    "instance creation for %s".formatted(reflectiveInvocationContext!!.targetClass)
             } else if (methodMatcher.matches()) {
                 val interceptedEvent = methodMatcher.group(1)
-                val methodRealClassName = invocationContext!!.executable!!.declaringClass.simpleName
-                val methodName = invocationContext.executable!!.name
-                val targetClassName = invocationContext!!.targetClass.simpleName
+                val methodRealClassName =
+                    reflectiveInvocationContext!!.executable!!.declaringClass.simpleName
+                val methodName = reflectiveInvocationContext.executable!!.name
+                val targetClassName = reflectiveInvocationContext.targetClass.simpleName
                 val methodDisplayName =
                     if (targetClassName == methodRealClassName) methodName
                     else "$methodName($methodRealClassName)"
@@ -86,7 +92,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
             val timeoutTask = TimeoutInteruptor(currentThread)
             val start = Instant.now()
             try {
-                val timeout = getTimeout(invocationContext)
+                val timeout = reflectiveInvocationContext?.let(::getTimeout)
                 if (timeout != null) {
                     LOGGER.info(
                         "Junit starting {} with timeout of {}",

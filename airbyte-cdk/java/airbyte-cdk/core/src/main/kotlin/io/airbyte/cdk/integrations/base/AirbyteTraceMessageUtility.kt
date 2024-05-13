@@ -21,7 +21,7 @@ object AirbyteTraceMessageUtility {
 
     @JvmStatic
     fun emitTransientErrorTrace(e: Throwable, displayMessage: String?) {
-        emitErrorTrace(e, displayMessage, AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR)
+        emitErrorTrace(e, displayMessage, AirbyteErrorTraceMessage.FailureType.TRANSIENT_ERROR)
     }
 
     fun emitCustomErrorTrace(displayMessage: String?, internalMessage: String?) {

@@ -3,13 +3,13 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.31.5'
+    cdkVersionRequired = '0.33.2'
     features = ['db-sources']
     useLocalCdk = false
 }
 
 java {
-    // TODO: rewrite code to avoid javac wornings in the first place
+    // TODO: rewrite code to avoid javac warnings in the first place
     compileJava {
         options.compilerArgs += "-Xlint:-try,-rawtypes"
     }
@@ -25,8 +25,8 @@ application {
 
 dependencies {
     implementation 'com.microsoft.sqlserver:mssql-jdbc:10.2.1.jre8'
-    implementation 'io.debezium:debezium-embedded:2.4.0.Final'
-    implementation 'io.debezium:debezium-connector-sqlserver:2.4.0.Final'
+    implementation 'io.debezium:debezium-embedded:2.6.1.Final'
+    implementation 'io.debezium:debezium-connector-sqlserver:2.6.1.Final'
     implementation 'org.codehaus.plexus:plexus-utils:3.4.2'
 
     testFixturesImplementation 'org.testcontainers:mssqlserver:1.19.0'
