@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 from typing import Any, Iterable, Mapping, Optional, Union, List, Dict
 
@@ -92,8 +93,8 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
             next_page_token: Optional[Mapping[str, Any]] = None,
     ):
         request_params = {
-            "start_date": stream_slice["date"],
-            "end_date": stream_slice["date"],
+            "start_date": stream_slice[self.cursor_field],
+            "end_date": stream_slice[self.cursor_field],
             "per_page": self.page_size,
             "page": next_page_token["page"] if next_page_token else 1
         }
@@ -109,23 +110,36 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
         else:
             yield {}
 
+    def read_records(
+            self,
+            sync_mode: SyncMode,
+            cursor_field: Optional[List[str]] = None,
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        yield from self._read_pages(
+            lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice, stream_state
+        )
+
     def stream_slices(
             self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        start_date = datetime.now()
         end_date = datetime.now()
-        if stream_state and stream_state.get(self.cursor_field):
-            start_date = datetime.strptime(self.state[self.cursor_field], '%Y-%m-%d')
+        state_date = end_date
+        if sync_mode == SyncMode.incremental:
+            if self.state and self.state.get(self.cursor_field):
+                state_date = datetime.strptime(self.state[self.cursor_field], '%Y-%m-%d')
 
-        start_date = start_date - timedelta(days=self.backfill_days)
+            self.state = {self.cursor_field: end_date}
+
+        start_date = state_date - timedelta(days=self.backfill_days)
 
         num_days = (end_date - start_date).days
         dates = [(start_date + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(num_days + 1)]
 
-        print(f"Slices: {str(dates)}")
+        self.log(f"Slices: {str(dates)}")
         for date in dates:
-            yield {"date": date}
-            continue
+            yield {self.cursor_field: date}
 
 
 class Reports(MintegralReportingStream):
