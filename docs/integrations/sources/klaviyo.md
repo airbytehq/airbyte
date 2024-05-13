@@ -59,7 +59,7 @@ Stream `Lists Detailed` contains field `profile_count` in addition to info from 
 ## Data type map
 
 | Integration Type | Airbyte Type | Notes |
-|:-----------------|:-------------|:------|
+| :--------------- | :----------- | :---- |
 | `string`         | `string`     |       |
 | `number`         | `number`     |       |
 | `array`          | `array`      |       |
@@ -69,6 +69,8 @@ Stream `Lists Detailed` contains field `profile_count` in addition to info from 
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                       |
 |:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
+| `2.6.2`  | 2024-05-08 | [37789](https://github.com/airbytehq/airbyte/pull/37789)   | Move stream schemas and spec to manifest                                                                                      |
+| `2.6.1`  | 2024-05-07 | [38010](https://github.com/airbytehq/airbyte/pull/38010)   | Add error handler for `5XX` status codes                                                                                      |
 | `2.6.0`  | 2024-04-19 | [37370](https://github.com/airbytehq/airbyte/pull/37370)   | Add streams `campaigns_detailed` and `lists_detailed`                                                                         |
 | `2.5.0`  | 2024-04-15 | [36264](https://github.com/airbytehq/airbyte/pull/36264)   | Migrate to low-code                                                                                                           |
 | `2.4.0`  | 2024-04-11 | [36989](https://github.com/airbytehq/airbyte/pull/36989)   | Update `Campaigns` schema                                                                                                     |

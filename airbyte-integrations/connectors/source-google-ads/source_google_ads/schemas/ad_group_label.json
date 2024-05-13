@@ -3,21 +3,27 @@
   "type": "object",
   "properties": {
     "ad_group.id": {
+      "description": "The unique identifier of the ad group.",
       "type": ["null", "integer"]
     },
     "label.id": {
+      "description": "The unique identifier of the label.",
       "type": ["null", "integer"]
     },
     "ad_group.resource_name": {
+      "description": "The resource name of the ad group.",
       "type": ["null", "string"]
     },
     "ad_group_label.resource_name": {
+      "description": "The resource name of the ad group label.",
       "type": ["null", "string"]
     },
     "label.name": {
+      "description": "The name of the label.",
       "type": ["null", "string"]
     },
     "label.resource_name": {
+      "description": "The resource name of the label.",
       "type": ["null", "string"]
     }
   }

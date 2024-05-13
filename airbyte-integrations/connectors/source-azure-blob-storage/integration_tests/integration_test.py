@@ -6,7 +6,7 @@ import pytest
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_protocol.models import ConfiguredAirbyteCatalog
-from source_azure_blob_storage import Config, SourceAzureBlobStorage, SourceAzureBlobStorageStreamReader
+from source_azure_blob_storage import SourceAzureBlobStorage, SourceAzureBlobStorageSpec, SourceAzureBlobStorageStreamReader
 
 
 @pytest.mark.parametrize(
@@ -23,7 +23,7 @@ def test_read_files(configured_catalog: ConfiguredAirbyteCatalog, config: Mappin
     config = request.getfixturevalue(config)
     source = SourceAzureBlobStorage(
         SourceAzureBlobStorageStreamReader(),
-        spec_class=Config,
+        spec_class=SourceAzureBlobStorageSpec,
         catalog=configured_catalog,
         config=config,
         state=None,
