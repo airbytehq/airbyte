@@ -3,6 +3,7 @@
 #
 
 import uuid
+import os
 from typing import Optional
 
 import urllib3
@@ -25,6 +26,8 @@ MAX_METADATA_SIZE = 40_960 - 10_000
 
 MAX_IDS_PER_DELETE = 1000
 
+AIRBYTE_TAG = "airbyte"
+AIRBYTE_TEST_TAG = "airbyte_test"
 
 class PineconeIndexer(Indexer):
     config: PineconeIndexingModel
@@ -32,7 +35,7 @@ class PineconeIndexer(Indexer):
     def __init__(self, config: PineconeIndexingModel, embedding_dimensions: int):
         super().__init__(config)
         try:
-            self.pc = PineconeGRPC(api_key=config.pinecone_key, threaded=True)
+            self.pc = PineconeGRPC(api_key=config.pinecone_key, source_tag=self.get_source_tag, threaded=False)
         except PineconeException as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=str(e))
 
@@ -61,6 +64,10 @@ class PineconeIndexer(Indexer):
 
     def post_sync(self):
         return []
+    
+    def get_source_tag(self):
+        is_integration_test = os.getenv("INTEGRATION_TEST", False)
+        return AIRBYTE_TEST_TAG if is_integration_test else AIRBYTE_TAG
 
     def delete_vectors(self, filter, namespace=None, prefix=None):
         if self._pod_type == "starter":

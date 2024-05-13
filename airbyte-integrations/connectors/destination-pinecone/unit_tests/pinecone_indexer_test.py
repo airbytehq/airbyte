@@ -55,6 +55,16 @@ def mock_determine_spec_type():
         mock.return_value = "pod"
         yield mock
 
+def test_get_source_tag():
+    # default 
+    indexer = create_pinecone_indexer()
+    assert indexer.get_source_tag() == "airbyte"
+
+    # set integration test flag
+    with patch.dict("os.environ", {"INTEGRATION_TEST": "True"}):
+        indexer = create_pinecone_indexer()
+        assert indexer.get_source_tag() == "airbyte_test"
+
 def test_pinecone_index_upsert_and_delete(mock_describe_index):
     indexer = create_pinecone_indexer()
     indexer._pod_type = "p1"

@@ -5,6 +5,7 @@
 import json
 import logging
 import time
+import os
 
 from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
 from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
@@ -32,6 +33,8 @@ class PineconeIntegrationTest(BaseIntegrationTest):
         print()  # Move to the next line after the loop
     
     def setUp(self):
+        # When following is set, source_tag will not be passed to Pinecone.
+        os.environ["INTEGRATION_TEST"] = "True"
         with open("secrets/config.json", "r") as f:
             self.config = json.loads(f.read())
         self._init_pinecone()
@@ -48,6 +51,8 @@ class PineconeIntegrationTest(BaseIntegrationTest):
             else :
                 print("Noting to delete. No data in the index/namespace.")
 
+    def test_integration_test_flag_is_set(self):
+        assert os.getenv("INTEGRATION_TEST", False) == "True"
 
     def test_check_valid_config(self):
         outcome = DestinationPinecone().check(logging.getLogger("airbyte"), self.config)        
