@@ -5,7 +5,7 @@ const yaml = require("js-yaml");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const { themes } = require('prism-react-renderer');
+const { themes } = require("prism-react-renderer");
 const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
 
@@ -15,7 +15,7 @@ const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
 
 const redirects = yaml.load(
-  fs.readFileSync(path.join(__dirname, "redirects.yml"), "utf-8")
+  fs.readFileSync(path.join(__dirname, "redirects.yml"), "utf-8"),
 );
 
 /** @type {import('@docusaurus/types').Config} */
@@ -23,7 +23,7 @@ const config = {
   markdown: {
     mermaid: true,
   },
-  themes: ['@docusaurus/theme-mermaid'],
+  themes: ["@docusaurus/theme-mermaid"],
   title: "Airbyte Documentation",
   tagline:
     "Airbyte is an open-source data integration platform to build ELT pipelines. Consolidate your data in your data warehouses, lakes and databases.",

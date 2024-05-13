@@ -29,7 +29,7 @@
 }
 
 .available {
-  background:var(--color-green-50);
+  background: var(--color-green-50);
   color: var(--ifm-font-color-base);
 }
 

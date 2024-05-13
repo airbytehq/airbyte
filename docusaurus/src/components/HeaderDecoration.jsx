@@ -52,7 +52,11 @@ export const HeaderDecoration = ({
             <span className={isOss ? styles.available : styles.unavailable}>
               {isOss ? CHECK_ICON : CROSS_ICON} Airbyte OSS
             </span>
-            <span className={isPypiPublished ? styles.available : styles.unavailable}>
+            <span
+              className={
+                isPypiPublished ? styles.available : styles.unavailable
+              }
+            >
               {isPypiPublished ? CHECK_ICON : CROSS_ICON} PyAirbyte
             </span>
           </dd>

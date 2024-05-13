@@ -19,7 +19,7 @@ function getFilenamesInDir(prefix, dir, excludes) {
           fileName.endsWith("-migrations.md") ||
           fileName.endsWith(".js") ||
           fileName === "low-code.md"
-        )
+        ),
     )
     .map((fileName) => fileName.replace(".md", ""))
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
@@ -27,14 +27,14 @@ function getFilenamesInDir(prefix, dir, excludes) {
       // Get the first header of the markdown document
       const { contentTitle } = parseMarkdownContentTitle(
         parseFrontMatter(fs.readFileSync(path.join(dir, `${filename}.md`)))
-          .content
+          .content,
       );
       if (!contentTitle) {
         throw new Error(
           `Could not parse title from ${path.join(
             prefix,
-            filename
-          )}. Make sure there's no content above the first heading!`
+            filename,
+          )}. Make sure there's no content above the first heading!`,
         );
       }
 
@@ -55,7 +55,11 @@ function getFilenamesInDir(prefix, dir, excludes) {
         };
       }
 
-      return { type: "doc", id: path.join(prefix, filename), label: contentTitle };
+      return {
+        type: "doc",
+        id: path.join(prefix, filename),
+        label: contentTitle,
+      };
     });
 }
 
@@ -63,7 +67,7 @@ function getSourceConnectors() {
   return getFilenamesInDir("integrations/sources/", sourcesDocs, [
     "readme",
     "postgres",
-    "mysql"
+    "mysql",
   ]);
 }
 
@@ -259,6 +263,30 @@ const buildAConnector = {
   ],
 };
 
+const quickStart = {
+  type: "category",
+  label: "Quickstart",
+  link: {
+    type: "doc",
+    id: "getting-started/quickstart",
+  },
+  items: [
+    {
+
+        type: "doc",
+        id: "getting-started/quickstart-mac",
+    },
+    {
+      type: "doc",
+      id: "getting-started/quickstart-linux-and-windows",
+    },
+    {
+      type: "doc",
+      id: "getting-started/quickstart-next-steps",
+    },
+  ],
+};
+
 const connectorCatalog = {
   type: "category",
   label: "Connector Catalog",
@@ -274,7 +302,9 @@ const connectorCatalog = {
         type: "doc",
         id: "integrations/sources/README",
       },
-      items: [sourcePostgres, sourceMysql, ...getSourceConnectors()].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
+      items: [sourcePostgres, sourceMysql, ...getSourceConnectors()].sort(
+        (itemA, itemB) => itemA.label.localeCompare(itemB.label),
+      ),
     },
     {
       type: "category",
@@ -404,6 +434,8 @@ const understandingAirbyte = {
 
 module.exports = {
   docs: [
+    sectionHeader("Getting Started"),
+    quickStart,
     sectionHeader("Airbyte Connectors"),
     connectorCatalog,
     buildAConnector,
@@ -428,7 +460,7 @@ module.exports = {
       label: "Configuring Connections",
       link: {
         type: "doc",
-        id: "cloud/managing-airbyte-cloud/configuring-connections"
+        id: "cloud/managing-airbyte-cloud/configuring-connections",
       },
       items: [
         "using-airbyte/core-concepts/sync-schedules",
@@ -438,7 +470,7 @@ module.exports = {
           label: "Sync Modes",
           link: {
             type: "doc",
-            id: "using-airbyte/core-concepts/sync-modes/README"
+            id: "using-airbyte/core-concepts/sync-modes/README",
           },
           items: [
             "using-airbyte/core-concepts/sync-modes/incremental-append-deduped",
@@ -452,11 +484,9 @@ module.exports = {
           label: "Typing and Deduping",
           link: {
             type: "doc",
-            id: "using-airbyte/core-concepts/typing-deduping"
+            id: "using-airbyte/core-concepts/typing-deduping",
           },
-          items: [
-            "using-airbyte/core-concepts/basic-normalization"
-          ],
+          items: ["using-airbyte/core-concepts/basic-normalization"],
         },
         "cloud/managing-airbyte-cloud/manage-schema-changes",
         {
@@ -467,9 +497,9 @@ module.exports = {
             "operator-guides/transformation-and-normalization/transformations-with-sql",
             "operator-guides/transformation-and-normalization/transformations-with-dbt",
             "operator-guides/transformation-and-normalization/transformations-with-airbyte",
-          ]
+          ],
         },
-      ]
+      ],
     },
     {
       type: "category",
@@ -495,7 +525,7 @@ module.exports = {
         "enterprise-setup/implementation-guide",
         "enterprise-setup/api-access-config",
         "enterprise-setup/upgrading-from-community",
-      ]
+      ],
     },
     "operator-guides/upgrading-airbyte",
     {
@@ -509,7 +539,7 @@ module.exports = {
         "operator-guides/configuring-airbyte-db",
         "operator-guides/configuring-connector-resources",
         "operator-guides/telemetry",
-      ]
+      ],
     },
     {
       type: "category",
@@ -520,13 +550,16 @@ module.exports = {
           label: "Single Sign-On (SSO)",
           link: {
             type: "doc",
-            id: "access-management/sso"
+            id: "access-management/sso",
           },
           items: [
-            { type: "autogenerated", dirName: "access-management/sso-providers" },
-          ]
+            {
+              type: "autogenerated",
+              dirName: "access-management/sso-providers",
+            },
+          ],
         },
-      ]
+      ],
     },
     {
       type: "category",
@@ -535,7 +568,7 @@ module.exports = {
         "operator-guides/collecting-metrics",
         "operator-guides/scaling-airbyte",
         "cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits",
-      ]
+      ],
     },
     "operating-airbyte/security",
     {
@@ -557,8 +590,7 @@ module.exports = {
         "cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications",
         "cloud/managing-airbyte-cloud/manage-credits",
         "operator-guides/using-custom-connectors",
-        
-      ]
+      ],
     },
     sectionHeader("Developer Guides"),
     {
