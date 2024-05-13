@@ -36,7 +36,7 @@ class PineconeIndexer(Indexer):
     def __init__(self, config: PineconeIndexingModel, embedding_dimensions: int):
         super().__init__(config)
         try:
-            self.pc = PineconeGRPC(api_key=config.pinecone_key, source_tag=self.get_source_tag, threaded=False)
+            self.pc = PineconeGRPC(api_key=config.pinecone_key, source_tag=self.get_source_tag, threaded=True)
         except PineconeException as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=str(e))
 

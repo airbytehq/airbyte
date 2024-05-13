@@ -33,7 +33,6 @@ class PineconeIntegrationTest(BaseIntegrationTest):
         print()  # Move to the next line after the loop
     
     def setUp(self):
-        # When following is set, source_tag will not be passed to Pinecone.
         os.environ["INTEGRATION_TEST"] = "True"
         with open("secrets/config.json", "r") as f:
             self.config = json.loads(f.read())

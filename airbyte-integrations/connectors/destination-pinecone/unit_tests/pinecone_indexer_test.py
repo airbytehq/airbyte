@@ -336,6 +336,3 @@ def test_metadata_normalization():
         async_req=True,
         show_progress=False,
     )
-
-def dummy_test():
-    pass 
