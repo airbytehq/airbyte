@@ -36,6 +36,7 @@ The Partnerstack connector should not run into Partnerstack API limitations unde
 
 ## Changelog
 
-| Version | Date       | Pull Request                                         | Subject                           |
-| :------ | :--------- | :--------------------------------------------------- | :-------------------------------- |
-| 0.1.0   | 2022-10-27 | [XXX](https://github.com/airbytehq/airbyte/pull/XXX) | Add Partnerstack Source Connector |
+| Version | Date       | Pull Request                                             | Subject                                |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------|
+| 0.1.1   | 2024-05-13 | [37595](https://github.com/airbytehq/airbyte/pull/37595) | Change `last_records` to `last_record` |
+| 0.1.0   | 2022-10-27 | [18603](https://github.com/airbytehq/airbyte/pull/18603) | Add Partnerstack Source Connector      |
