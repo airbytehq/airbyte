@@ -52,7 +52,7 @@ def default_backoff_handler(
         # Only RequestExceptions are retryable, so if we get here, it's not retryable
         return False
 
-    return backoff.on_exception(
+    return backoff.on_exception(  # type: ignore # Decorator function returns a function with a different signature than the input function, so mypy can't infer the type of the returned function
         backoff.expo,
         TRANSIENT_EXCEPTIONS,
         jitter=None,
@@ -62,7 +62,7 @@ def default_backoff_handler(
         max_time=max_time,
         factor=factor,
         **kwargs,
-    )  # type: ignore # Decorator function returns a function with a different signature than the input function, so mypy can't infer the type of the returned function
+    )
 
 
 def http_client_default_backoff_handler(
@@ -80,7 +80,7 @@ def http_client_default_backoff_handler(
         # If made it here, the ResponseAction was RETRY and therefore should not give up
         return False
 
-    return backoff.on_exception(
+    return backoff.on_exception(  # type: ignore # Decorator function returns a function with a different signature than the input function, so mypy can't infer the type of the returned function
         backoff.expo,
         TRANSIENT_EXCEPTIONS,
         jitter=None,
@@ -90,7 +90,7 @@ def http_client_default_backoff_handler(
         max_time=max_time,
         factor=factor,
         **kwargs,
-    )  # type: ignore # Decorator function returns a function with a different signature than the input function, so mypy can't infer the type of the returned function
+    )
 
 
 def user_defined_backoff_handler(
@@ -112,7 +112,7 @@ def user_defined_backoff_handler(
         else:
             logger.error("Max retry limit reached for unknown request and response")
 
-    return backoff.on_exception(
+    return backoff.on_exception(  # type: ignore # Decorator function returns a function with a different signature than the input function, so mypy can't infer the type of the returned function
         backoff.constant,
         UserDefinedBackoffException,
         interval=0,  # skip waiting, we'll wait in on_backoff handler
@@ -122,4 +122,4 @@ def user_defined_backoff_handler(
         max_tries=max_tries,
         max_time=max_time,
         **kwargs,
-    )  # type: ignore # Decorator function returns a function with a different signature than the input function, so mypy can't infer the type of the returned function
+    )
