@@ -220,14 +220,11 @@ internal constructor(
             // exist, we
             // just return the original exception.
             ApmTraceUtils.addExceptionToTrace(e)
-            val rootThrowable = ConnectorExceptionUtil.getRootConfigError(e)
-            val displayMessage = ConnectorExceptionUtil.getDisplayMessage(rootThrowable)
+            val rootConfigErrorThrowable = ConnectorExceptionUtil.getRootConfigError(e)
+            val rootTransientErrorThrowable = ConnectorExceptionUtil.getRootTransientError(e)
             // If the source connector throws a config error, a trace message with the relevant
             // message should
             // be surfaced.
-            if (ConnectorExceptionUtil.isConfigError(rootThrowable)) {
-                AirbyteTraceMessageUtility.emitConfigErrorTrace(e, displayMessage)
-            }
             if (parsed.command == Command.CHECK) {
                 // Currently, special handling is required for the CHECK case since the user display
                 // information in
@@ -240,10 +237,29 @@ internal constructor(
                         .withConnectionStatus(
                             AirbyteConnectionStatus()
                                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                                .withMessage(displayMessage)
+                                .withMessage(
+                                    ConnectorExceptionUtil.getDisplayMessage(
+                                        rootConfigErrorThrowable
+                                    )
+                                )
                         )
                 )
                 return
+            }
+
+            if (ConnectorExceptionUtil.isConfigError(rootConfigErrorThrowable)) {
+                AirbyteTraceMessageUtility.emitConfigErrorTrace(
+                    e,
+                    ConnectorExceptionUtil.getDisplayMessage(rootConfigErrorThrowable),
+                )
+                // On receiving a config error, the container should be immediately shut down.
+            } else if (ConnectorExceptionUtil.isTransientError(rootTransientErrorThrowable)) {
+                AirbyteTraceMessageUtility.emitTransientErrorTrace(
+                    e,
+                    ConnectorExceptionUtil.getDisplayMessage(rootTransientErrorThrowable)
+                )
+                // On receiving a transient error, the container should be immediately shut down.
+                System.exit(1)
             }
             throw e
         }

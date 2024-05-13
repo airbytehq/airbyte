@@ -5,27 +5,30 @@
 import copy
 import json
 import os
+from datetime import datetime
 from typing import List, Optional, Tuple, Union
 
 import orchestrator.hacks as HACKS
 import pandas as pd
 import sentry_sdk
-import yaml
 from dagster import AutoMaterializePolicy, DynamicPartitionsDefinition, MetadataValue, OpExecutionContext, Output, asset
 from dagster_gcp.gcs.file_manager import GCSFileHandle, GCSFileManager
 from google.cloud import storage
 from metadata_service.constants import ICON_FILE_NAME, METADATA_FILE_NAME
 from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
 from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
+from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.spec_cache import SpecCache
 from orchestrator.config import MAX_METADATA_PARTITION_RUN_REQUEST, VALID_REGISTRIES, get_public_url_for_gcs_file
+from orchestrator.fetcher.connector_cdk_version import get_cdk_version
 from orchestrator.logging import sentry
 from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
 from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition
+from orchestrator.utils.blob_helpers import yaml_blob_to_dict
 from orchestrator.utils.dagster_helpers import OutputDataFrame
-from orchestrator.utils.object_helpers import deep_copy_params
-from pydantic import ValidationError
-from pydash.objects import get
+from orchestrator.utils.object_helpers import deep_copy_params, default_none_to_dict
+from pydantic import BaseModel, ValidationError
+from pydash.objects import get, set_with
 
 PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
 TaggedRegistryEntry = Tuple[str, PolymorphicRegistryEntry]
@@ -141,6 +144,51 @@ def apply_ab_internal_defaults(metadata_data: dict) -> dict:
 
 
 @deep_copy_params
+def apply_generated_fields(metadata_data: dict, metadata_entry: LatestMetadataEntry) -> dict:
+    """Apply generated fields to the metadata data field.
+
+    Args:
+        metadata_data (dict): The metadata data field.
+        metadata_entry (LatestMetadataEntry): The metadata entry.
+
+    Returns:
+        dict: The metadata data field with the generated fields applied.
+    """
+    generated_fields = metadata_data.get("generated") or {}
+
+    # Add the source file metadata
+    generated_fields = set_with(generated_fields, "source_file_info.metadata_etag", metadata_entry.etag, default_none_to_dict)
+    generated_fields = set_with(generated_fields, "source_file_info.metadata_file_path", metadata_entry.file_path, default_none_to_dict)
+    generated_fields = set_with(generated_fields, "source_file_info.metadata_bucket_name", metadata_entry.bucket_name, default_none_to_dict)
+    generated_fields = set_with(
+        generated_fields, "source_file_info.metadata_last_modified", metadata_entry.last_modified, default_none_to_dict
+    )
+
+    # Add the registry entry generation timestamp
+    generated_fields = set_with(
+        generated_fields, "source_file_info.registry_entry_generated_at", datetime.now().isoformat(), default_none_to_dict
+    )
+
+    return generated_fields
+
+
+@deep_copy_params
+def apply_package_info_fields(metadata_data: dict, metadata_entry: LatestMetadataEntry) -> dict:
+    """Apply package info fields to the metadata data field.
+
+    Args:
+        metadata_data (dict): The metadata data field.
+
+    Returns:
+        dict: The metadata data field with the package info fields applied.
+    """
+    package_info_fields = metadata_data.get("packageInfo") or {}
+    package_info_fields = set_with(package_info_fields, "cdk_version", get_cdk_version(metadata_entry), default_none_to_dict)
+
+    return package_info_fields
+
+
+@deep_copy_params
 @sentry_sdk.trace
 def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_registry_key: str) -> dict:
     """Convert the metadata definition to a registry entry.
@@ -179,6 +227,12 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
     overridden_metadata_data["tombstone"] = False
     overridden_metadata_data["custom"] = False
     overridden_metadata_data["public"] = True
+
+    # Add generated fields for source file metadata and git
+    overridden_metadata_data["generated"] = apply_generated_fields(overridden_metadata_data, metadata_entry)
+
+    # Add Dependency information
+    overridden_metadata_data["packageInfo"] = apply_package_info_fields(overridden_metadata_data, metadata_entry)
 
     # if there is no supportLevel, set it to "community"
     if not overridden_metadata_data.get("supportLevel"):
@@ -332,23 +386,71 @@ def delete_registry_entry(registry_name, metadata_entry: LatestMetadataEntry, me
 
 
 @sentry_sdk.trace
-def safe_parse_metadata_definition(metadata_blob: storage.Blob) -> Optional[MetadataDefinition]:
+def safe_parse_metadata_definition(file_name: str, metadata_dict: dict) -> Optional[MetadataDefinition]:
     """
     Safely parse the metadata definition from the given metadata entry.
     Handles the case where the metadata definition is invalid for in old versions of the metadata.
     """
-    yaml_string = metadata_blob.download_as_string().decode("utf-8")
-    metadata_dict = yaml.safe_load(yaml_string)
+
     try:
         return MetadataDefinition.parse_obj(metadata_dict)
 
     except ValidationError as e:
         # only raise the error if "latest" is in the path
-        if "latest" in metadata_blob.name:
+        if "latest" in file_name:
             raise e
         else:
-            print(f"WARNING: Could not parse metadata definition for {metadata_blob.name}. Error: {e}")
+            print(f"WARNING: Could not parse metadata definition for {file_name}. Error: {e}")
             return None
+
+
+def safe_get_slack_user_identifier(airbyte_slack_users: pd.DataFrame, metadata_dict: Union[dict, BaseModel]) -> Optional[str]:
+    """
+    Safely get the slack user identifier from the given git info in the metadata file.
+    """
+    if isinstance(metadata_dict, BaseModel):
+        metadata_dict = to_json_sanitized_dict(metadata_dict)
+
+    # if the slack users is empty or none, return none
+    if airbyte_slack_users is None or airbyte_slack_users.empty:
+        return None
+
+    commit_author = get(metadata_dict, "data.generated.git.commit_author")
+    commit_author_email = get(metadata_dict, "data.generated.git.commit_author_email")
+
+    # if the commit author email is not present, return author name or none
+    if not commit_author_email:
+        return commit_author
+
+    # if the commit author email is present, try to find the user in the slack users dataframe
+    # if the user is not found, return the author name or none
+    slack_user = airbyte_slack_users[airbyte_slack_users["email"] == commit_author_email]
+    if slack_user.empty:
+        slack_user = airbyte_slack_users[airbyte_slack_users["real_name"] == commit_author]
+
+    if slack_user.empty:
+        return commit_author
+
+    # if the user is found, return the slack real_name and id e.g. "John Doe (U12345678)"
+    slack_id = slack_user["id"].iloc[0]
+    slack_real_name = slack_user["real_name"].iloc[0]
+    return f"{slack_real_name} (<@{slack_id}>)"
+
+
+def safe_get_commit_sha(metadata_dict: Union[dict, BaseModel]) -> Optional[str]:
+    """
+    Safely get the git commit sha from the given git info in the metadata file.
+    """
+    if isinstance(metadata_dict, BaseModel):
+        metadata_dict = to_json_sanitized_dict(metadata_dict)
+
+    # if the git commit sha is not present, return none
+    commit_sha = get(metadata_dict, "data.generated.git.commit_sha")
+    if not commit_sha:
+        return None
+
+    # if the git commit sha is present, return the commit sha
+    return commit_sha
 
 
 # ASSETS
@@ -373,16 +475,24 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
     if not matching_blob:
         raise Exception(f"Could not find blob with etag {etag}")
 
+    airbyte_slack_users = HACKS.get_airbyte_slack_users_from_graph(context)
+
+    metadata_dict = yaml_blob_to_dict(matching_blob)
+    user_identifier = safe_get_slack_user_identifier(airbyte_slack_users, metadata_dict)
+    commit_sha = safe_get_commit_sha(metadata_dict)
+
     metadata_file_path = matching_blob.name
     PublishConnectorLifecycle.log(
         context,
         PublishConnectorLifecycleStage.METADATA_VALIDATION,
         StageStatus.IN_PROGRESS,
         f"Found metadata file with path {metadata_file_path} for etag {etag}",
+        user_identifier=user_identifier,
+        commit_sha=commit_sha,
     )
 
     # read the matching_blob into a metadata definition
-    metadata_def = safe_parse_metadata_definition(matching_blob)
+    metadata_def = safe_parse_metadata_definition(matching_blob.name, metadata_dict)
 
     dagster_metadata = {
         "bucket_name": matching_blob.bucket.name,
@@ -398,6 +508,8 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
             PublishConnectorLifecycleStage.METADATA_VALIDATION,
             StageStatus.FAILED,
             f"Could not parse metadata definition for {metadata_file_path}, dont panic, this can be expected for old metadata files",
+            user_identifier=user_identifier,
+            commit_sha=commit_sha,
         )
         return Output(value=None, metadata=dagster_metadata)
 
@@ -415,6 +527,8 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
         icon_url=icon_url,
         bucket_name=matching_blob.bucket.name,
         file_path=metadata_file_path,
+        etag=etag,
+        last_modified=matching_blob.time_created.isoformat(),
     )
 
     PublishConnectorLifecycle.log(
@@ -422,6 +536,8 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
         PublishConnectorLifecycleStage.METADATA_VALIDATION,
         StageStatus.SUCCESS,
         f"Successfully parsed metadata definition for {metadata_file_path}",
+        user_identifier=user_identifier,
+        commit_sha=commit_sha,
     )
 
     return Output(value=metadata_entry, metadata=dagster_metadata)
@@ -442,11 +558,18 @@ def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestM
         # if the metadata entry is invalid, return an empty dict
         return Output(metadata={"empty_metadata": True}, value=None)
 
+    airbyte_slack_users = HACKS.get_airbyte_slack_users_from_graph(context)
+
+    user_identifier = safe_get_slack_user_identifier(airbyte_slack_users, metadata_entry.metadata_definition)
+    commit_sha = safe_get_commit_sha(metadata_entry.metadata_definition)
+
     PublishConnectorLifecycle.log(
         context,
         PublishConnectorLifecycleStage.REGISTRY_ENTRY_GENERATION,
         StageStatus.IN_PROGRESS,
         f"Generating registry entry for {metadata_entry.file_path}",
+        user_identifier=user_identifier,
+        commit_sha=commit_sha,
     )
 
     spec_cache = SpecCache()
@@ -488,7 +611,9 @@ def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestM
             context,
             PublishConnectorLifecycleStage.REGISTRY_ENTRY_GENERATION,
             StageStatus.SUCCESS,
-            f"Successfully generated {registry_name} registry entry for {metadata_entry.file_path} at {registry_url}",
+            f"Successfully generated {registry_name} registry entry for {metadata_entry.file_path} at {registry_url}.\n\n*This new Connector will be available for use in the platform on the next release (1-3 min)*",
+            user_identifier=user_identifier,
+            commit_sha=commit_sha,
         )
 
     # Log the registry entries that were deleted
@@ -498,6 +623,8 @@ def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestM
             PublishConnectorLifecycleStage.REGISTRY_ENTRY_GENERATION,
             StageStatus.SUCCESS,
             f"Successfully deleted {registry_name} registry entry for {metadata_entry.file_path}",
+            user_identifier=user_identifier,
+            commit_sha=commit_sha,
         )
 
     return Output(metadata=dagster_metadata, value=persisted_registry_entries)
