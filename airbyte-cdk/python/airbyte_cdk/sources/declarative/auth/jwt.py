@@ -7,7 +7,6 @@ from dataclasses import InitVar, dataclass
 from datetime import datetime
 from typing import Any, Mapping, Optional, Union
 
-import jwt
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
@@ -75,22 +74,22 @@ class JwtAuthenticator(DeclarativeAuthenticator):
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._secret_key = InterpolatedString.create(self.secret_key, parameters=parameters)
-        self._algorithm = JwtAlgorithm(self.algorithm) if isinstance(self.algorithm, str) else self.algorithm
-        self._base64_encode_secret_key = (
-            InterpolatedBoolean(self.base64_encode_secret_key, parameters=parameters)
-            if isinstance(self.base64_encode_secret_key, str)
-            else self.base64_encode_secret_key
-        )
-        self._token_duration = self.token_duration
-        self._header_prefix = InterpolatedString.create(self.header_prefix, parameters=parameters) if self.header_prefix else None
-        self._kid = InterpolatedString.create(self.kid, parameters=parameters) if self.kid else None
-        self._typ = InterpolatedString.create(self.typ, parameters=parameters) if self.typ else None
-        self._cty = InterpolatedString.create(self.cty, parameters=parameters) if self.cty else None
-        self._iss = InterpolatedString.create(self.iss, parameters=parameters) if self.iss else None
-        self._sub = InterpolatedString.create(self.sub, parameters=parameters) if self.sub else None
-        self._aud = InterpolatedString.create(self.aud, parameters=parameters) if self.aud else None
-        self._additional_jwt_headers = InterpolatedMapping(self.additional_jwt_headers or {}, parameters=parameters)
-        self._additional_jwt_payload = InterpolatedMapping(self.additional_jwt_payload or {}, parameters=parameters)
+        # self._algorithm = JwtAlgorithm(self.algorithm) if isinstance(self.algorithm, str) else self.algorithm
+        # self._base64_encode_secret_key = (
+        #     InterpolatedBoolean(self.base64_encode_secret_key, parameters=parameters)
+        #     if isinstance(self.base64_encode_secret_key, str)
+        #     else self.base64_encode_secret_key
+        # )
+        # self._token_duration = self.token_duration
+        # self._header_prefix = InterpolatedString.create(self.header_prefix, parameters=parameters) if self.header_prefix else None
+        # self._kid = InterpolatedString.create(self.kid, parameters=parameters) if self.kid else None
+        # self._typ = InterpolatedString.create(self.typ, parameters=parameters) if self.typ else None
+        # self._cty = InterpolatedString.create(self.cty, parameters=parameters) if self.cty else None
+        # self._iss = InterpolatedString.create(self.iss, parameters=parameters) if self.iss else None
+        # self._sub = InterpolatedString.create(self.sub, parameters=parameters) if self.sub else None
+        # self._aud = InterpolatedString.create(self.aud, parameters=parameters) if self.aud else None
+        # self._additional_jwt_headers = InterpolatedMapping(self.additional_jwt_headers or {}, parameters=parameters)
+        # self._additional_jwt_payload = InterpolatedMapping(self.additional_jwt_payload or {}, parameters=parameters)
 
     def _get_jwt_headers(self) -> dict[str, Any]:
         """ "
