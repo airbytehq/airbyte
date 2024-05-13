@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory
 
 /**
  * When adding a new S3 destination acceptance test, extend this class and do the following:
- * * Implement [.getFormatConfig] that returns a [S3FormatConfig]
+ * * Implement [.getFormatConfig] that returns a [UploadFormatConfig]
  * * Implement [.retrieveRecords] that returns the Json records for the test
  *
  * Under the hood, a [S3DestinationConfig] is constructed as follows:
@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory
  * * Get the format config from [.getFormatConfig]
  */
 abstract class S3DestinationAcceptanceTest
-protected constructor(protected val outputFormat: S3Format) : DestinationAcceptanceTest() {
+protected constructor(protected val outputFormat: FileUploadFormat) : DestinationAcceptanceTest() {
     protected val secretFilePath: String = "secrets/config.json"
     protected var configJson: JsonNode? = null
     protected var s3DestinationConfig: S3DestinationConfig = mock()
