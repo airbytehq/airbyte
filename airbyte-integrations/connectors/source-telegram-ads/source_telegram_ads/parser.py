@@ -44,7 +44,7 @@ def parse_ad_stats(
     except:
         return
     get_csv_kwargs = dict(
-        base_url="https://promote.telegram.org/",
+        base_url="https://ads.telegram.org/",
         user_agent=DEFAULT_USER_AGENT,
         account_token=account_token,
         organization_token=organization_token,
@@ -72,7 +72,6 @@ def parse_ad_stats(
     }
 
     stat_graph_reader = csv.reader(StringIO(stat_graph_csv), delimiter="\t")
-    stat_graph_header = list(map(lambda s: s.lower(), next(stat_graph_reader)))
 
     stat_graph_data = {}
     stat_graph_reader = csv.DictReader(StringIO(stat_graph_csv), delimiter="\t")
@@ -85,7 +84,7 @@ def parse_ad_stats(
 
     budget_graph_reader = csv.reader(StringIO(budget_graph_csv), delimiter="\t")
     next(budget_graph_reader)
-    budget_graph_data = {dt: spent_budget.replace(",", ".") for dt, spent_budget in budget_graph_reader}
+    budget_graph_data = {dt: spent_budget.replace(",", ".") for dt, spent_budget in list(budget_graph_reader)}
 
     for dt in stat_graph_data.keys():
         yield {

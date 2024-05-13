@@ -26,7 +26,7 @@ BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
 # Basic full refresh stream
 class TelegramAdsStream(HttpStream, ABC):
-    url_base = "https://promote.telegram.org/"
+    url_base = "https://ads.telegram.org/"
     transformer: TypeTransformer = TypeTransformer(config=TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, account_token: str, organization_token: str):
