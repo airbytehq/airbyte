@@ -2,8 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import uuid
 import os
+import uuid
 from typing import Optional
 
 import urllib3
@@ -28,6 +28,7 @@ MAX_IDS_PER_DELETE = 1000
 
 AIRBYTE_TAG = "airbyte"
 AIRBYTE_TEST_TAG = "airbyte_test"
+
 
 class PineconeIndexer(Indexer):
     config: PineconeIndexingModel
@@ -64,7 +65,7 @@ class PineconeIndexer(Indexer):
 
     def post_sync(self):
         return []
-    
+
     def get_source_tag(self):
         is_integration_test = os.getenv("INTEGRATION_TEST", False)
         return AIRBYTE_TEST_TAG if is_integration_test else AIRBYTE_TAG

@@ -4,8 +4,8 @@
 
 import json
 import logging
-import time
 import os
+import time
 
 from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
 from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
