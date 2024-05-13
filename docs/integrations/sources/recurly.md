@@ -63,6 +63,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 1.1.0   | 2024-05-08 | [37750](https://github.com/airbytehq/airbyte/pull/37750) | Migrate to Low Code CDK                                                              |
 | 1.0.3   | 2024-04-19 | [37246](https://github.com/airbytehq/airbyte/pull/37246) | Updating to 0.80.0 CDK                                                               |
 | 1.0.2   | 2024-04-12 | [37246](https://github.com/airbytehq/airbyte/pull/37246) | schema descriptions                                                                  |
 | 1.0.1   | 2024-03-05 | [35828](https://github.com/airbytehq/airbyte/pull/35828) | Bump version to unarchive supportLevel in Cloud productionDB                         |
