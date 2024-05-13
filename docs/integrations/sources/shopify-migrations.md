@@ -15,7 +15,8 @@ This version implements `Shopify GraphQL BULK Operations` to speed up the follow
 * In the `Product Variants` stream, the `presentment_prices.compare_at_price` property has changed from a `number` to an `object of strings`. This field was not populated in the `REST API` stream version, but it is correctly covered in the GraphQL stream version.
 * The `Product Variants` stream's `inventory_policy` and `inventory_management` properties now contain `uppercase string` values, instead of `lowercase`.
 * In the `Product Images` stream, the date-time fields, such as `created_at` and `updated_at`, now use `UTC` format without a timezone component.
-* In the `Product Images` stream, the `variant_ids` property is no longer available. Refer to the `Product variants` stream instead.
+* In the `Product Images` stream, the `variant_ids` and `position` properties are no longer available. Refer to the `Product variants` stream instead.
+* Retrieving the `deleted` records for `Products`, `Product Images` and `Product Variants` streams are no longer available, due to the `GraphQL` limitations.
 
 ### Action items required for 2.1.0
 - `Refresh Schema` + `Reset` is required for this stream after the upgrade from previous version.

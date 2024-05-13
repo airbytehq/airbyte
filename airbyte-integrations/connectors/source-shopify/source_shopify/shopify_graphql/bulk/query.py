@@ -1948,6 +1948,10 @@ class ProductVariant(ShopifyBulkQuery):
 
         return entity
 
+    def _unnest_and_resolve_id(self, record: MutableMapping[str, Any], from_property: str, id_field: str) -> int:
+        entity = record.get(from_property, {})
+        return self.tools.resolve_str_id(entity.get(id_field)) if entity else None
+
     def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
         """
         Defines how to process collected components.
@@ -1961,17 +1965,21 @@ class ProductVariant(ShopifyBulkQuery):
             record.pop("record_components")
 
         # unnest mandatory fields from their placeholders
-        record["product_id"] = self.tools.resolve_str_id(record.get("product", {}).get("product_id"))
+        record["product_id"] = self._unnest_and_resolve_id(record, "product", "product_id")
+        record["inventory_item_id"] = self._unnest_and_resolve_id(record, "inventoryItem", "inventory_item_id")
+        record["image_id"] = self._unnest_and_resolve_id(record, "image", "image_id")
+        # unnest `fulfillment_service` from `fulfillmentService`
         record["fulfillment_service"] = record.get("fulfillmentService", {}).get("fulfillment_service")
-        record["inventory_item_id"] = self.tools.resolve_str_id(record.get("inventoryItem", {}).get("inventory_item_id"))
-        record["grams"] = int(record.get("grams", 0))
-        # cast the the `price` to number, could be literally `None`
+        # cast the `price` to number, could be literally `None`
         price = record.get("price")
         record["price"] = float(price) if price else None
+        # cast the `grams` to integer
+        record["grams"] = int(record.get("grams", 0))
         # convert date-time cursors
         record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
         record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
         # clean up the leftovers
+        record.pop("image", None)
         record.pop("product", None)
         record.pop("inventoryItem", None)
 
