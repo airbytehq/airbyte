@@ -7,7 +7,7 @@ import os
 import urllib
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping, Optional, Tuple, Union
+from typing import Any, Mapping, Optional, Tuple, Union, List
 
 import requests
 import requests_cache
@@ -43,11 +43,11 @@ class HttpClient:
         self,
         name: str,
         logger: logging.Logger,
+        error_handler: Optional[ErrorHandler] = None,
         api_budget: Optional[APIBudget] = None,
         session: Optional[Union[requests.Session, requests_cache.CachedSession]] = None,
         authenticator: Optional[AuthBase] = None,
         use_cache: bool = False,
-        error_handler: Optional[ErrorHandler] = None,
         backoff_strategy: BackoffStrategy = DefaultBackoffStrategy(),
         error_message_parser: ErrorMessageParser = JsonErrorMessageParser(),
     ):
@@ -170,7 +170,7 @@ class HttpClient:
         except requests.RequestException as e:
             exc = e
 
-        error_resolution: ErrorResolution = self._error_handler.interpret_response(response or exc)
+        error_resolution: ErrorResolution = self._error_handler.interpret_response(response if response is not None else exc)
 
         # Evaluation of response.text can be heavy, for example, if streaming a large response
         # Do it only in debug mode
@@ -203,17 +203,17 @@ class HttpClient:
 
         # TODO: Consider dynamic retry count depending on subsequent error codes
         elif error_resolution.response_action == ResponseAction.RETRY:
-            custom_backoff_time = self._backoff_strategy.backoff_time(response or exc)
+            custom_backoff_time = self._backoff_strategy.backoff_time(response if response is not None else exc)
             error_message = (
                 error_resolution.error_message
                 or f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action}."
             )
             if custom_backoff_time:
                 raise UserDefinedBackoffException(
-                    backoff=custom_backoff_time, request=request, response_or_exception=(response or exc), error_message=error_message
+                    backoff=custom_backoff_time, request=request, response_or_exception=(response if response is not None else exc), error_message=error_message
                 )
             else:
-                raise DefaultBackoffException(request=request, response_or_exception=(response or exc), error_message=error_message)
+                raise DefaultBackoffException(request=request, response_or_exception=(response if response is not None else exc), error_message=error_message)
 
         elif response:
             try:

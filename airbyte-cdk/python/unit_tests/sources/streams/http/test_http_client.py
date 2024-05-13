@@ -268,12 +268,15 @@ def test_send_request_given_retry_response_action_retries_and_returns_valid_resp
     assert returned_response == valid_response
 
 def test_session_request_exception_raises_backoff_exception():
-    http_client = test_http_client()
-    http_method = "get"
-    url = "https://test_base_url.com/v1/endpoint"
-    prepared_request = http_client._create_prepared_request(http_method=http_method, url=url)
+    error_handler = HttpStatusErrorHandler(logger=MagicMock(), error_mapping={requests.exceptions.RequestException: ErrorResolution(ResponseAction.RETRY, FailureType.system_error, "test retry message")})
+    http_client = HttpClient(
+        name="test",
+        logger=MagicMock(),
+        error_handler=error_handler,
+    )
+    prepared_request = requests.PreparedRequest()
 
-    with patch.object(http_client._session, "send", side_effect=requests.exceptions.RequestException):
+    with patch.object(http_client._session, "send", side_effect=requests.RequestException):
         with pytest.raises(DefaultBackoffException):
             http_client._send(prepared_request, {})
 
