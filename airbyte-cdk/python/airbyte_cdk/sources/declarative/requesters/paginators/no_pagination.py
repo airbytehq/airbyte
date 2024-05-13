@@ -7,7 +7,7 @@ from typing import Any, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
 
 @dataclass
