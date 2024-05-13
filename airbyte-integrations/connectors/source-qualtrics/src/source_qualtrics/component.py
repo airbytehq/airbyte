@@ -62,7 +62,7 @@ class CustomRequester(HttpRequester):
             elif attempt < 20:
                 print(f"Attempt {attempt}: In Progress")
                 attempt = attempt + 1
-                time.sleep(30)
+                time.sleep(100)
                 self._check_progress(survey_id, export_id, attempt)
             else:
                 raise SystemExit(f"Reach maximum retry limit")

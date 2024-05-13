@@ -43,14 +43,14 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
   
-  groups_stream:
+  groups:
     $ref: "#/definitions/base_stream"
     name: "groups"
     primary_key: "id"
     $parameters:
       path: "/groups"
 
-  surveys_stream:
+  surveys:
     $ref: "#/definitions/base_stream"
     name: "surveys"
     primary_key: "id"
@@ -59,7 +59,7 @@ definitions:
     paginator:
       $ref: "#/definitions/paginator"
 
-  surveys_questions_stream:
+  surveys_questions:
     $ref: "#/definitions/base_stream"
     name: "surveys_questions"
     $parameters:
@@ -75,7 +75,7 @@ definitions:
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "#/definitions/surveys_stream"
+          - stream: "#/definitions/surveys"
             parent_key: "id"
             partition_field: "id"
 
@@ -92,7 +92,7 @@ definitions:
         inject_into: header
         field_name: X-API-TOKEN
 
-  surveys_responses_stream:
+  surveys_responses:
       $ref: "#/definitions/base_stream"
       name: "surveys_responses"
       $parameters:
@@ -112,21 +112,23 @@ definitions:
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
-            - stream: "#/definitions/surveys_stream"
+            - stream: "#/definitions/surveys"
               parent_key: "id"
               partition_field: "id"
 
 streams:
-  - "#/definitions/groups_stream"
-  - "#/definitions/surveys_stream"
-  - "#/definitions/surveys_questions_stream"
-  - "#/definitions/surveys_responses_stream"
+  - "#/definitions/groups"
+  - "#/definitions/surveys"
+  - "#/definitions/surveys_questions"
+  - "#/definitions/surveys_responses"
 
 check:
   type: CheckStream
   stream_names:
     - "groups"
-    - "survey"
+    - "surveys"
+    - "surveys_questions"
+    - "surveys_responses"
 
 spec:
   type: Spec
@@ -146,7 +148,7 @@ spec:
   
 metadata:
   autoImportSchema:
-    groups_stream: true
-    surveys_stream: true
-    surveys_questions_stream: true
-    surveys_responses_stream: true
+    groups: true
+    surveys: true
+    surveys_questions: true
+    surveys_responses: true
