@@ -84,6 +84,7 @@ class ApplovinStream(HttpStream):
                 dummy_record[field] = True
         return dummy_record
 
+
 class Campaigns(ApplovinStream):
     primary_key = "campaign_id"
     use_cache = True
@@ -201,6 +202,7 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
             print("generated a dummy record")
             return self.generate_dummy_record()
 
+        self.offset = 0  # very important, reset offset for every slice
         print(f"Slice {str(stream_slice)}, state {str(stream_state)}")
 
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
@@ -215,7 +217,8 @@ class ApplovinIncrementalMetricsStream(ApplovinStream, IncrementalMixin):
             stream_slice: Optional[Mapping[str, Any]] = None,
             next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        print(f"Request_params of {self.report_type}: {str(stream_state)}, {str(stream_slice)}, date {str(stream_slice['date'])}, offset {self.offset}, limit {self.page_size}")
+        print(
+            f"Request_params of {self.report_type}: {str(stream_state)}, {str(stream_slice)}, date {str(stream_slice['date'])}, offset {self.offset}, limit {self.page_size}")
         return {
             "api_key": self.config["reporting_api_key"],
             "start": stream_slice["date"],
