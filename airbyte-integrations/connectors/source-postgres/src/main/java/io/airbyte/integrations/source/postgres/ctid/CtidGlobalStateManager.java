@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -145,7 +146,7 @@ public class CtidGlobalStateManager extends CtidStateManager {
 
     resumableFullRefreshStreams.forEach(stream -> {
       final CtidStatus ctidStatusForFullRefreshStream = generateCtidStatusForState(pair);
-      streamStates.add(getAirbyteStreamState(pair, Jsons.jsonNode(ctidStatusForFullRefreshStream)));
+      streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(ctidStatusForFullRefreshStream)));
     });
 
     return new AirbyteStateMessage()
