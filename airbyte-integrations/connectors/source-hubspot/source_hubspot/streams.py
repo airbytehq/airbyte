@@ -1409,12 +1409,13 @@ class ContactsListMemberships(ContactsAllBase, ClientSideIncrementalStream):
     filter_value = True
 
     @property
-    def updated_at_field(self):
+    def updated_at_field(self) -> str:
         """Name of the field associated with the state"""
         return "timestamp"
 
     @property
-    def cursor_field_datetime_format(self):
+    def cursor_field_datetime_format(self) -> str:
+        """Cursor value expected to be a timestamp in milliseconds"""
         return "x"
 
 
