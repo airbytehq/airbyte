@@ -5,8 +5,9 @@ from __future__ import annotations
 import logging
 import os
 import time
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterator
 from contextlib import contextmanager
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from github import Auth, Github
@@ -101,6 +102,11 @@ def auto_merge() -> None:
     If the AUTO_MERGE_PRODUCTION environment variable is not set to "true", this will be a dry run.
     """
     dry_run = PRODUCTION is False
+    if PRODUCTION:
+        logger.info("Running auto-merge in production mode. Mergeable PRs will be merged!")
+    else:
+        logger.info("Running auto-merge in dry mode mode. Mergeable PRs won't be merged!")
+
     with github_client() as gh_client:
         repo = gh_client.get_repo(AIRBYTE_REPO)
         main_branch = repo.get_branch(BASE_BRANCH)
@@ -114,5 +120,6 @@ def auto_merge() -> None:
             back_off_if_rate_limited(gh_client)
             if merged_pr := process_pr(repo, pr, required_passing_contexts, dry_run):
                 merged_prs.append(merged_pr)
-        if PRODUCTION:
-            os.environ["GITHUB_STEP_SUMMARY"] = generate_job_summary_as_markdown(merged_prs)
+        if os.environ["GITHUB_STEP_SUMMARY"]:
+            job_summary_path = Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(generate_job_summary_as_markdown(merged_prs))
+            logger.info(f"Job summary written to {job_summary_path}")
