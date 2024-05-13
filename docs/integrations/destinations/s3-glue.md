@@ -157,7 +157,10 @@ In order for everything to work correctly, it is also necessary that the user wh
     {
       "Effect": "Allow",
       "Action": "s3:*",
-      "Resource": ["arn:aws:s3:::YOUR_BUCKET_NAME/*", "arn:aws:s3:::YOUR_BUCKET_NAME"]
+      "Resource": [
+        "arn:aws:s3:::YOUR_BUCKET_NAME/*",
+        "arn:aws:s3:::YOUR_BUCKET_NAME"
+      ]
     }
   ]
 }

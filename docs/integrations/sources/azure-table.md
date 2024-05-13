@@ -7,7 +7,7 @@ The Azure table storage supports Full Refresh and Incremental syncs. You can cho
 ### Output schema
 
 This Source have generic schema for all streams.
-Azure Table storage is a service that stores non-relational structured data (also known as structured NoSQL data). There is no efficient way to read schema for the given table. We use `data` property to have all the properties for any given row. 
+Azure Table storage is a service that stores non-relational structured data (also known as structured NoSQL data). There is no efficient way to read schema for the given table. We use `data` property to have all the properties for any given row.
 
 - data - This property contains all values
 - additionalProperties - This property denotes that all the values are in `data` property.
@@ -49,16 +49,17 @@ The Azure table storage connector should not run into API limitations under norm
 
 ### Requirements
 
-* Azure Storage Account
-* Azure Storage Account Key
-* Azure Storage Endpoint Suffix
+- Azure Storage Account
+- Azure Storage Account Key
+- Azure Storage Endpoint Suffix
 
 ### Setup guide
 
 Visit the [Azure Portal](https://portal.azure.com). Go to your storage account, you can find :
- - Azure Storage Account - under the overview tab
- - Azure Storage Account Key - under the Access keys tab
- - Azure Storage Endpoint Suffix - under the Endpoint tab
+
+- Azure Storage Account - under the overview tab
+- Azure Storage Account Key - under the Access keys tab
+- Azure Storage Endpoint Suffix - under the Endpoint tab
 
 We recommend creating a restricted key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access. However, shared access key authentication is not supported by this connector yet.
 

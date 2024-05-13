@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
-  dockerImageTag: 4.0.1
+  dockerImageTag: 4.0.2
   dockerRepository: airbyte/source-gitlab
   documentationUrl: https://docs.airbyte.com/integrations/sources/gitlab
   githubIssueLabel: source-gitlab
@@ -33,8 +33,9 @@ data:
       4.0.0:
         message:
           In this release, several changes have been made to the Gitlab connector.
-          The primary key was changed for streams `group_members`, `group_labels`, `project_members`, `project_labels`, `branches`, and `tags`.
-          Users will need to refresh schemas and reset the affected streams after upgrading.
+          The primary key was changed for streams `group_members`, `group_labels`,
+          `project_members`, `project_labels`, `branches`, and `tags`. Users will
+          need to refresh schemas and reset the affected streams after upgrading.
         upgradeDeadline: "2024-04-15"
         scopedImpact:
           - scopeType: stream
@@ -51,17 +52,20 @@ data:
               - "tags"
       3.0.0:
         message:
-          In this release, merge_request_commits stream schema has been fixed so that it returns commits for each merge_request.
-          Users will need to refresh the source schema and reset merge_request_commits stream after upgrading.
+          In this release, merge_request_commits stream schema has been fixed
+          so that it returns commits for each merge_request. Users will need to refresh
+          the source schema and reset merge_request_commits stream after upgrading.
         upgradeDeadline: "2024-02-13"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["merge_request_commits"]
       2.0.0:
         message:
-          In this release, several streams were updated to date-time field format, as declared in the Gitlab API.
-          These changes impact pipeline.created_at and pipeline.updated_at fields for stream Deployments and expires_at field for stream Group Members and stream Project Members.
-          Users will need to refresh the source schema and reset affected streams after upgrading.
+          In this release, several streams were updated to date-time field
+          format, as declared in the Gitlab API. These changes impact pipeline.created_at
+          and pipeline.updated_at fields for stream Deployments and expires_at field
+          for stream Group Members and stream Project Members. Users will need to
+          refresh the source schema and reset affected streams after upgrading.
         upgradeDeadline: "2023-11-09"
   suggestedStreams:
     streams:
