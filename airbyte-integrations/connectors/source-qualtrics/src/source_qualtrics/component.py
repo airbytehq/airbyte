@@ -19,82 +19,52 @@ from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 @dataclass
 class CustomRequester(HttpRequester):
 
-
-
     def __post_init__(self, parameters: Mapping[str, Any]):
         super(CustomRequester, self).__post_init__(parameters)
-        self.headers = {
-            "X-API-Token": self.config['api_key'],
-            "Content-Type": "application/json"
-        }
- 
+        self.fileId: str
+        self.headers = {"X-API-Token": self.config["api_key"], "Content-Type": "application/json"}
+        self.url = "https://fra1.qualtrics.com/API/v3"
 
-    def get_url_base(self) -> str:
-        return os.path.join(self._url_base.eval(self.config), "")
-    
-    def get_request_headers(
+    def get_path(
         self,
         *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Mapping[str, Any]:
-        headers = super().get_request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        return headers
-    
-
-    def get_request_params(
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
+        stream_state: Optional[StreamState],
+        stream_slice: Optional[StreamSlice],
+        next_page_token: Optional[Mapping[str, Any]],
+    ) -> str:
         """
-        Combines queries to a single GraphQL query.
+        Returns the URL path for the API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "some_entity"
         """
-        export_id = self._export_response(stream_slice['id'])
-        export_id = "ES_5mR6q6us6Lsuyqy"
-        fileId = self._check_progress(stream_slice['id'], export_id)
-        print(fileId)
+        stream_slice = stream_slice["id"]
+        export_id = self._export_response(stream_slice)
+        self._check_progress(stream_slice, export_id)
+        return f"surveys/{stream_slice}/export-responses/{self.fileId}/file"
 
-
-    def _export_response(self, survey_id:str):
-        url = f"https://fra1.qualtrics.com/API/v3/surveys/{survey_id}/export-responses"
+    def _export_response(self, survey_id: str):
+        url = f"{self.url}//surveys/{survey_id}/export-responses"
         try:
-            response = requests.post(url, headers=self.headers, json={"format": "csv"})
+            response = requests.post(url, headers=self.headers, json={"format": "json", "compress": "false"})
             response.raise_for_status()
             if response.status_code == 200:
                 print("Export and process id_retrieval succeeded")
-                return response.json()['result']["progressId"]
+                return response.json()["result"]["progressId"]
         except requests.exceptions.RequestException as e:
             raise SystemExit(f"Error export : {e}")
 
-
-    def _check_progress(self, survey_id:str, export_id:str):
-        url = f"https://fra1.qualtrics.com/API/v3/surveys/{survey_id}/export-responses/{export_id}"
+    def _check_progress(self, survey_id: str, export_id: str, attempt=1):
+        url = f"{self.url}/surveys/{survey_id}/export-responses/{export_id}"
         try:
-            response = requests.get(url, headers=self.headers, json={"format": "csv"})
+            response = requests.get(url, headers=self.headers)
             response.raise_for_status()
-            if response.status_code == 200 and response.json()['result']["status"]=="complete":
+            if response.status_code == 200 and response.json()["result"]["status"] == "complete":
                 print("fileId retrieval succeeded")
-                return response.json()['result']["fileId"]
-            else:
-                print("in Progress")
+                self.fileId = response.json()["result"]["fileId"]
+            elif attempt < 20:
+                print(f"Attempt {attempt}: In Progress")
+                attempt = attempt + 1
                 time.sleep(30)
-                self._check_progress(survey_id, export_id)
+                self._check_progress(survey_id, export_id, attempt)
+            else:
+                raise SystemExit(f"Reach maximum retry limit")
         except requests.exceptions.RequestException as e:
             raise SystemExit(f"Error export : {e}")
-        response = requests.get(url, headers=self.headers, json={})
-
-    def _get_response(self, survey_id:str, file_id:str):
-        url = f"https://fra1.qualtrics.com/API/v3/surveys/{survey_id}/export-responses/{file_id}/file"
-        try:
-            response = requests.get(url, headers=self.headers, json={"format": "csv"})
-            response.raise_for_status()
-            if response.status_code == 200 :
-                print("fileId retrieval succeeded")
-                return response.json()['result']["fileId"]
-        except requests.exceptions.RequestException as e:
-            raise SystemExit(f"Error export : {e}")
-        response = requests.get(url, headers=self.headers, json={})

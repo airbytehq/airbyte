@@ -8,6 +8,7 @@ import sys
 from airbyte_cdk.entrypoint import launch
 from .source import SourceQualtrics
 
+
 def run():
     source = SourceQualtrics()
     launch(source, sys.argv[1:])
