@@ -27,6 +27,9 @@
     "subscription_id": {
       "description": "Unique identifier for the subscription the usage data belongs to",
       "type": "string"
+    },
+    "grouping_key": {
+      "type": "string"
     }
   },
   "required": [

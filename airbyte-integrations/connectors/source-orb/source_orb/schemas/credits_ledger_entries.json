@@ -43,7 +43,7 @@
     },
     "credit_block_per_unit_cost_basis": {
       "description": "The cost per unit of the credit block",
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "description": {
       "description": "A description of the ledger entry",
