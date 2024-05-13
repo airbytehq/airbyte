@@ -17,12 +17,15 @@ from requests_cache import CachedRequest
 def test_http_client():
     return HttpClient(name="StubHttpClient", logger=MagicMock())
 
+
 def test_cache_http_client():
     return HttpClient(name="StubCacheHttpClient", logger=MagicMock(), use_cache=True)
+
 
 def test_cache_filename():
     http_client = test_http_client()
     http_client.cache_filename == f"{http_client._name}.sqlite"
+
 
 @pytest.mark.parametrize(
     "use_cache, expected_session",
@@ -34,6 +37,7 @@ def test_cache_filename():
 def test_request_session_returns_valid_session(use_cache, expected_session):
     http_client = HttpClient(name="test", logger=MagicMock(), use_cache=use_cache)
     assert isinstance(http_client._request_session(), expected_session)
+
 
 @pytest.mark.parametrize(
     "deduplicate_query_params, url, params, expected_url",
@@ -116,11 +120,13 @@ def test_duplicate_request_params_are_deduped(deduplicate_query_params, url, par
         prepared_request = http_client._create_prepared_request(http_method="get", url=url, dedupe_query_params=deduplicate_query_params, params=params)
         assert prepared_request.url == expected_url
 
+
 def test_create_prepared_response_given_given_both_json_and_data_raises_request_body_exception():
     http_client = test_http_client()
 
     with pytest.raises(RequestBodyException):
         http_client._create_prepared_request(http_method="get", url="https://test_base_url.com/v1/endpoint", json={"test": "json"}, data={"test": "data"})
+
 
 @pytest.mark.parametrize(
     "json, data",
@@ -135,9 +141,11 @@ def test_create_prepared_response_given_either_json_or_data_returns_valid_reques
     assert prepared_request
     assert isinstance(prepared_request, requests.PreparedRequest)
 
+
 def test_connection_pool():
     http_client = HttpClient(name="test", logger=MagicMock(), authenticator=TokenAuthenticator("test-token"))
     assert http_client._session.adapters["https://"]._pool_connections == 20
+
 
 def test_valid_basic_send_request(mocker):
     http_client = test_http_client()
@@ -154,12 +162,12 @@ def test_valid_basic_send_request(mocker):
     assert returned_request == prepared_request
     assert returned_response == mocked_response
 
+
 def test_send_raises_airbyte_traced_exception_with_fail_response_action(mocker):
     http_client = test_http_client()
     prepared_request = requests.PreparedRequest()
     response = requests.Response()
     response.status_code = 400
-
 
     mocker.patch.object(http_client._session, "send", return_value=response)
     mocker.patch.object(http_client._error_handler, "interpret_response", return_value=ErrorResolution(ResponseAction.FAIL, FailureType.system_error, "test error message"))
@@ -168,6 +176,7 @@ def test_send_raises_airbyte_traced_exception_with_fail_response_action(mocker):
         http_client._send(prepared_request, {})
 
     assert http_client._session.send.call_count == 1
+
 
 def test_send_ignores_with_ignore_reponse_action_and_returns_response(mocker):
     http_client = test_http_client()
@@ -184,6 +193,7 @@ def test_send_ignores_with_ignore_reponse_action_and_returns_response(mocker):
 
     http_client._logger.info.assert_called_once()
     assert returned_response == mocked_response
+
 
 @pytest.mark.parametrize(
         "backoff_time_value, exception_type",
@@ -211,6 +221,7 @@ def test_raises_backoff_exception_with_retry_response_action(mocker, backoff_tim
     with pytest.raises(exception_type):
         http_client._send(prepared_request, {})
 
+
 @pytest.mark.parametrize(
         "backoff_time_value, exception_type",
         [
@@ -233,6 +244,7 @@ def test_raises_backoff_exception_with_response_with_unmapped_error(mocker, back
 
     with pytest.raises(exception_type):
         http_client._send(prepared_request, {})
+
 
 def test_send_request_given_retry_response_action_retries_and_returns_valid_response(mocker):
 
@@ -266,6 +278,7 @@ def test_send_request_given_retry_response_action_retries_and_returns_valid_resp
     assert http_client._session.send.call_count == call_count
     assert returned_response == valid_response
 
+
 def test_session_request_exception_raises_backoff_exception():
     error_handler = HttpStatusErrorHandler(logger=MagicMock(), error_mapping={requests.exceptions.RequestException: ErrorResolution(ResponseAction.RETRY, FailureType.system_error, "test retry message")})
     http_client = HttpClient(
@@ -278,6 +291,7 @@ def test_session_request_exception_raises_backoff_exception():
     with patch.object(http_client._session, "send", side_effect=requests.RequestException):
         with pytest.raises(DefaultBackoffException):
             http_client._send(prepared_request, {})
+
 
 def test_that_response_was_cached(requests_mock):
     cached_http_client = test_cache_http_client()
@@ -300,6 +314,7 @@ def test_that_response_was_cached(requests_mock):
     assert isinstance(second_response.request, CachedRequest)
     assert not requests_mock.called
 
+
 def test_send_handles_response_action_given_session_send_raises_request_exception():
     error_resolution = ErrorResolution(ResponseAction.FAIL, FailureType.system_error, "test fail message")
 
@@ -318,6 +333,7 @@ def test_send_handles_response_action_given_session_send_raises_request_exceptio
             assert e.internal_message == error_resolution.error_message
             assert e.message == error_resolution.error_message
             assert e.failure_type == error_resolution.failure_type
+
 
 def test_send_request_given_request_exception_and_retry_response_action_retries_and_returns_valid_response(mocker):
 

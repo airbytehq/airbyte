@@ -2,7 +2,6 @@
 
 from typing import Optional, Union
 
-import pytest
 import requests
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, DefaultBackoffStrategy
 
@@ -12,7 +11,8 @@ def test_given_no_arguments_default_backoff_strategy_returns_default_values():
     backoff_strategy = DefaultBackoffStrategy()
     assert backoff_strategy.max_retries == 5
     assert backoff_strategy.max_time == 600
-    assert backoff_strategy.backoff_time(response) == None
+    assert backoff_strategy.backoff_time(response) is None
+
 
 class CustomBackoffStrategy(BackoffStrategy):
 
@@ -25,7 +25,6 @@ class CustomBackoffStrategy(BackoffStrategy):
 
 
 def test_given_valid_arguments_default_backoff_strategy_returns_values():
-
 
     response = requests.Response()
     response.headers["Retry-After"] = 123

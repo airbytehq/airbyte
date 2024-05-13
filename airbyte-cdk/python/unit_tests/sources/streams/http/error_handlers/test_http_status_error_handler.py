@@ -10,15 +10,17 @@ from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, Htt
 
 logger = MagicMock()
 
+
 def test_given_ok_response_http_status_error_handler_returns_success_action(mocker):
     mocked_response = MagicMock(spec=requests.Response)
     mocked_response.ok = True
     mocked_response.status_code = 200
-    error_resolution =  HttpStatusErrorHandler(logger).interpret_response(mocked_response)
+    error_resolution = HttpStatusErrorHandler(logger).interpret_response(mocked_response)
     assert isinstance(error_resolution, ErrorResolution)
     assert error_resolution.response_action == ResponseAction.SUCCESS
-    assert error_resolution.failure_type == None
-    assert error_resolution.error_message == None
+    assert error_resolution.failure_type is None
+    assert error_resolution.error_message is None
+
 
 @pytest.mark.parametrize(
     "error, expected_action, expected_failure_type, expected_error_message",
@@ -30,10 +32,11 @@ def test_given_ok_response_http_status_error_handler_returns_success_action(mock
 def test_given_error_code_in_response_http_status_error_handler_returns_expected_actions(error, expected_action, expected_failure_type, expected_error_message):
     response = requests.Response()
     response.status_code = error
-    error_resolution =  HttpStatusErrorHandler(logger).interpret_response(response)
+    error_resolution = HttpStatusErrorHandler(logger).interpret_response(response)
     assert error_resolution.response_action == expected_action
     assert error_resolution.failure_type == expected_failure_type
     assert error_resolution.error_message == expected_error_message
+
 
 def test_given_no_response_argument_returns_expected_action():
 
@@ -41,6 +44,7 @@ def test_given_no_response_argument_returns_expected_action():
 
     assert error_resolution.response_action == ResponseAction.FAIL
     assert error_resolution.failure_type == FailureType.system_error
+
 
 def test_given_unmapped_status_error_returns_retry_action_as_transient_error():
 
@@ -53,12 +57,14 @@ def test_given_unmapped_status_error_returns_retry_action_as_transient_error():
     assert error_resolution.failure_type == FailureType.system_error
     assert error_resolution.error_message == "Unexpected HTTP Status Code in error handler: 508"
 
+
 def test_given_requests_exception_returns_retry_action_as_transient_error():
 
     error_resolution = HttpStatusErrorHandler(logger).interpret_response(requests.RequestException())
 
     assert error_resolution.response_action == ResponseAction.RETRY
     assert error_resolution.failure_type
+
 
 def test_given_unmapped_exception_returns_retry_action_as_system_error():
 
@@ -67,6 +73,7 @@ def test_given_unmapped_exception_returns_retry_action_as_system_error():
     assert error_resolution.response_action == ResponseAction.RETRY
     assert error_resolution.failure_type == FailureType.system_error
 
+
 def test_given_unexpected_response_type_returns_fail_action_as_system_error():
 
     error_resolution = HttpStatusErrorHandler(logger).interpret_response("unexpected response type")
@@ -74,6 +81,7 @@ def test_given_unexpected_response_type_returns_fail_action_as_system_error():
     assert error_resolution.response_action == ResponseAction.FAIL
     assert error_resolution.failure_type == FailureType.system_error
     assert error_resolution.error_message == "Received unexpected response type: <class 'str'>"
+
 
 def test_given_injected_error_mapping_returns_expected_action():
 
@@ -98,7 +106,6 @@ def test_given_injected_error_mapping_returns_expected_action():
     error_mapping = {
         509: mapped_error_resolution
     }
-
 
     actual_error_resolution = HttpStatusErrorHandler(logger, error_mapping).interpret_response(mock_response)
 

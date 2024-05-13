@@ -5,11 +5,9 @@
 import logging
 import os
 import urllib
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, Optional, Tuple, Union
 
-import backoff
 import requests
 import requests_cache
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE

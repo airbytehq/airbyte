@@ -22,6 +22,7 @@ def test_given_error_message_in_response_body_parse_response_error_message_retur
     error_message = JsonErrorMessageParser().parse_response_error_message(response)
     assert error_message == expected_error_message
 
+
 def test_given_invalid_json_body_parse_response_error_message_returns_none():
     response = requests.Response()
     response._content = b'invalid json body'

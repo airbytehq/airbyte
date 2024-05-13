@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import logging
-from typing import Any, Mapping, Optional, Type, Union
+from typing import Mapping, Optional, Type, Union
 
 import requests
 from airbyte_cdk.models import FailureType
