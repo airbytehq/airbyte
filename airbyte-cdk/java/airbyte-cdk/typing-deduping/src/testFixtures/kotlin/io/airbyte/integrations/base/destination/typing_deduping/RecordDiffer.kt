@@ -10,6 +10,7 @@ import com.google.common.collect.Streams
 import io.airbyte.commons.json.Jsons
 import java.math.BigDecimal
 import java.time.*
+import java.time.format.DateTimeParseException
 import java.util.*
 import java.util.function.Function
 import java.util.stream.Collectors
@@ -440,7 +441,16 @@ constructor(
                 Instant.ofEpochMilli(Long.MIN_VALUE)
             } else {
                 try {
-                    Instant.parse(node.asText())
+                    OffsetDateTime.parse(node.asText()).toInstant()
+                } catch (parseE: DateTimeParseException) {
+                    // Fallback to using LocalDateTime and try again
+                    // Some databases have Timestamp_TZ mapped to TIMESTAMP with no offset,
+                    // this is sketchy to assume it as always UTC
+                    try {
+                        LocalDateTime.parse(node.asText()).toInstant(ZoneOffset.UTC)
+                    } catch (e: Exception) {
+                        Instant.ofEpochMilli(Long.MIN_VALUE)
+                    }
                 } catch (e: Exception) {
                     Instant.ofEpochMilli(Long.MIN_VALUE)
                 }

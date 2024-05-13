@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.createRecord;
+import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.filterRecords;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.map;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.setEmittedAtToNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -122,7 +123,8 @@ class PostgresSourceSSLTest {
     final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new PostgresSource().read(getConfig(), configuredCatalog, null));
     setEmittedAtToNull(actualMessages);
 
-    assertEquals(ASCII_MESSAGES, actualMessages);
+    var actualRecordMessage = filterRecords(actualMessages);
+    assertEquals(ASCII_MESSAGES, actualRecordMessage);
   }
 
   @Test

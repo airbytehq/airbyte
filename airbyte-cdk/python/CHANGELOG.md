@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.88.2
+Fix dependency for pytz
+
 ## 0.88.1
 Fix timestamp formatting in low-code macros
 
