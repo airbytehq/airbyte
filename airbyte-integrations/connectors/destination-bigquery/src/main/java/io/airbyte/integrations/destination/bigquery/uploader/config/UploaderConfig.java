@@ -22,8 +22,8 @@ public class UploaderConfig {
 
   private JsonNode config;
   /**
-   * Taken directly from the {@link ConfiguredAirbyteStream}, except if the namespace was null, we set
-   * it to the destination default namespace.
+   * Taken directly from the {@link ConfiguredAirbyteStream}, except if the originalNamespace was
+   * null, we set it to the destination default originalNamespace.
    */
   private ConfiguredAirbyteStream configStream;
   /**
