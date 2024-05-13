@@ -10,7 +10,7 @@ import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager;
 import io.airbyte.cdk.integrations.destination.async.state.FlushFailure;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction;
-import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
+import io.airbyte.integrations.destination.bigquery.uploader.BigQueryDirectUploader;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -31,7 +31,7 @@ public class BigQueryRecordStandardConsumer extends AsyncStreamConsumer {
                                         BigQuery bigQuery,
                                         ConfiguredAirbyteCatalog catalog,
                                         Optional<String> defaultNamespace,
-                                        Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> uploaderMap) {
+                                        Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, BigQueryDirectUploader>> uploaderMap) {
     super(outputRecordCollector,
         onStart,
         onClose,
