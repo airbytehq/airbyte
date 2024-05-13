@@ -891,7 +891,7 @@ class ClientSideIncrementalStream(Stream, IncrementalMixin):
         # save the state
         self.state = {self.cursor_field: int(max_state) if int_field_type else max_state}
         # emmit record if it has bigger cursor value compare to the state (`True` only)
-        return record_value > state_value
+        return record_value >= state_value
 
     def read_records(
         self,
@@ -1369,6 +1369,7 @@ class ContactsAllBase(Stream):
     page_filter = "vidOffset"
     page_field = "vid-offset"
     primary_key = "canonical-vid"
+    limit_field = "count"
     scopes = {"crm.objects.contacts.read"}
     properties_scopes = {"crm.schemas.contacts.read"}
     records_field = None
@@ -1393,7 +1394,7 @@ class ContactsAllBase(Stream):
         return params
 
 
-class ContactsListMemberships(ContactsAllBase, ABC):
+class ContactsListMemberships(ContactsAllBase, ClientSideIncrementalStream):
     """Contacts list Memberships, API v1
     The Stream was created due to issue #8477, where supporting List Memberships in Contacts stream was requested.
     According to the issue this feature is supported in API v1 by setting parameter showListMemberships=true
@@ -1406,6 +1407,16 @@ class ContactsListMemberships(ContactsAllBase, ABC):
     records_field = "list-memberships"
     filter_field = "showListMemberships"
     filter_value = True
+
+    @property
+    def updated_at_field(self) -> str:
+        """Name of the field associated with the state"""
+        return "timestamp"
+
+    @property
+    def cursor_field_datetime_format(self) -> str:
+        """Cursor value expected to be a timestamp in milliseconds"""
+        return "x"
 
 
 class ContactsFormSubmissions(ContactsAllBase, ABC):
