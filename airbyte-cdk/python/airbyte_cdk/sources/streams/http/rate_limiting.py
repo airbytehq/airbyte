@@ -49,8 +49,6 @@ def default_backoff_handler(
                 if give_up:
                     logger.info(f"Giving up for returned HTTP status: {exc.response.status_code!r}")
                 return give_up
-            else:
-                return False
         # Only RequestExceptions are retryable, so if we get here, it's not retryable
         return False
 
@@ -64,7 +62,7 @@ def default_backoff_handler(
         max_time=max_time,
         factor=factor,
         **kwargs,
-    )
+    ) # type: ignore # Decorator function returns a function with a different signature than the input function, so mypy can't infer the type of the returned function
 
 
 def http_client_default_backoff_handler(
@@ -92,7 +90,7 @@ def http_client_default_backoff_handler(
         max_time=max_time,
         factor=factor,
         **kwargs,
-    )
+    ) # type: ignore # Decorator function returns a function with a different signature than the input function, so mypy can't infer the type of the returned function
 
 
 def user_defined_backoff_handler(
@@ -124,4 +122,4 @@ def user_defined_backoff_handler(
         max_tries=max_tries,
         max_time=max_time,
         **kwargs,
-    )
+    ) # type: ignore # Decorator function returns a function with a different signature than the input function, so mypy can't infer the type of the returned function
