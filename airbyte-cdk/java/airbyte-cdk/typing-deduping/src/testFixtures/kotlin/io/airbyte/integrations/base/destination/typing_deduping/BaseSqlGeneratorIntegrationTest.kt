@@ -1544,7 +1544,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
     @Test
     @Throws(Exception::class)
-    fun testV1V2migration() {
+    open fun testV1V2migration() {
         // This is maybe a little hacky, but it avoids having to refactor this entire class and
         // subclasses
         // for something that is going away

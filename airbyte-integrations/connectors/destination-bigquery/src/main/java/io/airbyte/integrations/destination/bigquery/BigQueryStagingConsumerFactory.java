@@ -13,7 +13,6 @@ import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer;
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager;
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction;
-import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
@@ -117,12 +116,6 @@ public class BigQueryStagingConsumerFactory {
   }
 
   /**
-   * Sets up {@link BufferedStreamConsumer} with creation of the destination's raw tables
-   *
-   * <p>
-   * Note: targetTableId is synonymous with airbyte_raw table
-   * </p>
-   *
    * @param bigQueryGcsOperations collection of Google Cloud Storage Operations
    * @param writeConfigs configuration settings used to describe how to write data and where it exists
    */
