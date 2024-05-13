@@ -61,6 +61,7 @@ def default_backoff_handler(
         **kwargs,
     )
 
+
 def http_client_default_backoff_handler(
     max_tries: Optional[int], factor: float, max_time: Optional[int] = None, **kwargs: Any
 ) -> Callable[[SendRequestCallableType], SendRequestCallableType]:

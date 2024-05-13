@@ -33,6 +33,7 @@ from .rate_limiting import http_client_default_backoff_handler, user_defined_bac
 
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
+
 class HttpClient:
 
     _DEFAULT_MAX_RETRY = 5
@@ -210,10 +211,15 @@ class HttpClient:
             )
             if custom_backoff_time:
                 raise UserDefinedBackoffException(
-                    backoff=custom_backoff_time, request=request, response_or_exception=(response if response is not None else exc), error_message=error_message
+                    backoff=custom_backoff_time,
+                    request=request,
+                    response_or_exception=(response if response is not None else exc),
+                    error_message=error_message,
                 )
             else:
-                raise DefaultBackoffException(request=request, response_or_exception=(response if response is not None else exc), error_message=error_message)
+                raise DefaultBackoffException(
+                    request=request, response_or_exception=(response if response is not None else exc), error_message=error_message
+                )
 
         elif response:
             try:
