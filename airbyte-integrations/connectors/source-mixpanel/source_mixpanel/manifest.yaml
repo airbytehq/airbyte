@@ -129,7 +129,7 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector_empty_dpath"
         record_filter:
-          condition: | 
+          condition: |
             {%- set filter_date = stream_state.created or stream_slice.start_time -%}
             "{{ record['created'] >= filter_date if filter_date else true }}"
     incremental_sync:
