@@ -2,9 +2,14 @@
   "type": ["null", "object"],
   "properties": {
     "applies_to": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
+      "type": ["null", "object"],
+      "properties": {
+        "products": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
       }
     },
     "metadata": {
