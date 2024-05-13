@@ -6,7 +6,7 @@ from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
-from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
 
 @dataclass
