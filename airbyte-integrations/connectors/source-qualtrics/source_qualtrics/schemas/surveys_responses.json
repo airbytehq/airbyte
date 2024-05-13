@@ -1,0 +1,172 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "displayedFields": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "displayedValues": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "labels": {
+      "properties": {
+        "QID1_NPS_GROUP": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "finished": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "responseId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "values": {
+      "properties": {
+        "Delighted Browser": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Delighted Device Type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Delighted Operating System": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Delighted Source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "DelightedPersonID": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "DelightedResponseID": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Locale": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "QID1": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "QID1_NPS_GROUP": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "QID2_TEXT": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Uid": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "_recordId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "delighted_email_subject": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "endDate": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "finished": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "recipientEmail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "recordedDate": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "startDate": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}
