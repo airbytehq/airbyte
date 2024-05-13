@@ -121,9 +121,11 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     }
 
     private fun assertStateDoNotHaveDuplicateStreams(stateMessage: AirbyteStateMessage) {
-        val dedupedStreamStates = stateMessage.global.streamStates.stream()
-            .map { streamState: AirbyteStreamState -> streamState.streamDescriptor }
-            .collect(Collectors.toSet())
+        val dedupedStreamStates =
+            stateMessage.global.streamStates
+                .stream()
+                .map { streamState: AirbyteStreamState -> streamState.streamDescriptor }
+                .collect(Collectors.toSet())
         Assertions.assertEquals(dedupedStreamStates.size, stateMessage.global.streamStates.size)
     }
 
@@ -623,7 +625,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         val recordMessages1 = extractRecordMessages(actualRecords1)
         val stateMessages1 = extractStateMessages(actualRecords1)
-        stateMessages1.map {state -> assertStateDoNotHaveDuplicateStreams(state)}
+        stateMessages1.map { state -> assertStateDoNotHaveDuplicateStreams(state) }
         val names = HashSet(STREAM_NAMES)
         names.add(MODELS_STREAM_NAME_2)
 
@@ -1246,7 +1248,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             stateAfterFirstBatch,
             MODEL_RECORDS.size.toLong() + MODEL_RECORDS_2.size.toLong(),
         )
-        stateAfterFirstBatch.map {state -> assertStateDoNotHaveDuplicateStreams(state)}
+        stateAfterFirstBatch.map { state -> assertStateDoNotHaveDuplicateStreams(state) }
     }
 
     protected open fun assertStateMessagesForNewTableSnapshotTest(
