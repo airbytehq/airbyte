@@ -6,7 +6,7 @@ AIRBYTE_REPO = "airbytehq/airbyte"
 AUTO_MERGE_LABEL = "auto-merge"
 BASE_BRANCH = "master"
 CONNECTOR_PATH_PREFIXES = {
-    "airbyte-integrations/connectors/",
+    "airbyte-integrations/connectors",
     "docs/integrations/sources",
     "docs/integrations/destinations",
 }
