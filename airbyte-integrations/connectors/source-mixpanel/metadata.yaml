@@ -26,8 +26,10 @@ data:
   registries:
     cloud:
       enabled: true
+      dockerImageTag: 2.2.0 # temporary pin due to a bug in 2.3.0 https://github.com/airbytehq/airbyte/pull/38106
     oss:
       enabled: true
+      dockerImageTag: 2.2.0 # temporary pin due to a bug in 2.3.0 https://github.com/airbytehq/airbyte/pull/38106
   releaseStage: generally_available
   releases:
     breakingChanges:
