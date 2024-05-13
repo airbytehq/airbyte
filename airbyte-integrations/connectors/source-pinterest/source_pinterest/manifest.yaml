@@ -31,8 +31,25 @@ definitions:
               http_codes: [429]
               predicate: "{{ response.get('code') == 8 }}"
             - type: HttpResponseFilter
+              action: IGNORE
+              error_message: "Can't access catalog product groups because there is no existing catalog."
+              http_codes: [409]
+            - type: HttpResponseFilter
               action: RETRY
               http_codes: [429]
+            - type: HttpResponseFilter
+              action: FAIL
+              error_message: "Try to re-authenticate because current refresh token is not valid."
+              error_message_contains: "401 Client Error: Unauthorized for url"
+        - type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 1
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes: [400]
+              predicate: "{{ response.get('code') > 0 }}"
         - type: DefaultErrorHandler # adding this DefaultErrorHandler for 5XX error codes
 
   # Selector
@@ -105,15 +122,13 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
         record_filter:
-          type: RecordFilter
-          condition: "{{ not stream_state or record.get('updated_time') >= stream_state.get('updated_time') }}"
+          type: CustomRecordFilter
+          class_name: source_pinterest.components.record_filter.PinterestSemiIncrementalRecordFilter
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "updated_time"
-      datetime_format: "%Y-%m-%d"
-      cursor_datetime_formats:
-        - "%s"
-      start_datetime: "{{ config.get('start_date') if config.get('start_date') and config.get('start_date') > day_delta(-89, format='%Y-%m-%d') else day_delta(-89, format='%Y-%m-%d') }}"
+      datetime_format: "%s"
+      start_datetime: "{{ format_datetime(config.get('start_date'), '%s') if config.get('start_date') else 0 }}"
 
   base_analytics_stream:
     type: DeclarativeStream
@@ -373,4 +388,4 @@ streams:
 check:
   type: CheckStream
   stream_names:
-    - boards
+    - user_account_analytics
