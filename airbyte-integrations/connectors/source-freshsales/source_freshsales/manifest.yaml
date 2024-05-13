@@ -348,8 +348,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - filters
-      primary_key:
-        - id
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -431,8 +429,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - filters
-      primary_key:
-        - id
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -514,8 +510,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - filters
-      primary_key:
-        - id
       schema_loader:
         type: InlineSchemaLoader
         schema:
