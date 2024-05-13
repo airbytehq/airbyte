@@ -174,7 +174,7 @@ class HttpClient:
 
         # Evaluation of response.text can be heavy, for example, if streaming a large response
         # Do it only in debug mode
-        if self._logger.isEnabledFor(logging.DEBUG) and response:
+        if self._logger.isEnabledFor(logging.DEBUG) and response is not None:
             self._logger.debug(
                 "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
             )

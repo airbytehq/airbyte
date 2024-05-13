@@ -320,7 +320,7 @@ def test_send_handles_response_action_given_session_send_raises_request_exceptio
             assert e.message == error_resolution.error_message
             assert e.failure_type == error_resolution.failure_type
 
-def test_send_request_given_request_exception_andretry_response_action_retries_and_returns_valid_response(mocker):
+def test_send_request_given_request_exception_and_retry_response_action_retries_and_returns_valid_response(mocker):
 
     http_client = HttpClient(
         name="test",
@@ -337,12 +337,7 @@ def test_send_request_given_request_exception_andretry_response_action_retries_a
         if http_client._session.send.call_count == call_count:
             return valid_response
         else:
-            retry_response = requests.RequestException()
-            # retry_response.ok = False
-            retry_response.text = "RequestException Test"
-            retry_response.status_code = 408
-            retry_response.headers = {}
-            return retry_response
+            raise requests.RequestException()
 
     prepared_request = requests.PreparedRequest()
 
