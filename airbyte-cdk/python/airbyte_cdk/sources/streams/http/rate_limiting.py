@@ -42,7 +42,9 @@ def default_backoff_handler(
         if isinstance(exc, RequestException):
             if exc.response is not None:
                 give_up: bool = (
-                    exc.response is not None and exc.response.status_code != codes.too_many_requests and 400 <= exc.response.status_code < 500
+                    exc.response is not None
+                    and exc.response.status_code != codes.too_many_requests
+                    and 400 <= exc.response.status_code < 500
                 )
                 if give_up:
                     logger.info(f"Giving up for returned HTTP status: {exc.response.status_code!r}")
