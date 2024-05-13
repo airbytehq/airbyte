@@ -30,7 +30,7 @@ definitions:
             start_from_page: 1
             inject_on_first_request: true
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /sales_accounts/view/{{ stream_partition.view_id }}
           http_method: GET
           request_headers:
@@ -50,7 +50,7 @@ definitions:
             parent_stream_configs:
               - type: ParentStreamConfig
                 stream:
-                  $ref: '#/definitions/streams/sales_accounts_filter'
+                  $ref: "#/definitions/streams/sales_accounts_filter"
                 parent_key: id
                 partition_field: view_id
       primary_key:
@@ -58,7 +58,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/accounts'
+          $ref: "#/schemas/accounts"
     contacts:
       type: DeclarativeStream
       name: contacts
@@ -80,7 +80,7 @@ definitions:
             start_from_page: 1
             inject_on_first_request: true
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /contacts/view/{{ stream_partition.view_id }}
           http_method: GET
           request_headers:
@@ -100,7 +100,7 @@ definitions:
             parent_stream_configs:
               - type: ParentStreamConfig
                 stream:
-                  $ref: '#/definitions/streams/contacts_filters'
+                  $ref: "#/definitions/streams/contacts_filters"
                 parent_key: id
                 partition_field: view_id
       primary_key:
@@ -108,7 +108,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/contacts'
+          $ref: "#/schemas/contacts"
     won_deals:
       type: DeclarativeStream
       name: won_deals
@@ -130,7 +130,7 @@ definitions:
             start_from_page: 1
             inject_on_first_request: true
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /deals/view/{{ stream_partition.view_id }}
           http_method: GET
           request_headers:
@@ -150,7 +150,7 @@ definitions:
             parent_stream_configs:
               - type: ParentStreamConfig
                 stream:
-                  $ref: '#/definitions/streams/deals_filter'
+                  $ref: "#/definitions/streams/deals_filter"
                 parent_key: id
                 partition_field: view_id
       primary_key:
@@ -158,7 +158,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/won_deals'
+          $ref: "#/schemas/won_deals"
       transformations:
         - type: RemoveFields
           field_pointers:
@@ -184,7 +184,7 @@ definitions:
             start_from_page: 1
             inject_on_first_request: true
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /deals/view/{{ stream_partition.view_id }}
           http_method: GET
           request_headers:
@@ -204,7 +204,7 @@ definitions:
             parent_stream_configs:
               - type: ParentStreamConfig
                 stream:
-                  $ref: '#/definitions/streams/deals_filter'
+                  $ref: "#/definitions/streams/deals_filter"
                 parent_key: id
                 partition_field: view_id
       primary_key:
@@ -212,7 +212,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/lost_deals'
+          $ref: "#/schemas/lost_deals"
       transformations:
         - type: RemoveFields
           field_pointers:
@@ -238,7 +238,7 @@ definitions:
             start_from_page: 1
             inject_on_first_request: true
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /deals/view/{{ stream_partition.view_id }}
           http_method: GET
           request_headers:
@@ -258,7 +258,7 @@ definitions:
             parent_stream_configs:
               - type: ParentStreamConfig
                 stream:
-                  $ref: '#/definitions/streams/deals_filter'
+                  $ref: "#/definitions/streams/deals_filter"
                 parent_key: id
                 partition_field: view_id
       primary_key:
@@ -266,7 +266,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/open_deals'
+          $ref: "#/schemas/open_deals"
       transformations:
         - type: RemoveFields
           field_pointers:
@@ -292,7 +292,7 @@ definitions:
             start_from_page: 1
             inject_on_first_request: true
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /tasks
           http_method: GET
           request_headers:
@@ -312,7 +312,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/open_tasks'
+          $ref: "#/schemas/open_tasks"
     deals_filter:
       type: DeclarativeStream
       name: deals_filter
@@ -334,7 +334,7 @@ definitions:
             start_from_page: 1
             inject_on_first_request: true
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /deals/filters
           http_method: GET
           request_headers:
@@ -353,7 +353,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/deals_filter'
+          $ref: "#/schemas/deals_filter"
     completed_tasks:
       type: DeclarativeStream
       name: completed_tasks
@@ -375,7 +375,7 @@ definitions:
             start_from_page: 1
             inject_on_first_request: true
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /tasks
           http_method: GET
           request_headers:
@@ -395,7 +395,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/completed_tasks'
+          $ref: "#/schemas/completed_tasks"
     contacts_filters:
       type: DeclarativeStream
       name: contacts_filters
@@ -417,7 +417,7 @@ definitions:
             start_from_page: 1
             inject_on_first_request: true
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /contacts/filters
           http_method: GET
           request_headers:
@@ -436,7 +436,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/contacts_filters'
+          $ref: "#/schemas/contacts_filters"
     past_appointments:
       type: DeclarativeStream
       name: past_appointments
@@ -458,7 +458,7 @@ definitions:
             start_from_page: 1
             inject_on_first_request: true
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /appointments
           http_method: GET
           request_headers:
@@ -478,7 +478,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/past_appointments'
+          $ref: "#/schemas/past_appointments"
     sales_accounts_filter:
       type: DeclarativeStream
       name: sales_accounts_filter
@@ -500,7 +500,7 @@ definitions:
             start_from_page: 1
             inject_on_first_request: true
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /sales_accounts/filters
           http_method: GET
           request_headers:
@@ -519,7 +519,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/sales_accounts_filter'
+          $ref: "#/schemas/sales_accounts_filter"
     upcoming_appointments:
       type: DeclarativeStream
       name: upcoming_appointments
@@ -541,7 +541,7 @@ definitions:
             start_from_page: 1
             inject_on_first_request: true
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /appointments
           http_method: GET
           request_headers:
@@ -561,24 +561,24 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/upcoming_appointments'
+          $ref: "#/schemas/upcoming_appointments"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['domain_name'] }}/crm/sales/api
 
 streams:
-  - $ref: '#/definitions/streams/contacts_filters'
-  - $ref: '#/definitions/streams/contacts'
-  - $ref: '#/definitions/streams/sales_accounts_filter'
-  - $ref: '#/definitions/streams/accounts'
-  - $ref: '#/definitions/streams/deals_filter'
-  - $ref: '#/definitions/streams/open_deals'
-  - $ref: '#/definitions/streams/won_deals'
-  - $ref: '#/definitions/streams/lost_deals'
-  - $ref: '#/definitions/streams/open_tasks'
-  - $ref: '#/definitions/streams/completed_tasks'
-  - $ref: '#/definitions/streams/past_appointments'
-  - $ref: '#/definitions/streams/upcoming_appointments'
+  - $ref: "#/definitions/streams/contacts_filters"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/sales_accounts_filter"
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/deals_filter"
+  - $ref: "#/definitions/streams/open_deals"
+  - $ref: "#/definitions/streams/won_deals"
+  - $ref: "#/definitions/streams/lost_deals"
+  - $ref: "#/definitions/streams/open_tasks"
+  - $ref: "#/definitions/streams/completed_tasks"
+  - $ref: "#/definitions/streams/past_appointments"
+  - $ref: "#/definitions/streams/upcoming_appointments"
 
 spec:
   type: Spec
@@ -631,243 +631,243 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       city:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       tags:
         type:
-          - 'null'
+          - "null"
           - array
       email:
         type:
-          - 'null'
+          - "null"
           - string
       links:
         type:
-          - 'null'
+          - "null"
           - object
       phone:
         type:
-          - 'null'
+          - "null"
           - string
       state:
         type:
-          - 'null'
+          - "null"
           - string
       avatar:
         type:
-          - 'null'
+          - "null"
           - string
       emails:
         type:
-          - 'null'
+          - "null"
           - array
       medium:
         type:
-          - 'null'
+          - "null"
           - string
       address:
         type:
-          - 'null'
+          - "null"
           - string
       country:
         type:
-          - 'null'
+          - "null"
           - string
       keyword:
         type:
-          - 'null'
+          - "null"
           - string
       twitter:
         type:
-          - 'null'
+          - "null"
           - string
       website:
         type:
-          - 'null'
+          - "null"
           - string
       zipcode:
         type:
-          - 'null'
+          - "null"
           - string
       facebook:
         type:
-          - 'null'
+          - "null"
           - string
       linkedin:
         type:
-          - 'null'
+          - "null"
           - string
       owner_id:
         type:
-          - 'null'
+          - "null"
           - integer
       job_title:
         type:
-          - 'null'
+          - "null"
           - string
       last_name:
         type:
-          - 'null'
+          - "null"
           - string
       last_seen:
         type:
-          - 'null'
+          - "null"
           - string
       time_zone:
         type:
-          - 'null'
+          - "null"
           - string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       first_name:
         type:
-          - 'null'
+          - "null"
           - string
       is_deleted:
         type:
-          - 'null'
+          - "null"
           - boolean
       lead_score:
         type:
-          - 'null'
+          - "null"
           - integer
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
       work_email:
         type:
-          - 'null'
+          - "null"
           - string
       external_id:
         type:
-          - 'null'
+          - "null"
           - string
       recent_note:
         type:
-          - 'null'
+          - "null"
           - string
       work_number:
         type:
-          - 'null'
+          - "null"
           - string
       custom_field:
         type:
-          - 'null'
+          - "null"
           - object
       customer_fit:
         type:
-          - 'null'
+          - "null"
           - string
       display_name:
         type:
-          - 'null'
+          - "null"
           - string
       territory_id:
         type:
-          - 'null'
+          - "null"
           - integer
       web_form_ids:
         type:
-          - 'null'
+          - "null"
           - array
       mobile_number:
         type:
-          - 'null'
+          - "null"
           - string
       phone_numbers:
         type:
-          - 'null'
+          - "null"
           - array
       team_user_ids:
         type:
-          - 'null'
+          - "null"
           - array
       annual_revenue:
         type:
-          - 'null'
+          - "null"
           - number
       last_contacted:
         type:
-          - 'null'
+          - "null"
           - string
       won_deals_count:
         type:
-          - 'null'
+          - "null"
           - integer
       business_type_id:
         type:
-          - 'null'
+          - "null"
           - integer
       industry_type_id:
         type:
-          - 'null'
+          - "null"
           - integer
       last_assigned_at:
         type:
-          - 'null'
+          - "null"
           - string
       open_deals_count:
         type:
-          - 'null'
+          - "null"
           - integer
       won_deals_amount:
         type:
-          - 'null'
+          - "null"
           - string
       open_deals_amount:
         type:
-          - 'null'
+          - "null"
           - string
       subscription_types:
         type:
-          - 'null'
+          - "null"
           - string
       last_contacted_mode:
         type:
-          - 'null'
+          - "null"
           - string
       number_of_employees:
         type:
-          - 'null'
+          - "null"
           - integer
       subscription_status:
         type:
-          - 'null'
+          - "null"
           - integer
       active_sales_sequences:
         type:
-          - 'null'
+          - "null"
           - string
       parent_sales_account_id:
         type:
-          - 'null'
+          - "null"
           - integer
       completed_sales_sequences:
         type:
-          - 'null'
+          - "null"
           - string
       whatsapp_subscription_status:
         type:
-          - 'null'
+          - "null"
           - string
       last_contacted_via_sales_activity:
         type:
-          - 'null'
+          - "null"
           - string
       last_contacted_sales_activity_mode:
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
   contacts:
@@ -878,975 +878,975 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       city:
         type:
-          - 'null'
+          - "null"
           - string
       tags:
         type:
-          - 'null'
+          - "null"
           - array
       email:
         type:
-          - 'null'
+          - "null"
           - string
       links:
         type:
-          - 'null'
+          - "null"
           - object
       state:
         type:
-          - 'null'
+          - "null"
           - string
       avatar:
         type:
-          - 'null'
+          - "null"
           - string
       emails:
         type:
-          - 'null'
+          - "null"
           - array
       locale:
         type:
-          - 'null'
+          - "null"
           - string
       mcr_id:
         type:
-          - 'null'
+          - "null"
           - integer
       medium:
         type:
-          - 'null'
+          - "null"
           - string
       address:
         type:
-          - 'null'
+          - "null"
           - string
       country:
         type:
-          - 'null'
+          - "null"
           - string
       keyword:
         type:
-          - 'null'
+          - "null"
           - string
       twitter:
         type:
-          - 'null'
+          - "null"
           - string
       zipcode:
         type:
-          - 'null'
+          - "null"
           - string
       facebook:
         type:
-          - 'null'
+          - "null"
           - string
       linkedin:
         type:
-          - 'null'
+          - "null"
           - string
       owner_id:
         type:
-          - 'null'
+          - "null"
           - integer
       job_title:
         type:
-          - 'null'
+          - "null"
           - string
       last_name:
         type:
-          - 'null'
+          - "null"
           - string
       last_seen:
         type:
-          - 'null'
+          - "null"
           - string
       time_zone:
         type:
-          - 'null'
+          - "null"
           - string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       first_name:
         type:
-          - 'null'
+          - "null"
           - string
       is_deleted:
         type:
-          - 'null'
+          - "null"
           - boolean
       lead_score:
         type:
-          - 'null'
+          - "null"
           - integer
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
       work_email:
         type:
-          - 'null'
+          - "null"
           - string
       campaign_id:
         type:
-          - 'null'
+          - "null"
           - integer
       external_id:
         type:
-          - 'null'
+          - "null"
           - string
       last_medium:
         type:
-          - 'null'
+          - "null"
           - string
       last_source:
         type:
-          - 'null'
+          - "null"
           - string
       recent_note:
         type:
-          - 'null'
+          - "null"
           - string
       system_tags:
         type:
-          - 'null'
+          - "null"
           - array
       work_number:
         type:
-          - 'null'
+          - "null"
           - string
       custom_field:
         type:
-          - 'null'
+          - "null"
           - object
       customer_fit:
         type:
-          - 'null'
+          - "null"
           - integer
       display_name:
         type:
-          - 'null'
+          - "null"
           - string
       first_medium:
         type:
-          - 'null'
+          - "null"
           - string
       first_source:
         type:
-          - 'null'
+          - "null"
           - string
       territory_id:
         type:
-          - 'null'
+          - "null"
           - integer
       web_form_ids:
         type:
-          - 'null'
+          - "null"
           - string
       last_campaign:
         type:
-          - 'null'
+          - "null"
           - string
       latest_medium:
         type:
-          - 'null'
+          - "null"
           - string
       latest_source:
         type:
-          - 'null'
+          - "null"
           - string
       mobile_number:
         type:
-          - 'null'
+          - "null"
           - string
       phone_numbers:
         type:
-          - 'null'
+          - "null"
           - array
       team_user_ids:
         type:
-          - 'null'
+          - "null"
           - string
       first_campaign:
         type:
-          - 'null'
+          - "null"
           - string
       last_contacted:
         type:
-          - 'null'
+          - "null"
           - string
       last_seen_chat:
         type:
-          - 'null'
+          - "null"
           - string
       lead_source_id:
         type:
-          - 'null'
+          - "null"
           - integer
       sales_accounts:
         type:
-          - 'null'
+          - "null"
           - array
       total_sessions:
         type:
-          - 'null'
+          - "null"
           - string
       first_seen_chat:
         type:
-          - 'null'
+          - "null"
           - string
       latest_campaign:
         type:
-          - 'null'
+          - "null"
           - string
       won_deals_count:
         type:
-          - 'null'
+          - "null"
           - integer
       last_assigned_at:
         type:
-          - 'null'
+          - "null"
           - string
       open_deals_count:
         type:
-          - 'null'
+          - "null"
           - integer
       sales_account_id:
         type:
-          - 'null'
+          - "null"
           - integer
       won_deals_amount:
         type:
-          - 'null'
+          - "null"
           - string
       contact_status_id:
         type:
-          - 'null'
+          - "null"
           - integer
       open_deals_amount:
         type:
-          - 'null'
+          - "null"
           - string
       lifecycle_stage_id:
         type:
-          - 'null'
+          - "null"
           - integer
       subscription_types:
         type:
-          - 'null'
+          - "null"
           - string
       last_contacted_mode:
         type:
-          - 'null'
+          - "null"
           - string
       subscription_status:
         type:
-          - 'null'
+          - "null"
           - integer
       unsubscription_reason:
         type:
-          - 'null'
+          - "null"
           - string
       active_sales_sequences:
         type:
-          - 'null'
+          - "null"
           - string
       sms_subscription_status:
         type:
-          - 'null'
+          - "null"
           - integer
       completed_sales_sequences:
         type:
-          - 'null'
+          - "null"
           - string
       other_unsubscription_reason:
         type:
-          - 'null'
+          - "null"
           - string
       whatsapp_subscription_status:
         type:
-          - 'null'
+          - "null"
           - integer
       last_contacted_via_sales_activity:
         type:
-          - 'null'
+          - "null"
           - string
       last_contacted_sales_activity_mode:
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
   won_deals:
     "$schema": http://json-schema.org/draft-07/schema#
     type: object
     required:
-    - id
+      - id
     additionalProperties: true
     properties:
       id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       amount:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       currency_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       base_currency_amount:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       sales_account_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       deal_stage_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       deal_reason_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       deal_type_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       owner_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       expected_close:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       closed_date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       lead_source_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       campaign_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       deal_product_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       deal_payment_status_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       probability:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       created_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       updated_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       territory_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       deal_pipeline_id:
         type: integer
       stage_updated_time:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom_field:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
       age:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       links:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
       recent_note:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       completed_sales_sequences:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       active_sales_sequences:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       web_form_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       upcoming_activities_time:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       collaboration:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
       last_assigned_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       tags:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       last_contacted_sales_activity_mode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       last_contacted_via_sales_activity:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       expected_deal_value:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       is_deleted:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       team_user_ids:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       avatar:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       fc_widget_collaboration:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
       forecast_category:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       deal_prediction_last_updated_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       rotten_days:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       has_products:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       products:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       last_deal_prediction:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       deal_prediction:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       freddy_forecast_metrics:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
   lost_deals:
     "$schema": http://json-schema.org/draft-07/schema#
     type: object
     required:
-    - id
+      - id
     additionalProperties: true
     properties:
       id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       amount:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       currency_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       base_currency_amount:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       sales_account_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       deal_stage_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       deal_reason_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       deal_type_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       owner_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       expected_close:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       closed_date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       lead_source_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       campaign_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       deal_product_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       deal_payment_status_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       probability:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       created_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       updated_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       territory_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       deal_pipeline_id:
         type: integer
       stage_updated_time:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom_field:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
       age:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       links:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
       recent_note:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       completed_sales_sequences:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       active_sales_sequences:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       web_form_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       upcoming_activities_time:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       collaboration:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
       last_assigned_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       tags:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       last_contacted_sales_activity_mode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       last_contacted_via_sales_activity:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       expected_deal_value:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       is_deleted:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       team_user_ids:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       avatar:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       fc_widget_collaboration:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
       forecast_category:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       deal_prediction_last_updated_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       rotten_days:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       has_products:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       products:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       last_deal_prediction:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       deal_prediction:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       freddy_forecast_metrics:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
   open_deals:
     "$schema": http://json-schema.org/draft-07/schema#
     type: object
     required:
-    - id
+      - id
     additionalProperties: true
     properties:
       id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       name:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       amount:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       currency_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       base_currency_amount:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       sales_account_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       deal_stage_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       deal_reason_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       deal_type_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       owner_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       expected_close:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       closed_date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       lead_source_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       campaign_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       deal_product_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       deal_payment_status_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       probability:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       created_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       updated_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       territory_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       deal_pipeline_id:
         type: integer
       stage_updated_time:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       custom_field:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
       age:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       links:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
       recent_note:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       completed_sales_sequences:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       active_sales_sequences:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       web_form_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       upcoming_activities_time:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       collaboration:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
       last_assigned_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       tags:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       last_contacted_sales_activity_mode:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       last_contacted_via_sales_activity:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       expected_deal_value:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       is_deleted:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       team_user_ids:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       avatar:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       fc_widget_collaboration:
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
       forecast_category:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       deal_prediction_last_updated_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       rotten_days:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       has_products:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       products:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       last_deal_prediction:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       deal_prediction:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       freddy_forecast_metrics:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
   open_tasks:
     "$schema": http://json-schema.org/draft-07/schema#
     type: object
     required:
-    - id
+      - id
     additionalProperties: true
     properties:
       id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       title:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       description:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       due_date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       targetable_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       targetable_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Possible:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       owner_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       status:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       creater_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       created_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       updated_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       outcome_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       task_type_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       updater_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       targetables:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       completed_date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
   deals_filter:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1856,77 +1856,77 @@ schemas:
     "$schema": http://json-schema.org/draft-07/schema#
     type: object
     required:
-    - id
+      - id
     additionalProperties: true
     properties:
       id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       title:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       description:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       due_date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       targetable_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       targetable_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Possible:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       owner_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       status:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       creater_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       created_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       updated_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       outcome_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       task_type_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       updater_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       targetables:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       completed_date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
   contacts_filters:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1936,137 +1936,137 @@ schemas:
     "$schema": http://json-schema.org/draft-07/schema#
     type: object
     required:
-    - id
+      - id
     additionalProperties: true
     properties:
       id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       from_date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Start:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       end_date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       End:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       time_zone:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       title:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       description:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       creater_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       targetable_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       targetable_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Possible:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       location:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       created_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       updated_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       is_allday:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       appointment_attendees_attributes:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       outcome_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       latitude:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       longitude:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       checkedin_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       checkedout_location:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       can_checkin_checkout:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       checkedout_latitude:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       checkedin_duration:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       checkedout_longitude:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       targetables:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       can_checkin:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       provider:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       checkedout_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       conference_id:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
   sales_accounts_filter:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -2076,134 +2076,134 @@ schemas:
     "$schema": http://json-schema.org/draft-07/schema#
     type: object
     required:
-    - id
+      - id
     additionalProperties: true
     properties:
       id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       from_date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Start:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       end_date:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       End:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       time_zone:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       title:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       description:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       creater_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       targetable_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       targetable_type:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       Possible:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       location:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       created_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       updated_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       is_allday:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       appointment_attendees_attributes:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       outcome_id:
         type:
-        - 'null'
-        - integer
+          - "null"
+          - integer
       latitude:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       longitude:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       checkedin_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       checkedout_location:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       can_checkin_checkout:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       checkedout_latitude:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       checkedin_duration:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       checkedout_longitude:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       targetables:
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
       can_checkin:
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       provider:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       checkedout_at:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       conference_id:
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
