@@ -62,7 +62,7 @@ def default_backoff_handler(
         max_time=max_time,
         factor=factor,
         **kwargs,
-    ) # type: ignore # Decorator function returns a function with a different signature than the input function, so mypy can't infer the type of the returned function
+    )  # type: ignore # Decorator function returns a function with a different signature than the input function, so mypy can't infer the type of the returned function
 
 
 def http_client_default_backoff_handler(
@@ -90,7 +90,7 @@ def http_client_default_backoff_handler(
         max_time=max_time,
         factor=factor,
         **kwargs,
-    ) # type: ignore # Decorator function returns a function with a different signature than the input function, so mypy can't infer the type of the returned function
+    )  # type: ignore # Decorator function returns a function with a different signature than the input function, so mypy can't infer the type of the returned function
 
 
 def user_defined_backoff_handler(
@@ -122,4 +122,4 @@ def user_defined_backoff_handler(
         max_tries=max_tries,
         max_time=max_time,
         **kwargs,
-    ) # type: ignore # Decorator function returns a function with a different signature than the input function, so mypy can't infer the type of the returned function
+    )  # type: ignore # Decorator function returns a function with a different signature than the input function, so mypy can't infer the type of the returned function
