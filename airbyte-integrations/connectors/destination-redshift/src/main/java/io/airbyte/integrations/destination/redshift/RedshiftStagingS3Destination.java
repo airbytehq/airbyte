@@ -241,7 +241,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
       catalogParser = new CatalogParser(sqlGenerator, rawNamespace);
     } else {
       rawNamespace = JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
-      catalogParser = new CatalogParser(sqlGenerator);
+      catalogParser = new CatalogParser(sqlGenerator, rawNamespace);
     }
     final RedshiftDestinationHandler redshiftDestinationHandler = new RedshiftDestinationHandler(databaseName, database, rawNamespace);
     parsedCatalog = catalogParser.parseCatalog(catalog);
