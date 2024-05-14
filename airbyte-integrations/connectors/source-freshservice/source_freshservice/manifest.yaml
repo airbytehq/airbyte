@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /tickets
           http_method: GET
           error_handler:
@@ -49,12 +49,12 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: updated_at
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -62,7 +62,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/tickets'
+          $ref: "#/schemas/tickets"
     satisfaction_survey_responses:
       type: DeclarativeStream
       name: satisfaction_survey_responses
@@ -71,7 +71,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /tickets/{{ stream_partition.parent_id }}/csat_response
           http_method: GET
           error_handler:
@@ -106,11 +106,11 @@ definitions:
                 parent_key: id
                 partition_field: parent_id
                 stream:
-                  $ref: '#/definitions/streams/tickets'
+                  $ref: "#/definitions/streams/tickets"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/satisfaction_survey_responses'
+          $ref: "#/schemas/satisfaction_survey_responses"
     requested_items:
       type: DeclarativeStream
       name: requested_items
@@ -119,7 +119,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /tickets/{{ stream_partition.parent_id }}/requested_items
           http_method: GET
           error_handler:
@@ -170,11 +170,11 @@ definitions:
                 parent_key: id
                 partition_field: parent_id
                 stream:
-                  $ref: '#/definitions/streams/tickets'
+                  $ref: "#/definitions/streams/tickets"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/requested_items'
+          $ref: "#/schemas/requested_items"
     problems:
       type: DeclarativeStream
       name: problems
@@ -183,7 +183,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /problems
           http_method: GET
           error_handler:
@@ -214,7 +214,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/problems'
+          $ref: "#/schemas/problems"
     changes:
       type: DeclarativeStream
       name: changes
@@ -223,7 +223,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /changes
           http_method: GET
           error_handler:
@@ -254,7 +254,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/changes'
+          $ref: "#/schemas/changes"
     releases:
       type: DeclarativeStream
       name: releases
@@ -263,7 +263,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /releases
           http_method: GET
           error_handler:
@@ -295,12 +295,12 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: updated_at
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -308,7 +308,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/releases'
+          $ref: "#/schemas/releases"
     requesters:
       type: DeclarativeStream
       name: requesters
@@ -317,7 +317,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /requesters
           http_method: GET
           error_handler:
@@ -348,7 +348,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/requesters'
+          $ref: "#/schemas/requesters"
     agents:
       type: DeclarativeStream
       name: agents
@@ -357,7 +357,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /agents
           http_method: GET
           error_handler:
@@ -388,7 +388,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/agents'
+          $ref: "#/schemas/agents"
     locations:
       type: DeclarativeStream
       name: locations
@@ -397,7 +397,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /locations
           http_method: GET
           error_handler:
@@ -428,7 +428,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/locations'
+          $ref: "#/schemas/locations"
     products:
       type: DeclarativeStream
       name: products
@@ -437,7 +437,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /products
           http_method: GET
           error_handler:
@@ -468,7 +468,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/products'
+          $ref: "#/schemas/products"
     vendors:
       type: DeclarativeStream
       name: vendors
@@ -477,7 +477,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /vendors
           http_method: GET
           error_handler:
@@ -508,7 +508,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/vendors'
+          $ref: "#/schemas/vendors"
     assets:
       type: DeclarativeStream
       name: assets
@@ -517,7 +517,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /assets
           http_method: GET
           error_handler:
@@ -548,7 +548,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/assets'
+          $ref: "#/schemas/assets"
     software:
       type: DeclarativeStream
       name: software
@@ -557,7 +557,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /applications
           http_method: GET
           error_handler:
@@ -588,7 +588,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/software'
+          $ref: "#/schemas/software"
     purchase_orders:
       type: DeclarativeStream
       name: purchase_orders
@@ -597,7 +597,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /purchase_orders
           http_method: GET
           error_handler:
@@ -628,30 +628,30 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/purchase_orders'
+          $ref: "#/schemas/purchase_orders"
   base_requester:
     type: HttpRequester
     url_base: https://{{config['domain_name']}}/api/v2
     authenticator:
       type: BasicHttpAuthenticator
-      username: '{{ config[''api_key''] }}'
-      password: '{{ config[''api_key''] }}'
+      username: "{{ config['api_key'] }}"
+      password: "{{ config['api_key'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/tickets'
-  - $ref: '#/definitions/streams/satisfaction_survey_responses'
-  - $ref: '#/definitions/streams/requested_items'
-  - $ref: '#/definitions/streams/problems'
-  - $ref: '#/definitions/streams/changes'
-  - $ref: '#/definitions/streams/releases'
-  - $ref: '#/definitions/streams/requesters'
-  - $ref: '#/definitions/streams/agents'
-  - $ref: '#/definitions/streams/locations'
-  - $ref: '#/definitions/streams/products'
-  - $ref: '#/definitions/streams/vendors'
-  - $ref: '#/definitions/streams/assets'
-  - $ref: '#/definitions/streams/software'
-  - $ref: '#/definitions/streams/purchase_orders'
+  - $ref: "#/definitions/streams/tickets"
+  - $ref: "#/definitions/streams/satisfaction_survey_responses"
+  - $ref: "#/definitions/streams/requested_items"
+  - $ref: "#/definitions/streams/problems"
+  - $ref: "#/definitions/streams/changes"
+  - $ref: "#/definitions/streams/releases"
+  - $ref: "#/definitions/streams/requesters"
+  - $ref: "#/definitions/streams/agents"
+  - $ref: "#/definitions/streams/locations"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/vendors"
+  - $ref: "#/definitions/streams/assets"
+  - $ref: "#/definitions/streams/software"
+  - $ref: "#/definitions/streams/purchase_orders"
 
 spec:
   type: Spec
@@ -688,7 +688,7 @@ spec:
           UTC date and time in the format 2020-10-01T00:00:00Z. Any data before
           this date will not be replicated.
         examples:
-          - '2020-10-01T00:00:00Z'
+          - "2020-10-01T00:00:00Z"
         order: 2
     additionalProperties: true
 
@@ -717,87 +717,87 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
         description: Type of the ticket.
       attachments:
         type:
-          - 'null'
+          - "null"
           - array
         description: Attachments related to the ticket.
       category:
         type:
-          - 'null'
+          - "null"
           - string
         description: Category of the ticket.
       cc_emails:
         type:
-          - 'null'
+          - "null"
           - array
         description: Email addresses cc'd on the ticket.
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Date and time when the ticket was created.
       custom_fields:
         type:
-          - 'null'
+          - "null"
           - object
         description: Custom fields associated with the ticket.
       deleted:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the ticket is deleted.
       department_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the department handling the ticket.
       description:
         type:
-          - 'null'
+          - "null"
           - string
         description: Description of the ticket.
       description_text:
         type:
-          - 'null'
+          - "null"
           - string
         description: Textual description of the ticket.
       due_by:
         type:
-          - 'null'
+          - "null"
           - string
         description: Date by which the ticket needs to be resolved.
       email:
         type:
-          - 'null'
+          - "null"
           - string
         description: Email address associated with the ticket.
       email_config_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Configuration ID of the email associated with the ticket.
       fr_due_by:
         type:
-          - 'null'
+          - "null"
           - string
         description: First response due by date for the ticket.
       fr_escalated:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the ticket has been first response escalated.
       fwd_emails:
         type:
-          - 'null'
+          - "null"
           - array
         description: Email addresses to which the ticket has been forwarded.
       group_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the group the ticket is assigned to.
       id:
@@ -805,102 +805,102 @@ schemas:
         description: Unique identifier of the ticket.
       impact:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Impact level of the ticket.
       is_escalated:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the ticket has been escalated.
       item_category:
         type:
-          - 'null'
+          - "null"
           - string
         description: Category of the item related to the ticket.
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Name associated with the ticket.
       phone:
         type:
-          - 'null'
+          - "null"
           - string
         description: Phone number associated with the ticket.
       priority:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Priority level of the ticket.
       reply_cc_emails:
         type:
-          - 'null'
+          - "null"
           - array
         description: Email addresses cc'd on replies to the ticket.
       requested_for_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the person for whom the ticket was requested.
       requester_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the person who requested the ticket.
       responder_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the responder handling the ticket.
       source:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Source of the ticket creation.
       spam:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the ticket is considered as spam.
       status:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Current status of the ticket.
       sub_category:
         type:
-          - 'null'
+          - "null"
           - string
         description: Sub-category of the ticket.
       subject:
         type:
-          - 'null'
+          - "null"
           - string
         description: Subject of the ticket.
       tags:
         type:
-          - 'null'
+          - "null"
           - array
         description: Tags associated with the ticket.
       to_emails:
         type:
-          - 'null'
+          - "null"
           - array
         description: Email addresses the ticket was sent to.
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Date and time when the ticket was last updated.
       urgency:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Urgency level of the ticket.
       workspace_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the workspace associated with the ticket.
   satisfaction_survey_responses:
@@ -910,70 +910,70 @@ schemas:
     properties:
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: The timestamp when the survey response was created.
       id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The unique identifier for the survey response.
       overall_rating:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The overall numeric rating given by the respondent.
       overall_rating_text:
         type:
-          - 'null'
+          - "null"
           - string
         description: The text representation of the overall rating.
       primary_question:
         type:
-          - 'null'
+          - "null"
           - string
         description: The main question being asked in the survey.
       questionnaire_responses:
         type:
-          - 'null'
+          - "null"
           - object
         description: List of questionnaire responses provided by users
         items:
           type:
-            - 'null'
+            - "null"
             - object
           additionalProperties: true
           properties:
             answers:
               type:
-                - 'null'
+                - "null"
                 - array
               description: List of answers provided by users for the questions
               items:
                 - type:
-                    - 'null'
+                    - "null"
                     - object
                   additionalProperties: true
                   properties:
                     answer_text:
                       type:
-                        - 'null'
+                        - "null"
                         - string
             question:
               type:
-                - 'null'
+                - "null"
                 - object
               additionalProperties: true
               description: Details of the question asked in the survey
               properties:
                 question_text:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   description: The text of the question being answered.
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: The timestamp when the survey response was last updated.
   requested_items:
@@ -983,68 +983,68 @@ schemas:
     properties:
       cost_per_request:
         type:
-          - 'null'
+          - "null"
           - number
         description: The cost associated with fulfilling the request.
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: The timestamp when the request was created.
       custom_fields:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         description: Any custom fields associated with the requested item.
       delivery_time:
         type:
-          - 'null'
+          - "null"
           - number
         description: The estimated delivery time for the requested item.
       id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The unique identifier for the requested item.
       is_parent:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates whether the requested item is a parent item.
       loaned:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Whether the item has been loaned out.
       quantity:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The quantity of the requested item.
       remarks:
         type:
-          - 'null'
+          - "null"
           - string
         description: Any additional remarks or notes.
       service_item_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The ID of the service item being requested.
       service_item_name:
         type:
-          - 'null'
+          - "null"
           - string
         description: The name of the service item being requested.
       stage:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The current stage of the request item.
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: The timestamp when the request item was last updated.
   problems:
@@ -1054,7 +1054,7 @@ schemas:
     properties:
       agent_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The unique identifier of the agent assigned to the problem
       analysis_fields:
@@ -1063,7 +1063,7 @@ schemas:
         description: Fields related to the analysis or investigation of the problem
       assets:
         type:
-          - 'null'
+          - "null"
           - array
         description: >-
           Contains information about assets related to the problem, such as
@@ -1073,12 +1073,12 @@ schemas:
           description: Details of assets associated with the problem
       associated_change:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The ID of the change request associated with the problem
       attachments:
         type:
-          - 'null'
+          - "null"
           - array
         description: >-
           Contains any additional files or documents attached to the problem for
@@ -1088,44 +1088,44 @@ schemas:
           description: List of attachments related to the problem
       category:
         type:
-          - 'null'
+          - "null"
           - string
         description: The category under which the problem falls
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: The date and time at which the problem was created
         format: date-time
       custom_fields:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         description: Custom fields specific to the problem
       department_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The ID of the department associated with the problem
       description:
         type:
-          - 'null'
+          - "null"
           - string
         description: Detailed description of the problem
       description_text:
         type:
-          - 'null'
+          - "null"
           - string
         description: Textual description of the problem
       due_by:
         type:
-          - 'null'
+          - "null"
           - string
         description: The due date by which the problem needs to be resolved
       group_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The ID of the group handling the problem
       id:
@@ -1133,70 +1133,70 @@ schemas:
         description: The unique identifier of the problem
       impact:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The level of impact the problem has on operations
       item_category:
         type:
-          - 'null'
+          - "null"
           - string
         description: The category of the item associated with the problem
       known_error:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the problem is a known error
       planned_effort:
         type:
           - string
-          - 'null'
+          - "null"
         description: The planned effort required to resolve the problem
       planned_end_date:
         type:
-          - 'null'
+          - "null"
           - string
         description: The planned end date for resolving the problem
         format: date-time
       planned_start_date:
         type:
-          - 'null'
+          - "null"
           - string
         description: The planned start date for resolving the problem
         format: date-time
       priority:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The priority level assigned to the problem
       requester_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The ID of the user who reported the problem
       status:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The current status of the problem
       sub_category:
         type:
-          - 'null'
+          - "null"
           - string
         description: The sub-category under which the problem falls
       subject:
         type:
-          - 'null'
+          - "null"
           - string
         description: The subject or title of the problem
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: The date and time at which the problem was last updated
         format: date-time
       workspace_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The ID of the workspace to which the problem belongs
   changes:
@@ -1206,17 +1206,17 @@ schemas:
     properties:
       agent_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the agent responsible for the change
       approval_status:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Approval status of the change request
       assets:
         type:
-          - 'null'
+          - "null"
           - array
         description: Contains information about the assets that were changed.
         items:
@@ -1224,7 +1224,7 @@ schemas:
           description: List of assets associated with the change
       attachments:
         type:
-          - 'null'
+          - "null"
           - array
         description: Contains data related to any attachments associated with the changes.
         items:
@@ -1232,55 +1232,55 @@ schemas:
           description: List of attachments related to the change
       blackout_window:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         description: Details of any blackout window for the change
       category:
         type:
-          - 'null'
+          - "null"
           - string
         description: Category under which the change falls
       change_type:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Type of change being requested
       change_window_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the change window
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Timestamp when the change was created
         format: date-time
       custom_fields:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         description: Any custom fields associated with the change
       department_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the department associated with the change
       description:
         type:
-          - 'null'
+          - "null"
           - string
         description: Detailed description of the change
       description_text:
         type:
-          - 'null'
+          - "null"
           - string
         description: Textual description of the change
       group_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the group handling the change
       id:
@@ -1288,81 +1288,81 @@ schemas:
         description: Unique identifier for the change
       impact:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Impact level of the change
       impacted_services:
         type:
-          - 'null'
+          - "null"
           - array
         description: List of services impacted by the change
         items:
           additionalProperties: true
       item_category:
         type:
-          - 'null'
+          - "null"
           - string
         description: Category of the item related to the change
       maintenance_window:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         description: Details of any maintenance window for the change
       planned_effort:
         type:
           - string
-          - 'null'
+          - "null"
         description: Effort planned for the change
       planned_end_date:
         type:
-          - 'null'
+          - "null"
           - string
         description: Planned end date for the change
       planned_start_date:
         type:
-          - 'null'
+          - "null"
           - string
         description: Planned start date for the change
       priority:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Priority level of the change
       requester_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the requester initiating the change
       risk:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Risk level associated with the change
       status:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Current status of the change
       sub_category:
         type:
-          - 'null'
+          - "null"
           - string
         description: Sub-category under which the change falls
       subject:
         type:
-          - 'null'
+          - "null"
           - string
         description: Subject or title of the change
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Timestamp when the change was last updated
         format: date-time
       workspace_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the workspace in which the change resides
   releases:
@@ -1372,47 +1372,47 @@ schemas:
     properties:
       agent_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The unique identifier of the agent associated with the release.
       associated_assets:
         type:
-          - 'null'
+          - "null"
           - array
         description: Assets associated with the release.
       associated_changes:
         type:
-          - 'null'
+          - "null"
           - array
         description: Changes associated with the release.
       category:
         type:
-          - 'null'
+          - "null"
           - string
         description: Category of the release.
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Timestamp indicating when the release was created.
       custom_fields:
         type:
-          - 'null'
+          - "null"
           - object
         description: Custom fields specific to the release.
       department_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the department associated with the release.
       description:
         type:
-          - 'null'
+          - "null"
           - string
         description: Description of the release.
       group_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the group associated with the release.
       id:
@@ -1420,17 +1420,17 @@ schemas:
         description: Unique identifier of the release.
       item_category:
         type:
-          - 'null'
+          - "null"
           - string
         description: Category of the item associated with the release.
       planned_end_date:
         type:
-          - 'null'
+          - "null"
           - string
         description: Planned end date of the release.
       planned_start_date:
         type:
-          - 'null'
+          - "null"
           - string
         description: Planned start date of the release.
       planning_fields:
@@ -1438,42 +1438,42 @@ schemas:
         description: Fields related to the planning of the release.
       priority:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Priority level of the release.
       release_type:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Type of release (e.g., major, minor, patch).
       status:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Status of the release (e.g., planned, in progress, completed).
       sub_category:
         type:
-          - 'null'
+          - "null"
           - string
         description: Sub-category of the release.
       subject:
         type:
-          - 'null'
+          - "null"
           - string
         description: Subject or title of the release.
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Timestamp indicating when the release was last updated.
       work_end_date:
         type:
-          - 'null'
+          - "null"
           - string
         description: Actual end date of the release work.
       work_start_date:
         type:
-          - 'null'
+          - "null"
           - string
         description: Actual start date of the release work.
   requesters:
@@ -1483,66 +1483,66 @@ schemas:
     properties:
       active:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the requester is currently active or not in the system.
       address:
         type:
-          - 'null'
+          - "null"
           - string
         description: Requester's physical address.
       background_information:
         type:
-          - 'null'
+          - "null"
           - string
         description: Additional background information about the requester.
       can_see_all_changes_from_associated_departments:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: >-
           Boolean value for whether the requester can see changes from
           associated departments.
       can_see_all_tickets_from_associated_departments:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: >-
           Boolean value for whether the requester can see tickets from
           associated departments.
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Date and time when the requester record was created.
       custom_fields:
         type:
-          - 'null'
+          - "null"
           - object
         description: Custom fields associated with the requester profile.
       department_ids:
         type:
-          - 'null'
+          - "null"
           - array
         description: IDs of the departments the requester is associated with.
       department_names:
         type:
-          - 'null'
+          - "null"
           - array
         description: Names of the departments the requester is associated with.
       external_id:
         type:
-          - 'null'
+          - "null"
           - string
         description: External identifier for the requester, if applicable.
       first_name:
         type:
-          - 'null'
+          - "null"
           - string
         description: First name of the requester.
       has_logged_in:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the requester has logged into the system.
       id:
@@ -1550,82 +1550,82 @@ schemas:
         description: Unique identifier for the requester.
       is_agent:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Boolean value indicating if the requester is also an agent.
       job_title:
         type:
-          - 'null'
+          - "null"
           - string
         description: Job title of the requester.
       language:
         type:
-          - 'null'
+          - "null"
           - string
         description: Language preference of the requester.
       last_name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Last name of the requester.
       location_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the location associated with the requester.
       location_name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Name of the location associated with the requester.
       mobile_phone_number:
         type:
-          - 'null'
+          - "null"
           - string
         description: Mobile phone number of the requester.
       primary_email:
         type:
-          - 'null'
+          - "null"
           - string
         description: Primary email address of the requester.
       reporting_manager_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the reporting manager for the requester.
       secondary_emails:
         type:
-          - 'null'
+          - "null"
           - array
         description: Additional email addresses of the requester.
       time_format:
         type:
-          - 'null'
+          - "null"
           - string
         description: Preferred time format for the requester.
       time_zone:
         type:
-          - 'null'
+          - "null"
           - string
         description: Time zone preference for the requester.
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Date and time when the requester record was last updated.
       vip_user:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the requester is a VIP user.
       work_phone_number:
         type:
-          - 'null'
+          - "null"
           - string
         description: Work phone number of the requester.
       work_schedule_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the work schedule assigned to the requester.
   agents:
@@ -1635,82 +1635,82 @@ schemas:
     properties:
       active:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the agent is currently active or not
       address:
         type:
-          - 'null'
+          - "null"
           - string
         description: The physical address of the agent
       auto_assign_status_changed_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Timestamp for when auto assign status was last changed
       auto_assign_tickets:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Flag to enable/disable auto-assigning of tickets to the agent
       background_information:
         type:
-          - 'null'
+          - "null"
           - string
         description: Additional background information about the agent
       can_see_all_tickets_from_associated_departments:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Flag to allow viewing of tickets from associated departments
       change_scope:
         type:
-          - 'null'
+          - "null"
           - string
         description: Scope of changes the agent is allowed to make
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Timestamp for when the agent was created
       custom_fields:
         type:
-          - 'null'
+          - "null"
           - object
         description: Custom fields specific to the agent
       department_ids:
         type:
-          - 'null'
+          - "null"
           - array
         description: IDs of departments to which the agent belongs
       department_names:
         type:
-          - 'null'
+          - "null"
           - array
         description: Names of departments to which the agent belongs
       email:
         type:
-          - 'null'
+          - "null"
           - string
         description: Email address of the agent
       external_id:
         type:
-          - 'null'
+          - "null"
           - string
         description: External identifier for the agent
       first_name:
         type:
-          - 'null'
+          - "null"
           - string
         description: First name of the agent
       group_ids:
         type:
-          - 'null'
+          - "null"
           - array
         description: IDs of groups to which the agent belongs
       has_logged_in:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the agent has logged into the system
       id:
@@ -1718,162 +1718,162 @@ schemas:
         description: Unique identifier for the agent
       job_title:
         type:
-          - 'null'
+          - "null"
           - string
         description: Job title of the agent
       language:
         type:
-          - 'null'
+          - "null"
           - string
         description: Preferred language of communication for the agent
       last_active_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Timestamp for when the agent was last active
       last_login_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Timestamp for when the agent last logged in
       last_name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Last name of the agent
       location_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the location where the agent is based
       location_name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Name of the location where the agent is based
       member_of:
         type:
-          - 'null'
+          - "null"
           - array
         description: Groups the agent is a member of
       member_of_pending_approval:
         type:
-          - 'null'
+          - "null"
           - array
         description: Groups the agent has requested to join but pending approval
       mobile_phone_number:
         type:
-          - 'null'
+          - "null"
           - string
         description: Mobile phone number of the agent
       observer_of:
         type:
-          - 'null'
+          - "null"
           - array
         description: Groups the agent is an observer of
       observer_of_pending_approval:
         type:
-          - 'null'
+          - "null"
           - array
         description: Groups the agent is waiting to be approved as an observer
       occasional:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the agent is an occasional user
       problem_scope:
         type:
-          - 'null'
+          - "null"
           - string
         description: Scope of problems the agent is allowed to work on
       release_scope:
         type:
-          - 'null'
+          - "null"
           - string
         description: Scope of releases the agent is involved in
       reporting_manager_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the reporting manager for the agent
       role_ids:
         type:
-          - 'null'
+          - "null"
           - array
         description: IDs of roles assigned to the agent
       roles:
         type:
-          - 'null'
+          - "null"
           - array
         description: Roles assigned to the agent
       scopes:
         type:
-          - 'null'
+          - "null"
           - object
         description: Various scopes assigned to the agent
       scoreboard_level_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the scoreboard level for the agent
       scoreboard_points:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Scoreboard points earned by the agent
       signature:
         type:
-          - 'null'
+          - "null"
           - string
         description: Email signature of the agent
       ticket_scope:
         type:
-          - 'null'
+          - "null"
           - string
         description: Scope of tickets the agent is allowed to access
       time_format:
         type:
-          - 'null'
+          - "null"
           - string
         description: Preferred time format for the agent
       time_zone:
         type:
-          - 'null'
+          - "null"
           - string
         description: Preferred time zone for the agent
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Timestamp for when the agent was last updated
       vip_user:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the agent is a VIP user
       work_phone_number:
         type:
-          - 'null'
+          - "null"
           - string
         description: Work phone number of the agent
       work_schedule_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the work schedule assigned to the agent
       workspace_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the primary workspace for the agent
       workspace_ids:
         type:
-          - 'null'
+          - "null"
           - array
         description: IDs of workspaces associated with the agent
       workspace_info:
         type:
-          - 'null'
+          - "null"
           - array
         description: Information about workspaces used by the agent
         items:
@@ -1891,47 +1891,47 @@ schemas:
         properties:
           city:
             type:
-              - 'null'
+              - "null"
               - string
             description: City of the location
           country:
             type:
-              - 'null'
+              - "null"
               - string
             description: Country of the location
           line1:
             type:
-              - 'null'
+              - "null"
               - string
             description: First line of the address
           line2:
             type:
-              - 'null'
+              - "null"
               - string
             description: Second line of the address
           state:
             type:
-              - 'null'
+              - "null"
               - string
             description: State of the location
           zipcode:
             type:
-              - 'null'
+              - "null"
               - string
             description: Zip code of the location
       contact_name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Name of the primary contact person
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Timestamp when the location was created
       email:
         type:
-          - 'null'
+          - "null"
           - string
         description: Email address associated with the location
       id:
@@ -1939,27 +1939,27 @@ schemas:
         description: Unique identifier for the location
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Name of the location
       parent_location_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Identifier of the parent location (if applicable)
       phone:
         type:
-          - 'null'
+          - "null"
           - string
         description: Phone number of the location
       primary_contact_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Identifier of the primary contact person
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Timestamp when the location was last updated
   products:
@@ -1969,29 +1969,29 @@ schemas:
     properties:
       asset_type_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Unique identifier for the type of asset associated with the product.
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Timestamp indicating when the product was created.
       depreciation_type_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: >-
           Unique identifier for the type of depreciation method used for the
           product.
       description:
         type:
-          - 'null'
+          - "null"
           - string
         description: Brief overview or summary of the product.
       description_text:
         type:
-          - 'null'
+          - "null"
           - string
         description: Detailed text describing the product.
       id:
@@ -1999,27 +1999,27 @@ schemas:
         description: Unique identifier for the product.
       manufacturer:
         type:
-          - 'null'
+          - "null"
           - string
         description: Name of the manufacturer of the product.
       mode_of_procurement:
         type:
-          - 'null'
+          - "null"
           - string
         description: Method through which the product was procured.
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Name or title of the product.
       status:
         type:
-          - 'null'
+          - "null"
           - string
         description: Current status of the product.
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Timestamp indicating when the product was last updated.
   vendors:
@@ -2034,52 +2034,52 @@ schemas:
         properties:
           city:
             type:
-              - 'null'
+              - "null"
               - string
             description: City of the vendor's address
           country:
             type:
-              - 'null'
+              - "null"
               - string
             description: Country of the vendor's address
           line1:
             type:
-              - 'null'
+              - "null"
               - string
             description: First line of the vendor's address
           state:
             type:
-              - 'null'
+              - "null"
               - string
             description: State of the vendor's address
           zipcode:
             type:
-              - 'null'
+              - "null"
               - string
             description: Zipcode of the vendor's address
       contact_name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Name of the primary contact person
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Date and time when vendor data was created
       custom_fields:
         type:
-          - 'null'
+          - "null"
           - object
         description: Custom fields specific to the vendor
       description:
         type:
-          - 'null'
+          - "null"
           - string
         description: Description of the vendor
       email:
         type:
-          - 'null'
+          - "null"
           - string
         description: Email address of the vendor
       id:
@@ -2087,27 +2087,27 @@ schemas:
         description: Unique identifier for the vendor
       mobile:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Mobile number of the vendor
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Name of the vendor
       phone:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Phone number of the vendor
       primary_contact_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the primary contact person
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Date and time when vendor data was last updated
   assets:
@@ -2117,63 +2117,63 @@ schemas:
     properties:
       agent_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Unique identifier for the agent associated with the asset.
       asset_tag:
         type:
-          - 'null'
+          - "null"
           - string
         description: Identification tag assigned to the asset.
       asset_type_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Identifier for the type of asset.
       assigned_on:
         type:
-          - 'null'
+          - "null"
           - string
         description: Date when the asset was assigned.
       author_type:
         type:
-          - 'null'
+          - "null"
           - string
         description: Type of author responsible for the asset.
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Date and time when the asset record was created.
       department_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Identifier for the department where the asset is assigned.
       description:
         type:
-          - 'null'
+          - "null"
           - string
         description: Description providing additional details about the asset.
       discovery_enabled:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Flag indicating if asset discovery is enabled.
       display_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Identifier used to display the asset.
       end_of_life:
         type:
-          - 'null'
+          - "null"
           - string
         description: Date when the asset is expected to reach its end of life.
-        format: '%Y-%m-%d'
+        format: "%Y-%m-%d"
       group_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Identifier for the group to which the asset belongs.
       id:
@@ -2181,32 +2181,32 @@ schemas:
         description: Unique identifier for the asset.
       impact:
         type:
-          - 'null'
+          - "null"
           - string
         description: Measure of impact of the asset on operations.
       location_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Identifier for the location where the asset is located.
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Name or title of the asset.
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Date and time when the asset record was last updated.
       usage_type:
         type:
-          - 'null'
+          - "null"
           - string
         description: Type of usage or purpose of the asset.
       user_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Identifier for the user assigned to the asset.
   software:
@@ -2216,27 +2216,27 @@ schemas:
     properties:
       additional_data:
         type:
-          - 'null'
+          - "null"
           - object
         description: Additional data related to the software.
       application_type:
         type:
-          - 'null'
+          - "null"
           - string
         description: Type of application the software belongs to.
       category:
         type:
-          - 'null'
+          - "null"
           - string
         description: Category of the software.
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Timestamp for when the software was created.
       description:
         type:
-          - 'null'
+          - "null"
           - string
         description: Brief description or overview of the software.
       id:
@@ -2244,32 +2244,32 @@ schemas:
         description: Unique identifier for the software.
       installation_count:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Number of installations of the software.
       managed_by_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Identifier of the user or entity managing the software.
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Name of the software.
       notes:
         type:
-          - 'null'
+          - "null"
           - string
         description: Any additional notes or comments related to the software.
       publisher_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Identifier of the publisher of the software.
       sources:
         type:
-          - 'null'
+          - "null"
           - array
         description: Sources for the software.
         items:
@@ -2277,22 +2277,22 @@ schemas:
           description: Individual source item related to the software.
       status:
         type:
-          - 'null'
+          - "null"
           - string
         description: Current status of the software.
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Timestamp for when the software was last updated.
       user_count:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Number of users utilizing the software.
       workspace_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Identifier of the workspace to which the software belongs.
   purchase_orders:
@@ -2302,12 +2302,12 @@ schemas:
     properties:
       billing_address:
         type:
-          - 'null'
+          - "null"
           - string
         description: The address used for billing purposes
       billing_same_as_shipping:
         type:
-          - 'null'
+          - "null"
           - integer
         description: >-
           Indicates whether the billing address is the same as the shipping
@@ -2317,37 +2317,37 @@ schemas:
         description: The currency conversion rate used for the purchase order
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: The date and time when the purchase order was created
       created_by:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The user who created the purchase order
       currency_code:
         type:
-          - 'null'
+          - "null"
           - string
         description: The currency code used for the purchase order
       custom_fields:
         type:
-          - 'null'
+          - "null"
           - object
         description: Any custom fields associated with the purchase order
       department_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The ID of the department associated with the purchase order
       discount_percentage:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The discount percentage applied to the total cost
       expected_delivery_date:
         type:
-          - 'null'
+          - "null"
           - string
         description: The expected delivery date for the purchase order
       id:
@@ -2355,12 +2355,12 @@ schemas:
         description: The unique identifier for the purchase order
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: The name or title for the purchase order
       po_number:
         type:
-          - 'null'
+          - "null"
           - string
         description: The purchase order number for identification
       purchase_items:
@@ -2368,46 +2368,46 @@ schemas:
         description: The items or products included in the purchase order
       shipping_address:
         type:
-          - 'null'
+          - "null"
           - string
         description: The address where the items will be shipped
       shipping_cost:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The cost associated with shipping the items
       status:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The current status of the purchase order
       tax_percentage:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The tax percentage applied to the total cost
       total_cost:
         type:
-          - 'null'
+          - "null"
           - number
         description: The total cost of the purchase order including taxes and discounts
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: The date and time when the purchase order was last updated
       vendor_details:
         type:
-          - 'null'
+          - "null"
           - string
         description: Details about the vendor supplying the items
       vendor_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The ID of the vendor associated with the purchase order
       workspace_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The ID of the workspace in which the purchase order was created
