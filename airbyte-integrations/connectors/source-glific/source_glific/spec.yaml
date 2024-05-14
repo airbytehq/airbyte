@@ -26,3 +26,11 @@ connectionSpecification:
       order: 2
       default: "2023-01-26T11:11:11Z"
       pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    glific_url:
+      type: string
+      title: Glific URL
+      description: URL of the Glific instance
+      order: 3
+      default: "https://api.staging.glific.com/api"
+      pattern: ^https://[a-zA-Z0-9.-]+$
+

@@ -4,17 +4,16 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
-
-import requests
+from typing import Any, Iterable, List, Mapping, Optional, Tuple
 import json
+from datetime import datetime
+import requests
+
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream, IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.core import StreamData
-from datetime import datetime
 
 
 stream_json_schema = {
@@ -75,6 +74,7 @@ class GlificStream(HttpStream, ABC):
         self.start_time = config["start_time"]
         self.offset = 0
         self.last_record = None
+        self.state = {}
 
     @property
     def url_base(self) -> str:
@@ -100,8 +100,8 @@ class GlificStream(HttpStream, ABC):
 
     def update_state(self) -> None:
         if self.latest_updated_date:
-            if self.latest_updated_date > self.state["updated_at"]:
-                self.state = {self.cursor_field: self.latest_updated_date}
+            if not self.state or self.latest_updated_date > self.state["updated_at"]:
+                self.state = {"updated_at": self.latest_updated_date}
         self.latest_updated_date = None
         return None
 
@@ -204,7 +204,6 @@ class IncrementalGlificStream(GlificStream, IncrementalMixin, ABC):
 class SourceGlific(AbstractSource):
     """Glific source"""
 
-    API_URL = "https://api.staging.tides.coloredcow.com/api"
     PAGINATION_LIMIT = 500
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -226,7 +225,9 @@ class SourceGlific(AbstractSource):
             logger.info("Password missing")
             return False, "Password missing"
 
-        endpoint = f"{self.API_URL}/v1/session"
+        api_url = config["glific_url"]
+
+        endpoint = f"{api_url}/v1/session"
         auth_payload = {"user": {"phone": config["phone"], "password": config["password"]}}
 
         response = requests.post(endpoint, json=auth_payload, timeout=30)
@@ -243,8 +244,10 @@ class SourceGlific(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
 
+        api_url = config["glific_url"]
+
         # authenticate and get the credentials for all streams
-        endpoint = f"{self.API_URL}/v1/session"
+        endpoint = f"{api_url}/v1/session"
         auth_payload = {"user": {"phone": config["phone"], "password": config["password"]}}
         try:
             response = requests.post(endpoint, json=auth_payload, timeout=30)
@@ -255,7 +258,7 @@ class SourceGlific(AbstractSource):
             return []
 
         # fetch the export config for organization/client/user
-        endpoint = f"{self.API_URL}"
+        endpoint = api_url
         headers = {"authorization": credentials["access_token"]}
 
         try:
@@ -274,7 +277,7 @@ class SourceGlific(AbstractSource):
         export_config = json.loads(data["data"]["organizationExportConfig"]["data"])
         streams = []
         for table in export_config["tables"]:
-            stream_obj = IncrementalGlificStream(table, self.API_URL, self.PAGINATION_LIMIT, credentials, config)
+            stream_obj = IncrementalGlificStream(table, api_url, self.PAGINATION_LIMIT, credentials, config)
             streams.append(stream_obj)
 
         return streams
