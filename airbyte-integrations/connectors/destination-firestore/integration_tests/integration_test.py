@@ -3,10 +3,10 @@
 #
 
 import json
+import logging
 from typing import Any, Dict, Mapping
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
