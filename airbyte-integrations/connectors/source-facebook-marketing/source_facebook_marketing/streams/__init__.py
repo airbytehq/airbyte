@@ -61,6 +61,7 @@ __all__ = [
     "AdsInsightsDemographicsCountry",
     "AdsInsightsDemographicsDMARegion",
     "AdsInsightsDemographicsGender",
+    "AdRuleLibraries",
     "Campaigns",
     "CustomConversions",
     "CustomAudiences",
