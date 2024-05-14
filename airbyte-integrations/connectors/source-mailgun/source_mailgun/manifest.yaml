@@ -94,14 +94,14 @@ definitions:
     type: HttpRequester
     url_base: |-
       {{        
-        'https://api.mailgun.net/v3'
-        if config['domain_region']== 'US'
-        else 'https://api.eu.mailgun.net/v3'
+        'https://api.eu.mailgun.net/v3'
+        if config.domain_region == 'EU'
+        else 'https://api.mailgun.net/v3'
       }}
     authenticator:
       type: BasicHttpAuthenticator
       password: "{{ config['private_key'] }}"
-      username: "{{ config['username_do_not_edit'] }}"
+      username: "{{ config['username_do_not_edit'] if config['username_do_not_edit'] is defined else 'api'}}"
 
 streams:
   - $ref: "#/definitions/streams/domains"
@@ -128,10 +128,10 @@ spec:
         description: >-
           Domain region code. 'EU' or 'US' are possible values. The default is
           'US'.
+        default: US
         enum:
           - US
           - EU
-        default: US
       start_date:
         type: string
         order: 2
@@ -147,10 +147,10 @@ spec:
         type: string
         order: 3
         title: Username (Do Not Edit)
-        default: api
         description: >-
           Please don't edit this value. This is needed for the stream to work.
           Editing this will break the connector.
+        default: api
     additionalProperties: true
 
 metadata:
