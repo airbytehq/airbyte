@@ -20,7 +20,7 @@ from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_protocol.models import FailureType
@@ -106,7 +106,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
                 error_code = error_data.get("errorCode")
                 if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
                     logger.warn(f"API Call limit is exceeded. Error message: '{error_data.get('message')}'")
-                    error_msg = "API Call limit is exceeded"
+                    error_msg = "API Call limit is exceeded. Make sure that you have enough API allocation for your organization needs or retry later. For more information, see https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm"
             return False, error_msg
         return True, None
 

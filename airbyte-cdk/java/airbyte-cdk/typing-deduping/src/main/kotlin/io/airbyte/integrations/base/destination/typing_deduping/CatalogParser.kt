@@ -55,18 +55,28 @@ constructor(
                         .substring(0, 3)
                 val newName = "${originalName}_$hash"
                 actualStreamConfig =
-                    StreamConfig(
-                        sqlGenerator.buildStreamId(originalNamespace, newName, rawNamespace),
-                        originalStreamConfig.syncMode,
-                        originalStreamConfig.destinationSyncMode,
-                        originalStreamConfig.primaryKey,
-                        originalStreamConfig.cursor,
-                        originalStreamConfig.columns,
+                    originalStreamConfig.copy(
+                        id =
+                            sqlGenerator.buildStreamId(
+                                originalNamespace,
+                                newName,
+                                rawNamespace,
+                            ),
                     )
             } else {
                 actualStreamConfig = originalStreamConfig
             }
-            streamConfigs.add(actualStreamConfig)
+            streamConfigs.add(
+                actualStreamConfig.copy(
+                    // If we had collisions, we modified the stream name.
+                    // Revert those changes.
+                    id =
+                        actualStreamConfig.id.copy(
+                            originalName = stream.stream.name,
+                            originalNamespace = stream.stream.namespace,
+                        ),
+                ),
+            )
 
             // Populate some interesting strings into the exception handler string deinterpolator
             addStringForDeinterpolation(actualStreamConfig.id.rawNamespace)
@@ -75,37 +85,50 @@ constructor(
             addStringForDeinterpolation(actualStreamConfig.id.finalName)
             addStringForDeinterpolation(actualStreamConfig.id.originalNamespace)
             addStringForDeinterpolation(actualStreamConfig.id.originalName)
-            actualStreamConfig.columns!!
-                .keys
-                .forEach(
-                    Consumer { columnId: ColumnId? ->
-                        addStringForDeinterpolation(columnId!!.name)
-                        addStringForDeinterpolation(columnId.originalName)
-                    }
-                )
+            actualStreamConfig.columns.keys.forEach(
+                Consumer { columnId: ColumnId? ->
+                    addStringForDeinterpolation(columnId!!.name)
+                    addStringForDeinterpolation(columnId.originalName)
+                }
+            )
             // It's (unfortunately) possible for a cursor/PK to be declared that don't actually
             // exist in the
             // schema.
             // Add their strings explicitly.
-            actualStreamConfig.cursor!!.ifPresent { cursor: ColumnId ->
+            actualStreamConfig.cursor.ifPresent { cursor: ColumnId ->
                 addStringForDeinterpolation(cursor.name)
                 addStringForDeinterpolation(cursor.originalName)
             }
-            actualStreamConfig.primaryKey!!.forEach(
+            actualStreamConfig.primaryKey.forEach(
                 Consumer { pk: ColumnId ->
                     addStringForDeinterpolation(pk.name)
                     addStringForDeinterpolation(pk.originalName)
                 }
             )
         }
+        LOGGER.info("Running sync with stream configs: $streamConfigs")
         return ParsedCatalog(streamConfigs)
     }
 
     @VisibleForTesting
     fun toStreamConfig(stream: ConfiguredAirbyteStream): StreamConfig {
-        val schema: AirbyteType = AirbyteType.Companion.fromJsonSchema(stream.stream.jsonSchema)
+        if (stream.generationId == null) {
+            stream.generationId = 0
+            stream.minimumGenerationId = 0
+            stream.syncId = 0
+        }
+        if (
+            stream.minimumGenerationId != 0.toLong() &&
+                stream.minimumGenerationId != stream.generationId
+        ) {
+            throw UnsupportedOperationException("Hybrid refreshes are not yet supported.")
+        }
+
         val airbyteColumns =
-            when (schema) {
+            when (
+                val schema: AirbyteType =
+                    AirbyteType.Companion.fromJsonSchema(stream.stream.jsonSchema)
+            ) {
                 is Struct -> schema.properties
                 is Union -> schema.asColumns()
                 else -> throw IllegalArgumentException("Top-level schema must be an object")
@@ -132,11 +155,13 @@ constructor(
 
         return StreamConfig(
             sqlGenerator.buildStreamId(stream.stream.namespace, stream.stream.name, rawNamespace),
-            stream.syncMode,
             stream.destinationSyncMode,
             primaryKey,
             cursor,
-            columns
+            columns,
+            stream.generationId,
+            stream.minimumGenerationId,
+            stream.syncId,
         )
     }
 

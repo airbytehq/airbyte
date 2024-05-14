@@ -4,14 +4,14 @@
 
 package io.airbyte.integrations.destination.bigquery.uploader;
 
+import static io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.FormatOptions;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
-import com.google.cloud.bigquery.JobInfo.WriteDisposition;
-import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.WriteChannelConfiguration;
@@ -47,14 +47,13 @@ public class BigQueryUploaderFactory {
                                                  More details:
                                                  """;
 
-  public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig)
+  public static BigQueryDirectUploader getUploader(final UploaderConfig uploaderConfig)
       throws IOException {
-    final String dataset = uploaderConfig.getParsedStream().id().rawNamespace();
+    final String dataset = uploaderConfig.getParsedStream().getId().getRawNamespace();
     final String datasetLocation = BigQueryUtils.getDatasetLocation(uploaderConfig.getConfig());
     final Set<String> existingDatasets = new HashSet<>();
 
     final BigQueryRecordFormatter recordFormatter = uploaderConfig.getFormatter();
-    final Schema bigQuerySchema = recordFormatter.getBigQuerySchema();
 
     final TableId targetTable = TableId.of(dataset, uploaderConfig.getTargetTableName());
 
@@ -62,17 +61,12 @@ public class BigQueryUploaderFactory {
         uploaderConfig.getBigQuery(),
         existingDatasets,
         dataset,
-        datasetLocation,
-        bigQuerySchema);
-
-    final JobInfo.WriteDisposition syncMode = BigQueryUtils.getWriteDisposition(
-        uploaderConfig.getConfigStream().getDestinationSyncMode());
+        datasetLocation);
 
     return getBigQueryDirectUploader(
         uploaderConfig.getConfig(),
         targetTable,
         uploaderConfig.getBigQuery(),
-        syncMode,
         datasetLocation,
         recordFormatter);
   }
@@ -81,15 +75,14 @@ public class BigQueryUploaderFactory {
                                                                   final JsonNode config,
                                                                   final TableId targetTable,
                                                                   final BigQuery bigQuery,
-                                                                  final WriteDisposition syncMode,
                                                                   final String datasetLocation,
                                                                   final BigQueryRecordFormatter formatter) {
     // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
-    LOGGER.info("Will write raw data to {} with schema {}", targetTable, formatter.getBigQuerySchema());
+    LOGGER.info("Will write raw data to {} with schema {}", targetTable, SCHEMA_V2);
     final WriteChannelConfiguration writeChannelConfiguration =
         WriteChannelConfiguration.newBuilder(targetTable)
             .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
-            .setSchema(formatter.getBigQuerySchema())
+            .setSchema(SCHEMA_V2)
             .setFormatOptions(FormatOptions.json())
             .build(); // new-line delimited json.
 
@@ -121,7 +114,6 @@ public class BigQueryUploaderFactory {
     return new BigQueryDirectUploader(
         targetTable,
         new BigQueryTableWriter(writer),
-        syncMode,
         bigQuery,
         formatter);
   }

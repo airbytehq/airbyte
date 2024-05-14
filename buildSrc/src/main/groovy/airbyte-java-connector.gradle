@@ -166,7 +166,7 @@ class AirbyteJavaConnectorPlugin implements Plugin<Project> {
                     srcDir 'src/test-performance/java'
                 }
                 kotlin {
-                    srcDir 'src/test-integration/kotlin'
+                    srcDir 'src/test-performance/kotlin'
                 }
                 resources {
                     srcDir 'src/test-performance/resources'

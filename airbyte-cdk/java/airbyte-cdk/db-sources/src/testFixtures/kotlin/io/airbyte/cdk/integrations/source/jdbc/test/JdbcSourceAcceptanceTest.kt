@@ -24,6 +24,7 @@ import java.sql.SQLException
 import java.util.*
 import java.util.function.Consumer
 import java.util.stream.Collectors
+import junit.framework.TestCase.assertEquals
 import org.hamcrest.MatcherAssert
 import org.hamcrest.Matchers
 import org.junit.jupiter.api.AfterEach
@@ -39,7 +40,7 @@ import org.mockito.Mockito
         "The static variables are updated in subclasses for convenience, and cannot be final."
 )
 abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
-    @JvmField protected var testdb: T = createTestDatabase()
+    @JvmField protected var testdb: T? = null
 
     protected fun streamName(): String {
         return TABLE_NAME
@@ -119,60 +120,60 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             testdb!!.with("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'")
         }
         testdb
-            .with(
+            ?.with(
                 createTableQuery(
                     getFullyQualifiedTableName(TABLE_NAME),
                     COLUMN_CLAUSE_WITH_PK,
                     primaryKeyClause(listOf("id"))
                 )
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(id, name, updated_at) VALUES (1, 'picard', '2004-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME)
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(id, name, updated_at) VALUES (2, 'crusher', '2005-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME)
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(id, name, updated_at) VALUES (3, 'vash', '2006-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME)
             )
-            .with(
+            ?.with(
                 createTableQuery(
                     getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK),
                     COLUMN_CLAUSE_WITHOUT_PK,
                     ""
                 )
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(id, name, updated_at) VALUES (1, 'picard', '2004-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(id, name, updated_at) VALUES (2, 'crusher', '2005-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(id, name, updated_at) VALUES (3, 'vash', '2006-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)
             )
-            .with(
+            ?.with(
                 createTableQuery(
                     getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK),
                     COLUMN_CLAUSE_WITH_COMPOSITE_PK,
                     primaryKeyClause(listOf("first_name", "last_name"))
                 )
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(first_name, last_name, updated_at) VALUES ('first', 'picard', '2004-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(first_name, last_name, updated_at) VALUES ('second', 'crusher', '2005-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s(first_name, last_name, updated_at) VALUES ('third', 'vash', '2006-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)
             )
@@ -383,22 +384,27 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
     @Test
     @Throws(Exception::class)
     fun testReadSuccess() {
-        val actualMessages =
-            MoreIterators.toList(
-                source()!!.read(config(), getConfiguredCatalogWithOneStream(defaultNamespace), null)
-            )
+        val catalog = getConfiguredCatalogWithOneStream(defaultNamespace)
+        val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
 
         setEmittedAtToNull(actualMessages)
-        val expectedMessages = testMessages
+        val expectedMessagesResult: MutableList<AirbyteMessage> = ArrayList(testMessages)
+        val actualRecordMessages = filterRecords(actualMessages)
+
         MatcherAssert.assertThat(
-            expectedMessages,
-            Matchers.containsInAnyOrder<Any>(*actualMessages.toTypedArray())
+            expectedMessagesResult,
+            Matchers.containsInAnyOrder<Any>(*actualRecordMessages.toTypedArray())
         )
         MatcherAssert.assertThat(
-            actualMessages,
-            Matchers.containsInAnyOrder<Any>(*expectedMessages.toTypedArray())
+            actualRecordMessages,
+            Matchers.containsInAnyOrder<Any>(*expectedMessagesResult.toTypedArray())
         )
     }
+
+    // This validation only applies to resumable full refresh syncs.
+    protected open fun validateFullRefreshStateMessageReadSuccess(
+        stateMessages: List<AirbyteStateMessage>
+    ) {}
 
     @Test
     @Throws(Exception::class)
@@ -414,9 +420,10 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         setEmittedAtToNull(actualMessages)
 
         val expectedMessages = airbyteMessagesReadOneColumn
-        Assertions.assertEquals(expectedMessages.size, actualMessages.size)
-        Assertions.assertTrue(expectedMessages.containsAll(actualMessages))
-        Assertions.assertTrue(actualMessages.containsAll(expectedMessages))
+        val actualRecordMessages = filterRecords(actualMessages)
+        Assertions.assertEquals(expectedMessages.size, actualRecordMessages.size)
+        Assertions.assertTrue(expectedMessages.containsAll(actualRecordMessages))
+        Assertions.assertTrue(actualRecordMessages.containsAll(expectedMessages))
     }
 
     protected open val airbyteMessagesReadOneColumn: List<AirbyteMessage>
@@ -464,12 +471,51 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         }
 
         val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
+        val actualRecordMessages = filterRecords(actualMessages)
 
         setEmittedAtToNull(actualMessages)
 
-        Assertions.assertEquals(expectedMessages.size, actualMessages.size)
-        Assertions.assertTrue(expectedMessages.containsAll(actualMessages))
-        Assertions.assertTrue(actualMessages.containsAll(expectedMessages))
+        Assertions.assertEquals(expectedMessages.size, actualRecordMessages.size)
+        Assertions.assertTrue(expectedMessages.containsAll(actualRecordMessages))
+        Assertions.assertTrue(actualRecordMessages.containsAll(expectedMessages))
+    }
+
+    @Test
+    @Throws(Exception::class)
+    protected fun testReadBothIncrementalAndFullRefreshStreams() {
+        val catalog = getConfiguredCatalogWithOneStream(defaultNamespace)
+        val expectedMessages: MutableList<AirbyteMessage> = ArrayList(testMessages)
+
+        val streamName2 = streamName() + 2
+        val tableName = getFullyQualifiedTableName(TABLE_NAME + 2)
+        testdb!!
+            .with(createTableQuery(tableName, "id INTEGER, name VARCHAR(200)", ""))
+            .with("INSERT INTO %s(id, name) VALUES (1,'picard')", tableName)
+            .with("INSERT INTO %s(id, name) VALUES (2, 'crusher')", tableName)
+            .with("INSERT INTO %s(id, name) VALUES (3, 'vash')", tableName)
+
+        val airbyteStream2 =
+            CatalogHelpers.createConfiguredAirbyteStream(
+                streamName2,
+                defaultNamespace,
+                Field.of(COL_ID, JsonSchemaType.NUMBER),
+                Field.of(COL_NAME, JsonSchemaType.STRING)
+            )
+        airbyteStream2.syncMode = SyncMode.INCREMENTAL
+        airbyteStream2.cursorField = java.util.List.of(COL_ID)
+        airbyteStream2.destinationSyncMode = DestinationSyncMode.APPEND
+        catalog.streams.add(airbyteStream2)
+
+        expectedMessages.addAll(getAirbyteMessagesSecondSync(streamName2))
+
+        val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
+        val actualRecordMessages = filterRecords(actualMessages)
+
+        setEmittedAtToNull(actualMessages)
+
+        Assertions.assertEquals(expectedMessages.size, actualRecordMessages.size)
+        Assertions.assertTrue(expectedMessages.containsAll(actualRecordMessages))
+        Assertions.assertTrue(actualRecordMessages.containsAll(expectedMessages))
     }
 
     protected open fun getAirbyteMessagesSecondSync(streamName: String?): List<AirbyteMessage> {
@@ -502,15 +548,42 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                     )
                 )
         val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
+        val actualRecordMessages = filterRecords(actualMessages)
 
         setEmittedAtToNull(actualMessages)
 
         val expectedMessages: MutableList<AirbyteMessage> = ArrayList(testMessages)
         expectedMessages.addAll(getAirbyteMessagesForTablesWithQuoting(streamForTableWithSpaces))
 
-        Assertions.assertEquals(expectedMessages.size, actualMessages.size)
-        Assertions.assertTrue(expectedMessages.containsAll(actualMessages))
-        Assertions.assertTrue(actualMessages.containsAll(expectedMessages))
+        Assertions.assertEquals(expectedMessages.size, actualRecordMessages.size)
+        Assertions.assertTrue(expectedMessages.containsAll(actualRecordMessages))
+        Assertions.assertTrue(actualRecordMessages.containsAll(expectedMessages))
+    }
+
+    @Test
+    @Throws(Exception::class)
+    protected fun testTablesWithResumableFullRefreshStates() {
+
+        val catalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    java.util.List.of(
+                        getConfiguredCatalogWithOneStream(defaultNamespace).streams[0],
+                    )
+                )
+        val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
+        val actualRecordMessages = filterRecords(actualMessages)
+
+        setEmittedAtToNull(actualMessages)
+
+        val expectedMessages: MutableList<AirbyteMessage> = ArrayList(testMessages)
+
+        Assertions.assertEquals(expectedMessages.size, actualRecordMessages.size)
+        Assertions.assertTrue(expectedMessages.containsAll(actualRecordMessages))
+        Assertions.assertTrue(actualRecordMessages.containsAll(expectedMessages))
+
+        val stateMessages = extractStateMessage(actualMessages)
+        validateFullRefreshStateMessageReadSuccess(stateMessages)
     }
 
     protected open fun getAirbyteMessagesForTablesWithQuoting(
@@ -700,11 +773,11 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected open fun executeStatementReadIncrementallyTwice() {
         testdb
-            .with(
+            ?.with(
                 "INSERT INTO %s (id, name, updated_at) VALUES (4, 'riker', '2006-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME)
             )
-            .with(
+            ?.with(
                 "INSERT INTO %s (id, name, updated_at) VALUES (5, 'data', '2006-10-19')",
                 getFullyQualifiedTableName(TABLE_NAME)
             )
@@ -1519,6 +1592,30 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected fun extractState(airbyteMessage: AirbyteMessage): JsonNode {
         return Jsons.jsonNode(java.util.List.of(airbyteMessage.state))
+    }
+
+    protected fun createStateMessage(
+        streamNamespace: String,
+        streamName: String,
+        jsonStreamState: JsonNode,
+        recordCount: Long
+    ): AirbyteMessage {
+        return AirbyteMessage()
+            .withType(AirbyteMessage.Type.STATE)
+            .withState(
+                AirbyteStateMessage()
+                    .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                    .withStream(
+                        AirbyteStreamState()
+                            .withStreamDescriptor(
+                                StreamDescriptor()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                            )
+                            .withStreamState(jsonStreamState)
+                    )
+                    .withSourceStats(AirbyteStateStats().withRecordCount(recordCount.toDouble()))
+            )
     }
 
     protected fun createStateMessage(

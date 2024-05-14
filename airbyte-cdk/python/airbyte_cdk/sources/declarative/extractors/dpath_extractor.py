@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.types import Config
 
 
 @dataclass
@@ -58,7 +58,7 @@ class DpathExtractor(RecordExtractor):
     parameters: InitVar[Mapping[str, Any]]
     decoder: Decoder = JsonDecoder(parameters={})
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         for path_index in range(len(self.field_path)):
             if isinstance(self.field_path[path_index], str):
                 self.field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
@@ -68,7 +68,7 @@ class DpathExtractor(RecordExtractor):
         if len(self.field_path) == 0:
             extracted = response_body
         else:
-            path = [path.eval(self.config) for path in self.field_path]
+            path = [path.eval(self.config) for path in self.field_path]  # type: ignore # field_path elements are always cast to interpolated string
             if "*" in path:
                 extracted = dpath.util.values(response_body, path)
             else:

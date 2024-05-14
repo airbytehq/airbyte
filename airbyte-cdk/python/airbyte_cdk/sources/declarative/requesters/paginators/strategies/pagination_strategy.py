@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Any, List, Optional
 
 import requests
-from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.types import Record
 
 
 @dataclass

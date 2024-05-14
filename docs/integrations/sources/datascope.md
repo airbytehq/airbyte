@@ -4,8 +4,7 @@ This page contains the setup guide and reference information for the [DataScope]
 
 ## Prerequisites
 
-A DataScope account with access to the API. You can create a free account [here](https://www.mydatascope.com/webhooks). 
-
+A DataScope account with access to the API. You can create a free account [here](https://www.mydatascope.com/webhooks).
 
 ## Setup guide
 
@@ -30,7 +29,7 @@ A DataScope account with access to the API. You can create a free account [here]
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 3. Enter your `api_key` which will be flagged with Authorization header.
-6. Click **Set up source**.
+4. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -50,6 +49,7 @@ The DataScope source connector supports the following [sync modes](https://docs.
 - answers
 
 Implemented but not added streams:
+
 - Lists
 - Notifications
 
@@ -60,5 +60,5 @@ GET https://www.mydatascope.com/api/external/locations
 ## Changelog
 
 | Version | Date       | Pull Request                                              | Subject        |
-| :------ |:-----------|:----------------------------------------------------------| :------------- |
+| :------ | :--------- | :-------------------------------------------------------- | :------------- |
 | 0.1.0   | 2022-10-31 | [#18725](https://github.com/airbytehq/airbyte/pull/18725) | Initial commit |

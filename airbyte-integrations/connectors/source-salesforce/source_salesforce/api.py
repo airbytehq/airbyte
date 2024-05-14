@@ -10,7 +10,7 @@ import backoff
 import requests  # type: ignore[import]
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
+from airbyte_protocol.models import FailureType, StreamDescriptor
 from requests import adapters as request_adapters
 from requests.exceptions import HTTPError, RequestException  # type: ignore[import]
 
@@ -374,7 +374,14 @@ class Salesforce:
                 ):
                     if err:
                         self.logger.error(f"Loading error of the {stream_name} schema: {err}")
-                        continue
+                        # Without schema information, the source can't determine the type of stream to instantiate and there might be issues
+                        # related to property chunking
+                        raise AirbyteTracedException(
+                            message=f"Schema could not be extracted for stream {stream_name}. Please retry later.",
+                            internal_message=str(err),
+                            failure_type=FailureType.system_error,
+                            stream_descriptor=StreamDescriptor(name=stream_name),
+                        )
                     stream_schemas[stream_name] = schema
         return stream_schemas
 
