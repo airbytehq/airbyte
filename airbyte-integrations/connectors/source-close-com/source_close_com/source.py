@@ -687,7 +687,7 @@ class Base64HttpAuthenticator(TokenAuthenticator):
 
 
 class SourceCloseCom(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = Base64HttpAuthenticator(auth=(config["api_key"], "")).get_auth_header()
             url = "https://api.close.com/api/v1/me"
