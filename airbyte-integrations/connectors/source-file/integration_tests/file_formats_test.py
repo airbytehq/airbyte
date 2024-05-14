@@ -3,10 +3,10 @@
 #
 
 
+import logging
 from pathlib import Path
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.utils import AirbyteTracedException
 from source_file import SourceFile
 from source_file.client import Client
