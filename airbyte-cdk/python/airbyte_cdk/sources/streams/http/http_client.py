@@ -63,20 +63,9 @@ class HttpClient:
         if isinstance(authenticator, AuthBase):
             self._session.auth = authenticator
         self._logger = logger
-        if error_handler is None:
-            self._error_handler = HttpStatusErrorHandler(self._logger)
-        else:
-            self._error_handler = error_handler
-
-        if backoff_strategy is None:
-            self._backoff_strategy = DefaultBackoffStrategy()
-        else:
-            self._backoff_strategy = backoff_strategy
-
-        if error_message_parser is None:
-            self._error_message_parser = JsonErrorMessageParser()
-        else:
-            self._error_message_parser = error_message_parser
+        self._error_handler = error_handler or HttpStatusErrorHandler(self._logger)
+        self._backoff_strategy = backoff_strategy or DefaultBackoffStrategy()
+        self._error_message_parser = error_message_parser or JsonErrorMessageParser()
 
     @property
     def cache_filename(self) -> str:
