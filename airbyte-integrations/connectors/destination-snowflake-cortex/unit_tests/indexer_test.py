@@ -10,10 +10,10 @@ from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStat
 from destination_snowflake_cortex.config import SnowflakeCortexIndexingModel
 from destination_snowflake_cortex.indexer import (
     CHUNK_ID_COLUMN,
+    DOCUMENT_CONTENT_COLUMN,
     DOCUMENT_ID_COLUMN,
     EMBEDDING_COLUMN,
     METADATA_COLUMN,
-    PAGE_CONTENT_COLUMN,
     SnowflakeCortexIndexer,
 )
 
@@ -43,7 +43,7 @@ def test_get_airbyte_messsages_from_chunks():
     for message in messages:
         message.type = "RECORD"
         assert message.record.data[METADATA_COLUMN] == {"_ab_stream": "abc"}
-        assert message.record.data[PAGE_CONTENT_COLUMN] == f"test{i}"
+        assert message.record.data[DOCUMENT_CONTENT_COLUMN] == f"test{i}"
         assert message.record.data[EMBEDDING_COLUMN] == [1*i, 2*i, 3*i]
         assert all(key in message.record.data for key in [DOCUMENT_ID_COLUMN, CHUNK_ID_COLUMN])
         assert all(key not in message.record.data for key in ["str_col", "int_col"])
@@ -56,7 +56,7 @@ def test_add_columns_to_catalog():
     # test all streams in catalog have the new columns
     for stream in updated_catalog.streams:
         assert all(column in stream.stream.json_schema["properties"] 
-                   for column in [DOCUMENT_ID_COLUMN, CHUNK_ID_COLUMN, PAGE_CONTENT_COLUMN, METADATA_COLUMN, EMBEDDING_COLUMN])
+                   for column in [DOCUMENT_ID_COLUMN, CHUNK_ID_COLUMN, DOCUMENT_CONTENT_COLUMN, METADATA_COLUMN, EMBEDDING_COLUMN])
         if stream.stream.name in ['example_stream', 'example_stream2']:
             assert(stream.primary_key == [[DOCUMENT_ID_COLUMN]])
         if stream.stream.name == 'example_stream3':

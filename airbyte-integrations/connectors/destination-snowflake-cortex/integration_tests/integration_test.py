@@ -80,7 +80,7 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         cursor = conn.cursor()
 
         query = f"""
-        SELECT PAGE_CONTENT
+        SELECT DOCUMENT_CONTENT
         FROM {table_name}
         ORDER BY VECTOR_L2_DISTANCE(
             CAST({query_vector} AS VECTOR(FLOAT, 1536)),
@@ -110,17 +110,16 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         list(destination.write(self.config, append_catalog, [self._record("mystream", "Cats are nice", 6), first_state_message]))
         assert(self._get_record_count("mystream") == 6)
 
-        # TODO: following ends up calling emulated merge and fails, investigate why
+        # subsequent sync with append_dedup
         append_dedup_catalog = self._get_configured_catalog(DestinationSyncMode.append_dedup) 
         list(destination.write(self.config, append_dedup_catalog, [self._record("mystream", "Cats are nice too", 4), first_state_message]))
         assert(self._get_record_count("mystream") == 6)
         
-        # TODO: uncomment and test before merging 
         # perform a query using OpenAI embedding 
-        #embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
-        #result = self._run_cosine_similarity(embeddings.embed_query("feline animals"), "mystream")
-        #assert(len(result) == 1)
-        #result[0] == "str_col: Cats are nice"
+        embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
+        result = self._run_cosine_similarity(embeddings.embed_query("feline animals"), "mystream")
+        assert(len(result) == 1)
+        result[0] == "str_col: Cats are nice"
 
 
     """
@@ -145,22 +144,22 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
     def test_get_embeddings_using_cortex(self):
         conn = self._get_db_connection()
         cur = conn.cursor()
-        page_content_list = ["dogs are number 1", "dogs are number 2", "cats are nummber 1"]
+        document_content_list = ["dogs are number 1", "dogs are number 2", "cats are nummber 1"]
 
         cur.execute("""
-        CREATE TEMPORARY TABLE temp_page_content (
-            page_content STRING
+        CREATE TEMPORARY TABLE temp_document_content (
+            document_content STRING
         )
         """)
-        cur.executemany("INSERT INTO temp_page_content (page_content) VALUES (%s)", page_content_list)
+        cur.executemany("INSERT INTO temp_document_content (document_content) VALUES (%s)", document_content_list)
 
         cur.execute("""
-        SELECT snowflake.cortex.embed_text('e5-base-v2', page_content) AS embedding
-        FROM temp_page_content
+        SELECT snowflake.cortex.embed_text('e5-base-v2', document_content) AS embedding
+        FROM temp_document_content
         """)
         processed_data = cur.fetchall()
         self.assertTrue(processed_data, "No data found in the database")
-        cur.execute("DROP TABLE temp_page_content")
+        cur.execute("DROP TABLE temp_document_content")
         cur.close()
         conn.close()
 

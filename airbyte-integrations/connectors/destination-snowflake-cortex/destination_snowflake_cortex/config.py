@@ -7,7 +7,7 @@ from airbyte_cdk.destinations.vector_db_based.config import VectorDBConfigModel
 from pydantic import BaseModel, Field
 
 
-# to-do - override the embedding model to use Snowflake supported model
+# to-do - https://github.com/airbytehq/airbyte/issues/38007 - add Snowflake supported models to config
 class SnowflakeCortexIndexingModel(BaseModel):
     account: str = Field(
         ...,

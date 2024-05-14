@@ -28,7 +28,7 @@ from destination_snowflake_cortex.config import SnowflakeCortexIndexingModel
 DOCUMENT_ID_COLUMN = "document_id"
 CHUNK_ID_COLUMN = "chunk_id"
 METADATA_COLUMN = "metadata"
-PAGE_CONTENT_COLUMN = "page_content"
+DOCUMENT_CONTENT_COLUMN = "document_content"
 EMBEDDING_COLUMN = "embedding"
 
 
@@ -70,7 +70,7 @@ class SnowflakeCortexIndexer(Indexer):
             new_data[DOCUMENT_ID_COLUMN] = self._create_document_id(message)
             new_data[CHUNK_ID_COLUMN] = str(uuid.uuid4().int)
             new_data[METADATA_COLUMN] = chunk.metadata
-            new_data[PAGE_CONTENT_COLUMN] = chunk.page_content
+            new_data[DOCUMENT_CONTENT_COLUMN] = chunk.page_content
             new_data[EMBEDDING_COLUMN] = chunk.embedding
             message.record.data = new_data
             airbyte_messages.append(message)
@@ -80,18 +80,18 @@ class SnowflakeCortexIndexer(Indexer):
         """Adds following columns to catalog
         document_id (primary key) -> unique per record/document
         chunk_id -> unique per chunk
-        page_content -> text content of the page
+        document_content -> text content of the document
         metadata -> metadata of the record
-        embedding -> embedding of the page content
+        embedding -> embedding of the document content
         """
         updated_catalog = self.catalog
         # update each stream in the catalog
         for stream in updated_catalog.streams:
-            # Revisit this - Clear existing properties, if anys, since we are not entirely sure what's in the configured catalog.
+            # TO-DO: Revisit this - Clear existing properties, if anys, since we are not entirely sure what's in the configured catalog.
             stream.stream.json_schema["properties"] = {}
             stream.stream.json_schema["properties"][DOCUMENT_ID_COLUMN] = {"type": "string"}
             stream.stream.json_schema["properties"][CHUNK_ID_COLUMN] = {"type": "string"}
-            stream.stream.json_schema["properties"][PAGE_CONTENT_COLUMN] = {"type": "string"}
+            stream.stream.json_schema["properties"][DOCUMENT_CONTENT_COLUMN] = {"type": "string"}
             stream.stream.json_schema["properties"][METADATA_COLUMN] = {"type": "object"}
             stream.stream.json_schema["properties"][EMBEDDING_COLUMN] = {"type": "vector_array"}
             # set primary key only if there are existing primary keys
@@ -131,7 +131,7 @@ class SnowflakeCortexIndexer(Indexer):
             return f"Stream_{stream_name}_Key_{primary_key}"
         return str(uuid.uuid4().int)
 
-    def _create_state_message(self, stream, namespace, data: dict[str, Any]) -> AirbyteMessage:
+    def _create_state_message(self, stream: str, namespace: str, data: dict[str, Any]) -> AirbyteMessage:
         """Create a state message for the stream"""
         stream = AirbyteStreamState(stream_descriptor=StreamDescriptor(name=stream, namespace=namespace))
         return AirbyteMessage(
@@ -150,7 +150,7 @@ class SnowflakeCortexIndexer(Indexer):
                     return WriteStrategy.MERGE
         return WriteStrategy.AUTO
 
-    def index(self, document_chunks, namespace, stream):
+    def index(self, document_chunks: Iterable[Any], namespace: str, stream: str):
         # get list of airbyte messages from the document chunks
         airbyte_messages = self._get_airbyte_messsages_from_chunks(document_chunks)
         # todo: remove state messages and see if things still work
@@ -168,7 +168,7 @@ class SnowflakeCortexIndexer(Indexer):
             )
             cortex_processor.process_airbyte_messages(airbyte_messages, self.get_write_strategy(stream))
 
-    def delete(self, delete_ids, namespace, stream):
+    def delete(self, delete_ids: list[str], namespace: str, stream: str):
         # delete is generally used when we use full refresh/overwrite strategy.
         # PyAirbyte's sync will take care of overwriting the records. Hence, we don't need to do anything here.
         pass

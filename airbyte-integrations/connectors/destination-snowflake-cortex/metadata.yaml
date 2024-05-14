@@ -1,11 +1,10 @@
 data:
-  # TODO:
-  # ab_internal:
-  #   ql: 300
-  #   sl: 200
+  ab_internal:
+    ql: 300
+    sl: 200
   allowedHosts:
     hosts:
-      - "*.snowflakecomputing.com" # TODO: Confirm the correct host(s)
+      - "*.snowflakecomputing.com"
       - api.openai.com
       - api.cohere.ai
       - ${embedding.api_base}
