@@ -67,7 +67,7 @@ class PineconeIndexer(Indexer):
         return []
 
     def get_source_tag(self):
-        is_integration_test = os.getenv("INTEGRATION_TEST", False)
+        is_integration_test = "PYTEST_CURRENT_TEST" in os.environ
         return AIRBYTE_TEST_TAG if is_integration_test else AIRBYTE_TAG
 
     def delete_vectors(self, filter, namespace=None, prefix=None):
