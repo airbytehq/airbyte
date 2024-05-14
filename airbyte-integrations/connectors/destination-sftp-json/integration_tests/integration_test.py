@@ -3,13 +3,13 @@
 #
 
 
+import logging
 import time
 from socket import socket
 from typing import Any, Dict, List, Mapping
 
 import docker
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
