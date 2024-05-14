@@ -43,7 +43,9 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
                     "database": "MYDATABASE",
                     "default_schema": "MYSCHEMA",
                     "username": "MYUSERNAME",
-                    "password": "xxxxxxx"
+                    "credentials": {
+                        "password": "xxxxxxx"
+                    }
                 },
             },
         )
