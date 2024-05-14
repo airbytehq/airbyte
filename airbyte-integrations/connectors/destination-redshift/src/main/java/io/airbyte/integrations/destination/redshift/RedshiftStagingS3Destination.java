@@ -179,7 +179,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
 
   @Override
   protected JdbcSqlGenerator getSqlGenerator(final JsonNode config) {
-    return new RedshiftSqlGenerator(getNamingResolver());
+    return new RedshiftSqlGenerator(getNamingResolver(), config);
   }
 
   @Override
@@ -229,7 +229,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
         stream.getStream().setNamespace(defaultNamespace);
       }
     }
-    final RedshiftSqlGenerator sqlGenerator = new RedshiftSqlGenerator(getNamingResolver());
+
+    final RedshiftSqlGenerator sqlGenerator = new RedshiftSqlGenerator(getNamingResolver(), config);
     final ParsedCatalog parsedCatalog;
     final TyperDeduper typerDeduper;
     final JdbcDatabase database = getDatabase(getDataSource(config));
