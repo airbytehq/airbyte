@@ -74,7 +74,7 @@ class GlificStream(HttpStream, ABC):
         self.start_time = config["start_time"]
         self.offset = 0
         self.last_record = None
-        self.state = {}
+        self.state = {"updated_at": "2020-01-01T00:00:00Z"}
 
     @property
     def url_base(self) -> str:
@@ -100,7 +100,7 @@ class GlificStream(HttpStream, ABC):
 
     def update_state(self) -> None:
         if self.latest_updated_date:
-            if not self.state or self.latest_updated_date > self.state["updated_at"]:
+            if self.latest_updated_date > self.state["updated_at"]:
                 self.state = {"updated_at": self.latest_updated_date}
         self.latest_updated_date = None
         return None
