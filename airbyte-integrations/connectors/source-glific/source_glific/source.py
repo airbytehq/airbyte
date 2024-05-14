@@ -74,7 +74,6 @@ class GlificStream(HttpStream, ABC):
         self.start_time = config["start_time"]
         self.offset = 0
         self.last_record = None
-        self.state = {"updated_at": "2020-01-01T00:00:00Z"}
 
     @property
     def url_base(self) -> str:
@@ -196,7 +195,7 @@ class IncrementalGlificStream(GlificStream, IncrementalMixin, ABC):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self.cursor_value = value[self.cursor_field]
+        self.cursor_value = value.get(self.cursor_field)
         self._state = value
 
 
