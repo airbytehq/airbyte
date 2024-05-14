@@ -42,7 +42,7 @@ import org.junit.jupiter.api.Test;
 public class RedshiftSuperLimitationTransformerTest {
 
   private RedshiftSuperLimitationTransformer transformer;
-  private static final RedshiftSqlGenerator redshiftSqlGenerator = new RedshiftSqlGenerator(new RedshiftSQLNameTransformer());
+  private static final RedshiftSqlGenerator redshiftSqlGenerator = new RedshiftSqlGenerator(new RedshiftSQLNameTransformer(), false);
 
   @BeforeEach
   public void setup() {

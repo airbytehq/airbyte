@@ -18,4 +18,6 @@ public class RedshiftDestinationConstants {
 
   public static final DataType<String> SUPER_TYPE = new DefaultDataType<>(null, String.class, "super");
 
+  public static final String DROP_CASCADE_OPTION = "drop_cascade";
+
 }
