@@ -20,7 +20,7 @@ python = "^3.9,<3.12"
 airbyte-cdk = "^0"
 
 [tool.poetry.scripts]
-source-zendesk-talk = "source_datadog.run:run"
+source-datadog = "source_datadog.run:run"
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.9.3"
