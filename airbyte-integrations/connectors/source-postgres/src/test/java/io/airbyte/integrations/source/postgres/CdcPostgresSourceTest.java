@@ -102,6 +102,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   }
 
   @Override
+  protected boolean supportResumableFullRefresh() {
+    return true;
+  }
+
+  @Override
   protected JsonNode config() {
     return testdb.testConfigBuilder()
         .withSchemas(modelsSchema(), modelsSchema() + "_random")
@@ -240,6 +245,15 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
       }
     }
   }
+
+  @Override
+  protected void validateStreamStateInResumableFullRefresh(final JsonNode streamStateToBeTested) {
+    assertEquals("ctid", streamStateToBeTested.get("state_type").asText());
+  }
+
+  @Override
+  @Test
+  protected void testCdcAndNonResumableFullRefreshInSameSync() throws Exception {}
 
   @Override
   protected void assertStateMessagesForNewTableSnapshotTest(final List<? extends AirbyteStateMessage> stateMessages,
