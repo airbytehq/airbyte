@@ -345,9 +345,7 @@ open class S3DestinationConfig {
                         getProperty(config, S3Constants.SECRET_ACCESS_KEY)
                     )
                 } else if (config.has(S3Constants.ROLE_ARN)) {
-                    S3AssumeRoleCredentialConfig(
-                        getProperty(config, S3Constants.ROLE_ARN)!!
-                    )
+                    S3AssumeRoleCredentialConfig(getProperty(config, S3Constants.ROLE_ARN)!!)
                 } else {
                     S3AWSDefaultProfileCredentialConfig()
                 }

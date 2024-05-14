@@ -402,14 +402,12 @@
         ],
         "order": 8
       },
-      "role_arn" : {
-        "type" : "string",
-        "description" : "The Role ARN",
-        "title" : "Role ARN",
-        "examples" : [
-          "arn:aws:iam::667471877866:role/TestExternalId"
-        ],
-        "order" : 9
+      "role_arn": {
+        "type": "string",
+        "description": "The Role ARN",
+        "title": "Role ARN",
+        "examples": ["arn:aws:iam::667471877866:role/TestExternalId"],
+        "order": 9
       }
     }
   }
