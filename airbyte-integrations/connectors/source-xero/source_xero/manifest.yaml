@@ -26,6 +26,7 @@ definitions:
             - type: HttpResponseFilter
               action: IGNORE
               http_codes:
+                - 401
                 - 403
               error_message: Resource is forbidden, Please check all the scopes in xero platform for getting access of resource
 
@@ -467,9 +468,7 @@ definitions:
       extractor_path: "TrackingCategories"
 
   line_items_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       Description:
         type:
@@ -588,9 +587,7 @@ definitions:
     additionalProperties: true
 
   bank_transactions_schema:
-    type:
-      - "null"
-      - "object"
+    type: object
     additionalProperties: true
     properties:
       Type:
@@ -683,9 +680,7 @@ definitions:
           - "string"
 
   addresses_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       Region:
         type:
@@ -730,9 +725,7 @@ definitions:
     additionalProperties: true
 
   phones_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       PhoneNumber:
         type:
@@ -753,9 +746,7 @@ definitions:
     additionalProperties: true
 
   payment_terms_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       Sales:
         type:
@@ -788,9 +779,7 @@ definitions:
     additionalProperties: true
 
   contacts_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       ContactID:
         type:
@@ -1050,9 +1039,7 @@ definitions:
       additionalProperties: true
 
   credit_notes_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       Type:
         type:
@@ -1168,9 +1155,7 @@ definitions:
     additionalProperties: true
 
   invoices_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       Type:
         type:
@@ -1340,9 +1325,7 @@ definitions:
     additionalProperties: true
 
   manual_journals_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       Date:
         type:
@@ -1428,9 +1411,7 @@ definitions:
     additionalProperties: true
 
   overpayments_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       Type:
         type:
@@ -1525,9 +1506,7 @@ definitions:
     additionalProperties: true
 
   prepayments_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       Type:
         type:
@@ -1640,9 +1619,7 @@ definitions:
     additionalProperties: true
 
   purchase_orders_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       Contact:
         $ref: "#/definitions/contacts_schema"
@@ -1773,9 +1750,7 @@ definitions:
     additionalProperties: true
 
   accounts_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       Code:
         type:
@@ -1852,9 +1827,7 @@ definitions:
     additionalProperties: true
 
   bank_transfers_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       FromBankAccount:
         $ref: "#/definitions/accounts_schema"
@@ -1906,9 +1879,7 @@ definitions:
     additionalProperties: true
 
   employees_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       Status:
         type:
@@ -1937,9 +1908,7 @@ definitions:
     additionalProperties: true
 
   items_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       ItemID:
         type:
@@ -2170,9 +2139,7 @@ definitions:
     additionalProperties: true
 
   payments_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       Date:
         type:
@@ -2269,9 +2236,7 @@ definitions:
     additionalProperties: true
 
   users_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       UserID:
         type:
@@ -2306,9 +2271,7 @@ definitions:
     additionalProperties: true
 
   branding_themes_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       CreatedDateUTC:
         type:
@@ -2329,9 +2292,7 @@ definitions:
     additionalProperties: true
 
   contact_groups_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       Status:
         type:
@@ -2351,9 +2312,7 @@ definitions:
     additionalProperties: true
 
   currencies_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       Description:
         type:
@@ -2365,9 +2324,7 @@ definitions:
     additionalProperties: true
 
   organisations_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       APIKey:
         type:
@@ -2510,9 +2467,7 @@ definitions:
     additionalProperties: true
 
   repeating_invoices_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       Type:
         type:
@@ -2612,9 +2567,7 @@ definitions:
     additionalProperties: true
 
   tax_rates_schema:
-    type:
-      - "null"
-      - object
+    type: object
     properties:
       Name:
         type:
@@ -2688,9 +2641,7 @@ definitions:
     additionalProperties: true
 
   tracking_categories_schema:
-    type:
-      - "null"
-      - "object"
+    type: object
     properties:
       Status:
         type:

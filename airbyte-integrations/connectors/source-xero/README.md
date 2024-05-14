@@ -35,7 +35,7 @@ See `sample_files/sample_config.json` for a sample config file.
 poetry run source-xero spec
 poetry run source-xero check --config secrets/config.json
 poetry run source-xero discover --config secrets/config.json
-poetry run source-xero read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run source-xero read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Running tests
