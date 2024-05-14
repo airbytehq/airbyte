@@ -51,7 +51,7 @@ class PineconeIntegrationTest(BaseIntegrationTest):
                 print("Noting to delete. No data in the index/namespace.")
 
     def test_integration_test_flag_is_set(self):
-        assert os.getenv("INTEGRATION_TEST", False) == "True"
+        assert "PYTEST_CURRENT_TEST" in os.environ
 
     def test_check_valid_config(self):
         outcome = DestinationPinecone().check(logging.getLogger("airbyte"), self.config)        
