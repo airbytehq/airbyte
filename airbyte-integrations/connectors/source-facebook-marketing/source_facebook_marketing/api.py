@@ -5,6 +5,7 @@
 import json
 import logging
 from dataclasses import dataclass
+from http.client import RemoteDisconnected
 from time import sleep
 from typing import List
 
@@ -26,7 +27,7 @@ class FacebookAPIException(Exception):
     """General class for all API errors"""
 
 
-backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=15, factor=5)
+backoff_policy = retry_pattern(backoff.expo, (FacebookRequestError, requests.ConnectionError, RemoteDisconnected), max_tries=15, factor=5)
 
 
 class MyFacebookAdsApi(FacebookAdsApi):

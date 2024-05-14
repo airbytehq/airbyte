@@ -47,7 +47,7 @@ class AccountTypeException(Exception):
     """Wrong account type"""
 
 
-def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
+def retry_pattern(backoff_type, exceptions, **wait_gen_kwargs):
     def log_retry_attempt(details):
         _, exc, _ = sys.exc_info()
         logger.info(str(exc))
@@ -119,7 +119,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
 
     return backoff.on_exception(
         backoff_type,
-        exception,
+        exceptions,
         jitter=None,
         on_backoff=[log_retry_attempt, reduce_request_record_limit],
         on_success=[revert_request_record_limit],

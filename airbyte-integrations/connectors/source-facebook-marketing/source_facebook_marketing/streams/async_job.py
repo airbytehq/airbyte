@@ -5,6 +5,9 @@
 import copy
 import logging
 from abc import ABC, abstractmethod
+from http.client import RemoteDisconnected
+
+import requests
 from enum import Enum
 from typing import Any, Iterator, List, Mapping, Optional, Type, Union
 
@@ -30,7 +33,7 @@ logger = logging.getLogger("airbyte")
 # Also, it does not happen while making a call to the API, but later - when parsing the result,
 # that's why a retry is added to `get_results()` instead of extending the existing retry of `api.call()` with `FacebookBadObjectError`.
 
-backoff_policy = retry_pattern(backoff.expo, FacebookBadObjectError, max_tries=10, factor=5)
+backoff_policy = retry_pattern(backoff.expo, (FacebookBadObjectError, requests.ConnectionError, RemoteDisconnected), max_tries=15, factor=5)
 
 
 def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
