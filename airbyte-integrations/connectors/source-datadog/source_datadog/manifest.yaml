@@ -55,7 +55,7 @@ definitions:
     type: "DefaultPaginator"
     pagination_strategy:
       type: "CursorPagination"
-      cursor_value: "{{ last_record['meta']['pagination']['next_offset'] }}"
+      cursor_value: "{{ last_record['meta']['pagination']['next_offset'] if last_record else None }}"
     page_token_option:
       type: "RequestPath"
       field_name: "page[offset]"
@@ -65,7 +65,7 @@ definitions:
     type: "DefaultPaginator"
     pagination_strategy:
       type: "CursorPagination"
-      cursor_value: "{{ last_record['meta']['page']['after'] }}"
+      cursor_value: "{{ last_record['meta']['page']['after'] if last_record else None }}"
     page_token_option:
       type: "RequestPath"
       field_name: "page[cursor]"
