@@ -205,6 +205,18 @@ Follow these instructions to add the Airbyte helm repository:
 ```yml
 global:
   edition: enterprise
+
+  # This must be set to the public facing URL of your Airbyte instance.
+  airbyteUrl: https://airbyte.company.example
+
+  # Optional configuration of an OIDC provider
+  auth:
+    identityProvider:
+      type: oidc
+      domain: company.example
+      app-name: airbyte
+      client-id: e83bbc57-1991-417f-8203-3affb47636cf
+      client-secret: $OKTA_CLIENT_SECRET
 ```
 
 3. The following subsections help you customize your deployment to use an external database, log storage, dedicated ingress, and more. To skip this and deploy a minimal, local version of Self-Managed Enterprise, [jump to Step 4](#step-4-deploy-self-managed-enterprise).
