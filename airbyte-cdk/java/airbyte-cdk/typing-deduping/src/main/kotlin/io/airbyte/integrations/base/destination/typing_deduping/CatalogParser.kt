@@ -55,13 +55,13 @@ constructor(
                         .substring(0, 3)
                 val newName = "${originalName}_$hash"
                 actualStreamConfig =
-                    StreamConfig(
-                        sqlGenerator.buildStreamId(originalNamespace, newName, rawNamespace),
-                        originalStreamConfig.syncMode,
-                        originalStreamConfig.destinationSyncMode,
-                        originalStreamConfig.primaryKey,
-                        originalStreamConfig.cursor,
-                        originalStreamConfig.columns,
+                    originalStreamConfig.copy(
+                        id =
+                            sqlGenerator.buildStreamId(
+                                originalNamespace,
+                                newName,
+                                rawNamespace,
+                            ),
                     )
             } else {
                 actualStreamConfig = originalStreamConfig
@@ -112,6 +112,18 @@ constructor(
 
     @VisibleForTesting
     fun toStreamConfig(stream: ConfiguredAirbyteStream): StreamConfig {
+        if (stream.generationId == null) {
+            stream.generationId = 0
+            stream.minimumGenerationId = 0
+            stream.syncId = 0
+        }
+        if (
+            stream.minimumGenerationId != 0.toLong() &&
+                stream.minimumGenerationId != stream.generationId
+        ) {
+            throw UnsupportedOperationException("Hybrid refreshes are not yet supported.")
+        }
+
         val airbyteColumns =
             when (
                 val schema: AirbyteType =
@@ -143,11 +155,13 @@ constructor(
 
         return StreamConfig(
             sqlGenerator.buildStreamId(stream.stream.namespace, stream.stream.name, rawNamespace),
-            stream.syncMode,
             stream.destinationSyncMode,
             primaryKey,
             cursor,
-            columns
+            columns,
+            stream.generationId,
+            stream.minimumGenerationId,
+            stream.syncId,
         )
     }
 

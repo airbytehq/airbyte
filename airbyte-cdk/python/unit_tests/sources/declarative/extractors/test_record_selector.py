@@ -12,7 +12,7 @@ from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtr
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.types import Record
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 

@@ -9,7 +9,11 @@ import requests
 from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
+<<<<<<< HEAD
 from airbyte_cdk.sources.declarative.types import Config, Record
+=======
+from airbyte_cdk.sources.types import Config, Record
+>>>>>>> master
 
 
 @dataclass
@@ -45,7 +49,10 @@ class OffsetIncrement(PaginationStrategy):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._offset = 0
         page_size = str(self.page_size) if isinstance(self.page_size, int) else self.page_size
-        self._page_size = InterpolatedString(page_size, parameters=parameters) if page_size else None
+        if page_size:
+            self._page_size: Optional[InterpolatedString] = InterpolatedString(page_size, parameters=parameters)
+        else:
+            self._page_size = None
 
     @property
     def initial_token(self) -> Optional[Any]:
