@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
-  dockerImageTag: 2.0.8
+  dockerImageTag: 2.1.0
   dockerRepository: airbyte/source-shopify
   documentationUrl: https://docs.airbyte.com/integrations/sources/shopify
   githubIssueLabel: source-shopify
@@ -64,6 +64,14 @@ data:
                 "product_variants",
                 "transactions",
               ]
+      2.1.0:
+        message:
+          "This upgrade changes the `Products`, `Product Images` and `Product Variants` streams to use `Shopify GraphQL BULK`.
+          More details here: https://github.com/airbytehq/airbyte/pull/37767."
+        upgradeDeadline: "2024-06-10"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["product_variants"]
   suggestedStreams:
     streams:
       - customers
