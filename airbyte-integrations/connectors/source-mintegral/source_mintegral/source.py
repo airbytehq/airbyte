@@ -12,7 +12,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
-from source_mintegral.streams import *
+from source_mintegral.streams import Offers, Campaigns, Reports
 
 
 class HeaderAuthenticator(HttpAuthenticator):

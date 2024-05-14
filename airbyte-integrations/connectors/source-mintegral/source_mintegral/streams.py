@@ -1,4 +1,5 @@
 import logging
+from abc import ABC
 from datetime import datetime, timedelta
 from typing import Any, Iterable, Mapping, Optional, Union, List, Dict
 
@@ -11,7 +12,7 @@ from airbyte_protocol.models import SyncMode
 
 
 # Basic full refresh stream
-class MintegralStream(HttpStream):
+class MintegralStream(HttpStream, ABC):
     page_size = 50
     url_base = "https://ss-api.mintegral.com/api/open/v1/"
 
@@ -109,17 +110,6 @@ class MintegralReportingStream(HttpStream, IncrementalMixin):
             yield from response_json["data"]
         else:
             yield {}
-
-    def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: Optional[List[str]] = None,
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            stream_state: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[StreamData]:
-        yield from self._read_pages(
-            lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice, stream_state
-        )
 
     def stream_slices(
             self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
