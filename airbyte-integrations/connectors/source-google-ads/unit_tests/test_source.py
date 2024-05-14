@@ -3,13 +3,13 @@
 #
 
 
+import logging
 import re
 from collections import namedtuple
 from unittest.mock import Mock, call
 
 import pendulum
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from pendulum import today
 from source_google_ads.custom_query_stream import IncrementalCustomQuery

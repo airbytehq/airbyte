@@ -3,11 +3,11 @@
 #
 
 
+import logging
 from contextlib import nullcontext as does_not_raise
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.utils import AirbyteTracedException
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.models import CustomerModel
