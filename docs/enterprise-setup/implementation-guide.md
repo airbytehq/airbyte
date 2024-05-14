@@ -551,3 +551,33 @@ The [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/e
     ],
 }
 ```
+
+### AWS Secret Manager Policy
+
+
+```yaml
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:CreateSecret",
+                "secretsmanager:ListSecrets",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:TagResource",
+                "secretsmanager:UpdateSecret"
+            ],
+            "Resource": [
+                "*"
+            ],
+            "Condition": {
+                "ForAllValues:StringEquals": {
+                    "secretsmanager:ResourceTag/AirbyteManaged": "true"
+                }
+            }
+        }
+    ]
+}
+```
