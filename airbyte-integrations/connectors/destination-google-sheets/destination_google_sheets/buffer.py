@@ -3,9 +3,9 @@
 #
 
 
+import logging
 from typing import Any, Mapping
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream
 
 

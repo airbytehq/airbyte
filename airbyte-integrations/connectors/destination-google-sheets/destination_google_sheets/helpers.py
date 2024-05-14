@@ -3,10 +3,10 @@
 #
 
 
+import logging
 import re
 from typing import List
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from pygsheets import Spreadsheet, Worksheet
 from pygsheets.exceptions import WorksheetNotFound

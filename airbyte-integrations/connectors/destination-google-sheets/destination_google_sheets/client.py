@@ -3,10 +3,10 @@
 #
 
 
+import logging
 from typing import Dict
 
 import pygsheets
-from airbyte_cdk import AirbyteLogger
 from google.auth.transport.requests import Request
 from google.oauth2 import credentials as client_account
 from pygsheets.client import Client as pygsheets_client
