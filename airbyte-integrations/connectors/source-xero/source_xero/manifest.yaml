@@ -24,11 +24,14 @@ definitions:
         - type: DefaultErrorHandler
           response_filters:
             - type: HttpResponseFilter
-              action: IGNORE
+              action: FAIL
               http_codes:
                 - 401
-                - 403
               error_message: Resource is forbidden, Please check all the scopes in xero platform for getting access of resource
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 403
 
   paginator_base:
     type: "DefaultPaginator"
