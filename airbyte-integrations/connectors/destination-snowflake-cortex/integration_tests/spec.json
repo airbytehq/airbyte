@@ -316,11 +316,39 @@
         "title": "Indexing",
         "type": "object",
         "properties": {
-          "account": {
-            "title": "Account",
-            "description": "Enter the account name you want to use to access the database.",
+          "host": {
+            "title": "Host",
+            "description": "Enter the account name you want to use to access the database. This is usually the identifier before .snowflakecomputing.com",
             "airbyte_secret": true,
             "examples": ["xxx.us-east-2.aws"],
+            "type": "string"
+          },
+          "role": {
+            "title": "Role",
+            "description": "Enter the role that you want to use to access Snowflake",
+            "airbyte_secret": true,
+            "examples": ["AIRBYTE_ROLE", "ACCOUNTADMIN"],
+            "type": "string"
+          },
+          "warehouse": {
+            "title": "Warehouse",
+            "description": "Enter the name of the warehouse that you want to sync data into",
+            "airbyte_secret": true,
+            "examples": ["AIRBYTE_WAREHOUSE"],
+            "type": "string"
+          },
+          "database": {
+            "title": "Database",
+            "description": "Enter the name of the database that you want to sync data into",
+            "airbyte_secret": true,
+            "examples": ["AIRBYTE_DATABASE"],
+            "type": "string"
+          },
+          "default_schema": {
+            "title": "Default Schema",
+            "description": "Enter the name of the default schema",
+            "airbyte_secret": true,
+            "examples": ["AIRBYTE_SCHEMA"],
             "type": "string"
           },
           "username": {
@@ -335,36 +363,16 @@
             "description": "Enter the password associated with the user you entered above",
             "airbyte_secret": true,
             "type": "string"
-          },
-          "database": {
-            "title": "Database",
-            "description": "Enter the name of the database that you want to sync data into",
-            "airbyte_secret": true,
-            "examples": ["AIRBYTE_DATABASE"],
-            "type": "string"
-          },
-          "warehouse": {
-            "title": "Warehouse",
-            "description": "Enter the name of the warehouse that you want to sync data into",
-            "airbyte_secret": true,
-            "examples": ["AIRBYTE_WAREHOUSE"],
-            "type": "string"
-          },
-          "role": {
-            "title": "Role",
-            "description": "Enter the name of the role that you want to sync data into",
-            "airbyte_secret": true,
-            "examples": ["AIRBYTE_ROLE", "ACCOUNTADMIN"],
-            "type": "string"
           }
         },
         "required": [
-          "account",
-          "username",
-          "password",
-          "database",
+          "host",
+          "role",
           "warehouse",
-          "role"
+          "database",
+          "default_schema",
+          "username",
+          "password"
         ],
         "description": "Snowflake can be used to store vector data and retrieve embeddings.",
         "group": "indexing"

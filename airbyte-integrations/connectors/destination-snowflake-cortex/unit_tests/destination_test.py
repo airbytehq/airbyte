@@ -17,12 +17,13 @@ class TestDestinationSnowflakeCortex(unittest.TestCase):
             "processing": {"text_fields": ["str_col"], "metadata_fields": [], "chunk_size": 1000},
             "embedding": {"mode": "openai", "openai_key": "mykey"},
             "indexing": {
-                "account": "MYACCOUNT",
-                "username": "MYUSERNAME",
-                "password": "xxxxxxx",
-                "database": "MYDATABASE",
-                "warehouse": "MYWAREHOUSE",
-                "role": "ACCOUNTADMIN"
+                    "host": "MYACCOUNT",
+                    "role": "MYUSERNAME",
+                    "warehouse": "MYWAREHOUSE", 
+                    "database": "MYDATABASE",
+                    "default_schema": "MYSCHEMA",
+                    "username": "MYUSERNAME",
+                    "password": "xxxxxxx"
             },
         }
         self.config_model = ConfigModel.parse_obj(self.config)

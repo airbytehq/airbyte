@@ -9,11 +9,12 @@
     "openai_key": "mykey"
   },
   "indexing": {
-    "account": "MYACCOUNT",
-    "username": "MYUSERNAME",
-    "password": "xxxxxxx",
+    "host": "MYACCOUNT",
+    "role": "MYUSERNAME",
+    "warehouse": "COMPUTE_WH",
     "database": "MYDATABASE",
-    "warehouse": "MYWAREHOUSE",
-    "role": "ACCOUNTADMIN"
+    "default_schema": "MYSCHEMA",
+    "username": "MYUSERNAME",
+    "password": "xxxxxxx"
   }
 }

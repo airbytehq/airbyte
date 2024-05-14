@@ -37,12 +37,13 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
                 "processing": {"text_fields": ["str_col"], "chunk_size": 1000, "metadata_fields": ["int_col"]},
                 "embedding": {"mode": "openai", "openai_key": "mykey"},
                 "indexing": {
-                    "account": "myaccount",
-                    "username": "myaccount",
-                    "password": "xxxxxxxxxxxx",
-                    "database": "INTEGRATION_TEST",
-                    "warehouse": "INTEGRATION_TEST_WAREHOUSE",
-                    "role": "ACCOUNTADMIN"
+                    "host": "MYACCOUNT",
+                    "role": "MYUSERNAME",
+                    "warehouse": "MYWAREHOUSE", 
+                    "database": "MYDATABASE",
+                    "default_schema": "MYSCHEMA",
+                    "username": "MYUSERNAME",
+                    "password": "xxxxxxx"
                 },
             },
         )
@@ -50,13 +51,13 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
 
     def _get_db_connection(self):
         return connector.connect(
-            user=self.config["indexing"]["username"],
-            password=self.config["indexing"]["password"],
-            account=self.config["indexing"]["account"],
+            account=self.config["indexing"]["host"],
+            role=self.config["indexing"]["role"],
             warehouse=self.config["indexing"]["warehouse"],
             database=self.config["indexing"]["database"],
-            role=self.config["indexing"]["role"],
-            schema="airbyte_raw",
+            schema=self.config["indexing"]["default_schema"],
+            user=self.config["indexing"]["username"],
+            password=self.config["indexing"]["password"],
         )
     
     def _get_record_count(self, table_name):

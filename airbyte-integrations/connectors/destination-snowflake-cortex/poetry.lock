@@ -220,13 +220,13 @@ vector-db-based = ["cohere (==4.21)", "langchain (==0.1.16)", "openai[embeddings
 
 [[package]]
 name = "airbyte-protocol-models"
-version = "0.9.0"
+version = "0.10.0"
 description = "Declares the Airbyte Protocol."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "airbyte_protocol_models-0.9.0-py3-none-any.whl", hash = "sha256:e972e140b5efd1edad5a338bcae8fdee9fc12545caf2c321e0f61b151c163a9b"},
-    {file = "airbyte_protocol_models-0.9.0.tar.gz", hash = "sha256:40b69c33df23fe82d7078e84beb123bd604480e4d73cb277a890fcc92aedc8d2"},
+    {file = "airbyte_protocol_models-0.10.0-py3-none-any.whl", hash = "sha256:84447b00492193d2852e90898b56c0eeb8387a7cdb0b033860a606cee30451be"},
+    {file = "airbyte_protocol_models-0.10.0.tar.gz", hash = "sha256:03835e75104ca6feb82fa86a69afa5e970a7ddf8fd6c2d4494ff4b5a64e05c07"},
 ]
 
 [package.dependencies]

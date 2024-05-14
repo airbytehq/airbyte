@@ -37,14 +37,15 @@ class SnowflakeCortexIndexer(Indexer):
 
     def __init__(self, config: SnowflakeCortexIndexingModel, embedding_dimensions: int, configured_catalog: ConfiguredAirbyteCatalog):
         super().__init__(config)
-        account = config.account
-        username = config.username
-        password = config.password
-        database = config.database
-        warehouse = config.warehouse
-        role = config.role
         self.cache = SnowflakeCache(
-            account=account, username=username, password=password, database=database, warehouse=warehouse, role=role
+            # Note: Host maps to account in the cache
+            account=config.host,
+            role=config.role,
+            warehouse=config.warehouse,
+            database=config.database,
+            username=config.username,
+            password=config.password,
+            schema_name=config.default_schema,
         )
         self.embedding_dimensions = embedding_dimensions
         self.catalog = configured_catalog
