@@ -47,8 +47,8 @@ class HttpClient:
         session: Optional[Union[requests.Session, requests_cache.CachedSession]] = None,
         authenticator: Optional[AuthBase] = None,
         use_cache: bool = False,
-        backoff_strategy: BackoffStrategy = DefaultBackoffStrategy(),
-        error_message_parser: ErrorMessageParser = JsonErrorMessageParser(),
+        backoff_strategy: BackoffStrategy = None,
+        error_message_parser: ErrorMessageParser = None,
     ):
         self._name = name
         self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
@@ -64,8 +64,8 @@ class HttpClient:
             self._session.auth = authenticator
         self._logger = logger
         self._error_handler = error_handler or HttpStatusErrorHandler(self._logger)
-        self._backoff_strategy = backoff_strategy
-        self._error_message_parser = error_message_parser
+        self._backoff_strategy = backoff_strategy or DefaultBackoffStrategy()
+        self._error_message_parser = error_message_parser or JsonErrorMessageParser()
 
     @property
     def cache_filename(self) -> str:
@@ -111,7 +111,7 @@ class HttpClient:
         self,
         http_method: str,
         url: str,
-        dedupe_query_params: bool = True,
+        dedupe_query_params: bool = False,
         headers: Optional[Mapping[str, str]] = None,
         params: Optional[Mapping[str, str]] = None,
         json: Optional[Mapping[str, Any]] = None,
@@ -170,6 +170,11 @@ class HttpClient:
             exc = e
 
         error_resolution: ErrorResolution = self._error_handler.interpret_response(response if response is not None else exc)
+
+        print("\n\n=====================\n\n")
+        print(response)
+        print(error_resolution)
+        print("\n\n=====================\n\n")
 
         # Evaluation of response.text can be heavy, for example, if streaming a large response
         # Do it only in debug mode
