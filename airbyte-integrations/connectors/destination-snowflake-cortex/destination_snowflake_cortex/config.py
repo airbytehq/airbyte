@@ -70,12 +70,6 @@ class SnowflakeCortexIndexingModel(BaseModel):
 
     credentials: PasswordBasedAuthorizationModel
 
-    # credentials: SnowflakeCortexAuthorizationModel = Field(
-    #     default=None,
-    #     title="Authorization Method",
-    #     type="object",
-    # )
-
     class Config:
         title = "Indexing"
         schema_extra = {
