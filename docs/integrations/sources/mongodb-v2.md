@@ -231,7 +231,8 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------| :------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------|
+| 1.3.13  | 2024-05-09 | [36851](https://github.com/airbytehq/airbyte/pull/36851) | Support reading collection with a binary _id type.                                                        |
 | 1.3.12  | 2024-05-07 | [36851](https://github.com/airbytehq/airbyte/pull/36851) | Upgrade debezium to version 2.5.1.                                                                        |
 | 1.3.11  | 2024-05-02 | [37753](https://github.com/airbytehq/airbyte/pull/37753) | Chunk size(limit) should correspond to ~1GB of data.                                                      |
 | 1.3.10  | 2024-05-02 | [37781](https://github.com/airbytehq/airbyte/pull/37781) | Adopt latest CDK.                                                                                         |

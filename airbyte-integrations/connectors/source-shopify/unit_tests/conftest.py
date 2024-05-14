@@ -532,7 +532,7 @@ def product_images_jsonl_content_example():
 def product_variants_jsonl_content_example():
     return """{"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/123","title":"Test 234","price":"59.00","sku":"","position":3,"inventoryPolicy":"DENY","compareAtPrice":null,"inventoryManagement":"SHOPIFY","createdAt":"2023-04-14T10:29:27Z","updatedAt":"2023-10-27T16:56:39Z","taxable":true,"barcode":"","weight":0.0,"weightUnit":"GRAMS","inventoryQuantity":0,"requiresShipping":false,"grams":0.0,"image":null,"old_inventory_quantity":0,"product":{"product_id":"gid:\/\/shopify\/Product\/111"},"fulfillmentService":{"fulfillment_service":"manual"},"inventoryItem":{"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/222"}}
 {"__typename":"ProductVariantPricePair","price":{"amount":"59.0","currencyCode":"USD"},"compareAtPrice":null,"__parentId":"gid:\/\/shopify\/ProductVariant\/123"}
-{"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/456","title":"Test Variant","price":"113.00","sku":"123","position":4,"inventoryPolicy":"CONTINUE","compareAtPrice":"1.00","inventoryManagement":"SHOPIFY","createdAt":"2023-12-11T10:37:41Z","updatedAt":"2023-12-11T10:37:41Z","taxable":true,"barcode":"123","weight":127.0,"weightUnit":"GRAMS","inventoryQuantity":1,"requiresShipping":true,"grams":127.0,"image":null,"old_inventory_quantity":1,"product":{"product_id":"gid:\/\/shopify\/Product\/222"},"fulfillmentService":{"fulfillment_service":"manual"},"inventoryItem":{"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/333"}}
+{"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/456","title":"Test Variant","price":"113.00","sku":"123","position":4,"inventoryPolicy":"CONTINUE","compareAtPrice":"1.00","inventoryManagement":"SHOPIFY","createdAt":"2023-12-11T10:37:41Z","updatedAt":"2023-12-11T10:37:41Z","taxable":true,"barcode":"123","weight":127.0,"weightUnit":"GRAMS","inventoryQuantity":1,"requiresShipping":true,"grams":127.0,"image":{"image_id":"gid:\/\/shopify\/ProductImage\/123456"},"old_inventory_quantity":1,"product":{"product_id":"gid:\/\/shopify\/Product\/222"},"fulfillmentService":{"fulfillment_service":"manual"},"inventoryItem":{"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/333"}}
 {"__typename":"ProductVariantPricePair","price":{"amount":"113.0","currencyCode":"USD"},"compareAtPrice":{"amount":"1.0","currencyCode":"USD"},"__parentId":"gid:\/\/shopify\/ProductVariant\/456"}\n"""
 
 
@@ -783,7 +783,7 @@ def product_variants_response_expected_result():
             "inventory_quantity": 0,
             "requires_shipping": False,
             "grams": 0,
-            "image": None,
+            "image_id": None,
             "old_inventory_quantity": 0,
             "fulfillment_service": "manual",
             "admin_graphql_api_id": "gid://shopify/ProductVariant/123",
@@ -820,7 +820,7 @@ def product_variants_response_expected_result():
             "inventory_quantity": 1,
             "requires_shipping": True,
             "grams": 127,
-            "image": None,
+            "image_id": 123456,
             "old_inventory_quantity": 1,
             "fulfillment_service": "manual",
             "admin_graphql_api_id": "gid://shopify/ProductVariant/456",

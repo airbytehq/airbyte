@@ -22,6 +22,7 @@ import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
@@ -38,13 +39,11 @@ import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
-import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
-import io.airbyte.integrations.destination.bigquery.formatter.GcsCsvBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryV1V2Migrator;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryV2TableMigrator;
-import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
+import io.airbyte.integrations.destination.bigquery.uploader.BigQueryDirectUploader;
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
@@ -66,10 +65,10 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
@@ -225,9 +224,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   @Override
   @SuppressWarnings("deprecation")
-  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
-                                                                       final ConfiguredAirbyteCatalog catalog,
-                                                                       final Consumer<AirbyteMessage> outputRecordCollector)
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final @NotNull JsonNode config,
+                                                                       final @NotNull ConfiguredAirbyteCatalog catalog,
+                                                                       final @NotNull Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
     final String defaultNamespace = BigQueryUtils.getDatasetId(config);
@@ -236,7 +235,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
     final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText(), datasetLocation);
     final Optional<String> rawNamespaceOverride = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET);
-    final ParsedCatalog parsedCatalog = parseCatalog(config, catalog, datasetLocation, rawNamespaceOverride);
+    final ParsedCatalog parsedCatalog = parseCatalog(sqlGenerator, defaultNamespace,
+        rawNamespaceOverride.orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE), catalog);
     final BigQuery bigquery = getBigQuery(config);
     final TyperDeduper typerDeduper =
         buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation, disableTypeDedupe);
@@ -271,35 +271,33 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final DateTime syncDatetime = DateTime.now(DateTimeZone.UTC);
     final boolean keepStagingFiles = BigQueryUtils.isKeepFilesInGcs(config);
     final GcsStorageOperations gcsOperations = new GcsStorageOperations(gcsNameTransformer, gcsConfig.getS3Client(), gcsConfig);
-    final BigQueryStagingOperations bigQueryGcsOperations = new BigQueryGcsOperations(
+    final BigQueryGcsOperations bigQueryGcsOperations = new BigQueryGcsOperations(
         bigquery,
         gcsNameTransformer,
         gcsConfig,
         gcsOperations,
+        datasetLocation,
         stagingId,
         syncDatetime,
         keepStagingFiles);
 
     return new BigQueryStagingConsumerFactory().createAsync(
-        config,
         catalog,
         outputRecordCollector,
         bigQueryGcsOperations,
-        getCsvRecordFormatterCreator(namingResolver),
-        namingResolver::getTmpTableName,
         typerDeduper,
         parsedCatalog,
         BigQueryUtils.getDatasetId(config));
   }
 
-  protected Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> getUploaderMap(
-                                                                                                                final BigQuery bigquery,
-                                                                                                                final JsonNode config,
-                                                                                                                final ConfiguredAirbyteCatalog catalog,
-                                                                                                                final ParsedCatalog parsedCatalog)
+  protected Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, BigQueryDirectUploader>> getUploaderMap(
+                                                                                                           final BigQuery bigquery,
+                                                                                                           final JsonNode config,
+                                                                                                           final ConfiguredAirbyteCatalog catalog,
+                                                                                                           final ParsedCatalog parsedCatalog)
       throws IOException {
     return () -> {
-      final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new ConcurrentHashMap<>();
+      final ConcurrentMap<AirbyteStreamNameNamespacePair, BigQueryDirectUploader> uploaderMap = new ConcurrentHashMap<>();
       for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
         final AirbyteStream stream = configStream.getStream();
         final StreamConfig parsedStream;
@@ -315,7 +313,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             .configStream(configStream)
             .parsedStream(parsedStream)
             .config(config)
-            .formatterMap(getFormatterMap(stream.getJsonSchema()))
+            .formatterMap(getFormatterMap())
             .targetTableName(targetTableName)
             // This refers to whether this is BQ denormalized or not
             .isDefaultAirbyteTmpSchema(isDefaultAirbyteTmpTableSchema())
@@ -333,7 +331,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   protected void putStreamIntoUploaderMap(final AirbyteStream stream,
                                           final UploaderConfig uploaderConfig,
-                                          final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap)
+                                          final Map<AirbyteStreamNameNamespacePair, BigQueryDirectUploader> uploaderMap)
       throws IOException {
     uploaderMap.put(
         AirbyteStreamNameNamespacePair.fromAirbyteStream(stream),
@@ -351,10 +349,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return true;
   }
 
-  protected Map<UploaderType, BigQueryRecordFormatter> getFormatterMap(final JsonNode jsonSchema) {
+  protected Map<UploaderType, BigQueryRecordFormatter> getFormatterMap() {
     return Map.of(
-        UploaderType.STANDARD, new DefaultBigQueryRecordFormatter(jsonSchema, namingResolver),
-        UploaderType.CSV, new GcsCsvBigQueryRecordFormatter(jsonSchema, namingResolver));
+        UploaderType.STANDARD, new BigQueryRecordFormatter(namingResolver),
+        UploaderType.CSV, new BigQueryRecordFormatter(namingResolver));
   }
 
   private SerializedAirbyteMessageConsumer getStandardRecordConsumer(final BigQuery bigquery,
@@ -364,13 +362,13 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                                      final Consumer<AirbyteMessage> outputRecordCollector,
                                                                      final TyperDeduper typerDeduper)
       throws Exception {
-    final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> writeConfigs = getUploaderMap(
+    final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, BigQueryDirectUploader>> writeConfigs = getUploaderMap(
         bigquery,
         config,
         catalog,
         parsedCatalog);
 
-    final Optional<String> bqNamespace = Optional.ofNullable(BigQueryUtils.getDatasetId(config));
+    final String bqNamespace = BigQueryUtils.getDatasetId(config);
 
     return new BigQueryRecordStandardConsumer(
         outputRecordCollector,
@@ -390,7 +388,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                 LOGGER.info("Raw table {} not found, continuing with creation", rawTableId);
               }
               LOGGER.info("Creating table {}", rawTableId);
-              BigQueryUtils.createPartitionedTableIfNotExists(bigquery, rawTableId, DefaultBigQueryRecordFormatter.SCHEMA_V2);
+              BigQueryUtils.createPartitionedTableIfNotExists(bigquery, rawTableId, BigQueryRecordFormatter.SCHEMA_V2);
             } else {
               uploader.createRawTable();
             }
@@ -408,18 +406,14 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             throw new RuntimeException(e);
           }
         },
-        bigquery,
         catalog,
         bqNamespace,
         writeConfigs);
   }
 
-  protected Function<JsonNode, BigQueryRecordFormatter> getCsvRecordFormatterCreator(final BigQuerySQLNameTransformer namingResolver) {
-    return streamSchema -> new GcsCsvBigQueryRecordFormatter(streamSchema, namingResolver);
-  }
-
   private void setDefaultStreamNamespace(final ConfiguredAirbyteCatalog catalog, final String namespace) {
-    // Set the default namespace on streams with null namespace. This means we don't need to repeat this
+    // Set the default originalNamespace on streams with null originalNamespace. This means we don't
+    // need to repeat this
     // logic in the rest of the connector.
     // (record messages still need to handle null namespaces though, which currently happens in e.g.
     // AsyncStreamConsumer#accept)
@@ -431,13 +425,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  private ParsedCatalog parseCatalog(final JsonNode config,
-                                     final ConfiguredAirbyteCatalog catalog,
-                                     final String datasetLocation,
-                                     final Optional<String> rawNamespaceOverride) {
-    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText(), datasetLocation);
-    final CatalogParser catalogParser = rawNamespaceOverride.map(s -> new CatalogParser(sqlGenerator, s))
-        .orElseGet(() -> new CatalogParser(sqlGenerator));
+  private ParsedCatalog parseCatalog(final BigQuerySqlGenerator sqlGenerator,
+                                     final String defaultNamespace,
+                                     final String rawNamespaceOverride,
+                                     final ConfiguredAirbyteCatalog catalog) {
+    final CatalogParser catalogParser = new CatalogParser(sqlGenerator, rawNamespaceOverride);
 
     return catalogParser.parseCatalog(catalog);
   }

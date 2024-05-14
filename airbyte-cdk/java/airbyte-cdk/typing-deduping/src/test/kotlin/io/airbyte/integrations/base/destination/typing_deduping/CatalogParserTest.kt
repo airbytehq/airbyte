@@ -10,7 +10,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.SyncMode
-import java.util.List
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.BeforeEach
@@ -74,7 +73,7 @@ internal class CatalogParserTest {
         }
         val catalog =
             ConfiguredAirbyteCatalog()
-                .withStreams(List.of(stream("a", "foobarfoo"), stream("a", "foofoo")))
+                .withStreams(listOf(stream("a", "foobarfoo"), stream("a", "foofoo")))
 
         val parsedCatalog = parser.parseCatalog(catalog)
 
@@ -127,13 +126,13 @@ internal class CatalogParserTest {
                                               
                                               """.trimIndent()
             )
-        val catalog = ConfiguredAirbyteCatalog().withStreams(List.of(stream("a", "a", schema)))
+        val catalog = ConfiguredAirbyteCatalog().withStreams(listOf(stream("a", "a", schema)))
 
         val parsedCatalog = parser.parseCatalog(catalog)
-        val columnsList = parsedCatalog.streams[0].columns!!.keys.toList()
+        val columnsList = parsedCatalog.streams[0].columns.keys.toList()
 
         assertAll(
-            { Assertions.assertEquals(2, parsedCatalog.streams[0].columns!!.size) },
+            { Assertions.assertEquals(2, parsedCatalog.streams[0].columns.size) },
             { Assertions.assertEquals("foofoo", columnsList[0].name) },
             { Assertions.assertEquals("foofoo_1", columnsList[1].name) }
         )
@@ -168,10 +167,10 @@ internal class CatalogParserTest {
         val catalog = ConfiguredAirbyteCatalog().withStreams(listOf(stream("a", "a", schema)))
 
         val parsedCatalog = parser.parseCatalog(catalog)
-        val columnsList = parsedCatalog.streams[0].columns!!.keys.toList()
+        val columnsList = parsedCatalog.streams[0].columns.keys.toList()
 
         assertAll(
-            { Assertions.assertEquals(2, parsedCatalog.streams[0].columns!!.size) },
+            { Assertions.assertEquals(2, parsedCatalog.streams[0].columns.size) },
             { Assertions.assertEquals("aVeryLongC", columnsList[0].name) },
             { Assertions.assertEquals("aV36rd", columnsList[1].name) }
         )
@@ -200,6 +199,9 @@ internal class CatalogParserTest {
                 )
                 .withSyncMode(SyncMode.INCREMENTAL)
                 .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                .withGenerationId(0)
+                .withMinimumGenerationId(0)
+                .withSyncId(0)
         }
     }
 }

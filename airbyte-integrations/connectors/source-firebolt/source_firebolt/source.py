@@ -109,18 +109,19 @@ class SourceFirebolt(Source):
             with connection.cursor() as cursor:
                 for c_stream in catalog.streams:
                     table_name = c_stream.stream.name
-                    table_properties = c_stream.stream.json_schema["properties"]
+                    table_properties = c_stream.stream.json_schema.get("properties", {})
                     columns = list(table_properties.keys())
+                    if columns:
+                        # Escape columns with " to avoid reserved keywords e.g. id
+                        escaped_columns = ['"{}"'.format(col) for col in columns]
 
-                    # Escape columns with " to avoid reserved keywords e.g. id
-                    escaped_columns = ['"{}"'.format(col) for col in columns]
+                        query = "SELECT {columns} FROM {table}".format(columns=",".join(escaped_columns), table=table_name)
+                        print(query)
+                        cursor.execute(query)
 
-                    query = "SELECT {columns} FROM {table}".format(columns=",".join(escaped_columns), table=table_name)
-                    cursor.execute(query)
-
-                    logger.info(f"Fetched {cursor.rowcount} rows from table {table_name}.")
-                    for result in cursor.fetchall():
-                        message = airbyte_message_from_data(result, columns, table_name)
-                        if message:
-                            yield message
+                        logger.info(f"Fetched {cursor.rowcount} rows from table {table_name}.")
+                        for result in cursor.fetchall():
+                            message = airbyte_message_from_data(result, columns, table_name)
+                            if message:
+                                yield message
         logger.info("Data read complete.")

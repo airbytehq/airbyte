@@ -11,8 +11,8 @@ from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigr
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
-from airbyte_cdk.sources.declarative.types import Config, StreamSlice
 from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.types import Config, StreamSlice
 
 
 @dataclass
@@ -95,7 +95,7 @@ class DeclarativeStream(Stream):
         Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
         :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
         """
-        cursor = self._stream_cursor_field.eval(self.config)
+        cursor = self._stream_cursor_field.eval(self.config)  # type: ignore # _stream_cursor_field is always cast to interpolated string
         return cursor if cursor else []
 
     @property

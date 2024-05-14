@@ -6,7 +6,6 @@
 import pytest
 import requests
 
-from source_shopify import SourceShopify
 from source_shopify.shopify_graphql.bulk.exceptions import ShopifyBulkExceptions
 from source_shopify.shopify_graphql.bulk.status import ShopifyBulkJobStatus
 from source_shopify.streams.streams import (
@@ -22,19 +21,6 @@ from source_shopify.streams.streams import (
     ProductVariants,
     TransactionsGraphql,
 )
-from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from airbyte_cdk.test.mock_http import HttpMocker
-from airbyte_cdk.test.mock_http import HttpResponse
-from freezegun import freeze_time
-from airbyte_protocol.models import (
-    AirbyteStateMessage,
-    ConfiguredAirbyteCatalog,
-    SyncMode,
-)
-from typing import Any, Dict, List, Optional
-from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS, HttpRequest
-import pendulum as pdm
 
 
 def test_get_errors_from_response_invalid_response(auth_config) -> None:
