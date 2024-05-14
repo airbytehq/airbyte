@@ -43,6 +43,10 @@ class ChargebeeRequestBuilder:
         return cls("subscriptions", site, site_api_key)
 
     @classmethod
+    def subscription_with_scheduled_changes_endpoint(cls, site: str, site_api_key: str) -> "ChargebeeRequestBuilder":
+        return cls("subscriptions_with_scheduled_changes", site, site_api_key)
+
+    @classmethod
     def hosted_page_endpoint(cls, site: str, site_api_key: str) -> "ChargebeeRequestBuilder":
         return cls("hosted_pages", site, site_api_key)
 
