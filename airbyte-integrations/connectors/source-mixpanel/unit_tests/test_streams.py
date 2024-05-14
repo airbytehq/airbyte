@@ -128,8 +128,8 @@ def engage_response():
                 {
                     "$distinct_id": "9d35cd7f-3f06-4549-91bf-198ee58bb58a",
                     "$properties": {
-                        "$created": "2022-01-01T11:20:47",
-                        "$last_seen": "2022-01-01T11:20:47",
+                        "$created": "2024-02-01T11:20:47",
+                        "$last_seen": "2024-02-01T11:20:47",
                         "$browser": "Chrome",
                         "$browser_version": "83.0.4103.116",
                         "$email": "clark@asw.com",
@@ -141,8 +141,8 @@ def engage_response():
                 {
                     "$distinct_id": "cd9d357f-3f06-4549-91bf-158bb598ee8a",
                     "$properties": {
-                        "$created": "2023-01-01T11:20:47",
-                        "$last_seen": "2023-01-01T11:20:47",
+                        "$created": "2024-03-01T11:20:47",
+                        "$last_seen": "2024-03-01T11:20:47",
                         "$browser": "Firefox",
                         "$browser_version": "83.0.4103.116",
                         "$email": "bruce@asw.com",
@@ -171,18 +171,18 @@ def test_engage_stream_incremental(requests_mock, engage_response, config_raw):
         }
     }
     config_raw['start_date'] = '2022-02-01T00:00:00Z'
-    config_raw['end_date'] = '2024-03-01T00:00:00Z'
+    config_raw['end_date'] = '2024-05-01T00:00:00Z'
 
     requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "engage/properties", json=engage_properties)
     requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "engage?", engage_response)
 
     stream = init_stream('engage', config=config_raw)
 
-    stream_state = {"last_seen": "2022-02-01T11:20:47"}
+    stream_state = {"last_seen": "2024-02-11T11:20:47"}
     records = list(read_incremental(stream, stream_state=stream_state, cursor_field=["last_seen"]))
 
     assert len(records) == 1
-    assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"last_seen": "2023-01-01T11:20:47"}
+    assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"last_seen": "2024-03-01T11:20:47"}
 
 
 
@@ -202,23 +202,23 @@ def test_cohort_members_stream_incremental(requests_mock, engage_response, confi
             }
         }
     }
-    config_raw['start_date'] = '2022-02-01T00:00:00Z'
+    config_raw['start_date'] = '2024-02-01T00:00:00Z'
     config_raw['end_date'] = '2024-03-01T00:00:00Z'
 
-    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "cohorts/list", json=[{'id': 1111, "name":'bla'}])
+    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "cohorts/list", json=[{'id': 1111, "name":'bla', 'created': '2024-02-02T00:00:00Z'}])
     requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "engage/properties", json=engage_properties)
     requests_mock.register_uri("POST", MIXPANEL_BASE_URL + "engage?", engage_response)
 
     stream = init_stream('cohort_members', config=config_raw)
 
-    stream_state = {"last_seen": "2022-02-01T11:20:47"}
+    stream_state = {"last_seen": "2024-02-01T11:20:47"}
     records = list(read_incremental(stream, stream_state=stream_state, cursor_field=["last_seen"]))
 
     assert len(records) == 2
     assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {
         'states': [
             {
-                'cursor': {'last_seen': '2023-01-01T11:20:47'},
+                'cursor': {'last_seen': '2024-03-01T11:20:47'},
                 'partition': {'id': 1111, 'parent_slice': {}},
             }
         ]
