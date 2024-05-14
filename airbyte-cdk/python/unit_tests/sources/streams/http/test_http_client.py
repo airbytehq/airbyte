@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import logging
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 import requests
@@ -384,7 +384,6 @@ def test_send_request_given_request_exception_and_retry_response_action_retries_
         error_handler=HttpStatusErrorHandler(logger=MagicMock(), error_mapping={408: ErrorResolution(ResponseAction.RETRY, FailureType.system_error, "test retry message")}),
         session=mocked_session
     )
-
 
     prepared_request = requests.PreparedRequest()
 
