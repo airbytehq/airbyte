@@ -29,7 +29,7 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseDate: 2024-05-13 # TODO: Confirm the release date
+  releaseDate: 2024-05-14
   releaseStage: beta
   resourceRequirements:
     jobSpecific:
