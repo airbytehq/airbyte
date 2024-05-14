@@ -32,7 +32,7 @@ TIMEOUT_IN_MILLISECONDS = 3_600_000
 class Client:
     api_version: int = 13
     refresh_token_safe_delta: int = 10  # in seconds
-    logger: AirbyteLogger = AirbyteLogger()
+    logger: logging.Logger = AirbyteLogger()
     # retry on: rate limit errors, auth token expiration, internal errors
     # https://docs.microsoft.com/en-us/advertising/guides/services-protocol?view=bingads-13#throttling
     # https://docs.microsoft.com/en-us/advertising/guides/operation-error-codes?view=bingads-13
