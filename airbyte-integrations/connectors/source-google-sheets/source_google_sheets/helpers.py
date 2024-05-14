@@ -43,7 +43,7 @@ class Helpers(object):
             return client_account.Credentials.from_authorized_user_info(info=credentials)
 
     @staticmethod
-    def headers_to_airbyte_stream(logger: AirbyteLogger, sheet_name: str, header_row_values: List[str]) -> AirbyteStream:
+    def headers_to_airbyte_stream(logger: logging.Logger, sheet_name: str, header_row_values: List[str]) -> AirbyteStream:
         """
         Parses sheet headers from the provided row. This method assumes that data is contiguous
         i.e: every cell contains a value and the first cell which does not contain a value denotes the end
