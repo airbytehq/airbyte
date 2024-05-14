@@ -205,7 +205,9 @@ definitions:
 
   cohort_members_stream:
     $ref: "#/definitions/engage_stream"
-    primary_key: distinct_id, cohort_id
+    primary_key:
+      - distinct_id
+      - cohort_id
     $parameters:
       name: cohort_members
       path: 2.0/engage
