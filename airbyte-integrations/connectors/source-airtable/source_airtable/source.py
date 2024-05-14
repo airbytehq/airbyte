@@ -24,7 +24,7 @@ class SourceAirtable(AbstractSource):
     streams_catalog: Iterable[Mapping[str, Any]] = []
     _auth: AirtableAuth = None
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         auth = AirtableAuth(config)
         try:
             # try reading first table from each base, to check the connectivity,
@@ -66,7 +66,7 @@ class SourceAirtable(AbstractSource):
         catalog = self._remove_missed_streams_from_catalog(logger, config, catalog)
         return super().read(logger, config, catalog, state)
 
-    def discover(self, logger: AirbyteLogger, config) -> AirbyteCatalog:
+    def discover(self, logger: logging.Logger, config) -> AirbyteCatalog:
         """
         Override to provide the dynamic schema generation capabilities,
         using resource available for authenticated user.
