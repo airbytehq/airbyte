@@ -59,6 +59,7 @@ class DpathExtractor(RecordExtractor):
     decoder: Decoder = JsonDecoder(parameters={})
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._field_path = [InterpolatedString.create(path, parameters=parameters) for path in self.field_path]
         for path_index in range(len(self.field_path)):
             if isinstance(self.field_path[path_index], str):
                 self._field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
