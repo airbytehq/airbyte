@@ -35,12 +35,13 @@ definitions:
               error_message: "Can't access catalog product groups because there is no existing catalog."
               http_codes: [409]
             - type: HttpResponseFilter
-              action: RETRY
-              http_codes: [429]
-            - type: HttpResponseFilter
               action: FAIL
               error_message: "Try to re-authenticate because current refresh token is not valid."
               error_message_contains: "401 Client Error: Unauthorized for url"
+              http_codes: [401]
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes: [500]
         - type: DefaultErrorHandler
           backoff_strategies:
             - type: ConstantBackoffStrategy
@@ -50,7 +51,6 @@ definitions:
               action: RETRY
               http_codes: [400]
               predicate: "{{ response.get('code') > 0 }}"
-        - type: DefaultErrorHandler # adding this DefaultErrorHandler for 5XX error codes
 
   # Selector
   selector:
@@ -136,7 +136,7 @@ definitions:
     retriever: "#/definitions/analytics_retriever"
     incremental_sync:
       type: DatetimeBasedCursor
-      cursor_field: "{{ parameters.get('cursor_field', 'updated_time') }}"
+      cursor_field: "{{ parameters.get('cursor_field', 'DATE') }}"
       datetime_format: "%Y-%m-%d"
       cursor_datetime_formats:
         - "%s"
@@ -388,4 +388,4 @@ streams:
 check:
   type: CheckStream
   stream_names:
-    - user_account_analytics
+    - boards
