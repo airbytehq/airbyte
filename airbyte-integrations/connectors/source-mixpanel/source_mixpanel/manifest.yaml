@@ -210,9 +210,6 @@ definitions:
       name: cohort_members
       path: 2.0/engage
       field_path: results
-    state_migrations:
-      - type: CustomStateMigration
-        class_name: "source_mixpanel.components.CohortMembersLegacyToPerPartitionStateMigration"
     retriever:
       $ref: "#/definitions/retriever"
       requester:

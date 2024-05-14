@@ -3,8 +3,8 @@
 ## Upgrading to 3.0.0
 
 In this release, we introduce breaking change for `CohortMembers` stream: 
-- State is reset and migrated to new empty per-partition state automatically. It means that on next incremental sync there actually will be one full refresh read and new state will be released.
-- Key is changed to new unique key (based on 'distinct_id' and 'cohort_id' fields) since previous key was not unique and didn't support possibility for user be in a few different cohorts.
+- State is changed to per-partition format.
+- Key is changed to correct unique key (based on 'distinct_id' and 'cohort_id' fields) since previous key was not unique and didn't support possibility for user be in a few different cohorts.
 
 To gracefully handle these changes for your existing connections, we highly recommend resetting your data before resuming your data syncs with the new version.
 

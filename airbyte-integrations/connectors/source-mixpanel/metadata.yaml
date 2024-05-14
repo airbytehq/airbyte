@@ -35,9 +35,7 @@ data:
     breakingChanges:
       3.0.0:
         message:
-          In this release, state for CohortMembers is reset and migrated to new empty
-          per-partition state automatically. It means that on next incremental sync
-          there actually will be one full read and new state will be released.
+          In this release, state for CohortMembers is changed to per partition format.
           Key for CohortMembers stream was changed to new unique key based on 
           distinct_id and cohort_id fields since previous key was not unique and 
           didn't support possibility for user be in a few different cohorts
