@@ -27,7 +27,7 @@ definitions:
               action: FAIL
               http_codes:
                 - 401
-              error_message:  Failed to authorize request. Please update your access token to continue using the source.
+              error_message: Failed to authorize request. Please update your access token to continue using the source.
             - type: HttpResponseFilter
               action: IGNORE
               http_codes:
