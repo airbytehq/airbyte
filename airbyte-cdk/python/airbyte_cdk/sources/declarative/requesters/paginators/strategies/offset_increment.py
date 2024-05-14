@@ -9,11 +9,7 @@ import requests
 from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
-<<<<<<< HEAD
-from airbyte_cdk.sources.declarative.types import Config, Record
-=======
 from airbyte_cdk.sources.types import Config, Record
->>>>>>> master
 
 
 @dataclass
