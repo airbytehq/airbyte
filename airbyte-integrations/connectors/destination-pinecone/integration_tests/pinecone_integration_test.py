@@ -33,7 +33,6 @@ class PineconeIntegrationTest(BaseIntegrationTest):
         print()  # Move to the next line after the loop
     
     def setUp(self):
-        os.environ["INTEGRATION_TEST"] = "True"
         with open("secrets/config.json", "r") as f:
             self.config = json.loads(f.read())
         self._init_pinecone()
