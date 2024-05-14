@@ -1604,9 +1604,7 @@ definitions:
     additionalProperties: true
 
   allocations_schema:
-    type:
-      - "null"
-      - "object"
+    type: object
     properties:
       Date:
         type:
@@ -2004,9 +2002,7 @@ definitions:
     additionalProperties: true
 
   nested_invoice_schema:
-    type:
-      - "null"
-      - "object"
+    type: object
     properties:
       Type:
         type:
