@@ -3,9 +3,9 @@
 #
 
 
+import logging
 from typing import Any, Iterable, List, Mapping
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.destinations.vector_db_based import Embedder, FakeEmbedder, OpenAIEmbedder
 from airbyte_cdk.models import (
@@ -69,7 +69,7 @@ class DestinationLangchain(Destination):
         batcher.flush()
         yield from self.indexer.post_sync()
 
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         self._init_indexer(ConfigModel.parse_obj(config))
         embedder_error = self.embedder.check()
         indexer_error = self.indexer.check()
