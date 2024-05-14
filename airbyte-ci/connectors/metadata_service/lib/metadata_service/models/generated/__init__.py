@@ -9,6 +9,7 @@ from .ConnectorRegistryDestinationDefinition import *
 from .ConnectorRegistrySourceDefinition import *
 from .ConnectorRegistryV0 import *
 from .ConnectorReleases import *
+from .ConnectorTestSuiteOptions import *
 from .GeneratedFields import *
 from .GitInfo import *
 from .JobType import *
@@ -17,6 +18,8 @@ from .RegistryOverrides import *
 from .ReleaseStage import *
 from .RemoteRegistries import *
 from .ResourceRequirements import *
+from .Secret import *
+from .SecretStore import *
 from .SourceFileInfo import *
 from .SuggestedStreams import *
 from .SupportLevel import *
