@@ -40,6 +40,8 @@
     "deleted_by_cascade": { "type": "boolean" },
     "created_at": { "type": "string", "format": "date-time" },
     "updated_at": { "type": "string", "format": "date-time" },
+    "start_time": { "type": "string", "format": "date-time" },
+    "end_time": { "type": "string", "format": "date-time" },
     "discussions_chat_disabled": { "type": "boolean" },
     "discussion_room_tab_title": { "type": ["null", "string"] },
     "show_booths": { "type": "boolean" },
