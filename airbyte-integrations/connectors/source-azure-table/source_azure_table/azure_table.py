@@ -44,7 +44,7 @@ class AzureTableReader:
 
     """
 
-    def __init__(self, logger: AirbyteLogger, config: dict):
+    def __init__(self, logger: logging.Logger, config: dict):
         """
         Parameters
         ----------
