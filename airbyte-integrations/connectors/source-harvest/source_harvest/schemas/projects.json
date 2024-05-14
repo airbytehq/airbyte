@@ -3,90 +3,117 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the project.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name or title of the project.",
       "type": ["null", "string"]
     },
     "code": {
+      "description": "A unique identifier or code for the project.",
       "type": ["null", "string"]
     },
     "is_active": {
+      "description": "Indicates whether the project is currently active.",
       "type": ["null", "boolean"]
     },
     "bill_by": {
+      "description": "Indicates how the project is billed, e.g., hourly, fixed fee, etc.",
       "type": ["null", "string"]
     },
     "budget": {
+      "description": "The allocated budget for the project.",
       "type": ["null", "number"]
     },
     "budget_by": {
+      "description": "Specifies how the budget is managed, e.g., total, task, person, etc.",
       "type": ["null", "string"]
     },
     "budget_is_monthly": {
+      "description": "Indicates whether the budget is monthly.",
       "type": ["null", "boolean"]
     },
     "notify_when_over_budget": {
+      "description": "Indicates whether notifications are sent when the project goes over budget.",
       "type": ["null", "boolean"]
     },
     "over_budget_notification_percentage": {
+      "description": "The percentage threshold for over-budget notifications.",
       "type": ["null", "number"]
     },
     "over_budget_notification_date": {
+      "description": "The date for sending notifications when the project goes over budget.",
       "type": ["null", "string"],
       "format": "date"
     },
     "show_budget_to_all": {
+      "description": "Indicates whether the budget is visible to all project members.",
       "type": ["null", "boolean"]
     },
     "created_at": {
+      "description": "The date and time when the project was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the project was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "starts_on": {
+      "description": "The start date of the project.",
       "type": ["null", "string"],
       "format": "date"
     },
     "ends_on": {
+      "description": "The end date of the project.",
       "type": ["null", "string"]
     },
     "is_billable": {
+      "description": "Indicates whether the project is billable.",
       "type": ["null", "boolean"]
     },
     "is_fixed_fee": {
+      "description": "Indicates whether the project has a fixed fee.",
       "type": ["null", "boolean"]
     },
     "notes": {
+      "description": "Any additional notes or comments related to the project.",
       "type": ["null", "string"]
     },
     "client": {
+      "description": "Details of the client associated with the project.",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "The unique identifier of the client.",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "The name of the client associated with the project.",
           "type": ["null", "string"]
         },
         "currency": {
+          "description": "The currency used for the project.",
           "type": ["null", "string"]
         }
       }
     },
     "cost_budget": {
+      "description": "The total cost budget for the project.",
       "type": ["null", "number"]
     },
     "cost_budget_include_expenses": {
+      "description": "Indicates whether expenses are included in the cost budget.",
       "type": ["null", "boolean"]
     },
     "hourly_rate": {
+      "description": "The hourly rate for the project.",
       "type": ["null", "number"]
     },
     "fee": {
+      "description": "The fee associated with the project.",
       "type": ["null", "number"]
     }
   }
