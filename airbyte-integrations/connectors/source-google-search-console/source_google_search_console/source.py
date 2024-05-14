@@ -108,7 +108,7 @@ class SourceGoogleSearchConsole(AbstractSource):
                         raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
         return config
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             config = self._validate_and_transform(config)
             stream_kwargs = self.get_stream_kwargs(config)
