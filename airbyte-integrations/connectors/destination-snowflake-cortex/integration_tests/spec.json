@@ -320,7 +320,7 @@
             "title": "Host",
             "description": "Enter the account name you want to use to access the database. This is usually the identifier before .snowflakecomputing.com",
             "airbyte_secret": true,
-            "examples": ["xxx.us-east-2.aws"],
+            "examples": ["AIRBYTE_ACCOUNT"],
             "type": "string"
           },
           "role": {
@@ -358,11 +358,19 @@
             "examples": ["AIRBYTE_USER"],
             "type": "string"
           },
-          "password": {
-            "title": "Password",
-            "description": "Enter the password associated with the user you entered above",
-            "airbyte_secret": true,
-            "type": "string"
+          "credentials": {
+            "title": "Credentials",
+            "type": "object",
+            "properties": {
+              "password": {
+                "title": "Password",
+                "description": "Enter the password you want to use to access the database",
+                "airbyte_secret": true,
+                "examples": ["AIRBYTE_PASSWORD"],
+                "type": "string"
+              }
+            },
+            "required": ["password"]
           }
         },
         "required": [
@@ -372,7 +380,7 @@
           "database",
           "default_schema",
           "username",
-          "password"
+          "credentials"
         ],
         "description": "Snowflake can be used to store vector data and retrieve embeddings.",
         "group": "indexing"

@@ -19,7 +19,18 @@ from destination_snowflake_cortex.indexer import (
 
 
 def _create_snowflake_cortex_indexer(catalog:Optional[ConfiguredAirbyteCatalog] ):
-    config = SnowflakeCortexIndexingModel(host="account", username="username", password="password", database="database", warehouse="warehouse", role="role", default_schema="schema")
+    snowflake_credentials = {
+        "host": "account",
+        "role": "role",
+        "warehouse": "warehouse",
+        "database": "database",
+        "default_schema": "schema",
+        "username": "username",
+        "credentials": {
+            "password": "xxxxxx"
+        }
+    }
+    config = SnowflakeCortexIndexingModel(**snowflake_credentials)
     with patch.object(SnowflakeCortexIndexer, '_init_db_connection', side_effect=None):
         indexer = SnowflakeCortexIndexer(config, 3, Mock(ConfiguredAirbyteCatalog) if catalog is None else catalog)
     return indexer 

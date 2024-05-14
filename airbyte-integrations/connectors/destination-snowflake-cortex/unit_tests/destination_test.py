@@ -23,7 +23,9 @@ class TestDestinationSnowflakeCortex(unittest.TestCase):
                     "database": "MYDATABASE",
                     "default_schema": "MYSCHEMA",
                     "username": "MYUSERNAME",
-                    "password": "xxxxxxx"
+                    "credentials": {
+                        "password": "xxxxxxx"
+                    }
             },
         }
         self.config_model = ConfigModel.parse_obj(self.config)

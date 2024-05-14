@@ -57,7 +57,7 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
             database=self.config["indexing"]["database"],
             schema=self.config["indexing"]["default_schema"],
             user=self.config["indexing"]["username"],
-            password=self.config["indexing"]["password"],
+            password=self.config["indexing"]["credentials"]["password"],
         )
     
     def _get_record_count(self, table_name):

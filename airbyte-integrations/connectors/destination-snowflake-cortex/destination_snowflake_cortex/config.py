@@ -3,24 +3,27 @@
 #
 
 
+from typing import Literal, Union
+
 from airbyte_cdk.destinations.vector_db_based.config import VectorDBConfigModel
+from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 from pydantic import BaseModel, Field
 
-# to-do - https://github.com/airbytehq/airbyte/issues/38007 - add Snowflake supported models to config
 
-# "indexing": {
-#     "host": "NXA17679",
-#     "role": "ACCOUNTADMIN",
-#     "warehouse": "COMPUTE_WH",
-#     "database": "PYAIRBYTE_INTEGRATION_TEST",
-#     "schema": "airbyte_raw",
-#     "username": "airbytepartneradmin",
-#     "credentials": {
-#         "password": "t^$JK9g6CfqDH@4U"
-#     }
-# }
+class PasswordBasedAuthorizationModel(BaseModel):
+    password: str = Field(
+        ...,
+        title="Password",
+        airbyte_secret=True,
+        description="Enter the password you want to use to access the database",
+        examples=["AIRBYTE_PASSWORD"],
+    )
+
+    class Config:
+        title = "Credentials"
 
 
+# to-do - https://github.com/airbytehq/airbyte/issues/38007 - add Snowflake supported models to embedding options
 class SnowflakeCortexIndexingModel(BaseModel):
     host: str = Field(
         ...,
@@ -65,11 +68,13 @@ class SnowflakeCortexIndexingModel(BaseModel):
         examples=["AIRBYTE_USER"],
     )
 
-    # add a dropdown for password
+    credentials: PasswordBasedAuthorizationModel
 
-    password: str = Field(
-        ..., title="Password", airbyte_secret=True, description="Enter the password associated with the user you entered above"
-    )
+    # credentials: SnowflakeCortexAuthorizationModel = Field(
+    #     default=None,
+    #     title="Authorization Method",
+    #     type="object",
+    # )
 
     class Config:
         title = "Indexing"

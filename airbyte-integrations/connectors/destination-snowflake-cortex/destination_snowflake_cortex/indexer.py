@@ -44,7 +44,7 @@ class SnowflakeCortexIndexer(Indexer):
             warehouse=config.warehouse,
             database=config.database,
             username=config.username,
-            password=config.password,
+            password=config.credentials.password,
             schema_name=config.default_schema,
         )
         self.embedding_dimensions = embedding_dimensions
