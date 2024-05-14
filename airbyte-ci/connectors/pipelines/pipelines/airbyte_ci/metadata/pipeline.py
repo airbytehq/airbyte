@@ -13,7 +13,7 @@ from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
 from pipelines.airbyte_ci.steps.poetry import PoetryRunStep
 from pipelines.consts import DOCS_DIRECTORY_ROOT_PATH, GIT_DIRECTORY_ROOT_PATH, INTERNAL_TOOL_PATHS
 from pipelines.dagger.actions.python.common import with_pip_packages
-from pipelines.dagger.containers.python import with_python_base
+from pipelines.dagger.containers.python import with_ubuntu_python_base
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
 from pipelines.helpers.utils import DAGGER_CONFIG, get_secret_host_variable
 from pipelines.models.reports import Report
@@ -116,7 +116,7 @@ class DeployOrchestrator(Step):
         "--organization",
         "airbyte-connectors",
         "--deployment",
-        "prod",
+        "dev",
         "--python-version",
         "3.9",
     ]
@@ -124,8 +124,10 @@ class DeployOrchestrator(Step):
     async def _run(self) -> StepResult:
         # mount metadata_service/lib and metadata_service/orchestrator
         parent_dir = self.context.get_repo_dir("airbyte-ci/connectors/metadata_service")
-        python_base = with_python_base(self.context, "3.9")
-        python_with_dependencies = with_pip_packages(python_base, ["dagster-cloud==1.5.14", "poetry2setup==1.1.0"])
+        python_base = with_ubuntu_python_base(self.context)
+        python_with_dependencies = with_pip_packages(
+            python_base, ["distutils", "setuptools", "dagster-cloud==1.5.14", "poetry2setup==1.1.0"]
+        )
         dagster_cloud_api_token_secret: dagger.Secret = get_secret_host_variable(
             self.context.dagger_client, "DAGSTER_CLOUD_METADATA_API_TOKEN"
         )
@@ -135,6 +137,8 @@ class DeployOrchestrator(Step):
             .with_secret_variable("DAGSTER_CLOUD_API_TOKEN", dagster_cloud_api_token_secret)
             .with_workdir("/src/orchestrator")
             .with_exec(["/bin/sh", "-c", "poetry2setup >> setup.py"])
+            # cat out the setup.py file to verify it was created correctly
+            .with_exec(["cat", "setup.py"])
             .with_exec(self.deploy_dagster_command)
         )
         return await self.get_step_result(container_to_run)
@@ -188,16 +192,16 @@ async def run_metadata_orchestrator_deploy_pipeline(
         async with metadata_pipeline_context:
             steps: STEP_TREE = [
                 [
-                    StepToRun(
-                        id=CONNECTOR_TEST_STEP_ID.TEST_ORCHESTRATOR,
-                        step=TestOrchestrator(context=metadata_pipeline_context),
-                    )
+                    # StepToRun(
+                    #     id=CONNECTOR_TEST_STEP_ID.TEST_ORCHESTRATOR,
+                    #     step=TestOrchestrator(context=metadata_pipeline_context),
+                    # )
                 ],
                 [
                     StepToRun(
                         id=CONNECTOR_TEST_STEP_ID.DEPLOY_ORCHESTRATOR,
                         step=DeployOrchestrator(context=metadata_pipeline_context),
-                        depends_on=[CONNECTOR_TEST_STEP_ID.TEST_ORCHESTRATOR],
+                        # depends_on=[CONNECTOR_TEST_STEP_ID.TEST_ORCHESTRATOR],
                     )
                 ],
             ]

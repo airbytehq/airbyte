@@ -15,6 +15,43 @@ from pipelines.consts import (
 from pipelines.helpers.utils import sh_dash_c
 
 
+def with_ubuntu_python_base(context: PipelineContext) -> Container:
+    """Build a Python container with a cache volume for pip cache.
+
+    Args:
+        context (PipelineContext): The current test context, providing a dagger client and a repository directory.
+        python_image_name (str, optional): The python image to use to build the python base environment. Defaults to "python:3.9-slim".
+
+    Raises:
+        ValueError: Raised if the python_image_name is not a python image.
+
+    Returns:
+        Container: The python base environment container.
+    """
+
+    pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
+
+    base_container = (
+        context.dagger_client.container()
+        .from_(f"ubuntu:20.04")
+        .with_mounted_cache("/root/.cache/pip", pip_cache)
+        .with_env_variable("DEBIAN_FRONTEND", "noninteractive")
+        .with_env_variable("TZ", "UTC")
+        .with_exec(
+            sh_dash_c(
+                [
+                    "apt-get update",
+                    "apt-get install -y build-essential cmake g++ libffi-dev libstdc++6 git python3.9 python3.9-dev python3-pip",
+                    "pip3 install pip==23.1.2",
+                    "ln -s /usr/bin/python3.9 /usr/bin/python",
+                ]
+            )
+        )
+    )
+
+    return base_container
+
+
 def with_python_base(context: PipelineContext, python_version: str = "3.10") -> Container:
     """Build a Python container with a cache volume for pip cache.
 
