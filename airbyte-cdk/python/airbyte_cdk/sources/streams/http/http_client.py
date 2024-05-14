@@ -47,8 +47,8 @@ class HttpClient:
         session: Optional[Union[requests.Session, requests_cache.CachedSession]] = None,
         authenticator: Optional[AuthBase] = None,
         use_cache: bool = False,
-        backoff_strategy: BackoffStrategy = None,
-        error_message_parser: ErrorMessageParser = None,
+        backoff_strategy: Optional[BackoffStrategy] = None,
+        error_message_parser: Optional[ErrorMessageParser] = None,
     ):
         self._name = name
         self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
@@ -170,11 +170,6 @@ class HttpClient:
             exc = e
 
         error_resolution: ErrorResolution = self._error_handler.interpret_response(response if response is not None else exc)
-
-        print("\n\n=====================\n\n")
-        print(response)
-        print(error_resolution)
-        print("\n\n=====================\n\n")
 
         # Evaluation of response.text can be heavy, for example, if streaming a large response
         # Do it only in debug mode
