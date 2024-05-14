@@ -112,7 +112,7 @@ class SourceFirebolt(Source):
                     table_properties = c_stream.stream.json_schema.get("properties", {})
                     columns = list(table_properties.keys())
                     if columns:
-                    # Escape columns with " to avoid reserved keywords e.g. id
+                        # Escape columns with " to avoid reserved keywords e.g. id
                         escaped_columns = ['"{}"'.format(col) for col in columns]
 
                         query = "SELECT {columns} FROM {table}".format(columns=",".join(escaped_columns), table=table_name)
