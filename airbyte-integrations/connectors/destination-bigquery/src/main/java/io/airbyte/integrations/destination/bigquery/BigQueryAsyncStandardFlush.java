@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import com.google.cloud.bigquery.BigQuery;
 import com.google.common.util.concurrent.RateLimiter;
 import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction;
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage;
@@ -22,13 +21,9 @@ public class BigQueryAsyncStandardFlush implements DestinationFlushFunction {
 
   // TODO remove this once the async framework supports rate-limiting/backpressuring
   private static final RateLimiter rateLimiter = RateLimiter.create(0.07);
-
-  private final BigQuery bigQuery;
   private final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, BigQueryDirectUploader>> uploaderMap;
 
-  public BigQueryAsyncStandardFlush(final BigQuery bigQuery,
-                                    final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, BigQueryDirectUploader>> uploaderMap) {
-    this.bigQuery = bigQuery;
+  public BigQueryAsyncStandardFlush(final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, BigQueryDirectUploader>> uploaderMap) {
     this.uploaderMap = uploaderMap;
   }
 

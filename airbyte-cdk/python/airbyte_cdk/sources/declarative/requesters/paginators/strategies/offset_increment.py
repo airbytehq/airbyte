@@ -9,7 +9,7 @@ import requests
 from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.types import Config, Record
 
 
 @dataclass
@@ -42,11 +42,11 @@ class OffsetIncrement(PaginationStrategy):
     decoder: Decoder = JsonDecoder(parameters={})
     inject_on_first_request: bool = False
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._offset = 0
         page_size = str(self.page_size) if isinstance(self.page_size, int) else self.page_size
         if page_size:
-            self._page_size = InterpolatedString(page_size, parameters=parameters)
+            self._page_size: Optional[InterpolatedString] = InterpolatedString(page_size, parameters=parameters)
         else:
             self._page_size = None
 
@@ -56,7 +56,7 @@ class OffsetIncrement(PaginationStrategy):
             return self._offset
         return None
 
-    def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
+    def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Optional[Any]:
         decoded_response = self.decoder.decode(response)
 
         # Stop paginating when there are fewer records than the page size or the current page has no records
@@ -66,7 +66,7 @@ class OffsetIncrement(PaginationStrategy):
             self._offset += len(last_records)
             return self._offset
 
-    def reset(self):
+    def reset(self) -> None:
         self._offset = 0
 
     def get_page_size(self) -> Optional[int]:
@@ -76,4 +76,4 @@ class OffsetIncrement(PaginationStrategy):
                 raise Exception(f"{page_size} is of type {type(page_size)}. Expected {int}")
             return page_size
         else:
-            return self._page_size
+            return None
