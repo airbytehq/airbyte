@@ -100,7 +100,7 @@ class SourceAmazonSellerPartner(AbstractSource):
         }
         return stream_kwargs
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """
         Check connection to Amazon SP API by requesting the Orders endpoint
         This endpoint is not available for vendor-only Seller accounts,
