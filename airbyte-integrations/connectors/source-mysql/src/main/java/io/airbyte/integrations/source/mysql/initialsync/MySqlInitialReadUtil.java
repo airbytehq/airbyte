@@ -28,10 +28,13 @@ import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
+import io.airbyte.commons.stream.StreamStatusUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mysql.MySqlQueryUtils;
 import io.airbyte.integrations.source.mysql.MySqlSourceOperations;
+import io.airbyte.integrations.source.mysql.StatusEmitterIterator;
 import io.airbyte.integrations.source.mysql.cdc.MySqlCdcConnectorMetadataInjector;
 import io.airbyte.integrations.source.mysql.cdc.MySqlCdcPosition;
 import io.airbyte.integrations.source.mysql.cdc.MySqlCdcProperties;
@@ -43,14 +46,8 @@ import io.airbyte.integrations.source.mysql.cdc.MySqlDebeziumStateUtil.MysqlDebe
 import io.airbyte.integrations.source.mysql.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.protocol.models.CommonField;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.v0.AirbyteStreamState;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.StreamDescriptor;
-import io.airbyte.protocol.models.v0.SyncMode;
+import io.airbyte.protocol.models.v0.*;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -229,6 +226,14 @@ public class MySqlInitialReadUtil {
           emittedAt));
     }
 
+    final List<AutoCloseableIterator<AirbyteMessage>> starters = catalog.getStreams().stream()
+            .filter(stream -> !initialLoadStreams.streamsForInitialLoad.contains(stream))
+            .map(stream -> (AutoCloseableIterator<AirbyteMessage>)new StatusEmitterIterator(
+                    new AirbyteStreamStatusHolder(
+                            new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
+                            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)))
+            .toList();
+
     // Build the incremental CDC iterators.
     final AirbyteDebeziumHandler<MySqlCdcPosition> handler = new AirbyteDebeziumHandler<MySqlCdcPosition>(
         sourceConfig,
@@ -244,6 +249,15 @@ public class MySqlInitialReadUtil {
     final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
         propertiesManager, eventConverter, new MySqlCdcSavedInfoFetcher(stateToBeUsed), new MySqlCdcStateHandler(stateManager));
 
+    final List<AutoCloseableIterator<AirbyteMessage>> completers = catalog.getStreams().stream()
+//            .filter(stream -> !initialLoadStreams.streamsForInitialLoad.contains(stream))
+            .map(stream -> (AutoCloseableIterator<AirbyteMessage>)new StatusEmitterIterator(
+                    new AirbyteStreamStatusHolder(
+                            new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
+                            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)))
+            .toList();
+
+    LOGGER.info("*** starters: {}, completeres: {}", starters.size(), completers.size());
     // This starts processing the binglogs as soon as initial sync is complete, this is a bit different
     // from the current cdc syncs.
     // We finish the current CDC once the initial snapshot is complete and the next sync starts
@@ -251,7 +265,10 @@ public class MySqlInitialReadUtil {
     return Collections.singletonList(
         AutoCloseableIterators.concatWithEagerClose(
             Stream
-                .of(initialLoadIterator, Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)))
+                .of(initialLoadIterator,
+                        starters,
+                        Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null))
+                        ,completers)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList()),
             AirbyteTraceMessageUtility::emitStreamStatusTrace));
