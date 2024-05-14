@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional
 
 import requests
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
 
 @dataclass
