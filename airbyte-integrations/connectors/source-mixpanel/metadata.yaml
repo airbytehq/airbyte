@@ -38,7 +38,7 @@ data:
           In this release, state for CohortMembers is reset and migrated to new empty
           per-partition state automatically. It means that on next incremental sync
           there actually will be one full read and new state will be released.
-        upgradeDeadline: "2024-05-20"
+        upgradeDeadline: "2024-05-22"
       2.0.0:
         message:
           In this release, the default primary key for stream Export has been
