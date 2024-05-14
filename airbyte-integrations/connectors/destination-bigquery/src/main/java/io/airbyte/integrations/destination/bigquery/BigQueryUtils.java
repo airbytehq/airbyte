@@ -37,8 +37,6 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -52,11 +50,6 @@ import org.slf4j.LoggerFactory;
 public class BigQueryUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUtils.class);
-  private static final String BIG_QUERY_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSSSSS";
-  private static final BigQuerySQLNameTransformer NAME_TRANSFORMER = new BigQuerySQLNameTransformer();
-  private static final DateTimeFormatter formatter =
-      DateTimeFormatter.ofPattern("[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d]" +
-          "[[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X]]]");
   private static final String USER_AGENT_FORMAT = "%s (GPN: Airbyte)";
   private static final String CHECK_TEST_DATASET_SUFFIX = "_airbyte_check_stage_tmp_";
   private static final String CHECK_TEST_TMP_TABLE_NAME = "test_connection_table_name";
@@ -95,8 +88,7 @@ public class BigQueryUtils {
   public static void createSchemaAndTableIfNeeded(final BigQuery bigquery,
                                                   final Set<String> existingSchemas,
                                                   final String schemaName,
-                                                  final String datasetLocation,
-                                                  final Schema schema) {
+                                                  final String datasetLocation) {
     if (!existingSchemas.contains(schemaName)) {
       getOrCreateDataset(bigquery, schemaName, datasetLocation);
       existingSchemas.add(schemaName);
@@ -280,27 +272,6 @@ public class BigQueryUtils {
     }
 
     return false;
-  }
-
-  /**
-   * Maps Airbyte internal sync modes with that of BigQuery's sync modes (aka Write Disposition)
-   *
-   * @param syncMode {@link DestinationSyncMode} represents how data is supposed to be written
-   * @return converted sync mode to map to BigQuery's Write Disposition
-   */
-  public static JobInfo.WriteDisposition getWriteDisposition(final DestinationSyncMode syncMode) {
-    if (syncMode == null) {
-      throw new IllegalStateException("Undefined destination sync mode");
-    }
-    switch (syncMode) {
-      case OVERWRITE -> {
-        return JobInfo.WriteDisposition.WRITE_TRUNCATE;
-      }
-      case APPEND, APPEND_DEDUP -> {
-        return JobInfo.WriteDisposition.WRITE_APPEND;
-      }
-      default -> throw new IllegalStateException("Unrecognized destination sync mode: " + syncMode);
-    }
   }
 
   // https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html

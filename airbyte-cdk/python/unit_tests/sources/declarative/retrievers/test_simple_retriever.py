@@ -7,13 +7,13 @@ import pytest
 import requests
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode, Type
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
-from airbyte_cdk.sources.declarative.incremental import Cursor, DatetimeBasedCursor
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, DeclarativeCursor
 from airbyte_cdk.sources.declarative.partition_routers import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever, SimpleRetrieverTestReadDecorator
-from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.types import Record
 
 A_SLICE_STATE = {"slice_state": "slice state value"}
 A_STREAM_SLICE = {"stream slice": "slice value"}
@@ -43,7 +43,7 @@ def test_simple_retriever_full(mock_http_stream):
     record_selector = MagicMock()
     record_selector.select_records.return_value = records
 
-    cursor = MagicMock(spec=Cursor)
+    cursor = MagicMock(spec=DeclarativeCursor)
     stream_slices = [{"date": "2022-01-01"}, {"date": "2022-01-02"}]
     cursor.stream_slices.return_value = stream_slices
 
@@ -417,7 +417,7 @@ def test_when_read_records_then_cursor_close_slice_with_greater_record(test_name
     records = [first_record, second_record]
     record_selector = MagicMock()
     record_selector.select_records.return_value = records
-    cursor = MagicMock(spec=Cursor)
+    cursor = MagicMock(spec=DeclarativeCursor)
     cursor.is_greater_than_or_equal.return_value = first_greater_than_second
     paginator = MagicMock()
     paginator.get_request_headers.return_value = {}
@@ -452,7 +452,7 @@ def test_given_stream_data_is_not_record_when_read_records_then_update_slice_wit
     stream_data = [AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="a log message"))]
     record_selector = MagicMock()
     record_selector.select_records.return_value = []
-    cursor = MagicMock(spec=Cursor)
+    cursor = MagicMock(spec=DeclarativeCursor)
 
     retriever = SimpleRetriever(
         name="stream_name",
@@ -490,7 +490,7 @@ def test_given_state_selector_when_read_records_use_stream_state(http_stream_rea
     requester = MagicMock()
     paginator = MagicMock()
     record_selector = MagicMock()
-    cursor = MagicMock(spec=Cursor)
+    cursor = MagicMock(spec=DeclarativeCursor)
     cursor.select_state = MagicMock(return_value=A_SLICE_STATE)
     cursor.get_stream_state = MagicMock(return_value=A_STREAM_STATE)
 

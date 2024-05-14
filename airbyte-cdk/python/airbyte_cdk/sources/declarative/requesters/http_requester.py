@@ -25,12 +25,12 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
     InterpolatedRequestOptionsProvider,
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
-from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler, user_defined_backoff_handler
+from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.mapping_helpers import combine_mappings
 from requests.auth import AuthBase
