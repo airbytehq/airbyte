@@ -211,12 +211,12 @@ class HttpClient:
                 raise UserDefinedBackoffException(
                     backoff=custom_backoff_time,
                     request=request,
-                    response_or_exception=(response if response is not None else exc),
+                    response=(response if response is not None else exc),
                     error_message=error_message,
                 )
             else:
                 raise DefaultBackoffException(
-                    request=request, response_or_exception=(response if response is not None else exc), error_message=error_message
+                    request=request, response=(response if response is not None else exc), error_message=error_message
                 )
 
         elif response:
