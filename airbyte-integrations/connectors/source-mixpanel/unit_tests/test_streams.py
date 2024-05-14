@@ -211,7 +211,19 @@ def test_cohort_members_stream_incremental(requests_mock, engage_response, confi
 
     stream = init_stream('cohort_members', config=config_raw)
 
-    stream_state = {"last_seen": "2024-02-01T11:20:47"}
+    stream_state = {"states":
+        [{
+            "partition": {
+              "id": 1111,
+              "parent_slice": {}
+            },
+            "cursor": {
+              "last_seen": "2024-02-01T11:20:47"
+            }
+        }]
+    }
+
+    # stream_state = {"states":[ {"last_seen": "2024-02-01T11:20:47"}] }
     records = list(read_incremental(stream, stream_state=stream_state, cursor_field=["last_seen"]))
 
     assert len(records) == 2
