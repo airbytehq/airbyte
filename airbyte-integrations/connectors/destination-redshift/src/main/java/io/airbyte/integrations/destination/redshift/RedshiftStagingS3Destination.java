@@ -46,7 +46,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.NoOpTyperDeduper
 import io.airbyte.integrations.base.destination.typing_deduping.NoopV2TableMigrator;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftS3StagingSqlOperations;
@@ -179,8 +178,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
   }
 
   @Override
-  protected JdbcSqlGenerator getSqlGenerator() {
-    return new RedshiftSqlGenerator(getNamingResolver());
+  protected JdbcSqlGenerator getSqlGenerator(final JsonNode config) {
+    return new RedshiftSqlGenerator(getNamingResolver(), config);
   }
 
   @Override
@@ -230,7 +229,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
         stream.getStream().setNamespace(defaultNamespace);
       }
     }
-    final RedshiftSqlGenerator sqlGenerator = new RedshiftSqlGenerator(getNamingResolver());
+
+    final RedshiftSqlGenerator sqlGenerator = new RedshiftSqlGenerator(getNamingResolver(), config);
     final ParsedCatalog parsedCatalog;
     final TyperDeduper typerDeduper;
     final JdbcDatabase database = getDatabase(getDataSource(config));
@@ -242,7 +242,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
       catalogParser = new CatalogParser(sqlGenerator, rawNamespace);
     } else {
       rawNamespace = JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
-      catalogParser = new CatalogParser(sqlGenerator);
+      catalogParser = new CatalogParser(sqlGenerator, rawNamespace);
     }
     final RedshiftDestinationHandler redshiftDestinationHandler = new RedshiftDestinationHandler(databaseName, database, rawNamespace);
     parsedCatalog = catalogParser.parseCatalog(catalog);
@@ -267,11 +267,10 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
         config,
         catalog,
         isPurgeStagingData(s3Options),
-        new TypeAndDedupeOperationValve(),
         typerDeduper,
         parsedCatalog,
         defaultNamespace,
-        true)
+        JavaBaseConstants.DestinationColumns.V2_WITH_META)
         .setDataTransformer(getDataTransformer(parsedCatalog, defaultNamespace))
         .build()
         .createAsync();

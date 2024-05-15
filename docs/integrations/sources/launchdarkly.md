@@ -6,19 +6,19 @@ This source can sync data from the [Launchdarkly API](https://apidocs.launchdark
 
 ## This Source Supports the Following Streams
 
-* projects
-* environments
-* metrics
-* members
-* audit_log
-* flags
+- projects
+- environments
+- metrics
+- members
+- audit_log
+- flags
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | No                   |       |
 
 ### Performance considerations
 
@@ -28,10 +28,10 @@ Launchdarkly APIs are under rate limits for the number of API calls allowed per 
 
 ### Requirements
 
-* Access Token
+- Access Token
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject                                    |
-| :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
+| Version | Date       | Pull Request                                              | Subject                                        |
+| :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------- |
 | 0.1.0   | 2022-10-30 | [#18660](https://github.com/airbytehq/airbyte/pull/18660) | 🎉 New Source: Launchdarkly API [low-code CDK] |

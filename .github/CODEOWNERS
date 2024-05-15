@@ -4,6 +4,7 @@
 /airbyte-integrations/connectors/destination-milvus @airbytehq/ai-language-models
 /airbyte-integrations/connectors/destination-qdrant @airbytehq/ai-language-models
 /airbyte-integrations/connectors/destination-chroma @airbytehq/ai-language-models
+/airbyte-integrations/connectors/destination-snowflake-cortex @airbytehq/ai-language-models
 /airbyte-cdk/python/airbyte_cdk/destinations/vector_db_based @airbytehq/ai-language-models
 
 # CI/CD
@@ -51,3 +52,10 @@
 /airbyte-integrations/connectors/destination-s3/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-snowflake/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-redshift/ @airbytehq/destinations
+
+# Python critical connectors
+/airbyte-integrations/connectors/source-facebook-marketing/ @airbytehq/critical-connectors
+/airbyte-integrations/connectors/source-hubspot/ @airbytehq/critical-connectors
+/airbyte-integrations/connectors/source-salesforce/ @airbytehq/critical-connectors
+/airbyte-integrations/connectors/source-shopify/ @airbytehq/critical-connectors
+/airbyte-integrations/connectors/source-stripe/ @airbytehq/critical-connectors
