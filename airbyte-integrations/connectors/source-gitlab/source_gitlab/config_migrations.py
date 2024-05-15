@@ -30,13 +30,11 @@ class MigrateStringToArray(ABC):
 
     @property
     @abc.abstractmethod
-    def migrate_from_key(self) -> str:
-        ...
+    def migrate_from_key(self) -> str: ...
 
     @property
     @abc.abstractmethod
-    def migrate_to_key(self) -> str:
-        ...
+    def migrate_to_key(self) -> str: ...
 
     @classmethod
     def _should_migrate(cls, config: Mapping[str, Any]) -> bool:
@@ -56,6 +54,7 @@ class MigrateStringToArray(ABC):
         config[cls.migrate_to_key] = config[cls.migrate_to_key] if cls.migrate_to_key in config else []
         data = set(filter(None, config.get(cls.migrate_from_key).split(" ")))
         config[cls.migrate_to_key] = list(data | set(config[cls.migrate_to_key]))
+
         return config
 
     @classmethod
