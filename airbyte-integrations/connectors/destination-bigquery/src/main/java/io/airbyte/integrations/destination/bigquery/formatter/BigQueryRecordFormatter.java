@@ -55,8 +55,4 @@ public class BigQueryRecordFormatter {
     return QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
   }
 
-  public Schema getBigQuerySchema() {
-    return SCHEMA_V2;
-  }
-
 }

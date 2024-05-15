@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.89.0
+
+
+## 0.88.4
+HttpMocker, Adding the delete method.
+
+## 0.88.3
+Add Delete method to HttpMocker
+
 ## 0.88.2
 Fix dependency for pytz
 

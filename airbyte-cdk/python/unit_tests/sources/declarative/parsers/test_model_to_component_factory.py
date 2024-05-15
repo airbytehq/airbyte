@@ -229,7 +229,7 @@ spec:
 
     assert isinstance(stream.retriever.record_selector.extractor, DpathExtractor)
     assert isinstance(stream.retriever.record_selector.extractor.decoder, JsonDecoder)
-    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor.field_path] == ["lists"]
+    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor._field_path] == ["lists"]
 
     assert isinstance(stream.retriever.record_selector.record_filter, RecordFilter)
     assert stream.retriever.record_selector.record_filter._filter_interpolator.condition == "{{ record['id'] > stream_state['id'] }}"
@@ -760,7 +760,7 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
 
     assert isinstance(selector, RecordSelector)
     assert isinstance(selector.extractor, DpathExtractor)
-    assert [fp.eval(input_config) for fp in selector.extractor.field_path] == [expected_runtime_selector]
+    assert [fp.eval(input_config) for fp in selector.extractor._field_path] == [expected_runtime_selector]
     assert isinstance(selector.record_filter, RecordFilter)
     assert selector.record_filter.condition == "{{ record['id'] > stream_state['id'] }}"
 
@@ -1094,7 +1094,7 @@ def test_config_with_defaults():
 
     assert isinstance(stream.retriever.record_selector, RecordSelector)
     assert isinstance(stream.retriever.record_selector.extractor, DpathExtractor)
-    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor.field_path] == ["result"]
+    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor._field_path] == ["result"]
 
     assert isinstance(stream.retriever.paginator, DefaultPaginator)
     assert stream.retriever.paginator.url_base.string == "https://api.sendgrid.com"
