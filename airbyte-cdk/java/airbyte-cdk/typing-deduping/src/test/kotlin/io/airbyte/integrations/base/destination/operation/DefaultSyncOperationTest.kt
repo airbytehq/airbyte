@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.base.destination.operation
 
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
@@ -5,18 +9,20 @@ import io.airbyte.integrations.base.destination.typing_deduping.DestinationIniti
 import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableStatus
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
-import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.separately
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
 import io.airbyte.protocol.models.v0.DestinationSyncMode
+import io.mockk.clearMocks
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import java.util.Optional
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.internal.createInstance
 
 class DefaultSyncOperationTest {
     private data class MockState(
@@ -27,125 +33,174 @@ class DefaultSyncOperationTest {
         override fun needsSoftReset(): Boolean = needsSoftReset
 
         override fun <T : MinimumDestinationState> withSoftReset(needsSoftReset: Boolean): T {
-            @Suppress("UNCHECKED_CAST")
-            return copy(needsSoftReset = needsSoftReset) as T
+            @Suppress("UNCHECKED_CAST") return copy(needsSoftReset = needsSoftReset) as T
         }
     }
 
     private val destinationHandler = mockk<DestinationHandler<MockState>>(relaxed = true)
-    private val streamOperations = mapOf(
-        overwriteStreamConfig to mockk<StreamOperation<MockState>>(relaxed = true),
-        appendStreamConfig to mockk<StreamOperation<MockState>>(relaxed = true),
-        dedupStreamConfig to mockk<StreamOperation<MockState>>(relaxed = true),
-    )
+    private val streamOperations =
+        mapOf(
+            overwriteStreamConfig to mockk<StreamOperation<MockState>>(relaxed = true),
+            appendStreamConfig to mockk<StreamOperation<MockState>>(relaxed = true),
+            dedupStreamConfig to mockk<StreamOperation<MockState>>(relaxed = true),
+        )
+    private val streamOperationsFactory =
+        mockk<StreamOperationsFactory<MockState>> {
+            val initialStatusSlot = slot<DestinationInitialStatus<MockState>>()
+            every { createInstance(capture(initialStatusSlot)) } answers
+                {
+                    streamOperations[initialStatusSlot.captured.streamConfig]!!
+                }
+        }
 
     @Test
     fun multipleSoftResets() {
-        every { destinationHandler.gatherInitialState(any()) } returns listOf(
+        val overwriteInitialStatus =
             DestinationInitialStatus(
                 overwriteStreamConfig,
                 isFinalTablePresent = true,
-                initialRawTableStatus = InitialRawTableStatus(
-                    rawTableExists = true,
-                    hasUnprocessedRecords = false,
-                    maxProcessedTimestamp = Optional.empty()
-                ),
+                initialRawTableStatus =
+                    InitialRawTableStatus(
+                        rawTableExists = true,
+                        hasUnprocessedRecords = false,
+                        maxProcessedTimestamp = Optional.empty()
+                    ),
                 isSchemaMismatch = true,
                 isFinalTableEmpty = false,
-                destinationState = MockState(
-                    needsSoftReset = false,
-                    softResetMigrationCompleted = false,
-                    nonSoftResetMigrationCompleted = true
-                )
-            ),
+                destinationState =
+                    MockState(
+                        needsSoftReset = false,
+                        softResetMigrationCompleted = false,
+                        nonSoftResetMigrationCompleted = true
+                    )
+            )
+        val appendInitialStatus =
             DestinationInitialStatus(
                 appendStreamConfig,
                 isFinalTablePresent = true,
-                initialRawTableStatus = InitialRawTableStatus(
-                    rawTableExists = true,
-                    hasUnprocessedRecords = false,
-                    maxProcessedTimestamp = Optional.empty()
-                ),
+                initialRawTableStatus =
+                    InitialRawTableStatus(
+                        rawTableExists = true,
+                        hasUnprocessedRecords = false,
+                        maxProcessedTimestamp = Optional.empty()
+                    ),
                 isSchemaMismatch = true,
                 isFinalTableEmpty = false,
-                destinationState = MockState(
-                    needsSoftReset = false,
-                    softResetMigrationCompleted = false,
-                    nonSoftResetMigrationCompleted = true
-                )
-            ),
+                destinationState =
+                    MockState(
+                        needsSoftReset = false,
+                        softResetMigrationCompleted = false,
+                        nonSoftResetMigrationCompleted = true
+                    )
+            )
+        val dedupInitialStatus =
             DestinationInitialStatus(
                 dedupStreamConfig,
                 isFinalTablePresent = true,
-                initialRawTableStatus = InitialRawTableStatus(
-                    rawTableExists = true,
-                    hasUnprocessedRecords = false,
-                    maxProcessedTimestamp = Optional.empty()
-                ),
+                initialRawTableStatus =
+                    InitialRawTableStatus(
+                        rawTableExists = true,
+                        hasUnprocessedRecords = false,
+                        maxProcessedTimestamp = Optional.empty()
+                    ),
                 isSchemaMismatch = true,
                 isFinalTableEmpty = false,
-                destinationState = MockState(
-                    needsSoftReset = false,
-                    softResetMigrationCompleted = false,
-                    nonSoftResetMigrationCompleted = true
-                )
-            ),
-        )
+                destinationState =
+                    MockState(
+                        needsSoftReset = false,
+                        softResetMigrationCompleted = false,
+                        nonSoftResetMigrationCompleted = true
+                    )
+            )
+        every { destinationHandler.gatherInitialState(any()) } returns
+            listOf(
+                overwriteInitialStatus,
+                appendInitialStatus,
+                dedupInitialStatus,
+            )
 
-        val syncOperation = DefaultSyncOperation(
-            parsedCatalog,
-            destinationHandler,
-            "default_ns",
-            { destinationInitialStatus -> streamOperations[destinationInitialStatus.streamConfig]!! },
-            listOf(migrationWithSoftReset, migrationWithoutSoftReset),
-        )
+        val syncOperation =
+            DefaultSyncOperation(
+                parsedCatalog,
+                destinationHandler,
+                "default_ns",
+                streamOperationsFactory,
+                listOf(migrationWithSoftReset, migrationWithoutSoftReset),
+            )
 
         verify(exactly = 1) {
             destinationHandler.gatherInitialState(any())
-            destinationHandler.execute(Sql.of("MIGRATE WITH SOFT_RESET airbyte_internal.overwrite_stream;"))
-            destinationHandler.execute(Sql.of("MIGRATE WITH SOFT_RESET airbyte_internal.append_stream;"))
-            destinationHandler.execute(Sql.of("MIGRATE WITH SOFT_RESET airbyte_internal.dedup_stream;"))
-            destinationHandler
-                .commitDestinationStates(
-                    mapOf(
-                        overwriteStreamConfig.id to MockState(
+            destinationHandler.execute(
+                Sql.of("MIGRATE WITH SOFT_RESET airbyte_internal.overwrite_stream;")
+            )
+            destinationHandler.execute(
+                Sql.of("MIGRATE WITH SOFT_RESET airbyte_internal.append_stream;")
+            )
+            destinationHandler.execute(
+                Sql.of("MIGRATE WITH SOFT_RESET airbyte_internal.dedup_stream;")
+            )
+            destinationHandler.commitDestinationStates(
+                mapOf(
+                    overwriteStreamConfig.id to
+                        MockState(
                             needsSoftReset = true,
                             softResetMigrationCompleted = true,
                             nonSoftResetMigrationCompleted = true,
                         ),
-                        appendStreamConfig.id to
-                            MockState(
-                                needsSoftReset = true,
-                                softResetMigrationCompleted = true,
-                                nonSoftResetMigrationCompleted = true,
-                            ),
-                        dedupStreamConfig.id to
-                            MockState(
-                                needsSoftReset = true,
-                                softResetMigrationCompleted = true,
-                                nonSoftResetMigrationCompleted = true,
-                            ),
-                    ),
-                )
-            destinationHandler
-                .execute(
-                    separately(
-                        "CREATE SCHEMA airbyte_internal",
-                        "CREATE SCHEMA overwrite_ns",
-                        "CREATE SCHEMA append_ns",
-                        "CREATE SCHEMA dedup_ns",
-                    ),
-                )
+                    appendStreamConfig.id to
+                        MockState(
+                            needsSoftReset = true,
+                            softResetMigrationCompleted = true,
+                            nonSoftResetMigrationCompleted = true,
+                        ),
+                    dedupStreamConfig.id to
+                        MockState(
+                            needsSoftReset = true,
+                            softResetMigrationCompleted = true,
+                            nonSoftResetMigrationCompleted = true,
+                        ),
+                ),
+            )
+            streamOperationsFactory.createInstance(
+                overwriteInitialStatus.copy(
+                    destinationState =
+                        overwriteInitialStatus.destinationState.copy(
+                            needsSoftReset = true,
+                            softResetMigrationCompleted = true,
+                        ),
+                ),
+            )
+            streamOperationsFactory.createInstance(
+                appendInitialStatus.copy(
+                    destinationState =
+                        appendInitialStatus.destinationState.copy(
+                            needsSoftReset = true,
+                            softResetMigrationCompleted = true,
+                        ),
+                ),
+            )
+            streamOperationsFactory.createInstance(
+                dedupInitialStatus.copy(
+                    destinationState =
+                        dedupInitialStatus.destinationState.copy(
+                            needsSoftReset = true,
+                            softResetMigrationCompleted = true,
+                        ),
+                ),
+            )
         }
-
         confirmVerified(destinationHandler)
+        confirmVerified(streamOperationsFactory)
         streamOperations.values.onEach { confirmVerified(it) }
+
+        clearMocks(destinationHandler)
+        clearMocks(streamOperationsFactory)
+        streamOperations.values.onEach { clearMocks(it) }
     }
 
     companion object {
         private val migrationWithSoftReset: Migration<MockState> =
-            object :
-                Migration<MockState> {
+            object : Migration<MockState> {
                 override fun migrateIfNecessary(
                     destinationHandler: DestinationHandler<MockState>,
                     stream: StreamConfig,
@@ -167,8 +222,7 @@ class DefaultSyncOperationTest {
             }
 
         private val migrationWithoutSoftReset: Migration<MockState> =
-            object :
-                Migration<MockState> {
+            object : Migration<MockState> {
                 override fun migrateIfNecessary(
                     destinationHandler: DestinationHandler<MockState>,
                     stream: StreamConfig,
@@ -240,10 +294,7 @@ class DefaultSyncOperationTest {
                 0,
                 0,
             )
-        private val parsedCatalog = ParsedCatalog(listOf(
-            overwriteStreamConfig,
-            appendStreamConfig,
-            dedupStreamConfig
-        ))
+        private val parsedCatalog =
+            ParsedCatalog(listOf(overwriteStreamConfig, appendStreamConfig, dedupStreamConfig))
     }
 }

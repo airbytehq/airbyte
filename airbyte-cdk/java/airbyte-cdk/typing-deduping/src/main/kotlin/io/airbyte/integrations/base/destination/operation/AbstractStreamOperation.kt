@@ -132,19 +132,17 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
         } else {
             // In overwrite mode, we want to read all the raw records. Typically, this is equivalent
             // to filtering on timestamp, but might as well be explicit.
-            val timestampFilter = if (isOverwriteSync) {
-                initialRawTableStatus.maxProcessedTimestamp
-            } else {
-                Optional.empty()
-            }
-            storageOperations.typeAndDedupe(
-                streamConfig,
-                timestampFilter,
-                finalTmpTableSuffix
-            )
+            val timestampFilter =
+                if (isOverwriteSync) {
+                    initialRawTableStatus.maxProcessedTimestamp
+                } else {
+                    Optional.empty()
+                }
+            storageOperations.typeAndDedupe(streamConfig, timestampFilter, finalTmpTableSuffix)
         }
 
-        // For overwrite, it's wasteful to do T+D, so we don't do soft-reset in prepare. Instead, we do
+        // For overwrite, it's wasteful to do T+D, so we don't do soft-reset in prepare. Instead, we
+        // do
         // type-dedupe
         // on a suffixed table and do a swap here when we have to for schema mismatches
         if (

@@ -49,7 +49,6 @@ class DefaultSyncOperation<DestinationState : MinimumDestinationState>(
         log.info { "Preparing required schemas and tables for all streams" }
         val streamsInitialStates = destinationHandler.gatherInitialState(parsedCatalog.streams)
 
-        // we will commit destinationStates and run Migrations here.
         val postMigrationInitialStates =
             tdutils.executeRawTableMigrations(
                 executorService,
@@ -57,6 +56,9 @@ class DefaultSyncOperation<DestinationState : MinimumDestinationState>(
                 migrations,
                 streamsInitialStates
             )
+        destinationHandler.commitDestinationStates(
+            postMigrationInitialStates.associate { it.streamConfig.id to it.destinationState }
+        )
 
         val initializationFutures =
             postMigrationInitialStates
