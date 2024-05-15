@@ -1,273 +1,4652 @@
-version: "0.29.0"
-
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    title: Woocommerce Spec
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - api_secret
+      - shop
+      - start_date
+    properties:
+      shop:
+        type: string
+        order: 2
+        title: Shop Name
+        description: >-
+          The name of the store. For https://EXAMPLE.com, the shop name is
+          'EXAMPLE.com'.
+      api_key:
+        type: string
+        order: 0
+        title: Customer Key
+        description: Customer Key for API in WooCommerce shop
+        airbyte_secret: true
+      api_secret:
+        type: string
+        order: 1
+        title: Customer Secret
+        description: Customer Secret for API in WooCommerce shop
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 3
+        title: Start Date
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - '2021-01-01'
+        description: 'The date you would like to replicate data from. Format: YYYY-MM-DD'
+    additionalProperties: true
+check:
+  stream_names:
+    - system_status_tools
+  type: CheckStream
+streams:
+  - retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+          type: RequestOption
+          name: customers
+          path: /customers
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+          name: customers
+          path: /customers
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          name: customers
+          path: /customers
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        name: customers
+        path: /customers
+        primary_key: id
+        $parameters:
+          name: customers
+          path: /customers
+          primary_key: id
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          name: customers
+          path: /customers
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        type: HttpRequester
+        name: customers
+        path: /customers
+        primary_key: id
+        $parameters:
+          name: customers
+          path: /customers
+          primary_key: id
+      record_selector:
+        extractor:
+          field_path: []
+          type: DpathExtractor
+          name: customers
+          path: /customers
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        type: RecordSelector
+        name: customers
+        path: /customers
+        primary_key: id
+        $parameters:
+          name: customers
+          path: /customers
+          primary_key: id
+      type: SimpleRetriever
+      name: customers
+      path: /customers
+      primary_key: id
+      $parameters:
+        name: customers
+        path: /customers
+        primary_key: id
+    type: DeclarativeStream
+    name: customers
+    path: /customers
+    primary_key: id
+    $parameters:
+      name: customers
+      path: /customers
+      primary_key: id
+  - retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+          type: RequestOption
+          name: coupons
+          path: /coupons
+          primary_key: id
+          $parameters:
+            name: coupons
+            path: /coupons
+            primary_key: id
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+          name: coupons
+          path: /coupons
+          primary_key: id
+          $parameters:
+            name: coupons
+            path: /coupons
+            primary_key: id
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          name: coupons
+          path: /coupons
+          primary_key: id
+          $parameters:
+            name: coupons
+            path: /coupons
+            primary_key: id
+        name: coupons
+        path: /coupons
+        primary_key: id
+        $parameters:
+          name: coupons
+          path: /coupons
+          primary_key: id
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          name: coupons
+          path: /coupons
+          primary_key: id
+          $parameters:
+            name: coupons
+            path: /coupons
+            primary_key: id
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        type: HttpRequester
+        name: coupons
+        path: /coupons
+        primary_key: id
+        $parameters:
+          name: coupons
+          path: /coupons
+          primary_key: id
+      record_selector:
+        extractor:
+          field_path: []
+          type: DpathExtractor
+          name: coupons
+          path: /coupons
+          primary_key: id
+          $parameters:
+            name: coupons
+            path: /coupons
+            primary_key: id
+        type: RecordSelector
+        name: coupons
+        path: /coupons
+        primary_key: id
+        $parameters:
+          name: coupons
+          path: /coupons
+          primary_key: id
+      type: SimpleRetriever
+      name: coupons
+      path: /coupons
+      primary_key: id
+      $parameters:
+        name: coupons
+        path: /coupons
+        primary_key: id
+    incremental_sync:
+      step: P30D
+      type: DatetimeBasedCursor
+      cursor_field: date_modified_gmt
+      end_datetime:
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        type: MinMaxDatetime
+        name: coupons
+        path: /coupons
+        primary_key: id
+        $parameters:
+          name: coupons
+          path: /coupons
+          primary_key: id
+      start_datetime:
+        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        type: MinMaxDatetime
+        name: coupons
+        path: /coupons
+        primary_key: id
+        $parameters:
+          name: coupons
+          path: /coupons
+          primary_key: id
+      datetime_format: '%Y-%m-%dT%H:%M:%S'
+      end_time_option:
+        field_name: modified_before
+        inject_into: request_parameter
+        type: RequestOption
+        name: coupons
+        path: /coupons
+        primary_key: id
+        $parameters:
+          name: coupons
+          path: /coupons
+          primary_key: id
+      start_time_option:
+        field_name: modified_after
+        inject_into: request_parameter
+        type: RequestOption
+        name: coupons
+        path: /coupons
+        primary_key: id
+        $parameters:
+          name: coupons
+          path: /coupons
+          primary_key: id
+      cursor_granularity: PT1S
+      name: coupons
+      path: /coupons
+      primary_key: id
+      $parameters:
+        name: coupons
+        path: /coupons
+        primary_key: id
+    type: DeclarativeStream
+    name: coupons
+    path: /coupons
+    primary_key: id
+    $parameters:
+      name: coupons
+      path: /coupons
+      primary_key: id
+  - retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+          type: RequestOption
+          name: orders
+          path: /orders
+          primary_key: id
+          $parameters:
+            name: orders
+            path: /orders
+            primary_key: id
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+          name: orders
+          path: /orders
+          primary_key: id
+          $parameters:
+            name: orders
+            path: /orders
+            primary_key: id
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          name: orders
+          path: /orders
+          primary_key: id
+          $parameters:
+            name: orders
+            path: /orders
+            primary_key: id
+        name: orders
+        path: /orders
+        primary_key: id
+        $parameters:
+          name: orders
+          path: /orders
+          primary_key: id
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          name: orders
+          path: /orders
+          primary_key: id
+          $parameters:
+            name: orders
+            path: /orders
+            primary_key: id
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        type: HttpRequester
+        name: orders
+        path: /orders
+        primary_key: id
+        $parameters:
+          name: orders
+          path: /orders
+          primary_key: id
+      record_selector:
+        extractor:
+          field_path: []
+          type: DpathExtractor
+          name: orders
+          path: /orders
+          primary_key: id
+          $parameters:
+            name: orders
+            path: /orders
+            primary_key: id
+        type: RecordSelector
+        name: orders
+        path: /orders
+        primary_key: id
+        $parameters:
+          name: orders
+          path: /orders
+          primary_key: id
+      type: SimpleRetriever
+      name: orders
+      path: /orders
+      primary_key: id
+      $parameters:
+        name: orders
+        path: /orders
+        primary_key: id
+    incremental_sync:
+      step: P30D
+      type: DatetimeBasedCursor
+      cursor_field: date_modified_gmt
+      end_datetime:
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        type: MinMaxDatetime
+        name: orders
+        path: /orders
+        primary_key: id
+        $parameters:
+          name: orders
+          path: /orders
+          primary_key: id
+      start_datetime:
+        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        type: MinMaxDatetime
+        name: orders
+        path: /orders
+        primary_key: id
+        $parameters:
+          name: orders
+          path: /orders
+          primary_key: id
+      datetime_format: '%Y-%m-%dT%H:%M:%S'
+      end_time_option:
+        field_name: modified_before
+        inject_into: request_parameter
+        type: RequestOption
+        name: orders
+        path: /orders
+        primary_key: id
+        $parameters:
+          name: orders
+          path: /orders
+          primary_key: id
+      start_time_option:
+        field_name: modified_after
+        inject_into: request_parameter
+        type: RequestOption
+        name: orders
+        path: /orders
+        primary_key: id
+        $parameters:
+          name: orders
+          path: /orders
+          primary_key: id
+      cursor_granularity: PT1S
+      name: orders
+      path: /orders
+      primary_key: id
+      $parameters:
+        name: orders
+        path: /orders
+        primary_key: id
+    type: DeclarativeStream
+    name: orders
+    path: /orders
+    primary_key: id
+    $parameters:
+      name: orders
+      path: /orders
+      primary_key: id
+  - retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+          type: RequestOption
+          name: order_notes
+          path: /orders/{{ stream_slice.id }}/notes
+          primary_key: id
+          $parameters:
+            name: order_notes
+            path: /orders/{{ stream_slice.id }}/notes
+            primary_key: id
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+          name: order_notes
+          path: /orders/{{ stream_slice.id }}/notes
+          primary_key: id
+          $parameters:
+            name: order_notes
+            path: /orders/{{ stream_slice.id }}/notes
+            primary_key: id
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          name: order_notes
+          path: /orders/{{ stream_slice.id }}/notes
+          primary_key: id
+          $parameters:
+            name: order_notes
+            path: /orders/{{ stream_slice.id }}/notes
+            primary_key: id
+        name: order_notes
+        path: /orders/{{ stream_slice.id }}/notes
+        primary_key: id
+        $parameters:
+          name: order_notes
+          path: /orders/{{ stream_slice.id }}/notes
+          primary_key: id
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          name: order_notes
+          path: /orders/{{ stream_slice.id }}/notes
+          primary_key: id
+          $parameters:
+            name: order_notes
+            path: /orders/{{ stream_slice.id }}/notes
+            primary_key: id
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        type: HttpRequester
+        name: order_notes
+        path: /orders/{{ stream_slice.id }}/notes
+        primary_key: id
+        $parameters:
+          name: order_notes
+          path: /orders/{{ stream_slice.id }}/notes
+          primary_key: id
+      record_selector:
+        extractor:
+          field_path: []
+          type: DpathExtractor
+          name: order_notes
+          path: /orders/{{ stream_slice.id }}/notes
+          primary_key: id
+          $parameters:
+            name: order_notes
+            path: /orders/{{ stream_slice.id }}/notes
+            primary_key: id
+        type: RecordSelector
+        name: order_notes
+        path: /orders/{{ stream_slice.id }}/notes
+        primary_key: id
+        $parameters:
+          name: order_notes
+          path: /orders/{{ stream_slice.id }}/notes
+          primary_key: id
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream:
+              retriever:
+                paginator:
+                  type: DefaultPaginator
+                  page_size_option:
+                    field_name: per_page
+                    inject_into: request_parameter
+                    type: RequestOption
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                    $parameters:
+                      name: orders
+                      path: /orders
+                      primary_key: id
+                  page_token_option:
+                    type: RequestOption
+                    field_name: offset
+                    inject_into: request_parameter
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                    $parameters:
+                      name: orders
+                      path: /orders
+                      primary_key: id
+                  pagination_strategy:
+                    type: OffsetIncrement
+                    page_size: 100
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                    $parameters:
+                      name: orders
+                      path: /orders
+                      primary_key: id
+                  name: orders
+                  path: /orders
+                  primary_key: id
+                  $parameters:
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                requester:
+                  url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+                  http_method: GET
+                  authenticator:
+                    type: BasicHttpAuthenticator
+                    password: '{{ config[''api_secret''] }}'
+                    username: '{{ config[''api_key''] }}'
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                    $parameters:
+                      name: orders
+                      path: /orders
+                      primary_key: id
+                  request_parameters:
+                    order: asc
+                    orderby: id
+                    dates_are_gmt: 'true'
+                  type: HttpRequester
+                  name: orders
+                  path: /orders
+                  primary_key: id
+                  $parameters:
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                record_selector:
+                  extractor:
+                    field_path: []
+                    type: DpathExtractor
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                    $parameters:
+                      name: orders
+                      path: /orders
+                      primary_key: id
+                  type: RecordSelector
+                  name: orders
+                  path: /orders
+                  primary_key: id
+                  $parameters:
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                type: SimpleRetriever
+                name: orders
+                path: /orders
+                primary_key: id
+                $parameters:
+                  name: orders
+                  path: /orders
+                  primary_key: id
+              incremental_sync:
+                step: P30D
+                type: DatetimeBasedCursor
+                cursor_field: date_modified_gmt
+                end_datetime:
+                  datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  type: MinMaxDatetime
+                  name: orders
+                  path: /orders
+                  primary_key: id
+                  $parameters:
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                start_datetime:
+                  datetime: >-
+                    {{ format_datetime(config['start_date'],
+                    '%Y-%m-%dT%H:%M:%S') }}
+                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  type: MinMaxDatetime
+                  name: orders
+                  path: /orders
+                  primary_key: id
+                  $parameters:
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                datetime_format: '%Y-%m-%dT%H:%M:%S'
+                end_time_option:
+                  field_name: modified_before
+                  inject_into: request_parameter
+                  type: RequestOption
+                  name: orders
+                  path: /orders
+                  primary_key: id
+                  $parameters:
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                start_time_option:
+                  field_name: modified_after
+                  inject_into: request_parameter
+                  type: RequestOption
+                  name: orders
+                  path: /orders
+                  primary_key: id
+                  $parameters:
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                cursor_granularity: PT1S
+                name: orders
+                path: /orders
+                primary_key: id
+                $parameters:
+                  name: orders
+                  path: /orders
+                  primary_key: id
+              type: DeclarativeStream
+              name: orders
+              path: /orders
+              primary_key: id
+              $parameters:
+                name: orders
+                path: /orders
+                primary_key: id
+            parent_key: id
+            partition_field: id
+            type: ParentStreamConfig
+            name: order_notes
+            path: /orders/{{ stream_slice.id }}/notes
+            primary_key: id
+            $parameters:
+              name: order_notes
+              path: /orders/{{ stream_slice.id }}/notes
+              primary_key: id
+        name: order_notes
+        path: /orders/{{ stream_slice.id }}/notes
+        primary_key: id
+        $parameters:
+          name: order_notes
+          path: /orders/{{ stream_slice.id }}/notes
+          primary_key: id
+      type: SimpleRetriever
+      name: order_notes
+      path: /orders/{{ stream_slice.id }}/notes
+      primary_key: id
+      $parameters:
+        name: order_notes
+        path: /orders/{{ stream_slice.id }}/notes
+        primary_key: id
+    type: DeclarativeStream
+    name: order_notes
+    path: /orders/{{ stream_slice.id }}/notes
+    primary_key: id
+    $parameters:
+      name: order_notes
+      path: /orders/{{ stream_slice.id }}/notes
+      primary_key: id
+  - retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+          type: RequestOption
+          name: payment_gateways
+          path: /payment_gateways
+          primary_key: id
+          $parameters:
+            name: payment_gateways
+            path: /payment_gateways
+            primary_key: id
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+          name: payment_gateways
+          path: /payment_gateways
+          primary_key: id
+          $parameters:
+            name: payment_gateways
+            path: /payment_gateways
+            primary_key: id
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          name: payment_gateways
+          path: /payment_gateways
+          primary_key: id
+          $parameters:
+            name: payment_gateways
+            path: /payment_gateways
+            primary_key: id
+        name: payment_gateways
+        path: /payment_gateways
+        primary_key: id
+        $parameters:
+          name: payment_gateways
+          path: /payment_gateways
+          primary_key: id
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          name: payment_gateways
+          path: /payment_gateways
+          primary_key: id
+          $parameters:
+            name: payment_gateways
+            path: /payment_gateways
+            primary_key: id
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        type: HttpRequester
+        name: payment_gateways
+        path: /payment_gateways
+        primary_key: id
+        $parameters:
+          name: payment_gateways
+          path: /payment_gateways
+          primary_key: id
+      record_selector:
+        extractor:
+          field_path: []
+          type: DpathExtractor
+          name: payment_gateways
+          path: /payment_gateways
+          primary_key: id
+          $parameters:
+            name: payment_gateways
+            path: /payment_gateways
+            primary_key: id
+        type: RecordSelector
+        name: payment_gateways
+        path: /payment_gateways
+        primary_key: id
+        $parameters:
+          name: payment_gateways
+          path: /payment_gateways
+          primary_key: id
+      type: SimpleRetriever
+      name: payment_gateways
+      path: /payment_gateways
+      primary_key: id
+      $parameters:
+        name: payment_gateways
+        path: /payment_gateways
+        primary_key: id
+    type: DeclarativeStream
+    name: payment_gateways
+    path: /payment_gateways
+    primary_key: id
+    $parameters:
+      name: payment_gateways
+      path: /payment_gateways
+      primary_key: id
+  - retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+          type: RequestOption
+          name: products
+          path: /products
+          primary_key: id
+          $parameters:
+            name: products
+            path: /products
+            primary_key: id
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+          name: products
+          path: /products
+          primary_key: id
+          $parameters:
+            name: products
+            path: /products
+            primary_key: id
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          name: products
+          path: /products
+          primary_key: id
+          $parameters:
+            name: products
+            path: /products
+            primary_key: id
+        name: products
+        path: /products
+        primary_key: id
+        $parameters:
+          name: products
+          path: /products
+          primary_key: id
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          name: products
+          path: /products
+          primary_key: id
+          $parameters:
+            name: products
+            path: /products
+            primary_key: id
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        type: HttpRequester
+        name: products
+        path: /products
+        primary_key: id
+        $parameters:
+          name: products
+          path: /products
+          primary_key: id
+      record_selector:
+        extractor:
+          field_path: []
+          type: DpathExtractor
+          name: products
+          path: /products
+          primary_key: id
+          $parameters:
+            name: products
+            path: /products
+            primary_key: id
+        type: RecordSelector
+        name: products
+        path: /products
+        primary_key: id
+        $parameters:
+          name: products
+          path: /products
+          primary_key: id
+      type: SimpleRetriever
+      name: products
+      path: /products
+      primary_key: id
+      $parameters:
+        name: products
+        path: /products
+        primary_key: id
+    incremental_sync:
+      step: P30D
+      type: DatetimeBasedCursor
+      cursor_field: date_modified_gmt
+      end_datetime:
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        type: MinMaxDatetime
+        name: products
+        path: /products
+        primary_key: id
+        $parameters:
+          name: products
+          path: /products
+          primary_key: id
+      start_datetime:
+        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        type: MinMaxDatetime
+        name: products
+        path: /products
+        primary_key: id
+        $parameters:
+          name: products
+          path: /products
+          primary_key: id
+      datetime_format: '%Y-%m-%dT%H:%M:%S'
+      end_time_option:
+        field_name: modified_before
+        inject_into: request_parameter
+        type: RequestOption
+        name: products
+        path: /products
+        primary_key: id
+        $parameters:
+          name: products
+          path: /products
+          primary_key: id
+      start_time_option:
+        field_name: modified_after
+        inject_into: request_parameter
+        type: RequestOption
+        name: products
+        path: /products
+        primary_key: id
+        $parameters:
+          name: products
+          path: /products
+          primary_key: id
+      cursor_granularity: PT1S
+      name: products
+      path: /products
+      primary_key: id
+      $parameters:
+        name: products
+        path: /products
+        primary_key: id
+    type: DeclarativeStream
+    name: products
+    path: /products
+    primary_key: id
+    $parameters:
+      name: products
+      path: /products
+      primary_key: id
+  - retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+          type: RequestOption
+          name: product_attributes
+          path: /products/attributes
+          primary_key: id
+          $parameters:
+            name: product_attributes
+            path: /products/attributes
+            primary_key: id
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+          name: product_attributes
+          path: /products/attributes
+          primary_key: id
+          $parameters:
+            name: product_attributes
+            path: /products/attributes
+            primary_key: id
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          name: product_attributes
+          path: /products/attributes
+          primary_key: id
+          $parameters:
+            name: product_attributes
+            path: /products/attributes
+            primary_key: id
+        name: product_attributes
+        path: /products/attributes
+        primary_key: id
+        $parameters:
+          name: product_attributes
+          path: /products/attributes
+          primary_key: id
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          name: product_attributes
+          path: /products/attributes
+          primary_key: id
+          $parameters:
+            name: product_attributes
+            path: /products/attributes
+            primary_key: id
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        type: HttpRequester
+        name: product_attributes
+        path: /products/attributes
+        primary_key: id
+        $parameters:
+          name: product_attributes
+          path: /products/attributes
+          primary_key: id
+      record_selector:
+        extractor:
+          field_path: []
+          type: DpathExtractor
+          name: product_attributes
+          path: /products/attributes
+          primary_key: id
+          $parameters:
+            name: product_attributes
+            path: /products/attributes
+            primary_key: id
+        type: RecordSelector
+        name: product_attributes
+        path: /products/attributes
+        primary_key: id
+        $parameters:
+          name: product_attributes
+          path: /products/attributes
+          primary_key: id
+      type: SimpleRetriever
+      name: product_attributes
+      path: /products/attributes
+      primary_key: id
+      $parameters:
+        name: product_attributes
+        path: /products/attributes
+        primary_key: id
+    type: DeclarativeStream
+    name: product_attributes
+    path: /products/attributes
+    primary_key: id
+    $parameters:
+      name: product_attributes
+      path: /products/attributes
+      primary_key: id
+  - retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+          type: RequestOption
+          name: product_attribute_terms
+          path: /products/attributes/{{ stream_slice.id }}/terms
+          primary_key: id
+          $parameters:
+            name: product_attribute_terms
+            path: /products/attributes/{{ stream_slice.id }}/terms
+            primary_key: id
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+          name: product_attribute_terms
+          path: /products/attributes/{{ stream_slice.id }}/terms
+          primary_key: id
+          $parameters:
+            name: product_attribute_terms
+            path: /products/attributes/{{ stream_slice.id }}/terms
+            primary_key: id
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          name: product_attribute_terms
+          path: /products/attributes/{{ stream_slice.id }}/terms
+          primary_key: id
+          $parameters:
+            name: product_attribute_terms
+            path: /products/attributes/{{ stream_slice.id }}/terms
+            primary_key: id
+        name: product_attribute_terms
+        path: /products/attributes/{{ stream_slice.id }}/terms
+        primary_key: id
+        $parameters:
+          name: product_attribute_terms
+          path: /products/attributes/{{ stream_slice.id }}/terms
+          primary_key: id
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          name: product_attribute_terms
+          path: /products/attributes/{{ stream_slice.id }}/terms
+          primary_key: id
+          $parameters:
+            name: product_attribute_terms
+            path: /products/attributes/{{ stream_slice.id }}/terms
+            primary_key: id
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        type: HttpRequester
+        name: product_attribute_terms
+        path: /products/attributes/{{ stream_slice.id }}/terms
+        primary_key: id
+        $parameters:
+          name: product_attribute_terms
+          path: /products/attributes/{{ stream_slice.id }}/terms
+          primary_key: id
+      record_selector:
+        extractor:
+          field_path: []
+          type: DpathExtractor
+          name: product_attribute_terms
+          path: /products/attributes/{{ stream_slice.id }}/terms
+          primary_key: id
+          $parameters:
+            name: product_attribute_terms
+            path: /products/attributes/{{ stream_slice.id }}/terms
+            primary_key: id
+        type: RecordSelector
+        name: product_attribute_terms
+        path: /products/attributes/{{ stream_slice.id }}/terms
+        primary_key: id
+        $parameters:
+          name: product_attribute_terms
+          path: /products/attributes/{{ stream_slice.id }}/terms
+          primary_key: id
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream:
+              retriever:
+                paginator:
+                  type: DefaultPaginator
+                  page_size_option:
+                    field_name: per_page
+                    inject_into: request_parameter
+                    type: RequestOption
+                    name: product_attributes
+                    path: /products/attributes
+                    primary_key: id
+                    $parameters:
+                      name: product_attributes
+                      path: /products/attributes
+                      primary_key: id
+                  page_token_option:
+                    type: RequestOption
+                    field_name: offset
+                    inject_into: request_parameter
+                    name: product_attributes
+                    path: /products/attributes
+                    primary_key: id
+                    $parameters:
+                      name: product_attributes
+                      path: /products/attributes
+                      primary_key: id
+                  pagination_strategy:
+                    type: OffsetIncrement
+                    page_size: 100
+                    name: product_attributes
+                    path: /products/attributes
+                    primary_key: id
+                    $parameters:
+                      name: product_attributes
+                      path: /products/attributes
+                      primary_key: id
+                  name: product_attributes
+                  path: /products/attributes
+                  primary_key: id
+                  $parameters:
+                    name: product_attributes
+                    path: /products/attributes
+                    primary_key: id
+                requester:
+                  url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+                  http_method: GET
+                  authenticator:
+                    type: BasicHttpAuthenticator
+                    password: '{{ config[''api_secret''] }}'
+                    username: '{{ config[''api_key''] }}'
+                    name: product_attributes
+                    path: /products/attributes
+                    primary_key: id
+                    $parameters:
+                      name: product_attributes
+                      path: /products/attributes
+                      primary_key: id
+                  request_parameters:
+                    order: asc
+                    orderby: id
+                    dates_are_gmt: 'true'
+                  type: HttpRequester
+                  name: product_attributes
+                  path: /products/attributes
+                  primary_key: id
+                  $parameters:
+                    name: product_attributes
+                    path: /products/attributes
+                    primary_key: id
+                record_selector:
+                  extractor:
+                    field_path: []
+                    type: DpathExtractor
+                    name: product_attributes
+                    path: /products/attributes
+                    primary_key: id
+                    $parameters:
+                      name: product_attributes
+                      path: /products/attributes
+                      primary_key: id
+                  type: RecordSelector
+                  name: product_attributes
+                  path: /products/attributes
+                  primary_key: id
+                  $parameters:
+                    name: product_attributes
+                    path: /products/attributes
+                    primary_key: id
+                type: SimpleRetriever
+                name: product_attributes
+                path: /products/attributes
+                primary_key: id
+                $parameters:
+                  name: product_attributes
+                  path: /products/attributes
+                  primary_key: id
+              type: DeclarativeStream
+              name: product_attributes
+              path: /products/attributes
+              primary_key: id
+              $parameters:
+                name: product_attributes
+                path: /products/attributes
+                primary_key: id
+            parent_key: id
+            partition_field: id
+            type: ParentStreamConfig
+            name: product_attribute_terms
+            path: /products/attributes/{{ stream_slice.id }}/terms
+            primary_key: id
+            $parameters:
+              name: product_attribute_terms
+              path: /products/attributes/{{ stream_slice.id }}/terms
+              primary_key: id
+        name: product_attribute_terms
+        path: /products/attributes/{{ stream_slice.id }}/terms
+        primary_key: id
+        $parameters:
+          name: product_attribute_terms
+          path: /products/attributes/{{ stream_slice.id }}/terms
+          primary_key: id
+      type: SimpleRetriever
+      name: product_attribute_terms
+      path: /products/attributes/{{ stream_slice.id }}/terms
+      primary_key: id
+      $parameters:
+        name: product_attribute_terms
+        path: /products/attributes/{{ stream_slice.id }}/terms
+        primary_key: id
+    type: DeclarativeStream
+    name: product_attribute_terms
+    path: /products/attributes/{{ stream_slice.id }}/terms
+    primary_key: id
+    $parameters:
+      name: product_attribute_terms
+      path: /products/attributes/{{ stream_slice.id }}/terms
+      primary_key: id
+  - retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+          type: RequestOption
+          name: product_categories
+          path: /products/categories
+          primary_key: id
+          $parameters:
+            name: product_categories
+            path: /products/categories
+            primary_key: id
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+          name: product_categories
+          path: /products/categories
+          primary_key: id
+          $parameters:
+            name: product_categories
+            path: /products/categories
+            primary_key: id
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          name: product_categories
+          path: /products/categories
+          primary_key: id
+          $parameters:
+            name: product_categories
+            path: /products/categories
+            primary_key: id
+        name: product_categories
+        path: /products/categories
+        primary_key: id
+        $parameters:
+          name: product_categories
+          path: /products/categories
+          primary_key: id
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          name: product_categories
+          path: /products/categories
+          primary_key: id
+          $parameters:
+            name: product_categories
+            path: /products/categories
+            primary_key: id
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        type: HttpRequester
+        name: product_categories
+        path: /products/categories
+        primary_key: id
+        $parameters:
+          name: product_categories
+          path: /products/categories
+          primary_key: id
+      record_selector:
+        extractor:
+          field_path: []
+          type: DpathExtractor
+          name: product_categories
+          path: /products/categories
+          primary_key: id
+          $parameters:
+            name: product_categories
+            path: /products/categories
+            primary_key: id
+        type: RecordSelector
+        name: product_categories
+        path: /products/categories
+        primary_key: id
+        $parameters:
+          name: product_categories
+          path: /products/categories
+          primary_key: id
+      type: SimpleRetriever
+      name: product_categories
+      path: /products/categories
+      primary_key: id
+      $parameters:
+        name: product_categories
+        path: /products/categories
+        primary_key: id
+    type: DeclarativeStream
+    name: product_categories
+    path: /products/categories
+    primary_key: id
+    $parameters:
+      name: product_categories
+      path: /products/categories
+      primary_key: id
+  - retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+          type: RequestOption
+          name: product_reviews
+          path: /products/reviews
+          primary_key: id
+          $parameters:
+            name: product_reviews
+            path: /products/reviews
+            primary_key: id
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+          name: product_reviews
+          path: /products/reviews
+          primary_key: id
+          $parameters:
+            name: product_reviews
+            path: /products/reviews
+            primary_key: id
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          name: product_reviews
+          path: /products/reviews
+          primary_key: id
+          $parameters:
+            name: product_reviews
+            path: /products/reviews
+            primary_key: id
+        name: product_reviews
+        path: /products/reviews
+        primary_key: id
+        $parameters:
+          name: product_reviews
+          path: /products/reviews
+          primary_key: id
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          name: product_reviews
+          path: /products/reviews
+          primary_key: id
+          $parameters:
+            name: product_reviews
+            path: /products/reviews
+            primary_key: id
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        type: HttpRequester
+        name: product_reviews
+        path: /products/reviews
+        primary_key: id
+        $parameters:
+          name: product_reviews
+          path: /products/reviews
+          primary_key: id
+      record_selector:
+        extractor:
+          field_path: []
+          type: DpathExtractor
+          name: product_reviews
+          path: /products/reviews
+          primary_key: id
+          $parameters:
+            name: product_reviews
+            path: /products/reviews
+            primary_key: id
+        type: RecordSelector
+        name: product_reviews
+        path: /products/reviews
+        primary_key: id
+        $parameters:
+          name: product_reviews
+          path: /products/reviews
+          primary_key: id
+      type: SimpleRetriever
+      name: product_reviews
+      path: /products/reviews
+      primary_key: id
+      $parameters:
+        name: product_reviews
+        path: /products/reviews
+        primary_key: id
+    incremental_sync:
+      step: P30D
+      type: DatetimeBasedCursor
+      cursor_field: date_created_gmt
+      end_datetime:
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        type: MinMaxDatetime
+        name: product_reviews
+        path: /products/reviews
+        primary_key: id
+        $parameters:
+          name: product_reviews
+          path: /products/reviews
+          primary_key: id
+      start_datetime:
+        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        type: MinMaxDatetime
+        name: product_reviews
+        path: /products/reviews
+        primary_key: id
+        $parameters:
+          name: product_reviews
+          path: /products/reviews
+          primary_key: id
+      datetime_format: '%Y-%m-%dT%H:%M:%S'
+      end_time_option:
+        field_name: before
+        inject_into: request_parameter
+        type: RequestOption
+        name: product_reviews
+        path: /products/reviews
+        primary_key: id
+        $parameters:
+          name: product_reviews
+          path: /products/reviews
+          primary_key: id
+      start_time_option:
+        field_name: after
+        inject_into: request_parameter
+        type: RequestOption
+        name: product_reviews
+        path: /products/reviews
+        primary_key: id
+        $parameters:
+          name: product_reviews
+          path: /products/reviews
+          primary_key: id
+      cursor_granularity: PT1S
+      name: product_reviews
+      path: /products/reviews
+      primary_key: id
+      $parameters:
+        name: product_reviews
+        path: /products/reviews
+        primary_key: id
+    type: DeclarativeStream
+    name: product_reviews
+    path: /products/reviews
+    primary_key: id
+    $parameters:
+      name: product_reviews
+      path: /products/reviews
+      primary_key: id
+  - retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+          type: RequestOption
+          name: product_shipping_classes
+          path: /products/shipping_classes
+          primary_key: id
+          $parameters:
+            name: product_shipping_classes
+            path: /products/shipping_classes
+            primary_key: id
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+          name: product_shipping_classes
+          path: /products/shipping_classes
+          primary_key: id
+          $parameters:
+            name: product_shipping_classes
+            path: /products/shipping_classes
+            primary_key: id
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          name: product_shipping_classes
+          path: /products/shipping_classes
+          primary_key: id
+          $parameters:
+            name: product_shipping_classes
+            path: /products/shipping_classes
+            primary_key: id
+        name: product_shipping_classes
+        path: /products/shipping_classes
+        primary_key: id
+        $parameters:
+          name: product_shipping_classes
+          path: /products/shipping_classes
+          primary_key: id
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          name: product_shipping_classes
+          path: /products/shipping_classes
+          primary_key: id
+          $parameters:
+            name: product_shipping_classes
+            path: /products/shipping_classes
+            primary_key: id
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        type: HttpRequester
+        name: product_shipping_classes
+        path: /products/shipping_classes
+        primary_key: id
+        $parameters:
+          name: product_shipping_classes
+          path: /products/shipping_classes
+          primary_key: id
+      record_selector:
+        extractor:
+          field_path: []
+          type: DpathExtractor
+          name: product_shipping_classes
+          path: /products/shipping_classes
+          primary_key: id
+          $parameters:
+            name: product_shipping_classes
+            path: /products/shipping_classes
+            primary_key: id
+        type: RecordSelector
+        name: product_shipping_classes
+        path: /products/shipping_classes
+        primary_key: id
+        $parameters:
+          name: product_shipping_classes
+          path: /products/shipping_classes
+          primary_key: id
+      type: SimpleRetriever
+      name: product_shipping_classes
+      path: /products/shipping_classes
+      primary_key: id
+      $parameters:
+        name: product_shipping_classes
+        path: /products/shipping_classes
+        primary_key: id
+    type: DeclarativeStream
+    name: product_shipping_classes
+    path: /products/shipping_classes
+    primary_key: id
+    $parameters:
+      name: product_shipping_classes
+      path: /products/shipping_classes
+      primary_key: id
+  - retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+          type: RequestOption
+          name: product_tags
+          path: /products/tags
+          primary_key: id
+          $parameters:
+            name: product_tags
+            path: /products/tags
+            primary_key: id
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+          name: product_tags
+          path: /products/tags
+          primary_key: id
+          $parameters:
+            name: product_tags
+            path: /products/tags
+            primary_key: id
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          name: product_tags
+          path: /products/tags
+          primary_key: id
+          $parameters:
+            name: product_tags
+            path: /products/tags
+            primary_key: id
+        name: product_tags
+        path: /products/tags
+        primary_key: id
+        $parameters:
+          name: product_tags
+          path: /products/tags
+          primary_key: id
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          name: product_tags
+          path: /products/tags
+          primary_key: id
+          $parameters:
+            name: product_tags
+            path: /products/tags
+            primary_key: id
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        type: HttpRequester
+        name: product_tags
+        path: /products/tags
+        primary_key: id
+        $parameters:
+          name: product_tags
+          path: /products/tags
+          primary_key: id
+      record_selector:
+        extractor:
+          field_path: []
+          type: DpathExtractor
+          name: product_tags
+          path: /products/tags
+          primary_key: id
+          $parameters:
+            name: product_tags
+            path: /products/tags
+            primary_key: id
+        type: RecordSelector
+        name: product_tags
+        path: /products/tags
+        primary_key: id
+        $parameters:
+          name: product_tags
+          path: /products/tags
+          primary_key: id
+      type: SimpleRetriever
+      name: product_tags
+      path: /products/tags
+      primary_key: id
+      $parameters:
+        name: product_tags
+        path: /products/tags
+        primary_key: id
+    type: DeclarativeStream
+    name: product_tags
+    path: /products/tags
+    primary_key: id
+    $parameters:
+      name: product_tags
+      path: /products/tags
+      primary_key: id
+  - retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+          type: RequestOption
+          name: product_variations
+          path: /products/{{ stream_slice.id }}/variations
+          primary_key: id
+          $parameters:
+            name: product_variations
+            path: /products/{{ stream_slice.id }}/variations
+            primary_key: id
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+          name: product_variations
+          path: /products/{{ stream_slice.id }}/variations
+          primary_key: id
+          $parameters:
+            name: product_variations
+            path: /products/{{ stream_slice.id }}/variations
+            primary_key: id
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          name: product_variations
+          path: /products/{{ stream_slice.id }}/variations
+          primary_key: id
+          $parameters:
+            name: product_variations
+            path: /products/{{ stream_slice.id }}/variations
+            primary_key: id
+        name: product_variations
+        path: /products/{{ stream_slice.id }}/variations
+        primary_key: id
+        $parameters:
+          name: product_variations
+          path: /products/{{ stream_slice.id }}/variations
+          primary_key: id
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          name: product_variations
+          path: /products/{{ stream_slice.id }}/variations
+          primary_key: id
+          $parameters:
+            name: product_variations
+            path: /products/{{ stream_slice.id }}/variations
+            primary_key: id
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        type: HttpRequester
+        name: product_variations
+        path: /products/{{ stream_slice.id }}/variations
+        primary_key: id
+        $parameters:
+          name: product_variations
+          path: /products/{{ stream_slice.id }}/variations
+          primary_key: id
+      record_selector:
+        extractor:
+          field_path: []
+          type: DpathExtractor
+          name: product_variations
+          path: /products/{{ stream_slice.id }}/variations
+          primary_key: id
+          $parameters:
+            name: product_variations
+            path: /products/{{ stream_slice.id }}/variations
+            primary_key: id
+        type: RecordSelector
+        name: product_variations
+        path: /products/{{ stream_slice.id }}/variations
+        primary_key: id
+        $parameters:
+          name: product_variations
+          path: /products/{{ stream_slice.id }}/variations
+          primary_key: id
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream:
+              retriever:
+                paginator:
+                  type: DefaultPaginator
+                  page_size_option:
+                    field_name: per_page
+                    inject_into: request_parameter
+                    type: RequestOption
+                    name: products
+                    path: /products
+                    primary_key: id
+                    $parameters:
+                      name: products
+                      path: /products
+                      primary_key: id
+                  page_token_option:
+                    type: RequestOption
+                    field_name: offset
+                    inject_into: request_parameter
+                    name: products
+                    path: /products
+                    primary_key: id
+                    $parameters:
+                      name: products
+                      path: /products
+                      primary_key: id
+                  pagination_strategy:
+                    type: OffsetIncrement
+                    page_size: 100
+                    name: products
+                    path: /products
+                    primary_key: id
+                    $parameters:
+                      name: products
+                      path: /products
+                      primary_key: id
+                  name: products
+                  path: /products
+                  primary_key: id
+                  $parameters:
+                    name: products
+                    path: /products
+                    primary_key: id
+                requester:
+                  url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+                  http_method: GET
+                  authenticator:
+                    type: BasicHttpAuthenticator
+                    password: '{{ config[''api_secret''] }}'
+                    username: '{{ config[''api_key''] }}'
+                    name: products
+                    path: /products
+                    primary_key: id
+                    $parameters:
+                      name: products
+                      path: /products
+                      primary_key: id
+                  request_parameters:
+                    order: asc
+                    orderby: id
+                    dates_are_gmt: 'true'
+                  type: HttpRequester
+                  name: products
+                  path: /products
+                  primary_key: id
+                  $parameters:
+                    name: products
+                    path: /products
+                    primary_key: id
+                record_selector:
+                  extractor:
+                    field_path: []
+                    type: DpathExtractor
+                    name: products
+                    path: /products
+                    primary_key: id
+                    $parameters:
+                      name: products
+                      path: /products
+                      primary_key: id
+                  type: RecordSelector
+                  name: products
+                  path: /products
+                  primary_key: id
+                  $parameters:
+                    name: products
+                    path: /products
+                    primary_key: id
+                type: SimpleRetriever
+                name: products
+                path: /products
+                primary_key: id
+                $parameters:
+                  name: products
+                  path: /products
+                  primary_key: id
+              incremental_sync:
+                step: P30D
+                type: DatetimeBasedCursor
+                cursor_field: date_modified_gmt
+                end_datetime:
+                  datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  type: MinMaxDatetime
+                  name: products
+                  path: /products
+                  primary_key: id
+                  $parameters:
+                    name: products
+                    path: /products
+                    primary_key: id
+                start_datetime:
+                  datetime: >-
+                    {{ format_datetime(config['start_date'],
+                    '%Y-%m-%dT%H:%M:%S') }}
+                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  type: MinMaxDatetime
+                  name: products
+                  path: /products
+                  primary_key: id
+                  $parameters:
+                    name: products
+                    path: /products
+                    primary_key: id
+                datetime_format: '%Y-%m-%dT%H:%M:%S'
+                end_time_option:
+                  field_name: modified_before
+                  inject_into: request_parameter
+                  type: RequestOption
+                  name: products
+                  path: /products
+                  primary_key: id
+                  $parameters:
+                    name: products
+                    path: /products
+                    primary_key: id
+                start_time_option:
+                  field_name: modified_after
+                  inject_into: request_parameter
+                  type: RequestOption
+                  name: products
+                  path: /products
+                  primary_key: id
+                  $parameters:
+                    name: products
+                    path: /products
+                    primary_key: id
+                cursor_granularity: PT1S
+                name: products
+                path: /products
+                primary_key: id
+                $parameters:
+                  name: products
+                  path: /products
+                  primary_key: id
+              type: DeclarativeStream
+              name: products
+              path: /products
+              primary_key: id
+              $parameters:
+                name: products
+                path: /products
+                primary_key: id
+            parent_key: id
+            partition_field: id
+            type: ParentStreamConfig
+            name: product_variations
+            path: /products/{{ stream_slice.id }}/variations
+            primary_key: id
+            $parameters:
+              name: product_variations
+              path: /products/{{ stream_slice.id }}/variations
+              primary_key: id
+        name: product_variations
+        path: /products/{{ stream_slice.id }}/variations
+        primary_key: id
+        $parameters:
+          name: product_variations
+          path: /products/{{ stream_slice.id }}/variations
+          primary_key: id
+      type: SimpleRetriever
+      name: product_variations
+      path: /products/{{ stream_slice.id }}/variations
+      primary_key: id
+      $parameters:
+        name: product_variations
+        path: /products/{{ stream_slice.id }}/variations
+        primary_key: id
+    type: DeclarativeStream
+    name: product_variations
+    path: /products/{{ stream_slice.id }}/variations
+    primary_key: id
+    $parameters:
+      name: product_variations
+      path: /products/{{ stream_slice.id }}/variations
+      primary_key: id
+  - retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+          type: RequestOption
+          name: refunds
+          path: /orders/{{ stream_slice.id }}/refunds
+          primary_key: id
+          $parameters:
+            name: refunds
+            path: /orders/{{ stream_slice.id }}/refunds
+            primary_key: id
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+          name: refunds
+          path: /orders/{{ stream_slice.id }}/refunds
+          primary_key: id
+          $parameters:
+            name: refunds
+            path: /orders/{{ stream_slice.id }}/refunds
+            primary_key: id
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          name: refunds
+          path: /orders/{{ stream_slice.id }}/refunds
+          primary_key: id
+          $parameters:
+            name: refunds
+            path: /orders/{{ stream_slice.id }}/refunds
+            primary_key: id
+        name: refunds
+        path: /orders/{{ stream_slice.id }}/refunds
+        primary_key: id
+        $parameters:
+          name: refunds
+          path: /orders/{{ stream_slice.id }}/refunds
+          primary_key: id
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          name: refunds
+          path: /orders/{{ stream_slice.id }}/refunds
+          primary_key: id
+          $parameters:
+            name: refunds
+            path: /orders/{{ stream_slice.id }}/refunds
+            primary_key: id
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        type: HttpRequester
+        name: refunds
+        path: /orders/{{ stream_slice.id }}/refunds
+        primary_key: id
+        $parameters:
+          name: refunds
+          path: /orders/{{ stream_slice.id }}/refunds
+          primary_key: id
+      record_selector:
+        extractor:
+          field_path: []
+          type: DpathExtractor
+          name: refunds
+          path: /orders/{{ stream_slice.id }}/refunds
+          primary_key: id
+          $parameters:
+            name: refunds
+            path: /orders/{{ stream_slice.id }}/refunds
+            primary_key: id
+        type: RecordSelector
+        name: refunds
+        path: /orders/{{ stream_slice.id }}/refunds
+        primary_key: id
+        $parameters:
+          name: refunds
+          path: /orders/{{ stream_slice.id }}/refunds
+          primary_key: id
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream:
+              retriever:
+                paginator:
+                  type: DefaultPaginator
+                  page_size_option:
+                    field_name: per_page
+                    inject_into: request_parameter
+                    type: RequestOption
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                    $parameters:
+                      name: orders
+                      path: /orders
+                      primary_key: id
+                  page_token_option:
+                    type: RequestOption
+                    field_name: offset
+                    inject_into: request_parameter
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                    $parameters:
+                      name: orders
+                      path: /orders
+                      primary_key: id
+                  pagination_strategy:
+                    type: OffsetIncrement
+                    page_size: 100
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                    $parameters:
+                      name: orders
+                      path: /orders
+                      primary_key: id
+                  name: orders
+                  path: /orders
+                  primary_key: id
+                  $parameters:
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                requester:
+                  url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+                  http_method: GET
+                  authenticator:
+                    type: BasicHttpAuthenticator
+                    password: '{{ config[''api_secret''] }}'
+                    username: '{{ config[''api_key''] }}'
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                    $parameters:
+                      name: orders
+                      path: /orders
+                      primary_key: id
+                  request_parameters:
+                    order: asc
+                    orderby: id
+                    dates_are_gmt: 'true'
+                  type: HttpRequester
+                  name: orders
+                  path: /orders
+                  primary_key: id
+                  $parameters:
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                record_selector:
+                  extractor:
+                    field_path: []
+                    type: DpathExtractor
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                    $parameters:
+                      name: orders
+                      path: /orders
+                      primary_key: id
+                  type: RecordSelector
+                  name: orders
+                  path: /orders
+                  primary_key: id
+                  $parameters:
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                type: SimpleRetriever
+                name: orders
+                path: /orders
+                primary_key: id
+                $parameters:
+                  name: orders
+                  path: /orders
+                  primary_key: id
+              incremental_sync:
+                step: P30D
+                type: DatetimeBasedCursor
+                cursor_field: date_modified_gmt
+                end_datetime:
+                  datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  type: MinMaxDatetime
+                  name: orders
+                  path: /orders
+                  primary_key: id
+                  $parameters:
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                start_datetime:
+                  datetime: >-
+                    {{ format_datetime(config['start_date'],
+                    '%Y-%m-%dT%H:%M:%S') }}
+                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  type: MinMaxDatetime
+                  name: orders
+                  path: /orders
+                  primary_key: id
+                  $parameters:
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                datetime_format: '%Y-%m-%dT%H:%M:%S'
+                end_time_option:
+                  field_name: modified_before
+                  inject_into: request_parameter
+                  type: RequestOption
+                  name: orders
+                  path: /orders
+                  primary_key: id
+                  $parameters:
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                start_time_option:
+                  field_name: modified_after
+                  inject_into: request_parameter
+                  type: RequestOption
+                  name: orders
+                  path: /orders
+                  primary_key: id
+                  $parameters:
+                    name: orders
+                    path: /orders
+                    primary_key: id
+                cursor_granularity: PT1S
+                name: orders
+                path: /orders
+                primary_key: id
+                $parameters:
+                  name: orders
+                  path: /orders
+                  primary_key: id
+              type: DeclarativeStream
+              name: orders
+              path: /orders
+              primary_key: id
+              $parameters:
+                name: orders
+                path: /orders
+                primary_key: id
+            parent_key: id
+            partition_field: id
+            type: ParentStreamConfig
+            name: refunds
+            path: /orders/{{ stream_slice.id }}/refunds
+            primary_key: id
+            $parameters:
+              name: refunds
+              path: /orders/{{ stream_slice.id }}/refunds
+              primary_key: id
+        name: refunds
+        path: /orders/{{ stream_slice.id }}/refunds
+        primary_key: id
+        $parameters:
+          name: refunds
+          path: /orders/{{ stream_slice.id }}/refunds
+          primary_key: id
+      type: SimpleRetriever
+      name: refunds
+      path: /orders/{{ stream_slice.id }}/refunds
+      primary_key: id
+      $parameters:
+        name: refunds
+        path: /orders/{{ stream_slice.id }}/refunds
+        primary_key: id
+    type: DeclarativeStream
+    name: refunds
+    path: /orders/{{ stream_slice.id }}/refunds
+    primary_key: id
+    $parameters:
+      name: refunds
+      path: /orders/{{ stream_slice.id }}/refunds
+      primary_key: id
+  - retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+          type: RequestOption
+          name: shipping_methods
+          path: /shipping_methods
+          primary_key: id
+          $parameters:
+            name: shipping_methods
+            path: /shipping_methods
+            primary_key: id
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+          name: shipping_methods
+          path: /shipping_methods
+          primary_key: id
+          $parameters:
+            name: shipping_methods
+            path: /shipping_methods
+            primary_key: id
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          name: shipping_methods
+          path: /shipping_methods
+          primary_key: id
+          $parameters:
+            name: shipping_methods
+            path: /shipping_methods
+            primary_key: id
+        name: shipping_methods
+        path: /shipping_methods
+        primary_key: id
+        $parameters:
+          name: shipping_methods
+          path: /shipping_methods
+          primary_key: id
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          name: shipping_methods
+          path: /shipping_methods
+          primary_key: id
+          $parameters:
+            name: shipping_methods
+            path: /shipping_methods
+            primary_key: id
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        type: HttpRequester
+        name: shipping_methods
+        path: /shipping_methods
+        primary_key: id
+        $parameters:
+          name: shipping_methods
+          path: /shipping_methods
+          primary_key: id
+      record_selector:
+        extractor:
+          field_path: []
+          type: DpathExtractor
+          name: shipping_methods
+          path: /shipping_methods
+          primary_key: id
+          $parameters:
+            name: shipping_methods
+            path: /shipping_methods
+            primary_key: id
+        type: RecordSelector
+        name: shipping_methods
+        path: /shipping_methods
+        primary_key: id
+        $parameters:
+          name: shipping_methods
+          path: /shipping_methods
+          primary_key: id
+      type: SimpleRetriever
+      name: shipping_methods
+      path: /shipping_methods
+      primary_key: id
+      $parameters:
+        name: shipping_methods
+        path: /shipping_methods
+        primary_key: id
+    type: DeclarativeStream
+    name: shipping_methods
+    path: /shipping_methods
+    primary_key: id
+    $parameters:
+      name: shipping_methods
+      path: /shipping_methods
+      primary_key: id
+  - retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+          type: RequestOption
+          name: shipping_zone_locations
+          path: /shipping/zones/{{ stream_slice.id }}/locations
+          primary_key:
+            - code
+            - type
+          $parameters:
+            name: shipping_zone_locations
+            path: /shipping/zones/{{ stream_slice.id }}/locations
+            primary_key:
+              - code
+              - type
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+          name: shipping_zone_locations
+          path: /shipping/zones/{{ stream_slice.id }}/locations
+          primary_key:
+            - code
+            - type
+          $parameters:
+            name: shipping_zone_locations
+            path: /shipping/zones/{{ stream_slice.id }}/locations
+            primary_key:
+              - code
+              - type
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          name: shipping_zone_locations
+          path: /shipping/zones/{{ stream_slice.id }}/locations
+          primary_key:
+            - code
+            - type
+          $parameters:
+            name: shipping_zone_locations
+            path: /shipping/zones/{{ stream_slice.id }}/locations
+            primary_key:
+              - code
+              - type
+        name: shipping_zone_locations
+        path: /shipping/zones/{{ stream_slice.id }}/locations
+        primary_key:
+          - code
+          - type
+        $parameters:
+          name: shipping_zone_locations
+          path: /shipping/zones/{{ stream_slice.id }}/locations
+          primary_key:
+            - code
+            - type
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          name: shipping_zone_locations
+          path: /shipping/zones/{{ stream_slice.id }}/locations
+          primary_key:
+            - code
+            - type
+          $parameters:
+            name: shipping_zone_locations
+            path: /shipping/zones/{{ stream_slice.id }}/locations
+            primary_key:
+              - code
+              - type
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        type: HttpRequester
+        name: shipping_zone_locations
+        path: /shipping/zones/{{ stream_slice.id }}/locations
+        primary_key:
+          - code
+          - type
+        $parameters:
+          name: shipping_zone_locations
+          path: /shipping/zones/{{ stream_slice.id }}/locations
+          primary_key:
+            - code
+            - type
+      record_selector:
+        extractor:
+          field_path: []
+          type: DpathExtractor
+          name: shipping_zone_locations
+          path: /shipping/zones/{{ stream_slice.id }}/locations
+          primary_key:
+            - code
+            - type
+          $parameters:
+            name: shipping_zone_locations
+            path: /shipping/zones/{{ stream_slice.id }}/locations
+            primary_key:
+              - code
+              - type
+        type: RecordSelector
+        name: shipping_zone_locations
+        path: /shipping/zones/{{ stream_slice.id }}/locations
+        primary_key:
+          - code
+          - type
+        $parameters:
+          name: shipping_zone_locations
+          path: /shipping/zones/{{ stream_slice.id }}/locations
+          primary_key:
+            - code
+            - type
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream:
+              retriever:
+                paginator:
+                  type: DefaultPaginator
+                  page_size_option:
+                    field_name: per_page
+                    inject_into: request_parameter
+                    type: RequestOption
+                    name: shipping_zones
+                    path: /shipping/zones
+                    primary_key: id
+                    $parameters:
+                      name: shipping_zones
+                      path: /shipping/zones
+                      primary_key: id
+                  page_token_option:
+                    type: RequestOption
+                    field_name: offset
+                    inject_into: request_parameter
+                    name: shipping_zones
+                    path: /shipping/zones
+                    primary_key: id
+                    $parameters:
+                      name: shipping_zones
+                      path: /shipping/zones
+                      primary_key: id
+                  pagination_strategy:
+                    type: OffsetIncrement
+                    page_size: 100
+                    name: shipping_zones
+                    path: /shipping/zones
+                    primary_key: id
+                    $parameters:
+                      name: shipping_zones
+                      path: /shipping/zones
+                      primary_key: id
+                  name: shipping_zones
+                  path: /shipping/zones
+                  primary_key: id
+                  $parameters:
+                    name: shipping_zones
+                    path: /shipping/zones
+                    primary_key: id
+                requester:
+                  url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+                  http_method: GET
+                  authenticator:
+                    type: BasicHttpAuthenticator
+                    password: '{{ config[''api_secret''] }}'
+                    username: '{{ config[''api_key''] }}'
+                    name: shipping_zones
+                    path: /shipping/zones
+                    primary_key: id
+                    $parameters:
+                      name: shipping_zones
+                      path: /shipping/zones
+                      primary_key: id
+                  request_parameters:
+                    order: asc
+                    orderby: id
+                    dates_are_gmt: 'true'
+                  type: HttpRequester
+                  name: shipping_zones
+                  path: /shipping/zones
+                  primary_key: id
+                  $parameters:
+                    name: shipping_zones
+                    path: /shipping/zones
+                    primary_key: id
+                record_selector:
+                  extractor:
+                    field_path: []
+                    type: DpathExtractor
+                    name: shipping_zones
+                    path: /shipping/zones
+                    primary_key: id
+                    $parameters:
+                      name: shipping_zones
+                      path: /shipping/zones
+                      primary_key: id
+                  type: RecordSelector
+                  name: shipping_zones
+                  path: /shipping/zones
+                  primary_key: id
+                  $parameters:
+                    name: shipping_zones
+                    path: /shipping/zones
+                    primary_key: id
+                type: SimpleRetriever
+                name: shipping_zones
+                path: /shipping/zones
+                primary_key: id
+                $parameters:
+                  name: shipping_zones
+                  path: /shipping/zones
+                  primary_key: id
+              type: DeclarativeStream
+              name: shipping_zones
+              path: /shipping/zones
+              primary_key: id
+              $parameters:
+                name: shipping_zones
+                path: /shipping/zones
+                primary_key: id
+            parent_key: id
+            partition_field: id
+            type: ParentStreamConfig
+            name: shipping_zone_locations
+            path: /shipping/zones/{{ stream_slice.id }}/locations
+            primary_key:
+              - code
+              - type
+            $parameters:
+              name: shipping_zone_locations
+              path: /shipping/zones/{{ stream_slice.id }}/locations
+              primary_key:
+                - code
+                - type
+        name: shipping_zone_locations
+        path: /shipping/zones/{{ stream_slice.id }}/locations
+        primary_key:
+          - code
+          - type
+        $parameters:
+          name: shipping_zone_locations
+          path: /shipping/zones/{{ stream_slice.id }}/locations
+          primary_key:
+            - code
+            - type
+      type: SimpleRetriever
+      name: shipping_zone_locations
+      path: /shipping/zones/{{ stream_slice.id }}/locations
+      primary_key:
+        - code
+        - type
+      $parameters:
+        name: shipping_zone_locations
+        path: /shipping/zones/{{ stream_slice.id }}/locations
+        primary_key:
+          - code
+          - type
+    type: DeclarativeStream
+    name: shipping_zone_locations
+    path: /shipping/zones/{{ stream_slice.id }}/locations
+    primary_key:
+      - code
+      - type
+    $parameters:
+      name: shipping_zone_locations
+      path: /shipping/zones/{{ stream_slice.id }}/locations
+      primary_key:
+        - code
+        - type
+  - retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+          type: RequestOption
+          name: shipping_zone_methods
+          path: /shipping/zones/{{ stream_slice.id }}/methods
+          primary_key: instance_id
+          $parameters:
+            name: shipping_zone_methods
+            path: /shipping/zones/{{ stream_slice.id }}/methods
+            primary_key: instance_id
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+          name: shipping_zone_methods
+          path: /shipping/zones/{{ stream_slice.id }}/methods
+          primary_key: instance_id
+          $parameters:
+            name: shipping_zone_methods
+            path: /shipping/zones/{{ stream_slice.id }}/methods
+            primary_key: instance_id
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          name: shipping_zone_methods
+          path: /shipping/zones/{{ stream_slice.id }}/methods
+          primary_key: instance_id
+          $parameters:
+            name: shipping_zone_methods
+            path: /shipping/zones/{{ stream_slice.id }}/methods
+            primary_key: instance_id
+        name: shipping_zone_methods
+        path: /shipping/zones/{{ stream_slice.id }}/methods
+        primary_key: instance_id
+        $parameters:
+          name: shipping_zone_methods
+          path: /shipping/zones/{{ stream_slice.id }}/methods
+          primary_key: instance_id
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          name: shipping_zone_methods
+          path: /shipping/zones/{{ stream_slice.id }}/methods
+          primary_key: instance_id
+          $parameters:
+            name: shipping_zone_methods
+            path: /shipping/zones/{{ stream_slice.id }}/methods
+            primary_key: instance_id
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        type: HttpRequester
+        name: shipping_zone_methods
+        path: /shipping/zones/{{ stream_slice.id }}/methods
+        primary_key: instance_id
+        $parameters:
+          name: shipping_zone_methods
+          path: /shipping/zones/{{ stream_slice.id }}/methods
+          primary_key: instance_id
+      record_selector:
+        extractor:
+          field_path: []
+          type: DpathExtractor
+          name: shipping_zone_methods
+          path: /shipping/zones/{{ stream_slice.id }}/methods
+          primary_key: instance_id
+          $parameters:
+            name: shipping_zone_methods
+            path: /shipping/zones/{{ stream_slice.id }}/methods
+            primary_key: instance_id
+        type: RecordSelector
+        name: shipping_zone_methods
+        path: /shipping/zones/{{ stream_slice.id }}/methods
+        primary_key: instance_id
+        $parameters:
+          name: shipping_zone_methods
+          path: /shipping/zones/{{ stream_slice.id }}/methods
+          primary_key: instance_id
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream:
+              retriever:
+                paginator:
+                  type: DefaultPaginator
+                  page_size_option:
+                    field_name: per_page
+                    inject_into: request_parameter
+                    type: RequestOption
+                    name: shipping_zones
+                    path: /shipping/zones
+                    primary_key: id
+                    $parameters:
+                      name: shipping_zones
+                      path: /shipping/zones
+                      primary_key: id
+                  page_token_option:
+                    type: RequestOption
+                    field_name: offset
+                    inject_into: request_parameter
+                    name: shipping_zones
+                    path: /shipping/zones
+                    primary_key: id
+                    $parameters:
+                      name: shipping_zones
+                      path: /shipping/zones
+                      primary_key: id
+                  pagination_strategy:
+                    type: OffsetIncrement
+                    page_size: 100
+                    name: shipping_zones
+                    path: /shipping/zones
+                    primary_key: id
+                    $parameters:
+                      name: shipping_zones
+                      path: /shipping/zones
+                      primary_key: id
+                  name: shipping_zones
+                  path: /shipping/zones
+                  primary_key: id
+                  $parameters:
+                    name: shipping_zones
+                    path: /shipping/zones
+                    primary_key: id
+                requester:
+                  url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+                  http_method: GET
+                  authenticator:
+                    type: BasicHttpAuthenticator
+                    password: '{{ config[''api_secret''] }}'
+                    username: '{{ config[''api_key''] }}'
+                    name: shipping_zones
+                    path: /shipping/zones
+                    primary_key: id
+                    $parameters:
+                      name: shipping_zones
+                      path: /shipping/zones
+                      primary_key: id
+                  request_parameters:
+                    order: asc
+                    orderby: id
+                    dates_are_gmt: 'true'
+                  type: HttpRequester
+                  name: shipping_zones
+                  path: /shipping/zones
+                  primary_key: id
+                  $parameters:
+                    name: shipping_zones
+                    path: /shipping/zones
+                    primary_key: id
+                record_selector:
+                  extractor:
+                    field_path: []
+                    type: DpathExtractor
+                    name: shipping_zones
+                    path: /shipping/zones
+                    primary_key: id
+                    $parameters:
+                      name: shipping_zones
+                      path: /shipping/zones
+                      primary_key: id
+                  type: RecordSelector
+                  name: shipping_zones
+                  path: /shipping/zones
+                  primary_key: id
+                  $parameters:
+                    name: shipping_zones
+                    path: /shipping/zones
+                    primary_key: id
+                type: SimpleRetriever
+                name: shipping_zones
+                path: /shipping/zones
+                primary_key: id
+                $parameters:
+                  name: shipping_zones
+                  path: /shipping/zones
+                  primary_key: id
+              type: DeclarativeStream
+              name: shipping_zones
+              path: /shipping/zones
+              primary_key: id
+              $parameters:
+                name: shipping_zones
+                path: /shipping/zones
+                primary_key: id
+            parent_key: id
+            partition_field: id
+            type: ParentStreamConfig
+            name: shipping_zone_methods
+            path: /shipping/zones/{{ stream_slice.id }}/methods
+            primary_key: instance_id
+            $parameters:
+              name: shipping_zone_methods
+              path: /shipping/zones/{{ stream_slice.id }}/methods
+              primary_key: instance_id
+        name: shipping_zone_methods
+        path: /shipping/zones/{{ stream_slice.id }}/methods
+        primary_key: instance_id
+        $parameters:
+          name: shipping_zone_methods
+          path: /shipping/zones/{{ stream_slice.id }}/methods
+          primary_key: instance_id
+      type: SimpleRetriever
+      name: shipping_zone_methods
+      path: /shipping/zones/{{ stream_slice.id }}/methods
+      primary_key: instance_id
+      $parameters:
+        name: shipping_zone_methods
+        path: /shipping/zones/{{ stream_slice.id }}/methods
+        primary_key: instance_id
+    type: DeclarativeStream
+    name: shipping_zone_methods
+    path: /shipping/zones/{{ stream_slice.id }}/methods
+    primary_key: instance_id
+    $parameters:
+      name: shipping_zone_methods
+      path: /shipping/zones/{{ stream_slice.id }}/methods
+      primary_key: instance_id
+  - retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+          type: RequestOption
+          name: shipping_zones
+          path: /shipping/zones
+          primary_key: id
+          $parameters:
+            name: shipping_zones
+            path: /shipping/zones
+            primary_key: id
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+          name: shipping_zones
+          path: /shipping/zones
+          primary_key: id
+          $parameters:
+            name: shipping_zones
+            path: /shipping/zones
+            primary_key: id
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          name: shipping_zones
+          path: /shipping/zones
+          primary_key: id
+          $parameters:
+            name: shipping_zones
+            path: /shipping/zones
+            primary_key: id
+        name: shipping_zones
+        path: /shipping/zones
+        primary_key: id
+        $parameters:
+          name: shipping_zones
+          path: /shipping/zones
+          primary_key: id
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          name: shipping_zones
+          path: /shipping/zones
+          primary_key: id
+          $parameters:
+            name: shipping_zones
+            path: /shipping/zones
+            primary_key: id
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        type: HttpRequester
+        name: shipping_zones
+        path: /shipping/zones
+        primary_key: id
+        $parameters:
+          name: shipping_zones
+          path: /shipping/zones
+          primary_key: id
+      record_selector:
+        extractor:
+          field_path: []
+          type: DpathExtractor
+          name: shipping_zones
+          path: /shipping/zones
+          primary_key: id
+          $parameters:
+            name: shipping_zones
+            path: /shipping/zones
+            primary_key: id
+        type: RecordSelector
+        name: shipping_zones
+        path: /shipping/zones
+        primary_key: id
+        $parameters:
+          name: shipping_zones
+          path: /shipping/zones
+          primary_key: id
+      type: SimpleRetriever
+      name: shipping_zones
+      path: /shipping/zones
+      primary_key: id
+      $parameters:
+        name: shipping_zones
+        path: /shipping/zones
+        primary_key: id
+    type: DeclarativeStream
+    name: shipping_zones
+    path: /shipping/zones
+    primary_key: id
+    $parameters:
+      name: shipping_zones
+      path: /shipping/zones
+      primary_key: id
+  - retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+          type: RequestOption
+          name: system_status_tools
+          path: /system_status/tools
+          primary_key: id
+          $parameters:
+            name: system_status_tools
+            path: /system_status/tools
+            primary_key: id
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+          name: system_status_tools
+          path: /system_status/tools
+          primary_key: id
+          $parameters:
+            name: system_status_tools
+            path: /system_status/tools
+            primary_key: id
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          name: system_status_tools
+          path: /system_status/tools
+          primary_key: id
+          $parameters:
+            name: system_status_tools
+            path: /system_status/tools
+            primary_key: id
+        name: system_status_tools
+        path: /system_status/tools
+        primary_key: id
+        $parameters:
+          name: system_status_tools
+          path: /system_status/tools
+          primary_key: id
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          name: system_status_tools
+          path: /system_status/tools
+          primary_key: id
+          $parameters:
+            name: system_status_tools
+            path: /system_status/tools
+            primary_key: id
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        type: HttpRequester
+        name: system_status_tools
+        path: /system_status/tools
+        primary_key: id
+        $parameters:
+          name: system_status_tools
+          path: /system_status/tools
+          primary_key: id
+      record_selector:
+        extractor:
+          field_path: []
+          type: DpathExtractor
+          name: system_status_tools
+          path: /system_status/tools
+          primary_key: id
+          $parameters:
+            name: system_status_tools
+            path: /system_status/tools
+            primary_key: id
+        type: RecordSelector
+        name: system_status_tools
+        path: /system_status/tools
+        primary_key: id
+        $parameters:
+          name: system_status_tools
+          path: /system_status/tools
+          primary_key: id
+      type: SimpleRetriever
+      name: system_status_tools
+      path: /system_status/tools
+      primary_key: id
+      $parameters:
+        name: system_status_tools
+        path: /system_status/tools
+        primary_key: id
+    type: DeclarativeStream
+    name: system_status_tools
+    path: /system_status/tools
+    primary_key: id
+    $parameters:
+      name: system_status_tools
+      path: /system_status/tools
+      primary_key: id
+  - retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+          type: RequestOption
+          name: tax_classes
+          path: /taxes/classes
+          primary_key:
+            - slug
+            - name
+          $parameters:
+            name: tax_classes
+            path: /taxes/classes
+            primary_key:
+              - slug
+              - name
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+          name: tax_classes
+          path: /taxes/classes
+          primary_key:
+            - slug
+            - name
+          $parameters:
+            name: tax_classes
+            path: /taxes/classes
+            primary_key:
+              - slug
+              - name
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          name: tax_classes
+          path: /taxes/classes
+          primary_key:
+            - slug
+            - name
+          $parameters:
+            name: tax_classes
+            path: /taxes/classes
+            primary_key:
+              - slug
+              - name
+        name: tax_classes
+        path: /taxes/classes
+        primary_key:
+          - slug
+          - name
+        $parameters:
+          name: tax_classes
+          path: /taxes/classes
+          primary_key:
+            - slug
+            - name
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          name: tax_classes
+          path: /taxes/classes
+          primary_key:
+            - slug
+            - name
+          $parameters:
+            name: tax_classes
+            path: /taxes/classes
+            primary_key:
+              - slug
+              - name
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        type: HttpRequester
+        name: tax_classes
+        path: /taxes/classes
+        primary_key:
+          - slug
+          - name
+        $parameters:
+          name: tax_classes
+          path: /taxes/classes
+          primary_key:
+            - slug
+            - name
+      record_selector:
+        extractor:
+          field_path: []
+          type: DpathExtractor
+          name: tax_classes
+          path: /taxes/classes
+          primary_key:
+            - slug
+            - name
+          $parameters:
+            name: tax_classes
+            path: /taxes/classes
+            primary_key:
+              - slug
+              - name
+        type: RecordSelector
+        name: tax_classes
+        path: /taxes/classes
+        primary_key:
+          - slug
+          - name
+        $parameters:
+          name: tax_classes
+          path: /taxes/classes
+          primary_key:
+            - slug
+            - name
+      type: SimpleRetriever
+      name: tax_classes
+      path: /taxes/classes
+      primary_key:
+        - slug
+        - name
+      $parameters:
+        name: tax_classes
+        path: /taxes/classes
+        primary_key:
+          - slug
+          - name
+    type: DeclarativeStream
+    name: tax_classes
+    path: /taxes/classes
+    primary_key:
+      - slug
+      - name
+    $parameters:
+      name: tax_classes
+      path: /taxes/classes
+      primary_key:
+        - slug
+        - name
+  - retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+          type: RequestOption
+          name: tax_rates
+          path: /taxes
+          primary_key: id
+          $parameters:
+            name: tax_rates
+            path: /taxes
+            primary_key: id
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+          name: tax_rates
+          path: /taxes
+          primary_key: id
+          $parameters:
+            name: tax_rates
+            path: /taxes
+            primary_key: id
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          name: tax_rates
+          path: /taxes
+          primary_key: id
+          $parameters:
+            name: tax_rates
+            path: /taxes
+            primary_key: id
+        name: tax_rates
+        path: /taxes
+        primary_key: id
+        $parameters:
+          name: tax_rates
+          path: /taxes
+          primary_key: id
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          name: tax_rates
+          path: /taxes
+          primary_key: id
+          $parameters:
+            name: tax_rates
+            path: /taxes
+            primary_key: id
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        type: HttpRequester
+        name: tax_rates
+        path: /taxes
+        primary_key: id
+        $parameters:
+          name: tax_rates
+          path: /taxes
+          primary_key: id
+      record_selector:
+        extractor:
+          field_path: []
+          type: DpathExtractor
+          name: tax_rates
+          path: /taxes
+          primary_key: id
+          $parameters:
+            name: tax_rates
+            path: /taxes
+            primary_key: id
+        type: RecordSelector
+        name: tax_rates
+        path: /taxes
+        primary_key: id
+        $parameters:
+          name: tax_rates
+          path: /taxes
+          primary_key: id
+      type: SimpleRetriever
+      name: tax_rates
+      path: /taxes
+      primary_key: id
+      $parameters:
+        name: tax_rates
+        path: /taxes
+        primary_key: id
+    type: DeclarativeStream
+    name: tax_rates
+    path: /taxes
+    primary_key: id
+    $parameters:
+      name: tax_rates
+      path: /taxes
+      primary_key: id
+version: 0.29.0
 definitions:
   selector:
     extractor:
       field_path: []
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_woocommerce/schemas/{{ parameters['name'] }}.json"
   requester:
-    url_base: "https://{{ config['shop'] }}/wp-json/wc/v3"
-    http_method: "GET"
+    url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+    http_method: GET
     authenticator:
       type: BasicHttpAuthenticator
-      username: "{{ config['api_key'] }}"
-      password: "{{ config['api_secret'] }}"
+      password: '{{ config[''api_secret''] }}'
+      username: '{{ config[''api_key''] }}'
     request_parameters:
-      orderby: "id"
-      order: "asc"
-      dates_are_gmt: "true"
+      order: asc
+      orderby: id
+      dates_are_gmt: 'true'
+  retriever:
+    paginator:
+      type: DefaultPaginator
+      page_size_option:
+        field_name: per_page
+        inject_into: request_parameter
+      page_token_option:
+        type: RequestOption
+        field_name: offset
+        inject_into: request_parameter
+      pagination_strategy:
+        type: OffsetIncrement
+        page_size: 100
+    requester:
+      url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+      http_method: GET
+      authenticator:
+        type: BasicHttpAuthenticator
+        password: '{{ config[''api_secret''] }}'
+        username: '{{ config[''api_key''] }}'
+      request_parameters:
+        order: asc
+        orderby: id
+        dates_are_gmt: 'true'
+    record_selector:
+      extractor:
+        field_path: []
+  base_stream:
+    retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
+  orders_stream:
+    retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
+    incremental_sync:
+      step: P30D
+      type: DatetimeBasedCursor
+      cursor_field: date_modified_gmt
+      end_datetime:
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+      start_datetime:
+        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+      datetime_format: '%Y-%m-%dT%H:%M:%S'
+      end_time_option:
+        field_name: modified_before
+        inject_into: request_parameter
+      start_time_option:
+        field_name: modified_after
+        inject_into: request_parameter
+      cursor_granularity: PT1S
+    $parameters:
+      name: orders
+      path: /orders
+      primary_key: id
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: ./source_woocommerce/schemas/{{ parameters['name'] }}.json
+  coupons_stream:
+    retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
+    incremental_sync:
+      step: P30D
+      type: DatetimeBasedCursor
+      cursor_field: date_modified_gmt
+      end_datetime:
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+      start_datetime:
+        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+      datetime_format: '%Y-%m-%dT%H:%M:%S'
+      end_time_option:
+        field_name: modified_before
+        inject_into: request_parameter
+      start_time_option:
+        field_name: modified_after
+        inject_into: request_parameter
+      cursor_granularity: PT1S
+    $parameters:
+      name: coupons
+      path: /coupons
+      primary_key: id
+  refunds_stream:
+    retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream:
+              retriever:
+                paginator:
+                  type: DefaultPaginator
+                  page_size_option:
+                    field_name: per_page
+                    inject_into: request_parameter
+                  page_token_option:
+                    type: RequestOption
+                    field_name: offset
+                    inject_into: request_parameter
+                  pagination_strategy:
+                    type: OffsetIncrement
+                    page_size: 100
+                requester:
+                  url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+                  http_method: GET
+                  authenticator:
+                    type: BasicHttpAuthenticator
+                    password: '{{ config[''api_secret''] }}'
+                    username: '{{ config[''api_key''] }}'
+                  request_parameters:
+                    order: asc
+                    orderby: id
+                    dates_are_gmt: 'true'
+                record_selector:
+                  extractor:
+                    field_path: []
+              incremental_sync:
+                step: P30D
+                type: DatetimeBasedCursor
+                cursor_field: date_modified_gmt
+                end_datetime:
+                  datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                start_datetime:
+                  datetime: >-
+                    {{ format_datetime(config['start_date'],
+                    '%Y-%m-%dT%H:%M:%S') }}
+                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                datetime_format: '%Y-%m-%dT%H:%M:%S'
+                end_time_option:
+                  field_name: modified_before
+                  inject_into: request_parameter
+                start_time_option:
+                  field_name: modified_after
+                  inject_into: request_parameter
+                cursor_granularity: PT1S
+              $parameters:
+                name: orders
+                path: /orders
+                primary_key: id
+            parent_key: id
+            partition_field: id
+    $parameters:
+      name: refunds
+      path: /orders/{{ stream_slice.id }}/refunds
+      primary_key: id
+  products_stream:
+    retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
+    incremental_sync:
+      step: P30D
+      type: DatetimeBasedCursor
+      cursor_field: date_modified_gmt
+      end_datetime:
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+      start_datetime:
+        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+      datetime_format: '%Y-%m-%dT%H:%M:%S'
+      end_time_option:
+        field_name: modified_before
+        inject_into: request_parameter
+      start_time_option:
+        field_name: modified_after
+        inject_into: request_parameter
+      cursor_granularity: PT1S
+    $parameters:
+      name: products
+      path: /products
+      primary_key: id
+  customers_stream:
+    retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
+    $parameters:
+      name: customers
+      path: /customers
+      primary_key: id
+  tax_rates_stream:
+    retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
+    $parameters:
+      name: tax_rates
+      path: /taxes
+      primary_key: id
+  order_notes_stream:
+    retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream:
+              retriever:
+                paginator:
+                  type: DefaultPaginator
+                  page_size_option:
+                    field_name: per_page
+                    inject_into: request_parameter
+                  page_token_option:
+                    type: RequestOption
+                    field_name: offset
+                    inject_into: request_parameter
+                  pagination_strategy:
+                    type: OffsetIncrement
+                    page_size: 100
+                requester:
+                  url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+                  http_method: GET
+                  authenticator:
+                    type: BasicHttpAuthenticator
+                    password: '{{ config[''api_secret''] }}'
+                    username: '{{ config[''api_key''] }}'
+                  request_parameters:
+                    order: asc
+                    orderby: id
+                    dates_are_gmt: 'true'
+                record_selector:
+                  extractor:
+                    field_path: []
+              incremental_sync:
+                step: P30D
+                type: DatetimeBasedCursor
+                cursor_field: date_modified_gmt
+                end_datetime:
+                  datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                start_datetime:
+                  datetime: >-
+                    {{ format_datetime(config['start_date'],
+                    '%Y-%m-%dT%H:%M:%S') }}
+                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                datetime_format: '%Y-%m-%dT%H:%M:%S'
+                end_time_option:
+                  field_name: modified_before
+                  inject_into: request_parameter
+                start_time_option:
+                  field_name: modified_after
+                  inject_into: request_parameter
+                cursor_granularity: PT1S
+              $parameters:
+                name: orders
+                path: /orders
+                primary_key: id
+            parent_key: id
+            partition_field: id
+    $parameters:
+      name: order_notes
+      path: /orders/{{ stream_slice.id }}/notes
+      primary_key: id
+  tax_classes_stream:
+    retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
+    $parameters:
+      name: tax_classes
+      path: /taxes/classes
+      primary_key:
+        - slug
+        - name
+  product_tags_stream:
+    retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
+    $parameters:
+      name: product_tags
+      path: /products/tags
+      primary_key: id
   date_incremental_sync:
-    type: DatetimeBasedCursor
-    start_datetime:
-      datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S') }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%S"
-    end_datetime:
-      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%S"
-    datetime_format: "%Y-%m-%dT%H:%M:%S"
-    cursor_granularity: PT1S
     step: P30D
-    start_time_option:
-      field_name: modified_after
-      inject_into: request_parameter
+    type: DatetimeBasedCursor
+    cursor_field: date_modified_gmt
+    end_datetime:
+      datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+      datetime_format: '%Y-%m-%dT%H:%M:%S'
+    start_datetime:
+      datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
+      datetime_format: '%Y-%m-%dT%H:%M:%S'
+    datetime_format: '%Y-%m-%dT%H:%M:%S'
     end_time_option:
       field_name: modified_before
       inject_into: request_parameter
-    cursor_field: "date_modified_gmt"
-  retriever:
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: DefaultPaginator
-      pagination_strategy:
-        type: "OffsetIncrement"
-        page_size: 100
-      page_token_option:
-        type: RequestOption
-        inject_into: "request_parameter"
-        field_name: "offset"
-      page_size_option:
-        inject_into: "request_parameter"
-        field_name: "per_page"
-    requester:
-      $ref: "#/definitions/requester"
-  base_stream:
+    start_time_option:
+      field_name: modified_after
+      inject_into: request_parameter
+    cursor_granularity: PT1S
+  shipping_zones_stream:
     retriever:
-      $ref: "#/definitions/retriever"
-  base_incremental_stream:
-    incremental_sync:
-      $ref: "#/definitions/date_incremental_sync"
-    retriever:
-      $ref: "#/definitions/retriever"
-  customers_stream:
-    $ref: "#/definitions/base_stream"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
     $parameters:
-      name: "customers"
-      primary_key: "id"
-      path: "/customers"
-  coupons_stream:
-    $ref: "#/definitions/base_incremental_stream"
-    $parameters:
-      name: "coupons"
-      primary_key: "id"
-      path: "/coupons"
-  orders_stream:
-    $ref: "#/definitions/base_incremental_stream"
-    $parameters:
-      name: "orders"
-      primary_key: "id"
-      path: "/orders"
-  order_notes_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - stream: "#/definitions/orders_stream"
-            parent_key: id
-            partition_field: id
-    $parameters:
-      name: "order_notes"
-      primary_key: "id"
-      path: "/orders/{{ stream_slice.id }}/notes"
-  products_stream:
-    $ref: "#/definitions/base_incremental_stream"
-    $parameters:
-      name: "products"
-      primary_key: "id"
-      path: "/products"
-  product_variations_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - stream: "#/definitions/products_stream"
-            parent_key: id
-            partition_field: id
-    $parameters:
-      name: "product_variations"
-      primary_key: "id"
-      path: "/products/{{ stream_slice.id }}/variations"
-  payment_gateways_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "payment_gateways"
-      primary_key: "id"
-      path: "/payment_gateways"
-  product_attributes_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "product_attributes"
-      primary_key: "id"
-      path: "/products/attributes"
-  product_attribute_terms_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - stream: "#/definitions/product_attributes_stream"
-            parent_key: id
-            partition_field: id
-    $parameters:
-      name: "product_attribute_terms"
-      primary_key: "id"
-      path: "/products/attributes/{{ stream_slice.id }}/terms"
-  product_categories_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "product_categories"
-      primary_key: "id"
-      path: "/products/categories"
+      name: shipping_zones
+      path: /shipping/zones
+      primary_key: id
   product_reviews_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
     incremental_sync:
-      $ref: "#/definitions/date_incremental_sync"
-      start_time_option:
-        field_name: after
-        inject_into: request_parameter
+      step: P30D
+      type: DatetimeBasedCursor
+      cursor_field: date_created_gmt
+      end_datetime:
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+      start_datetime:
+        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+      datetime_format: '%Y-%m-%dT%H:%M:%S'
       end_time_option:
         field_name: before
         inject_into: request_parameter
-      cursor_field: "date_created_gmt"
+      start_time_option:
+        field_name: after
+        inject_into: request_parameter
+      cursor_granularity: PT1S
+    $parameters:
+      name: product_reviews
+      path: /products/reviews
+      primary_key: id
+  base_incremental_stream:
     retriever:
-      $ref: "#/definitions/retriever"
-    $parameters:
-      name: "product_reviews"
-      primary_key: "id"
-      path: "/products/reviews"
-  product_shipping_classes_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "product_shipping_classes"
-      primary_key: "id"
-      path: "/products/shipping_classes"
-  product_tags_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "product_tags"
-      primary_key: "id"
-      path: "/products/tags"
-  refunds_stream:
-    $ref: "#/definitions/base_stream"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
+    incremental_sync:
+      step: P30D
+      type: DatetimeBasedCursor
+      cursor_field: date_modified_gmt
+      end_datetime:
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+      start_datetime:
+        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+      datetime_format: '%Y-%m-%dT%H:%M:%S'
+      end_time_option:
+        field_name: modified_before
+        inject_into: request_parameter
+      start_time_option:
+        field_name: modified_after
+        inject_into: request_parameter
+      cursor_granularity: PT1S
+  payment_gateways_stream:
     retriever:
-      $ref: "#/definitions/retriever"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
+    $parameters:
+      name: payment_gateways
+      path: /payment_gateways
+      primary_key: id
+  shipping_methods_stream:
+    retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
+    $parameters:
+      name: shipping_methods
+      path: /shipping_methods
+      primary_key: id
+  product_attributes_stream:
+    retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
+    $parameters:
+      name: product_attributes
+      path: /products/attributes
+      primary_key: id
+  product_categories_stream:
+    retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
+    $parameters:
+      name: product_categories
+      path: /products/categories
+      primary_key: id
+  product_variations_stream:
+    retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "#/definitions/orders_stream"
+          - stream:
+              retriever:
+                paginator:
+                  type: DefaultPaginator
+                  page_size_option:
+                    field_name: per_page
+                    inject_into: request_parameter
+                  page_token_option:
+                    type: RequestOption
+                    field_name: offset
+                    inject_into: request_parameter
+                  pagination_strategy:
+                    type: OffsetIncrement
+                    page_size: 100
+                requester:
+                  url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+                  http_method: GET
+                  authenticator:
+                    type: BasicHttpAuthenticator
+                    password: '{{ config[''api_secret''] }}'
+                    username: '{{ config[''api_key''] }}'
+                  request_parameters:
+                    order: asc
+                    orderby: id
+                    dates_are_gmt: 'true'
+                record_selector:
+                  extractor:
+                    field_path: []
+              incremental_sync:
+                step: P30D
+                type: DatetimeBasedCursor
+                cursor_field: date_modified_gmt
+                end_datetime:
+                  datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                start_datetime:
+                  datetime: >-
+                    {{ format_datetime(config['start_date'],
+                    '%Y-%m-%dT%H:%M:%S') }}
+                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                datetime_format: '%Y-%m-%dT%H:%M:%S'
+                end_time_option:
+                  field_name: modified_before
+                  inject_into: request_parameter
+                start_time_option:
+                  field_name: modified_after
+                  inject_into: request_parameter
+                cursor_granularity: PT1S
+              $parameters:
+                name: products
+                path: /products
+                primary_key: id
             parent_key: id
             partition_field: id
     $parameters:
-      name: "refunds"
-      primary_key: "id"
-      path: "/orders/{{ stream_slice.id }}/refunds"
-  shipping_methods_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "shipping_methods"
-      primary_key: "id"
-      path: "/shipping_methods"
-  shipping_zones_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "shipping_zones"
-      primary_key: "id"
-      path: "/shipping/zones"
+      name: product_variations
+      path: /products/{{ stream_slice.id }}/variations
+      primary_key: id
   shipping_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
-      - stream: "#/definitions/shipping_zones_stream"
+      - stream:
+          retriever:
+            paginator:
+              type: DefaultPaginator
+              page_size_option:
+                field_name: per_page
+                inject_into: request_parameter
+              page_token_option:
+                type: RequestOption
+                field_name: offset
+                inject_into: request_parameter
+              pagination_strategy:
+                type: OffsetIncrement
+                page_size: 100
+            requester:
+              url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+              http_method: GET
+              authenticator:
+                type: BasicHttpAuthenticator
+                password: '{{ config[''api_secret''] }}'
+                username: '{{ config[''api_key''] }}'
+              request_parameters:
+                order: asc
+                orderby: id
+                dates_are_gmt: 'true'
+            record_selector:
+              extractor:
+                field_path: []
+          $parameters:
+            name: shipping_zones
+            path: /shipping/zones
+            primary_key: id
         parent_key: id
         partition_field: id
-  shipping_zone_locations_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      partition_router:
-        $ref: "#/definitions/shipping_partition_router"
-    $parameters:
-      name: "shipping_zone_locations"
-      primary_key: ["code", "type"]
-      path: "/shipping/zones/{{ stream_slice.id }}/locations"
-  shipping_zone_methods_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      partition_router:
-        $ref: "#/definitions/shipping_partition_router"
-    $parameters:
-      name: "shipping_zone_methods"
-      primary_key: "instance_id"
-      path: "/shipping/zones/{{ stream_slice.id }}/methods"
   system_status_tools_stream:
-    $ref: "#/definitions/base_stream"
+    retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
     $parameters:
-      name: "system_status_tools"
-      primary_key: "id"
-      path: "/system_status/tools"
-  tax_classes_stream:
-    $ref: "#/definitions/base_stream"
+      name: system_status_tools
+      path: /system_status/tools
+      primary_key: id
+  shipping_zone_methods_stream:
+    retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream:
+              retriever:
+                paginator:
+                  type: DefaultPaginator
+                  page_size_option:
+                    field_name: per_page
+                    inject_into: request_parameter
+                  page_token_option:
+                    type: RequestOption
+                    field_name: offset
+                    inject_into: request_parameter
+                  pagination_strategy:
+                    type: OffsetIncrement
+                    page_size: 100
+                requester:
+                  url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+                  http_method: GET
+                  authenticator:
+                    type: BasicHttpAuthenticator
+                    password: '{{ config[''api_secret''] }}'
+                    username: '{{ config[''api_key''] }}'
+                  request_parameters:
+                    order: asc
+                    orderby: id
+                    dates_are_gmt: 'true'
+                record_selector:
+                  extractor:
+                    field_path: []
+              $parameters:
+                name: shipping_zones
+                path: /shipping/zones
+                primary_key: id
+            parent_key: id
+            partition_field: id
     $parameters:
-      name: "tax_classes"
-      primary_key: ["slug", "name"]
-      path: "/taxes/classes"
-  tax_rates_stream:
-    $ref: "#/definitions/base_stream"
+      name: shipping_zone_methods
+      path: /shipping/zones/{{ stream_slice.id }}/methods
+      primary_key: instance_id
+  product_attribute_terms_stream:
+    retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream:
+              retriever:
+                paginator:
+                  type: DefaultPaginator
+                  page_size_option:
+                    field_name: per_page
+                    inject_into: request_parameter
+                  page_token_option:
+                    type: RequestOption
+                    field_name: offset
+                    inject_into: request_parameter
+                  pagination_strategy:
+                    type: OffsetIncrement
+                    page_size: 100
+                requester:
+                  url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+                  http_method: GET
+                  authenticator:
+                    type: BasicHttpAuthenticator
+                    password: '{{ config[''api_secret''] }}'
+                    username: '{{ config[''api_key''] }}'
+                  request_parameters:
+                    order: asc
+                    orderby: id
+                    dates_are_gmt: 'true'
+                record_selector:
+                  extractor:
+                    field_path: []
+              $parameters:
+                name: product_attributes
+                path: /products/attributes
+                primary_key: id
+            parent_key: id
+            partition_field: id
     $parameters:
-      name: "tax_rates"
-      primary_key: "id"
-      path: "/taxes"
-
-streams:
-  - "#/definitions/customers_stream"
-  - "#/definitions/coupons_stream"
-  - "#/definitions/orders_stream"
-  - "#/definitions/order_notes_stream"
-  - "#/definitions/payment_gateways_stream"
-  - "#/definitions/products_stream"
-  - "#/definitions/product_attributes_stream"
-  - "#/definitions/product_attribute_terms_stream"
-  - "#/definitions/product_categories_stream"
-  - "#/definitions/product_reviews_stream"
-  - "#/definitions/product_shipping_classes_stream"
-  - "#/definitions/product_tags_stream"
-  - "#/definitions/product_variations_stream"
-  - "#/definitions/refunds_stream"
-  - "#/definitions/shipping_methods_stream"
-  - "#/definitions/shipping_zone_locations_stream"
-  - "#/definitions/shipping_zone_methods_stream"
-  - "#/definitions/shipping_zones_stream"
-  - "#/definitions/system_status_tools_stream"
-  - "#/definitions/tax_classes_stream"
-  - "#/definitions/tax_rates_stream"
-
-check:
-  stream_names:
-    - "system_status_tools"
+      name: product_attribute_terms
+      path: /products/attributes/{{ stream_slice.id }}/terms
+      primary_key: id
+  shipping_zone_locations_stream:
+    retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream:
+              retriever:
+                paginator:
+                  type: DefaultPaginator
+                  page_size_option:
+                    field_name: per_page
+                    inject_into: request_parameter
+                  page_token_option:
+                    type: RequestOption
+                    field_name: offset
+                    inject_into: request_parameter
+                  pagination_strategy:
+                    type: OffsetIncrement
+                    page_size: 100
+                requester:
+                  url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+                  http_method: GET
+                  authenticator:
+                    type: BasicHttpAuthenticator
+                    password: '{{ config[''api_secret''] }}'
+                    username: '{{ config[''api_key''] }}'
+                  request_parameters:
+                    order: asc
+                    orderby: id
+                    dates_are_gmt: 'true'
+                record_selector:
+                  extractor:
+                    field_path: []
+              $parameters:
+                name: shipping_zones
+                path: /shipping/zones
+                primary_key: id
+            parent_key: id
+            partition_field: id
+    $parameters:
+      name: shipping_zone_locations
+      path: /shipping/zones/{{ stream_slice.id }}/locations
+      primary_key:
+        - code
+        - type
+  product_shipping_classes_stream:
+    retriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      requester:
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        http_method: GET
+        authenticator:
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+      record_selector:
+        extractor:
+          field_path: []
+    $parameters:
+      name: product_shipping_classes
+      path: /products/shipping_classes
+      primary_key: id
+type: DeclarativeSource
