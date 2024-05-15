@@ -22,10 +22,7 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message:
-          Version 1.0.0 introduces a number of schema updates to the Recurly
-          connector. To ensure a smooth upgrade, please refresh your schemas and reset
-          your data before resuming syncs.
+        message: Version 1.0.0 introduces a number of schema updates to the Recurly connector. To ensure a smooth upgrade, please refresh your schemas and reset your data before resuming syncs.
         upgradeDeadline: "2024-03-05"
   releaseStage: alpha
   remoteRegistries:
@@ -36,4 +33,13 @@ data:
   tags:
     - language:python
     - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-RECURLY__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

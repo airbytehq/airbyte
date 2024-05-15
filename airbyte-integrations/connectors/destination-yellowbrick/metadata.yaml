@@ -23,4 +23,12 @@ data:
   supportsDbt: false
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-YELLOWBRICK_CREDENTIALS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

@@ -28,4 +28,7 @@ data:
   supportsDbt: false
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

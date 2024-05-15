@@ -32,4 +32,13 @@ data:
   supportsDbt: true
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-POSTGRES_CREDENTIALS__CREDS
+          fileName: credentials.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

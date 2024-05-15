@@ -41,4 +41,18 @@ data:
   tags:
     - language:python
     - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_GOOGLE_SEARCH_CONSOLE_CDK_CREDS_3
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-GOOGLE-SEARCH-CONSOLE_SERVICE_ACCOUNT__CREDS
+          fileName: service_account_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

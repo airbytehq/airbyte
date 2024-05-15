@@ -32,4 +32,18 @@ data:
     sl: 200
     ql: 400
   supportLevel: certified
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-RECHARGE_ORDERS_MODERN_API__CREDS
+          fileName: config_order_modern_api.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-RECHARGE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

@@ -21,4 +21,6 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/clickhouse
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: integrationTests
 metadataSpecVersion: "1.0"
