@@ -5,9 +5,9 @@
 import json
 from typing import Any, Mapping
 
-import pytest
 from airbyte_cdk.models import OrchestratorType, Type
 from airbyte_cdk.sources import Source
+
 from source_okta.config_migration import OktaConfigMigration
 from source_okta.source import SourceOkta
 
