@@ -3,26 +3,25 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.5"
-name = "source-insightly"
-description = "Source implementation for Insightly."
+version = "0.2.1"
+name = "source-pokeapi"
+description = "Source implementation for pokeapi."
 authors = [ "Airbyte <contact@airbyte.io>",]
 license = "MIT"
 readme = "README.md"
-documentation = "https://docs.airbyte.com/integrations/sources/insightly"
+documentation = "https://docs.airbyte.com/integrations/sources/pokeapi"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
-[[tool.poetry.packages]]
-include = "source_insightly"
+packages = [ { include = "source_pokeapi" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "0.80.0"
+airbyte-cdk = "^0"
 
 [tool.poetry.scripts]
-source-insightly = "source_insightly.run:run"
+source-pokeapi = "source_pokeapi.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.2"
-requests-mock = "^1.9.3"
-pytest-mock = "^3.6.1"
+requests-mock = "*"
+pytest-mock = "*"
+pytest = "*"
