@@ -296,7 +296,7 @@ class Campaigns(IncrementalGoogleAdsStream):
     """
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key = ["campaign.id", "segments.date", "segments.hour"]
+    primary_key = ["campaign.id", "segments.date", "segments.hour", "segments.ad_network_type"]
 
 
 class CampaignLabels(GoogleAdsStream):
