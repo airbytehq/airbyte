@@ -3,12 +3,12 @@
 #
 
 import json
+import logging
 from datetime import timedelta
 from unittest.mock import MagicMock
 
 import pendulum
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.utils import AirbyteTracedException
