@@ -1433,13 +1433,13 @@ class Deals(CRMSearchStream):
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "companies", "line_items"]
     primary_key = "id"
-    scopes = {"contacts", "crm.objects.deals.read", "crm.objects.custom.read"}
+    scopes = {"contacts", "crm.objects.deals.read"}
 
     def __init__(self, custom_object_list=None, **kwargs):
         super().__init__(**kwargs)
-        self.associations = ["contacts", "companies", "line_items"]
         if custom_object_list:
             self.associations.extend(custom_object_list)
+            self.scopes.add("crm.objects.custom.read")
 
 
 class DealsArchived(ClientSideIncrementalStream):
@@ -2105,27 +2105,29 @@ class Workflows(ClientSideIncrementalStream):
 class Companies(CRMSearchStream):
     entity = "company"
     last_modified_field = "hs_lastmodifieddate"
+    associations = ["contacts"]
     primary_key = "id"
-    scopes = {"crm.objects.contacts.read", "crm.objects.companies.read", "crm.objects.custom.read"}
+    scopes = {"crm.objects.contacts.read", "crm.objects.companies.read"}
 
     def __init__(self, custom_object_list=None, **kwargs):
         super().__init__(**kwargs)
-        self.associations = ["contacts", "companies", "deals", "tickets"]
         if custom_object_list:
             self.associations.extend(custom_object_list)
+            self.scopes.add("crm.objects.custom.read")
 
 
 class Contacts(CRMSearchStream):
     entity = "contact"
     last_modified_field = "lastmodifieddate"
+    associations = ["contacts", "companies"]
     primary_key = "id"
-    scopes = {"crm.objects.contacts.read", "crm.objects.companies.read", "crm.objects.custom.read"}
+    scopes = {"crm.objects.contacts.read", "crm.objects.companies.read"}
 
     def __init__(self, custom_object_list=None, **kwargs):
         super().__init__(**kwargs)
-        self.associations = ["contacts", "companies", "deals", "tickets"]
         if custom_object_list:
             self.associations.extend(custom_object_list)
+            self.scopes.add("crm.objects.custom.read")
 
 
 class ContactsMergedAudit(Stream):
@@ -2256,15 +2258,16 @@ class Products(CRMObjectIncrementalStream):
 
 class Tickets(CRMSearchStream):
     entity = "ticket"
+    associations = ["contacts", "deals", "companies"]
     primary_key = "id"
-    scopes = {"tickets", "crm.objects.custom.read"}
+    scopes = {"tickets"}
     last_modified_field = "hs_lastmodifieddate"
 
     def __init__(self, custom_object_list=None, **kwargs):
         super().__init__(**kwargs)
-        self.associations = ["contacts", "deals", "companies", "tickets"]
         if custom_object_list:
             self.associations.extend(custom_object_list)
+            self.scopes.add("crm.objects.custom.read")
 
 
 class CustomObject(CRMSearchStream, ABC):
