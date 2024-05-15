@@ -1,3 +1,7 @@
+---
+displayed_sidebar: docs
+---
+
 # Mac Installation
 
 Now that you have Docker set up for Airbyte, you can proceed to installation. We recommend that Mac users use brew if it is available. This way, you can install `abctl` using the following commands: 

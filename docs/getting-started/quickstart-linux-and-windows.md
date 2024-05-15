@@ -1,3 +1,7 @@
+---
+displayed_sidebar: docs
+---
+
 # Linux and Windows Installation
 
 After getting Docker Windows set up for running Airbyte on your machine, download the latest version of abctl from the [releases page](https://github.com/airbytehq/abctl/releases) and run the following command:

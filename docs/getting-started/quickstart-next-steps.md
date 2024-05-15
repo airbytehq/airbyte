@@ -1,3 +1,7 @@
+---
+displayed_sidebar: docs
+---
+
 # Next Steps
 
 ## Building your first connection
