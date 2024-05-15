@@ -52,7 +52,7 @@ class SourceLooker(AbstractSource):
     def get_authenticator(self, config: Mapping[str, Any]) -> CustomTokenAuthenticator:
         return CustomTokenAuthenticator(domain=config["domain"], client_id=config["client_id"], client_secret=config["client_secret"])
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         authenticator = self.get_authenticator(config)
         err = authenticator.update_access_token()
         if err:
