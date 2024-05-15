@@ -124,6 +124,22 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         assert(len(result) == 1)
         result[0] == "str_col: Cats are nice"
 
+   
+    def test_overwrite_mode_deletes_records(self):  
+        self._delete_table("mystream")
+        catalog = self._get_configured_catalog(DestinationSyncMode.overwrite)
+        first_state_message = self._state({"state": "1"})
+        first_record_chunk = [self._record("mystream", f"Dogs are number {i}", i) for i in range(4)]
+
+        # initial sync with replace 
+        destination = DestinationSnowflakeCortex()
+        list(destination.write(self.config, catalog, [*first_record_chunk, first_state_message]))
+        assert(self._get_record_count("mystream") == 4)
+
+        # following should replace existing records
+        append_catalog = self._get_configured_catalog(DestinationSyncMode.overwrite) 
+        list(destination.write(self.config, append_catalog, [self._record("mystream", "Cats are nice", 6), first_state_message]))
+        assert(self._get_record_count("mystream") == 1)
 
     """
     Following tests are not code specific, but are useful to confirm that the Cortex functions are available and behaving as expcected
