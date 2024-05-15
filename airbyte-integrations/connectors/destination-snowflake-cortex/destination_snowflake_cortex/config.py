@@ -32,7 +32,6 @@ class SnowflakeCortexIndexingModel(BaseModel):
         order=1,
         description="Enter the account name you want to use to access the database. This is usually the identifier before .snowflakecomputing.com",
         examples=["AIRBYTE_ACCOUNT"],
-        
     )
     role: str = Field(
         ...,
