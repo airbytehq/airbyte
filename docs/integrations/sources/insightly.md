@@ -69,6 +69,7 @@ The connector is restricted by Insightly [requests limitation](https://api.na1.i
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.5   | 2024-05-14 | [38140](https://github.com/airbytehq/airbyte/pull/38140) | Make compatible with builder                                                    |
 | 0.2.4   | 2024-04-19 | [37177](https://github.com/airbytehq/airbyte/pull/37177) | Updating to 0.80.0 CDK                                                          |
 | 0.2.3   | 2024-04-18 | [37177](https://github.com/airbytehq/airbyte/pull/37177) | Manage dependencies with Poetry.                                                |
 | 0.2.2   | 2024-04-15 | [37177](https://github.com/airbytehq/airbyte/pull/37177) | Base image migration: remove Dockerfile and use the python-connector-base image |
