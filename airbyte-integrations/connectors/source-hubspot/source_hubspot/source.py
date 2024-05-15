@@ -111,7 +111,7 @@ class SourceHubspot(AbstractSource):
         credentials = config.get("credentials", {})
         return API(credentials=credentials)
 
-    def get_common_params(self, config) -> Mapping[str, Any]:
+    def get_common_params(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         start_date = config.get("start_date", DEFAULT_START_DATE)
         credentials = config["credentials"]
         api = self.get_api(config=config)
@@ -121,17 +121,20 @@ class SourceHubspot(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         credentials = config.get("credentials", {})
+        api = API(credentials=credentials)
+        custom_object_list = [object for object, _, _, _ in api.get_custom_objects_metadata()]
         common_params = self.get_common_params(config=config)
+
         streams = [
             Campaigns(**common_params),
-            Companies(**common_params),
+            Companies(custom_object_list=custom_object_list, **common_params),
             ContactLists(**common_params),
-            Contacts(**common_params),
+            Contacts(custom_object_list=custom_object_list, **common_params),
             ContactsFormSubmissions(**common_params),
             ContactsListMemberships(**common_params),
             ContactsMergedAudit(**common_params),
             DealPipelines(**common_params),
-            Deals(**common_params),
+            Deals(custom_object_list=custom_object_list, **common_params),
             DealsArchived(**common_params),
             EmailEvents(**common_params),
             EmailSubscriptions(**common_params),
@@ -153,7 +156,7 @@ class SourceHubspot(AbstractSource):
             CompaniesPropertyHistory(**common_params),
             DealsPropertyHistory(**common_params),
             SubscriptionChanges(**common_params),
-            Tickets(**common_params),
+            Tickets(custom_object_list=custom_object_list, **common_params),
             TicketPipelines(**common_params),
             Workflows(**common_params),
         ]
@@ -178,7 +181,6 @@ class SourceHubspot(AbstractSource):
                 ]
             )
 
-        api = API(credentials=credentials)
         if api.is_oauth2():
             authenticator = api.get_authenticator()
             granted_scopes = self.get_granted_scopes(authenticator)
