@@ -4,10 +4,10 @@
 
 
 import json
+import logging
 import socket
 from typing import Any, Generator, List, MutableMapping, Union
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteCatalog,
@@ -43,7 +43,7 @@ class SourceGoogleSheets(Source):
     Spreadsheets API Reference: https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets
     """
 
-    def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: json) -> AirbyteConnectionStatus:
         # Check involves verifying that the specified spreadsheet is reachable with our credentials.
         try:
             client = GoogleSheetsClient(self.get_credentials(config))
@@ -108,7 +108,7 @@ class SourceGoogleSheets(Source):
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
-    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
+    def discover(self, logger: logging.Logger, config: json) -> AirbyteCatalog:
         client = GoogleSheetsClient(self.get_credentials(config))
         spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
         try:
@@ -144,7 +144,7 @@ class SourceGoogleSheets(Source):
 
     def _read(
         self,
-        logger: AirbyteLogger,
+        logger: logging.Logger,
         config: json,
         catalog: ConfiguredAirbyteCatalog,
     ) -> Generator[AirbyteMessage, None, None]:
@@ -208,7 +208,7 @@ class SourceGoogleSheets(Source):
 
     def read(
         self,
-        logger: AirbyteLogger,
+        logger: logging.Logger,
         config: json,
         catalog: ConfiguredAirbyteCatalog,
         state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
