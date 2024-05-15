@@ -3029,29 +3029,7 @@ earlier_csv_scenario: TestScenario[InMemoryFilesSource] = (
         .set_file_type("csv")
     )
     .set_expected_check_status("FAILED")
-    .set_expected_check_error(AirbyteTracedException, FileBasedSourceError.EMPTY_STREAM.value)
-    .set_expected_catalog(
-        {
-            "streams": [
-                {
-                    "default_cursor_field": ["_ab_source_file_last_modified"],
-                    "json_schema": {
-                        "type": "object",
-                        "properties": {
-                            "col1": {"type": "string"},
-                            "col2": {"type": "string"},
-                            "_ab_source_file_last_modified": {"type": "string"},
-                            "_ab_source_file_url": {"type": "string"},
-                        },
-                    },
-                    "name": "stream1",
-                    "source_defined_cursor": True,
-                    "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
-    )
-    .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_expected_catalog({"streams": []})
 ).build()
 
 csv_no_records_scenario: TestScenario[InMemoryFilesSource] = (

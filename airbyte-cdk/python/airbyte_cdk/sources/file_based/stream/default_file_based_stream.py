@@ -172,7 +172,10 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         }
         try:
             schema = self._get_raw_json_schema()
-        except (InvalidSchemaError, NoFilesMatchingError) as config_exception:
+        except NoFilesMatchingError:
+            self.logger.warning(f"No files were identified in the stream {self.name}. Set empty schema for the stream.")
+            return {}
+        except InvalidSchemaError as config_exception:
             self.logger.exception(FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value, exc_info=config_exception)
             raise AirbyteTracedException(
                 internal_message="Please check the logged errors for more information.",
