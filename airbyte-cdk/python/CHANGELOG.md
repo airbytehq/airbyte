@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.89.0
+
+
 ## 0.88.4
 HttpMocker, Adding the delete method.
 
