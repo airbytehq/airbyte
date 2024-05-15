@@ -36,7 +36,7 @@ This connector has been tested for the Airbyte organization, which has 266 repos
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.2.5   | 2024-05-20 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Update connector to latest builder version                                      |
+| 0.2.5   | 2024-05-20 | [38229](https://github.com/airbytehq/airbyte/pull/38229) | Update connector to latest builder version                                      |
 | 0.2.4   | 2024-04-19 | [37151](https://github.com/airbytehq/airbyte/pull/37151) | Updating to 0.80.0 CDK                                                          |
 | 0.2.3   | 2024-04-18 | [37151](https://github.com/airbytehq/airbyte/pull/37151) | Manage dependencies with Poetry.                                                |
 | 0.2.2   | 2024-04-15 | [37151](https://github.com/airbytehq/airbyte/pull/37151) | Base image migration: remove Dockerfile and use the python-connector-base image |
