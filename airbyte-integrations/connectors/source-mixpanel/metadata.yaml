@@ -39,7 +39,7 @@ data:
           Key for CohortMembers stream was changed to new unique key based on 
           distinct_id and cohort_id fields since previous key was not unique and 
           didn't support possibility for user be in a few different cohorts
-        upgradeDeadline: "2024-05-22"
+        upgradeDeadline: "2024-06-03"
       2.0.0:
         message:
           In this release, the default primary key for stream Export has been
