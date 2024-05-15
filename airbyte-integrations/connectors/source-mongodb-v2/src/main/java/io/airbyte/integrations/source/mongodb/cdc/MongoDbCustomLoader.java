@@ -8,7 +8,6 @@ import io.airbyte.commons.json.Jsons;
 import io.debezium.connector.mongodb.MongoDbConnectorConfig;
 import io.debezium.connector.mongodb.MongoDbOffsetContext;
 import io.debezium.connector.mongodb.MongoDbOffsetContext.Loader;
-import io.debezium.connector.mongodb.ReplicaSets;
 import java.util.Collections;
 import java.util.Map;
 
@@ -25,14 +24,13 @@ public class MongoDbCustomLoader extends Loader {
 
   private Map<Map<String, String>, Map<String, Object>> offsets;
 
-  public MongoDbCustomLoader(final MongoDbConnectorConfig connectorConfig, final ReplicaSets replicaSets) {
-    super(connectorConfig, replicaSets);
+  public MongoDbCustomLoader(final MongoDbConnectorConfig connectorConfig) {
+    super(connectorConfig);
   }
 
-  @Override
   public MongoDbOffsetContext loadOffsets(final Map<Map<String, String>, Map<String, Object>> offsets) {
     this.offsets = Jsons.clone(offsets);
-    return super.loadOffsets(offsets);
+    return null;
   }
 
   public Map<Map<String, String>, Map<String, Object>> getRawOffset() {

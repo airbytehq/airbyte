@@ -97,7 +97,7 @@ public class MongoDbCdcInitializer {
     final BsonDocument initialResumeToken =
         MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, incrementalOnlyStreamsCatalog);
     final JsonNode initialDebeziumState =
-        mongoDbDebeziumStateUtil.constructInitialDebeziumState(initialResumeToken, mongoClient, databaseName);
+        mongoDbDebeziumStateUtil.constructInitialDebeziumState(initialResumeToken, databaseName);
     final MongoDbCdcState cdcState =
         (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null || stateManager.getCdcState().state().isNull())
             ? new MongoDbCdcState(initialDebeziumState, isEnforceSchema)
