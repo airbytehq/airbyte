@@ -230,6 +230,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------| :--------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.4   | 2024-05-15 | [38208](https://github.com/airbytehq/airbyte/pull/38208)   | disable counts in full refresh stream in state message.                                                                                         |
 | 3.4.3   | 2024-05-13 | [38104](https://github.com/airbytehq/airbyte/pull/38104)   | Handle transient error messages.                                                                                                                |
 | 3.4.2   | 2024-05-07 | [38046](https://github.com/airbytehq/airbyte/pull/38046)   | Resumeable refresh should run only if there is source defined pk.                                                                               |
 | 3.4.1   | 2024-05-03 | [37824](https://github.com/airbytehq/airbyte/pull/37824)   | Fixed a bug on Resumeable full refresh where cursor based source throw NPE.                                                                     |
