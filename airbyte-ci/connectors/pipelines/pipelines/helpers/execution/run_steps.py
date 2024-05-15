@@ -208,7 +208,10 @@ def _filter_skipped_steps(steps_to_evaluate: STEP_TREE, skip_steps: List[str], r
 
         else:
             steps_to_run.append(step_to_eval)
-
+    if not steps_to_run:
+        raise InvalidStepConfiguration(
+            "No steps were queued to run. You may have skipped all steps, or selected --only on an invalid step."
+        )
     return steps_to_run, results
 
 
