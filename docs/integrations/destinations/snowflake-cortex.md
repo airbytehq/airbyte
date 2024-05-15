@@ -2,7 +2,7 @@
 
 ## Overview
 
-This page guides you through the process of setting up the [Snowflake](https://pinecone.io/) as a vector destination.
+This page guides you through the process of setting up the [Snowflake](https://www.snowflake.com/en/) as a vector destination.
 
 There are three parts to this:
 * Processing - split up individual records in chunks so they will fit the context window and decide which fields to use as context and which are supplementary metadata.
@@ -81,4 +81,5 @@ To get started, sign up for [Snowflake](https://www.snowflake.com/en/). Ensure y
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.1 | 2024-05-15 | [#38206](https://github.com/airbytehq/airbyte/pull/38206) | Bug fixes.
 | 0.1.0 | 2024-05-13 | [#37333](https://github.com/airbytehq/airbyte/pull/36807) | Add support for Snowflake as a Vector destination.

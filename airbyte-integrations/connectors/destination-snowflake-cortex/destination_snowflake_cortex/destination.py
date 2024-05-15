@@ -16,7 +16,7 @@ from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_snowflake_cortex.config import ConfigModel
 from destination_snowflake_cortex.indexer import SnowflakeCortexIndexer
 
-BATCH_SIZE = 32
+BATCH_SIZE = 150
 
 
 class DestinationSnowflakeCortex(Destination):

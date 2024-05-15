@@ -135,7 +135,7 @@ def test_create_state_message():
 def test_get_write_strategy():
     indexer = _create_snowflake_cortex_indexer(generate_catalog())
     assert(indexer.get_write_strategy('example_stream') == WriteStrategy.MERGE)
-    assert(indexer.get_write_strategy('example_stream2') == WriteStrategy.REPLACE)
+    assert(indexer.get_write_strategy('example_stream2') == WriteStrategy.APPEND)
     assert(indexer.get_write_strategy('example_stream3') == WriteStrategy.APPEND)
 
 def test_get_document_id():
@@ -183,6 +183,28 @@ def test_check():
     mock_processor._get_tables_list.assert_called_once()
     assert result == None
 
+
+def test_pre_sync_table_does_exist():
+    indexer = _create_snowflake_cortex_indexer(generate_catalog())
+    mock_processor = MagicMock()
+    indexer.default_processor = mock_processor
+    
+    mock_processor._get_tables_list.return_value = ["table1", "table2"]
+    mock_processor._execute_query.return_value = None
+    indexer.pre_sync(generate_catalog())
+    mock_processor._get_tables_list.assert_called_once()
+    mock_processor._execute_sql.assert_not_called()
+
+def test_pre_sync_table_exists():
+    indexer = _create_snowflake_cortex_indexer(generate_catalog())
+    mock_processor = MagicMock()
+    indexer.default_processor = mock_processor
+   
+    mock_processor._get_tables_list.return_value = ["example_stream2", "table2"]
+    mock_processor._execute_query.return_value = None
+    indexer.pre_sync(generate_catalog())
+    mock_processor._get_tables_list.assert_called_once()
+    mock_processor._execute_sql.assert_called_once()
 
 def generate_catalog():
     return ConfiguredAirbyteCatalog.parse_obj(
