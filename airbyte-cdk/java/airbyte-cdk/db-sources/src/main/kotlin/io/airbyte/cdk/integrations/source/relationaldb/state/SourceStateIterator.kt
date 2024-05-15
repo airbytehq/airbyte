@@ -82,8 +82,8 @@ open class SourceStateIterator<T>(
     }
 
     /**
-     * We are disabling counts for FULL_REFRESH streams cause there is are issues with it.
-     * We should re-enable it once we do the work for project Counts: Emit Counts in Full Refresh
+     * We are disabling counts for FULL_REFRESH streams cause there is are issues with it. We should
+     * re-enable it once we do the work for project Counts: Emit Counts in Full Refresh
      */
     private fun shouldAttachCountWithState(): Boolean {
         return stream?.syncMode != SyncMode.FULL_REFRESH
