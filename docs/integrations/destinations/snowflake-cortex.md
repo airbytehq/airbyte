@@ -2,7 +2,7 @@
 
 ## Overview
 
-This page guides you through the process of setting up the [Snowflake](https://pinecone.io/) as a vector destination.
+This page guides you through the process of setting up the [Snowflake](https://www.snowflake.com/en/) as a vector destination.
 
 There are three parts to this:
 * Processing - split up individual records in chunks so they will fit the context window and decide which fields to use as context and which are supplementary metadata.
