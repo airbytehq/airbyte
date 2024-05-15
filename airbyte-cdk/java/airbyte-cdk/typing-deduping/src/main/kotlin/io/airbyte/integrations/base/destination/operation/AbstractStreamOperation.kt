@@ -12,6 +12,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.Optional
 import java.util.stream.Stream
 
 abstract class AbstractStreamOperation<DestinationState : MinimumDestinationState>(
@@ -110,34 +111,40 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
     override fun finalizeTable(streamConfig: StreamConfig, syncSummary: StreamSyncSummary) {
         // Delete staging directory, implementation will handle if it has to do it or not or a No-OP
         storageOperations.cleanupStage(streamConfig.id)
+
+        // Legacy logic that if recordsWritten or not tracked then it could be non-zero
+        val isOverwriteSync = streamConfig.destinationSyncMode != DestinationSyncMode.OVERWRITE
+        // Legacy logic that if recordsWritten or not tracked then it could be non-zero.
+        // But for OVERWRITE syncs, we don't need to look at old records.
+        val shouldRunTypingDeduping =
+            syncSummary.recordsWritten.map { it > 0 }.orElse(true) ||
+                (initialRawTableStatus.hasUnprocessedRecords && isOverwriteSync)
         if (disableTypeDedupe) {
             log.info {
                 "Typing and deduping disabled, skipping final table finalization. " +
                     "Raw records can be found at ${streamConfig.id.rawNamespace}.${streamConfig.id.rawName}"
             }
-            return
-        }
-
-        // Legacy logic that if recordsWritten or not tracked then it could be non-zero
-        val shouldRunFinalizer =
-            syncSummary.recordsWritten.map { it > 0 }.orElse(true) ||
-                initialRawTableStatus.hasUnprocessedRecords
-        if (!shouldRunFinalizer) {
+        } else if (!shouldRunTypingDeduping) {
             log.info {
                 "Skipping typing and deduping for stream ${streamConfig.id.originalNamespace}.${streamConfig.id.originalName} " +
                     "because it had no records during this sync and no unprocessed records from a previous sync."
             }
-            return
+        } else {
+            // In overwrite mode, we want to read all the raw records. Typically, this is equivalent
+            // to filtering on timestamp, but might as well be explicit.
+            val timestampFilter = if (isOverwriteSync) {
+                initialRawTableStatus.maxProcessedTimestamp
+            } else {
+                Optional.empty()
+            }
+            storageOperations.typeAndDedupe(
+                streamConfig,
+                timestampFilter,
+                finalTmpTableSuffix
+            )
         }
 
-        storageOperations.typeAndDedupe(
-            streamConfig,
-            initialRawTableStatus.maxProcessedTimestamp,
-            finalTmpTableSuffix
-        )
-
-        // For overwrite, It's wasteful to do T+D, so we don't do soft-reset in prepare. Instead, we
-        // do
+        // For overwrite, it's wasteful to do T+D, so we don't do soft-reset in prepare. Instead, we do
         // type-dedupe
         // on a suffixed table and do a swap here when we have to for schema mismatches
         if (
