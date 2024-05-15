@@ -42,4 +42,53 @@ data:
       - ad_groups
       - ad_groups_reports_daily
       - advertisers_reports_daily
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_NEW_CREDS
+          fileName: new_config_sandbox.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_NEW_PROD_CREDS
+          fileName: new_config_prod.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_OAUTH_CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_PROD_CREDS
+          fileName: prod_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_PROD_CREDS_WITH_DAY_GRANULARITY
+          fileName: prod_config_with_day_granularity.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_PROD_CREDS_WITH_LIFETIME_GRANULARITY
+          fileName: prod_config_with_lifetime_granularity.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_PROD_DAY_CREDS
+          fileName: prod_config_day.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_SANDBOX_CREDS
+          fileName: sandbox_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
