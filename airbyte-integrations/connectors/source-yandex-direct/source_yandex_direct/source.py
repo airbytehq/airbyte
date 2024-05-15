@@ -67,7 +67,7 @@ class SourceYandexDirect(AbstractSource):
                             f'{spec_field_name} (key {key}): field "field_name" is not available. See example.',
                         )
 
-        for report_config in config.get("reports"):
+        for report_config in config.get("reports", []):
             report_name = report_config["name"]
 
             date_exclusive_fields = []
