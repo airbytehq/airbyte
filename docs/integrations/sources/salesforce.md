@@ -192,6 +192,7 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
+| 2.5.11  | 2024-05-09 | [38205](https://github.com/airbytehq/airbyte/pull/38205)      | Use new delete method of HttpMocker for test_bulk_stream                                                                        |
 | 2.5.10  | 2024-05-09 | [38065](https://github.com/airbytehq/airbyte/pull/38065) | Replace deprecated authentication mechanism to up-to-date one                                                                        |
 | 2.5.9   | 2024-05-02 | [37749](https://github.com/airbytehq/airbyte/pull/37749) | Adding mock server tests for bulk streams                                                                                            |
 | 2.5.8   | 2024-04-30 | [37340](https://github.com/airbytehq/airbyte/pull/37340) | Source Salesforce: reduce info logs                                                                                                  |
