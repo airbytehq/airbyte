@@ -6,11 +6,11 @@ data:
     hosts:
       - api.stripe.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: e094cb9a-26de-4645-8761-65c0c425d1de
-  dockerImageTag: 5.3.7
+  dockerImageTag: 5.3.8
   dockerRepository: airbyte/source-stripe
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   githubIssueLabel: source-stripe
@@ -18,10 +18,6 @@ data:
   license: ELv2
   maxSecondsBetweenMessages: 1
   name: Stripe
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-stripe
   registries:
     cloud:
       enabled: true
@@ -46,6 +42,10 @@ data:
           Also, the `Invoices`, `Subscriptions` and `SubscriptionSchedule` stream
           schemas have been updated.
         upgradeDeadline: "2023-12-11"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-stripe
   suggestedStreams:
     streams:
       - customers
