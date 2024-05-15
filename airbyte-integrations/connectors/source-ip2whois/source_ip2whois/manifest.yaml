@@ -17,12 +17,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /v2
           http_method: GET
           request_parameters:
-            key: '{{ config[''api_key''] }}'
-            domain: '{{ config[''domain''] }}'
+            key: "{{ config['api_key'] }}"
+            domain: "{{ config['domain'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -31,13 +31,13 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/whois'
+          $ref: "#/schemas/whois"
   base_requester:
     type: HttpRequester
     url_base: https://api.ip2whois.com
 
 streams:
-  - $ref: '#/definitions/streams/whois'
+  - $ref: "#/definitions/streams/whois"
 
 spec:
   type: Spec
