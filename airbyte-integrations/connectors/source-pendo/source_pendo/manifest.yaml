@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /page
           http_method: GET
         record_selector:
@@ -28,7 +28,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/Page'
+          $ref: "#/schemas/Page"
     Feature:
       type: DeclarativeStream
       name: Feature
@@ -37,7 +37,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /feature
           http_method: GET
         record_selector:
@@ -48,7 +48,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/Feature'
+          $ref: "#/schemas/Feature"
     Report:
       type: DeclarativeStream
       name: Report
@@ -57,7 +57,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /report
           http_method: GET
         record_selector:
@@ -68,7 +68,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/Report'
+          $ref: "#/schemas/Report"
     Guide:
       type: DeclarativeStream
       name: Guide
@@ -77,7 +77,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /guide
           http_method: GET
         record_selector:
@@ -88,14 +88,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/Guide'
+          $ref: "#/schemas/Guide"
     Account Metadata:
       type: DeclarativeStream
       name: Account Metadata
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /metadata/schema/account
           http_method: GET
         record_selector:
@@ -106,14 +106,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/Account Metadata'
+          $ref: "#/schemas/Account Metadata"
     Visitor Metadata:
       type: DeclarativeStream
       name: Visitor Metadata
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /metadata/schema/visitor
           http_method: GET
         record_selector:
@@ -124,25 +124,25 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/Visitor Metadata'
+          $ref: "#/schemas/Visitor Metadata"
   base_requester:
     type: HttpRequester
     url_base: https://app.pendo.io/api/v1
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
       inject_into:
         type: RequestOption
         field_name: x-pendo-integration-key
         inject_into: header
 
 streams:
-  - $ref: '#/definitions/streams/Page'
-  - $ref: '#/definitions/streams/Feature'
-  - $ref: '#/definitions/streams/Report'
-  - $ref: '#/definitions/streams/Guide'
-  - $ref: '#/definitions/streams/Account Metadata'
-  - $ref: '#/definitions/streams/Visitor Metadata'
+  - $ref: "#/definitions/streams/Page"
+  - $ref: "#/definitions/streams/Feature"
+  - $ref: "#/definitions/streams/Report"
+  - $ref: "#/definitions/streams/Guide"
+  - $ref: "#/definitions/streams/Account Metadata"
+  - $ref: "#/definitions/streams/Visitor Metadata"
 
 spec:
   type: Spec
@@ -287,7 +287,7 @@ schemas:
           items:
             type:
               - array
-              - 'null'
+              - "null"
             description: An array of items belonging to the group.
           lastUpdatedAt:
             type: integer
@@ -585,7 +585,7 @@ schemas:
           items:
             type:
               - array
-              - 'null'
+              - "null"
             description: Items included in the group.
           lastUpdatedAt:
             type: integer
@@ -794,7 +794,7 @@ schemas:
                                     properties:
                                       count:
                                         type:
-                                          - 'null'
+                                          - "null"
                                           - string
                                         description: Count of grouped items
                             group:
@@ -888,7 +888,7 @@ schemas:
                         type: object
                         properties:
                           cat:
-                            type: 'null'
+                            type: "null"
                           eval:
                             type: object
                             description: Evaluate usage trending data
@@ -1074,7 +1074,7 @@ schemas:
                                     items:
                                       type: object
                                       properties:
-                                        '==':
+                                        "==":
                                           type: integer
                                         value:
                                           type: string
@@ -1284,7 +1284,7 @@ schemas:
                   type:
                     type: string
               secondaryDateRange:
-                type: 'null'
+                type: "null"
               useSecondaryDateRange:
                 type: boolean
           generator:
@@ -1347,7 +1347,7 @@ schemas:
                   period:
                     type: string
               secondaryTimeSeries:
-                type: 'null'
+                type: "null"
               start:
                 type: string
       id:
@@ -1462,7 +1462,7 @@ schemas:
             description: Type of guide.
           activation:
             anyOf:
-              - type: 'null'
+              - type: "null"
               - type: object
                 properties:
                   event:
@@ -1476,7 +1476,7 @@ schemas:
             description: Information related to guide activation.
           badge:
             anyOf:
-              - type: 'null'
+              - type: "null"
               - type: object
                 properties:
                   bbJson:
@@ -1487,7 +1487,7 @@ schemas:
                       id:
                         type: string
                       layoutId:
-                        type: 'null'
+                        type: "null"
                       properties:
                         type: array
                         items:
@@ -1502,7 +1502,7 @@ schemas:
                                 - integer
                                 - string
                       templateName:
-                        type: 'null'
+                        type: "null"
                       uiMetadata:
                         type: object
                         properties:
@@ -1525,7 +1525,7 @@ schemas:
                             id:
                               type: string
                             layoutId:
-                              type: 'null'
+                              type: "null"
                             properties:
                               type: array
                               items:
@@ -1540,7 +1540,7 @@ schemas:
                                       - integer
                                       - string
                             templateName:
-                              type: 'null'
+                              type: "null"
                             uiMetadata:
                               type: object
                               properties:
@@ -1947,7 +1947,7 @@ schemas:
               properties:
                 visitors:
                   anyOf:
-                    - type: 'null'
+                    - type: "null"
                     - type: object
                       properties:
                         identified:
@@ -2220,7 +2220,7 @@ schemas:
                   type: string
                 advanceActions:
                   anyOf:
-                    - type: 'null'
+                    - type: "null"
                     - type: object
                       properties:
                         elementClick:
