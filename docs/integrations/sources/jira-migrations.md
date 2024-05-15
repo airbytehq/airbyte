@@ -24,6 +24,18 @@ To gracefully handle these changes for your existing connections, we highly reco
         This will reset the data in your destination and initiate a fresh sync.
         ```
 
+The **Issues** stream should be manually reset to avoid potential state issues.
+
+1. Select **Connections** in the main navbar.
+1.1 Select the connection(s) affected by the update.
+2. Select the **Replication** tab.
+3. Uncheck all streams except the Issues stream.
+4. Select the **Settings** tab.
+5. Press the **Clear your data** button.
+6. Return to the **Replication** tab.
+7. Check all your streams.
+8. Select **Sync now** to sync your data
+
 For more information on resetting your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
 
 ## Upgrading to 1.0.0
