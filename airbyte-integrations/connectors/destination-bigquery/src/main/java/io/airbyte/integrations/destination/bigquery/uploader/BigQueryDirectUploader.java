@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.bigquery.uploader;
 import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.printHeapMemoryConsumption;
 
 import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableId;
@@ -24,19 +23,16 @@ public class BigQueryDirectUploader {
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDirectUploader.class);
 
   protected final TableId table;
-  protected final WriteDisposition syncMode;
   protected final BigQueryTableWriter writer;
   protected final BigQuery bigQuery;
   protected final BigQueryRecordFormatter recordFormatter;
 
   BigQueryDirectUploader(final TableId table,
                          final BigQueryTableWriter writer,
-                         final WriteDisposition syncMode,
                          final BigQuery bigQuery,
                          final BigQueryRecordFormatter recordFormatter) {
     this.table = table;
     this.writer = writer;
-    this.syncMode = syncMode;
     this.bigQuery = bigQuery;
     this.recordFormatter = recordFormatter;
   }
@@ -67,7 +63,7 @@ public class BigQueryDirectUploader {
     final Table rawTable = bigQuery.getTable(table);
     if (rawTable == null) {
       LOGGER.info("Creating raw table {}.", table);
-      bigQuery.create(TableInfo.newBuilder(table, StandardTableDefinition.of(recordFormatter.getBigQuerySchema())).build());
+      bigQuery.create(TableInfo.newBuilder(table, StandardTableDefinition.of(BigQueryRecordFormatter.SCHEMA_V2)).build());
     } else {
       LOGGER.info("Found raw table {}.", rawTable.getTableId());
     }
@@ -77,7 +73,6 @@ public class BigQueryDirectUploader {
   public String toString() {
     return "BigQueryDirectUploader{" +
         "table=" + table.getTable() +
-        ", syncMode=" + syncMode +
         ", writer=" + writer.getClass() +
         ", recordFormatter=" + recordFormatter.getClass() +
         '}';
