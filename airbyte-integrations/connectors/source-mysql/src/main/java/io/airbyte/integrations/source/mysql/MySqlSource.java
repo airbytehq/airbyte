@@ -53,6 +53,8 @@ import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
+import io.airbyte.commons.util.AirbyteStreamAware;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mysql.cdc.CdcConfigurationHelper;
 import io.airbyte.integrations.source.mysql.cursor_based.MySqlCursorBasedStateManager;
@@ -65,17 +67,10 @@ import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.Cur
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.InitialLoadStreams;
 import io.airbyte.integrations.source.mysql.internal.models.CursorBasedStatus;
 import io.airbyte.protocol.models.CommonField;
-import io.airbyte.protocol.models.v0.AirbyteCatalog;
-import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.*;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.v0.AirbyteStream;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.ConnectorSpecification;
-import io.airbyte.protocol.models.v0.SyncMode;
+
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
@@ -498,10 +493,22 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     }
 
     LOGGER.info("using CDC: {}", false);
-    return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager,
-        emittedAt);
+    return decorateWithStreamStatus(super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager,
+        emittedAt));
   }
 
+  private List<AutoCloseableIterator<AirbyteMessage>> decorateWithStreamStatus(List<AutoCloseableIterator<AirbyteMessage>> iterators) {
+    var ret = new ArrayList<AutoCloseableIterator<AirbyteMessage>>();
+    iterators.forEach(iter -> {
+      var sai = (AirbyteStreamAware) iter;
+      var pair = new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(sai.getAirbyteStream().get().getName(), sai.getAirbyteStream().get().getNamespace());
+      ret.add(new StatusEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)));
+      ret.add(iter);
+      ret.add(new StatusEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
+
+    });
+    return ret;
+  }
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of(
