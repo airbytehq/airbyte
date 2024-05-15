@@ -15,7 +15,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: repositories/{{ config['docker_username'] }}/
           http_method: GET
         record_selector:
@@ -35,7 +35,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/docker_hub'
+          $ref: "#/schemas/docker_hub"
   base_requester:
     type: HttpRequester
     url_base: https://hub.docker.com/v2/
@@ -60,7 +60,7 @@ definitions:
           inject_into: header
 
 streams:
-  - $ref: '#/definitions/streams/docker_hub'
+  - $ref: "#/definitions/streams/docker_hub"
 
 spec:
   type: Spec
@@ -94,109 +94,109 @@ schemas:
     properties:
       affiliation:
         type:
-          - 'null'
+          - "null"
           - string
         description: The affiliation of the user or organization that owns the repository.
       can_edit:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates whether the user has edit permissions for the repository.
       collaborator_count:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The count of collaborators associated with the repository.
       content_types:
         type:
-          - 'null'
+          - "null"
           - array
         description: The content types supported by the repository.
         items:
           type:
-            - 'null'
+            - "null"
             - string
       date_registered:
         type:
-          - 'null'
+          - "null"
           - string
         description: The date when the repository was registered on Docker Hub.
       description:
         type:
-          - 'null'
+          - "null"
           - string
         description: The description of the repository.
       hub_user:
         type:
-          - 'null'
+          - "null"
           - string
         description: The user associated with the repository on Docker Hub.
       is_automated:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates whether the repository is automated.
       is_migrated:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates whether the repository has been migrated.
       is_private:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates whether the repository is private.
       last_updated:
         type:
-          - 'null'
+          - "null"
           - string
         description: The date when the repository was last updated.
       media_types:
         type:
-          - 'null'
+          - "null"
           - array
         description: The media types supported by the repository.
         items:
           type:
-            - 'null'
+            - "null"
             - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: The name of the repository.
       namespace:
         type:
-          - 'null'
+          - "null"
           - string
         description: The namespace associated with the repository.
       pull_count:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The count of pulls or downloads for the repository.
       repository_type:
         type:
-          - 'null'
+          - "null"
           - string
         description: The type of the repository.
       star_count:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The count of stars or likes for the repository.
       status:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The status of the repository.
       status_description:
         type:
-          - 'null'
+          - "null"
           - string
         description: The description of the status of the repository.
       user:
         type:
-          - 'null'
+          - "null"
           - string
         description: The user associated with the repository.
