@@ -25,6 +25,7 @@ class ParentStreamConfig:
     parent_key: The key of the parent stream's records that will be the stream slice key
     partition_field: The partition key
     request_option: How to inject the slice value on an outgoing HTTP request
+    incremental_dependency (bool): Indicates if the parent stream should be read incrementally.
     """
 
     stream: "DeclarativeStream"  # Parent streams must be DeclarativeStream because we can't know which part of the stream slice is a partition for regular Stream
@@ -33,6 +34,7 @@ class ParentStreamConfig:
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     request_option: Optional[RequestOption] = None
+    incremental_dependency: bool = False
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self.parent_key = InterpolatedString.create(self.parent_key, parameters=parameters)
@@ -128,13 +130,13 @@ class SubstreamPartitionRouter(PartitionRouter):
                 parent_stream = parent_stream_config.stream
                 parent_field = parent_stream_config.parent_key.eval(self.config)  # type: ignore # parent_key is always casted to an interpolated string
                 partition_field = parent_stream_config.partition_field.eval(self.config)  # type: ignore # partition_field is always casted to an interpolated string
+                incremental_dependency = parent_stream_config.incremental_dependency
                 for parent_stream_slice in parent_stream.stream_slices(
                     sync_mode=SyncMode.full_refresh, cursor_field=None, stream_state=None
                 ):
                     empty_parent_slice = True
                     parent_partition = parent_stream_slice.partition if parent_stream_slice else {}
 
-                    child_slices_for_parent_slice = []
                     for parent_record in parent_stream.read_records(
                         sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
                     ):
@@ -155,7 +157,8 @@ class SubstreamPartitionRouter(PartitionRouter):
                             yield StreamSlice(
                                 partition={partition_field: partition_value, "parent_slice": parent_partition}, cursor_slice={}
                             )
-                    self._parent_state[parent_stream.name] = parent_stream.state
+                    if incremental_dependency:
+                        self._parent_state[parent_stream.name] = parent_stream.state
 
                     # If the parent slice contains no records,
                     if empty_parent_slice:
@@ -169,9 +172,16 @@ class SubstreamPartitionRouter(PartitionRouter):
             stream_state (Optional[StreamState]): The state of the streams to be set. If `parent_state` exists in the
             stream_state, it will update the state of each parent stream with the corresponding state from the stream_state.
         """
-        if stream_state and stream_state.get("parent_state"):
-            for parent_config in self.parent_stream_configs:
-                parent_config.stream.state = stream_state.get("parent_state").get(parent_config.stream.name, {})
+        if not stream_state:
+            return
+
+        parent_state = stream_state.get("parent_state")
+        if not parent_state:
+            return
+
+        for parent_config in self.parent_stream_configs:
+            if parent_config.incremental_dependency:
+                parent_config.stream.state = parent_state.get(parent_config.stream.name, {})
 
     def get_parent_state(self) -> StreamState:
         """

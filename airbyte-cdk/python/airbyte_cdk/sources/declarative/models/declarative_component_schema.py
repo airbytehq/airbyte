@@ -1306,6 +1306,11 @@ class ParentStreamConfig(BaseModel):
         description='A request option describing where the parent key value should be injected into and under what field name if applicable.',
         title='Request Option',
     )
+    incremental_dependency: bool = Field(
+        False,
+        description='Indicates if the parent stream should be read incrementally.',
+        title='Incremental Dependency',
+    )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
