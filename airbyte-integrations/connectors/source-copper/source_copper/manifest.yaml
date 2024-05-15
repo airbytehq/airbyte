@@ -522,7 +522,9 @@ schemas:
     additionalProperties: true
     properties:
       address:
-        type: object
+        type: 
+          - "null"
+          - object
         description: Company address details
         properties:
           city:
