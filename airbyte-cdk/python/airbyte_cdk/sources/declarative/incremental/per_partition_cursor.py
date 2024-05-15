@@ -86,6 +86,8 @@ class PerPartitionCursor(DeclarativeCursor):
         for state in stream_state["states"]:
             self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
 
+        self._partition_router.set_parent_state(stream_state)
+
     def observe(self, stream_slice: StreamSlice, record: Record) -> None:
         self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].observe(
             StreamSlice(partition={}, cursor_slice=stream_slice.cursor_slice), record
@@ -113,7 +115,12 @@ class PerPartitionCursor(DeclarativeCursor):
                         "cursor": cursor_state,
                     }
                 )
-        return {"states": states}
+        state = {"states": states}
+
+        parent_state = self._partition_router.get_parent_state()
+        if parent_state:
+            state["parent_state"] = parent_state
+        return state
 
     def _get_state_for_partition(self, partition: Mapping[str, Any]) -> Optional[StreamState]:
         cursor = self._cursor_per_partition.get(self._to_partition_key(partition))

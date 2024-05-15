@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, Optional, Union
 import dpath
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 
 if TYPE_CHECKING:
@@ -40,7 +40,7 @@ class ParentStreamConfig:
 
 
 @dataclass
-class SubstreamPartitionRouter(StreamSlicer):
+class SubstreamPartitionRouter(PartitionRouter):
     """
     Partition router that iterates over the parent's stream records and emits slices
     Will populate the state with `partition_field` and `parent_slice` so they can be accessed by other components
@@ -57,6 +57,7 @@ class SubstreamPartitionRouter(StreamSlicer):
         if not self.parent_stream_configs:
             raise ValueError("SubstreamPartitionRouter needs at least 1 parent stream")
         self._parameters = parameters
+        self._parent_state = {}
 
     def get_request_params(
         self,
@@ -133,6 +134,7 @@ class SubstreamPartitionRouter(StreamSlicer):
                     empty_parent_slice = True
                     parent_partition = parent_stream_slice.partition if parent_stream_slice else {}
 
+                    child_slices_for_parent_slice = []
                     for parent_record in parent_stream.read_records(
                         sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
                     ):
@@ -153,6 +155,29 @@ class SubstreamPartitionRouter(StreamSlicer):
                             yield StreamSlice(
                                 partition={partition_field: partition_value, "parent_slice": parent_partition}, cursor_slice={}
                             )
+                    self._parent_state[parent_stream.name] = parent_stream.state
+
                     # If the parent slice contains no records,
                     if empty_parent_slice:
                         yield from []
+
+    def set_parent_state(self, stream_state: Optional[StreamState]) -> None:
+        """
+        Set the state of the parent streams.
+
+        Args:
+            stream_state (Optional[StreamState]): The state of the streams to be set. If `parent_state` exists in the
+            stream_state, it will update the state of each parent stream with the corresponding state from the stream_state.
+        """
+        if stream_state and stream_state.get("parent_state"):
+            for parent_config in self.parent_stream_configs:
+                parent_config.stream.state = stream_state.get("parent_state").get(parent_config.stream.name, {})
+
+    def get_parent_state(self) -> StreamState:
+        """
+        Get the state of the parent streams.
+
+        Returns:
+            StreamState: The current state of the parent streams.
+        """
+        return self._parent_state
