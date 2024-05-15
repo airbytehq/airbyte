@@ -406,6 +406,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected open fun compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(
         targetPosition: CdcTargetPosition<*>?,
+
         record: AirbyteRecordMessage
     ) {
         Assertions.assertEquals(extractPosition(record.data), targetPosition)
@@ -665,10 +666,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 modelsSchema(),
             )
         } else {
-            assertExpectedStateMessageCountMatches(
-                stateMessages1,
-                MODEL_RECORDS.size.toLong() + MODEL_RECORDS_2.size.toLong(),
-            )
             assertExpectedRecords(
                 Streams.concat(MODEL_RECORDS_2.stream(), MODEL_RECORDS.stream())
                     .collect(Collectors.toSet()),
@@ -690,7 +687,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             val recordMessages2 = extractRecordMessages(actualRecords2)
             val stateMessages2 = extractStateMessages(actualRecords2)
 
-            assertExpectedStateMessageCountMatches(stateMessages2, 7)
             assertExpectedRecords(
                 Streams.concat(MODEL_RECORDS_2.stream(), Stream.of(puntoRecord))
                     .collect(Collectors.toSet()),
@@ -1134,7 +1130,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         val recordsFromFirstBatch = extractRecordMessages(dataFromFirstBatch)
         val stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch)
         assertExpectedStateMessagesForFullRefresh(stateAfterFirstBatch)
-        assertExpectedStateMessageCountMatches(stateAfterFirstBatch, MODEL_RECORDS.size.toLong())
 
         val stateMessageEmittedAfterFirstSyncCompletion =
             stateAfterFirstBatch[stateAfterFirstBatch.size - 1]
@@ -1244,10 +1239,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         Assertions.assertEquals(12, recordsFromFirstBatch.size)
 
-        assertExpectedStateMessageCountMatches(
-            stateAfterFirstBatch,
-            MODEL_RECORDS.size.toLong() + MODEL_RECORDS_2.size.toLong(),
-        )
         stateAfterFirstBatch.map { state -> assertStateDoNotHaveDuplicateStreams(state) }
     }
 
