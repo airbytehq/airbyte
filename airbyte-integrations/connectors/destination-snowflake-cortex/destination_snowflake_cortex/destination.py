@@ -18,6 +18,7 @@ from destination_snowflake_cortex.indexer import SnowflakeCortexIndexer
 
 BATCH_SIZE = 150
 
+
 class DestinationSnowflakeCortex(Destination):
     indexer: Indexer
     embedder: Embedder
