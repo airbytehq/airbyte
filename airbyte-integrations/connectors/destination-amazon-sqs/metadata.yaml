@@ -24,4 +24,13 @@ data:
   tags:
   - language:python
   - cdk:python
-metadataSpecVersion: '1.0'
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-AMAZON-SQS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"
