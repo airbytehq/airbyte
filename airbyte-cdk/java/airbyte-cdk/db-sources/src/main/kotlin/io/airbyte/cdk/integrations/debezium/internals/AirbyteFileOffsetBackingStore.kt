@@ -109,7 +109,7 @@ class AirbyteFileOffsetBackingStore(
         if (mapAsString.size > 0) {
             val key = mapAsString.keys.stream().toList()[0]
 
-            if (!key.contains("rs")) {
+            if (!key.contains("\"rs\":")) {
                 // The state is Debezium 2.6 compatible. No need to change anything.
                 return mapAsString
             }
