@@ -65,12 +65,13 @@ class InlineSchemas(Step):
 
     async def _run(self) -> StepResult:
         connector = self.context.connector
-        python_path = connector.python_source_dir_path
+        python_path = connector.code_directory
         file_path = Path(os.path.abspath(os.path.join(python_path)))
 
         self.replace_text_in_files(file_path, "from airbyte_cdk import AirbyteLogger", "import logging")
         self.replace_text_in_files(file_path, "from airbyte_cdk.logger import AirbyteLogger", "import logging")
         self.replace_text_in_files(file_path, "logger: AirbyteLogger", "logger: logging.Logger")
+        self.replace_text_in_files(file_path, "AirbyteLogger()", 'logging.getLogger("airbyte")')
 
         return StepResult(step=self, status=StepStatus.SUCCESS)
 
