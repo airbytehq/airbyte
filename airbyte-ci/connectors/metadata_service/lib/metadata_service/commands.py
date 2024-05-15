@@ -17,6 +17,11 @@ def log_metadata_upload_info(metadata_upload_info: MetadataUploadInfo):
             click.secho(
                 f"The {file.description} file for {metadata_upload_info.metadata_file_path} was uploaded to {file.blob_id}.", color="green"
             )
+        else:
+            click.secho(
+                f"The {file.description} file for {metadata_upload_info.metadata_file_path} was not uploaded. Reason: {file.blob_id}",
+                color="yellow",
+            )
 
 
 @click.group(help="Airbyte Metadata Service top-level command group.")
