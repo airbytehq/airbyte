@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /users
           http_method: GET
           request_headers:
@@ -45,7 +45,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/users'
+          $ref: "#/schemas/users"
     teams:
       type: DeclarativeStream
       name: teams
@@ -54,7 +54,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /teams
           http_method: GET
           request_headers:
@@ -82,7 +82,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/teams'
+          $ref: "#/schemas/teams"
     calls:
       type: DeclarativeStream
       name: calls
@@ -91,11 +91,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /calls
           http_method: GET
           request_parameters:
-            has_ancestry: 'true'
+            has_ancestry: "true"
           request_headers:
             Accept: application/json
         record_selector:
@@ -122,12 +122,12 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: created_time
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%f%z'
-        datetime_format: '%Y-%m-%d %H:%M:%S.%f+00:00'
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] or day_delta(-3650, ''%Y-%m-%dT%H:%M:%SZ'') }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] or day_delta(-3650, '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -138,14 +138,14 @@ definitions:
           field_name: by_time[to]
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc() }}'
-          datetime_format: '%Y-%m-%d %H:%M:%S.%f+00:00'
+          datetime: "{{ now_utc() }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: P1D
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/calls'
+          $ref: "#/schemas/calls"
     call_metrics:
       type: DeclarativeStream
       name: call_metrics
@@ -154,11 +154,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /call_metrics
           http_method: GET
           request_parameters:
-            has_ancestry: 'true'
+            has_ancestry: "true"
           request_headers:
             Accept: application/json
         record_selector:
@@ -185,12 +185,12 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: created_time
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%f%z'
-        datetime_format: '%Y-%m-%d %H:%M:%S.%f+00:00'
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] or day_delta(-3650, ''%Y-%m-%dT%H:%M:%SZ'') }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ config['start_date'] or day_delta(-3650, '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -201,30 +201,30 @@ definitions:
           field_name: by_time[to]
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc() }}'
-          datetime_format: '%Y-%m-%d %H:%M:%S.%f+00:00'
+          datetime: "{{ now_utc() }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
         step: P1Y
         cursor_granularity: P1D
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/call_metrics'
+          $ref: "#/schemas/call_metrics"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['domain'] }}.freshcaller.com/api/v1
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
       inject_into:
         type: RequestOption
         inject_into: header
         field_name: X-Api-Auth
 
 streams:
-  - $ref: '#/definitions/streams/users'
-  - $ref: '#/definitions/streams/teams'
-  - $ref: '#/definitions/streams/calls'
-  - $ref: '#/definitions/streams/call_metrics'
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/calls"
+  - $ref: "#/definitions/streams/call_metrics"
 
 spec:
   type: Spec
@@ -268,7 +268,7 @@ spec:
           replicated. Defaulted to 10 years prior to current date if not
           provided.
         examples:
-          - '2022-01-01T12:00:00Z'
+          - "2022-01-01T12:00:00Z"
         order: 3
       sync_lag_minutes:
         type: integer
@@ -295,72 +295,72 @@ schemas:
       confirmed:
         type:
           - boolean
-          - 'null'
+          - "null"
       deleted:
         type:
           - boolean
-          - 'null'
+          - "null"
       email:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type:
           - integer
-          - 'null'
+          - "null"
       language:
         type:
           - string
-          - 'null'
+          - "null"
       last_call_time:
         type:
           - string
-          - 'null'
+          - "null"
         format: date-time
       last_seen_time:
         type:
           - string
-          - 'null'
+          - "null"
         format: date-time
       mobile_app_preference:
         type:
           - integer
-          - 'null'
+          - "null"
       name:
         type:
           - string
-          - 'null'
+          - "null"
       phone:
         type:
           - string
-          - 'null'
+          - "null"
       preference:
         type:
           - integer
-          - 'null'
+          - "null"
       role:
         type:
           - string
-          - 'null'
+          - "null"
       status:
         type:
           - integer
-          - 'null'
+          - "null"
       teams:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type: object
           properties:
             id:
               type:
                 - integer
-                - 'null'
+                - "null"
       time_zone:
         type:
           - string
-          - 'null'
+          - "null"
   teams:
     type: object
     $schema: https://json-schema.org/draft-07/schema#
@@ -369,30 +369,30 @@ schemas:
       description:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type:
           - integer
-          - 'null'
+          - "null"
       name:
         type:
           - string
-          - 'null'
+          - "null"
       omni_channel:
         type:
           - boolean
-          - 'null'
+          - "null"
       users:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type: object
           properties:
             id:
               type:
                 - integer
-                - 'null'
+                - "null"
   calls:
     type: object
     $schema: https://json-schema.org/draft-07/schema#
@@ -401,222 +401,222 @@ schemas:
       assigned_agent_id:
         type:
           - integer
-          - 'null'
+          - "null"
       assigned_agent_name:
         type:
           - string
-          - 'null'
+          - "null"
       assigned_call_queue_id:
         type:
           - integer
-          - 'null'
+          - "null"
       assigned_call_queue_name:
         type:
           - string
-          - 'null'
+          - "null"
       assigned_ivr_id:
         type:
           - integer
-          - 'null'
+          - "null"
       assigned_ivr_name:
         type:
           - string
-          - 'null'
+          - "null"
       assigned_team_id:
         type:
           - integer
-          - 'null'
+          - "null"
       assigned_team_name:
         type:
           - string
-          - 'null'
+          - "null"
       bill_duration:
         type:
           - number
-          - 'null'
+          - "null"
       bill_duration_unit:
         type:
           - string
-          - 'null'
+          - "null"
       call_notes:
         type:
           - string
-          - 'null'
+          - "null"
       created_time:
         type:
           - string
-          - 'null'
+          - "null"
         format: date-time
       direction:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type:
           - integer
-          - 'null'
+          - "null"
       integrated_resources:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type: object
           properties:
             type:
               type:
                 - string
-                - 'null'
+                - "null"
             id:
               type:
                 - string
-                - 'null'
+                - "null"
             integration_name:
               type:
                 - string
-                - 'null'
+                - "null"
       parallel_call_groups:
         type:
           - array
-          - 'null'
+          - "null"
       parent_call_id:
         type:
           - integer
-          - 'null'
+          - "null"
       participants:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type: object
           properties:
             call_id:
               type:
                 - integer
-                - 'null'
+                - "null"
             call_status:
               type:
                 - integer
-                - 'null'
+                - "null"
             caller_id:
               type:
                 - integer
-                - 'null'
+                - "null"
             caller_name:
               type:
                 - string
-                - 'null'
+                - "null"
             caller_number:
               type:
                 - string
-                - 'null'
+                - "null"
             connection_type:
               type:
                 - number
-                - 'null'
+                - "null"
             cost:
               type:
                 - number
-                - 'null'
+                - "null"
             cost_unit:
               type:
                 - string
-                - 'null'
+                - "null"
             created_time:
               type:
                 - string
-                - 'null'
+                - "null"
               format: date-time
             duration:
               type:
                 - integer
-                - 'null'
+                - "null"
             duration_unit:
               type:
                 - string
-                - 'null'
+                - "null"
             enqueued_time:
               type:
                 - string
-                - 'null'
+                - "null"
             id:
               type:
                 - integer
-                - 'null'
+                - "null"
             participant_id:
               type:
                 - integer
-                - 'null'
+                - "null"
             participant_type:
               type:
                 - string
-                - 'null'
+                - "null"
             updated_time:
               type:
                 - string
-                - 'null'
+                - "null"
               format: date-time
       phone_number:
         type:
           - string
-          - 'null'
+          - "null"
       phone_number_id:
         type:
           - integer
-          - 'null'
+          - "null"
       recording:
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           duration:
             type:
               - number
-              - 'null'
+              - "null"
           duration_unit:
             type:
               - string
-              - 'null'
+              - "null"
           id:
             type:
               - integer
-              - 'null'
+              - "null"
           transcription_url:
             type:
               - string
-              - 'null'
+              - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
       recording_to_redact:
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           duration:
             type:
               - number
-              - 'null'
+              - "null"
           duration_unit:
             type:
               - string
-              - 'null'
+              - "null"
           id:
             type:
               - integer
-              - 'null'
+              - "null"
           url:
             type:
               - string
-              - 'null'
+              - "null"
       root_call_id:
         type:
           - integer
-          - 'null'
+          - "null"
       updated_time:
         type:
           - string
-          - 'null'
+          - "null"
         format: date-time
   call_metrics:
     type: object
@@ -626,130 +626,130 @@ schemas:
       answering_speed:
         type:
           - number
-          - 'null'
+          - "null"
       answering_speed_unit:
         type:
           - string
-          - 'null'
+          - "null"
       bill_duration:
         type:
           - number
-          - 'null'
+          - "null"
       bill_duration_unit:
         type:
           - string
-          - 'null'
+          - "null"
       call_id:
         type:
           - integer
-          - 'null'
+          - "null"
       call_work_time:
         type:
           - number
-          - 'null'
+          - "null"
       call_work_time_unit:
         type:
           - string
-          - 'null'
+          - "null"
       cost:
         type:
           - number
-          - 'null'
+          - "null"
       cost_unit:
         type:
           - string
-          - 'null'
+          - "null"
       created_time:
         type:
           - string
-          - 'null'
+          - "null"
         format: date-time
       csat:
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           outcome:
             type:
               - string
-              - 'null'
+              - "null"
           time:
             type:
               - number
-              - 'null'
+              - "null"
           time_unit:
             type:
               - string
-              - 'null'
+              - "null"
           transfer_made:
             type:
               - boolean
-              - 'null'
+              - "null"
       hold_duration:
         type:
           - number
-          - 'null'
+          - "null"
       hold_duration_unit:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type:
           - integer
-          - 'null'
+          - "null"
       ivr_time:
         type:
           - integer
-          - 'null'
+          - "null"
       ivr_time_unit:
         type:
           - string
-          - 'null'
+          - "null"
       recording_duration:
         type:
           - number
-          - 'null'
+          - "null"
       recording_duration_unit:
         type:
           - string
-          - 'null'
+          - "null"
       tags:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type: object
           properties:
             default:
               type:
                 - boolean
-                - 'null'
+                - "null"
             id:
               type:
                 - integer
-                - 'null'
+                - "null"
             name:
               type:
                 - string
-                - 'null'
+                - "null"
       talk_time:
         type:
           - number
-          - 'null'
+          - "null"
       talk_time_unit:
         type:
           - string
-          - 'null'
+          - "null"
       total_ringing_time:
         type:
           - number
-          - 'null'
+          - "null"
       total_ringing_time_unit:
         type:
           - string
-          - 'null'
+          - "null"
       updated_time:
         type:
           - string
-          - 'null'
+          - "null"
         format: date-time
