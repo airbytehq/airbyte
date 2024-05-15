@@ -317,7 +317,7 @@ class SourceYandexMetrika(AbstractSource):
                     currency=agg_report_config.get("currency"),
                     experiment_ab_id=agg_report_config.get("experiment_ab_id"),
                 )
-                for agg_report_config in raw_config.get("aggregated_reports")
+                for agg_report_config in raw_config.get("aggregated_reports", [])
             ],
         }
         transformed_config.update(self.transform_date_range(raw_config))
