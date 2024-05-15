@@ -865,10 +865,7 @@ streams:
             type:
               - "null"
               - object
-        "required": [
-          "groupId",
-          "id"
-        ]
+        "required": ["groupId", "id"]
         additionalProperties: true
 
   - type: DeclarativeStream
@@ -1017,10 +1014,7 @@ streams:
                         type:
                           - "null"
                           - string
-        "required": [
-          "groupId",
-          "id"
-        ]
+        "required": ["groupId", "id"]
 
   - type: DeclarativeStream
     name: logs
@@ -1687,10 +1681,7 @@ streams:
                         type:
                           - "null"
                           - string
-        "required": [
-          "userId",
-          "id"
-        ]
+        "required": ["userId", "id"]
 
   - type: DeclarativeStream
     name: permissions
