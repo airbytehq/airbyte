@@ -172,21 +172,20 @@ class SnowflakeCortexIndexer(Indexer):
             cortex_processor.process_airbyte_messages(airbyte_messages, self.get_write_strategy(stream))
 
     def delete(self, delete_ids: list[str], namespace: str, stream: str):
-        # delete is generally used when we use full refresh/overwrite strategy.
-        # PyAirbyte's sync will take care of overwriting the records. Hence, we don't need to do anything here.
+        # this delete is specific to vector stores, hence not implemented here
         pass
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
         """
-        Run before the sync starts. This method should be used to make sure all records in the destination that belong to streams with a destination mode of overwrite are deleted.
-
-        Each record has a metadata field with the name airbyte_cdk.destinations.vector_db_based.document_processor.METADATA_STREAM_FIELD which can be used to filter documents for deletion.
-        Use the airbyte_cdk.destinations.vector_db_based.utils.create_stream_identifier method to create the stream identifier based on the stream definition to use for filtering.
+        Run before the sync starts. This method makes sure that all records in the destination that belong to streams with a destination mode of overwrite are deleted.
         """
+        table_list = self.default_processor._get_tables_list()
         for stream in catalog.streams:
             # remove all records for streams with overwrite mode
             if stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                # TODO: remove all records for the stream
+                stream_name = stream.stream.name
+                if stream_name.lower() in [table.lower() for table in table_list]:
+                    self.default_processor._execute_sql(f"DELETE FROM {stream_name}")
                 pass
 
     def check(self) -> Optional[str]:
