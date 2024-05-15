@@ -248,11 +248,68 @@ definitions:
               - channel_id
             value: "{{ stream_partition.get('channel') }}"
 
+  threads_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: threads
+      path: conversations.replies
+      field_path: messages
+    primary_key:
+      - channel_id
+      - ts
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          channel: "{{ stream_slice['parent_slice']['channel'] }}"
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/channel_messages_stream"
+            parent_key: ts
+            partition_field: float_ts
+            request_option:
+              type: RequestOption
+              field_name: "ts"
+              inject_into: "request_parameter"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      lookback_window: "P{{ config.get('lookback_window', 0) }}D"
+      cursor_field: "float_ts"
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        inject_into: request_parameter
+        field_name: oldest
+        type: RequestOption
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - float_ts
+            value: "{{ record['ts']|float }}"
+          - path:
+              - channel_id
+            value: "{{ stream_slice['parent_slice']['channel'] }}"
+
 streams:
   - "#/definitions/users_stream"
   - "#/definitions/channels_stream"
   - "#/definitions/channel_members_stream"
   - "#/definitions/channel_messages_stream"
+  - "#/definitions/threads_stream"
 
 check:
   type: CheckStream
