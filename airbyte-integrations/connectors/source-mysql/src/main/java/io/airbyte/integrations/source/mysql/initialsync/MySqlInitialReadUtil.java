@@ -230,6 +230,7 @@ public class MySqlInitialReadUtil {
     }
 
     // Build the incremental CDC iterators.
+    // TODO : We need to interleave CDC iterators here.
     final AirbyteDebeziumHandler<MySqlCdcPosition> handler = new AirbyteDebeziumHandler<MySqlCdcPosition>(
         sourceConfig,
         MySqlCdcTargetPosition.targetPosition(database),
@@ -251,7 +252,7 @@ public class MySqlInitialReadUtil {
     return Collections.singletonList(
         AutoCloseableIterators.concatWithEagerClose(
             Stream
-                .of(initialLoadIterator, Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)))
+                .of(Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)), initialLoadIterator)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList()),
             AirbyteTraceMessageUtility::emitStreamStatusTrace));
