@@ -2,7 +2,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-from abc import ABC
 from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Tuple
 
@@ -10,7 +9,6 @@ import requests
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.types import Config
-from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
 
 @dataclass
