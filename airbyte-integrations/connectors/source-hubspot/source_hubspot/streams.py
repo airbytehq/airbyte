@@ -2274,7 +2274,14 @@ class CustomObject(CRMSearchStream, ABC):
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "companies", "deals", "tickets"]
     primary_key = "id"
-    scopes = {"crm.schemas.custom.read", "crm.objects.custom.read"}
+    scopes = {
+        "crm.schemas.custom.read",
+        "crm.objects.custom.read",
+        "crm.objects.contacts.read",
+        "crm.objects.companies.read",
+        "crm.objects.deals.read",
+        "tickets"
+    }
 
     def __init__(self, entity: str, schema: Mapping[str, Any], fully_qualified_name: str, custom_properties: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
