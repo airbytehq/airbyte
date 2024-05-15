@@ -186,7 +186,7 @@ class BigQueryDestinationTest {
     // all successful configs use the same project ID
     projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
 
-    // configWithProjectId - config that uses project:dataset notation for datasetId
+    // configWithProjectId - config that uses project:dataset notation for rawNamespace
     final String dataSetWithProjectId = String.format("%s:%s", projectId, datasetId);
     configWithProjectId = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_STANDARD_INSERT_PATH, dataSetWithProjectId, stagingPath);
 

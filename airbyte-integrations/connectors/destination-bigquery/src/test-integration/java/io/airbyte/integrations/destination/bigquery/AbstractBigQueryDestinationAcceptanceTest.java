@@ -126,7 +126,7 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
       final int underscoreIndex = expectedNormalizedNamespace.indexOf("_", 1);
       final String randomSuffix = expectedNormalizedNamespace.substring(underscoreIndex);
       /*
-       * bigquery allows namespace starting with a number, and prepending underscore will hide the
+       * bigquery allows originalNamespace starting with a number, and prepending underscore will hide the
        * dataset, so we don't do it as we do for other destinations
        */
       assertEquals("99namespace" + randomSuffix, actualNormalizedNamespace, message);
