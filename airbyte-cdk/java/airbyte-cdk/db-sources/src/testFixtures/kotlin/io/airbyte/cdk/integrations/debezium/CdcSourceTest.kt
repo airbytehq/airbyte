@@ -406,7 +406,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected open fun compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(
         targetPosition: CdcTargetPosition<*>?,
-
         record: AirbyteRecordMessage
     ) {
         Assertions.assertEquals(extractPosition(record.data), targetPosition)
