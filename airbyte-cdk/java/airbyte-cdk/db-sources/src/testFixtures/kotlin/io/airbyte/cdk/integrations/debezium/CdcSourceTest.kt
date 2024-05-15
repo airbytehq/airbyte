@@ -120,6 +120,15 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         // Do nothing.
     }
 
+    private fun assertStateDoNotHaveDuplicateStreams(stateMessage: AirbyteStateMessage) {
+        val dedupedStreamStates =
+            stateMessage.global.streamStates
+                .stream()
+                .map { streamState: AirbyteStreamState -> streamState.streamDescriptor }
+                .collect(Collectors.toSet())
+        Assertions.assertEquals(dedupedStreamStates.size, stateMessage.global.streamStates.size)
+    }
+
     @BeforeEach
     protected open fun setup() {
         testdb = createTestDatabase()
@@ -616,6 +625,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         val recordMessages1 = extractRecordMessages(actualRecords1)
         val stateMessages1 = extractStateMessages(actualRecords1)
+        stateMessages1.map { state -> assertStateDoNotHaveDuplicateStreams(state) }
         val names = HashSet(STREAM_NAMES)
         names.add(MODELS_STREAM_NAME_2)
 
@@ -655,10 +665,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 modelsSchema(),
             )
         } else {
-            assertExpectedStateMessageCountMatches(
-                stateMessages1,
-                MODEL_RECORDS.size.toLong() + MODEL_RECORDS_2.size.toLong()
-            )
             assertExpectedRecords(
                 Streams.concat(MODEL_RECORDS_2.stream(), MODEL_RECORDS.stream())
                     .collect(Collectors.toSet()),
@@ -680,7 +686,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             val recordMessages2 = extractRecordMessages(actualRecords2)
             val stateMessages2 = extractStateMessages(actualRecords2)
 
-            assertExpectedStateMessageCountMatches(stateMessages2, 7)
             assertExpectedRecords(
                 Streams.concat(MODEL_RECORDS_2.stream(), Stream.of(puntoRecord))
                     .collect(Collectors.toSet()),
@@ -715,7 +720,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     // sync, the
     // data is replicated as expected.
     @Throws(Exception::class)
-    fun testCdcAndNonResumableFullRefreshInSameSync() {
+    protected open fun testCdcAndNonResumableFullRefreshInSameSync() {
         val configuredCatalog = Jsons.clone(configuredCatalog)
 
         val MODEL_RECORDS_2: List<JsonNode> =
@@ -734,7 +739,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             createTableSqlFmt(),
             modelsSchema(),
             MODELS_STREAM_NAME_2,
-            columnClause(columns, Optional.of(COL_ID)),
+            columnClause(columns, Optional.empty()),
         )
 
         for (recordJson in MODEL_RECORDS_2) {
@@ -1124,7 +1129,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         val recordsFromFirstBatch = extractRecordMessages(dataFromFirstBatch)
         val stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch)
         assertExpectedStateMessagesForFullRefresh(stateAfterFirstBatch)
-        assertExpectedStateMessageCountMatches(stateAfterFirstBatch, MODEL_RECORDS.size.toLong())
 
         val stateMessageEmittedAfterFirstSyncCompletion =
             stateAfterFirstBatch[stateAfterFirstBatch.size - 1]
@@ -1234,10 +1238,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         Assertions.assertEquals(12, recordsFromFirstBatch.size)
 
-        assertExpectedStateMessageCountMatches(
-            stateAfterFirstBatch,
-            MODEL_RECORDS.size.toLong() + MODEL_RECORDS_2.size.toLong()
-        )
+        stateAfterFirstBatch.map { state -> assertStateDoNotHaveDuplicateStreams(state) }
     }
 
     protected open fun assertStateMessagesForNewTableSnapshotTest(

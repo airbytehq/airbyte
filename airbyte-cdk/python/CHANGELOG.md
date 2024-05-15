@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.89.0
+
+
+## 0.88.4
+HttpMocker, Adding the delete method.
+
+## 0.88.3
+Add Delete method to HttpMocker
+
+## 0.88.2
+Fix dependency for pytz
+
+## 0.88.1
+Fix timestamp formatting in low-code macros
+
 ## 0.88.0
 file-based: Increase the maximum parseable field size for CSV files
 
