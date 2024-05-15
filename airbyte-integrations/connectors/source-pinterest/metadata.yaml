@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
-  dockerImageTag: 1.4.0
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-pinterest
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
@@ -26,6 +26,19 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      2.0.0:
+        message: "This release introduces updated format of state for incremental streams. Users will need to reset affected streams after upgrading."
+        upgradeDeadline: "2024-06-03"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - ad_account_analytics
+              - ad_analytics
+              - ad_group_analytics
+              - ad_groups
+              - ads
+              - campaign_analytics
+              - campaigns
       1.0.0:
         message:
           "This release updates the date-time fields to use the Airbyte format
