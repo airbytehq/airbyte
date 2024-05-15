@@ -4,6 +4,7 @@
 
 import json
 import logging
+import os
 import time
 
 from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
@@ -48,6 +49,8 @@ class PineconeIntegrationTest(BaseIntegrationTest):
             else :
                 print("Noting to delete. No data in the index/namespace.")
 
+    def test_integration_test_flag_is_set(self):
+        assert "PYTEST_CURRENT_TEST" in os.environ
 
     def test_check_valid_config(self):
         outcome = DestinationPinecone().check(logging.getLogger("airbyte"), self.config)        
