@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID;
-import static io.debezium.relational.RelationalDatabaseConnectorConfig.DATABASE_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.MongoChangeStreamException;
@@ -24,10 +23,8 @@ import io.debezium.connector.common.OffsetReader;
 import io.debezium.connector.mongodb.MongoDbConnectorConfig;
 import io.debezium.connector.mongodb.MongoDbOffsetContext;
 import io.debezium.connector.mongodb.MongoDbPartition;
-import io.debezium.connector.mongodb.MongoDbTaskContext;
 import io.debezium.connector.mongodb.ResumeTokens;
 import io.debezium.pipeline.spi.Partition;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -57,7 +54,6 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
    * Constructs the initial Debezium offset state that will be used by the incremental CDC snapshot
    * after an initial snapshot sync.
    *
-   * @param mongoClient The {@link MongoClient} used to query the MongoDB server.
    * @param serverId The ID of the target server.
    * @return The initial Debezium offset state storage document as a {@link JsonNode}.
    * @throws IllegalStateException if unable to determine the replica set.
@@ -74,7 +70,6 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
    * Formats the Debezium initial state into a format suitable for storage in the offset data file.
    *
    * @param serverId The ID target MongoDB database.
-   * @param replicaSet The name of the target MongoDB replica set.
    * @param resumeTokenData The MongoDB resume token that represents the offset state.
    * @return The offset state as a {@link JsonNode}.
    */
@@ -148,13 +143,13 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
   public Optional<BsonDocument> savedOffset(final Properties baseProperties,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final JsonNode cdcState,
-                                            final JsonNode config,
-                                            final MongoClient mongoClient) {
+                                            final JsonNode config) {
     LOGGER.debug("Initializing file offset backing store with state '{}'...", cdcState);
     final var offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcState, Optional.empty());
     final DebeziumPropertiesManager debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(baseProperties, config, catalog);
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
-    return parseSavedOffset(debeziumProperties, mongoClient);
+    LOGGER.info("properties: " + debeziumProperties);
+    return parseSavedOffset(debeziumProperties);
   }
 
   /**
@@ -165,7 +160,7 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
    *        state
    * @return Returns the resume token that Airbyte has acknowledged in the source database server.
    */
-  private Optional<BsonDocument> parseSavedOffset(final Properties properties, final MongoClient mongoClient) {
+  private Optional<BsonDocument> parseSavedOffset(final Properties properties) {
     FileOffsetBackingStore fileOffsetBackingStore = null;
     OffsetStorageReaderImpl offsetStorageReader = null;
 
@@ -174,18 +169,17 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
       offsetStorageReader = getOffsetStorageReader(fileOffsetBackingStore, properties);
 
       final Configuration config = Configuration.from(properties);
-      final MongoDbTaskContext taskContext = new MongoDbTaskContext(config);
       final MongoDbConnectorConfig mongoDbConnectorConfig = new MongoDbConnectorConfig(config);
 
-      final MongoDbOffsetContext.Loader loader = new MongoDbCustomLoader(mongoDbConnectorConfig);
+      final MongoDbOffsetContext.Loader loader = new MongoDbOffsetContext.Loader(mongoDbConnectorConfig);
 
-      final Partition mongoDbPartition = new MongoDbPartition(properties.getProperty(KEY_SERVER_ID));
+      final Partition mongoDbPartition = new MongoDbPartition(properties.getProperty(CONNECTOR_NAME_PROPERTY));
+
       final Set<Partition> partitions =
-          Collections.singleton(mongoDbPartition); // replace with serverId
+          Collections.singleton(mongoDbPartition);
       final OffsetReader<Partition, MongoDbOffsetContext, MongoDbOffsetContext.Loader> offsetReader = new OffsetReader<>(offsetStorageReader, loader);
       final Map<Partition, MongoDbOffsetContext> offsets = offsetReader.offsets(partitions);
 
-      LOGGER.info("check offsets read from offsetReader: {}", offsets);
       if (offsets == null || offsets.values().stream().noneMatch(Objects::nonNull)) {
         return Optional.empty();
       }
@@ -194,9 +188,6 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
       final var offset = context.getOffset();
 
       final Object resumeTokenData = offset.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN);
-      LOGGER.info("check offset from context: {}", offset);
-
-      LOGGER.info("check resumeTokenData: {}", resumeTokenData);
 
       if (resumeTokenData != null) {
         final BsonDocument resumeToken = ResumeTokens.fromData(resumeTokenData.toString());

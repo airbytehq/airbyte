@@ -67,7 +67,7 @@ public class MongoDbCdcInitializer {
    * @param mongoClient The {@link MongoClient} used to interact with the target MongoDB server.
    * @param cdcMetadataInjector The {@link MongoDbCdcConnectorMetadataInjector} used to add metadata
    *        to generated records.
-   * @param catalog The configured Airbyte catalog of streams for the source.
+   * @param streams The configured Airbyte catalog of streams for the source.
    * @param stateManager The {@link MongoDbStateManager} that provides state information used for
    *        iterator selection.
    * @param emittedAt The timestamp of the sync.
@@ -106,8 +106,7 @@ public class MongoDbCdcInitializer {
         Jsons.clone(defaultDebeziumProperties),
         incrementalOnlyStreamsCatalog,
         cdcState.state(),
-        config.getDatabaseConfig(),
-        mongoClient);
+        config.getDatabaseConfig());
 
     // We should always be able to extract offset out of state if it's not null
     if (cdcState.state() != null && optSavedOffset.isEmpty()) {

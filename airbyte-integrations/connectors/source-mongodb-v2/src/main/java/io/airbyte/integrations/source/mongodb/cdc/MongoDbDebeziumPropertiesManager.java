@@ -40,7 +40,7 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   static final String DOUBLE_QUOTES_PATTERN = "\"";
   static final String MONGODB_AUTHSOURCE_KEY = "mongodb.authsource";
   static final String MONGODB_CONNECTION_MODE_KEY = "mongodb.connection.mode";
-  static final String MONGODB_CONNECTION_MODE_VALUE = "replica_set";
+  static final String MONGODB_CONNECTION_MODE_VALUE = "sharded";
   static final String MONGODB_CONNECTION_STRING_KEY = "mongodb.connection.string";
   static final String MONGODB_PASSWORD_KEY = "mongodb.password";
   static final String MONGODB_SSL_ENABLED_KEY = "mongodb.ssl.enabled";

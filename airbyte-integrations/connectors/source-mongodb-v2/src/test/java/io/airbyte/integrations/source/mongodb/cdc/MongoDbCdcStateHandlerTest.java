@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Test;
 class MongoDbCdcStateHandlerTest {
 
   private static final String DATABASE = "test-database";
-  private static final String REPLICA_SET = "test-replica-set";
   private static final String RESUME_TOKEN = "8264BEB9F3000000012B0229296E04";
 
   final MongoDbSourceConfig CONFIG = new MongoDbSourceConfig(io.airbyte.commons.json.Jsons.jsonNode(
@@ -42,7 +41,7 @@ class MongoDbCdcStateHandlerTest {
   @Test
   void testSavingState() {
     final Map<String, String> offset =
-        Jsons.object(MongoDbDebeziumStateUtil.formatState(DATABASE, REPLICA_SET, RESUME_TOKEN), new TypeReference<>() {});
+        Jsons.object(MongoDbDebeziumStateUtil.formatState(DATABASE, RESUME_TOKEN), new TypeReference<>() {});
     final AirbyteMessage airbyteMessage = mongoDbCdcStateHandler.saveState(offset, null);
     assertNotNull(airbyteMessage);
     assertEquals(AirbyteMessage.Type.STATE, airbyteMessage.getType());
