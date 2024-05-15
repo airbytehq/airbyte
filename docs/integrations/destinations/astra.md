@@ -39,6 +39,7 @@ This page contains the setup guide and reference information for the destination
 
 | Version | Date       | Pull Request | Subject                                                   |
 | :------ | :--------- | :----------- | :-------------------------------------------------------- |
+| 0.1.4 | 2024-05-15 | [0](https://github.com/airbytehq/airbyte/pull/0) | Replace AirbyteLogger with logging.Logger |
 | 0.1.3   | 2024-04-19 | #37405       | Add "airbyte" user-agent in the HTTP requests to Astra DB |
 | 0.1.2   | 2024-04-15 |              | Moved to Poetry; Updated CDK & pytest versions            |
 | 0.1.1   | 2024-01-26 |              | DS Branding Update                                        |
