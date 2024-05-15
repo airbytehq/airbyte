@@ -35,5 +35,5 @@ The connector has a rate limit of 5 requests per second per account.
 
 | Version | Date       | Pull Request                                             | Subject                                    |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------- |
-| 0.1.1   | 2024-05-17 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Make connector compatable with the builder |
+| 0.1.1   | 2024-05-17 | [38224](https://github.com/airbytehq/airbyte/pull/38224) | Make connector compatable with the builder |
 | 0.1.0   | 2022-10-25 | [18335](https://github.com/airbytehq/airbyte/pull/18335) | Initial commit                             |
