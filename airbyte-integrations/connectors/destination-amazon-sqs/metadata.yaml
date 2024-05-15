@@ -23,4 +23,3 @@ data:
     ql: 200
   supportLevel: community
 metadataSpecVersion: "1.0"
-dockerImageTag: 0.0.1
