@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
@@ -56,14 +56,14 @@ class OffsetIncrement(PaginationStrategy):
             return self._offset
         return None
 
-    def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Optional[Any]:
+    def next_page_token(self, response: requests.Response, last_page_size: int, last_record: Optional[Record]) -> Optional[Any]:
         decoded_response = self.decoder.decode(response)
 
         # Stop paginating when there are fewer records than the page size or the current page has no records
-        if (self._page_size and len(last_records) < self._page_size.eval(self.config, response=decoded_response)) or len(last_records) == 0:
+        if (self._page_size and last_page_size < self._page_size.eval(self.config, response=decoded_response)) or last_page_size == 0:
             return None
         else:
-            self._offset += len(last_records)
+            self._offset += last_page_size
             return self._offset
 
     def reset(self) -> None:
