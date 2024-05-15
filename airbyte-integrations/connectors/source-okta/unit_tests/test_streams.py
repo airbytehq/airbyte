@@ -21,6 +21,8 @@ def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
     if not matches_by_name:
         raise ValueError("Please provide a valid stream name.")
     return matches_by_name[0]
+
+
 class TestStatusCodes:
     @pytest.mark.parametrize(
         ("http_status", "should_retry"),
@@ -32,8 +34,8 @@ class TestStatusCodes:
         ],
     )
     def test_should_retry(self, http_status, should_retry, url_base, start_date, requests_mock, oauth_config, api_url):
-        oauth_kwargs = {key: value for key, value in oauth_config.get("credentials").items() if key != 'auth_type'}
-        oauth_kwargs['token_refresh_endpoint'] = f"{api_url}/oauth2/v1/token"
+        oauth_kwargs = {key: value for key, value in oauth_config.get("credentials").items() if key != "auth_type"}
+        oauth_kwargs["token_refresh_endpoint"] = f"{api_url}/oauth2/v1/token"
         oauth_authentication_instance = CustomOauth2Authenticator(config=oauth_config, **oauth_kwargs, parameters=None)
         oauth_authentication_instance.path = f"{api_url}/oauth2/v1/token"
         assert isinstance(oauth_authentication_instance, CustomOauth2Authenticator)
@@ -44,6 +46,7 @@ class TestStatusCodes:
         response_mock.status_code = http_status
         stream = source_okta.streams(config=oauth_config)[0]
         assert stream.retriever.requester._should_retry(response_mock) == should_retry
+
 
 class TestOktaStream:
     def test_okta_stream_request_params(self, oauth_config, url_base, start_date):
@@ -86,6 +89,7 @@ class TestOktaStream:
         expected_method = "GET"
         assert stream.retriever.requester.http_method.value == expected_method
 
+
 class TestNextPageToken:
     def test_next_page_token(self, oauth_config, users_instance, url_base, api_url, start_date):
         stream = get_stream_by_name("users", config=oauth_config)
@@ -93,7 +97,7 @@ class TestNextPageToken:
         response.links = {"next": {"url": f"{api_url}?param1=test_value1&param2=test_value2"}}
         response.headers = {}
         inputs = {"response": response}
-        expected_token = {'next_page_token': 'https://test_domain.okta.com?param1=test_value1&param2=test_value2'}
+        expected_token = {"next_page_token": "https://test_domain.okta.com?param1=test_value1&param2=test_value2"}
         result = stream.retriever._next_page_token(**inputs)
         assert result == expected_token
 
@@ -103,7 +107,7 @@ class TestNextPageToken:
         response.links = {"next": {"url": f"{api_url}"}}
         response.headers = {}
         inputs = {"response": response}
-        expected_token = {'next_page_token': 'https://test_domain.okta.com'}
+        expected_token = {"next_page_token": "https://test_domain.okta.com"}
         result = stream.retriever._next_page_token(**inputs)
         assert result == expected_token
 
