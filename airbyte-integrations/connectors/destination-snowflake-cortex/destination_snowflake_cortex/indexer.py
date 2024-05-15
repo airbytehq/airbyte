@@ -2,6 +2,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 import uuid
 from typing import Any, Iterable, Optional
 
@@ -85,7 +86,7 @@ class SnowflakeCortexIndexer(Indexer):
         metadata -> metadata of the record
         embedding -> embedding of the document content
         """
-        updated_catalog = self.catalog
+        updated_catalog = copy.deepcopy(self.catalog)
         # update each stream in the catalog
         for stream in updated_catalog.streams:
             # TO-DO: Revisit this - Clear existing properties, if anys, since we are not entirely sure what's in the configured catalog.
@@ -144,7 +145,8 @@ class SnowflakeCortexIndexer(Indexer):
         for stream in self.catalog.streams:
             if stream.stream.name == stream_name:
                 if stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                    return WriteStrategy.REPLACE
+                    # we will use append here since we will remove the existing records and add new ones.
+                    return WriteStrategy.APPEND
                 if stream.destination_sync_mode == DestinationSyncMode.append:
                     return WriteStrategy.APPEND
                 if stream.destination_sync_mode == DestinationSyncMode.append_dedup:
@@ -173,6 +175,19 @@ class SnowflakeCortexIndexer(Indexer):
         # delete is generally used when we use full refresh/overwrite strategy.
         # PyAirbyte's sync will take care of overwriting the records. Hence, we don't need to do anything here.
         pass
+
+    def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
+        """
+        Run before the sync starts. This method should be used to make sure all records in the destination that belong to streams with a destination mode of overwrite are deleted.
+
+        Each record has a metadata field with the name airbyte_cdk.destinations.vector_db_based.document_processor.METADATA_STREAM_FIELD which can be used to filter documents for deletion.
+        Use the airbyte_cdk.destinations.vector_db_based.utils.create_stream_identifier method to create the stream identifier based on the stream definition to use for filtering.
+        """
+        for stream in catalog.streams:
+            # remove all records for streams with overwrite mode
+            if stream.destination_sync_mode == DestinationSyncMode.overwrite:
+                # TODO: remove all records for the stream
+                pass
 
     def check(self) -> Optional[str]:
         self.default_processor._get_tables_list()

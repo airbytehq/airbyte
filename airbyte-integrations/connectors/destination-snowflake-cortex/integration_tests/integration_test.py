@@ -124,6 +124,16 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         assert(len(result) == 1)
         result[0] == "str_col: Cats are nice"
 
+    # Fix: Trying to write records > batch size in overwrite mode does not work currently
+    def _test_write_record_count_200(self):  
+        catalog = self._get_configured_catalog(DestinationSyncMode.overwrite)
+        first_state_message = self._state({"state": "1"})
+        first_record_chunk = [self._record("mystream", f"Dogs are number {i}", i) for i in range(200)]
+
+        # initial sync with replace 
+        destination = DestinationSnowflakeCortex()
+        list(destination.write(self.config, catalog, [*first_record_chunk, first_state_message]))
+        assert(self._get_record_count("mystream") == 200)
 
     """
     Following tests are not code specific, but are useful to confirm that the Cortex functions are available and behaving as expcected
