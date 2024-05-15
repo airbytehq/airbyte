@@ -37,7 +37,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.migrators.Minimu
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import io.airbyte.protocol.models.v0.SyncMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -407,7 +406,6 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   public void testFailureOnReservedColumnNamePrefix(final String prefix) {
     final StreamConfig stream = new StreamConfig(
         getStreamId(),
-        SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND,
         Collections.emptyList(),
         Optional.empty(),
@@ -417,7 +415,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
             put(getGenerator().buildColumnId(prefix + "the_column_name"), AirbyteProtocolType.STRING);
           }
 
-        });
+        }, 0, 0, 0);
 
     final Sql createTable = getGenerator().createTable(stream, "", false);
     assertThrows(

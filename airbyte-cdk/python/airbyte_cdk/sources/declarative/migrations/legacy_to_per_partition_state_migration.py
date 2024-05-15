@@ -52,7 +52,7 @@ class LegacyToPerPartitionStateMigration(StateMigration):
         partition_field = (
             parent_stream_config.partition_field
             if isinstance(parent_stream_config, ParentStreamConfig)
-            else parent_stream_config.get("partition_field")
+            else parent_stream_config.get("partition_field")  # type: ignore # See above comment on why parent_stream_config might be a dict
         )
 
         return partition_field

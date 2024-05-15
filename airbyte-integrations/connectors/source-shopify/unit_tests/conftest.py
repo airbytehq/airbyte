@@ -511,6 +511,32 @@ def filfillment_order_jsonl_content_example():
 
 
 @pytest.fixture
+def products_jsonl_content_example():
+    return """{"__typename":"Product","id":"gid:\/\/shopify\/Product\/123","publishedAt":"2021-06-23T01:09:29Z","createdAt":"2021-06-23T01:09:29Z","status":"ACTIVE","vendor":"Blanda, O'Kon and Bartell","updatedAt":"2023-04-20T11:12:26Z","bodyHtml":"Gold and silver glitter iPhone 7 cases with geometric line patterns, stacked","productType":"Music","tags":["developer-tools-generator"],"handle":"gold-silver-iphone-7-case","templateSuffix":null,"title":"Gold Silver iPhone 7 Case","options":[{"id":"gid:\/\/shopify\/ProductOption\/444","name":"Title","values":["Plastic","indigo"],"position":1}]}
+{"__typename":"Image","id":"gid:\/\/shopify\/ProductImage\/111","__parentId":"gid:\/\/shopify\/Product\/123"}
+{"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/111","__parentId":"gid:\/\/shopify\/Product\/123"}
+{"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/222","__parentId":"gid:\/\/shopify\/Product\/123"}\n"""
+
+
+@pytest.fixture
+def product_images_jsonl_content_example():
+    return """{"__typename":"Product","id":"gid:\/\/shopify\/Product\/123"}
+{"__typename":"MediaImage","createdAt":"2023-01-06T18:29:17Z","updatedAt":"2023-01-06T18:29:19Z","image":{"url":"https:\/\/cdn.shopify.com\/s\/files\/1\/0580\/3317\/6765\/products\/white-t-shirt.jpg?v=1673029759"},"__parentId":"gid:\/\/shopify\/Product\/123"}
+{"__typename":"Image","id":"gid:\/\/shopify\/ProductImage\/111","height":280,"alt":"","src":"https:\/\/cdn.shopify.com\/s\/files\/1\/0580\/3317\/6765\/products\/white-t-shirt.jpg?v=1673029759","url":"https:\/\/cdn.shopify.com\/s\/files\/1\/0580\/3317\/6765\/products\/white-t-shirt.jpg?v=1673029759","width":265,"__parentId":"gid:\/\/shopify\/Product\/123"}
+{"__typename":"Product","id":"gid:\/\/shopify\/Product\/456"}
+{"__typename":"MediaImage","createdAt":"2021-06-23T01:09:47Z","updatedAt":"2023-04-24T17:27:15Z","image":{"url":"https:\/\/cdn.shopify.com\/s\/files\/1\/0580\/3317\/6765\/products\/4-ounce-soy-candle.jpg?v=1624410587"},"__parentId":"gid:\/\/shopify\/Product\/456"}
+{"__typename":"Image","id":"gid:\/\/shopify\/ProductImage\/222","height":1467,"alt":"updated_mon_24.04.2023","src":"https:\/\/cdn.shopify.com\/s\/files\/1\/0580\/3317\/6765\/products\/4-ounce-soy-candle.jpg?v=1624410587","url":"https:\/\/cdn.shopify.com\/s\/files\/1\/0580\/3317\/6765\/products\/4-ounce-soy-candle.jpg?v=1624410587","width":2200,"__parentId":"gid:\/\/shopify\/Product\/456"}\n"""
+
+
+@pytest.fixture
+def product_variants_jsonl_content_example():
+    return """{"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/123","title":"Test 234","price":"59.00","sku":"","position":3,"inventoryPolicy":"DENY","compareAtPrice":null,"inventoryManagement":"SHOPIFY","createdAt":"2023-04-14T10:29:27Z","updatedAt":"2023-10-27T16:56:39Z","taxable":true,"barcode":"","weight":0.0,"weightUnit":"GRAMS","inventoryQuantity":0,"requiresShipping":false,"grams":0.0,"image":null,"old_inventory_quantity":0,"product":{"product_id":"gid:\/\/shopify\/Product\/111"},"fulfillmentService":{"fulfillment_service":"manual"},"inventoryItem":{"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/222"}}
+{"__typename":"ProductVariantPricePair","price":{"amount":"59.0","currencyCode":"USD"},"compareAtPrice":null,"__parentId":"gid:\/\/shopify\/ProductVariant\/123"}
+{"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/456","title":"Test Variant","price":"113.00","sku":"123","position":4,"inventoryPolicy":"CONTINUE","compareAtPrice":"1.00","inventoryManagement":"SHOPIFY","createdAt":"2023-12-11T10:37:41Z","updatedAt":"2023-12-11T10:37:41Z","taxable":true,"barcode":"123","weight":127.0,"weightUnit":"GRAMS","inventoryQuantity":1,"requiresShipping":true,"grams":127.0,"image":{"image_id":"gid:\/\/shopify\/ProductImage\/123456"},"old_inventory_quantity":1,"product":{"product_id":"gid:\/\/shopify\/Product\/222"},"fulfillmentService":{"fulfillment_service":"manual"},"inventoryItem":{"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/333"}}
+{"__typename":"ProductVariantPricePair","price":{"amount":"113.0","currencyCode":"USD"},"compareAtPrice":{"amount":"1.0","currencyCode":"USD"},"__parentId":"gid:\/\/shopify\/ProductVariant\/456"}\n"""
+
+
+@pytest.fixture
 def inventory_items_jsonl_content_example():
     return """{"__typename":"InventoryItem","id":"gid:\/\/shopify\/InventoryItem\/44871665713341","unitCost":null,"countryCodeOfOrigin":null,"harmonizedSystemCode":null,"provinceCodeOfOrigin":null,"updatedAt":"2023-04-14T10:29:27Z","createdAt":"2023-04-14T10:29:27Z","sku":"","tracked":true,"requiresShipping":false}
 {"__typename":"InventoryItem","id":"gid:\/\/shopify\/InventoryItem\/45419395743933","unitCost":{"cost":"29.0"},"countryCodeOfOrigin":"UA","harmonizedSystemCode":"330510","provinceCodeOfOrigin":null,"updatedAt":"2023-12-11T10:37:41Z","createdAt":"2023-12-11T10:37:41Z","sku":"123","tracked":true,"requiresShipping":true}\n"""
@@ -659,6 +685,162 @@ def fulfillment_orders_response_expected_result():
         "admin_graphql_api_id": "gid://shopify/FulfillmentOrder/2",
         "shop_url": "test_shop",
     }
+
+
+@pytest.fixture
+def products_response_expected_result():
+    return {
+            "id": 123,
+            "published_at": "2021-06-23T01:09:29+00:00",
+            "created_at": "2021-06-23T01:09:29+00:00",
+            "status": "ACTIVE",
+            "vendor": "Blanda, O'Kon and Bartell",
+            "updated_at": "2023-04-20T11:12:26+00:00",
+            "body_html": "Gold and silver glitter iPhone 7 cases with geometric line patterns, stacked",
+            "product_type": "Music",
+            "tags": "developer-tools-generator",
+            "handle": "gold-silver-iphone-7-case",
+            "template_suffix": None,
+            "title": "Gold Silver iPhone 7 Case",
+            "options": [
+                {
+                    "id": 444,
+                    "name": "Title",
+                    "values": [
+                        "Plastic",
+                        "indigo"
+                    ],
+                    "position": 1,
+                    "product_id": 123
+                }
+            ],
+            "admin_graphql_api_id": "gid://shopify/Product/123",
+            "images": [
+                {
+                    "id": 111
+                }
+            ],
+            "variants": [
+                {
+                    "id": 111
+                },
+                {
+                    "id": 222
+                }
+            ],
+            "shop_url": "test_shop"
+        }
+
+
+@pytest.fixture
+def product_images_response_expected_result():
+    return [
+        {
+            "created_at": "2023-01-06T18:29:17+00:00",
+            "updated_at": "2023-01-06T18:29:19+00:00",
+            "id": 111,
+            "height": 280,
+            "alt": None,
+            "src": "https://cdn.shopify.com/s/files/1/0580/3317/6765/products/white-t-shirt.jpg?v=1673029759",
+            "width": 265,
+            "admin_graphql_api_id": "gid://shopify/ProductImage/111",
+            "product_id": 123,
+            "shop_url": "test_shop"
+        },
+        {
+            "created_at": "2021-06-23T01:09:47+00:00",
+            "updated_at": "2023-04-24T17:27:15+00:00",
+            "id": 222,
+            "height": 1467,
+            "alt": "updated_mon_24.04.2023",
+            "src": "https://cdn.shopify.com/s/files/1/0580/3317/6765/products/4-ounce-soy-candle.jpg?v=1624410587",
+            "width": 2200,
+            "admin_graphql_api_id": "gid://shopify/ProductImage/222",
+            "product_id": 456,
+            "shop_url": "test_shop"
+        }
+    ]
+
+
+@pytest.fixture
+def product_variants_response_expected_result():
+    return [
+        {
+            "id": 123,
+            "title": "Test 234",
+            "price": 59.00,
+            "sku": "",
+            "position": 3,
+            "inventory_policy": "DENY",
+            "compare_at_price": None,
+            "inventory_management": "SHOPIFY",
+            "created_at": "2023-04-14T10:29:27+00:00",
+            "updated_at": "2023-10-27T16:56:39+00:00",
+            "taxable": True,
+            "barcode": "",
+            "weight": 0.0,
+            "weight_unit": "GRAMS",
+            "inventory_quantity": 0,
+            "requires_shipping": False,
+            "grams": 0,
+            "image_id": None,
+            "old_inventory_quantity": 0,
+            "fulfillment_service": "manual",
+            "admin_graphql_api_id": "gid://shopify/ProductVariant/123",
+            "presentment_prices": [
+                {
+                    "price": {
+                        "amount": 59.0,
+                        "currency_code": "USD"
+                    },
+                    "compare_at_price": {
+                        "amount": None
+                    }
+                }
+            ],
+            "product_id": 111,
+            "inventory_item_id": 222,
+            "shop_url": "test_shop"
+        },
+        {
+            "id": 456,
+            "title": "Test Variant",
+            "price": 113.00,
+            "sku": "123",
+            "position": 4,
+            "inventory_policy": "CONTINUE",
+            "compare_at_price": "1.00",
+            "inventory_management": "SHOPIFY",
+            "created_at": "2023-12-11T10:37:41+00:00",
+            "updated_at": "2023-12-11T10:37:41+00:00",
+            "taxable": True,
+            "barcode": "123",
+            "weight": 127.0,
+            "weight_unit": "GRAMS",
+            "inventory_quantity": 1,
+            "requires_shipping": True,
+            "grams": 127,
+            "image_id": 123456,
+            "old_inventory_quantity": 1,
+            "fulfillment_service": "manual",
+            "admin_graphql_api_id": "gid://shopify/ProductVariant/456",
+            "presentment_prices": [
+                {
+                    "price": {
+                        "amount": 113.0,
+                        "currency_code": "USD"
+                    },
+                    "compare_at_price": {
+                        "amount": 1.0,
+                        "currency_code": "USD"
+                    }
+                }
+            ],
+            "product_id": 222,
+            "inventory_item_id": 333,
+            "shop_url": "test_shop"
+        }
+    ]
 
 
 @pytest.fixture
