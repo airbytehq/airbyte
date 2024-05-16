@@ -334,7 +334,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 4.1.4 | 2024-05-15 | [0](https://github.com/airbytehq/airbyte/pull/0) | Replace AirbyteLogger with logging.Logger |
+| 4.1.4 | 2024-05-15 | [38243](https://github.com/airbytehq/airbyte/pull/38243) | Replace AirbyteLogger with logging.Logger |
 | 4.1.3 | 2024-05-13 | [38128](https://github.com/airbytehq/airbyte/pull/38128) | contacts_list_memberships as semi-incremental stream |
 | 4.1.2 | 2024-04-24 | [36642](https://github.com/airbytehq/airbyte/pull/36642) | Schema descriptions and CDK 0.80.0 |
 | 4.1.1 | 2024-04-11 | [35945](https://github.com/airbytehq/airbyte/pull/35945) | Add integration tests |
