@@ -4,7 +4,7 @@
 A few classes were deleted from the Airbyte CDK in version 1.0.0:
 - AirbyteLogger
 - AirbyteSpec
-- Authenticators in the `sources.streams.htt.auth` module
+- Authenticators in the `sources.streams.http.auth` module
 
 ## Migrating off AirbyteLogger
 No connectors should still be using `AirbyteLogger` directly, but the class is still used in some interfaces. The only required change is to update the type annotation from `AirbyteLogger` to `logging.Logger`. For example:
