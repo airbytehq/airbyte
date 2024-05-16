@@ -11,8 +11,6 @@ import io.airbyte.cdk.integrations.base.Source
 import io.airbyte.cdk.testutils.TestDatabase
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.util.AutoCloseableIterators
-import io.airbyte.protocol.models.AirbyteStreamStatusTraceMessage
-import io.airbyte.protocol.models.AirbyteTraceMessage
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
@@ -114,7 +112,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         expectedStreamStatus: AirbyteStreamStatusTraceMessage
     ) {
         var actualMessage = allMessages[idx]
-        Assertions.assertEquals(actualMessage.type, AirbyteMessage.Type.TRACE)
+        Assertions.assertEquals(AirbyteMessage.Type.TRACE, actualMessage.type)
         var traceMessage = actualMessage.trace
         Assertions.assertNotNull(traceMessage.streamStatus)
         Assertions.assertEquals(expectedStreamStatus, traceMessage.streamStatus)
@@ -127,9 +125,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     ): AirbyteStreamStatusTraceMessage {
 
         return AirbyteStreamStatusTraceMessage()
-            .withStreamDescriptor(
-                io.airbyte.protocol.models
-                    .StreamDescriptor()
+            .withStreamDescriptor(StreamDescriptor()
                     .withNamespace(namespace)
                     .withName(streamName)
             )
@@ -692,8 +688,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         val read1 = source().read(config()!!, configuredCatalog, null)
         val actualRecords1 = AutoCloseableIterators.toListAndClose(read1)
 
-        // The first message will be start of the full refresh stream.
-        // The last message will be the end of the incremental stream.
+        // The first message will be start of the incremental stream.
+        // The last message will be the end of the full refresh stream.
         // Index start of the incremental stream will be depending on if connector supports
         // resumeable full refresh.
         assertStreamStatusTraceMessageIndex(
@@ -701,7 +697,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             actualRecords1,
             createAirbteStreanStatusTraceMessage(
                 modelsSchema(),
-                MODELS_STREAM_NAME_2,
+                MODELS_STREAM_NAME,
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED
             )
         )
@@ -710,7 +706,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             actualRecords1,
             createAirbteStreanStatusTraceMessage(
                 modelsSchema(),
-                MODELS_STREAM_NAME,
+                MODELS_STREAM_NAME_2,
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
             )
         )
@@ -991,7 +987,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             )
         )
         assertStreamStatusTraceMessageIndex(
-            1,
+            actualRecords.size - 1,
             actualRecords,
             createAirbteStreanStatusTraceMessage(
                 modelsSchema(),
