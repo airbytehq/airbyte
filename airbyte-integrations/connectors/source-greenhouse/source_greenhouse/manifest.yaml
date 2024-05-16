@@ -76,8 +76,8 @@ definitions:
     incremental_sync:
       type: CustomIncrementalSync
       class_name: source_greenhouse.components.GreenHouseSlicer
-      request_cursor_field: "created_after"
-      cursor_field: "applied_at"
+      request_cursor_field: "last_activity_after"
+      cursor_field: "last_activity_at"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -254,6 +254,21 @@ definitions:
           answers:
             description: Answers provided in the application.
             type: array
+          custom_fields:
+            description: Custom fields associated with the application.
+            properties: {}
+            additionalProperties: true
+            type:
+              - "null"
+              - object
+          keyed_custom_fields:
+            description: Keyed custom fields associated with the application.
+            properties: {}
+            additionalProperties: true
+            type:
+              - "null"
+              - object
+
   candidates_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
