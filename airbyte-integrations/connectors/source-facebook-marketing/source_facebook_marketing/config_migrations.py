@@ -121,3 +121,72 @@ class MigrateIncludeDeletedToStatusFilters(MigrateAccountIdToArray):
             config[stream_filter] = statuses
         # return transformed config
         return config
+
+
+class MigrateSecretsPathInConnector:
+    """
+    This class stands for migrating the config at runtime.
+    This migration is intended for backwards compatibility with the previous version, so existing secrets configurations gets migrated to new path.
+
+    Starting from `X.X.X`, the `client_id`, `client_secret` and `access_token` will be placed at `credentials` path.
+    """
+
+    @classmethod
+    def should_migrate(cls, config: Mapping[str, Any]) -> bool:
+        """
+        This method determines whether the config should be migrated to nest existing fields at credentials.
+        It is assumed if credentials does not exist on configuration, `client_id`, `client_secret` and `access_token` exists on root path.
+        Returns:
+            > True, if the migration is necessary
+            > False, otherwise.
+        """
+        credentials = config.get("credentials", None)
+        return credentials is None or not all(key in credentials for key in ["client_id", "client_secret", "access_token"])
+
+    @classmethod
+    def migrate(cls, args: List[str], source: Source) -> None:
+        """
+        This method checks the input args, should the config be migrated,
+        transform if neccessary and emit the CONTROL message.
+        """
+        # get config path
+        config_path = AirbyteEntrypoint(source).extract_config(args)
+        # proceed only if `--config` arg is provided
+        if config_path:
+            # read the existing config
+            config = source.read_config(config_path)
+            # migration check
+            if cls.should_migrate(config):
+                cls.emit_control_message(
+                    cls.modify_and_save(config_path, source, config),
+                )
+
+    @classmethod
+    def transform(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        # transform the config
+        config["credentials"] = {}
+        if "client_id" in config:
+            config["credentials"]["client_id"] = config.pop("client_id")
+        if "client_secret" in config:
+            config["credentials"]["client_secret"] = config.pop("client_secret")
+        if "access_token" in config:
+            config["credentials"]["access_token"] = config.pop("access_token")
+        # return transformed config
+        return config
+
+    @classmethod
+    def modify_and_save(cls, config_path: str, source: Source, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        # modify the config
+        migrated_config = cls.transform(config)
+        # save the config
+        source.write_config(migrated_config, config_path)
+        # return modified config
+        return migrated_config
+
+    @classmethod
+    def emit_control_message(cls, migrated_config: Mapping[str, Any]) -> None:
+        # add the Airbyte Control Message to message repo
+        cls.message_repository.emit_message(create_connector_config_control_message(migrated_config))
+        # emit the Airbyte Control Message from message queue to stdout
+        for message in cls.message_repository._message_queue:
+            print(message.json(exclude_unset=True))

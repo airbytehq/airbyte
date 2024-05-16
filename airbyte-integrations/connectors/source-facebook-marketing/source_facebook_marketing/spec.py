@@ -5,7 +5,7 @@
 import logging
 from datetime import datetime, timezone
 from enum import Enum
-from typing import List, Optional, Set, Literal, Union
+from typing import List, Literal, Optional, Set, Union
 
 from airbyte_cdk.sources.config import BaseConfig
 from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
@@ -44,11 +44,6 @@ class OAuthCredentials(BaseModel):
         description="Client Secret for the Facebook Marketing API",
         airbyte_secret=True,
     )
-    refresh_token: str = Field(
-        title="Refresh Token",
-        description="Refresh Token for the Facebook Marketing API",
-        airbyte_secret=True,
-    )
 
 
 class ServiceAccountCredentials(BaseModel):
@@ -60,11 +55,12 @@ class ServiceAccountCredentials(BaseModel):
     service_account_info: str = Field(
         title="Service Account Information",
         description="The value of the generated access token. "
-                    'From your App’s Dashboard, click on "Marketing API" then "Tools". '
-                    'Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on "Get token". '
-                    'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information.',
+        'From your App’s Dashboard, click on "Marketing API" then "Tools". '
+        'Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on "Get token". '
+        'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information.',
         airbyte_secret=True,
     )
+
 
 class InsightConfig(BaseModel):
     """Config for custom insights"""
@@ -181,7 +177,7 @@ class ConnectorConfig(BaseConfig):
         title="Authentication",
         description="Credentials for connecting to the Facebook Marketing API",
         discriminator="auth_type",
-        type="object"
+        type="object",
     )
 
     start_date: Optional[datetime] = Field(
