@@ -16,7 +16,6 @@ from airbyte_cdk.sources.file_based.exceptions import (
     FileBasedSourceError,
     InvalidSchemaError,
     MissingSchemaError,
-    NoFilesMatchingError,
     RecordParseError,
     SchemaInferenceError,
     StopSyncPerValidationPolicy,
@@ -172,9 +171,6 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         }
         try:
             schema = self._get_raw_json_schema()
-        except NoFilesMatchingError:
-            self.logger.warning(f"No files were identified in the stream {self.name}. Set empty schema for the stream.")
-            return {}
         except InvalidSchemaError as config_exception:
             self.logger.exception(FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value, exc_info=config_exception)
             raise AirbyteTracedException(
@@ -198,7 +194,10 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             total_n_files = len(files)
 
             if total_n_files == 0:
-                raise NoFilesMatchingError(FileBasedSourceError.EMPTY_STREAM, stream=self.name)
+                self.logger.warning(
+                    msg=f"No files were identified in the stream {self.name}. Setting default schema for the stream."
+                )
+                return schemaless_schema
 
             max_n_files_for_schema_inference = self._discovery_policy.get_max_n_files_for_schema_inference(self.get_parser())
             if total_n_files > max_n_files_for_schema_inference:

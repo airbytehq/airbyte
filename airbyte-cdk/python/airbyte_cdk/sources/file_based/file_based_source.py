@@ -44,7 +44,6 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
 from airbyte_cdk.utils.analytics_message import create_analytics_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_protocol.models import AirbyteCatalog
 from pydantic.error_wrappers import ValidationError
 
 DEFAULT_CONCURRENCY = 100
@@ -279,7 +278,3 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
     def _validate_input_schema(self, stream_config: FileBasedStreamConfig) -> None:
         if stream_config.schemaless and stream_config.input_schema:
             raise ValidationError("`input_schema` and `schemaless` options cannot both be set", model=FileBasedStreamConfig)
-
-    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
-        streams = [stream.as_airbyte_stream() for stream in self.streams(config=config) if stream.get_json_schema()]
-        return AirbyteCatalog(streams=streams)

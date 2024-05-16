@@ -3029,7 +3029,26 @@ earlier_csv_scenario: TestScenario[InMemoryFilesSource] = (
         .set_file_type("csv")
     )
     .set_expected_check_status("FAILED")
-    .set_expected_catalog({"streams": []})
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                            "data": {"type": "object"},
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
 ).build()
 
 csv_no_records_scenario: TestScenario[InMemoryFilesSource] = (
@@ -3086,4 +3105,48 @@ csv_no_records_scenario: TestScenario[InMemoryFilesSource] = (
         }
     )
     .set_expected_records([])
+).build()
+
+csv_no_files_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
+    .set_name("no_files_csv_stream")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "format": {"filetype": "csv"},
+                    "globs": ["*"],
+                    "validation_policy": "Emit Record",
+                }
+            ],
+            "start_date": "2023-06-10T03:54:07.000000Z",
+        }
+    )
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files({})
+        .set_file_type("csv")
+    )
+    .set_expected_check_status("FAILED")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                            "data": {"type": "object"},
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
 ).build()
