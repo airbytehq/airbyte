@@ -92,7 +92,10 @@ public final class PostgresCatalogHelper {
   /**
    * Modifies streams that are NOT present in the publication to be full-refresh only streams. Users
    * should be able to replicate these streams, just not in incremental mode as they have no
-   * associated publication.  Previously, we also setSourceDefinedCursor(false) and setSourceDefinedPrimaryKey(List.of()) for streams that are in the catalog but not in the CDC publication, but now that full refresh streams can be resumable, we should include this information.
+   * associated publication. Previously, we also setSourceDefinedCursor(false) and
+   * setSourceDefinedPrimaryKey(List.of()) for streams that are in the catalog but not in the CDC
+   * publication, but now that full refresh streams can be resumable, we should include this
+   * information.
    */
   public static AirbyteStream setFullRefreshForNonPublicationStreams(final AirbyteStream stream,
                                                                      final Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc) {
