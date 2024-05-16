@@ -1,0 +1,16 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "project_id": {
+        "type": ["null", "integer"]
+      },
+      "date": {
+        "type": ["null", "string"]
+      },
+      "value": {
+        "type": ["null", "number"]
+      }
+    }
+  }
+  

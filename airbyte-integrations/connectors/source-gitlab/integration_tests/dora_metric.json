@@ -1,0 +1,16 @@
+{
+    "streams": [
+      {
+        "stream": {
+          "name": "project_dora_metrics_time_to_restore_service",
+          "json_schema": {},
+          "supported_sync_modes": ["full_refresh"],
+          "source_defined_primary_key": [["project_id"]]
+        },
+        "sync_mode": "full_refresh",
+        "destination_sync_mode": "overwrite",
+        "primary_key": [["project_id"]]
+      }
+    ]
+  }
+  
