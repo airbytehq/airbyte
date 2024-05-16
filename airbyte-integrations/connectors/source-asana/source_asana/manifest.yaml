@@ -102,6 +102,8 @@ definitions:
         use_cache: true
         request_parameters:
           workspace: "{{ stream_slice['workspace_gid'] }}"
+      paginator:
+        $ref: "#/definitions/paginator_base"
       partition_router:
         $ref: "#/definitions/workspaces_partition_router"
     $parameters:
@@ -170,6 +172,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         use_cache: true
+      paginator:
+        $ref: "#/definitions/paginator_base"
       partition_router:
         $ref: "#/definitions/projects_partition_router"
 
@@ -194,6 +198,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         use_cache: true
+      paginator:
+        $ref: "#/definitions/paginator_base"
       partition_router:
         $ref: "#/definitions/tasks_partition_router"
 
@@ -232,6 +238,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         use_cache: true
+      paginator:
+        $ref: "#/definitions/paginator_base"
     $parameters:
       path: "/workspaces"
 
@@ -253,6 +261,8 @@ definitions:
       path: "/workspaces/{{ stream_slice['workspace_gid'] }}/tags"
     retriever:
       $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/paginator_base"
       partition_router:
         $ref: "#/definitions/workspaces_partition_router"
 
@@ -263,6 +273,10 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/users_schema"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/paginator_base"
     $parameters:
       path: "/users"
 
@@ -284,6 +298,8 @@ definitions:
       path: "/organizations/{{ stream_slice['workspace_gid'] }}/teams"
     retriever:
       $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/paginator_base"
       partition_router:
         $ref: "#/definitions/workspaces_partition_router"
 
@@ -331,6 +347,9 @@ definitions:
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
+            - stream: "#/definitions/projects_stream"
+              parent_key: "gid"
+              partition_field: "parent_gid"
             - stream: "#/definitions/tasks_stream"
               parent_key: "gid"
               partition_field: "parent_gid"
@@ -374,6 +393,8 @@ definitions:
         request_parameters:
           owner: "{{ stream_slice['users_gid'] }}"
           workspace: "{{ stream_slice['workspace_gid'] }}"
+      paginator:
+        $ref: "#/definitions/paginator_base"
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -440,6 +461,8 @@ definitions:
       path: "/workspaces/{{ stream_slice['workspace_gid'] }}/custom_fields"
     retriever:
       $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/paginator_base"
       partition_router:
         $ref: "#/definitions/workspaces_partition_router"
 
@@ -454,6 +477,8 @@ definitions:
       path: "/organization_exports/{{ stream_slice.gid }}"
     retriever:
       $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/paginator_base"
       partition_router:
         - type: ListPartitionRouter
           values: "{{ config['organization_export_ids' ] }}"
@@ -476,18 +501,18 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          resource: "{{ stream_slice.task_gid if stream_slice.task_gid else stream_slice.project_id }}"
+          resource: "{{ stream_slice.parent_gid }}"
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
             - stream: "#/definitions/tasks_stream"
               parent_key: "gid"
-              partition_field: "task_gid"
+              partition_field: "parent_gid"
         - type: SubstreamPartitionRouter
           parent_stream_configs:
             - stream: "#/definitions/projects_stream"
               parent_key: "gid"
-              partition_field: "project_id"
+              partition_field: "parent_gid"
 
   projects_schema:
     $schema: http://json-schema.org/draft-07/schema#
