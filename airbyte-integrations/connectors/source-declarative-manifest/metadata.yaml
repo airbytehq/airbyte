@@ -30,4 +30,6 @@ data:
   supportLevel: community
   tags:
     - language:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
 metadataSpecVersion: "1.0"

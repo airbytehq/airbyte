@@ -31,12 +31,7 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message:
-          "All Ads-Insights-* streams now have updated schemas. Users will
-          need to retest source configuration, refresh the source schema and reset
-          affected streams after upgrading. Please pay attention that data older than
-          37 months will become unavailable due to FaceBook limitations. For more
-          information [visit](https://docs.airbyte.com/integrations/sources/facebook-marketing-migrations)"
+        message: "All Ads-Insights-* streams now have updated schemas. Users will need to retest source configuration, refresh the source schema and reset affected streams after upgrading. Please pay attention that data older than 37 months will become unavailable due to FaceBook limitations. For more information [visit](https://docs.airbyte.com/integrations/sources/facebook-marketing-migrations)"
         upgradeDeadline: "2024-03-17"
         scopedImpact:
           - scopeType: stream
@@ -69,4 +64,30 @@ data:
   tags:
     - language:python
     - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-FACEBOOK-MARKETING_NO_DATE__CREDS
+          fileName: config_no_date.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-FACEBOOK-MARKETING__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-FACEBOOK-MARKETING_NO_DATE__CREDS
+          fileName: config_no_date.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-FACEBOOK-MARKETING__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
