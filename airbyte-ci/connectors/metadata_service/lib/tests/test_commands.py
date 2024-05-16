@@ -27,16 +27,14 @@ def test_valid_metadata_yaml_files(mocker, valid_metadata_yaml_files, tmp_path):
         assert result.exit_code == 0, f"Validation failed for {file_path} with error: {result.output}"
 
 
-#
-# def test_invalid_metadata_yaml_files(invalid_metadata_yaml_files, tmp_path):
-#     runner = CliRunner()
-#
-#     assert len(invalid_metadata_yaml_files) > 0, "No files found"
-#
-#     for file_path in invalid_metadata_yaml_files:
-#         result = runner.invoke(commands.validate, [file_path, str(tmp_path)])
-#         assert result.exit_code != 0, f"Validation succeeded (when it should have failed) for {file_path}"
-#
+def test_invalid_metadata_yaml_files(invalid_metadata_yaml_files, tmp_path):
+    runner = CliRunner()
+
+    assert len(invalid_metadata_yaml_files) > 0, "No files found"
+
+    for file_path in invalid_metadata_yaml_files:
+        result = runner.invoke(commands.validate, [file_path, str(tmp_path)])
+        assert result.exit_code != 0, f"Validation succeeded (when it should have failed) for {file_path}"
 
 
 def test_metadata_file_not_found_fails(tmp_path):
