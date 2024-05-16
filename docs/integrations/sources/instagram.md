@@ -113,7 +113,7 @@ Instagram limits the number of requests that can be made at a time. See Facebook
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
-| 3.0.8 | 2024-05-15 | [0](https://github.com/airbytehq/airbyte/pull/0) | Replace AirbyteLogger with logging.Logger |
+| 3.0.8 | 2024-05-15 | [38268](https://github.com/airbytehq/airbyte/pull/38268) | Replace AirbyteLogger with logging.Logger |
 | 3.0.7 | 2024-04-19 | [36643](https://github.com/airbytehq/airbyte/pull/36643) | Updating to 0.80.0 CDK |
 | 3.0.6 | 2024-04-12 | [36643](https://github.com/airbytehq/airbyte/pull/36643) | Schema descriptions |
 | 3.0.5 | 2024-03-20 | [36314](https://github.com/airbytehq/airbyte/pull/36314) | Unpin CDK version |
