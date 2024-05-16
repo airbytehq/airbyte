@@ -69,7 +69,7 @@ kubectl create namespace airbyte
 
 ### Configure Kubernetes Secrets
 
-Sensitive credentials such as AWS access keys are required to be made available in Kubernetes Secrets during deployment. The Kubernetes secret store and secret keys are referenced in your `values.yml` file. Ensure all required secrets are configured before deploying Airbyte Self-Managed Enterprise.
+Sensitive credentials such as AWS access keys are required to be made available in Kubernetes Secrets during deployment. The Kubernetes secret store and secret keys are referenced in your `values.yaml` file. Ensure all required secrets are configured before deploying Airbyte Self-Managed Enterprise.
 
 You may apply your Kubernetes secrets by applying the example manifests below to your cluster, or using `kubectl` directly. If your Kubernetes cluster already has permissions to make requests to an external entity via an instance profile, credentials are not required. For example, if your Amazon EKS cluster has been assigned a sufficient AWS IAM role to make requests to AWS S3, you do not need to specify access keys.
 
@@ -198,9 +198,9 @@ Follow these instructions to add the Airbyte helm repository:
 
 ### Step 2: Configure your Deployment
 
-1. Inside your `airbyte` directory, create an empty `values.yml` file.
+1. Inside your `airbyte` directory, create an empty `values.yaml` file.
 
-2. Paste the following into your newly created `values.yml` file. This is required to deploy Airbyte Self-Managed Enterprise:
+2. Paste the following into your newly created `values.yaml` file. This is required to deploy Airbyte Self-Managed Enterprise:
 
 ```yml
 global:
@@ -208,16 +208,6 @@ global:
 
   # This must be set to the public facing URL of your Airbyte instance.
   airbyteUrl: #https://airbyte.company.example
-
-  # Optional configuration of an OIDC provider
-  auth:
-    identityProvider:
-      type: oidc
-      oidc:
-        domain: #company.example
-        app-name: #airbyte
-        client-id: #e83bbc57-1991-417f-8203-3affb47636cf
-        client-secret: #$OKTA_CLIENT_SECRET
 ```
 
 3. The following subsections help you customize your deployment to use an external database, log storage, dedicated ingress, and more. To skip this and deploy a minimal, local version of Self-Managed Enterprise, [jump to Step 3](#step-3-deploy-self-managed-enterprise).
@@ -231,7 +221,7 @@ We assume in the following that you've already configured a Postgres instance:
 <details>
 <summary>External database setup steps</summary>
 
-Add external database details to your `values.yml` file. This disables the default internal Postgres database (`airbyte/db`), and configures the external Postgres database. You can override all of the values below by setting them in the airbyte-config-secrets or set them directly here. You must set the database password in the airbyte-config-secrets. Here is an example configuration:
+Add external database details to your `values.yaml` file. This disables the default internal Postgres database (`airbyte/db`), and configures the external Postgres database. You can override all of the values below by setting them in the airbyte-config-secrets or set them directly here. You must set the database password in the airbyte-config-secrets. Here is an example configuration:
 
 ```yaml
 postgresql:
@@ -274,7 +264,7 @@ For Self-Managed Enterprise deployments, we recommend spinning up standalone log
 <details>
 <summary>External log storage setup steps</summary>
 
-Add external log storage details to your `values.yml` file. This disables the default internal Minio instance (`airbyte/minio`), and configures the external log database:
+Add external log storage details to your `values.yaml` file. This disables the default internal Minio instance (`airbyte/minio`), and configures the external log database:
 
 <Tabs>
 <TabItem value="S3" label="S3" default>
@@ -370,6 +360,22 @@ secretsManager:
 </Tabs>
 
 </details>
+
+#### Configuring External OIDC Provider (Optional)
+
+To enable SSO authentication, add [SSO auth details](/access-management/sso) to your `values.yaml` file.
+```yaml
+auth:
+  identityProvider:
+    type: oidc
+    oidc:
+      domain: #company.example
+      app-name: #airbyte
+      client-id: #e83bbc57-1991-417f-8203-3affb47636cf
+      client-secret: #$OKTA_CLIENT_SECRET
+```
+
+See the [following guide](/access-management/sso-providers/okta) on how to collect this information for Okta.
 
 #### Configuring Ingress
 
@@ -478,7 +484,7 @@ The ALB controller will use a `ServiceAccount` that requires the [following IAM 
 </Tabs>
 </details>
 
-Once this is complete, ensure that the value of the `webapp-url` field in your `values.yml` is configured to match the ingress URL.
+Once this is complete, ensure that the value of the `webapp-url` field in your `values.yaml` is configured to match the ingress URL.
 
 You may configure ingress using a load balancer or an API Gateway. We do not currently support most service meshes (such as Istio). If you are having networking issues after fully deploying Airbyte, please verify that firewalls or lacking permissions are not interfering with pod-pod communication. Please also verify that deployed pods have the right permissions to make requests to your external database.
 
@@ -489,7 +495,7 @@ Install Airbyte Self-Managed Enterprise on helm using the following command:
 ```sh
 helm install \
 --namespace airbyte \
---values ./values.yml \
+--values ./values.yaml \
 airbyte-enterprise \
 airbyte/airbyte
 ```
@@ -506,7 +512,7 @@ Upgrade Airbyte Self-Managed Enterprise by:
 ```sh
 helm upgrade \
 --namespace airbyte \
---values ./values.yml \
+--values ./values.yaml \
 --install airbyte-enterprise \
 airbyte/airbyte
 ```
@@ -520,7 +526,7 @@ After specifying your own configuration, run the following command:
 ```sh
 helm upgrade \
 --namespace airbyte \
---values ./values.yml \
+--values ./values.yaml \
 --install airbyte-enterprise \
 airbyte/airbyte
 ```
@@ -529,7 +535,7 @@ airbyte/airbyte
 
 You may choose to use your own service account instead of the Airbyte default, `airbyte-sa`. This may allow for better audit trails and resource management specific to your organizational policies and requirements.
 
-To do this, add the following to your `values.yml`:
+To do this, add the following to your `values.yaml`:
 
 ```
 serviceAccount:
