@@ -10,7 +10,7 @@ from .exceptions import ShopifyBulkExceptions
 
 BULK_RETRY_ERRORS: Final[Tuple] = (
     ShopifyBulkExceptions.BulkJobBadResponse,
-    ShopifyBulkExceptions.BulkJobUnknownError,
+    ShopifyBulkExceptions.BulkJobError,
 )
 
 
