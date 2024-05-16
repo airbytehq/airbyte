@@ -82,7 +82,7 @@ definitions:
     requester:
       $ref: "#/definitions/requester"
     request_parameters:
-        opt_fields: "{{ gid if response['gid'] else '' }}"
+      opt_fields: "{{ gid if response['gid'] else '' }}"
 
   base_stream:
     type: DeclarativeStream
