@@ -15,7 +15,7 @@ import pendulum
 import pytest
 import pytz
 import requests
-from airbyte_cdk import AirbyteLogger
+import logging
 from airbyte_protocol.models import SyncMode
 from source_zendesk_support.source import BasicApiTokenAuthenticator, SourceZendeskSupport
 from source_zendesk_support.streams import (
