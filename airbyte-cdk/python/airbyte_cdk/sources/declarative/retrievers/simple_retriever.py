@@ -228,7 +228,7 @@ class SimpleRetriever(Retriever):
     ) -> Iterable[Record]:
         if not response:
             self._last_response = None
-            yield from []
+            return []
 
         self._last_response = response
         record_generator = self.record_selector.select_records(
@@ -315,9 +315,9 @@ class SimpleRetriever(Retriever):
         yield from records_generator_fn(response)
 
         if not response:
-            next_page_token = {FULL_REFRESH_SYNC_COMPLETE_KEY: True}
+            next_page_token: Mapping[str, Any] = {FULL_REFRESH_SYNC_COMPLETE_KEY: True}
         else:
-            next_page_token = self._next_page_token(response) or {FULL_REFRESH_SYNC_COMPLETE_KEY: True}
+            next_page_token: Mapping[str, Any] = self._next_page_token(response) or {FULL_REFRESH_SYNC_COMPLETE_KEY: True}
 
         if self.cursor:
             self.cursor.close_slice(StreamSlice(cursor_slice=next_page_token, partition=stream_slice.partition))
