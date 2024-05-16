@@ -1,4 +1,4 @@
-# Harvest Migration Guide
+# Greenhouse Migration Guide
 
 ## Upgrading to 1.0.0
 
