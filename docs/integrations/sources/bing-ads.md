@@ -255,7 +255,7 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                        |
 | :------ | :--------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2.6.2 | 2024-05-15 | [0](https://github.com/airbytehq/airbyte/pull/0) | Replace AirbyteLogger with logging.Logger |
+| 2.6.2 | 2024-05-15 | [38254](https://github.com/airbytehq/airbyte/pull/38254) | Replace AirbyteLogger with logging.Logger |
 | 2.6.1 | 2024-05-02 | [36632](https://github.com/airbytehq/airbyte/pull/36632) | Schema descriptions |
 | 2.6.0 | 2024-04-25 | [35878](https://github.com/airbytehq/airbyte/pull/35878) | Add missing fields in keyword_performance_report |
 | 2.5.0 | 2024-03-21 | [35891](https://github.com/airbytehq/airbyte/pull/35891) | Accounts stream: add TaxCertificate field to schema |
