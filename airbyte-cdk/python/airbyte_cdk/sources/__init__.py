@@ -7,7 +7,7 @@ import dpath.options
 from .abstract_source import AbstractSource
 from .config import BaseConfig
 from .source import Source
-from .types import Config, Record,
+from .types import Config, Record
 
 # As part of the CDK sources, we do not control what the APIs return and it is possible that a key is empty.
 # Reasons why we are doing this at the airbyte_cdk level:
