@@ -81,8 +81,8 @@ definitions:
       type: NoPagination
     requester:
       $ref: "#/definitions/requester"
-      request_parameters:
-        opt_fields: "{{ response['gid'] if response['gid'] else '' }}"
+    request_parameters:
+        opt_fields: "{{ gid if response['gid'] else '' }}"
 
   base_stream:
     type: DeclarativeStream
@@ -275,10 +275,6 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/users_schema"
-    retriever:
-      $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/paginator_base"
     $parameters:
       path: "/users"
 
