@@ -28,7 +28,10 @@ from .utils import command_check
 def config_fixture(requests_mock):
     config = {
         "account_ids": ["123"],
-        "access_token": "TOKEN",
+        "credentials": {
+            "auth_type": "Service",
+            "service_account_info": "SERVICE_ACCOUNT_INFO",
+        },
         "start_date": "2019-10-10T00:00:00Z",
         "end_date": "2020-10-10T00:00:00Z",
     }
