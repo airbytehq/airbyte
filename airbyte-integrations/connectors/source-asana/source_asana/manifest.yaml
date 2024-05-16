@@ -81,6 +81,8 @@ definitions:
       type: NoPagination
     requester:
       $ref: "#/definitions/requester"
+      request_parameters:
+        opt_fields: "{{ response['gid'] if response['gid'] else '' }}"
 
   base_stream:
     type: DeclarativeStream
