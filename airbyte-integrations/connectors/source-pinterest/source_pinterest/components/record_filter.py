@@ -10,6 +10,11 @@ from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
 class PinterestSemiIncrementalRecordFilter(RecordFilter):
+    """
+    This class extends the RecordFilter functionality
+    and allows to filter by state or start date semi-incremental substreams
+    """
+
     cursor_field = "updated_time"
 
     def filter_records(

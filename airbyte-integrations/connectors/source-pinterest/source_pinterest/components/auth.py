@@ -20,6 +20,11 @@ logger = logging.getLogger("airbyte")
 
 @dataclass
 class PinterestOauthAuthenticator(DeclarativeOauth2Authenticator):
+    """
+    This class extends the DeclarativeOauth2Authenticator functionality
+    and allows to pass custom headers to the refresh access token requests
+    """
+
     def get_refresh_access_token_headers(self) -> Mapping[str, Any]:
         creds_encoded = standard_b64encode(f"{self.get_client_id()}:{self.get_client_secret()}".encode("ascii")).decode("ascii")
         return {"Authorization": f"Basic {creds_encoded}"}
@@ -44,7 +49,11 @@ class PinterestOauthAuthenticator(DeclarativeOauth2Authenticator):
                 response_json = response.json()
                 access_key = response_json.get(self.get_access_token_name())
                 if not access_key:
-                    raise Exception(f"Token refresh API response was missing access token {self.get_access_token_name()}")
+                    message = (
+                        f"Token refresh API response was missing access token {self.get_access_token_name()}"
+                        "Please re-authenticate from Sources/Pinterest/Settings."
+                    )
+                    raise AirbyteTracedException(internal_message=message, message=message, failure_type=FailureType.config_error)
                 add_to_secrets(access_key)
                 self._log_response(response)
                 return response_json
@@ -56,7 +65,7 @@ class PinterestOauthAuthenticator(DeclarativeOauth2Authenticator):
                 if e.response.status_code == 429 or e.response.status_code >= 500:
                     raise DefaultBackoffException(request=e.response.request, response=e.response)
             if self._wrap_refresh_token_exception(e):
-                message = "Refresh token is invalid or expired. Please re-authenticate from Sources/<your source>/Settings."
+                message = "Refresh token is invalid or expired. Please re-authenticate from Sources/Pinterest/Settings."
                 raise AirbyteTracedException(internal_message=message, message=message, failure_type=FailureType.config_error)
             raise
         except Exception as e:
