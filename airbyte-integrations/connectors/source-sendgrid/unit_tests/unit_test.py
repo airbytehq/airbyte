@@ -3,6 +3,7 @@
 #
 
 import json
+import logging
 import os
 import unittest
 from unittest.mock import MagicMock, Mock, patch
@@ -11,7 +12,6 @@ import pandas as pd
 import pendulum
 import pytest
 import requests
-import logging
 from airbyte_cdk.models import SyncMode
 from numpy import nan
 from requests import codes
