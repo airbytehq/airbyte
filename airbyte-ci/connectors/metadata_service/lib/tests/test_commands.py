@@ -26,6 +26,7 @@ def test_valid_metadata_yaml_files(mocker, valid_metadata_yaml_files, tmp_path):
         result = runner.invoke(commands.validate, [file_path, str(tmp_path)])
         assert result.exit_code == 0, f"Validation failed for {file_path} with error: {result.output}"
 
+
 #
 # def test_invalid_metadata_yaml_files(invalid_metadata_yaml_files, tmp_path):
 #     runner = CliRunner()
@@ -36,6 +37,7 @@ def test_valid_metadata_yaml_files(mocker, valid_metadata_yaml_files, tmp_path):
 #         result = runner.invoke(commands.validate, [file_path, str(tmp_path)])
 #         assert result.exit_code != 0, f"Validation succeeded (when it should have failed) for {file_path}"
 #
+
 
 def test_metadata_file_not_found_fails(tmp_path):
     runner = CliRunner()
@@ -183,7 +185,9 @@ def test_upload(
             [mocker.call(f"The icon file for {metadata_file_path} was uploaded to icon_blob_id.", fg="green")]
         )
     else:
-        commands.click.secho.assert_has_calls([mocker.call(f"The icon file for {metadata_file_path} was not uploaded. Reason: None", fg="yellow")])
+        commands.click.secho.assert_has_calls(
+            [mocker.call(f"The icon file for {metadata_file_path} was not uploaded. Reason: None", fg="yellow")]
+        )
 
     if doc_version_uploaded:
         commands.click.secho.assert_has_calls(
@@ -196,11 +200,7 @@ def test_upload(
 
     if doc_inapp_version_uploaded:
         commands.click.secho.assert_has_calls(
-            [
-                mocker.call(
-                    f"The versioned inapp doc file for {metadata_file_path} was uploaded to doc_inapp_version_blob_id.", fg="green"
-                )
-            ]
+            [mocker.call(f"The versioned inapp doc file for {metadata_file_path} was uploaded to doc_inapp_version_blob_id.", fg="green")]
         )
     else:
         commands.click.secho.assert_has_calls(
@@ -212,7 +212,9 @@ def test_upload(
             [mocker.call(f"The latest doc file for {metadata_file_path} was uploaded to doc_latest_blob_id.", fg="green")]
         )
     else:
-        commands.click.secho.assert_has_calls([mocker.call(f"The latest doc file for {metadata_file_path} was not uploaded. Reason: None", fg="yellow")])
+        commands.click.secho.assert_has_calls(
+            [mocker.call(f"The latest doc file for {metadata_file_path} was not uploaded. Reason: None", fg="yellow")]
+        )
 
     if doc_inapp_latest_uploaded:
         commands.click.secho.assert_has_calls(
