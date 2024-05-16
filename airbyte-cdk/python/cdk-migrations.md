@@ -24,7 +24,7 @@ Don't forget to also update the imports. You can delete `from airbyte_cdk import
 AirbyteSpec isn't used by any connectors in the repository, and I don't expect any custom connectors to use the class either. This should be a no-op.
 
 ## Migrating off Authenticators
-Replace usage of authenticators in the `airbyte_cdk.sources.streams.htt.auth` module with their sister classes in the `airbyte_cdk.sources.streams.http.requests_native_auth` module.
+Replace usage of authenticators in the `airbyte_cdk.sources.streams.http.auth` module with their sister classes in the `airbyte_cdk.sources.streams.http.requests_native_auth` module.
 
 If any of your streams reference `self.authenticator`, you'll also need to update these references to `self._session.auth` as the authenticator is embedded in the session object.
 
