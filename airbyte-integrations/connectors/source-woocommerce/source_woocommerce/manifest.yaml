@@ -36,8 +36,8 @@ spec:
         format: date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
         examples:
-          - '2021-01-01'
-        description: 'The date you would like to replicate data from. Format: YYYY-MM-DD'
+          - "2021-01-01"
+        description: "The date you would like to replicate data from. Format: YYYY-MM-DD"
     additionalProperties: true
 check:
   stream_names:
@@ -91,8 +91,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
           name: customers
           path: /customers
           primary_key: id
@@ -103,7 +103,7 @@ streams:
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
         type: HttpRequester
         name: customers
         path: /customers
@@ -194,8 +194,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
           name: coupons
           path: /coupons
           primary_key: id
@@ -206,7 +206,7 @@ streams:
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
         type: HttpRequester
         name: coupons
         path: /coupons
@@ -247,8 +247,8 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: date_modified_gmt
       end_datetime:
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
         type: MinMaxDatetime
         name: coupons
         path: /coupons
@@ -258,8 +258,8 @@ streams:
           path: /coupons
           primary_key: id
       start_datetime:
-        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
         type: MinMaxDatetime
         name: coupons
         path: /coupons
@@ -268,7 +268,7 @@ streams:
           name: coupons
           path: /coupons
           primary_key: id
-      datetime_format: '%Y-%m-%dT%H:%M:%S'
+      datetime_format: "%Y-%m-%dT%H:%M:%S"
       end_time_option:
         field_name: modified_before
         inject_into: request_parameter
@@ -354,8 +354,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
           name: orders
           path: /orders
           primary_key: id
@@ -366,7 +366,7 @@ streams:
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
         type: HttpRequester
         name: orders
         path: /orders
@@ -407,8 +407,8 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: date_modified_gmt
       end_datetime:
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
         type: MinMaxDatetime
         name: orders
         path: /orders
@@ -418,8 +418,8 @@ streams:
           path: /orders
           primary_key: id
       start_datetime:
-        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
         type: MinMaxDatetime
         name: orders
         path: /orders
@@ -428,7 +428,7 @@ streams:
           name: orders
           path: /orders
           primary_key: id
-      datetime_format: '%Y-%m-%dT%H:%M:%S'
+      datetime_format: "%Y-%m-%dT%H:%M:%S"
       end_time_option:
         field_name: modified_before
         inject_into: request_parameter
@@ -514,8 +514,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
           name: order_notes
           path: /orders/{{ stream_slice.id }}/notes
           primary_key: id
@@ -526,7 +526,7 @@ streams:
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
         type: HttpRequester
         name: order_notes
         path: /orders/{{ stream_slice.id }}/notes
@@ -605,8 +605,8 @@ streams:
                   http_method: GET
                   authenticator:
                     type: BasicHttpAuthenticator
-                    password: '{{ config[''api_secret''] }}'
-                    username: '{{ config[''api_key''] }}'
+                    password: "{{ config['api_secret'] }}"
+                    username: "{{ config['api_key'] }}"
                     name: orders
                     path: /orders
                     primary_key: id
@@ -617,7 +617,7 @@ streams:
                   request_parameters:
                     order: asc
                     orderby: id
-                    dates_are_gmt: 'true'
+                    dates_are_gmt: "true"
                   type: HttpRequester
                   name: orders
                   path: /orders
@@ -658,8 +658,8 @@ streams:
                 type: DatetimeBasedCursor
                 cursor_field: date_modified_gmt
                 end_datetime:
-                  datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
-                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
+                  datetime_format: "%Y-%m-%dT%H:%M:%S"
                   type: MinMaxDatetime
                   name: orders
                   path: /orders
@@ -672,7 +672,7 @@ streams:
                   datetime: >-
                     {{ format_datetime(config['start_date'],
                     '%Y-%m-%dT%H:%M:%S') }}
-                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  datetime_format: "%Y-%m-%dT%H:%M:%S"
                   type: MinMaxDatetime
                   name: orders
                   path: /orders
@@ -681,7 +681,7 @@ streams:
                     name: orders
                     path: /orders
                     primary_key: id
-                datetime_format: '%Y-%m-%dT%H:%M:%S'
+                datetime_format: "%Y-%m-%dT%H:%M:%S"
                 end_time_option:
                   field_name: modified_before
                   inject_into: request_parameter
@@ -800,8 +800,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
           name: payment_gateways
           path: /payment_gateways
           primary_key: id
@@ -812,7 +812,7 @@ streams:
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
         type: HttpRequester
         name: payment_gateways
         path: /payment_gateways
@@ -903,8 +903,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
           name: products
           path: /products
           primary_key: id
@@ -915,7 +915,7 @@ streams:
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
         type: HttpRequester
         name: products
         path: /products
@@ -956,8 +956,8 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: date_modified_gmt
       end_datetime:
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
         type: MinMaxDatetime
         name: products
         path: /products
@@ -967,8 +967,8 @@ streams:
           path: /products
           primary_key: id
       start_datetime:
-        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
         type: MinMaxDatetime
         name: products
         path: /products
@@ -977,7 +977,7 @@ streams:
           name: products
           path: /products
           primary_key: id
-      datetime_format: '%Y-%m-%dT%H:%M:%S'
+      datetime_format: "%Y-%m-%dT%H:%M:%S"
       end_time_option:
         field_name: modified_before
         inject_into: request_parameter
@@ -1063,8 +1063,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
           name: product_attributes
           path: /products/attributes
           primary_key: id
@@ -1075,7 +1075,7 @@ streams:
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
         type: HttpRequester
         name: product_attributes
         path: /products/attributes
@@ -1166,8 +1166,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
           name: product_attribute_terms
           path: /products/attributes/{{ stream_slice.id }}/terms
           primary_key: id
@@ -1178,7 +1178,7 @@ streams:
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
         type: HttpRequester
         name: product_attribute_terms
         path: /products/attributes/{{ stream_slice.id }}/terms
@@ -1257,8 +1257,8 @@ streams:
                   http_method: GET
                   authenticator:
                     type: BasicHttpAuthenticator
-                    password: '{{ config[''api_secret''] }}'
-                    username: '{{ config[''api_key''] }}'
+                    password: "{{ config['api_secret'] }}"
+                    username: "{{ config['api_key'] }}"
                     name: product_attributes
                     path: /products/attributes
                     primary_key: id
@@ -1269,7 +1269,7 @@ streams:
                   request_parameters:
                     order: asc
                     orderby: id
-                    dates_are_gmt: 'true'
+                    dates_are_gmt: "true"
                   type: HttpRequester
                   name: product_attributes
                   path: /products/attributes
@@ -1393,8 +1393,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
           name: product_categories
           path: /products/categories
           primary_key: id
@@ -1405,7 +1405,7 @@ streams:
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
         type: HttpRequester
         name: product_categories
         path: /products/categories
@@ -1496,8 +1496,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
           name: product_reviews
           path: /products/reviews
           primary_key: id
@@ -1508,7 +1508,7 @@ streams:
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
         type: HttpRequester
         name: product_reviews
         path: /products/reviews
@@ -1549,8 +1549,8 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: date_created_gmt
       end_datetime:
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
         type: MinMaxDatetime
         name: product_reviews
         path: /products/reviews
@@ -1560,8 +1560,8 @@ streams:
           path: /products/reviews
           primary_key: id
       start_datetime:
-        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
         type: MinMaxDatetime
         name: product_reviews
         path: /products/reviews
@@ -1570,7 +1570,7 @@ streams:
           name: product_reviews
           path: /products/reviews
           primary_key: id
-      datetime_format: '%Y-%m-%dT%H:%M:%S'
+      datetime_format: "%Y-%m-%dT%H:%M:%S"
       end_time_option:
         field_name: before
         inject_into: request_parameter
@@ -1656,8 +1656,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
           name: product_shipping_classes
           path: /products/shipping_classes
           primary_key: id
@@ -1668,7 +1668,7 @@ streams:
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
         type: HttpRequester
         name: product_shipping_classes
         path: /products/shipping_classes
@@ -1759,8 +1759,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
           name: product_tags
           path: /products/tags
           primary_key: id
@@ -1771,7 +1771,7 @@ streams:
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
         type: HttpRequester
         name: product_tags
         path: /products/tags
@@ -1862,8 +1862,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
           name: product_variations
           path: /products/{{ stream_slice.id }}/variations
           primary_key: id
@@ -1874,7 +1874,7 @@ streams:
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
         type: HttpRequester
         name: product_variations
         path: /products/{{ stream_slice.id }}/variations
@@ -1953,8 +1953,8 @@ streams:
                   http_method: GET
                   authenticator:
                     type: BasicHttpAuthenticator
-                    password: '{{ config[''api_secret''] }}'
-                    username: '{{ config[''api_key''] }}'
+                    password: "{{ config['api_secret'] }}"
+                    username: "{{ config['api_key'] }}"
                     name: products
                     path: /products
                     primary_key: id
@@ -1965,7 +1965,7 @@ streams:
                   request_parameters:
                     order: asc
                     orderby: id
-                    dates_are_gmt: 'true'
+                    dates_are_gmt: "true"
                   type: HttpRequester
                   name: products
                   path: /products
@@ -2006,8 +2006,8 @@ streams:
                 type: DatetimeBasedCursor
                 cursor_field: date_modified_gmt
                 end_datetime:
-                  datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
-                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
+                  datetime_format: "%Y-%m-%dT%H:%M:%S"
                   type: MinMaxDatetime
                   name: products
                   path: /products
@@ -2020,7 +2020,7 @@ streams:
                   datetime: >-
                     {{ format_datetime(config['start_date'],
                     '%Y-%m-%dT%H:%M:%S') }}
-                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  datetime_format: "%Y-%m-%dT%H:%M:%S"
                   type: MinMaxDatetime
                   name: products
                   path: /products
@@ -2029,7 +2029,7 @@ streams:
                     name: products
                     path: /products
                     primary_key: id
-                datetime_format: '%Y-%m-%dT%H:%M:%S'
+                datetime_format: "%Y-%m-%dT%H:%M:%S"
                 end_time_option:
                   field_name: modified_before
                   inject_into: request_parameter
@@ -2148,8 +2148,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
           name: refunds
           path: /orders/{{ stream_slice.id }}/refunds
           primary_key: id
@@ -2160,7 +2160,7 @@ streams:
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
         type: HttpRequester
         name: refunds
         path: /orders/{{ stream_slice.id }}/refunds
@@ -2239,8 +2239,8 @@ streams:
                   http_method: GET
                   authenticator:
                     type: BasicHttpAuthenticator
-                    password: '{{ config[''api_secret''] }}'
-                    username: '{{ config[''api_key''] }}'
+                    password: "{{ config['api_secret'] }}"
+                    username: "{{ config['api_key'] }}"
                     name: orders
                     path: /orders
                     primary_key: id
@@ -2251,7 +2251,7 @@ streams:
                   request_parameters:
                     order: asc
                     orderby: id
-                    dates_are_gmt: 'true'
+                    dates_are_gmt: "true"
                   type: HttpRequester
                   name: orders
                   path: /orders
@@ -2292,8 +2292,8 @@ streams:
                 type: DatetimeBasedCursor
                 cursor_field: date_modified_gmt
                 end_datetime:
-                  datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
-                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
+                  datetime_format: "%Y-%m-%dT%H:%M:%S"
                   type: MinMaxDatetime
                   name: orders
                   path: /orders
@@ -2306,7 +2306,7 @@ streams:
                   datetime: >-
                     {{ format_datetime(config['start_date'],
                     '%Y-%m-%dT%H:%M:%S') }}
-                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  datetime_format: "%Y-%m-%dT%H:%M:%S"
                   type: MinMaxDatetime
                   name: orders
                   path: /orders
@@ -2315,7 +2315,7 @@ streams:
                     name: orders
                     path: /orders
                     primary_key: id
-                datetime_format: '%Y-%m-%dT%H:%M:%S'
+                datetime_format: "%Y-%m-%dT%H:%M:%S"
                 end_time_option:
                   field_name: modified_before
                   inject_into: request_parameter
@@ -2434,8 +2434,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
           name: shipping_methods
           path: /shipping_methods
           primary_key: id
@@ -2446,7 +2446,7 @@ streams:
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
         type: HttpRequester
         name: shipping_methods
         path: /shipping_methods
@@ -2553,8 +2553,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
           name: shipping_zone_locations
           path: /shipping/zones/{{ stream_slice.id }}/locations
           primary_key:
@@ -2569,7 +2569,7 @@ streams:
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
         type: HttpRequester
         name: shipping_zone_locations
         path: /shipping/zones/{{ stream_slice.id }}/locations
@@ -2660,8 +2660,8 @@ streams:
                   http_method: GET
                   authenticator:
                     type: BasicHttpAuthenticator
-                    password: '{{ config[''api_secret''] }}'
-                    username: '{{ config[''api_key''] }}'
+                    password: "{{ config['api_secret'] }}"
+                    username: "{{ config['api_key'] }}"
                     name: shipping_zones
                     path: /shipping/zones
                     primary_key: id
@@ -2672,7 +2672,7 @@ streams:
                   request_parameters:
                     order: asc
                     orderby: id
-                    dates_are_gmt: 'true'
+                    dates_are_gmt: "true"
                   type: HttpRequester
                   name: shipping_zones
                   path: /shipping/zones
@@ -2812,8 +2812,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
           name: shipping_zone_methods
           path: /shipping/zones/{{ stream_slice.id }}/methods
           primary_key: instance_id
@@ -2824,7 +2824,7 @@ streams:
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
         type: HttpRequester
         name: shipping_zone_methods
         path: /shipping/zones/{{ stream_slice.id }}/methods
@@ -2903,8 +2903,8 @@ streams:
                   http_method: GET
                   authenticator:
                     type: BasicHttpAuthenticator
-                    password: '{{ config[''api_secret''] }}'
-                    username: '{{ config[''api_key''] }}'
+                    password: "{{ config['api_secret'] }}"
+                    username: "{{ config['api_key'] }}"
                     name: shipping_zones
                     path: /shipping/zones
                     primary_key: id
@@ -2915,7 +2915,7 @@ streams:
                   request_parameters:
                     order: asc
                     orderby: id
-                    dates_are_gmt: 'true'
+                    dates_are_gmt: "true"
                   type: HttpRequester
                   name: shipping_zones
                   path: /shipping/zones
@@ -3039,8 +3039,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
           name: shipping_zones
           path: /shipping/zones
           primary_key: id
@@ -3051,7 +3051,7 @@ streams:
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
         type: HttpRequester
         name: shipping_zones
         path: /shipping/zones
@@ -3142,8 +3142,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
           name: system_status_tools
           path: /system_status/tools
           primary_key: id
@@ -3154,7 +3154,7 @@ streams:
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
         type: HttpRequester
         name: system_status_tools
         path: /system_status/tools
@@ -3261,8 +3261,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
           name: tax_classes
           path: /taxes/classes
           primary_key:
@@ -3277,7 +3277,7 @@ streams:
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
         type: HttpRequester
         name: tax_classes
         path: /taxes/classes
@@ -3388,8 +3388,8 @@ streams:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
           name: tax_rates
           path: /taxes
           primary_key: id
@@ -3400,7 +3400,7 @@ streams:
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
         type: HttpRequester
         name: tax_rates
         path: /taxes
@@ -3454,12 +3454,12 @@ definitions:
     http_method: GET
     authenticator:
       type: BasicHttpAuthenticator
-      password: '{{ config[''api_secret''] }}'
-      username: '{{ config[''api_key''] }}'
+      password: "{{ config['api_secret'] }}"
+      username: "{{ config['api_key'] }}"
     request_parameters:
       order: asc
       orderby: id
-      dates_are_gmt: 'true'
+      dates_are_gmt: "true"
   retriever:
     paginator:
       type: DefaultPaginator
@@ -3478,12 +3478,12 @@ definitions:
       http_method: GET
       authenticator:
         type: BasicHttpAuthenticator
-        password: '{{ config[''api_secret''] }}'
-        username: '{{ config[''api_key''] }}'
+        password: "{{ config['api_secret'] }}"
+        username: "{{ config['api_key'] }}"
       request_parameters:
         order: asc
         orderby: id
-        dates_are_gmt: 'true'
+        dates_are_gmt: "true"
     record_selector:
       extractor:
         field_path: []
@@ -3506,12 +3506,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -3534,12 +3534,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -3548,12 +3548,12 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: date_modified_gmt
       end_datetime:
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
       start_datetime:
-        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
-      datetime_format: '%Y-%m-%dT%H:%M:%S'
+        datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+      datetime_format: "%Y-%m-%dT%H:%M:%S"
       end_time_option:
         field_name: modified_before
         inject_into: request_parameter
@@ -3587,12 +3587,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -3601,12 +3601,12 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: date_modified_gmt
       end_datetime:
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
       start_datetime:
-        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
-      datetime_format: '%Y-%m-%dT%H:%M:%S'
+        datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+      datetime_format: "%Y-%m-%dT%H:%M:%S"
       end_time_option:
         field_name: modified_before
         inject_into: request_parameter
@@ -3637,12 +3637,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -3668,12 +3668,12 @@ definitions:
                   http_method: GET
                   authenticator:
                     type: BasicHttpAuthenticator
-                    password: '{{ config[''api_secret''] }}'
-                    username: '{{ config[''api_key''] }}'
+                    password: "{{ config['api_secret'] }}"
+                    username: "{{ config['api_key'] }}"
                   request_parameters:
                     order: asc
                     orderby: id
-                    dates_are_gmt: 'true'
+                    dates_are_gmt: "true"
                 record_selector:
                   extractor:
                     field_path: []
@@ -3682,14 +3682,14 @@ definitions:
                 type: DatetimeBasedCursor
                 cursor_field: date_modified_gmt
                 end_datetime:
-                  datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
-                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
+                  datetime_format: "%Y-%m-%dT%H:%M:%S"
                 start_datetime:
                   datetime: >-
                     {{ format_datetime(config['start_date'],
                     '%Y-%m-%dT%H:%M:%S') }}
-                  datetime_format: '%Y-%m-%dT%H:%M:%S'
-                datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  datetime_format: "%Y-%m-%dT%H:%M:%S"
+                datetime_format: "%Y-%m-%dT%H:%M:%S"
                 end_time_option:
                   field_name: modified_before
                   inject_into: request_parameter
@@ -3726,12 +3726,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -3740,12 +3740,12 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: date_modified_gmt
       end_datetime:
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
       start_datetime:
-        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
-      datetime_format: '%Y-%m-%dT%H:%M:%S'
+        datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+      datetime_format: "%Y-%m-%dT%H:%M:%S"
       end_time_option:
         field_name: modified_before
         inject_into: request_parameter
@@ -3776,12 +3776,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -3808,12 +3808,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -3840,12 +3840,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -3871,12 +3871,12 @@ definitions:
                   http_method: GET
                   authenticator:
                     type: BasicHttpAuthenticator
-                    password: '{{ config[''api_secret''] }}'
-                    username: '{{ config[''api_key''] }}'
+                    password: "{{ config['api_secret'] }}"
+                    username: "{{ config['api_key'] }}"
                   request_parameters:
                     order: asc
                     orderby: id
-                    dates_are_gmt: 'true'
+                    dates_are_gmt: "true"
                 record_selector:
                   extractor:
                     field_path: []
@@ -3885,14 +3885,14 @@ definitions:
                 type: DatetimeBasedCursor
                 cursor_field: date_modified_gmt
                 end_datetime:
-                  datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
-                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
+                  datetime_format: "%Y-%m-%dT%H:%M:%S"
                 start_datetime:
                   datetime: >-
                     {{ format_datetime(config['start_date'],
                     '%Y-%m-%dT%H:%M:%S') }}
-                  datetime_format: '%Y-%m-%dT%H:%M:%S'
-                datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  datetime_format: "%Y-%m-%dT%H:%M:%S"
+                datetime_format: "%Y-%m-%dT%H:%M:%S"
                 end_time_option:
                   field_name: modified_before
                   inject_into: request_parameter
@@ -3929,12 +3929,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -3963,12 +3963,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -3981,12 +3981,12 @@ definitions:
     type: DatetimeBasedCursor
     cursor_field: date_modified_gmt
     end_datetime:
-      datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
-      datetime_format: '%Y-%m-%dT%H:%M:%S'
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S"
     start_datetime:
-      datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
-      datetime_format: '%Y-%m-%dT%H:%M:%S'
-    datetime_format: '%Y-%m-%dT%H:%M:%S'
+      datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S"
+    datetime_format: "%Y-%m-%dT%H:%M:%S"
     end_time_option:
       field_name: modified_before
       inject_into: request_parameter
@@ -4013,12 +4013,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -4045,12 +4045,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -4059,12 +4059,12 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: date_created_gmt
       end_datetime:
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
       start_datetime:
-        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
-      datetime_format: '%Y-%m-%dT%H:%M:%S'
+        datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+      datetime_format: "%Y-%m-%dT%H:%M:%S"
       end_time_option:
         field_name: before
         inject_into: request_parameter
@@ -4095,12 +4095,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -4109,12 +4109,12 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: date_modified_gmt
       end_datetime:
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
       start_datetime:
-        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%S'
-      datetime_format: '%Y-%m-%dT%H:%M:%S'
+        datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+      datetime_format: "%Y-%m-%dT%H:%M:%S"
       end_time_option:
         field_name: modified_before
         inject_into: request_parameter
@@ -4141,12 +4141,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -4173,12 +4173,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -4205,12 +4205,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -4237,12 +4237,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -4269,12 +4269,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -4300,12 +4300,12 @@ definitions:
                   http_method: GET
                   authenticator:
                     type: BasicHttpAuthenticator
-                    password: '{{ config[''api_secret''] }}'
-                    username: '{{ config[''api_key''] }}'
+                    password: "{{ config['api_secret'] }}"
+                    username: "{{ config['api_key'] }}"
                   request_parameters:
                     order: asc
                     orderby: id
-                    dates_are_gmt: 'true'
+                    dates_are_gmt: "true"
                 record_selector:
                   extractor:
                     field_path: []
@@ -4314,14 +4314,14 @@ definitions:
                 type: DatetimeBasedCursor
                 cursor_field: date_modified_gmt
                 end_datetime:
-                  datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
-                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
+                  datetime_format: "%Y-%m-%dT%H:%M:%S"
                 start_datetime:
                   datetime: >-
                     {{ format_datetime(config['start_date'],
                     '%Y-%m-%dT%H:%M:%S') }}
-                  datetime_format: '%Y-%m-%dT%H:%M:%S'
-                datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  datetime_format: "%Y-%m-%dT%H:%M:%S"
+                datetime_format: "%Y-%m-%dT%H:%M:%S"
                 end_time_option:
                   field_name: modified_before
                   inject_into: request_parameter
@@ -4361,12 +4361,12 @@ definitions:
               http_method: GET
               authenticator:
                 type: BasicHttpAuthenticator
-                password: '{{ config[''api_secret''] }}'
-                username: '{{ config[''api_key''] }}'
+                password: "{{ config['api_secret'] }}"
+                username: "{{ config['api_key'] }}"
               request_parameters:
                 order: asc
                 orderby: id
-                dates_are_gmt: 'true'
+                dates_are_gmt: "true"
             record_selector:
               extractor:
                 field_path: []
@@ -4395,12 +4395,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -4427,12 +4427,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -4458,12 +4458,12 @@ definitions:
                   http_method: GET
                   authenticator:
                     type: BasicHttpAuthenticator
-                    password: '{{ config[''api_secret''] }}'
-                    username: '{{ config[''api_key''] }}'
+                    password: "{{ config['api_secret'] }}"
+                    username: "{{ config['api_key'] }}"
                   request_parameters:
                     order: asc
                     orderby: id
-                    dates_are_gmt: 'true'
+                    dates_are_gmt: "true"
                 record_selector:
                   extractor:
                     field_path: []
@@ -4496,12 +4496,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -4527,12 +4527,12 @@ definitions:
                   http_method: GET
                   authenticator:
                     type: BasicHttpAuthenticator
-                    password: '{{ config[''api_secret''] }}'
-                    username: '{{ config[''api_key''] }}'
+                    password: "{{ config['api_secret'] }}"
+                    username: "{{ config['api_key'] }}"
                   request_parameters:
                     order: asc
                     orderby: id
-                    dates_are_gmt: 'true'
+                    dates_are_gmt: "true"
                 record_selector:
                   extractor:
                     field_path: []
@@ -4565,12 +4565,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
@@ -4596,12 +4596,12 @@ definitions:
                   http_method: GET
                   authenticator:
                     type: BasicHttpAuthenticator
-                    password: '{{ config[''api_secret''] }}'
-                    username: '{{ config[''api_key''] }}'
+                    password: "{{ config['api_secret'] }}"
+                    username: "{{ config['api_key'] }}"
                   request_parameters:
                     order: asc
                     orderby: id
-                    dates_are_gmt: 'true'
+                    dates_are_gmt: "true"
                 record_selector:
                   extractor:
                     field_path: []
@@ -4636,12 +4636,12 @@ definitions:
         http_method: GET
         authenticator:
           type: BasicHttpAuthenticator
-          password: '{{ config[''api_secret''] }}'
-          username: '{{ config[''api_key''] }}'
+          password: "{{ config['api_secret'] }}"
+          username: "{{ config['api_key'] }}"
         request_parameters:
           order: asc
           orderby: id
-          dates_are_gmt: 'true'
+          dates_are_gmt: "true"
       record_selector:
         extractor:
           field_path: []
