@@ -28,4 +28,4 @@ Replace usage of authenticators in the `airbyte_cdk.sources.streams.http.auth` m
 
 If any of your streams reference `self.authenticator`, you'll also need to update these references to `self._session.auth` as the authenticator is embedded in the session object.
 
-Here is an [example pull request that can serve as an example](https://github.com/airbytehq/airbyte/pull/38065/files).
+Here is a [pull request that can serve as an example](https://github.com/airbytehq/airbyte/pull/38065/files).
