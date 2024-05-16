@@ -212,7 +212,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 | :------ | :--------- | :---------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1.7.3 | 2024-05-15 | [0](https://github.com/airbytehq/airbyte/pull/0) | Replace AirbyteLogger with logging.Logger |
+| 1.7.3 | 2024-05-16 | [38271](https://github.com/airbytehq/airbyte/pull/38271) | Replace AirbyteLogger with logging.Logger |
 | 1.7.2 | 2024-04-19 | [36636](https://github.com/airbytehq/airbyte/pull/36636) | Updating to 0.80.0 CDK |
 | 1.7.1 | 2024-04-12 | [36636](https://github.com/airbytehq/airbyte/pull/36636) | schema descriptions |
 | 1.7.0 | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
