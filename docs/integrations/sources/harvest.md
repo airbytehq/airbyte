@@ -88,7 +88,7 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                           |
 |:--------| :--------- | :------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.3 | 2024-05-15 | [0](https://github.com/airbytehq/airbyte/pull/0) | Replace AirbyteLogger with logging.Logger |
+| 1.0.3 | 2024-05-16 | [38269](https://github.com/airbytehq/airbyte/pull/38269) | Replace AirbyteLogger with logging.Logger |
 | 1.0.2 | 2024-05-08 | [38055](https://github.com/airbytehq/airbyte/pull/38055) | Fix error handler for retriable errors |
 | 1.0.1 | 2024-04-24 | [36641](https://github.com/airbytehq/airbyte/pull/36641) | Schema descriptions and CDK 0.80.0 |
 | 1.0.0 | 2024-04-15 | [35863](https://github.com/airbytehq/airbyte/pull/35863) | Migrates connector to Low Code CDK, Updates incremental substream state to per-partition state |
