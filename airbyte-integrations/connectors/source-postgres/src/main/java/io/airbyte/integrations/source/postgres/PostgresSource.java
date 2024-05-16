@@ -39,6 +39,9 @@ import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.categor
 import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.reclassifyCategorisedCtidStreams;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.postgresql.PGProperty.ADAPTIVE_FETCH;
+import static org.postgresql.PGProperty.DEFAULT_ROW_FETCH_SIZE;
+import static org.postgresql.PGProperty.MAX_RESULT_BUFFER;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -52,7 +55,6 @@ import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
-import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
@@ -146,6 +148,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public static final String SSL_MODE_DISABLE = "disable";
   public static final String SSL_MODE_REQUIRE = "require";
 
+  public static final Map<String, String> ADAPTIVE_FETCH_PARAMS = ImmutableMap.of(
+      DEFAULT_ROW_FETCH_SIZE.getName(), "1",
+      ADAPTIVE_FETCH.getName(), "true",
+      MAX_RESULT_BUFFER.getName(), "10percent");
+
   private List<String> schemas;
 
   private Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc;
@@ -157,7 +164,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   PostgresSource() {
-    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new PostgresSourceOperations());
+    super(DRIVER_CLASS, PostgresStreamingQueryConfig::new, new PostgresSourceOperations());
     this.stateEmissionFrequency = INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
@@ -186,6 +193,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         config.get(JdbcUtils.HOST_KEY).asText(),
         config.get(JdbcUtils.PORT_KEY).asText(),
         encodedDatabaseName));
+
+    jdbcUrl.append(toJDBCQueryParams(ADAPTIVE_FETCH_PARAMS)).append(AMPERSAND);
 
     if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
       jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText()).append(AMPERSAND);
