@@ -12,7 +12,7 @@ class BaseBackoffException(requests.exceptions.HTTPError):
     def __init__(
         self,
         request: requests.PreparedRequest,
-        response: Optional[Union[requests.Response, requests.RequestException]],
+        response: Optional[Union[requests.Response, Exception]],
         error_message: str = "",
     ):
 
@@ -41,7 +41,7 @@ class UserDefinedBackoffException(BaseBackoffException):
         self,
         backoff: Union[int, float],
         request: requests.PreparedRequest,
-        response: Optional[Union[requests.Response, requests.RequestException]],
+        response: Optional[Union[requests.Response, Exception]],
         error_message: str = "",
     ):
         """

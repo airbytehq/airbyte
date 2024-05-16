@@ -21,7 +21,7 @@ class HttpStatusErrorHandler(ErrorHandler):
         ),
         400: ErrorResolution(
             response_action=ResponseAction.FAIL,
-            failure_type=FailureType.config_error,
+            failure_type=FailureType.system_error,
             error_message="Bad request. Please check your request parameters.",
         ),
         401: ErrorResolution(
@@ -38,6 +38,11 @@ class HttpStatusErrorHandler(ErrorHandler):
             response_action=ResponseAction.FAIL,
             failure_type=FailureType.system_error,
             error_message="Not found. The requested resource was not found on the server.",
+        ),
+        405: ErrorResolution(
+            response_action=ResponseAction.FAIL,
+            failure_type=FailureType.system_error,
+            error_message="Method not allowed. Please check your request method.",
         ),
         408: ErrorResolution(
             response_action=ResponseAction.RETRY,
@@ -63,6 +68,11 @@ class HttpStatusErrorHandler(ErrorHandler):
             response_action=ResponseAction.RETRY,
             failure_type=FailureType.transient_error,
             error_message="Service unavailable.",
+        ),
+        504: ErrorResolution(
+            response_action=ResponseAction.RETRY,
+            failure_type=FailureType.transient_error,
+            error_message="Gateway timeout.",
         ),
     }
 

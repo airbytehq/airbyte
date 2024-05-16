@@ -1,7 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import Optional, Union
 
 import requests
@@ -9,7 +8,6 @@ import requests
 from .response_models import ErrorResolution
 
 
-@dataclass
 class ErrorHandler(ABC):
     """
     Abstract base class to determine how to handle a failed HTTP request.
