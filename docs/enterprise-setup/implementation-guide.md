@@ -207,20 +207,20 @@ global:
   edition: enterprise
 
   # This must be set to the public facing URL of your Airbyte instance.
-  airbyteUrl: https://airbyte.company.example
+  airbyteUrl: #https://airbyte.company.example
 
   # Optional configuration of an OIDC provider
   auth:
     identityProvider:
       type: oidc
       oidc:
-        domain: company.example
-        app-name: airbyte
-        client-id: e83bbc57-1991-417f-8203-3affb47636cf
-        client-secret: $OKTA_CLIENT_SECRET
+        domain: #company.example
+        app-name: #airbyte
+        client-id: #e83bbc57-1991-417f-8203-3affb47636cf
+        client-secret: #$OKTA_CLIENT_SECRET
 ```
 
-3. The following subsections help you customize your deployment to use an external database, log storage, dedicated ingress, and more. To skip this and deploy a minimal, local version of Self-Managed Enterprise, [jump to Step 4](#step-4-deploy-self-managed-enterprise).
+3. The following subsections help you customize your deployment to use an external database, log storage, dedicated ingress, and more. To skip this and deploy a minimal, local version of Self-Managed Enterprise, [jump to Step 3](#step-3-deploy-self-managed-enterprise).
 
 #### Configuring the Airbyte Database
 
@@ -239,11 +239,30 @@ postgresql:
 
 global:
   database:
-    secretName: airbyte-config-secrets
-    host: ## Database host
-    user: ## Non-root username for the Airbyte database
-    database: db-airbyte ## Database name
-    port: 5432 ## Database port number
+    # -- Secret name where database credentials are stored
+    secretName: "" # e.g. "airbyte-config-secrets"
+
+    # -- The database host
+    host: ""
+    # -- The key within `secretName` where host is stored 
+    #hostSecretKey: "" # e.g. "database-host"
+
+    # -- The database port
+    port: ""
+    # -- The key within `secretName` where port is stored 
+    #portSecretKey: "" # e.g. "database-port" 
+
+    # -- The database name
+    database: ""
+    # -- The key within `secretName` where the database name is stored 
+    #databaseSecretKey: "" # e.g. "database-name" 
+
+    # -- The database user
+    user: "" # -- The key within `secretName` where the user is stored 
+    #userSecretKey: "" # e.g. "database-user"
+
+    # -- The database password
+    passwordSecretKey: "" # e.g."database-password"
 ```
 
 </details>
@@ -299,6 +318,57 @@ global:
 
 </TabItem>
 </Tabs>
+</details>
+
+#### Configuring External Connector Secret Management
+
+Airbyte's default behavior is to store encrypted connector secrets on your cluster as Kubernetes secrets. You may <b>optionally</b> opt to instead store connector secrets in an external secret manager such as AWS Secrets Manager, Google Secrets Manager or Hashicorp Vault. Upon creating a new connector, secrets (e.g. OAuth tokens, database passwords) will be written to, then read from the configured secrets manager.
+
+<details>
+<summary>Configuring external connector secret management</summary>
+
+Modifing the configuration of connector secret storage will cause all <i>existing</i> connectors to fail. You will need to recreate these connectors to ensure they are reading from the appropriate secret store.
+
+<Tabs>
+<TabItem label="Amazon" value="Amazon">
+
+If authenticating with credentials, ensure you've already created a Kubernetes secret containing both your AWS Secrets Manager access key ID, and secret access key. By default, secrets are expected in the `airbyte-config-secrets` Kubernetes secret, under the `aws-secret-manager-access-key-id` and `aws-secret-manager-secret-access-key` keys. Steps to configure these are in the above [prerequisites](#configure-kubernetes-secrets).
+
+```yaml
+secretsManager:
+  type: awsSecretManager
+  awsSecretManager:
+    region: <aws-region>
+    authenticationType: credentials ## Use "credentials" or "instanceProfile"
+    tags: ## Optional - You may add tags to new secrets created by Airbyte.
+      - key: ## e.g. team
+        value: ## e.g. deployments
+      - key: business-unit
+        value: engineering
+    kms: ## Optional - ARN for KMS Decryption.
+```
+
+Set `authenticationType` to `instanceProfile` if the compute infrastructure running Airbyte has pre-existing permissions (e.g. IAM role) to read and write from AWS Secrets Manager.
+
+To decrypt secrets in the secret manager with AWS KMS, configure the `kms` field, and ensure your Kubernetes cluster has pre-existing permissions to read and decrypt secrets.
+
+</TabItem>
+<TabItem label="GCP" value="GCP">
+
+Ensure you've already created a Kubernetes secret containing the credentials blob for the service account to be assumed by the cluster. By default, secrets are expected in the `gcp-cred-secrets` Kubernetes secret, under a `gcp.json` file. Steps to configure these are in the above [prerequisites](#configure-kubernetes-secrets). For simplicity, we recommend provisioning a single service account with access to both GCS and GSM.
+
+```yaml
+secretsManager:
+  type: googleSecretManager
+  storageSecretName: gcp-cred-secrets
+  googleSecretManager:
+    projectId: <project-id>
+    credentialsSecretKey: gcp.json
+```
+
+</TabItem>
+</Tabs>
+
 </details>
 
 #### Configuring Ingress
@@ -411,57 +481,6 @@ The ALB controller will use a `ServiceAccount` that requires the [following IAM 
 Once this is complete, ensure that the value of the `webapp-url` field in your `values.yml` is configured to match the ingress URL.
 
 You may configure ingress using a load balancer or an API Gateway. We do not currently support most service meshes (such as Istio). If you are having networking issues after fully deploying Airbyte, please verify that firewalls or lacking permissions are not interfering with pod-pod communication. Please also verify that deployed pods have the right permissions to make requests to your external database.
-
-#### Configuring External Connector Secret Management
-
-Airbyte's default behavior is to store encrypted connector secrets on your cluster as Kubernetes secrets. You may <b>optionally</b> opt to instead store connector secrets in an external secret manager such as AWS Secrets Manager, Google Secrets Manager or Hashicorp Vault. Upon creating a new connector, secrets (e.g. OAuth tokens, database passwords) will be written to, then read from the configured secrets manager.
-
-<details>
-<summary>Configuring external connector secret management</summary>
-
-Modifing the configuration of connector secret storage will cause all <i>existing</i> connectors to fail. You will need to recreate these connectors to ensure they are reading from the appropriate secret store.
-
-<Tabs>
-<TabItem label="Amazon" value="Amazon">
-
-If authenticating with credentials, ensure you've already created a Kubernetes secret containing both your AWS Secrets Manager access key ID, and secret access key. By default, secrets are expected in the `airbyte-config-secrets` Kubernetes secret, under the `aws-secret-manager-access-key-id` and `aws-secret-manager-secret-access-key` keys. Steps to configure these are in the above [prerequisites](#configure-kubernetes-secrets).
-
-```yaml
-secretsManager:
-  type: awsSecretManager
-  awsSecretManager:
-    region: <aws-region>
-    authenticationType: credentials ## Use "credentials" or "instanceProfile"
-    tags: ## Optional - You may add tags to new secrets created by Airbyte.
-      - key: ## e.g. team
-        value: ## e.g. deployments
-      - key: business-unit
-        value: engineering
-    kms: ## Optional - ARN for KMS Decryption.
-```
-
-Set `authenticationType` to `instanceProfile` if the compute infrastructure running Airbyte has pre-existing permissions (e.g. IAM role) to read and write from AWS Secrets Manager.
-
-To decrypt secrets in the secret manager with AWS KMS, configure the `kms` field, and ensure your Kubernetes cluster has pre-existing permissions to read and decrypt secrets.
-
-</TabItem>
-<TabItem label="GCP" value="GCP">
-
-Ensure you've already created a Kubernetes secret containing the credentials blob for the service account to be assumed by the cluster. By default, secrets are expected in the `gcp-cred-secrets` Kubernetes secret, under a `gcp.json` file. Steps to configure these are in the above [prerequisites](#configure-kubernetes-secrets). For simplicity, we recommend provisioning a single service account with access to both GCS and GSM.
-
-```yaml
-secretsManager:
-  type: googleSecretManager
-  storageSecretName: gcp-cred-secrets
-  googleSecretManager:
-    projectId: <project-id>
-    credentialsSecretKey: gcp.json
-```
-
-</TabItem>
-</Tabs>
-
-</details>
 
 ### Step 3: Deploy Self-Managed Enterprise
 
