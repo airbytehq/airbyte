@@ -22,6 +22,9 @@ definitions:
       type: CompositeErrorHandler
       error_handlers:
         - type: DefaultErrorHandler
+          backoff_strategies:
+            - type: "ConstantBackoffStrategy"
+              backoff_time_in_seconds: 30
           response_filters:
             - type: HttpResponseFilter
               action: FAIL
@@ -32,6 +35,10 @@ definitions:
               action: IGNORE
               http_codes:
                 - 403
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
 
   paginator_base:
     type: "DefaultPaginator"
