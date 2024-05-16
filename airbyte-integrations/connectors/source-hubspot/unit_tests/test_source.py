@@ -81,7 +81,7 @@ def test_check_connection_invalid_start_date_exception(config_invalid_date):
 
 
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
-def test_streams(requests_mock, config):
+def test_streams(requests_mock, config, mock_custom_objects_metadata):
 
     streams = SourceHubspot().streams(config)
 
@@ -89,7 +89,7 @@ def test_streams(requests_mock, config):
 
 
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
-def test_streams_incremental(requests_mock, config_experimental):
+def test_streams_incremental(requests_mock, config_experimental, mock_custom_objects_metadata):
 
     streams = SourceHubspot().streams(config_experimental)
 
@@ -466,6 +466,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
     test_stream = Companies(**common_params)
     test_stream._init_sync = pendulum.parse("2022-02-24T16:43:11Z")
     test_stream.state = {"updatedAt": "2022-02-24T16:43:11Z"}
+    test_stream.associations = []
 
     # Mocking Request
     test_stream._sync_mode = SyncMode.incremental
