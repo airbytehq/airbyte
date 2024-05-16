@@ -1084,6 +1084,9 @@ class CRMSearchStream(IncrementalStream, ABC):
     associations: List[str] = None
     fully_qualified_name: str = None
 
+    # added to guarantee the data types, declared for the stream's schema
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+
     @property
     def url(self):
         object_type_id = self.fully_qualified_name or self.entity
