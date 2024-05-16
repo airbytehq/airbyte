@@ -3,16 +3,16 @@
 #
 
 
+import logging
 from typing import Any, Mapping
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream
 
 
 class WriteBufferMixin:
 
     # Default instance of AirbyteLogger
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
     # intervals after which the records_buffer should be cleaned up for selected stream
     flush_interval = 500  # records count
     flush_interval_size_in_kb = 10 ^ 8  # memory allocation ~ 97656 Kb or 95 Mb

@@ -106,6 +106,7 @@ class CreatePullRequest(Step):
 
 async def get_connector_changes(context: ConnectorContext) -> Set[Path]:
     logger = main_logger
+    print(f"context.is_local: {context.is_local}")
     all_modified_files = set(
         transform_strs_to_paths(
             await get_modified_files(

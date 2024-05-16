@@ -44,6 +44,7 @@ async def get_modified_files_in_branch_remote(
 
 def get_modified_files_local(current_git_revision: str, diffed: str = "master") -> Set[str]:
     """Use git diff and git status to spot the modified files in the local repo."""
+    print(f"get_modified_files_local: {current_git_revision=}, {diffed=}")
     airbyte_repo = git.Repo()
     modified_files = airbyte_repo.git.diff(f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed}...{current_git_revision}").split("\n")
     status_output = airbyte_repo.git.status("--porcelain")
@@ -78,12 +79,14 @@ async def get_modified_files_in_commit_remote(current_git_branch: str, current_g
 
 
 def get_modified_files_in_commit_local(current_git_revision: str) -> Set[str]:
+    print(f"get modified files in commit local: {current_git_revision=}")
     airbyte_repo = git.Repo()
     modified_files = airbyte_repo.git.diff_tree("--no-commit-id", "--name-only", current_git_revision, "-r").split("\n")
     return set(modified_files)
 
 
 async def get_modified_files_in_commit(current_git_branch: str, current_git_revision: str, is_local: bool = True) -> Set[str]:
+    print(f"get modified files in commit: {current_git_branch=}, {current_git_revision=}, {is_local=}")
     if is_local:
         return get_modified_files_in_commit_local(current_git_revision)
     else:
@@ -114,6 +117,7 @@ async def get_modified_files(
     If the current branch is not master, it will return the list of modified files in the current branch.
     This latest case is the one we encounter when running the pipeline locally, on a local branch, or manually on GHA with a workflow dispatch event.
     """
+    print(f"get_modified_files: {git_branch=}, {git_revision=}, {diffed_branch=}, {is_local=}, {ci_context=}, {git_repo_url=}")
     if ci_context is CIContext.MASTER or (ci_context is CIContext.MANUAL and git_branch == "master"):
         return await get_modified_files_in_commit(git_branch, git_revision, is_local)
     return await get_modified_files_in_branch(git_repo_url, git_branch, git_revision, diffed_branch, is_local)

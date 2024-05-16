@@ -49,6 +49,8 @@ class RestoreVersionState(Step):
             self.dockerfile_content = connector.dockerfile_file_path.read_text()
         if connector.pyproject_file_path.is_file():
             self.poetry_content = connector.pyproject_file_path.read_text()
+        else:
+            self.poetry_content = None
         if connector.documentation_file_path and connector.documentation_file_path.is_file():
             self.documentation_content = connector.documentation_file_path.read_text()
 
