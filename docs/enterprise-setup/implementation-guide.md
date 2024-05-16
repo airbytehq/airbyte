@@ -75,7 +75,7 @@ You may apply your Kubernetes secrets by applying the example manifests below to
 
 #### Creating a Kubernetes Secret
 
-While you can set the `name` of the secret to whatever you prefer, you will need to set that name in various places in your values.yaml file. For this reason we suggest that you keep the name of `airbyte-config-secrets` unless you have a reason to change it.
+While you can set the name of the secret to whatever you prefer, you will need to set that name in various places in your values.yaml file. For this reason we suggest that you keep the name of `airbyte-config-secrets` unless you have a reason to change it.
 
 
 <details>
@@ -213,10 +213,11 @@ global:
   auth:
     identityProvider:
       type: oidc
-      domain: company.example
-      app-name: airbyte
-      client-id: e83bbc57-1991-417f-8203-3affb47636cf
-      client-secret: $OKTA_CLIENT_SECRET
+      oidc:
+        domain: company.example
+        app-name: airbyte
+        client-id: e83bbc57-1991-417f-8203-3affb47636cf
+        client-secret: $OKTA_CLIENT_SECRET
 ```
 
 3. The following subsections help you customize your deployment to use an external database, log storage, dedicated ingress, and more. To skip this and deploy a minimal, local version of Self-Managed Enterprise, [jump to Step 4](#step-4-deploy-self-managed-enterprise).
