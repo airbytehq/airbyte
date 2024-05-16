@@ -10,7 +10,6 @@ from typing import Any, Final, Iterable, List, Mapping, Optional
 
 import pendulum as pdm
 import requests
-from airbyte_cdk import AirbyteLogger
 from requests.exceptions import JSONDecodeError
 from source_shopify.utils import ApiTypeEnum
 from source_shopify.utils import ShopifyRateLimiter as limiter
