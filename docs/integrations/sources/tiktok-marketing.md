@@ -123,7 +123,7 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
-| 3.9.7 | 2024-05-15 | [0](https://github.com/airbytehq/airbyte/pull/0) | Replace AirbyteLogger with logging.Logger |
+| 3.9.7 | 2024-05-15 | [38250](https://github.com/airbytehq/airbyte/pull/38250) | Replace AirbyteLogger with logging.Logger and upgrade to latest base image |
 | 3.9.6 | 2024-04-19 | [36665](https://github.com/airbytehq/airbyte/pull/36665) | Updating to 0.80.0 CDK |
 | 3.9.5 | 2024-04-12 | [36665](https://github.com/airbytehq/airbyte/pull/36665) | Schema descriptions |
 | 3.9.4 | 2024-03-20 | [36302](https://github.com/airbytehq/airbyte/pull/36302) | Don't extract state from the latest record if stream doesn't have a cursor_field |
