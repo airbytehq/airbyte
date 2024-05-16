@@ -4,6 +4,7 @@
 import json
 import logging
 from abc import ABC
+from datetime import datetime, timedelta
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import elasticsearch.exceptions
@@ -523,6 +524,35 @@ class Campaigns(IncrementalElasticSearchV2Stream):
 
         return json.dumps(payload)
 
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        """State getter, should return state in form that can serialized to a string and send to the output
+        as a STATE AirbyteMessage.
+
+        A good example of a state is a _cursor_value:
+            {
+                self.cursor_field: "_cursor_value"
+            }
+
+         State should try to be as small as possible but at the same time descriptive enough to restore
+         syncing process from the point where it stopped.
+        """
+
+        return {self.cursor_field: self.cursor_value}
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        """State setter, accept state serialized by state getter."""
+        try:
+            timestamp_dt = datetime.fromisoformat(value[self.cursor_field])
+            new_timestamp_dt = timestamp_dt - timedelta(hours=1)
+            new_timestamp_str = new_timestamp_dt.isoformat()
+            self.cursor_value = new_timestamp_str
+        except KeyError:
+            self.cursor_value = value["date"]
+        except TypeError:
+            pass
+
 
 class Accounts(IncrementalElasticSearchV2Stream):
     primary_key = "_id"
@@ -543,3 +573,32 @@ class Accounts(IncrementalElasticSearchV2Stream):
         ]
 
         return json.dumps(payload)
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        """State getter, should return state in form that can serialized to a string and send to the output
+        as a STATE AirbyteMessage.
+
+        A good example of a state is a _cursor_value:
+            {
+                self.cursor_field: "_cursor_value"
+            }
+
+         State should try to be as small as possible but at the same time descriptive enough to restore
+         syncing process from the point where it stopped.
+        """
+
+        return {self.cursor_field: self.cursor_value}
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        """State setter, accept state serialized by state getter."""
+        try:
+            timestamp_dt = datetime.fromisoformat(value[self.cursor_field])
+            new_timestamp_dt = timestamp_dt - timedelta(hours=1)
+            new_timestamp_str = new_timestamp_dt.isoformat()
+            self.cursor_value = new_timestamp_str
+        except KeyError:
+            self.cursor_value = value["date"]
+        except TypeError:
+            pass
