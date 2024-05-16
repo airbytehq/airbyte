@@ -45,12 +45,19 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination<RedshiftS
       JdbcUtils.SSL_KEY, "true",
       "sslfactory", "com.amazon.redshift.ssl.NonValidatingFactory");
 
+  // insert into stmt has ~200 bytes
+  // Per record overhead of ~150 bytes for strings in statement like JSON_PARSE.. uuid etc
+  // If the flush size allows the max batch of 10k records, then net overhead is ~1.5MB.
+  // Lets round it to 2MB for wiggle room and keep a max buffer of 14MB per flush.
+  // This will allow not sending record set larger than 14M limiting the batch insert statement.
+  private static final Long REDSHIFT_OPTIMAL_BATCH_SIZE_FOR_FLUSH = 14 * 1024 * 1024L;
+
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new RedshiftInsertDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public RedshiftInsertDestination() {
-    super(DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations());
+    super(DRIVER_CLASS, REDSHIFT_OPTIMAL_BATCH_SIZE_FOR_FLUSH, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations());
   }
 
   @Override
@@ -121,8 +128,8 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination<RedshiftS
   }
 
   @Override
-  protected JdbcSqlGenerator getSqlGenerator() {
-    return new RedshiftSqlGenerator(super.getNamingResolver());
+  protected JdbcSqlGenerator getSqlGenerator(final JsonNode config) {
+    return new RedshiftSqlGenerator(super.getNamingResolver(), config);
   }
 
   @Override

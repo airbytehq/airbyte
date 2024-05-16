@@ -12,7 +12,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
-        status: "exception"
+        status: "failed"
       - config_path: "secrets/config_old.json"
         status: "succeed"
   discovery:

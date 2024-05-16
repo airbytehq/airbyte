@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Union
+from typing import Any, Iterable, List, Mapping, Union
 
 import dpath.util
 import requests
@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.types import Config
 
 
 @dataclass
@@ -58,24 +58,25 @@ class DpathExtractor(RecordExtractor):
     parameters: InitVar[Mapping[str, Any]]
     decoder: Decoder = JsonDecoder(parameters={})
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._field_path = [InterpolatedString.create(path, parameters=parameters) for path in self.field_path]
         for path_index in range(len(self.field_path)):
             if isinstance(self.field_path[path_index], str):
-                self.field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
+                self._field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
 
-    def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
         response_body = self.decoder.decode(response)
-        if len(self.field_path) == 0:
+        if len(self._field_path) == 0:
             extracted = response_body
         else:
-            path = [path.eval(self.config) for path in self.field_path]
+            path = [path.eval(self.config) for path in self._field_path]
             if "*" in path:
                 extracted = dpath.util.values(response_body, path)
             else:
                 extracted = dpath.util.get(response_body, path, default=[])
         if isinstance(extracted, list):
-            return extracted
+            yield from extracted
         elif extracted:
-            return [extracted]
+            yield extracted
         else:
-            return []
+            yield from []

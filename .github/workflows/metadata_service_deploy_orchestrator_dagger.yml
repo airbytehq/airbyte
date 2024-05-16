@@ -6,7 +6,7 @@ on:
     branches:
       - master
     paths:
-      - "airbyte-ci/connectors/metadata_service/orchestrator/**"
+      - "airbyte-ci/connectors/metadata_service/**"
 jobs:
   connector_metadata_service_deploy_orchestrator:
     name: Connector metadata service deploy orchestrator

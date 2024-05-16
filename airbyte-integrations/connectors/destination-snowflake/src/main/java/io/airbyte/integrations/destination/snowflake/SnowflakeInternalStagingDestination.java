@@ -10,6 +10,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.DestinationColumns;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
@@ -24,7 +25,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandl
 import io.airbyte.integrations.base.destination.typing_deduping.NoOpTyperDeduperWithV1V2Migrations;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDestinationHandler;
@@ -132,7 +132,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   }
 
   @Override
-  protected JdbcSqlGenerator getSqlGenerator() {
+  protected JdbcSqlGenerator getSqlGenerator(final JsonNode config) {
     throw new UnsupportedOperationException("Snowflake does not yet use the native JDBC DV2 interface");
   }
 
@@ -160,7 +160,10 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
       }
     }
 
-    final SnowflakeSqlGenerator sqlGenerator = new SnowflakeSqlGenerator();
+    final int retentionPeriodDays = SnowflakeSqlOperations.getRetentionPeriodDays(
+        config.get(SnowflakeSqlOperations.RETENTION_PERIOD_DAYS_CONFIG_KEY));
+
+    final SnowflakeSqlGenerator sqlGenerator = new SnowflakeSqlGenerator(retentionPeriodDays);
     final ParsedCatalog parsedCatalog;
     final TyperDeduper typerDeduper;
     final JdbcDatabase database = getDatabase(getDataSource(config));
@@ -202,11 +205,10 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         config,
         catalog,
         true,
-        new TypeAndDedupeOperationValve(),
         typerDeduper,
         parsedCatalog,
         defaultNamespace,
-        true)
+        DestinationColumns.V2_WITHOUT_META)
         .setBufferMemoryLimit(Optional.of(getSnowflakeBufferMemoryLimit()))
         .setOptimalBatchSizeBytes(
             // The per stream size limit is following recommendations from:

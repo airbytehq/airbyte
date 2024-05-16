@@ -25,13 +25,13 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.validation.json.JsonSchemaValidator
 import java.io.*
+import java.lang.reflect.Method
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
+import java.time.Instant
 import java.util.*
 import java.util.concurrent.*
 import java.util.function.Consumer
-import java.util.function.Predicate
-import java.util.stream.Collectors
 import org.apache.commons.lang3.ThreadUtils
 import org.apache.commons.lang3.concurrent.BasicThreadFactory
 import org.slf4j.Logger
@@ -84,6 +84,7 @@ internal constructor(
             (destination != null) xor (source != null),
             "can only pass in a destination or a source"
         )
+        threadCreationInfo.set(ThreadCreationInfo())
         this.cliParser = cliParser
         this.outputRecordCollector = outputRecordCollector
         // integration iface covers the commands that are the same for both source and destination.
@@ -125,7 +126,7 @@ internal constructor(
         LOGGER.info("Integration config: {}", parsed)
 
         try {
-            when (parsed!!.command) {
+            when (parsed.command) {
                 Command.SPEC ->
                     outputRecordCollector.accept(
                         AirbyteMessage()
@@ -133,16 +134,12 @@ internal constructor(
                             .withSpec(integration.spec())
                     )
                 Command.CHECK -> {
-                    val config = parseConfig(parsed!!.getConfigPath())
+                    val config = parseConfig(parsed.getConfigPath())
                     if (integration is Destination) {
                         DestinationConfig.Companion.initialize(config, integration.isV2Destination)
                     }
                     try {
-                        validateConfig(
-                            integration.spec()!!.connectionSpecification,
-                            config,
-                            "CHECK"
-                        )
+                        validateConfig(integration.spec().connectionSpecification, config, "CHECK")
                     } catch (e: Exception) {
                         // if validation fails don't throw an exception, return a failed connection
                         // check message
@@ -164,8 +161,8 @@ internal constructor(
                     )
                 }
                 Command.DISCOVER -> {
-                    val config = parseConfig(parsed!!.getConfigPath())
-                    validateConfig(integration.spec()!!.connectionSpecification, config, "DISCOVER")
+                    val config = parseConfig(parsed.getConfigPath())
+                    validateConfig(integration.spec().connectionSpecification, config, "DISCOVER")
                     outputRecordCollector.accept(
                         AirbyteMessage()
                             .withType(AirbyteMessage.Type.CATALOG)
@@ -173,10 +170,10 @@ internal constructor(
                     )
                 }
                 Command.READ -> {
-                    val config = parseConfig(parsed!!.getConfigPath())
-                    validateConfig(integration.spec()!!.connectionSpecification, config, "READ")
+                    val config = parseConfig(parsed.getConfigPath())
+                    validateConfig(integration.spec().connectionSpecification, config, "READ")
                     val catalog =
-                        parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog::class.java)
+                        parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog::class.java)!!
                     val stateOptional =
                         parsed.getStatePath().map { path: Path? -> parseConfig(path) }
                     try {
@@ -193,17 +190,20 @@ internal constructor(
                     }
                 }
                 Command.WRITE -> {
-                    val config = parseConfig(parsed!!.getConfigPath())
-                    validateConfig(integration.spec()!!.connectionSpecification, config, "WRITE")
-                    // save config to singleton
-                    DestinationConfig.Companion.initialize(
-                        config,
-                        (integration as Destination).isV2Destination
-                    )
-                    val catalog =
-                        parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog::class.java)
-
                     try {
+                        val config = parseConfig(parsed.getConfigPath())
+                        validateConfig(integration.spec().connectionSpecification, config, "WRITE")
+                        // save config to singleton
+                        DestinationConfig.Companion.initialize(
+                            config,
+                            (integration as Destination).isV2Destination
+                        )
+                        val catalog =
+                            parseConfig(
+                                parsed.getCatalogPath(),
+                                ConfiguredAirbyteCatalog::class.java
+                            )!!
+
                         destination!!
                             .getSerializedMessageConsumer(config, catalog, outputRecordCollector)
                             .use { consumer -> consumeWriteStream(consumer!!) }
@@ -211,7 +211,6 @@ internal constructor(
                         stopOrphanedThreads()
                     }
                 }
-                else -> throw IllegalStateException("Unexpected value: " + parsed!!.command)
             }
         } catch (e: Exception) {
             // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An
@@ -221,15 +220,12 @@ internal constructor(
             // exist, we
             // just return the original exception.
             ApmTraceUtils.addExceptionToTrace(e)
-            val rootThrowable = ConnectorExceptionUtil.getRootConfigError(e)
-            val displayMessage = ConnectorExceptionUtil.getDisplayMessage(rootThrowable)
+            val rootConfigErrorThrowable = ConnectorExceptionUtil.getRootConfigError(e)
+            val rootTransientErrorThrowable = ConnectorExceptionUtil.getRootTransientError(e)
             // If the source connector throws a config error, a trace message with the relevant
             // message should
             // be surfaced.
-            if (ConnectorExceptionUtil.isConfigError(rootThrowable)) {
-                AirbyteTraceMessageUtility.emitConfigErrorTrace(e, displayMessage)
-            }
-            if (parsed!!.command == Command.CHECK) {
+            if (parsed.command == Command.CHECK) {
                 // Currently, special handling is required for the CHECK case since the user display
                 // information in
                 // the trace message is
@@ -241,10 +237,29 @@ internal constructor(
                         .withConnectionStatus(
                             AirbyteConnectionStatus()
                                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                                .withMessage(displayMessage)
+                                .withMessage(
+                                    ConnectorExceptionUtil.getDisplayMessage(
+                                        rootConfigErrorThrowable
+                                    )
+                                )
                         )
                 )
                 return
+            }
+
+            if (ConnectorExceptionUtil.isConfigError(rootConfigErrorThrowable)) {
+                AirbyteTraceMessageUtility.emitConfigErrorTrace(
+                    e,
+                    ConnectorExceptionUtil.getDisplayMessage(rootConfigErrorThrowable),
+                )
+                // On receiving a config error, the container should be immediately shut down.
+            } else if (ConnectorExceptionUtil.isTransientError(rootTransientErrorThrowable)) {
+                AirbyteTraceMessageUtility.emitTransientErrorTrace(
+                    e,
+                    ConnectorExceptionUtil.getDisplayMessage(rootTransientErrorThrowable)
+                )
+                // On receiving a transient error, the container should be immediately shut down.
+                System.exit(1)
             }
             throw e
         }
@@ -256,7 +271,7 @@ internal constructor(
         messageIterator: AutoCloseableIterator<AirbyteMessage>,
         recordCollector: Consumer<AirbyteMessage>
     ) {
-        messageIterator!!.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+        messageIterator.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
             LOGGER.debug("Producing messages for stream {}...", s)
         }
         messageIterator.forEachRemaining(recordCollector)
@@ -286,7 +301,7 @@ internal constructor(
                      * stream consumer.
                      */
                     val partitionSize = streamConsumer.parallelism
-                    val partitions = Lists.partition(streams.stream().toList(), partitionSize!!)
+                    val partitions = Lists.partition(streams.stream().toList(), partitionSize)
 
                     // Submit each stream partition for concurrent execution
                     partitions.forEach(
@@ -337,17 +352,43 @@ internal constructor(
                 )
             produceMessages(stream, streamStatusTrackingRecordConsumer)
         } catch (e: Exception) {
-            stream!!.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+            stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
                 LOGGER.error("Failed to consume from stream {}.", s, e)
             }
             throw RuntimeException(e)
         }
     }
 
+    class ThreadCreationInfo {
+        val stack: List<StackTraceElement> = Thread.currentThread().stackTrace.asList()
+        val time: Instant = Instant.now()
+        override fun toString(): String {
+            return "creationStack=${stack.joinToString("\n  ")}\ncreationTime=$time"
+        }
+    }
+
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(IntegrationRunner::class.java)
+        private val threadCreationInfo: InheritableThreadLocal<ThreadCreationInfo> =
+            object : InheritableThreadLocal<ThreadCreationInfo>() {
+                override fun childValue(parentValue: ThreadCreationInfo): ThreadCreationInfo {
+                    return ThreadCreationInfo()
+                }
+            }
 
         const val TYPE_AND_DEDUPE_THREAD_NAME: String = "type-and-dedupe"
+
+        // ThreadLocal.get(Thread) is private. So we open it and keep a reference to the
+        // opened method
+        private val getMethod: Method =
+            ThreadLocal::class.java.getDeclaredMethod("get", Thread::class.java).also {
+                it.isAccessible = true
+            }
+
+        @JvmStatic
+        fun getThreadCreationInfo(thread: Thread): ThreadCreationInfo? {
+            return getMethod.invoke(threadCreationInfo, thread) as ThreadCreationInfo?
+        }
 
         /**
          * Filters threads that should not be considered when looking for orphaned threads at
@@ -358,11 +399,12 @@ internal constructor(
          * active so long as the database connection pool is open.
          */
         @VisibleForTesting
-        val ORPHANED_THREAD_FILTER: Predicate<Thread> = Predicate { runningThread: Thread ->
-            (runningThread.name != Thread.currentThread().name &&
-                !runningThread.isDaemon &&
-                TYPE_AND_DEDUPE_THREAD_NAME != runningThread.name)
-        }
+        private val orphanedThreadPredicates: MutableList<(Thread) -> Boolean> =
+            mutableListOf({ runningThread: Thread ->
+                (runningThread.name != Thread.currentThread().name &&
+                    !runningThread.isDaemon &&
+                    TYPE_AND_DEDUPE_THREAD_NAME != runningThread.name)
+            })
 
         const val INTERRUPT_THREAD_DELAY_MINUTES: Int = 1
         const val EXIT_THREAD_DELAY_MINUTES: Int = 2
@@ -403,6 +445,15 @@ internal constructor(
             LOGGER.info("Finished buffered read of input stream")
         }
 
+        @JvmStatic
+        fun addOrphanedThreadFilter(predicate: (Thread) -> (Boolean)) {
+            orphanedThreadPredicates.add(predicate)
+        }
+
+        fun filterOrphanedThread(thread: Thread): Boolean {
+            return orphanedThreadPredicates.all { it(thread) }
+        }
+
         /**
          * Stops any non-daemon threads that could block the JVM from exiting when the main thread
          * is done.
@@ -430,11 +481,7 @@ internal constructor(
         ) {
             val currentThread = Thread.currentThread()
 
-            val runningThreads =
-                ThreadUtils.getAllThreads()
-                    .stream()
-                    .filter(ORPHANED_THREAD_FILTER)
-                    .collect(Collectors.toList())
+            val runningThreads = ThreadUtils.getAllThreads().filter(::filterOrphanedThread).toList()
             if (runningThreads.isNotEmpty()) {
                 LOGGER.warn(
                     """
@@ -455,7 +502,10 @@ internal constructor(
                             .build()
                     )
                 for (runningThread in runningThreads) {
-                    val str = "Active non-daemon thread: " + dumpThread(runningThread)
+                    val str =
+                        "Active non-daemon thread: " +
+                            dumpThread(runningThread) +
+                            "\ncreationStack=${getThreadCreationInfo(runningThread)}"
                     LOGGER.warn(str)
                     // even though the main thread is already shutting down, we still leave some
                     // chances to the children
@@ -517,7 +567,7 @@ internal constructor(
             return Jsons.deserialize(IOs.readFile(path))
         }
 
-        private fun <T> parseConfig(path: Path?, klass: Class<T>): T {
+        private fun <T> parseConfig(path: Path?, klass: Class<T>): T? {
             val jsonNode = parseConfig(path)
             return Jsons.`object`(jsonNode, klass)
         }

@@ -49,8 +49,8 @@ object TestingNamespaces {
             generateSuffix()
     }
 
-    fun generateFromOriginal(toOverwrite: String?, oldPrefix: String?, newPrefix: String?): String {
-        return toOverwrite!!.replace(oldPrefix!!, newPrefix!!)
+    fun generateFromOriginal(toOverwrite: String, oldPrefix: String, newPrefix: String): String {
+        return toOverwrite.replace(oldPrefix, newPrefix)
     }
 
     /**
