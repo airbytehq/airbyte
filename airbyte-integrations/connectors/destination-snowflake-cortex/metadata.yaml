@@ -17,7 +17,7 @@ data:
   dockerRepository: airbyte/destination-snowflake-cortex
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake-cortex
   githubIssueLabel: destination-snowflake-cortex
-  icon: snowflake.svg
+  icon: snowflake-cortex.svg
   license: MIT
   name: Snowflake Cortex
   remoteRegistries:
