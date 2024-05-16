@@ -194,9 +194,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             total_n_files = len(files)
 
             if total_n_files == 0:
-                self.logger.warning(
-                    msg=f"No files were identified in the stream {self.name}. Setting default schema for the stream."
-                )
+                self.logger.warning(msg=f"No files were identified in the stream {self.name}. Setting default schema for the stream.")
                 return schemaless_schema
 
             max_n_files_for_schema_inference = self._discovery_policy.get_max_n_files_for_schema_inference(self.get_parser())
