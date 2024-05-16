@@ -7,6 +7,7 @@ This page contains the setup guide and reference information for the Waiteraid s
 You can find or create authentication tokens within [Waiteraid](https://app.waiteraid.com/api-docs/index.html#auth_call).
 
 ## Setup guide
+
 ## Step 1: Set up the Waiteraid connector in Airbyte
 
 ### For Airbyte Cloud:
@@ -15,15 +16,16 @@ You can find or create authentication tokens within [Waiteraid](https://app.wait
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Waiteraid connector and select **Waiteraid** from the Source type dropdown.
 4. Enter your `auth_token` - Waiteraid Authentication Token.
-5. Enter your `restaurant ID` - The Waiteraid ID of the Restaurant you wanto sync. 
+5. Enter your `restaurant ID` - The Waiteraid ID of the Restaurant you wanto sync.
 6. Click **Set up source**.
 <!-- env:oss -->
+
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source. 
+2. Set the name for your source.
 3. Enter your `auth_token` - Waiteraid Authentication Token.
-4. Enter your `restaurant ID` - The Waiteraid ID of the Restaurant you wanto sync. 
+4. Enter your `restaurant ID` - The Waiteraid ID of the Restaurant you wanto sync.
 5. Click **Set up source**.
 
 ## Supported sync modes
@@ -36,10 +38,12 @@ The Waiteraid source connector supports the following [sync modes](https://docs.
 | Incremental Sync  | No         |
 | SSL connection    | No         |
 | Namespaces        | No         |
+
 <!-- /env:oss -->
+
 ## Supported Streams
 
-* [Bookings](https://app.waiteraid.com/api-docs/index.html#api_get_bookings)
+- [Bookings](https://app.waiteraid.com/api-docs/index.html#api_get_bookings)
 
 ## Data type map
 
@@ -52,6 +56,6 @@ The Waiteraid source connector supports the following [sync modes](https://docs.
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                           |
-|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------|
-| 0.1.0   | 2022-10-QQ | [QQQQ](https://github.com/airbytehq/airbyte/pull/QQQQ)   | New Source: Waiteraid                                |
+| Version | Date       | Pull Request                                           | Subject               |
+| :------ | :--------- | :----------------------------------------------------- | :-------------------- |
+| 0.1.0   | 2022-10-QQ | [QQQQ](https://github.com/airbytehq/airbyte/pull/QQQQ) | New Source: Waiteraid |

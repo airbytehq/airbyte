@@ -36,6 +36,10 @@ properties:
         format: uuid
       connectorBuildOptions:
         "$ref": ConnectorBuildOptions.yaml
+      connectorTestSuitesOptions:
+        type: array
+        items:
+          "$ref": ConnectorTestSuiteOptions.yaml
       connectorType:
         type: string
         enum:
@@ -116,3 +120,5 @@ properties:
       supportsRefreshes:
         type: boolean
         default: false
+      generated:
+        "$ref": GeneratedFields.yaml
