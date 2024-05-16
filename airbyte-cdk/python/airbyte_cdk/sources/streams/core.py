@@ -237,8 +237,7 @@ class Stream(ABC):
             name=self.name,
             json_schema=dict(self.get_json_schema()),
             supported_sync_modes=[SyncMode.full_refresh],
-            # todo: This field doesn't exist yet, but it will in https://github.com/airbytehq/airbyte-protocol/pull/73
-            # is_resumable=self.is_resumable,
+            is_resumable=self.is_resumable,
         )
 
         if self.namespace:
