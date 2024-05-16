@@ -10,12 +10,21 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
-  dockerImageTag: 0.5.4
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-greenhouse
   documentationUrl: https://docs.airbyte.com/integrations/sources/greenhouse
   githubIssueLabel: source-greenhouse
   icon: greenhouse.svg
   license: MIT
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: Update cursor field to use `last_activity_after` parameter to retrieve updates in `applications` stream.
+        upgradeDeadline: "2024-06-01"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "applications"
   maxSecondsBetweenMessages: 10
   name: Greenhouse
   remoteRegistries:
