@@ -2244,6 +2244,10 @@ class Tickets(CRMSearchStream):
     primary_key = "id"
     scopes = {"tickets"}
     last_modified_field = "hs_lastmodifieddate"
+    # the `contacts` property started to send the `array of string`,
+    # but the schema declares it to be `array of integer`,
+    # applying the default schema type normalization fixes the issue.
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
 
 class CustomObject(CRMSearchStream, ABC):
