@@ -155,7 +155,7 @@ public class PostgresDestination extends AbstractJdbcDestination<PostgresState> 
 
   @Override
   protected StreamAwareDataTransformer getDataTransformer(ParsedCatalog parsedCatalog, String defaultNamespace) {
-    return new PostgresDataTransformer();
+    return new PostgresDataTransformer(parsedCatalog, defaultNamespace);
   }
 
   @Override
