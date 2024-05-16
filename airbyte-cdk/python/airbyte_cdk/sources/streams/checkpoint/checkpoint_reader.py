@@ -4,6 +4,10 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Iterable, Mapping, Optional
 
+from airbyte_cdk.sources.types import StreamSlice
+
+from .cursor import Cursor
+
 
 class CheckpointMode(Enum):
     INCREMENTAL = "incremental"
@@ -69,6 +73,66 @@ class IncrementalCheckpointReader(CheckpointReader):
 
     def get_checkpoint(self) -> Optional[Mapping[str, Any]]:
         return self._state
+
+
+class CursorBasedCheckpointReader(CheckpointReader):
+    """
+    CursorBasedCheckpointReader is used by streams that implement a Cursor in order to manage state. This allows the checkpoint
+    reader to delegate the complexity of fetching state to the cursor and focus on the iteration over a stream's partitions.
+    Right now only low-code connectors provide cursor implementations, but the logic is extensible to any stream that adheres
+    to the Cursor interface.
+    """
+
+    def __init__(self, cursor: Cursor, stream_slices: Iterable[Optional[Mapping[str, Any]]], read_state_from_cursor: bool = False):
+        # The first attempt of an RFR stream has an empty {} incoming state, but should still make a first attempt to read records
+        # from the first page in next().
+        self._cursor = cursor
+        self._stream_slices = iter(stream_slices)
+        self._read_state_from_cursor = read_state_from_cursor
+        self._current_slice: Optional[StreamSlice] = None
+        self._finished_sync = False
+
+    def next(self) -> Optional[Mapping[str, Any]]:
+        try:
+            if self._current_slice is None:
+                self._current_slice = self._get_next_slice()
+                return self._current_slice
+            if self._read_state_from_cursor:
+                state_for_slice = self._cursor.select_state(self._current_slice.get("partition"))
+                if state_for_slice == {"__ab_full_refresh_sync_complete": True}:
+                    self._current_slice = self._get_next_slice()
+                else:
+                    self._current_slice = StreamSlice(cursor_slice=state_for_slice or {}, partition=self._current_slice.partition)
+            else:
+                # Unlike RFR cursors that iterate dynamically based on how stream state is updated, most cursors operate on a
+                # fixed set of slices determined before reading records. They should just iterate to the next slice
+                self._current_slice = self._get_next_slice()
+            return self._current_slice
+        except StopIteration:
+            self._finished_sync = True
+            return None
+
+    def _get_next_slice(self) -> StreamSlice:
+        next_slice = next(self._stream_slices)
+        if not isinstance(next_slice, StreamSlice):
+            raise ValueError(
+                f"{self._current_slice} should be of type StreamSlice. This is likely a bug in the CDK, please contact Airbyte support"
+            )
+        return next_slice
+
+    def observe(self, new_state: Mapping[str, Any]) -> None:
+        # Cursor based checkpoint readers don't need to observe the new state because it has already been updated by the cursor
+        # while processing records
+        pass
+
+    def get_checkpoint(self) -> Optional[Mapping[str, Any]]:
+        # This is used to avoid sending a duplicate state message at the end of a sync since the stream has already
+        # emitted state at the end of each slice. We only emit state if _current_slice is None which indicates we had no
+        # slices and emitted no record or are currently in the process of emitting records.
+        if self._current_slice is None or not self._finished_sync:
+            return self._cursor.get_stream_state()
+        else:
+            return None
 
 
 class ResumableFullRefreshCheckpointReader(CheckpointReader):

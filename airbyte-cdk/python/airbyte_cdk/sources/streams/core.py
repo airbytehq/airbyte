@@ -15,6 +15,8 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.checkpoint import (
     CheckpointMode,
     CheckpointReader,
+    Cursor,
+    CursorBasedCheckpointReader,
     FullRefreshCheckpointReader,
     IncrementalCheckpointReader,
     ResumableFullRefreshCheckpointReader,
@@ -384,6 +386,14 @@ class Stream(ABC):
         """
         return {}
 
+    def get_cursor(self) -> Optional[Cursor]:
+        """
+        A Cursor is an interface that a stream can implement to manage how its internal state is read and updated while
+        reading records. Historically, Python connectors had no concept of a cursor to manage state. Python streams need
+        need to define a cursor implementation and override this method to manage state through a Cursor.
+        """
+        return None
+
     def _get_checkpoint_reader(
         self,
         logger: logging.Logger,
@@ -392,6 +402,16 @@ class Stream(ABC):
         stream_state: MutableMapping[str, Any],
     ) -> CheckpointReader:
         checkpoint_mode = self._checkpoint_mode
+        cursor = self.get_cursor()
+        if cursor:
+            slices = self.stream_slices(
+                cursor_field=cursor_field,
+                sync_mode=sync_mode,  # todo: change this interface to no longer rely on sync_mode for behavior
+                stream_state=stream_state,
+            )
+            return CursorBasedCheckpointReader(
+                stream_slices=slices, cursor=cursor, read_state_from_cursor=checkpoint_mode == CheckpointMode.RESUMABLE_FULL_REFRESH
+            )
         if checkpoint_mode == CheckpointMode.RESUMABLE_FULL_REFRESH:
             return ResumableFullRefreshCheckpointReader(stream_state=stream_state)
         else:
