@@ -214,7 +214,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------- |
-| 1.4.3 | 2024-05-15 | [0](https://github.com/airbytehq/airbyte/pull/0) | Replace AirbyteLogger with logging.Logger |
+| 1.4.3 | 2024-05-15 | [38257](https://github.com/airbytehq/airbyte/pull/38257) | Replace AirbyteLogger with logging.Logger |
 | 1.4.2 | 2024-04-19 | [36639](https://github.com/airbytehq/airbyte/pull/36639) | Updating to 0.80.0 CDK |
 | 1.4.1 | 2024-04-12 | [36639](https://github.com/airbytehq/airbyte/pull/36639) | Schema descriptions |
 | 1.4.0 | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
