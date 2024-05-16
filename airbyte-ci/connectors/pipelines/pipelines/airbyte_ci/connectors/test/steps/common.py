@@ -5,14 +5,14 @@
 """This module groups steps made to run tests agnostic to a connector language."""
 
 import datetime
+import logging
 import os
 import time
-import traceback
 from abc import ABC, abstractmethod
 from functools import cached_property
 from pathlib import Path
 from textwrap import dedent
-from typing import ClassVar, List, Optional
+from typing import ClassVar, Dict, List, Optional
 
 import requests  # type: ignore
 import semver
@@ -26,7 +26,82 @@ from pipelines.consts import INTERNAL_TOOL_PATHS, CIContext
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
+from pipelines.models.secrets import Secret, SecretNotFoundError, SecretStore
 from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, StepStatus
+
+
+def get_secrets_from_connector_test_suites_option(
+    connector_test_suites_options: List[Dict[str, str | Dict[str, List[Dict[str, str | Dict[str, str]]]]]],
+    suite_name: str,
+    secret_stores: Dict[str, SecretStore],
+    raise_on_missing_secret_store: bool = True,
+    logger: logging.Logger | None = None,
+) -> List[Secret]:
+    """Get secrets declared in metadata connectorTestSuitesOptions for a test suite name.
+    It will use the secret store alias declared in connectorTestSuitesOptions.
+    If the secret store is not available a warning or and error could be raised according to the raise_on_missing_secret_store parameter value.
+    We usually want to raise an error when running in CI context and log a warning when running locally, as locally we can fallback on local secrets.
+
+    Args:
+        connector_test_suites_options (List[Dict[str, str  |  Dict]]): The connector under test test suite options
+        suite_name (str): The test suite name
+        secret_stores (Dict[str, SecretStore]): The available secrets stores
+        raise_on_missing_secret_store (bool, optional): Raise an error if the secret store declared in the connectorTestSuitesOptions is not available. Defaults to True.
+        logger (logging.Logger | None, optional): Logger to log a warning if the secret store declared in the connectorTestSuitesOptions is not available. Defaults to None.
+
+    Raises:
+        SecretNotFoundError: Raised  if the secret store declared in the connectorTestSuitesOptions is not available and raise_on_missing_secret_store is truthy.
+
+    Returns:
+        List[Secret]: List of secrets declared in the connectorTestSuitesOptions for a test suite name.
+    """
+    secrets: List[Secret] = []
+
+    for enabled_test_suite in connector_test_suites_options:
+        if enabled_test_suite["suite"] == suite_name:
+            if enabled_test_suite.get("testSecrets"):
+                assert isinstance(enabled_test_suite["testSecrets"], list)
+                suite_secrets: List[Dict[str, str | Dict[str, str]]] = enabled_test_suite["testSecrets"]
+                for s in suite_secrets:
+                    if s["secretStore"]["alias"] not in secret_stores:
+                        message = f"Secret {s['name']} can't be retrieved as {s['secretStore']['alias']} is not available"
+                        if raise_on_missing_secret_store:
+                            raise SecretNotFoundError(message)
+                        if logger is not None:
+                            logger.warn(message)
+                        continue
+                    secret_store = secret_stores[s["secretStore"]["alias"]]
+                    secret = Secret(s["name"], secret_store, file_name=s.get("fileName"))
+                    secrets.append(secret)
+
+    return secrets
+
+
+def get_connector_secrets_for_test_suite(
+    test_suite_name: str, context: ConnectorContext, connector_test_suites_options: List, local_secrets: List[Secret]
+) -> List[Secret]:
+    """Get secrets to use for a test suite.
+    Always merge secrets declared in metadata's connectorTestSuiteOptions with secrets declared locally.
+
+    Args:
+        test_suite_name (str): Name of the test suite to get secrets for
+        context (ConnectorContext): The current connector context
+        connector_test_suites_options (Dict): The current connector test suite options (from metadata)
+        local_secrets (List[Secret]): The local connector secrets.
+
+    Returns:
+        List[Secret]: Secrets to use to run the passed test suite name.
+    """
+    return (
+        get_secrets_from_connector_test_suites_option(
+            connector_test_suites_options,
+            test_suite_name,
+            context.secret_stores,
+            raise_on_missing_secret_store=context.is_ci,
+            logger=context.logger,
+        )
+        + local_secrets
+    )
 
 
 class VersionCheck(Step, ABC):
@@ -161,14 +236,9 @@ class QaChecks(SimpleDockerStep):
             internal_tools=[
                 MountPath(INTERNAL_TOOL_PATHS.CONNECTORS_QA.value),
             ],
-            secrets={
-                k: v
-                for k, v in {
-                    "DOCKER_HUB_USERNAME": context.docker_hub_username_secret,
-                    "DOCKER_HUB_PASSWORD": context.docker_hub_password_secret,
-                }.items()
-                if v
-            },
+            secret_env_variables={"DOCKER_HUB_USERNAME": context.docker_hub_username, "DOCKER_HUB_PASSWORD": context.docker_hub_password}
+            if context.docker_hub_username and context.docker_hub_password
+            else None,
             command=["connectors-qa", "run", f"--name={technical_name}"],
         )
 
@@ -212,14 +282,15 @@ class AcceptanceTests(Step):
             command += ["--numprocesses=auto"]  # Using pytest-xdist to run tests in parallel, auto means using all available cores
         return command
 
-    def __init__(self, context: ConnectorContext, concurrent_test_run: Optional[bool] = False) -> None:
+    def __init__(self, context: ConnectorContext, secrets: List[Secret], concurrent_test_run: Optional[bool] = False) -> None:
         """Create a step to run acceptance tests for a connector if it has an acceptance test config file.
 
         Args:
             context (ConnectorContext): The current test context, providing a connector object, a dagger client and a repository directory.
+            secrets (List[Secret]): List of secrets to mount to the connector container under test.
             concurrent_test_run (Optional[bool], optional): Whether to run acceptance tests in parallel. Defaults to False.
         """
-        super().__init__(context)
+        super().__init__(context, secrets)
         self.concurrent_test_run = concurrent_test_run
 
     async def get_cat_command(self, connector_dir: Directory) -> List[str]:
@@ -295,7 +366,7 @@ class AcceptanceTests(Step):
             .with_new_file("/tmp/container_id.txt", contents=str(connector_container_id))
             .with_workdir("/test_input")
             .with_mounted_directory("/test_input", test_input)
-            .with_(await secrets.mounted_connector_secrets(self.context, self.CONTAINER_SECRETS_DIRECTORY))
+            .with_(await secrets.mounted_connector_secrets(self.context, self.CONTAINER_SECRETS_DIRECTORY, self.secrets))
         )
         if "_EXPERIMENTAL_DAGGER_RUNNER_HOST" in os.environ:
             self.context.logger.info("Using experimental dagger runner host to run CAT with dagger-in-dagger")
@@ -492,7 +563,7 @@ class RegressionTests(Step):
                         "config",
                         "http-basic.airbyte-platform-internal-source",
                         self.github_user,
-                        self.context.ci_github_access_token or "",
+                        self.context.ci_github_access_token.value if self.context.ci_github_access_token else "",
                     ]
                 )
                 # Add GCP credentials from the environment and point google to their location (also required for connection-retriever)

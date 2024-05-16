@@ -17,7 +17,7 @@ import logging
 import multiprocessing
 import os
 import sys
-from typing import Optional
+from typing import Any, Optional
 
 import asyncclick as click
 import docker  # type: ignore
@@ -37,8 +37,10 @@ from pipelines.cli.telemetry import click_track_command
 from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, LOCAL_BUILD_PLATFORM, CIContext
 from pipelines.dagger.actions.connector.hooks import get_dagger_sdk_version
 from pipelines.helpers import github
+from pipelines.helpers.gcs import sanitize_gcp_credentials
 from pipelines.helpers.git import get_current_git_branch, get_current_git_revision
 from pipelines.helpers.utils import AIRBYTE_REPO_URL, get_current_epoch_time
+from pipelines.models.secrets import InMemorySecretStore, Secret
 
 
 def log_context_info(ctx: click.Context) -> None:
@@ -72,7 +74,6 @@ def _get_pull_request(ctx: click.Context) -> Optional[PullRequest.PullRequest]:
     can_get_pull_request = pull_request_number and ci_github_access_token
     if not can_get_pull_request:
         return None
-
     return github.get_pull_request(pull_request_number, ci_github_access_token)
 
 
@@ -125,6 +126,31 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
     return called_with_dagger_run
 
 
+def wrap_in_secret(ctx: click.Context, param: click.Option, value: Any) -> Optional[Secret]:  # noqa
+    if value is None:
+        return None
+    assert param.name is not None
+    if not isinstance(value, str):
+        raise click.BadParameter(f"{param.name} value is not a string, only strings can be wrapped in a secret.")
+    ctx.ensure_object(dict)
+    if "secret_stores" not in ctx.obj:
+        ctx.obj["secret_stores"] = {}
+    if "in_memory" not in ctx.obj["secret_stores"]:
+        ctx.obj["secret_stores"]["in_memory"] = InMemorySecretStore()
+
+    ctx.obj["secret_stores"]["in_memory"].add_secret(param.name, value)
+    return Secret(param.name, ctx.obj["secret_stores"]["in_memory"])
+
+
+def wrap_gcp_credentials_in_secret(ctx: click.Context, param: click.Option, value: Any) -> Optional[Secret]:  # noqa
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise click.BadParameter(f"{param.name} value is not a string, only strings can be wrapped in a secret.")
+    value = sanitize_gcp_credentials(value)
+    return wrap_in_secret(ctx, param, value)
+
+
 # COMMANDS
 
 
@@ -161,19 +187,20 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
 @click.option("--pipeline-start-timestamp", default=get_current_epoch_time, envvar="CI_PIPELINE_START_TIMESTAMP", type=int)
 @click.option("--pull-request-number", envvar="PULL_REQUEST_NUMBER", type=int)
 @click.option("--ci-git-user", default="octavia-squidington-iii", envvar="CI_GIT_USER", type=str)
-@click.option("--ci-github-access-token", envvar="CI_GITHUB_ACCESS_TOKEN", type=str)
+@click.option("--ci-github-access-token", envvar="CI_GITHUB_ACCESS_TOKEN", type=str, callback=wrap_in_secret)
 @click.option("--ci-report-bucket-name", envvar="CI_REPORT_BUCKET_NAME", type=str)
 @click.option("--ci-artifact-bucket-name", envvar="CI_ARTIFACT_BUCKET_NAME", type=str)
 @click.option(
-    "--ci-gcs-credentials",
+    "--ci-gcp-credentials",
     help="The service account to use during CI.",
     type=click.STRING,
     required=False,  # Not required for pre-release or local pipelines
     envvar="GCP_GSM_CREDENTIALS",
+    callback=wrap_gcp_credentials_in_secret,
 )
 @click.option("--ci-job-key", envvar="CI_JOB_KEY", type=str)
-@click.option("--s3-build-cache-access-key-id", envvar="S3_BUILD_CACHE_ACCESS_KEY_ID", type=str)
-@click.option("--s3-build-cache-secret-key", envvar="S3_BUILD_CACHE_SECRET_KEY", type=str)
+@click.option("--s3-build-cache-access-key-id", envvar="S3_BUILD_CACHE_ACCESS_KEY_ID", type=str, callback=wrap_in_secret)
+@click.option("--s3-build-cache-secret-key", envvar="S3_BUILD_CACHE_SECRET_KEY", type=str, callback=wrap_in_secret)
 @click.option("--show-dagger-logs/--hide-dagger-logs", default=False, type=bool)
 @click_ci_requirements_option()
 @click_track_command
@@ -206,6 +233,9 @@ async def airbyte_ci(ctx: click.Context) -> None:  # noqa D103
 
     if not ctx.obj["is_local"]:
         log_context_info(ctx)
+
+    if not ctx.obj.get("secret_stores", {}).get("in_memory"):
+        ctx.obj["secret_stores"] = {"in_memory": InMemorySecretStore()}
 
 
 if __name__ == "__main__":
