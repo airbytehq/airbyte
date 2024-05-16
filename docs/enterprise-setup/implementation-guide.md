@@ -251,7 +251,7 @@ global:
     user: "" # -- The key within `secretName` where the user is stored 
     #userSecretKey: "" # e.g. "database-user"
 
-    # -- The database password
+    # -- The key within `secretName` where password is stored
     passwordSecretKey: "" # e.g."database-password"
 ```
 
