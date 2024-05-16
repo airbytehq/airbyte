@@ -4,7 +4,7 @@
  * work well for content-centric websites.
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap");
 
 /* You can override the default Infima variables here. */
 :root {
@@ -105,6 +105,7 @@ html[data-theme="dark"] .docusaurus-highlight-code-line {
 
 .navbar .navbar__link {
   color: var(--ifm-menu-color);
+  font-weight: var(--ifm-font-weight-normal);
 }
 
 .navbar .navbar__link:hover {
@@ -192,6 +193,10 @@ img {
 .iconExternalLink_I5OW {
   margin-left: 0.3rem;
   display: none;
+}
+
+.menu__link {
+  font-weight: var(--ifm-font-weight-normal);
 }
 
 .menu__link--sublist-caret:after {
