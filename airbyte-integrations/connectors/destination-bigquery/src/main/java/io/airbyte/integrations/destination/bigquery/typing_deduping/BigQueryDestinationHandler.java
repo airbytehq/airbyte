@@ -33,6 +33,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Streams;
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.base.destination.typing_deduping.AlterTableReport;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
@@ -42,6 +44,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigratedException;
+import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.migrators.BigQueryDestinationState;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -57,10 +60,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.text.StringSubstitutor;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// TODO this stuff almost definitely exists somewhere else in our codebase.
 public class BigQueryDestinationHandler implements DestinationHandler<BigQueryDestinationState> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationHandler.class);
@@ -318,6 +321,24 @@ public class BigQueryDestinationHandler implements DestinationHandler<BigQueryDe
   private static Set<String> getPks(final StreamConfig stream) {
     return stream.getPrimaryKey() != null ? stream.getPrimaryKey().stream().map(ColumnId::getName).collect(Collectors.toSet())
         : Collections.emptySet();
+  }
+
+  @Override
+  public void createNamespaces(@NotNull Set<String> schemas) {
+    schemas.forEach(this::createDataset);
+  }
+
+  private void createDataset(final String dataset) {
+    LOGGER.info("Creating dataset if not present {}", dataset);
+    try {
+      BigQueryUtils.getOrCreateDataset(bq, dataset, datasetLocation);
+    } catch (BigQueryException e) {
+      if (ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES.contains(e.getCode())) {
+        throw new ConfigErrorException(e.getMessage(), e);
+      } else {
+        throw e;
+      }
+    }
   }
 
 }

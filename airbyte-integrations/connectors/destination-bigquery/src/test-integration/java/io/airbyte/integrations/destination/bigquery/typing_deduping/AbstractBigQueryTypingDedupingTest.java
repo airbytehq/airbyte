@@ -33,7 +33,6 @@ import io.airbyte.workers.exception.TestHarnessException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedupingTest {

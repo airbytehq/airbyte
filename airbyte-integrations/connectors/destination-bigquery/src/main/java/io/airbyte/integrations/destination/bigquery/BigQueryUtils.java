@@ -36,12 +36,9 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -86,16 +83,6 @@ public class BigQueryUtils {
     } catch (final Exception e) {
       LOGGER.error("Failed to wait for a query job:" + queryJob);
       throw new RuntimeException(e);
-    }
-  }
-
-  public static void createSchemaAndTableIfNeeded(final BigQuery bigquery,
-                                                  final Set<String> existingSchemas,
-                                                  final String schemaName,
-                                                  final String datasetLocation) {
-    if (!existingSchemas.contains(schemaName)) {
-      getOrCreateDataset(bigquery, schemaName, datasetLocation);
-      existingSchemas.add(schemaName);
     }
   }
 
@@ -218,7 +205,8 @@ public class BigQueryUtils {
       }
 
     } catch (final BigQueryException e) {
-      LOGGER.error("Partitioned table was not created: " + tableId, e);
+      LOGGER.error("Partitioned table was not created: {}", tableId, e);
+      throw e;
     }
   }
 
@@ -364,15 +352,6 @@ public class BigQueryUtils {
     return Optional.ofNullable(System.getenv("WORKER_CONNECTOR_IMAGE"))
         .map(name -> name.replace("airbyte/", Strings.EMPTY).replace(":", "/"))
         .orElse("destination-bigquery");
-  }
-
-  public static void printHeapMemoryConsumption() {
-    final int mb = 1024 * 1024;
-    final MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
-    final long xmx = memoryBean.getHeapMemoryUsage().getMax() / mb;
-    final long xms = memoryBean.getHeapMemoryUsage().getInit() / mb;
-    LOGGER.info("Initial Memory (xms) mb = {}", xms);
-    LOGGER.info("Max Memory (xmx) : mb =  {}", xmx);
   }
 
 }

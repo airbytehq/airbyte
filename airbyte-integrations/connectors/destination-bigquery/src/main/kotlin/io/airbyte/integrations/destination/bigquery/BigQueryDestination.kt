@@ -3,14 +3,13 @@
  */
 package io.airbyte.integrations.destination.bigquery
 
-import com.codepoetics.protonpack.Indexed
-import com.codepoetics.protonpack.StreamUtils
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryException
 import com.google.cloud.bigquery.BigQueryOptions
 import com.google.cloud.bigquery.QueryJobConfiguration
+import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
 import com.google.common.base.Charsets
 import io.airbyte.cdk.integrations.BaseConnector
@@ -120,20 +119,24 @@ class BigQueryDestination : BaseConnector(), Destination {
 
         try {
             val credentials = getServiceAccountCredentials(config)
-            val storage =
+            val storage: Storage =
                 StorageOptions.newBuilder()
                     .setProjectId(config[bqConstants.CONFIG_PROJECT_ID].asText())
                     .setCredentials(credentials)
                     .setHeaderProvider(getHeaderProvider())
                     .build()
                     .service
-            val permissionsCheckStatusList =
+            val permissionsCheckStatusList: List<Boolean> =
                 storage.testIamPermissions(bucketName, REQUIRED_PERMISSIONS)
 
+            // testIamPermissions returns a list of booleans
+            // in the same order of the presented permissions list
             missingPermissions.addAll(
-                StreamUtils.zipWithIndex(permissionsCheckStatusList.stream())
-                    .filter { i: Indexed<Boolean> -> !i.value }
-                    .map { i: Indexed<Boolean> -> REQUIRED_PERMISSIONS[Math.toIntExact(i.index)] }
+                permissionsCheckStatusList
+                    .asSequence()
+                    .withIndex()
+                    .filter { !it.value }
+                    .map { REQUIRED_PERMISSIONS[it.index] }
                     .toList(),
             )
 
@@ -227,12 +230,11 @@ class BigQueryDestination : BaseConnector(), Destination {
 
         if (uploadingMethod == UploadingMethod.STANDARD) {
             val bigQueryClientChunkSize = getBigQueryClientChunkSize(config)
-            val bigQueryFormatter = BigQueryRecordFormatter(BigQuerySQLNameTransformer())
             val bigQueryLoadingStorageOperation =
                 BigQueryDirectLoadingStorageOperation(
                     bigquery,
                     bigQueryClientChunkSize,
-                    bigQueryFormatter,
+                    BigQueryRecordFormatter(),
                     sqlGenerator,
                     destinationHandler,
                     datasetLocation,
@@ -242,15 +244,16 @@ class BigQueryDestination : BaseConnector(), Destination {
                     parsedCatalog,
                     destinationHandler,
                     defaultNamespace,
-                    { destinationInitialStatus: DestinationInitialStatus<BigQueryDestinationState>
+                    { initialStatus: DestinationInitialStatus<BigQueryDestinationState>, disableTD
                         ->
                         StandardStreamOperation(
                             bigQueryLoadingStorageOperation,
-                            destinationInitialStatus,
-                            disableTypeDedupe,
+                            initialStatus,
+                            disableTD
                         )
                     },
                     migrations,
+                    disableTypeDedupe,
                 )
             return createDirectUploadConsumer(
                 outputRecordCollector,
@@ -281,16 +284,17 @@ class BigQueryDestination : BaseConnector(), Destination {
                 parsedCatalog,
                 destinationHandler,
                 defaultNamespace,
-                { destinationInitialStatus: DestinationInitialStatus<BigQueryDestinationState> ->
+                { initialStatus: DestinationInitialStatus<BigQueryDestinationState>, disableTD ->
                     StagingStreamOperations(
                         bigQueryGcsStorageOperations,
-                        destinationInitialStatus,
+                        initialStatus,
                         FileUploadFormat.CSV,
                         V2_WITHOUT_META,
-                        disableTypeDedupe
+                        disableTD
                     )
                 },
                 migrations,
+                disableTypeDedupe,
             )
         return createStagingConsumer(
             outputRecordCollector,

@@ -5,10 +5,7 @@
 package io.airbyte.integrations.destination.bigquery.operation
 
 import com.google.cloud.bigquery.BigQuery
-import com.google.cloud.bigquery.BigQueryException
 import com.google.cloud.bigquery.TableId
-import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil
-import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.integrations.base.destination.operation.StorageOperation
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
@@ -21,6 +18,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 private val log = KotlinLogging.logger {}
 
@@ -30,32 +28,13 @@ abstract class BigQueryStorageOperation<Data>(
     private val destinationHandler: BigQueryDestinationHandler,
     protected val datasetLocation: String
 ) : StorageOperation<Data> {
-    private val existingSchemas = HashSet<String>()
+    private val existingSchemas = ConcurrentHashMap.newKeySet<String>()
     override fun prepareStage(streamId: StreamId, destinationSyncMode: DestinationSyncMode) {
-        // Prepare staging schema
-        createStagingDataset(streamId)
         // Prepare staging table. For overwrite, it does drop-create so we can skip explicit create.
         if (destinationSyncMode == DestinationSyncMode.OVERWRITE) {
             truncateStagingTable(streamId)
         } else {
             createStagingTable(streamId)
-        }
-    }
-
-    private fun createStagingDataset(streamId: StreamId) {
-        // create raw schema
-        if (!existingSchemas.contains(streamId.rawNamespace)) {
-            log.info { "Creating raw namespace ${streamId.rawNamespace}" }
-            try {
-                BigQueryUtils.getOrCreateDataset(bigquery, streamId.rawNamespace, datasetLocation)
-            } catch (e: BigQueryException) {
-                if (ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES.contains(e.code)) {
-                    throw ConfigErrorException(e.message!!, e)
-                } else {
-                    throw e
-                }
-            }
-            existingSchemas.add(streamId.rawNamespace)
         }
     }
 
@@ -90,10 +69,6 @@ abstract class BigQueryStorageOperation<Data>(
     }
 
     abstract override fun writeToStage(streamId: StreamId, data: Data)
-
-    override fun createFinalNamespace(streamId: StreamId) {
-        destinationHandler.execute(sqlGenerator.createSchema(streamId.finalNamespace))
-    }
 
     override fun createFinalTable(streamConfig: StreamConfig, suffix: String, replace: Boolean) {
         destinationHandler.execute(sqlGenerator.createTable(streamConfig, suffix, replace))
