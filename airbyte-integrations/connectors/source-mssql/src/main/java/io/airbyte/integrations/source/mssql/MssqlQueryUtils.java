@@ -51,7 +51,7 @@ public class MssqlQueryUtils {
 
   private static final String MAX_CURSOR_VALUE_QUERY =
       """
-        SELECT %s, COUNT(*) AS %s FROM %s WHERE %s = (SELECT MAX(%s) FROM %s) GROUP BY 1 LIMIT 1;
+        SELECT TOP 1 %s, COUNT(*) AS %s FROM %s WHERE %s = (SELECT MAX(%s) FROM %s) GROUP BY %s;
       """;
   public static final String INDEX_QUERY = "EXEC sp_helpindex N'%s'";
 
@@ -208,7 +208,8 @@ public class MssqlQueryUtils {
             fullTableName,
             quotedCursorField,
             quotedCursorField,
-            fullTableName);
+            fullTableName,
+            quotedCursorField);
         final List<JsonNode> jsonNodes;
         try {
           jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(cursorBasedSyncStatusQuery).executeQuery(),
