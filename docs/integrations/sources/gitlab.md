@@ -79,6 +79,7 @@ This connector outputs the following streams:
 - [Branches](https://docs.gitlab.com/ee/api/branches.html)
 - [Commits](https://docs.gitlab.com/ee/api/commits.html) \(Incremental\)
 - [Issues](https://docs.gitlab.com/ee/api/issues.html) \(Incremental\)
+- [Group Issues](https://docs.gitlab.com/ee/api/issues.html#list-group-issues)
 - [Group Issue Boards](https://docs.gitlab.com/ee/api/group_boards.html)
 - [Pipelines](https://docs.gitlab.com/ee/api/pipelines.html) \(Incremental\)
 - [Jobs](https://docs.gitlab.com/ee/api/jobs.html)
@@ -96,6 +97,7 @@ This connector outputs the following streams:
 - [Project Labels](https://docs.gitlab.com/ee/api/labels.html)
 - [Epics](https://docs.gitlab.com/ee/api/epics.html) \(only available for GitLab Ultimate and GitLab.com Gold accounts. Stream Epics uses iid field as primary key for more convenient search and matching with UI. Iid is the internal ID of the epic, number of Epic on UI.\)
 - [Epic Issues](https://docs.gitlab.com/ee/api/epic_issues.html) \(only available for GitLab Ultimate and GitLab.com Gold accounts\)
+- [DORA Metrics](https://docs.gitlab.com/ee/api/dora/metrics.html) \(only available for GitLab Ultimate and GitLab.com Gold accounts\)
 
 ## Additional information
 
@@ -109,6 +111,8 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.0.3  | 2024-05-16 | [](https://github.com/airbytehq/airbyte/pull/) | Add DORA metrics and Group Issues streams                                                                                                                                                 |
+
 | 4.0.2   | 2024-04-24 | [36637](https://github.com/airbytehq/airbyte/pull/36637) | Schema descriptions and CDK 0.80.0                                                                                                                                                 |
 | 4.0.1   | 2024-04-23 | [37505](https://github.com/airbytehq/airbyte/pull/37505) | Set error code `500` as retryable                                                                                                                                                  |
 | 4.0.0   | 2024-03-25 | [35989](https://github.com/airbytehq/airbyte/pull/35989) | Migrate to low-code                                                                                                                                                                |

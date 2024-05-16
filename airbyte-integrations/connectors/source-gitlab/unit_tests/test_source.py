@@ -13,7 +13,7 @@ from source_gitlab import SourceGitlab
 def test_streams(config):
     source = SourceGitlab()
     streams = source.streams(config)
-    assert len(streams) == 23
+    assert len(streams) == 28
     assert all([isinstance(stream, DeclarativeStream) for stream in streams])
 
 

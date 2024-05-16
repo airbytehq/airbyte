@@ -26,9 +26,7 @@ definitions:
   # Requester
   requester:
     type: HttpRequester
-    url_base: >-
-      {% set parts = config.get('api_url', 'gitlab.com').split('://') %}
-      {{ parts[0] if parts|length > 1 else 'https' }}://{{ parts[1] if parts[1] else parts[0] }}/api/v4/
+    url_base: "https://{{ config.get('api_url', 'gitlab.com') }}/api/v4"
     http_method: GET
     authenticator: "#/definitions/authenticator"
     use_cache: true
@@ -270,6 +268,15 @@ definitions:
     $parameters:
       path: "groups/{{ stream_slice.id }}/boards"
 
+  group_issues_stream:
+    name: "group_issues"
+    $ref: "#/definitions/base_groups_child_stream"
+    primary_key: ["id"]
+    transformations:
+      - "#/definitions/add_group_id_field"
+    $parameters:
+      path: "groups/{{ stream_slice.id }}/issues"
+
   epics_stream:
     name: "epics"
     $ref: "#/definitions/base_groups_child_stream"
@@ -352,6 +359,55 @@ definitions:
       - "#/definitions/add_project_id_field"
     $parameters:
       path: "projects/{{ stream_slice.id }}/labels"
+
+  project_dora_metrics_deployment_frequency_stream:
+    name: "project_dora_metrics_deployment_frequency"
+    $ref: "#/definitions/base_projects_child_stream"
+    primary_key: ["project_id"]
+    transformations:
+      - "#/definitions/add_project_id_field"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/dora/metrics"
+      request_parameters:
+        metric: "deployment_frequency"
+        interval: "monthly"
+  
+  project_dora_metrics_lead_time_for_changes_stream:
+    name: "project_dora_metrics_lead_time_for_changes"
+    $ref: "#/definitions/base_projects_child_stream"
+    primary_key: ["project_id"]
+    transformations:
+      - "#/definitions/add_project_id_field"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/dora/metrics"
+      request_parameters:
+        metric: "lead_time_for_changes"
+        interval: "monthly"
+
+
+  project_dora_metrics_time_to_restore_service_stream:
+    name: "project_dora_metrics_time_to_restore_service"
+    $ref: "#/definitions/base_projects_child_stream"
+    primary_key: ["project_id"]
+    transformations:
+      - "#/definitions/add_project_id_field"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/dora/metrics"
+      request_parameters:
+        metric: "time_to_restore_service"
+        interval: "monthly"
+
+  project_dora_metrics_change_failure_rate_stream:
+    name: "project_dora_metrics_change_failure_rate"
+    $ref: "#/definitions/base_projects_child_stream"
+    primary_key: ["project_id"]
+    transformations:
+      - "#/definitions/add_project_id_field"
+    $parameters:
+      path: "projects/{{ stream_slice.id }}/dora/metrics"
+      request_parameters:
+        metric: "change_failure_rate"
+        interval: "monthly"
 
   branches_stream:
     name: "branches"
@@ -582,6 +638,7 @@ definitions:
 streams:
   # Groups-based streams
   - "#/definitions/groups_stream"
+  - "#/definitions/group_issues_stream"
   - "#/definitions/group_milestones_stream"
   - "#/definitions/group_members_stream"
   - "#/definitions/group_labels_stream"
@@ -594,6 +651,10 @@ streams:
   - "#/definitions/project_milestones_stream"
   - "#/definitions/project_members_stream"
   - "#/definitions/project_labels_stream"
+  - "#/definitions/project_dora_metrics_deployment_frequency_stream"
+  - "#/definitions/project_dora_metrics_lead_time_for_changes_stream"
+  - "#/definitions/project_dora_metrics_change_failure_rate_stream"
+  - "#/definitions/project_dora_metrics_time_to_restore_service_stream"
   - "#/definitions/branches_stream"
   - "#/definitions/releases_stream"
   - "#/definitions/tags_stream"
