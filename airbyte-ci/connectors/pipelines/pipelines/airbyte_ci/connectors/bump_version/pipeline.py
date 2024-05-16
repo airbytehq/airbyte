@@ -241,7 +241,7 @@ class SetConnectorVersion(Step):
             )
 
         content = await dagger_read_file(repo_dir, file_path)
-        new_content = re.sub(r"(?<=\bversion = \")(.*)(?=\")", self.new_version, content)
+        new_content = re.sub(r"^(?<=\bversion = \")(.*)(?=\")", self.new_version, content)
         self.repo_dir = await dagger_write_file(repo_dir, file_path, new_content)
 
         if self.export:
