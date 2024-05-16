@@ -175,8 +175,8 @@ class SourceZendeskSupport(YamlDeclarativeSource):
         args = self.convert_config_to_declarative_stream_args(config)
         declarative_streams = super().streams(args)
 
-        nested_streams = self.get_nested_streams(config)
-        declarative_streams.extend(nested_streams)
+        # nested_streams = self.get_nested_streams(config)
+        # declarative_streams.extend(nested_streams)
 
         declarative_streams = self.check_enterprise_streams(declarative_streams)
         return declarative_streams
