@@ -3049,6 +3049,7 @@ earlier_csv_scenario: TestScenario[InMemoryFilesSource] = (
             ]
         }
     )
+    .set_expected_records(None)
 ).build()
 
 csv_no_records_scenario: TestScenario[InMemoryFilesSource] = (
@@ -3149,4 +3150,5 @@ csv_no_files_scenario: TestScenario[InMemoryFilesSource] = (
             ]
         }
     )
+    .set_expected_records(None)
 ).build()
