@@ -55,7 +55,7 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
-| 2.3.1 | 2024-05-15 | [0](https://github.com/airbytehq/airbyte/pull/0) | Replace AirbyteLogger with logging.Logger |
+| 2.3.1 | 2024-05-16 | [38267](https://github.com/airbytehq/airbyte/pull/38267) | Replace AirbyteLogger with logging.Logger |
 | 2.3.0 | 2024-04-12 | [36724](https://github.com/airbytehq/airbyte/pull/36724) | Connector migrated to low-code |
 | 2.2.2 | 2024-04-19 | [36651](https://github.com/airbytehq/airbyte/pull/36651) | Updating to 0.80.0 CDK |
 | 2.2.1 | 2024-04-12 | [36651](https://github.com/airbytehq/airbyte/pull/36651) | Schema descriptions |
