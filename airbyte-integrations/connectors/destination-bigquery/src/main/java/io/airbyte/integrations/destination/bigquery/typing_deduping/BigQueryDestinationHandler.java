@@ -60,7 +60,6 @@ import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// TODO this stuff almost definitely exists somewhere else in our codebase.
 public class BigQueryDestinationHandler implements DestinationHandler<BigQueryDestinationState> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationHandler.class);
