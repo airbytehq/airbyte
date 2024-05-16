@@ -13,7 +13,7 @@ from typing import Any, Mapping
 
 import pytest
 import yaml
-from airbyte_cdk import AirbyteSpec, Connector
+from airbyte_cdk.connector import AirbyteSpec, Connector
 from airbyte_cdk.models import AirbyteConnectionStatus
 
 logger = logging.getLogger("airbyte")
