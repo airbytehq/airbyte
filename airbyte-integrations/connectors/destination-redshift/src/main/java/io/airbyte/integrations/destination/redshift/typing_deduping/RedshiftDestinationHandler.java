@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.redshift.typing_deduping;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
@@ -49,6 +50,12 @@ public class RedshiftDestinationHandler extends JdbcDestinationHandler<RedshiftS
         getJdbcDatabase().executeWithinTransaction(modifiedStatements);
       } catch (final SQLException e) {
         log.error("Sql {}-{} failed", queryId, transactionId, e);
+        // This is a big hammer for something that should be much more targetted, only when executing the
+        // DROP TABLE command.
+        if (e.getMessage().contains("ERROR: cannot drop table") && e.getMessage().contains("because other objects depend on it")) {
+          throw new ConfigErrorException(
+              "Failed to drop table without the CASCADE option. Consider changing the drop_cascade configuration parameter", e);
+        }
         throw e;
       }
 
