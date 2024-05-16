@@ -6,11 +6,11 @@ data:
     hosts:
       - ${domain}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
   connectorSubtype: api
   connectorType: source
   definitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
-  dockerImageTag: 2.0.1
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-jira
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
   githubIssueLabel: source-jira
@@ -18,6 +18,10 @@ data:
   license: MIT
   maxSecondsBetweenMessages: 5400
   name: Jira
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-jira
   registries:
     cloud:
       enabled: true
@@ -26,35 +30,21 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      2.0.0:
+        message: "The source Jira connector is being migrated from the Python CDK to our declarative low-code CDK. Due to changes to the incremental stream state, this migration constitutes a breaking change. Additionally, an issue in the `ProjectAvatars` stream has been fixed. After updating, please reset your source before resuming syncs. For more information, see our migration documentation for source Jira."
+        upgradeDeadline: "2024-05-31"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["board_issues", "issues", "sprint_issues"]
       1.0.0:
         message:
-          Stream state will be saved for every board in stream `Boards Issues`.
+          "Stream state will be saved for every board in stream `Boards Issues`.
           Customers who use stream `Board Issues` in Incremental Sync mode must take
-          action with their connections.
-        scopedImpact:
-          - impactedScopes:
-              - board_issues
-            scopeType: stream
+          action with their connections."
         upgradeDeadline: "2024-01-25"
-      2.0.0:
-        message:
-          The source Jira connector is being migrated from the Python CDK to
-          our declarative low-code CDK. Due to changes to the incremental stream state,
-          this migration constitutes a breaking change. Additionally, an issue in
-          the `ProjectAvatars` stream has been fixed. After updating, please reset
-          your source before resuming syncs. For more information, see our migration
-          documentation for source Jira.
         scopedImpact:
-          - impactedScopes:
-              - board_issues
-              - issues
-              - sprint_issues
-            scopeType: stream
-        upgradeDeadline: "2024-05-31"
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-jira
+          - scopeType: stream
+            impactedScopes: ["board_issues"]
   suggestedStreams:
     streams:
       - issues
