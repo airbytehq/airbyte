@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 137ece28-5434-455c-8f34-69dc3782f451
-  dockerImageTag: 2.1.2
+  dockerImageTag: 3.0.0
   dockerRepository: airbyte/source-linkedin-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
   githubIssueLabel: source-linkedin-ads
@@ -65,6 +65,13 @@ data:
               - "ad_member_seniority_analytics"
               - "ad_member_region_analytics"
               - "ad_member_company_analytics"
+      3.0.0:
+        message: This upgrade changes primary key for AccountUsers streams from account to account, users so that fix deduplication for this stream.
+        upgradeDeadline: "2024-06-17"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "account_users"
   suggestedStreams:
     streams:
       - accounts

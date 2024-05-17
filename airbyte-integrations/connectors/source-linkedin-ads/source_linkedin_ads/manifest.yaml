@@ -1,0 +1,1442 @@
+version: 0.89.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - accounts
+
+definitions:
+  streams:
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: adAccounts
+          http_method: GET
+          request_parameters:
+            q: search
+          request_headers:
+            Linkedin-Version: '202404'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: >-
+                      Stream {{self.name}}: LinkedIn API requests are rate
+                      limited. Rate limits specify the maximum number of API
+                      calls that can be made in a 24 hour period. These limits
+                      reset at midnight UTC every day. You can find more
+                      information here
+                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
+                      Also quotas and usage are here:
+                      https://www.linkedin.com/developers/apps.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - elements
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 500
+            cursor_value: '{{ response.get("metadata", {}).get("nextPageToken", {}) }}'
+            stop_condition: '{{ not response.get("metadata", {}).get("nextPageToken", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/accounts'
+    account_users:
+      type: DeclarativeStream
+      name: account_users
+      primary_key:
+        - account
+        - user
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: adAccountUsers
+          http_method: GET
+          request_parameters:
+            q: accounts
+            count: '500'
+            accounts: urn:li:sponsoredAccount:{{stream_slice.get('account_id')}}
+          request_headers:
+            Linkedin-Version: '202404'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: >-
+                      Stream {{self.name}}: LinkedIn API requests are rate
+                      limited. Rate limits specify the maximum number of API
+                      calls that can be made in a 24 hour period. These limits
+                      reset at midnight UTC every day. You can find more
+                      information here
+                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
+                      Also quotas and usage are here:
+                      https://www.linkedin.com/developers/apps.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - elements
+          record_filter:
+            type: RecordFilter
+            condition: >-
+              {{ record['changeAuditStamps']['lastModified']['time'] >= stream_state['lastModified'] if
+              stream_state.get('lastModified') else record['changeAuditStamps']['lastModified']['time'] >= timestamp(config['start_date']) * 1000 }}
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: '#/definitions/streams/accounts'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModified
+        cursor_datetime_formats:
+          - '%ms'
+        datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') }}"
+          datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - lastModified
+              value: '{{ record["changeAuditStamps"]["lastModified"]["time"] }}'
+        - type: AddFields
+          fields:
+            - path:
+                - created
+              value: '{{ record["changeAuditStamps"]["created"]["time"] }}'
+        - type: RemoveFields
+          field_pointers:
+            - - changeAuditStamps
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/account_users'
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: CustomRequester
+          class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
+          url_base: https://api.linkedin.com/rest/
+          authenticator: "#/definitions/authenticator"
+          path: adAccounts/{{stream_slice.get('account_id')}}/adCampaigns
+          http_method: GET
+          request_parameters:
+            q: search
+            search: "(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))"
+
+          request_headers:
+            Linkedin-Version: '202404'
+            X-Restli-Protocol-Version: 2.0.0
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: >-
+                      Stream {{self.name}}: LinkedIn API requests are rate
+                      limited. Rate limits specify the maximum number of API
+                      calls that can be made in a 24 hour period. These limits
+                      reset at midnight UTC every day. You can find more
+                      information here
+                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
+                      Also quotas and usage are here:
+                      https://www.linkedin.com/developers/apps.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - elements
+          record_filter:
+            type: RecordFilter
+            condition: >-
+              {{ record['changeAuditStamps']['lastModified']['time'] >= stream_state['lastModified'] if
+              stream_state.get('lastModified') else record['changeAuditStamps']['lastModified']['time'] >= timestamp(config['start_date']) * 1000 }}
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 500
+            cursor_value: '{{ response.get("metadata", {}).get("nextPageToken", {}) }}'
+            stop_condition: '{{ not response.get("metadata", {}).get("nextPageToken", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: '#/definitions/streams/accounts'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModified
+        cursor_datetime_formats:
+          - '%ms'
+        datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') }}"
+          datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - lastModified
+              value: '{{ record["changeAuditStamps"]["lastModified"]["time"] }}'
+        - type: AddFields
+          fields:
+            - path:
+                - created
+              value: '{{ record["changeAuditStamps"]["created"]["time"] }}'
+        - type: RemoveFields
+          field_pointers:
+            - - changeAuditStamps
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/campaign_groups'
+    campaign_groups:
+      type: DeclarativeStream
+      name: campaign_groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: CustomRequester
+          class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
+          url_base: https://api.linkedin.com/rest/
+          authenticator: "#/definitions/authenticator"
+          path: adAccounts/{{stream_slice.get('account_id')}}/adCampaignGroups
+          http_method: GET
+          request_parameters:
+            q: search
+            search: "(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))"
+
+          request_headers:
+            Linkedin-Version: '202404'
+            X-Restli-Protocol-Version: 2.0.0
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: >-
+                      Stream {{self.name}}: LinkedIn API requests are rate
+                      limited. Rate limits specify the maximum number of API
+                      calls that can be made in a 24 hour period. These limits
+                      reset at midnight UTC every day. You can find more
+                      information here
+                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
+                      Also quotas and usage are here:
+                      https://www.linkedin.com/developers/apps.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - elements
+          record_filter:
+            type: RecordFilter
+            condition: >-
+              {{ record['changeAuditStamps']['lastModified']['time'] >= stream_state['lastModified'] if
+              stream_state.get('lastModified') else record['changeAuditStamps']['lastModified']['time'] >= timestamp(config['start_date']) * 1000 }}
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 500
+            cursor_value: '{{ response.get("metadata", {}).get("nextPageToken", {}) }}'
+            stop_condition: '{{ not response.get("metadata", {}).get("nextPageToken", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: '#/definitions/streams/accounts'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModified
+        cursor_datetime_formats:
+          - '%ms'
+        datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') }}"
+          datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/campaign_groups'
+    creatives:
+      type: DeclarativeStream
+      name: creatives
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: adAccounts/{{stream_slice.get('account_id')}}/creatives
+          http_method: GET
+          request_parameters:
+            q: criteria
+          request_headers:
+            Linkedin-Version: '202404'
+            X-RestLi-Method: FINDER
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: >-
+                      Stream {{self.name}}: LinkedIn API requests are rate
+                      limited. Rate limits specify the maximum number of API
+                      calls that can be made in a 24 hour period. These limits
+                      reset at midnight UTC every day. You can find more
+                      information here
+                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
+                      Also quotas and usage are here:
+                      https://www.linkedin.com/developers/apps.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - elements
+          record_filter:
+            type: RecordFilter
+            condition: >-
+              {{ record['lastModifiedAt'] >= stream_state['lastModifiedAt'] if
+              stream_state.get('lastModifiedAt') else record['lastModifiedAt'] >= timestamp(config['start_date']) * 1000 }}
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response.get("metadata", {}).get("nextPageToken", {}) }}'
+            stop_condition: '{{ not response.get("metadata", {}).get("nextPageToken", {}) }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: '#/definitions/streams/accounts'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModifiedAt
+        cursor_datetime_formats:
+          - '%ms'
+        datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') }}"
+          datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/creatives'
+    conversions:
+      type: DeclarativeStream
+      name: conversions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: conversions
+          http_method: GET
+          request_parameters:
+            q: account
+            account: urn:li:sponsoredAccount:{{stream_slice.get('account_id')}}
+            count: '500'
+          request_headers:
+            Linkedin-Version: '202404'
+            X-Restli-Protocol-Version: 2.0.0
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: >-
+                      Stream {{self.name}}: LinkedIn API requests are rate
+                      limited. Rate limits specify the maximum number of API
+                      calls that can be made in a 24 hour period. These limits
+                      reset at midnight UTC every day. You can find more
+                      information here
+                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
+                      Also quotas and usage are here:
+                      https://www.linkedin.com/developers/apps.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - elements
+          record_filter:
+            type: RecordFilter
+            condition: >-
+              {{ record['lastModified'] >= stream_state['lastModified'] if
+              stream_state.get('lastModified') else record['lastModified'] >= timestamp(config['start_date']) * 1000 }}
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: '#/definitions/streams/accounts'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModified
+        cursor_datetime_formats:
+          - '%ms'
+        datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') }}"
+          datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/conversions'
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.linkedin.com/rest/
+    authenticator: "#/definitions/authenticator"
+  # Authenticators
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['access_token'] }}"
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    refresh_request_body: { }
+    token_refresh_endpoint: https://www.linkedin.com/oauth/v2/accessToken
+    grant_type: refresh_token
+    client_id: '{{ config["credentials"]["client_id"] }}'
+    client_secret: '{{ config["credentials"]["client_secret"] }}'
+    refresh_token: '{{ config["credentials"]["refresh_token"] }}'
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: [ "credentials", "auth_method" ]
+    authenticators:
+      oAuth2.0: "#/definitions/oauth_authenticator"
+      access_token: "#/definitions/bearer_authenticator"
+streams:
+  - $ref: '#/definitions/streams/accounts'
+  - $ref: '#/definitions/streams/account_users'
+  - $ref: '#/definitions/streams/campaigns'
+  - $ref: '#/definitions/streams/campaign_groups'
+  - $ref: '#/definitions/streams/creatives'
+  - $ref: '#/definitions/streams/conversions'
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - start_date
+    properties:
+      credentials:
+        title: Authentication
+        type: object
+        oneOf:
+          - type: object
+            title: OAuth2.0
+            required:
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_method:
+                type: string
+                const: oAuth2.0
+              client_id:
+                type: string
+                title: Client ID
+                description: "The client ID of your developer application. Refer to our <a href='https://docs.airbyte.com/integrations/sources/linkedin-ads#setup-guide'>documentation</a> for more information."
+                airbyte_secret: true
+              client_secret:
+                type: string
+                title: Client Secret
+                description: "The client secret of your developer application. Refer to our <a href='https://docs.airbyte.com/integrations/sources/linkedin-ads#setup-guide'>documentation</a> for more information."
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: "The key to refresh the expired access token. Refer to our <a href='https://docs.airbyte.com/integrations/sources/linkedin-ads#setup-guide'>documentation</a> for more information."
+                airbyte_secret: true
+          - title: Access Token
+            type: object
+            required:
+              - access_token
+            properties:
+              auth_method:
+                type: string
+                const: access_token
+              access_token:
+                type: string
+                title: Access Token
+                description: "The access token generated for your developer application. Refer to our <a href='https://docs.airbyte.com/integrations/sources/linkedin-ads#setup-guide'>documentation</a> for more information."
+                airbyte_secret: true
+      start_date:
+        type: string
+        title: Start Date
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        pattern_descriptor: YYYY-MM-DD
+        description: "UTC date in the format YYYY-MM-DD. Any data before this date will not be replicated."
+        examples:
+          - '2021-05-17'
+        format: date
+      account_ids:
+        title: Account IDs
+        type: array
+        description: "Specify the account IDs to pull data from, separated by a space. Leave this field empty if you want to pull the data from all accounts accessible by the authenticated user. See the <a href=\"https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details?lang=en\">LinkedIn docs</a> to locate these IDs."
+        items:
+          type: integer
+        examples:
+          - 123456789
+        default: [ ]
+        ad_analytics_reports:
+          title: Custom Ad Analytics Reports
+          type: array
+          items:
+            type: object
+            title: Ad Analytics Report Configuration
+            description: "Config for custom ad Analytics Report"
+            required:
+              - name
+              - pivot_by
+              - time_granularity
+            properties:
+              name:
+                title: Report Name
+                description: "The name for the custom report."
+                type: string
+              pivot_by:
+                title: Pivot Category
+                description: "Choose a category to pivot your analytics report around. This selection will organize your data based on the chosen attribute, allowing you to analyze trends and performance from different perspectives."
+                type: string
+                enum:
+                  - COMPANY
+                  - ACCOUNT
+                  - SHARE
+                  - CAMPAIGN
+                  - CREATIVE
+                  - CAMPAIGN_GROUP
+                  - CONVERSION
+                  - CONVERSATION_NODE
+                  - CONVERSATION_NODE_OPTION_INDEX
+                  - SERVING_LOCATION
+                  - CARD_INDEX
+                  - MEMBER_COMPANY_SIZE
+                  - MEMBER_INDUSTRY
+                  - MEMBER_SENIORITY
+                  - MEMBER_JOB_TITLE
+                  - MEMBER_JOB_FUNCTION
+                  - MEMBER_COUNTRY_V2
+                  - MEMBER_REGION_V2
+                  - MEMBER_COMPANY
+                  - PLACEMENT_NAME
+                  - IMPRESSION_DEVICE_TYPE
+              time_granularity:
+                title: Time Granularity
+                description: "Choose how to group the data in your report by time. The options are:<br>- 'ALL': A single result summarizing the entire time range.<br>- 'DAILY': Group results by each day.<br>- 'MONTHLY': Group results by each month.<br>- 'YEARLY': Group results by each year.<br>Selecting a time grouping helps you analyze trends and patterns over different time periods."
+                type: string
+                enum:
+                  - ALL
+                  - DAILY
+                  - MONTHLY
+                  - YEARLY
+          default: [ ]
+    additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_method
+    predicate_value: oAuth2.0
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+metadata:
+  autoImportSchema:
+    accounts: true
+    account_users: true
+    campaigns: true
+    campaign_groups: true
+    creatives: true
+    conversions: true
+
+schemas:
+  accounts:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    title: Accounts
+    additionalProperties: true
+    properties:
+      test:
+        description: Flag indicating if the account is in a test mode.
+        type:
+          - "null"
+          - boolean
+      notifiedOnCreativeRejection:
+        description: Flag for notifications on creative rejection.
+        type:
+          - "null"
+          - boolean
+      notifiedOnNewFeaturesEnabled:
+        description: Flag for notifications on new features being enabled.
+        type:
+          - "null"
+          - boolean
+      notifiedOnEndOfCampaign:
+        description: Flag for notifications on the end of campaign.
+        type:
+          - "null"
+          - boolean
+      servingStatuses:
+        description: The serving statuses associated with the account.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      notifiedOnCampaignOptimization:
+        description: Flag for notifications on campaign optimization.
+        type:
+          - "null"
+          - boolean
+      type:
+        description: The type or category of the account.
+        type:
+          - "null"
+          - string
+      version:
+        description: The version information related to the account.
+        type:
+          - "null"
+          - object
+        properties:
+          versionTag:
+            description: The version tag associated with the account.
+            type:
+              - "null"
+              - string
+      reference:
+        description: A reference identifier for the account.
+        type:
+          - "null"
+          - string
+      notifiedOnCreativeApproval:
+        description: Flag for notifications on creative approval.
+        type:
+          - "null"
+          - boolean
+      created:
+        description: The timestamp indicating when the account was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastModified:
+        description: The timestamp of the last modification made to the account.
+        type:
+          - "null"
+          - string
+        format: date-time
+      name:
+        description: The name of the account.
+        type:
+          - "null"
+          - string
+      currency:
+        description: The currency used for financial transactions in the account.
+        type:
+          - "null"
+          - string
+      id:
+        description: The unique identifier for the account.
+        type:
+          - "null"
+          - integer
+      status:
+        description: The status of the account.
+        type:
+          - "null"
+          - string
+
+  account_users:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    title: AccountUsers
+    additionalProperties: true
+    properties:
+      account:
+        description: The account associated with the user
+        type:
+          - "null"
+          - string
+      created:
+        description: The date and time when the user account was created
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastModified:
+        description: The date and time when the user account was last modified
+        type:
+          - "null"
+          - string
+        format: date-time
+      role:
+        description: The role assigned to the user in the account
+        type:
+          - "null"
+          - string
+      user:
+        description: The user details including name, email, etc.
+        type:
+          - "null"
+          - string
+
+  campaigns:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    title: Campaigns
+    additionalProperties: true
+    properties:
+      targetingCriteria:
+        description: Criteria for targeting in the campaign.
+        type:
+          - "null"
+          - object
+        properties:
+          include:
+            description: Criteria to include in targeting.
+            type:
+              - "null"
+              - object
+            properties:
+              and:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      description: The type of targeting to include.
+                      type:
+                        - "null"
+                        - string
+                    values:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        description: Values to include for the specified type.
+                        type:
+                          - "null"
+                          - string
+          exclude:
+            description: Criteria to exclude in targeting.
+            type:
+              - "null"
+              - object
+            properties:
+              or:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      description: The type of targeting to exclude.
+                      type:
+                        - "null"
+                        - string
+                    values:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        description: Values to exclude for the specified type.
+                        type:
+                          - "null"
+                          - string
+      servingStatuses:
+        description: The serving statuses of the campaign.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      type:
+        description: The type of campaign.
+        type:
+          - "null"
+          - string
+      locale:
+        description: The locale settings for the campaign.
+        type:
+          - "null"
+          - object
+        properties:
+          country:
+            description: The country setting for the campaign.
+            type:
+              - "null"
+              - string
+          language:
+            description: The language setting for the campaign.
+            type:
+              - "null"
+              - string
+      version:
+        description: The version information for the campaign.
+        type:
+          - "null"
+          - object
+        properties:
+          versionTag:
+            description: The version tag for the campaign.
+            type:
+              - "null"
+              - string
+      associatedEntity:
+        description: The entity associated with the campaign.
+        type:
+          - "null"
+          - string
+      runSchedule:
+        description: The schedule for running the campaign.
+        type:
+          - "null"
+          - object
+        properties:
+          start:
+            description: The start date of the campaign schedule.
+            type:
+              - "null"
+              - integer
+          end:
+            description: The end date of the campaign schedule.
+            type:
+              - "null"
+              - integer
+      optimizationTargetType:
+        description: The type of optimization target for the campaign.
+        type:
+          - "null"
+          - string
+      created:
+        description: The date and time when the campaign was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastModified:
+        description: The date and time when the campaign was last modified.
+        type:
+          - "null"
+          - string
+        format: date-time
+      campaignGroup:
+        description: The group to which the campaign belongs.
+        type:
+          - "null"
+          - string
+      dailyBudget:
+        description: The daily budget set for the campaign.
+        type:
+          - "null"
+          - object
+        properties:
+          amount:
+            description: The daily budget amount for the campaign.
+            type:
+              - "null"
+              - string
+          currencyCode:
+            description: The currency code for the daily budget amount.
+            type:
+              - "null"
+              - string
+      totalBudget:
+        description: The total budget amount for the campaign.
+        type:
+          - "null"
+          - object
+        properties:
+          amount:
+            description: The total budget amount.
+            type:
+              - "null"
+              - string
+          currencyCode:
+            description: The currency code for the total budget amount.
+            type:
+              - "null"
+              - string
+      unitCost:
+        description: The unit cost for the campaign.
+        type:
+          - "null"
+          - object
+        properties:
+          amount:
+            description: The unit cost amount.
+            type:
+              - "null"
+              - string
+          currencyCode:
+            description: The currency code for the unit cost amount.
+            type:
+              - "null"
+              - string
+      creativeSelection:
+        description: Information about the creative selection for the campaign.
+        type:
+          - "null"
+          - string
+      costType:
+        description: The type of cost associated with the campaign.
+        type:
+          - "null"
+          - string
+      name:
+        description: The name of the campaign.
+        type:
+          - "null"
+          - string
+      offsiteDeliveryEnabled:
+        description: Indicates if offsite delivery is enabled for the campaign.
+        type:
+          - "null"
+          - boolean
+      id:
+        description: The unique identifier of the campaign.
+        type:
+          - "null"
+          - integer
+      audienceExpansionEnabled:
+        description: Indicates if audience expansion is enabled for this campaign.
+        type:
+          - "null"
+          - boolean
+      test:
+        description: Indicates if the campaign is a test campaign.
+        type:
+          - "null"
+          - boolean
+      account:
+        description: The account associated with the campaign data.
+        type:
+          - "null"
+          - string
+      status:
+        description: The status of the campaign.
+        type:
+          - "null"
+          - string
+      storyDeliveryEnabled:
+        description: Indicates if story delivery is enabled for the campaign.
+        type:
+          - "null"
+          - boolean
+      pacingStrategy:
+        description: The pacing strategy for the campaign.
+        type:
+          - "null"
+          - string
+      format:
+        description: The format of the campaign.
+        type:
+          - "null"
+          - string
+      objectiveType:
+        description: The type of objective for the campaign.
+        type:
+          - "null"
+          - string
+      offsitePreferences:
+        description: Preferences related to offsite delivery.
+        type:
+          - "null"
+          - object
+        properties:
+          iabCategories:
+            description: IAB categories preferences.
+            type:
+              - "null"
+              - object
+            properties:
+              exclude:
+                description: Excluded IAB categories.
+                type:
+                  - "null"
+                  - array
+          publisherRestrictionFiles:
+            description: Publisher restriction files preferences.
+            type:
+              - "null"
+              - object
+            properties:
+              include:
+                description: Included publisher restriction files.
+                type:
+                  - "null"
+                  - array
+              exclude:
+                description: Excluded publisher restriction files.
+                type:
+                  - "null"
+                  - array
+
+  campaign_groups:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    title: Campaign Groups
+    additionalProperties: true
+    properties:
+      runSchedule:
+        description: Schedule for running the campaign group.
+        type:
+          - "null"
+          - object
+        properties:
+          start:
+            description: The start date and time of the campaign group run schedule.
+            type:
+              - "null"
+              - integer
+          end:
+            description: The end date and time of the campaign group run schedule.
+            type:
+              - "null"
+              - integer
+      created:
+        description: The date and time when the campaign group was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastModified:
+        description: The date and time when the campaign group was last modified.
+        type:
+          - "null"
+          - string
+        format: date-time
+      name:
+        description: Name of the campaign group.
+        type:
+          - "null"
+          - string
+      test:
+        description: Indicates if the campaign group is a test campaign.
+        type:
+          - "null"
+          - boolean
+      totalBudget:
+        description: Total budget allocated for the campaign group.
+        type:
+          - "null"
+          - object
+        properties:
+          amount:
+            description: The total budget amount.
+            type:
+              - "null"
+              - string
+          currencyCode:
+            description: The currency code of the total budget.
+            type:
+              - "null"
+              - string
+      servingStatuses:
+        description: List of serving statuses for the campaign group.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      backfilled:
+        description: Indicates if the campaign group was backfilled.
+        type:
+          - "null"
+          - boolean
+      id:
+        description: Unique identifier for the campaign group.
+        type:
+          - "null"
+          - integer
+      account:
+        description: The account associated with the campaign group.
+        type:
+          - "null"
+          - string
+      status:
+        description: Current status of the campaign group.
+        type:
+          - "null"
+          - string
+      allowedCampaignTypes:
+        description: List of campaign types allowed for this campaign group.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+
+  creatives:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    title: Creatives
+    additionalProperties: true
+    properties:
+      servingHoldReasons:
+        description: Reasons for holding the creative from serving.
+        type:
+          - "null"
+          - array
+        items:
+          description: List of reasons for holding the creative.
+          type:
+            - "null"
+            - string
+      lastModifiedAt:
+        description: The timestamp when the creative was last modified.
+        type:
+          - "null"
+          - integer
+      lastModifiedBy:
+        description: The user who last modified the creative.
+        type:
+          - "null"
+          - string
+      content:
+        description: The actual content of the creative.
+        type:
+          - "null"
+          - object
+      createdAt:
+        description: The timestamp when the creative was created.
+        type:
+          - "null"
+          - integer
+      isTest:
+        description: Boolean indicating if the creative is a test creative.
+        type:
+          - "null"
+          - boolean
+      createdBy:
+        description: The user who created the creative.
+        type:
+          - "null"
+          - string
+      review:
+        description: Review information for the creative.
+        type:
+          - "null"
+          - object
+        properties:
+          status:
+            description: The current status of the creative review.
+            type:
+              - "null"
+              - string
+          rejectionReasons:
+            description: Reasons why the creative was rejected during review.
+            type:
+              - "null"
+              - array
+      isServing:
+        description: Boolean indicating if the creative is currently serving.
+        type:
+          - "null"
+          - boolean
+      campaign:
+        description: The campaign to which the creative belongs.
+        type:
+          - "null"
+          - string
+      id:
+        description: The unique identifier of the creative.
+        type:
+          - "null"
+          - string
+      intendedStatus:
+        description: The intended status of the creative.
+        type:
+          - "null"
+          - string
+      account:
+        description: The account associated with the creative.
+        type:
+          - "null"
+          - string
+      leadgenCallToAction:
+        description: Call-to-action information for lead generation purposes.
+        type:
+          - "null"
+          - object
+        properties:
+          destination:
+            description: The destination for the call-to-action.
+            type:
+              - "null"
+              - string
+          label:
+            description: The label of the call-to-action.
+            type:
+              - "null"
+              - string
+
+  conversions:
+    $schema: https://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    title: Conversions
+    properties:
+      attributionType:
+        description: The type of attribution for the conversion.
+        type:
+          - "null"
+          - string
+      account:
+        description: The account associated with the conversion data.
+        type:
+          - "null"
+          - string
+      campaigns:
+        description: List of campaigns related to the conversion.
+        type:
+          - "null"
+          - array
+        items:
+          description: Individual campaign data.
+          type:
+            - "null"
+            - string
+      created:
+        description: Timestamp of when the conversion was created.
+        type:
+          - "null"
+          - integer
+      enabled:
+        description: Flag indicating if the conversion tracking is enabled.
+        type:
+          - "null"
+          - boolean
+      id:
+        description: Unique identifier for the conversion.
+        type:
+          - "null"
+          - integer
+      imagePixelTag:
+        description: Pixel tag used for tracking the conversion.
+        type:
+          - "null"
+          - string
+      name:
+        description: Name of the conversion.
+        type:
+          - "null"
+          - string
+      type:
+        description: Type of conversion.
+        type:
+          - "null"
+          - string
+      latestFirstPartyCallbackAt:
+        description: Timestamp of the latest first-party callback for the conversion.
+        type:
+          - "null"
+          - integer
+      postClickAttributionWindowSize:
+        description: Window size for post-click attribution.
+        type:
+          - "null"
+          - integer
+      viewThroughAttributionWindowSize:
+        description: Window size for view-through attribution.
+        type:
+          - "null"
+          - integer
+      lastCallbackAt:
+        description: Timestamp of the last callback for the conversion.
+        type:
+          - "null"
+          - integer
+      lastModified:
+        description: Timestamp of the last modification made to the conversion.
+        type:
+          - "null"
+          - integer
+      value:
+        description: Value associated with the conversion.
+        type:
+          - "null"
+          - object
+        properties:
+          amount:
+            description: Numeric value of the amount.
+            type:
+              - "null"
+              - string
+          currencyCode:
+            description: Currency code of the value.
+            type:
+              - "null"
+              - string
+      associatedCampaigns:
+        description: Campaigns associated with the conversion.
+        type:
+          - "null"
+          - array
+      urlMatchRuleExpression:
+        description: Expression used for matching URLs for attribution.
+        type:
+          - "null"
+          - array
+      urlRules:
+        description: Rules for URL matching in the conversion.
+        type:
+          - "null"
+          - array

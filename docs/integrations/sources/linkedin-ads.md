@@ -162,7 +162,7 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 ## Data type map
 
 | Integration Type | Airbyte Type | Notes                       |
-| :--------------- | :----------- | :-------------------------- |
+|:-----------------|:-------------|:----------------------------|
 | `number`         | `number`     | float number                |
 | `integer`        | `integer`    | whole number                |
 | `date`           | `string`     | FORMAT YYYY-MM-DD           |
@@ -174,7 +174,8 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 3.0.0   | 2024-05-17 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Migrate to low-code                                                                                             |
 | 2.1.2   | 2024-05-07 | [36648](https://github.com/airbytehq/airbyte/pull/36648) | Schema descriptions                                                                                             |
 | 2.1.1   | 2024-05-07 | [38013](https://github.com/airbytehq/airbyte/pull/38013) | Fix an issue where the `Accounts` stream did not correctly handle provided account IDs                          |
 | 2.1.0   | 2024-04-30 | [37573](https://github.com/airbytehq/airbyte/pull/37573) | Update API version to `202404`; add cursor-based pagination                                                     |

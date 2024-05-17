@@ -1,12 +1,11 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
 
 import logging
 from typing import Any, List, Mapping, Optional, Tuple, Union
 
-from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
@@ -24,17 +23,44 @@ from source_linkedin_ads.analytics_streams import (
     AdMemberRegionAnalytics,
     AdMemberSeniorityAnalytics,
 )
-from source_linkedin_ads.streams import Accounts, AccountUsers, CampaignGroups, Campaigns, Conversions, Creatives
-
-logger = logging.getLogger("airbyte")
 
 
-class SourceLinkedinAds(AbstractSource):
-    """
-    Abstract Source inheritance, provides:
-    - implementation for `check` connector's connectivity
-    - implementation to call each stream with it's input parameters.
-    """
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+
+"""
+This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
+source connector.
+
+WARNING: Do not modify this file.
+"""
+
+
+# Declarative Source
+class SourceLinkedinAds(YamlDeclarativeSource):
+    def __init__(self):
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})
+
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+        """
+        Assessing the availability of the connector's connection.
+
+        For this check method, the Customer must have the "r_liteprofile" scope enabled.
+        More info: https://docs.microsoft.com/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin
+
+        :param logger: Logger object to log the information.
+        :param config: Configuration mapping containing necessary parameters.
+        :return: A tuple containing a boolean indicating success or failure and an optional message or object.
+        """
+        self._validate_ad_analytics_reports(config)
+        return super().check_connection(logger, config)
+
+    @staticmethod
+    def _validate_ad_analytics_reports(config: Mapping[str, Any]) -> None:
+        report_names = [x["name"] for x in config.get("ad_analytics_reports", [])]
+        if len(report_names) != len(set(report_names)):
+            report_names = [x["name"] for x in config.get("ad_analytics_reports")]
+            message = f"Stream names for Custom Ad Analytics reports should be unique, duplicated streams: {set(name for name in report_names if report_names.count(name) > 1)}"
+            raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
 
     @classmethod
     def get_authenticator(cls, config: Mapping[str, Any]) -> Union[TokenAuthenticator, Oauth2Authenticator]:
@@ -59,20 +85,6 @@ class SourceLinkedinAds(AbstractSource):
             )
         raise Exception("incorrect input parameters")
 
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        """
-        Testing connection availability for the connector.
-        :: for this check method the Customer must have the "r_liteprofile" scope enabled.
-        :: more info: https://docs.microsoft.com/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin
-        """
-        self._validate_ad_analytics_reports(config)
-        config["authenticator"] = self.get_authenticator(config)
-        stream = Accounts(config)
-        try:
-            return stream.check_availability(logger)
-        except Exception as e:
-            return False, e
-
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         Mapping a input config of the user input configuration as defined in the connector spec.
@@ -80,9 +92,9 @@ class SourceLinkedinAds(AbstractSource):
         """
         self._validate_ad_analytics_reports(config)
         config["authenticator"] = self.get_authenticator(config)
-        streams = [
-            Accounts(config),
-            AccountUsers(config),
+
+        streams = super().streams(config=config)
+        streams.extend([
             AdCampaignAnalytics(config=config),
             AdCreativeAnalytics(config=config),
             AdImpressionDeviceAnalytics(config=config),
@@ -93,12 +105,8 @@ class SourceLinkedinAds(AbstractSource):
             AdMemberIndustryAnalytics(config=config),
             AdMemberSeniorityAnalytics(config=config),
             AdMemberRegionAnalytics(config=config),
-            AdMemberCompanyAnalytics(config=config),
-            CampaignGroups(config=config),
-            Campaigns(config=config),
-            Creatives(config=config),
-            Conversions(config=config),
-        ]
+            AdMemberCompanyAnalytics(config=config)
+        ])
 
         return streams + self.get_custom_ad_analytics_reports(config)
 
@@ -115,10 +123,3 @@ class SourceLinkedinAds(AbstractSource):
             streams.append(stream)
 
         return streams
-
-    def _validate_ad_analytics_reports(self, config: Mapping[str, Any]) -> None:
-        report_names = [x["name"] for x in config.get("ad_analytics_reports", [])]
-        if len(report_names) != len(set(report_names)):
-            report_names = [x["name"] for x in config.get("ad_analytics_reports")]
-            message = f"Stream names for Custom Ad Analytics reports should be unique, duplicated streams: {set(name for name in report_names if report_names.count(name) > 1)}"
-            raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
