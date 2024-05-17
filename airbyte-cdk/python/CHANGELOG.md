@@ -4,7 +4,7 @@
 Python CDK: Adds HttpClient, ErrorHandler, and related interfaces.
 
 ## 0.89.0
-
+low-code: Remove support for last_records and improve memory usage
 
 ## 0.88.4
 HttpMocker, Adding the delete method.
