@@ -7,7 +7,8 @@ import json
 from http import HTTPStatus
 
 import responses
-from source_jira.streams import Issues, Projects, Users
+from conftest import find_stream
+from source_jira.streams import Issues, Projects
 from source_jira.utils import read_full_refresh
 
 
@@ -95,8 +96,9 @@ def test_pagination_issues():
 
 
 @responses.activate
-def test_pagination_users():
+def test_pagination_users(config):
     domain = "domain.com"
+    config["domain"] = domain
     responses_json = [
         (HTTPStatus.OK, {}, json.dumps([{"self": "user1"}, {"self": "user2"}])),
         (HTTPStatus.OK, {}, json.dumps([{"self": "user3"}, {"self": "user4"}])),
@@ -110,13 +112,16 @@ def test_pagination_users():
         content_type="application/json",
     )
 
-    stream = Users(authenticator=None, domain=domain, projects=[])
-    stream.page_size = 2
+    stream = find_stream("users", config)
+    stream.retriever.paginator.pagination_strategy.page_size = 2
     records = list(read_full_refresh(stream))
-    assert records == [
+    expected_records = [
         {"self": "user1"},
         {"self": "user2"},
         {"self": "user3"},
         {"self": "user4"},
         {"self": "user5"},
     ]
+
+    for rec, exp in zip(records, expected_records):
+        assert dict(rec) == exp, f"Failed at {rec} vs {exp}"

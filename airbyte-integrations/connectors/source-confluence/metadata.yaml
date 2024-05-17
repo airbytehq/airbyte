@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cf40a7f8-71f8-45ce-a7fa-fca053e4028c
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   dockerRepository: airbyte/source-confluence
   documentationUrl: https://docs.airbyte.com/integrations/sources/confluence
   githubIssueLabel: source-confluence
@@ -32,4 +32,12 @@ data:
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-CONFLUENCE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
