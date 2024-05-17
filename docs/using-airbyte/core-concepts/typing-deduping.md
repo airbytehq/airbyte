@@ -30,7 +30,7 @@ users. Airbyte now separates `data-moving problems` from `data-content problems`
 Destinations V2, both types of errors were handled the same way: by failing the sync. Now, a failing
 sync means that Airbyte could not _move_ all of your data. You can query the `_airbyte_meta` column
 to see which rows failed for _content_ reasons, and why. This is a more flexible approach, as you
-can now decide how to handle rows with errors/cahnges on a case-by-case basis.
+can now decide how to handle rows with errors/changes on a case-by-case basis.
 
 :::tip
 
