@@ -154,7 +154,7 @@ class SnowflakeCortexSqlProcessor(SnowflakeSqlProcessor):
         columns_list_str: str = indent("\n, ".join(columns_list), " " * 12)
 
         # following two lines are different from SnowflakeSqlProcessor
-        vector_suffix = f"::Vector(Float, {self._vector_length})"
+        vector_suffix = f"::Vector(Float, {self.sql_config.vector_length})"
         variant_cols_str: str = ("\n" + " " * 21 + ", ").join(
             [f"$1:{self.normalizer.normalize(col)}{vector_suffix if 'embedding' in col else ''}" for col in columns_list]
         )
