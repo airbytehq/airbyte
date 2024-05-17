@@ -3565,9 +3565,6 @@ definitions:
       name: orders
       path: /orders
       primary_key: id
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: ./source_woocommerce/schemas/{{ parameters['name'] }}.json
   coupons_stream:
     retriever:
       paginator:
