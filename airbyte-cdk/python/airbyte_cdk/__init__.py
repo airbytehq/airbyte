@@ -75,7 +75,6 @@ from .sources.streams.http.requests_native_auth.abstract_token import AbstractHe
 from .sources.utils import casing
 from .sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader, check_config_against_spec_or_exit, split_config, expand_refs
 from .sources.utils.transform import TransformConfig, TypeTransformer
-import test
 from .utils import AirbyteTracedException, is_cloud_environment
 from .utils.constants import ENV_REQUEST_CACHE_PATH
 from .utils.event_timing import create_timer
@@ -241,31 +240,6 @@ __all__ = [
     "Record",
     "Source",
     "StreamSlice",
-    #
-    # # Vector destinations
-    # "BaseIntegrationTest",
-    # "Chunk",
-    # "create_chunks",
-    # "create_from_config",
-    # "create_stream_identifier",
-    # "DocumentProcessor",
-    # "Embedder",
-    # "FakeEmbedder",
-    # "FakeEmbeddingConfigModel",
-    # "format_exception",
-    # "Indexer",
-    # "METADATA_RECORD_ID_FIELD",
-    # "METADATA_STREAM_FIELD",
-    # "OPEN_AI_TOKEN_LIMIT",
-    # "OPEN_AI_VECTOR_SIZE",
-    # "OpenAIEmbedder",
-    # "OpenAIEmbeddingConfigModel",
-    # "VectorDBConfigModel",
-    # "Writer",
-
-    # export the test package separately
-    "test",
-
 ]
 
 __version__ = metadata.version("airbyte_cdk")
