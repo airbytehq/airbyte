@@ -443,7 +443,7 @@ def test_using_cache(mocker, requests_mock):
 
     parent_stream = CacheHttpStreamWithSlices()
     mocker.patch.object(parent_stream, "url_base", "https://google.com/")
-    parent_stream.clear_cache()
+    parent_stream._session.cache.clear()
 
     assert requests_mock.call_count == 0
     assert len(parent_stream._session.cache.responses) == 0
