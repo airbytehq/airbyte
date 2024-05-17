@@ -36,7 +36,9 @@ data:
           In this release, state for CohortMembers is changed to per partition format.
           Key for CohortMembers stream was changed to new unique key based on
           distinct_id and cohort_id fields since previous key was not unique and
-          didn't support possibility for user be in a few different cohorts
+          didn't support possibility for user be in a few different cohorts.
+          Semi-incremental Cohorts, Cohort_members and Engage streams with client side 
+          filtering extract data since user provided or default (1 year old) start_date.
         upgradeDeadline: "2024-06-03"
       2.0.0:
         message:

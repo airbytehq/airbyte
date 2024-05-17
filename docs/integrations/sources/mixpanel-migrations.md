@@ -5,6 +5,7 @@
 In this release, we introduce breaking change for `CohortMembers` stream: 
 - State is changed to per-partition format.
 - Key is changed to correct unique key (based on 'distinct_id' and 'cohort_id' fields) since previous key was not unique and didn't support possibility for user be in a few different cohorts.
+Semi-incremental `Cohorts`, `CohortMembers` and `Engage` streams with client-side filtering extract records since user provided or default (1 year old) start_date.
 
 To gracefully handle these changes for your existing connections, we highly recommend resetting your data before resuming your data syncs with the new version.
 
