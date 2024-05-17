@@ -285,7 +285,7 @@ async def run_connector_base_image_upgrade_pipeline(context: ConnectorContext, s
 
 
 async def run_connector_migration_to_base_image_pipeline(
-    context: ConnectorContext, semaphore: "Semaphore", pull_request_number: str | None
+    context: ConnectorContext, semaphore: "Semaphore", pull_request_number: str | None, changelog: bool, bump: str | None
 ) -> Report:
     async with semaphore:
         steps_results = []
@@ -325,14 +325,19 @@ async def run_connector_migration_to_base_image_pipeline(
 
             latest_repo_dir_state = update_base_image_in_metadata_result.output
             # BUMP CONNECTOR VERSION IN METADATA
-            new_version = get_bumped_version(context.connector.version, "patch")
-            bump_version_in_metadata = SetConnectorVersion(context, new_version, latest_repo_dir_state, False)
-            bump_version_in_metadata_result = await bump_version_in_metadata.run()
-            steps_results.append(bump_version_in_metadata_result)
+            if bump:
+                new_version = get_bumped_version(context.connector.version, bump)
+            else:
+                new_version = None
 
-            latest_repo_dir_state = bump_version_in_metadata_result.output
+            if new_version:
+                bump_version_in_metadata = SetConnectorVersion(context, new_version, latest_repo_dir_state, False)
+                bump_version_in_metadata_result = await bump_version_in_metadata.run()
+                steps_results.append(bump_version_in_metadata_result)
+                latest_repo_dir_state = bump_version_in_metadata_result.output
+
             # ADD CHANGELOG ENTRY only if the PR number is provided.
-            if pull_request_number is not None:
+            if new_version and changelog and pull_request_number is not None:
                 add_changelog_entry = AddChangelogEntry(
                     context,
                     new_version,

@@ -538,6 +538,7 @@ Modify the selected connector metadata to use the latest base image version.
 
 Upgrade the base image for source-openweather:
 `airbyte-ci connectors --name=source-openweather upgrade_base_image`
+`airbyte-ci connectors --name=source-openweather upgrade_base_image --changelog --bump patch --pull-request-number 123`
 
 ### Options
 
