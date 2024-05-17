@@ -23,7 +23,7 @@ class ShopifyBulkRecord:
     buffer: List[MutableMapping[str, Any]] = field(init=False, default_factory=list)
 
     # default logger
-    logger: Final[AirbyteLogger] = logging.getLogger("airbyte")
+    logger: Final[logging.Logger] = logging.getLogger("airbyte")
 
     def __post_init__(self) -> None:
         self.composition: Optional[Mapping[str, Any]] = self.query.record_composition
