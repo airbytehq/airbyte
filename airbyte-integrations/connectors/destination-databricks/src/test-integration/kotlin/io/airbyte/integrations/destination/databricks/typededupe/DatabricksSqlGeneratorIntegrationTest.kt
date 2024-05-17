@@ -28,7 +28,6 @@ import io.airbyte.integrations.destination.databricks.jdbc.DatabricksNamingTrans
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksSqlGenerator
 import io.airbyte.integrations.destination.databricks.model.DatabricksConnectorConfig
 import io.airbyte.protocol.models.v0.DestinationSyncMode
-import io.airbyte.protocol.models.v0.SyncMode
 import java.nio.file.Files
 import java.nio.file.Path
 import java.sql.Connection
@@ -345,11 +344,13 @@ class DatabricksSqlGeneratorIntegrationTest :
         val tmpStream =
             StreamConfig(
                 buildStreamId("sql_generator_test_svcnfgcqaz", "users_final", "users_raw"),
-                SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND_DEDUP,
                 listOf(),
                 Optional.empty(),
                 columns,
+                0,
+                0,
+                0
             )
         val initialStates =
             destinationHandler.gatherInitialState(listOf(incrementalDedupStream, tmpStream))
