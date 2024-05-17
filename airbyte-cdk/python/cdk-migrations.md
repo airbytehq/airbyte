@@ -1,5 +1,15 @@
 # CDK Migration Guide
 
+## Importing classes
+Starting from 1.0.0, CDK classes and functions should be imported directly from `airbyte_cdk` (example: `from airbyte_cdk import HttpStream`). Lower-level `__init__` files are not considered stable, and will be modified without introducing a major release.
+
+Introducing breaking changes to a class or function exported from the top level `__init__.py` will require a major version bump and a migration note to help developer upgrade.
+
+Note that the following packages are not part of the top level init either because they require extras dependencies, or because they should not be used in production by a connector module:
+- `destination.vector_db_based`
+- `source.file_based`
+- `test`
+
 ## Upgrading to 1.0.0
 A few classes were deleted from the Airbyte CDK in version 1.0.0:
 - AirbyteLogger
