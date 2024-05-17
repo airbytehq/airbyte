@@ -19,7 +19,7 @@ include = "destination_snowflake_cortex"
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 airbyte-cdk = {version = "0.81.6", extras = ["vector-db-based"]}
-airbyte = "0.10.5"
+airbyte = "0.11.0"
 
 
 [tool.poetry.group.dev.dependencies]

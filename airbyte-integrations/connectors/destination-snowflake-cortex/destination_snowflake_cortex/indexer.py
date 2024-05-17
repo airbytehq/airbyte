@@ -9,6 +9,7 @@ from typing import Any, Iterable, Optional
 import dpath.util
 from airbyte._processors.sql.snowflake import SnowflakeSqlProcessor
 from airbyte._processors.sql.snowflakecortex import SnowflakeCortexSqlProcessor
+from airbyte._future_cdk.catalog_providers import CatalogProvider
 from airbyte.caches import SnowflakeCache
 from airbyte.strategies import WriteStrategy
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
@@ -50,14 +51,6 @@ class SnowflakeCortexIndexer(Indexer):
         )
         self.embedding_dimensions = embedding_dimensions
         self.catalog = configured_catalog
-        self._init_db_connection()
-
-    def _init_db_connection(self):
-        """
-        Initialize default snowflake connection for checking the connection. We are not initializing the cortex
-        process here because that needs a catalog.
-        """
-        self.default_processor = SnowflakeSqlProcessor(cache=self.cache)
 
     def _get_airbyte_messsages_from_chunks(
         self,
@@ -163,11 +156,10 @@ class SnowflakeCortexIndexer(Indexer):
         if airbyte_messages is not None and len(airbyte_messages) > 0:
             updated_catalog = self._get_updated_catalog()
             cortex_processor = SnowflakeCortexSqlProcessor(
-                cache=self.cache,
-                catalog=updated_catalog,
+                sql_config=self.cache,
                 vector_length=self.embedding_dimensions,
-                source_name="vector_db_based",
-                stream_names=[stream],
+                catalog_provider=CatalogProvider(updated_catalog),
+                temp_dir=self.cache.cache_dir,  # Default to /tmp
             )
             cortex_processor.process_airbyte_messages(airbyte_messages, self.get_write_strategy(stream))
 
@@ -179,15 +171,15 @@ class SnowflakeCortexIndexer(Indexer):
         """
         Run before the sync starts. This method makes sure that all records in the destination that belong to streams with a destination mode of overwrite are deleted.
         """
-        table_list = self.default_processor._get_tables_list()
+        table_list = self.cache.processor._get_tables_list()
         for stream in catalog.streams:
             # remove all records for streams with overwrite mode
             if stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 stream_name = stream.stream.name
                 if stream_name.lower() in [table.lower() for table in table_list]:
-                    self.default_processor._execute_sql(f"DELETE FROM {stream_name}")
+                    self.cache.processor._execute_sql(f"DELETE FROM {stream_name}")
                 pass
 
     def check(self) -> Optional[str]:
-        self.default_processor._get_tables_list()
+        self.cache.processor._get_tables_list()
         # TODO: check to see if vector type is available in snowflake instance
