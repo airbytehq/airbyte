@@ -54,7 +54,11 @@ def create_source(config: Mapping[str, Any], limits: TestReadLimits) -> Manifest
 
 
 def read_stream(
-    source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, state: List[AirbyteStateMessage], limits: TestReadLimits
+    source: DeclarativeSource,
+    config: Mapping[str, Any],
+    configured_catalog: ConfiguredAirbyteCatalog,
+    state: List[AirbyteStateMessage],
+    limits: TestReadLimits,
 ) -> AirbyteMessage:
     try:
         handler = MessageGrouper(limits.max_pages_per_slice, limits.max_slices, limits.max_records)

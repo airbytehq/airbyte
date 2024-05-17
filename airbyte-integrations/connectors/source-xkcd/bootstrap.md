@@ -11,7 +11,7 @@ xkcd API has only one endpoint that responds with the comic metadata.
 ## Quick Notes
 
 - This is an open API, which means no credentials are necessary to access this data.
-- This API doesn't accept query strings or POST params. The only way to iterate over the comics is through different paths, passing the comic number (https://xkcd.com/{comic_num}/json.html). 
+- This API doesn't accept query strings or POST params. The only way to iterate over the comics is through different paths, passing the comic number (https://xkcd.com/{comic_num}/json.html).
 
 ## API Reference
 

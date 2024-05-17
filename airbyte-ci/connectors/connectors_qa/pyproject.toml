@@ -1,12 +1,10 @@
 [tool.poetry]
 name = "connectors-qa"
-version = "1.3.0"
+version = "1.3.2"
 description = "A package to run QA checks on Airbyte connectors, generate reports and documentation."
 authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"
-packages = [
-    { include = "connectors_qa", from = "src" },
-]
+packages = [{ include = "connectors_qa", from = "src" }]
 [tool.poetry.dependencies]
 python = "^3.10"
 airbyte-connectors-base-images = { path = "../base_images", develop = false }
@@ -41,5 +39,4 @@ lint = "ruff check src"
 
 [tool.airbyte_ci]
 optional_poetry_groups = ["dev"]
-poe_tasks = ["type_check", "lint", "test"]
-required_environment_variables = ["DOCKER_HUB_USERNAME", "DOCKER_HUB_PASSWORD"]
+poe_tasks = ["type_check", "test"]
