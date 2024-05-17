@@ -54,7 +54,7 @@ class SourceGoogleAds(AbstractSource):
     raise_exception_on_missing_stream = False
 
     @staticmethod
-    def _validate_and_transform(config: Mapping[str, Any]):
+    def _validate_and_transform(config: dict[str, Any]):
         if config.get("end_date") == "":
             config.pop("end_date")
         for query in config.get("custom_queries_array", []):
@@ -70,6 +70,9 @@ class SourceGoogleAds(AbstractSource):
         if "customer_id" in config:
             config["customer_ids"] = config["customer_id"].split(",")
             config.pop("customer_id")
+        if "exclude_customer_id" in config:
+            config["exclude_customer_ids"] = set(config["exclude_customer_id"].split(","))
+            config.pop("exclude_customer_id")
 
         return config
 
@@ -123,6 +126,8 @@ class SourceGoogleAds(AbstractSource):
         unique_customers = []
         seen_ids = set()
         for customer in customers:
+            if customer.id in config["exclude_customer_ids"]:
+                continue
             if customer.id in seen_ids:
                 continue
             seen_ids.add(customer.id)
