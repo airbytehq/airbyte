@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.90.0
+Python CDK: Adds HttpClient, ErrorHandler, and related interfaces.
+
 ## 0.89.0
 
 
