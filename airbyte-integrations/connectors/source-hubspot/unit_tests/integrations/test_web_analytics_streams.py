@@ -14,7 +14,6 @@ from airbyte_protocol.models import AirbyteStateBlob, AirbyteStateMessage, Airby
 
 from . import HubspotTestCase
 from .request_builders.streams import CRMStreamRequestBuilder, IncrementalCRMStreamRequestBuilder, WebAnalyticsRequestBuilder
-from .response_builder.pagination import HubspotPaginationStrategy
 from .response_builder.streams import HubspotStreamResponseBuilder
 
 CRM_STREAMS = (
@@ -41,7 +40,7 @@ class WebAnalyticsTestCase(HubspotTestCase):
 
     @classmethod
     def response_builder(cls, stream):
-        return HubspotStreamResponseBuilder.for_stream(stream, "results", HubspotPaginationStrategy())
+        return HubspotStreamResponseBuilder.for_stream(stream)
 
     @classmethod
     def web_analytics_request(

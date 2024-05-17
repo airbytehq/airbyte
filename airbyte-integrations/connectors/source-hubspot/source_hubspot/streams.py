@@ -333,6 +333,7 @@ class Stream(HttpStream, ABC):
     granted_scopes: Set = None
     properties_scopes: Set = None
     unnest_fields: Optional[List[str]] = None
+    checkpoint_by_page = False
 
     @cached_property
     def record_unnester(self):
@@ -506,10 +507,18 @@ class Stream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+        next_page_token = None
+        yield from self.read_paged_records(next_page_token=next_page_token, stream_slice=stream_slice, stream_state=stream_state)
+
+    def read_paged_records(
+        self,
+        next_page_token: Optional[Mapping[str, Any]],
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         pagination_complete = False
 
-        next_page_token = None
         try:
             while not pagination_complete:
                 properties = self._property_wrapper
@@ -533,7 +542,10 @@ class Stream(HttpStream, ABC):
                 yield from self.record_unnester.unnest(records)
 
                 next_page_token = self.next_page_token(response)
-                if not next_page_token:
+                if self.checkpoint_by_page and isinstance(self, CheckpointMixin):
+                    self.state = next_page_token or {}
+                    pagination_complete = True  # For RFR streams that checkpoint by page, a single page is read per invocation
+                elif not next_page_token:
                     pagination_complete = True
 
             # Always return an empty generator just in case no records were ever yielded
@@ -1367,7 +1379,8 @@ class ContactLists(IncrementalStream):
     unnest_fields = ["metaData"]
 
 
-class ContactsAllBase(Stream, CheckpointMixin):
+# class ContactsAllBase(ClientSideIncrementalStream):
+class ContactsAllBase(Stream):
     url = "/contacts/v1/lists/all/contacts/all"
     updated_at_field = "timestamp"
     more_key = "has-more"
@@ -1384,6 +1397,27 @@ class ContactsAllBase(Stream, CheckpointMixin):
     _state = {}
     limit_field = "count"
     limit = 100
+
+    def _transform(self, records: Iterable) -> Iterable:
+        for record in super()._transform(records):
+            canonical_vid = record.get("canonical-vid")
+            for item in record.get(self.records_field, []):
+                yield {"canonical-vid": canonical_vid, **item}
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        if self.filter_field and self.filter_value:
+            params.update({self.filter_field: self.filter_value})
+        return params
+
+
+class ResumableFullRefreshMixin(Stream, CheckpointMixin, ABC):
+    checkpoint_by_page = True
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -1406,54 +1440,7 @@ class ContactsAllBase(Stream, CheckpointMixin):
         """
 
         next_page_token = stream_slice
-        try:
-            properties = self._property_wrapper
-            if properties and properties.too_many_properties:
-                records, response = self._read_stream_records(
-                    stream_slice=stream_slice,
-                    stream_state=stream_state,
-                    next_page_token=next_page_token,
-                )
-            else:
-                response = self.handle_request(
-                    stream_slice=stream_slice,
-                    stream_state=stream_state,
-                    next_page_token=next_page_token,
-                    properties=properties,
-                )
-                records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
-
-            if self.filter_old_records:
-                records = self._filter_old_records(records)
-            yield from self.record_unnester.unnest(records)
-
-            self.state = self.next_page_token(response) or {}
-
-            # Always return an empty generator just in case no records were ever yielded
-            yield from []
-        except requests.exceptions.HTTPError as e:
-            response = e.response
-            if response.status_code == HTTPStatus.UNAUTHORIZED:
-                raise AirbyteTracedException("The authentication to HubSpot has expired. Re-authenticate to restore access to HubSpot.")
-            else:
-                raise e
-
-    def _transform(self, records: Iterable) -> Iterable:
-        for record in super()._transform(records):
-            canonical_vid = record.get("canonical-vid")
-            for item in record.get(self.records_field, []):
-                yield {"canonical-vid": canonical_vid, **item}
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        if self.filter_field and self.filter_value:
-            params.update({self.filter_field: self.filter_value})
-        return params
+        yield from self.read_paged_records(next_page_token=next_page_token, stream_slice=stream_slice, stream_state=stream_state)
 
 
 class ContactsListMemberships(ContactsAllBase, ClientSideIncrementalStream):
@@ -1469,6 +1456,7 @@ class ContactsListMemberships(ContactsAllBase, ClientSideIncrementalStream):
     records_field = "list-memberships"
     filter_field = "showListMemberships"
     filter_value = True
+    checkpoint_by_page = False
 
     @property
     def updated_at_field(self) -> str:
@@ -1481,14 +1469,14 @@ class ContactsListMemberships(ContactsAllBase, ClientSideIncrementalStream):
         return "x"
 
 
-class ContactsFormSubmissions(ContactsAllBase, ABC):
+class ContactsFormSubmissions(ContactsAllBase, ResumableFullRefreshMixin, ABC):
 
     records_field = "form-submissions"
     filter_field = "formSubmissionMode"
     filter_value = "all"
 
 
-class ContactsMergedAudit(ContactsAllBase, ABC):
+class ContactsMergedAudit(ContactsAllBase, ResumableFullRefreshMixin, ABC):
 
     records_field = "merge-audits"
     unnest_fields = ["merged_from_email", "merged_to_email"]

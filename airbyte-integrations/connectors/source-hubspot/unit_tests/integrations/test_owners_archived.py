@@ -7,7 +7,6 @@ from airbyte_protocol.models import SyncMode
 
 from . import HubspotTestCase
 from .request_builders.streams import OwnersArchivedStreamRequestBuilder
-from .response_builder.pagination import HubspotPaginationStrategy
 from .response_builder.streams import HubspotStreamResponseBuilder
 
 
@@ -26,7 +25,7 @@ class TestOwnersArchivedStream(HubspotTestCase):
 
     @property
     def response_builder(self):
-        return HubspotStreamResponseBuilder.for_stream(self.STREAM_NAME, "results", HubspotPaginationStrategy())
+        return HubspotStreamResponseBuilder.for_stream(self.STREAM_NAME)
 
     def response(self, with_pagination: bool = False):
         record = self.record_builder(self.STREAM_NAME, FieldPath(self.CURSOR_FIELD)).with_field(

@@ -1,39 +1,78 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+from unittest import TestCase
+
 import freezegun
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_protocol.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor, SyncMode
 
-from . import HubspotContactsTestCase
+from . import HubspotTestCase
 from .request_builders.streams import ContactsStreamRequestBuilder
+from .response_builder.contact_response_builder import AllContactsResponseBuilder, ContactBuilder, ContactsMergeAuditsBuilder
+
+_START_TIME_BEFORE_ANY_RECORD = "1970-01-01T00:00:00Z"
+
+_VID_OFFSET = 5331889818
 
 
-@freezegun.freeze_time("2024-05-04T00:00:00Z")
-class TestContactsFormSubmissionsStream(HubspotContactsTestCase):
+class TestContactsFormSubmissionsStream(TestCase, HubspotTestCase):
     SCOPES = ["crm.objects.contacts.read"]
     STREAM_NAME = "contacts_merged_audit"
 
-    @HttpMocker()
-    def test_read_multiple_contact_pages(self, http_mocker: HttpMocker):
-        self.mock_oauth(http_mocker, self.ACCESS_TOKEN)
-        self.mock_scopes(http_mocker, self.ACCESS_TOKEN, self.SCOPES)
-        self.mock_custom_objects(http_mocker)
+    def setUp(self) -> None:
+        self._http_mocker = HttpMocker()
+        self._http_mocker.__enter__()
 
-        self.mock_response(http_mocker, ContactsStreamRequestBuilder().build(), self.response(stream_name=self.STREAM_NAME, with_pagination=True).build())
-        self.mock_response(http_mocker, ContactsStreamRequestBuilder().with_vid_offset("5331889818").build(), self.response(stream_name=self.STREAM_NAME).build())
+        self.mock_oauth(self._http_mocker, self.ACCESS_TOKEN)
+        self.mock_scopes(self._http_mocker, self.ACCESS_TOKEN, self.SCOPES)
+        self.mock_custom_objects(self._http_mocker)
 
-        output = self.read_from_stream(self.oauth_config(), self.STREAM_NAME, SyncMode.full_refresh)
+    def tearDown(self) -> None:
+        self._http_mocker.__exit__(None, None, None)
 
-        assert len(output.records) == 8
-        assert output.state_messages[0].state.stream.stream_state.dict() == {"vidOffset": "5331889818"}
+    def test_read_multiple_contact_pages(self) -> None:
+        self.mock_response(
+            self._http_mocker,
+            ContactsStreamRequestBuilder().build(),
+            AllContactsResponseBuilder().with_pagination(vid_offset=_VID_OFFSET).with_contacts([
+                ContactBuilder().with_merge_audits([
+                    ContactsMergeAuditsBuilder(),
+                    ContactsMergeAuditsBuilder(),
+                    ContactsMergeAuditsBuilder(),
+                    ContactsMergeAuditsBuilder(),
+                ]),
+                ContactBuilder().with_merge_audits([
+                    ContactsMergeAuditsBuilder(),
+                    ContactsMergeAuditsBuilder(),
+                    ContactsMergeAuditsBuilder(),
+                ]),
+            ]).build(),
+        )
+        self.mock_response(
+            self._http_mocker,
+            ContactsStreamRequestBuilder().with_vid_offset(str(_VID_OFFSET)).build(),
+            AllContactsResponseBuilder().with_contacts([
+                ContactBuilder().with_merge_audits([
+                    ContactsMergeAuditsBuilder(),
+                ]),
+                ContactBuilder().with_merge_audits([
+                    ContactsMergeAuditsBuilder(),
+                    ContactsMergeAuditsBuilder(),
+                ]),
+            ]).build(),
+        )
+
+        output = self.read_from_stream(self.oauth_config(start_date=_START_TIME_BEFORE_ANY_RECORD), self.STREAM_NAME, SyncMode.full_refresh)
+
+        assert len(output.records) == 10
+        assert output.state_messages[0].state.stream.stream_state.dict() == {"vidOffset": 5331889818}
         assert output.state_messages[0].state.stream.stream_descriptor.name == self.STREAM_NAME
-        assert output.state_messages[0].state.sourceStats.recordCount == 4
+        assert output.state_messages[0].state.sourceStats.recordCount == 7
         assert output.state_messages[1].state.stream.stream_state.dict() == {}
         assert output.state_messages[1].state.stream.stream_descriptor.name == self.STREAM_NAME
-        assert output.state_messages[1].state.sourceStats.recordCount == 4
+        assert output.state_messages[1].state.sourceStats.recordCount == 3
 
-    @HttpMocker()
-    def test_read_from_incoming_state(self, http_mocker: HttpMocker):
+    def test_read_from_incoming_state(self) -> None:
         state = [
             AirbyteStateMessage(
                 type=AirbyteStateType.STREAM,
@@ -44,17 +83,46 @@ class TestContactsFormSubmissionsStream(HubspotContactsTestCase):
             )
         ]
 
-        self.mock_oauth(http_mocker, self.ACCESS_TOKEN)
-        self.mock_scopes(http_mocker, self.ACCESS_TOKEN, self.SCOPES)
-        self.mock_custom_objects(http_mocker)
-
         # Even though we only care about the request with a vidOffset parameter, we mock this in order to pass the availability check
-        self.mock_response(http_mocker, ContactsStreamRequestBuilder().build(), self.response(stream_name=self.STREAM_NAME, with_pagination=True).build())
-        self.mock_response(http_mocker, ContactsStreamRequestBuilder().with_vid_offset("5331889818").build(), self.response(stream_name=self.STREAM_NAME).build())
+        self.mock_response(
+            self._http_mocker,
+            ContactsStreamRequestBuilder().build(),
+            AllContactsResponseBuilder().with_pagination(vid_offset=_VID_OFFSET).with_contacts([
+                ContactBuilder().with_merge_audits([
+                    ContactsMergeAuditsBuilder(),
+                    ContactsMergeAuditsBuilder(),
+                    ContactsMergeAuditsBuilder(),
+                    ContactsMergeAuditsBuilder(),
+                ]),
+                ContactBuilder().with_merge_audits([
+                    ContactsMergeAuditsBuilder(),
+                    ContactsMergeAuditsBuilder(),
+                    ContactsMergeAuditsBuilder(),
+                ]),
+            ]).build(),
+        )
+        self.mock_response(
+            self._http_mocker,
+            ContactsStreamRequestBuilder().with_vid_offset(str(_VID_OFFSET)).build(),
+            AllContactsResponseBuilder().with_contacts([
+                ContactBuilder().with_merge_audits([
+                    ContactsMergeAuditsBuilder(),
+                ]),
+                ContactBuilder().with_merge_audits([
+                    ContactsMergeAuditsBuilder(),
+                    ContactsMergeAuditsBuilder(),
+                ]),
+            ]).build(),
+        )
 
-        output = self.read_from_stream(cfg=self.oauth_config(), stream=self.STREAM_NAME, sync_mode=SyncMode.full_refresh, state=state)
+        output = self.read_from_stream(
+            cfg=self.oauth_config(start_date=_START_TIME_BEFORE_ANY_RECORD),
+            stream=self.STREAM_NAME,
+            sync_mode=SyncMode.full_refresh,
+            state=state
+        )
 
-        assert len(output.records) == 4
+        assert len(output.records) == 3
         assert output.state_messages[0].state.stream.stream_state.dict() == {}
         assert output.state_messages[0].state.stream.stream_descriptor.name == self.STREAM_NAME
-        assert output.state_messages[0].state.sourceStats.recordCount == 4
+        assert output.state_messages[0].state.sourceStats.recordCount == 3

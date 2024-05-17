@@ -18,7 +18,6 @@ from .request_builders.api import CustomObjectsRequestBuilder, OAuthRequestBuild
 from .request_builders.streams import CRMStreamRequestBuilder, IncrementalCRMStreamRequestBuilder, WebAnalyticsRequestBuilder
 from .response_builder.helpers import RootHttpResponseBuilder
 from .response_builder.api import ScopesResponseBuilder
-from .response_builder.pagination import HubspotCursorPaginationStrategy
 from .response_builder.streams import GenericResponseBuilder, HubspotStreamResponseBuilder
 
 
@@ -132,28 +131,3 @@ class HubspotTestCase:
         cls, cfg, stream: str, sync_mode: SyncMode, state: Optional[List[AirbyteStateMessage]] = None, expecting_exception: bool = False
     ) -> EntrypointOutput:
         return read(SourceHubspot(), cfg, cls.catalog(stream, sync_mode), state, expecting_exception)
-
-
-@freezegun.freeze_time("2024-05-05T00:00:00Z")
-class HubspotContactsTestCase(HubspotTestCase):
-    CHECKPOINT_FIELD = "vid"
-
-    @classmethod
-    def response_builder(cls, stream_name) -> HubspotStreamResponseBuilder:
-        return HubspotStreamResponseBuilder.for_stream(stream_name, "contacts", HubspotCursorPaginationStrategy())
-
-    @classmethod
-    def response(cls, stream_name, with_pagination: bool = False) -> HubspotStreamResponseBuilder:
-        record = cls.record_builder(stream_name, FieldPath(cls.CHECKPOINT_FIELD)).with_field(
-            FieldPath("id"), cls.OBJECT_ID
-        )
-        response = cls.response_builder(stream_name=stream_name).with_record(record).with_record(record)
-        if with_pagination:
-            response = response.with_pagination()
-        return response
-
-    @classmethod
-    def record_builder(cls, stream: str, record_cursor_path):
-        return create_record_builder(
-            find_template(stream, __file__), records_path=FieldPath("contacts"), record_id_path=None, record_cursor_path=record_cursor_path
-        )

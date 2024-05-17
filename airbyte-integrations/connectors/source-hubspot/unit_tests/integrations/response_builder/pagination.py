@@ -19,9 +19,3 @@ class HubspotPaginationStrategy(PaginationStrategy):
                 "link": None
             }
         }
-
-
-class HubspotCursorPaginationStrategy(PaginationStrategy):
-    def update(self, response: Dict[str, Any]) -> None:
-        response["has-more"] = True
-        response["vid-offset"] = "5331889818"
