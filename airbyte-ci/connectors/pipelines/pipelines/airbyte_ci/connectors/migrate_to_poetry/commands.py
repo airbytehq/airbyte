@@ -10,14 +10,27 @@ from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
 
+@click.option(
+    "--changelog",
+    help="Add message to the changelog.",
+    type=bool,
+    is_flag=True,
+    required=False,
+    default=False,
+)
+@click.option(
+    "--bump",
+    help="Bump the metadata.yaml version. Can be `major`, `minor`, or `patch`.",
+    type=click.Choice(["patch", "minor", "major"]),
+    required=False,
+    default=None,
+)
 @click.command(
     cls=DaggerPipelineCommand,
     short_help="Migrate the selected connectors to poetry.",
 )
 @click.pass_context
-async def migrate_to_poetry(
-    ctx: click.Context,
-) -> bool:
+async def migrate_to_poetry(ctx: click.Context, changelog: bool, bump: str | None) -> bool:
 
     connectors_contexts = [
         ConnectorContext(
@@ -54,6 +67,8 @@ async def migrate_to_poetry(
         ctx.obj["concurrency"],
         ctx.obj["dagger_logs_path"],
         ctx.obj["execute_timeout"],
+        changelog,
+        bump,
     )
 
     return True

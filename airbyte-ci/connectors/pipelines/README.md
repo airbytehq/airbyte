@@ -569,6 +569,8 @@ Migrate connectors the poetry package manager.
 
 Migrate source-openweather to use the base image:
 `airbyte-ci connectors --name=source-openweather migrate-to-poetry`
+`airbyte-ci connectors --name=source-openweather migrate-to-poetry --changelog --bump patch`
+
 
 ### <a id="connectors-migrate_to_inline_schemas"></a>`connectors migrate_to_inline_schemas` command
 
