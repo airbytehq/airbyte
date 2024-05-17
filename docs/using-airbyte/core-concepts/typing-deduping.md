@@ -86,7 +86,7 @@ The data from one stream will now be mapped to one table in your schema as below
 | _(note, not in actual table)_                | \_airbyte_raw_id | \_airbyte_extracted_at | \_airbyte_meta                                                 | id  | first_name | age  | address                                   |
 | -------------------------------------------- | ---------------- | ---------------------- | -------------------------------------------------------------- | --- | ---------- | ---- | ----------------------------------------- |
 | Successful typing and de-duping ⟶            | xxx-xxx-xxx      | 2022-01-01 12:00:00    | `{}`                                                           | 1   | sarah      | 39   | `{ city: “San Francisco”, zip: “94131” }` |
-| Failed typing that didn’t break other rows ⟶ | yyy-yyy-yyy      | 2022-01-01 12:00:00    | `{ changes: {[“fish” is not a valid integer for column “age”]}` | 2   | evan       | NULL | `{ city: “Menlo Park”, zip: “94002” }`    |
+| Failed typing that didn’t break other rows ⟶ | yyy-yyy-yyy      | 2022-01-01 12:00:00    | `{ changes: {"field": "age", "change": "NULLED", "reason": "DESTINATION_TYPECAST_ERROR"}}` | 2   | evan       | NULL | `{ city: “Menlo Park”, zip: “94002” }`    |
 | Not-yet-typed ⟶                              |                  |                        |                                                                |     |            |      |                                           |
 
 In legacy normalization, columns of
