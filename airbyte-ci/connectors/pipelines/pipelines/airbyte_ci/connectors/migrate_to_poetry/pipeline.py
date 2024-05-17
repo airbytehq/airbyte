@@ -448,7 +448,7 @@ async def run_connector_migration_to_poetry_pipeline(context: ConnectorContext, 
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.SET_CONNECTOR_VERSION,
                 step=SetConnectorVersion(context, new_version),
-                depends_on=[CONNECTOR_TEST_STEP_ID.REGRESSION_TEST],
+                depends_on=[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_REGRESSION_TEST],
             )
         ],
         [
@@ -460,7 +460,7 @@ async def run_connector_migration_to_poetry_pipeline(context: ConnectorContext, 
                     "Manage dependencies with Poetry.",
                     "0",
                 ),
-                depends_on=[CONNECTOR_TEST_STEP_ID.REGRESSION_TEST],
+                depends_on=[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_REGRESSION_TEST],
             )
         ],
         [
