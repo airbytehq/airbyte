@@ -367,8 +367,12 @@ abstract class DestinationAcceptanceTest {
                 workspaceRoot.toString(),
                 localRoot.toString(),
                 "host",
-                emptyMap()
+                getConnectorEnv()
             )
+    }
+
+    open fun getConnectorEnv(): Map<String, String> {
+        return emptyMap()
     }
 
     @AfterEach

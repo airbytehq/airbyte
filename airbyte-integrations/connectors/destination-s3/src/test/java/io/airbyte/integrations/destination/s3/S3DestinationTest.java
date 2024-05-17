@@ -30,6 +30,8 @@ import io.airbyte.cdk.integrations.destination.s3.StorageProvider;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import java.util.Collections;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -58,7 +60,7 @@ public class S3DestinationTest {
 
     factoryConfig = new S3DestinationConfigFactory() {
 
-      public S3DestinationConfig getS3DestinationConfig(final JsonNode config, final StorageProvider storageProvider) {
+      public S3DestinationConfig getS3DestinationConfig(final JsonNode config, final StorageProvider storageProvider, Map<String, String> env) {
         return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
             .withEndpoint("https://s3.example.com")
             .withAccessKeyCredential("fake-accessKeyId", "fake-secretAccessKey")
@@ -74,7 +76,7 @@ public class S3DestinationTest {
    * Test that check will fail if IAM user does not have listObjects permission
    */
   public void checksS3WithoutListObjectPermission() {
-    final S3Destination destinationFail = new S3Destination(factoryConfig);
+    final S3Destination destinationFail = new S3Destination(factoryConfig, Collections.emptyMap());
     doThrow(new AmazonS3Exception("Access Denied")).when(s3).listObjects(any(ListObjectsRequest.class));
     final AirbyteConnectionStatus status = destinationFail.check(Jsons.emptyObject());
     assertEquals(Status.FAILED, status.getStatus(), "Connection check should have failed");
@@ -86,7 +88,7 @@ public class S3DestinationTest {
    * Test that check will succeed when IAM user has all required permissions
    */
   public void checksS3WithListObjectPermission() {
-    final S3Destination destinationSuccess = new S3Destination(factoryConfig);
+    final S3Destination destinationSuccess = new S3Destination(factoryConfig, Collections.emptyMap());
     final AirbyteConnectionStatus status = destinationSuccess.check(Jsons.emptyObject());
     assertEquals(Status.SUCCEEDED, status.getStatus(), "Connection check should have succeeded");
   }

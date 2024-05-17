@@ -127,7 +127,11 @@ protected constructor(protected val outputFormat: FileUploadFormat) : Destinatio
             .set<JsonNode>("format", formatConfig)
         this.configJson = configJson
         this.s3DestinationConfig =
-            S3DestinationConfig.getS3DestinationConfig(configJson, storageProvider())
+            S3DestinationConfig.getS3DestinationConfig(
+                configJson,
+                storageProvider(),
+                getConnectorEnv()
+            )
         LOGGER.info(
             "Test full path: {}/{}",
             s3DestinationConfig.bucketName,
