@@ -10,8 +10,9 @@ from .state_converters.datetime_stream_state_converter import DateTimeStreamStat
 __all__ = [
     "AbstractStreamStateConverter",
     "DateTimeStreamStateConverter",
-    "StreamFacade",
     "ConcurrentCursor",
+    "Cursor",
+    "StreamFacade",
     "CursorField",
     "FinalStateCursor",
 ]

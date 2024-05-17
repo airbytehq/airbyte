@@ -24,6 +24,7 @@ __all__ = [
     "DefaultFileBasedCursor",
     "FileBasedSourceError",
     "FileBasedSource",
+    "FileBasedStreamConfig",
     "AbstractFileBasedStreamReader",
     "RemoteFile",
     "FileReadMode",
