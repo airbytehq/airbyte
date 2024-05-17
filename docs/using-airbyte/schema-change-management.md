@@ -8,9 +8,9 @@ You can specify for each connection how Airbyte should handle any change of sche
 
 ## Types of Schema Changes
 
-When propagation is enabled, your data in the destination will automatically shift to bring in the new changes.
+With propogation enabled, data in the destination will automatically shift as you bring in changes.
 
-| Type of Schema Change    | Propagation Behavior                                                                                                                                                                                                                                                                                                                                             |
+| Type ofSchema Change    | Propagation Behavior                                                                                                                                                                                                                                                                                                                                             |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | New Column               | The new colummn will be created in the destination. Values for the column will be filled in for the updated rows. If you are missing values for rows not updated, a backfill can be done by completing a full resync or through the `Backfill new or renamed columns` option (see below)                                                                         |
 | Removal of column        | The old column will be removed from the destination.                                                                                                                                                                                                                                                                                                             |
@@ -20,14 +20,14 @@ When propagation is enabled, your data in the destination will automatically shi
 
 ## Detect and Propagate Schema Changes
 
-Based on your configured settings for **Detect and propagate schema changes**, Airbyte will automatically sync those changes or ignore them:
+Airbyte offers some options for how it should  **Detect and propagate schema changes**. Depending on how you configure it, Airbyte will automatically sync those changes or ignore them. The following options are available:
 
 | Setting                                    | Description                                                                                                                                                                                                                                |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Propagate all changes (streams and fields) | All new streams and column changes from the source will automatically be propagated and reflected in the destination. This includes stream changes (additions or deletions), column changes (additions or deletions) and data type changes |
-| Propagate column changes only              | Only column changes will be propagated. New or removed streams are ignored.                                                                                                                                                                |
-| Detect changes and manually approve        | Schema changes will be detected, but not propagated. Syncs will continue running with the schema you've set up. To propagate the detected schema changes, you will need to approve the changes manually                                    |
-| Detect changes and pause connection        | Connections will be automatically disabled as soon as any schema changes are detected                                                                                                                                                      |
+| Propagate all field and stream changes | All new streams and column changes from the source will automatically be propagated and reflected in the destination. This includes stream changes (additions or deletions), column changes (additions or deletions) and data type changes |
+| Propagate field changes only              | Only column changes will be propagated. New or removed streams will be ignored.                                                                                                                                                                |
+| Approve all changes myself         | This allows you to detect and manually approve changes. Schema changes will be detected, but not propagated. Syncs will continue running with the schema you've set up. To propagate the detected schema changes, you will need to approve the changes manually                                    |
+| Stop future syncs         | Connections will be automatically paused as soon as any schema changes are detected                                                                                                                                                      |
 
 Airbyte currently checks for any changes in your source schema immediately before syncing, at most once every 24 hours. This means that your schema may not always be propagated before your sync.
 
