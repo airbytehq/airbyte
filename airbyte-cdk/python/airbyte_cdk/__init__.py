@@ -241,5 +241,4 @@ __all__ = [
     "Source",
     "StreamSlice",
 ]
-
 __version__ = metadata.version("airbyte_cdk")
