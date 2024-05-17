@@ -32,6 +32,14 @@ if TYPE_CHECKING:
     from airbyte._processors.file.base import FileWriterBase
 
 
+
+@dataclasses.dataclass
+class SnowflakeCortexConfig(SnowflakeConfig):
+    """A Snowflake configuration for use with Cortex functions."""
+
+    vector_length: int
+
+
 class SnowflakeCortexTypeConverter(SnowflakeTypeConverter):
     """A class to convert array type into vector."""
 
@@ -65,14 +73,14 @@ class SnowflakeCortexSqlProcessor(SnowflakeSqlProcessor):
 
     supports_merge_insert = True
     type_converter_class = SnowflakeCortexTypeConverter
+    sql_config: SnowflakeCortexConfig
 
     def __init__(
         self,
         *,
-        vector_length: int,
         catalog_provider: CatalogProvider,
         state_writer: StateWriterBase | None = None,
-        sql_config: SnowflakeConfig,
+        sql_config: SnowflakeCortexConfig,
         file_writer: FileWriterBase | None = None,
         temp_dir: Path | None = None,
         temp_file_cleanup: bool = True,
