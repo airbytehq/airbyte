@@ -9,7 +9,6 @@ from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 import isodate
 import pendulum
 import requests
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Level, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
@@ -91,7 +90,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
                 internal_message = "Incorrect stream slice step"
                 raise AirbyteTracedException(failure_type=FailureType.config_error, internal_message=internal_message, message=e.args[0])
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
         self._validate_stream_slice_step(config.get("stream_slice_step"))
         try:
             salesforce = self._get_sf_object(config)
