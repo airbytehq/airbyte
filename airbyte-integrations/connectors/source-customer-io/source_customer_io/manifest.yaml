@@ -116,7 +116,7 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      type:
+      "type":
         type:
           - "null"
           - string
@@ -127,7 +127,7 @@ schemas:
             - "null"
             - object
           properties:
-            type:
+            "type":
               type:
                 - "null"
                 - string
@@ -178,7 +178,7 @@ schemas:
             - "null"
             - object
           properties:
-            type:
+            "type":
               type:
                 - "null"
                 - string
@@ -239,7 +239,7 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      type:
+      "type":
         type:
           - "null"
           - string
@@ -352,7 +352,7 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      type:
+      "type":
         type:
           - "null"
           - string
