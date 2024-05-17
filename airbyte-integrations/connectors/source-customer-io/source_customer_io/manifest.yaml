@@ -6,8 +6,6 @@ check:
   type: CheckStream
   stream_names:
     - campaigns
-    - campaigns_actions
-    - newsletters
 
 definitions:
   streams:
@@ -26,8 +24,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path:
-              - "{{ parameters.extractor_path }}"
+            field_path: "campaigns"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -47,8 +44,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path:
-              - "{{ parameters.extractor_path }}"
+            field_path: "actions"
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -76,8 +72,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path:
-              - "{{ parameters.extractor_path }}"
+            field_path: "newsletters"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -88,15 +83,6 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['app_api_key'] }}"
-      name: campaigns
-      primary_key: id
-      path: /campaigns
-      extractor_path: campaigns
-      $parameters:
-        name: campaigns
-        primary_key: id
-        path: /campaigns
-        extractor_path: campaigns
 
 streams:
   - $ref: "#/definitions/streams/campaigns"
