@@ -16,6 +16,7 @@ data:
   githubIssueLabel: source-woocommerce
   icon: woocommerce.svg
   license: MIT
+  maxSecondsBetweenMessages: 5400
   name: WooCommerce
   registries:
     cloud:
