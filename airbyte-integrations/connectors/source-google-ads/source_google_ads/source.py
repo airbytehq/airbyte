@@ -70,7 +70,6 @@ class SourceGoogleAds(AbstractSource):
         if "customer_id" in config:
             config["customer_ids"] = config["customer_id"].split(",")
             config.pop("customer_id")
-        config["exclude_customer_ids"] = set()
         if "exclude_customer_id" in config:
             config["exclude_customer_ids"] = set(config["exclude_customer_id"].split(","))
             config.pop("exclude_customer_id")
