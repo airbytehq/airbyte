@@ -149,7 +149,7 @@ class ConnectorContext(PipelineContext):
             ci_gcs_credentials=ci_gcs_credentials,
             ci_git_user=ci_git_user,
             ci_github_access_token=ci_github_access_token,
-            run_step_options=self._get_updated_run_step_options(run_step_options),
+            run_step_options=self._skip_metadata_disabled_test_suites(run_step_options),
             enable_report_auto_open=enable_report_auto_open,
         )
 
@@ -297,10 +297,26 @@ class ConnectorContext(PipelineContext):
         raise NotImplementedError
 
     def _get_step_id_to_skip_according_to_metadata(self) -> List[CONNECTOR_TEST_STEP_ID]:
+        """The connector metadata have a connectorTestSuitesOptions field.
+        It allows connector developers to declare the test suites that are enabled for a connector.
+        This function retrieved enabled test suites according to this field value and returns the test suites steps that are skipped (because they're not declared in this field.)
+        The skippable test suites steps are declared in TEST_SUITE_NAME_TO_STEP_ID.
+
+        Returns:
+            List[CONNECTOR_TEST_STEP_ID]: List of step ids that should be skipped according to connector metadata.
+        """
         enabled_test_suites = [option["suite"] for option in self.metadata.get("connectorTestSuitesOptions", [])]
         return [step_id for test_suite_name, step_id in TEST_SUITE_NAME_TO_STEP_ID.items() if test_suite_name not in enabled_test_suites]
 
-    def _get_updated_run_step_options(self, run_step_options: RunStepOptions) -> RunStepOptions:
+    def _skip_metadata_disabled_test_suites(self, run_step_options: RunStepOptions) -> RunStepOptions:
+        """Updated the original run_step_options to skip the disabled test suites according to connector metadata.
+
+        Args:
+            run_step_options (RunStepOptions): Original run step options.
+
+        Returns:
+            RunStepOptions: Updated run step options.
+        """
         run_step_options = deepcopy(run_step_options)
         run_step_options.skip_steps += self._get_step_id_to_skip_according_to_metadata()
         return run_step_options
