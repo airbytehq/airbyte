@@ -3,17 +3,8 @@
 #
 
 # Initialize Streams Package
-from .exceptions import UserDefinedBackoffException
+from .http_client import HttpClient
 from .http import HttpStream, HttpSubStream
-from .rate_limiting import default_backoff_handler, user_defined_backoff_handler, TRANSIENT_EXCEPTIONS
-from .availability_strategy import HttpAvailabilityStrategy
+from .exceptions import UserDefinedBackoffException
 
-__all__ = [
-    "HttpStream",
-    "HttpSubStream",
-    "HttpAvailabilityStrategy",
-    "UserDefinedBackoffException",
-    "default_backoff_handler",
-    "user_defined_backoff_handler",
-    "TRANSIENT_EXCEPTIONS",
-]
+__all__ = ["HttpClient", "HttpStream", "HttpSubStream", "UserDefinedBackoffException"]
