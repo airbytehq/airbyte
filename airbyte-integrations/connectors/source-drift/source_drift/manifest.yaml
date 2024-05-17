@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /accounts
           http_method: GET
         record_selector:
@@ -33,11 +33,11 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ last_record[''next''] }}'
+            cursor_value: "{{ last_record['next'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/accounts'
+          $ref: "#/schemas/accounts"
     conversations:
       type: DeclarativeStream
       name: conversations
@@ -46,7 +46,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /conversations
           http_method: GET
         record_selector:
@@ -61,11 +61,11 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ last_record[''next''] }}'
+            cursor_value: "{{ last_record['next'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/conversations'
+          $ref: "#/schemas/conversations"
     users:
       type: DeclarativeStream
       name: users
@@ -74,7 +74,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /users
           http_method: GET
         record_selector:
@@ -86,7 +86,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/users'
+          $ref: "#/schemas/users"
     contacts:
       type: DeclarativeStream
       name: contacts
@@ -95,11 +95,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /contacts
           http_method: GET
           request_parameters:
-            email: '{{ config[''email''] }}'
+            email: "{{ config['email'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -109,7 +109,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/contacts'
+          $ref: "#/schemas/contacts"
     messages:
       type: DeclarativeStream
       name: messages
@@ -118,7 +118,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /conversations/{{ stream_partition.parent_id }}/messages
           http_method: GET
         record_selector:
@@ -134,7 +134,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ last_record[''next''] }}'
+            cursor_value: "{{ last_record['next'] }}"
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -142,24 +142,24 @@ definitions:
                 parent_key: id
                 partition_field: parent_id
                 stream:
-                  $ref: '#/definitions/streams/conversations'
+                  $ref: "#/definitions/streams/conversations"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/messages'
+          $ref: "#/schemas/messages"
   base_requester:
     type: HttpRequester
     url_base: https://driftapi.com
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config[''credentials''][''access_token''] }}'
+      api_token: "{{ config['credentials']['access_token'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/accounts'
-  - $ref: '#/definitions/streams/conversations'
-  - $ref: '#/definitions/streams/users'
-  - $ref: '#/definitions/streams/contacts'
-  - $ref: '#/definitions/streams/messages'
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/conversations"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/messages"
 
 spec:
   type: Spec
@@ -363,7 +363,7 @@ schemas:
           description: Details of the participants in the conversation.
       relatedPlaybookId:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           The unique identifier of the playbook related to the conversation, if
