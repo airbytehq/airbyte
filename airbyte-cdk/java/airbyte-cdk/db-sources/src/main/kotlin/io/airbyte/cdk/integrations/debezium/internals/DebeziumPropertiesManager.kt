@@ -33,8 +33,8 @@ abstract class DebeziumPropertiesManager(
         props.setProperty("errors.max.retries", "3")
         // This property must be strictly less than errors.retry.delay.max.ms
         // (https://github.com/debezium/debezium/blob/bcc7d49519a4f07d123c616cfa45cd6268def0b9/debezium-core/src/main/java/io/debezium/util/DelayStrategy.java#L135)
-        props.setProperty("errors.retry.delay.initial.ms", "299")
-        props.setProperty("errors.retry.delay.max.ms", "300")
+        props.setProperty("errors.retry.delay.initial.ms", "500")
+        props.setProperty("errors.retry.delay.max.ms", "5000")
 
         schemaHistoryManager.ifPresent { m: AirbyteSchemaHistoryStorage ->
             m.setDebeziumProperties(props)
