@@ -1,0 +1,16 @@
+{
+  "credentials": {
+    "credentials_title": "IAM Assume Role"
+  },
+  "region": "eu-west-1",
+  "bucket_name": "clue-data-dev-athena-iceberg-storage",
+  "bucket_prefix": "airbyte",
+  "glue_database": "import",
+  "format": {
+    "format_type": "Iceberg",
+    "compression_codec": "SNAPPY",
+    "partition_by_cursor_field": true,
+    "temp_bucket": "clue-data-dev-athena-results",
+    "partitioning": "DATE"
+  }
+}

@@ -1,0 +1,2 @@
+{"type": "RECORD", "record": {"stream": "example_stream_incremental_json", "data": { "title": "value1", "date_field": "2022-07-03 15:32:18+00:00", "j_object": {"field_1":"value3","field_2":"value4"} }, "emitted_at": 1625383200000}}
+{"type": "RECORD", "record": {"stream": "example_stream_incremental_json", "data": { "title": "value2", "date_field": "2022-07-04 16:32:18+00:00", "j_object": {"field_1":"value1","field_2":"value2"} }, "emitted_at": 1625383200000}}

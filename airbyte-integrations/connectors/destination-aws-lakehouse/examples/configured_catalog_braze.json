@@ -1,0 +1,26 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "airbyte_braze_campaigns_test",
+        "json_schema": {
+            "type": "object", 
+            "$schema": "http://json-schema.org/draft-07/schema#", 
+            "properties": {
+                "id": {"type":["null", "string"]}, 
+                "name": {"type": ["null", "string"]}, 
+                "tags": {"type": ["null", "array"]}, 
+                "last_edited": {"type": ["null", "string"], "format": "date-time"}, 
+                "is_api_campaign": {"type": ["null", "boolean"]}}
+              },
+        "supported_sync_modes": ["full_refresh","incremental"],
+        "source_defined_cursor": false,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["last_edited"],
+      "destination_sync_mode": "append_dedup",
+      "source_defined_primary_key": [["id"]]
+    }
+  ]
+}

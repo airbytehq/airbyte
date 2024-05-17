@@ -1,0 +1,1 @@
+{"type": "RECORD", "record": {"stream": "example_stream_incremental_json", "data": { "{ctr}": 12, "{date}": "2024-05-05"}, "emitted_at": 1625383200000}}
