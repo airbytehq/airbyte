@@ -167,10 +167,12 @@ class MakePullRequest(Step):
         self,
         context: PipelineContext,
         pull: bool,
+        no_bump: bool,
         semaphore: "Semaphore",
     ) -> None:
         super().__init__(context)
         self.pull = pull
+        self.no_bump = no_bump
         self.semaphore = semaphore
 
     async def _run(self) -> StepResult:
@@ -178,8 +180,11 @@ class MakePullRequest(Step):
         branch_id = "up_to_date"
         title = "Up to date"
         body = "Updating python dependencies"  # TODO: update this based on what it actually did
-        changelog = True
-        bump = "patch"
+        changelog = not self.no_bump
+        if self.no_bump:
+            bump = None
+        else:
+            bump = "patch"
         dry_run = not self.pull
         report = await run_connector_pull_request_pipeline(
             context=self.context,
@@ -298,6 +303,7 @@ async def run_connector_up_to_date_pipeline(
     semaphore: "Semaphore",
     dev: bool = False,
     pull: bool = False,
+    no_bump: bool = False,
     specific_dependencies: List[str] = [],
 ) -> Report:
     restore_original_state = RestoreUpToDateState(context)
@@ -353,7 +359,7 @@ async def run_connector_up_to_date_pipeline(
         [
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.UPDATE_PULL_REQUEST,
-                step=MakePullRequest(context, pull, semaphore),
+                step=MakePullRequest(context, pull, no_bump, semaphore),
                 depends_on=steps_before_pull,
             )
         ]
