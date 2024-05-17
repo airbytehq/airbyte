@@ -83,7 +83,7 @@ public class XminCtidUtils {
     }
 
     final List<ConfiguredAirbyteStream> newlyAddedIncrementalStreams =
-        identifyNewlyAddedStreams(fullCatalog, alreadySeenStreams, SyncMode.INCREMENTAL);
+        identifyNewlyAddedStreams(fullCatalog, alreadySeenStreams);
     final List<ConfiguredAirbyteStream> streamsForCtidSync = new ArrayList<>();
     fullCatalog.getStreams().stream()
         .filter(stream -> streamsStillInCtidSync.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))

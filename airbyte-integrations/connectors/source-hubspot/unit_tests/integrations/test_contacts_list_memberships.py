@@ -1,60 +1,100 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+from datetime import datetime, timedelta, timezone
+from unittest import TestCase
+
 import freezegun
 from airbyte_cdk.test.mock_http import HttpMocker
-from airbyte_protocol.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor, SyncMode
+from airbyte_cdk.test.state_builder import StateBuilder
+from airbyte_protocol.models import SyncMode
 
-from . import HubspotContactsTestCase
+from . import HubspotTestCase
 from .request_builders.streams import ContactsStreamRequestBuilder
+from .response_builder.contact_response_builder import AllContactsResponseBuilder, ContactBuilder, ContactsListMembershipBuilder
+
+_START_TIME_BEFORE_ANY_RECORD = "1970-01-01T00:00:00Z"
+
+_NOW = datetime.now(timezone.utc)
+_VID_OFFSET = 5331889818
 
 
-@freezegun.freeze_time("2024-05-04T00:00:00Z")
-class TestContactsListMembershipsStream(HubspotContactsTestCase):
+class ContactsListMembershipsStreamTest(TestCase, HubspotTestCase):
     SCOPES = ["crm.objects.contacts.read"]
     STREAM_NAME = "contacts_list_memberships"
 
-    @HttpMocker()
-    def test_read_multiple_contact_pages(self, http_mocker: HttpMocker):
-        self.mock_oauth(http_mocker, self.ACCESS_TOKEN)
-        self.mock_scopes(http_mocker, self.ACCESS_TOKEN, self.SCOPES)
-        self.mock_custom_objects(http_mocker)
+    def setUp(self) -> None:
+        self._http_mocker = HttpMocker()
+        self._http_mocker.__enter__()
 
-        self.mock_response(http_mocker, ContactsStreamRequestBuilder().with_filter("showListMemberships", True).build(), self.response(stream_name=self.STREAM_NAME, with_pagination=True).build())
-        self.mock_response(http_mocker, ContactsStreamRequestBuilder().with_filter("showListMemberships", True).with_vid_offset("5331889818").build(), self.response(stream_name=self.STREAM_NAME).build())
+        self.mock_oauth(self._http_mocker, self.ACCESS_TOKEN)
+        self.mock_scopes(self._http_mocker, self.ACCESS_TOKEN, self.SCOPES)
+        self.mock_custom_objects(self._http_mocker)
 
-        output = self.read_from_stream(self.oauth_config(), self.STREAM_NAME, SyncMode.full_refresh)
+    def tearDown(self) -> None:
+        self._http_mocker.__exit__(None, None, None)
 
-        assert len(output.records) == 12
-        assert output.state_messages[0].state.stream.stream_state.dict() == {"vidOffset": "5331889818"}
-        assert output.state_messages[0].state.stream.stream_descriptor.name == self.STREAM_NAME
-        assert output.state_messages[0].state.sourceStats.recordCount == 6
-        assert output.state_messages[1].state.stream.stream_state.dict() == {}
-        assert output.state_messages[1].state.stream.stream_descriptor.name == self.STREAM_NAME
-        assert output.state_messages[1].state.sourceStats.recordCount == 6
+    def test_given_pagination_when_read_then_extract_records_from_both_pages(self) -> None:
+        self.mock_response(
+            self._http_mocker,
+            ContactsStreamRequestBuilder().with_filter("showListMemberships", True).build(),
+            AllContactsResponseBuilder().with_pagination(vid_offset=_VID_OFFSET).with_contacts([
+                ContactBuilder().with_list_memberships([
+                    ContactsListMembershipBuilder(),
+                    ContactsListMembershipBuilder(),
+                ]),
+            ]).build(),
+        )
+        self.mock_response(
+            self._http_mocker,
+            ContactsStreamRequestBuilder().with_filter("showListMemberships", True).with_vid_offset(str(_VID_OFFSET)).build(),
+            AllContactsResponseBuilder().with_contacts([
+                ContactBuilder().with_list_memberships([
+                    ContactsListMembershipBuilder(),
+                ]),
+                ContactBuilder().with_list_memberships([
+                    ContactsListMembershipBuilder(),
+                    ContactsListMembershipBuilder(),
+                ]),
+            ]).build(),
+        )
 
-    @HttpMocker()
-    def test_read_from_incoming_state(self, http_mocker: HttpMocker):
-        state = [
-            AirbyteStateMessage(
-                type=AirbyteStateType.STREAM,
-                stream=AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name=self.STREAM_NAME),
-                    stream_state=AirbyteStateBlob(**{"vidOffset": "5331889818"})
-                )
-            )
-        ]
+        output = self.read_from_stream(self.oauth_config(start_date=_START_TIME_BEFORE_ANY_RECORD), self.STREAM_NAME, SyncMode.full_refresh)
 
-        self.mock_oauth(http_mocker, self.ACCESS_TOKEN)
-        self.mock_scopes(http_mocker, self.ACCESS_TOKEN, self.SCOPES)
-        self.mock_custom_objects(http_mocker)
+        assert len(output.records) == 5
 
-        # Even though we only care about the request with a vidOffset parameter, we mock this in order to pass the availability check
-        self.mock_response(http_mocker, ContactsStreamRequestBuilder().with_filter("showListMemberships", True).build(), self.response(stream_name=self.STREAM_NAME, with_pagination=True).build())
-        self.mock_response(http_mocker, ContactsStreamRequestBuilder().with_filter("showListMemberships", True).with_vid_offset("5331889818").build(), self.response(stream_name=self.STREAM_NAME).build())
+    def test_given_timestamp_before_start_date_when_read_then_filter_out(self) -> None:
+        start_date = datetime(2024, 1, 1, tzinfo=timezone.utc)
+        self.mock_response(
+            self._http_mocker,
+            ContactsStreamRequestBuilder().with_filter("showListMemberships", True).build(),
+            AllContactsResponseBuilder().with_contacts([
+                ContactBuilder().with_list_memberships([
+                    ContactsListMembershipBuilder().with_timestamp(start_date + timedelta(days=10)),
+                    ContactsListMembershipBuilder().with_timestamp(start_date - timedelta(days=10)),
+                ]),
+            ]).build(),
+        )
+        output = self.read_from_stream(self.oauth_config(start_date=start_date.isoformat().replace("+00:00", "Z")), self.STREAM_NAME, SyncMode.full_refresh)
 
-        output = self.read_from_stream(cfg=self.oauth_config(), stream=self.STREAM_NAME, sync_mode=SyncMode.full_refresh, state=state)
+        assert len(output.records) == 1
 
-        assert len(output.records) == 6
-        assert output.state_messages[0].state.stream.stream_state.dict() == {}
-        assert output.state_messages[0].state.stream.stream_descriptor.name == self.STREAM_NAME
-        assert output.state_messages[0].state.sourceStats.recordCount == 6
+    def test_given_state_when_read_then_filter_out(self) -> None:
+        state_value = datetime(2024, 1, 1, tzinfo=timezone.utc)
+        self.mock_response(
+            self._http_mocker,
+            ContactsStreamRequestBuilder().with_filter("showListMemberships", True).build(),
+            AllContactsResponseBuilder().with_contacts([
+                ContactBuilder().with_list_memberships([
+                    ContactsListMembershipBuilder().with_timestamp(state_value + timedelta(days=10)),
+                    ContactsListMembershipBuilder().with_timestamp(state_value - timedelta(days=10)),
+                ]),
+            ]).build(),
+        )
+        output = self.read_from_stream(
+            self.oauth_config(start_date=_START_TIME_BEFORE_ANY_RECORD),
+            self.STREAM_NAME,
+            SyncMode.incremental,
+            StateBuilder().with_stream_state(self.STREAM_NAME, {"timestamp": int(state_value.timestamp() * 1000)}).build(),
+        )
+
+        assert len(output.records) == 1

@@ -18,15 +18,17 @@ import io.airbyte.cdk.integrations.destination.async.state.FlushFailure
 import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
-import io.airbyte.protocol.models.v0.*
+import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.time.Instant
-import java.util.*
+import java.util.Optional
 import java.util.concurrent.Executors
 import java.util.function.Consumer
 import java.util.function.Function
-import java.util.stream.Collectors
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -43,7 +45,6 @@ private constructor(
     private val config: JsonNode?,
     private val catalog: ConfiguredAirbyteCatalog?,
     private val purgeStagingData: Boolean,
-    private val typerDeduperValve: TypeAndDedupeOperationValve?,
     private val typerDeduper: TyperDeduper?,
     private val parsedCatalog: ParsedCatalog?,
     private val defaultNamespace: String?,
@@ -65,7 +66,6 @@ private constructor(
         var config: JsonNode? = null
         var catalog: ConfiguredAirbyteCatalog? = null
         var purgeStagingData: Boolean = false
-        var typerDeduperValve: TypeAndDedupeOperationValve? = null
         var typerDeduper: TyperDeduper? = null
         var parsedCatalog: ParsedCatalog? = null
         var defaultNamespace: String? = null
@@ -102,7 +102,6 @@ private constructor(
                 config,
                 catalog,
                 purgeStagingData,
-                typerDeduperValve,
                 typerDeduper,
                 parsedCatalog,
                 defaultNamespace,
@@ -116,7 +115,6 @@ private constructor(
 
     fun createAsync(): SerializedAirbyteMessageConsumer {
         val typerDeduper = this.typerDeduper!!
-        val typerDeduperValve = this.typerDeduperValve!!
         val stagingOperations = this.stagingOperations!!
 
         val writeConfigs: List<WriteConfig> =
@@ -129,8 +127,6 @@ private constructor(
                 stagingOperations,
                 database,
                 catalog,
-                typerDeduperValve,
-                typerDeduper,
                 optimalBatchSizeBytes,
                 destinationColumns
             )
@@ -173,7 +169,6 @@ private constructor(
             config: JsonNode?,
             catalog: ConfiguredAirbyteCatalog,
             purgeStagingData: Boolean,
-            typerDeduperValve: TypeAndDedupeOperationValve,
             typerDeduper: TyperDeduper,
             parsedCatalog: ParsedCatalog?,
             defaultNamespace: String?,
@@ -187,7 +182,6 @@ private constructor(
             builder.config = config
             builder.catalog = catalog
             builder.purgeStagingData = purgeStagingData
-            builder.typerDeduperValve = typerDeduperValve
             builder.typerDeduper = typerDeduper
             builder.parsedCatalog = parsedCatalog
             builder.defaultNamespace = defaultNamespace
@@ -220,19 +214,15 @@ private constructor(
                     streamDescToWriteConfig[streamIdentifier] = config
                 }
             }
-            if (!conflictingStreams.isEmpty()) {
+            if (conflictingStreams.isNotEmpty()) {
+                var affectedStreamsAsString =
+                    conflictingStreams.joinToString(", ") { config: WriteConfig ->
+                        config.namespace + "." + config.streamName
+                    }
                 val message =
-                    String.format(
-                        "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using \${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: %s",
-                        conflictingStreams
-                            .stream()
-                            .map<String>(
-                                Function<WriteConfig, String> { config: WriteConfig ->
-                                    config.namespace + "." + config.streamName
-                                }
-                            )
-                            .collect(Collectors.joining(", "))
-                    )
+                    "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using " +
+                        "\${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. " +
+                        "Affected streams: $affectedStreamsAsString"
                 throw ConfigErrorException(message)
             }
             return streamDescToWriteConfig
@@ -303,7 +293,7 @@ private constructor(
                     @Suppress("deprecation") namingResolver!!.getTmpTableName(streamName)
                 val syncMode = stream.destinationSyncMode
 
-                val writeConfig: WriteConfig =
+                val writeConfig =
                     WriteConfig(
                         streamName,
                         abStream.namespace,

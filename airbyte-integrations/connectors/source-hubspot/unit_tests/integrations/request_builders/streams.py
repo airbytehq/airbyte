@@ -1,6 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from typing import Any, Dict, Iterable, Tuple
+from typing import Any, Dict, Iterable, List, Tuple
 
 from airbyte_cdk.test.mock_http import HttpRequest
 
@@ -141,24 +141,24 @@ class OwnersArchivedStreamRequestBuilder(AbstractRequestBuilder):
 class ContactsStreamRequestBuilder(AbstractRequestBuilder):
     URL = "https://api.hubapi.com/contacts/v1/lists/all/contacts/all"
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._filters = []
         self._vid_offset = None
 
     @property
-    def _count(self):
+    def _count(self) -> str:
         return "count=100"
 
-    def with_filter(self, filter_field: str, filter_value: Any):
+    def with_filter(self, filter_field: str, filter_value: Any) -> "ContactsStreamRequestBuilder":
         self._filters.append(f"{filter_field}={filter_value}")
         return self
 
-    def with_vid_offset(self, vid_offset: str):
+    def with_vid_offset(self, vid_offset: str) -> "ContactsStreamRequestBuilder":
         self._vid_offset = f"vidOffset={vid_offset}"
         return self
 
     @property
-    def _query_params(self):
+    def _query_params(self) -> List[str]:
         params = [
             self._count,
             self._vid_offset,
@@ -166,6 +166,6 @@ class ContactsStreamRequestBuilder(AbstractRequestBuilder):
         params.extend(self._filters)
         return filter(None, params)
 
-    def build(self):
+    def build(self) -> HttpRequest:
         q = "&".join(filter(None, self._query_params))
         return HttpRequest(self.URL, query_params=q)
