@@ -1047,8 +1047,19 @@ class TestTicketSubstream:
     @pytest.mark.parametrize(
         "stream_state, response, expected_slices",
         [
-            ({}, {"tickets": [{"id": "13"}, {"id": "80"}]}, [{"ticket_id": "13"}, {"ticket_id": "80"}]),
-            ({"updated_at": "2024-04-17T19:34:06Z"}, {"tickets": [{"id": "80"}]}, [{"ticket_id": "80"}]),
+            (
+                {},
+                {"tickets": [{"id": "13"}, {"id": "80"}]},
+                [
+                    {"ticket_id": "13", "updated_at": STREAM_ARGS["start_date"]},
+                    {"ticket_id": "80", "updated_at": STREAM_ARGS["start_date"]},
+                ],
+            ),
+            (
+                {"updated_at": "2024-04-17T19:34:06Z"},
+                {"tickets": [{"id": "80"}]},
+                [{"ticket_id": "80", "updated_at": "2024-04-17T19:34:06Z"}],
+            ),
             ({"updated_at": "2224-04-17T19:34:06Z"}, {"tickets": []}, []),
         ],
         ids=[
@@ -1063,30 +1074,32 @@ class TestTicketSubstream:
         assert list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state=stream_state)) == expected_slices
 
     @pytest.mark.parametrize(
-        "stream_state, response, expected_records",
+        "stream_slice, response, expected_records",
         [
-            ({}, {"updated_at": "2024-04-17T19:34:06Z", "id": "test id"}, [{"id": "test id", "updated_at": "2024-04-17T19:34:06Z"}]),
-            ({}, {"updated_at": "1979-04-17T19:34:06Z", "id": "test id"}, []),
+            ({"updated_at": "2024-05-17T19:34:06Z"}, {"updated_at": "2024-04-17T19:34:06Z", "id": "test id"}, []),
             (
-                {"updated_at": "2024-04-17T19:34:06Z"},
-                {"updated_at": "2024-04-18T19:34:06Z", "id": "test id"},
-                [{"updated_at": "2024-04-18T19:34:06Z", "id": "test id"}],
+                {"updated_at": "2024-03-17T19:34:06Z"},
+                {"updated_at": "2024-04-17T19:34:06Z", "id": "test id"},
+                [{"updated_at": "2024-04-17T19:34:06Z", "id": "test id"}],
             ),
-            ({"updated_at": "2024-04-17T19:34:06Z"}, {"updated_at": "1979-04-18T19:34:06Z", "id": "test id"}, []),
+            (
+                {},
+                {"updated_at": "1979-04-17T19:34:06Z", "id": "test id"},
+                [{"updated_at": "1979-04-17T19:34:06Z", "id": "test id"}],
+            ),
         ],
         ids=[
-            "read_without_state",
-            "read_without_state_cursor_older_then_start_date",
-            "read_with_state",
-            "read_with_state_cursor_older_then_state_value",
+            "read_with_slice_cursor_greater_than_record_cursor",
+            "read_with_slice_cursor_less_than_record_cursor",
+            "read_without_slice_cursor",
         ],
     )
-    def test_ticket_metrics_parse_response(self, stream_state, response, expected_records):
+    def test_ticket_metrics_parse_response(self, stream_slice, response, expected_records):
         stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
         mocked_response = Mock()
-        mocked_response.json.return_value = {"ticket_metric": {"updated_at": "2024-04-17T19:34:06Z", "id": "test id"}}
-        records = list(stream.parse_response(mocked_response, stream_state=stream_state))
-        assert records == [{"id": "test id", "updated_at": "2024-04-17T19:34:06Z"}]
+        mocked_response.json.return_value = {"ticket_metric": response}
+        records = list(stream.parse_response(mocked_response, stream_state={}, stream_slice=stream_slice))
+        assert records == expected_records
 
     def test_read_ticket_metrics_with_error(self, requests_mock):
         stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
