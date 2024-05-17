@@ -103,3 +103,6 @@ scan-journal.log
 
 # mvn
 target/
+
+#vscode
+.history
