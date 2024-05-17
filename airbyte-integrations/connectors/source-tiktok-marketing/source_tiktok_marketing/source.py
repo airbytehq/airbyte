@@ -5,7 +5,6 @@ import logging
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -116,7 +115,7 @@ class SourceTiktokMarketing(AbstractSource):
 
         return stream_args
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Tests if the input configuration can be used to successfully connect to the integration
         """
