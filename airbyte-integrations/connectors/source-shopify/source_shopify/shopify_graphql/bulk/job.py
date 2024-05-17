@@ -28,7 +28,7 @@ class ShopifyBulkManager:
     stream_name: str
 
     # default logger
-    logger: Final[AirbyteLogger] = logging.getLogger("airbyte")
+    logger: Final[logging.Logger] = logging.getLogger("airbyte")
 
     # 10Mb chunk size to save the file
     _retrieve_chunk_size: Final[int] = 1024 * 1024 * 10
