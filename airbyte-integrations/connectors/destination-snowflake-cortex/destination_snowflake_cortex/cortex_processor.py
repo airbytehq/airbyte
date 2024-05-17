@@ -86,17 +86,31 @@ class SnowflakeCortexSqlProcessor(SnowflakeSqlProcessor):
         temp_file_cleanup: bool = True,
     ) -> None:
         """Custom initialization: Initialize type_converter with vector_length."""
-        self._vector_length = vector_length
+        if not temp_dir and not file_writer:
+            raise exc.PyAirbyteInternalError(
+                message="Either `temp_dir` or `file_writer` must be provided.",
+            )
 
-        # call base class to do necessary initialization
-        super().__init__(
-            catalog_provider=catalog_provider,
+        state_writer = state_writer or StdOutStateWriter()
+
+        self._sql_config: SnowflakeCortexConfig = sql_config
+
+        # Skip the direct parent's initialization and call the grandparent
+        RecordProcessorBase.__init__(
+            self,
             state_writer=state_writer,
-            sql_config=sql_config,
-            file_writer=file_writer,
-            temp_dir=temp_dir,
-            temp_file_cleanup=temp_file_cleanup,
+            catalog_provider=catalog_provider,
         )
+        self.file_writer = file_writer or self.file_writer_class(
+            cache_dir=cast(Path, temp_dir),
+            cleanup=temp_file_cleanup,
+        )
+
+        # This is the only line that is different from the base class implementation:
+        self.type_converter = self.type_converter_class(vector_length=self.sql_config.vector_length)
+
+        self._cached_table_definitions: dict[str, sqlalchemy.Table] = {}
+        self._ensure_schema_exists()
 
     def _get_column_list_from_table(
         self,
