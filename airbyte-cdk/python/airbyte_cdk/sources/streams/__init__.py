@@ -4,6 +4,5 @@
 
 # Initialize Streams Package
 from .core import NO_CURSOR_STATE_KEY, IncrementalMixin, CheckpointMixin, Stream
-from .availability_strategy import AvailabilityStrategy
 
-__all__ = ["AvailabilityStrategy", "NO_CURSOR_STATE_KEY", "IncrementalMixin", "CheckpointMixin", "Stream"]
+__all__ = ["NO_CURSOR_STATE_KEY", "IncrementalMixin", "CheckpointMixin", "Stream"]

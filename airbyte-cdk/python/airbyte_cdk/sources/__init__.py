@@ -7,7 +7,6 @@ import dpath.options
 from .abstract_source import AbstractSource
 from .config import BaseConfig
 from .source import Source
-from .types import Config, Record, StreamSlice
 
 # As part of the CDK sources, we do not control what the APIs return and it is possible that a key is empty.
 # Reasons why we are doing this at the airbyte_cdk level:
@@ -20,4 +19,4 @@ from .types import Config, Record, StreamSlice
 # this will not be thread-safe.
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
-__all__ = ["AbstractSource", "BaseConfig", "Config", "Record", "Source", "StreamSlice"]
+__all__ = ["AbstractSource", "BaseConfig", "Source"]
