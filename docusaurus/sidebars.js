@@ -458,7 +458,7 @@ module.exports = {
             "using-airbyte/core-concepts/basic-normalization"
           ],
         },
-        "cloud/managing-airbyte-cloud/manage-schema-changes",
+        "using-airbyte/schema-change-management",
         {
           type: "category",
           label: "Transformations",
