@@ -15,7 +15,7 @@ For [historic reasons](https://github.com/airbytehq/airbyte/issues/836), the Air
 
 :::caution
 
-Due to some difficulties in setting up Airflow, we recommend first trying out the deployment using the local example [here](https://github.com/airbytehq/airbyte/tree/master/resources/examples/airflow), as it contains accurate configuration required to get the Airbyte operator up and running.
+Due to some difficulties in setting up Airflow, we recommend first trying out the deployment using the local example [here](https://github.com/airbytehq/airbyte/blob/master/docs/operator-guides/using-the-airflow-airbyte-operator.md), as it contains accurate configuration required to get the Airbyte operator up and running.
 
 :::
 
