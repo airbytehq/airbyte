@@ -1,0 +1,43 @@
+name: main
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+    paths:
+      - airbyte-integrations/connectors/destination-aws-lakehouse
+env:
+  CONNECTOR_VERSION: "1.0.0"
+  TARGET_DIR: airbyte-integrations/connectors/destination-aws-lakehouse
+
+# These permissions are needed to interact with GitHub's OIDC Token endpoint
+# (aws-actions/configure-aws-credentials@v1)
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_GITHUB_ROLE_ARN }}
+          aws-region: eu-west-1
+
+      - name: Login to AWS ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and push Docker image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: airbyte-clue-connectors
+        run: |
+          cd ${{ env.TARGET_DIR }}
+          docker build -t $REGISTRY/$REPOSITORY:${{ env.AIRFLOW_VERSION }} .
+          docker push $REGISTRY/$REPOSITORY:${{ env.AIRFLOW_VERSION }}
