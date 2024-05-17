@@ -208,6 +208,7 @@ def _filter_skipped_steps(steps_to_evaluate: STEP_TREE, skip_steps: List[str], r
 
         else:
             steps_to_run.append(step_to_eval)
+
     return steps_to_run, results
 
 
