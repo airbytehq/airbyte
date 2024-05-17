@@ -45,12 +45,23 @@ class RestoreVersionState(Step):
         connector = context.connector
         if connector.metadata_file_path.is_file():
             self.metadata_content = connector.metadata_file_path.read_text()
+        else:
+            self.metadata_content = None
+
         if connector.dockerfile_file_path.is_file():
             self.dockerfile_content = connector.dockerfile_file_path.read_text()
+        else:
+            self.dockerfile_content = None
+
         if connector.pyproject_file_path.is_file():
             self.poetry_content = connector.pyproject_file_path.read_text()
+        else:
+            self.poetry_content = None
+
         if connector.documentation_file_path and connector.documentation_file_path.is_file():
             self.documentation_content = connector.documentation_file_path.read_text()
+        else:
+            self.documentation_content = None
 
     async def _run(self) -> StepResult:
         connector = self.context.connector
@@ -142,7 +153,7 @@ class SetConnectorVersion(Step):
 
     async def get_repo_dir(self) -> Directory:
         if not self.repo_dir:
-            self.repo_dir = await self.context.get_connector_dir()
+            self.repo_dir = await self.context.get_repo_dir()
         return self.repo_dir
 
     async def _run(self) -> StepResult:

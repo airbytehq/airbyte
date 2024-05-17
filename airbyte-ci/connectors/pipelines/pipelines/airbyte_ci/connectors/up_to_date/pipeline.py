@@ -239,6 +239,9 @@ def pick_airbyte_cdk_version(current_version: Version, context: ConnectorContext
 
     # TODO: could add more logic here for semantic and other known things
 
+    # 0.80.0 is better beause it specifies the protocol version
+    if context.connector.language == ConnectorLanguage.PYTHON and current_version < Version("0.80.0"):
+        return Version("0.80.0")
     # 0.84: where from airbyte_cdk.sources.deprecated is removed
     if context.connector.language == ConnectorLanguage.PYTHON and current_version < Version("0.84.0"):
         return Version("0.83.0")
