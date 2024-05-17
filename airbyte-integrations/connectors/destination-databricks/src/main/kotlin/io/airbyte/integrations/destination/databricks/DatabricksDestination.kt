@@ -16,15 +16,17 @@ import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
 import io.airbyte.cdk.integrations.destination.async.deser.AirbyteMessageDeserializer
 import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.util.addDefaultNamespaceToStreams
+import io.airbyte.integrations.base.destination.operation.DefaultFlush
+import io.airbyte.integrations.base.destination.operation.DefaultSyncOperation
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksDestinationHandler
+import io.airbyte.integrations.destination.databricks.jdbc.DatabricksNamingTransformer
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksSqlGenerator
-import io.airbyte.integrations.destination.databricks.jdbc.DatabricksStorageOperations
 import io.airbyte.integrations.destination.databricks.model.DatabricksConnectorConfig
-import io.airbyte.integrations.destination.databricks.staging.DatabricksFlushFunction
-import io.airbyte.integrations.destination.databricks.staging.SerializableBufferFactory
-import io.airbyte.integrations.destination.databricks.sync.DatabricksSyncOperations
+import io.airbyte.integrations.destination.databricks.operation.DatabricksStorageOperation
+import io.airbyte.integrations.destination.databricks.operation.DatabricksStreamOperationFactory
+import io.airbyte.integrations.destination.databricks.staging.DatabricksFileBufferFactory
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -65,7 +67,7 @@ class DatabricksDestination : BaseConnector(), Destination {
                 connectorConfig.authentication
             )
         val storageOperations =
-            DatabricksStorageOperations(
+            DatabricksStorageOperation(
                 sqlGenerator,
                 destinationHandler,
                 workspaceClient,
@@ -94,7 +96,7 @@ class DatabricksDestination : BaseConnector(), Destination {
         }
 
         try {
-            val writeBuffer = SerializableBufferFactory.createBuffer(FileUploadFormat.CSV)
+            val writeBuffer = DatabricksFileBufferFactory.createBuffer(FileUploadFormat.CSV)
             writeBuffer.use {
                 it.accept("{\"airbyte_check\":\"passed\"}", "{}", System.currentTimeMillis())
                 it.flush()
@@ -147,7 +149,7 @@ class DatabricksDestination : BaseConnector(), Destination {
 
         // Minimum surface area for AsyncConsumer's lifecycle functions to call.
         val storageOperations =
-            DatabricksStorageOperations(
+            DatabricksStorageOperation(
                 sqlGenerator,
                 destinationHandler,
                 workspaceClient,
@@ -159,12 +161,12 @@ class DatabricksDestination : BaseConnector(), Destination {
         // if something goes wrong here.
         // Rather than trying to safeguard if succeeded in AutoCloseable's onClose
         val syncOperations =
-            DatabricksSyncOperations(
+            DefaultSyncOperation(
                 parsedCatalog,
                 destinationHandler,
                 connectorConfig.schema,
-                storageOperations,
-                fileUploadFormat = FileUploadFormat.CSV
+                DatabricksStreamOperationFactory(storageOperations),
+                listOf()
             )
 
         return AsyncStreamConsumer(
@@ -173,7 +175,7 @@ class DatabricksDestination : BaseConnector(), Destination {
             onClose = { _, streamSyncSummaries ->
                 syncOperations.finalizeStreams(streamSyncSummaries)
             },
-            onFlush = DatabricksFlushFunction(128 * 1024 * 1024L, syncOperations),
+            onFlush = DefaultFlush(128 * 1024 * 1024L, syncOperations),
             catalog = catalog,
             bufferManager =
                 BufferManager(

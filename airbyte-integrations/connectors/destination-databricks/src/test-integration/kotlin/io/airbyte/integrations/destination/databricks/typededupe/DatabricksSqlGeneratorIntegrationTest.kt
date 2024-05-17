@@ -23,8 +23,8 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
 import io.airbyte.integrations.destination.databricks.DatabricksConnectorClientsFactory
-import io.airbyte.integrations.destination.databricks.DatabricksNamingTransformer
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksDestinationHandler
+import io.airbyte.integrations.destination.databricks.jdbc.DatabricksNamingTransformer
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksSqlGenerator
 import io.airbyte.integrations.destination.databricks.model.DatabricksConnectorConfig
 import io.airbyte.protocol.models.v0.DestinationSyncMode

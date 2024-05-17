@@ -2,18 +2,19 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.databricks.jdbc
+package io.airbyte.integrations.destination.databricks.operation
 
 import com.databricks.sdk.WorkspaceClient
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
+import io.airbyte.integrations.base.destination.operation.StorageOperation
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeTransaction
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil as tdutils
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
-import io.airbyte.integrations.destination.sync.StorageOperations
+import io.airbyte.integrations.destination.databricks.jdbc.DatabricksSqlGenerator
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
@@ -21,13 +22,13 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.*
 
-class DatabricksStorageOperations(
+class DatabricksStorageOperation(
     private val sqlGenerator: SqlGenerator,
     private val destinationHandler: DestinationHandler<MinimumDestinationState.Impl>,
     private val workspaceClient: WorkspaceClient,
     private val database: String,
     private val purgeStagedFiles: Boolean = false
-) : StorageOperations {
+) : StorageOperation<SerializableBuffer> {
 
     private val log = KotlinLogging.logger {}
 
@@ -35,9 +36,9 @@ class DatabricksStorageOperations(
     //  Hoist them to SqlGenerator interface in CDK, until then using concrete instance.
     private val databricksSqlGenerator = sqlGenerator as DatabricksSqlGenerator
 
-    override fun writeToStage(streamId: StreamId, buffer: SerializableBuffer) {
-        val stagedFile = "${stagingDirectory(streamId, database)}/${buffer.filename}"
-        workspaceClient.files().upload(stagedFile, buffer.inputStream)
+    override fun writeToStage(streamId: StreamId, data: SerializableBuffer) {
+        val stagedFile = "${stagingDirectory(streamId, database)}/${data.filename}"
+        workspaceClient.files().upload(stagedFile, data.inputStream)
         destinationHandler.execute(
             Sql.of(
                 """
@@ -58,7 +59,7 @@ class DatabricksStorageOperations(
         // recursively.
         if (purgeStagedFiles) {
             log.info {
-                "Removing staged file ${stagingDirectory(streamId, database)}/${buffer.filename}"
+                "Removing staged file ${stagingDirectory(streamId, database)}/${data.filename}"
             }
             // Using Jdbc for PUT 'file' and REMOVE 'file' just returns a presigned S3 url and the
             // HTTP method to call as
@@ -67,7 +68,7 @@ class DatabricksStorageOperations(
             // database)}/${buffer.filename}'"))
             workspaceClient
                 .files()
-                .delete("${stagingDirectory(streamId, database)}/${buffer.filename}")
+                .delete("${stagingDirectory(streamId, database)}/${data.filename}")
         }
     }
 
@@ -76,7 +77,7 @@ class DatabricksStorageOperations(
         maxProcessedTimestamp: Optional<Instant>,
         finalTableSuffix: String
     ) {
-        TypeAndDedupeTransaction.executeTypeAndDedupe(
+        tdutils.executeTypeAndDedupe(
             sqlGenerator,
             destinationHandler,
             streamConfig,
@@ -121,7 +122,7 @@ class DatabricksStorageOperations(
         }
     }
 
-    override fun createFinalSchema(streamId: StreamId) {
+    override fun createFinalNamespace(streamId: StreamId) {
         val finalSchema = streamId.finalNamespace
         // TODO: Optimize by running SHOW SCHEMAS; rather than CREATE SCHEMA if not exists
         destinationHandler.execute(sqlGenerator.createSchema(finalSchema))
@@ -135,7 +136,7 @@ class DatabricksStorageOperations(
     }
 
     override fun softResetFinalTable(streamConfig: StreamConfig) {
-        TypeAndDedupeTransaction.executeSoftReset(
+        tdutils.executeSoftReset(
             sqlGenerator,
             destinationHandler,
             streamConfig,

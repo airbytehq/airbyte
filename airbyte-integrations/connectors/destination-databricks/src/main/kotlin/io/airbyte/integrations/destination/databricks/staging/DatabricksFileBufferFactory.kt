@@ -17,7 +17,13 @@ import java.util.*
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.QuoteMode
 
-object SerializableBufferFactory {
+/**
+ * This is identical to
+ * [io.airbyte.cdk.integrations.destination.staging.StagingSerializedBufferFactory] but the
+ * getDataRow excludes including a blank value for _airbyte_loaded_at field. Databricks CSV load was
+ * failing with empty field in CSV.
+ */
+object DatabricksFileBufferFactory {
     /** Factory function to create buffer based on format */
     fun createBuffer(fileUploadFormat: FileUploadFormat): SerializableBuffer {
         when (fileUploadFormat) {

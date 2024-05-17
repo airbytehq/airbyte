@@ -15,7 +15,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupi
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.destination.databricks.DatabricksConnectorClientsFactory
-import io.airbyte.integrations.destination.databricks.DatabricksNamingTransformer
+import io.airbyte.integrations.destination.databricks.jdbc.DatabricksNamingTransformer
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksSqlGenerator
 import io.airbyte.integrations.destination.databricks.model.DatabricksConnectorConfig
 import java.nio.file.Path
