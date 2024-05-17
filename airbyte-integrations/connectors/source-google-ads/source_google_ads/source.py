@@ -125,10 +125,9 @@ class SourceGoogleAds(AbstractSource):
         # filter duplicates as one customer can be accessible from mutiple connected accounts
         unique_customers = []
         seen_ids = set()
+        excluded_ids = config.get("exclude_customer_ids", set())
         for customer in customers:
-            if customer.id in config["exclude_customer_ids"]:
-                continue
-            if customer.id in seen_ids:
+            if customer.id in seen_ids or customer.id in excluded_ids:
                 continue
             seen_ids.add(customer.id)
             unique_customers.append(customer)
