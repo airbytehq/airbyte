@@ -57,8 +57,8 @@ object JavaBaseConstants {
 
     const val DEFAULT_AIRBYTE_INTERNAL_NAMESPACE: String = "airbyte_internal"
     enum class DestinationColumns(val rawColumns: List<String>) {
-        V2_WITH_META(JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES),
-        V2_WITHOUT_META(JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META),
-        LEGACY(JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS)
+        V2_WITH_META(V2_RAW_TABLE_COLUMN_NAMES),
+        V2_WITHOUT_META(V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META),
+        LEGACY(LEGACY_RAW_TABLE_COLUMNS)
     }
 }
