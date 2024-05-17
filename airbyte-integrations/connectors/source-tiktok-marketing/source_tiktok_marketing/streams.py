@@ -864,6 +864,10 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
         for slice_adv_id in super().stream_slices(**kwargs):
             for start_date, end_date in self._get_time_interval(stream_start, stream_end, self.report_granularity, self.attribution_window):
+                print("STATE:")
+                print(stream_state)
+                print(start_date)
+                print(end_date)
                 slice = {
                     "advertiser_id": slice_adv_id["advertiser_id"],
                     "start_date": start_date.strftime("%Y-%m-%d"),
