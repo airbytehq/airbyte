@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "customers",
+        "name": "eur",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -11,7 +11,7 @@
     },
     {
       "stream": {
-        "name": "employees",
+        "name": "usd",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"]
       },

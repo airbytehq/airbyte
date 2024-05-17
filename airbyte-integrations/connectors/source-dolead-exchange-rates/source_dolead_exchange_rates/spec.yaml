@@ -4,10 +4,4 @@ connectionSpecification:
   title: Dolead Exchange Rates Spec
   type: object
   required:
-    ["input_currency"]
-  properties:
-    input_currency: {
-      type: "string",
-      description: "describe me",
-      examples: ["eur, usd"]
-    }
+    []

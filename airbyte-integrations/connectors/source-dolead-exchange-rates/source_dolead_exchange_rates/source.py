@@ -1,8 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
+import json
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -32,26 +31,70 @@ class DoleadExchangeRatesStream(HttpStream, ABC):
     url_base = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/"
     primary_key = None
 
-    def __init__(self, input_currency, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.input_currency = input_currency
+
+    def get_json_schema(self):
+        schema = super().get_json_schema()
+        schema['properties']["date"] = {"type": "string"}
+        schema['properties']["input_currency"] = {"type": "string"}
+        schema['properties']["output_currency"] = {"type": "string"}
+        schema['properties']["rate"] = {"type": "number"}
+        return schema
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
     def path(self, **kwargs) -> str:
-        input_currency = self.input_currency
         # This defines the path to the endpoint that we want to hit.
-        return f"{input_currency}.min.json"
+        return f"{self.output_currency}.min.json"
 
     def request_params(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
             next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        return {"input_currency": self.input_currency}
+        return {"input_currency": self.output_currency}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return [response.json()]
+        return response.json()
+
+
+class Usd(DoleadExchangeRatesStream):
+    output_currency = "usd"
+    input_currencies = ["eur", "gbp", "cad", "aud"]
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response = super().parse_response(response)
+        record = []
+        for input_currency in self.input_currencies:
+            line = {}
+            rate = response[self.output_currency][input_currency]
+            rate = 1 / rate
+            line["date"] = response["date"]
+            line["input_currency"] = input_currency
+            line["output_currency"] = self.output_currency
+            line["rate"] = rate
+            record.append(line)
+        return record
+
+
+class Eur(DoleadExchangeRatesStream):
+    output_currency = "eur"
+    input_currencies = ["usd", "gbp", "cad", "aud"]
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response = super().parse_response(response)
+        record = []
+        for input_currency in self.input_currencies:
+            line = {}
+            rate = response[self.output_currency][input_currency]
+            rate = 1 / rate
+            line["date"] = response["date"]
+            line["input_currency"] = input_currency
+            line["output_currency"] = self.output_currency
+            line["rate"] = rate
+            record.append(line)
+        return record
 
 
 # Source
@@ -60,4 +103,4 @@ class SourceDoleadExchangeRates(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [DoleadExchangeRatesStream(input_currency=config["input_currency"])]
+        return [Eur(), Usd()]
