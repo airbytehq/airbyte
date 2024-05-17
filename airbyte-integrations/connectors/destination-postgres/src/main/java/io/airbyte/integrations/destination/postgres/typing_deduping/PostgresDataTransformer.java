@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.SizeBasedDataTransformer;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
@@ -19,7 +21,7 @@ import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class PostgresDataTransformer implements StreamAwareDataTransformer {
+public class PostgresDataTransformer extends SizeBasedDataTransformer {
 
   /*
    * This class is copied in its entirety from DataAdapter class to unify logic into one single
@@ -29,7 +31,9 @@ public class PostgresDataTransformer implements StreamAwareDataTransformer {
   final Predicate<JsonNode> filterValueNode;
   final Function<JsonNode, JsonNode> valueNodeAdapter;
 
-  public PostgresDataTransformer() {
+  public PostgresDataTransformer(ParsedCatalog parsedCatalog,
+                                 String defaultNamespace) {
+    super(parsedCatalog, defaultNamespace, Integer.MAX_VALUE, Integer.MAX_VALUE);
     this.filterValueNode = jsonNode -> jsonNode.isTextual() && jsonNode.textValue().contains("\u0000");
     this.valueNodeAdapter = jsonNode -> {
       final String textValue = jsonNode.textValue().replaceAll("\\u0000", "");
@@ -48,7 +52,7 @@ public class PostgresDataTransformer implements StreamAwareDataTransformer {
     }
     // Does inplace changes in the actual JsonNode reference.
     adapt(data);
-    return new Pair<>(data, new AirbyteRecordMessageMeta().withChanges(metaChanges));
+    return super.transform(streamDescriptor, data, new AirbyteRecordMessageMeta().withChanges(metaChanges));
   }
 
   public void adapt(final JsonNode messageData) {
