@@ -371,4 +371,11 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
         self._fields = list(schema.get("properties", {}).keys())
+
+        # Having this field in syncs seem to have caused data inaccuracy where fields like `spend` had the wrong values
+        try:
+            self._fields.remove("wish_bid")
+        except ValueError:
+            pass
+
         return self._fields
