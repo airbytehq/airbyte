@@ -24,7 +24,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: "campaigns"
+            field_path: ["campaigns"]
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -44,7 +44,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: "actions"
+            field_path: ["actions"]
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -72,7 +72,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: "newsletters"
+            field_path: ["newsletters"]
       schema_loader:
         type: InlineSchemaLoader
         schema:
