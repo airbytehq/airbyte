@@ -10,9 +10,14 @@ from .pagination import HubspotPaginationStrategy
 
 
 class HubspotStreamResponseBuilder(HttpResponseBuilder):
+    @property
+    def pagination_strategy(self):
+        return self._pagination_strategy
+    
     @classmethod
     def for_stream(cls, stream: str):
         return cls(find_template(stream, __file__), FieldPath("results"), HubspotPaginationStrategy())
+
 
 class GenericResponseBuilder(AbstractResponseBuilder):
     def __init__(self):
