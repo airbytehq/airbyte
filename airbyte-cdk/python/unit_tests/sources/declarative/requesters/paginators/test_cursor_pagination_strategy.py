@@ -80,7 +80,6 @@ def test_last_record_points_to_the_last_item_in_last_records_array():
 
 
 def test_last_record_is_node_if_no_records():
-    last_records = []
     strategy = CursorPaginationStrategy(
         page_size=1,
         cursor_value="{{ last_record.id }}",

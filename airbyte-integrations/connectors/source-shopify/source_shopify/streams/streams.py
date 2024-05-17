@@ -24,6 +24,9 @@ from source_shopify.shopify_graphql.bulk.query import (
     MetafieldProduct,
     MetafieldProductImage,
     MetafieldProductVariant,
+    Product,
+    ProductImage,
+    ProductVariant,
     Transaction,
 )
 from source_shopify.shopify_graphql.graphql import get_query_products
@@ -108,10 +111,8 @@ class MetafieldDraftOrders(IncrementalShopifyGraphQlBulkStream):
     bulk_query: MetafieldDraftOrder = MetafieldDraftOrder
 
 
-class Products(IncrementalShopifyStreamWithDeletedEvents):
-    use_cache = True
-    data_field = "products"
-    deleted_events_api_name = "Product"
+class Products(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: Product = Product
 
 
 class ProductsGraphQl(IncrementalShopifyStream):
@@ -167,22 +168,16 @@ class MetafieldProducts(IncrementalShopifyGraphQlBulkStream):
     bulk_query: MetafieldProduct = MetafieldProduct
 
 
-class ProductImages(IncrementalShopifyNestedStream):
-    parent_stream_class = Products
-    nested_entity = "images"
-    # add `product_id` to each nested subrecord
-    mutation_map = {"product_id": "id"}
+class ProductImages(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: ProductImage = ProductImage
 
 
 class MetafieldProductImages(IncrementalShopifyGraphQlBulkStream):
     bulk_query: MetafieldProductImage = MetafieldProductImage
 
 
-class ProductVariants(IncrementalShopifyNestedStream):
-    parent_stream_class = Products
-    nested_entity = "variants"
-    # add `product_id` to each nested subrecord
-    mutation_map = {"product_id": "id"}
+class ProductVariants(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: ProductVariant = ProductVariant
 
 
 class MetafieldProductVariants(IncrementalShopifyGraphQlBulkStream):

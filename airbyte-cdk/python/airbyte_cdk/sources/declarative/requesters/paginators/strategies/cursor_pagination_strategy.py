@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
-from airbyte_cdk.sources.declarative.types import Config, Record
+from airbyte_cdk.sources.types import Config, Record
 
 
 @dataclass
@@ -40,7 +40,7 @@ class CursorPaginationStrategy(PaginationStrategy):
         else:
             self._cursor_value = self.cursor_value
         if isinstance(self.stop_condition, str):
-            self._stop_condition = InterpolatedBoolean(condition=self.stop_condition, parameters=parameters)
+            self._stop_condition: Optional[InterpolatedBoolean] = InterpolatedBoolean(condition=self.stop_condition, parameters=parameters)
         else:
             self._stop_condition = self.stop_condition
 

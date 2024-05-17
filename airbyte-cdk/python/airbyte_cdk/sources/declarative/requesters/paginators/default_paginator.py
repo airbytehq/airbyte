@@ -13,7 +13,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Pagi
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 
 
 @dataclass
@@ -166,9 +166,9 @@ class DefaultPaginator(Paginator):
             and isinstance(self.page_token_option, RequestOption)
             and self.page_token_option.inject_into == option_type
         ):
-            options[self.page_token_option.field_name.eval(config=self.config)] = self._token  # type: ignore # field_name is known to be an interpolated string
+            options[self.page_token_option.field_name.eval(config=self.config)] = self._token  # type: ignore # field_name is always cast to an interpolated string
         if self.page_size_option and self.pagination_strategy.get_page_size() and self.page_size_option.inject_into == option_type:
-            options[self.page_size_option.field_name.eval(config=self.config)] = self.pagination_strategy.get_page_size()  # type: ignore # field_name is known to be an interpolated string
+            options[self.page_size_option.field_name.eval(config=self.config)] = self.pagination_strategy.get_page_size()  # type: ignore # field_name is always cast to an interpolated string
         return options
 
 
