@@ -488,6 +488,7 @@ Get source-openweather up to date. If there are changes, bump the version and ad
 - `airbyte-ci connectors --name=source-openweather up_to_date --dev`: forces update if there are only dev changes
 - `airbyte-ci connectors --name=source-openweather up_to_date --dep pytest@^8.10 --dep airbyte-cdk@0.80.0`: allows update to toml files as well
 - `airbyte-ci connectors --name=source-openweather up_to_date --pull`: make a pull request for it
+- `airbyte-ci connectors --name=source-openweather up_to_date --no-bump`: don't change the version or changelog
 
 ### Other things it could do
 
@@ -619,7 +620,7 @@ Options:
 #### Examples
 
 Make a PR for all changes, bump the version and make a changelog in those PRs. They will be on the branch ci_update/round2/<connector-name>:
-`airbyte-ci connectors pull_request -m "upgrading connectors" -b ci_update/round2 --bump patch --changelog`
+`airbyte-ci connectors --modified pull_request -m "upgrading connectors" -b ci_update/round2 --bump patch --changelog`
 
 Do it just for a few connectors:
 `airbyte-ci connectors --name source-aha --name source-quickbooks pull_request -m "upgrading connectors" -b ci_update/round2 --bump patch --changelog`
