@@ -467,7 +467,7 @@ async def run_connector_migration_to_poetry_pipeline(context: ConnectorContext, 
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_UPDATE_README,
                 step=UpdateReadMe(context),
-                depends_on=[CONNECTOR_TEST_STEP_ID.REGRESSION_TEST],
+                depends_on=[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_REGRESSION_TEST],
             )
         ],
     ]
