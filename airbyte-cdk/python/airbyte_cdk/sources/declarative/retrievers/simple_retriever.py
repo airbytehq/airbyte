@@ -317,7 +317,7 @@ class SimpleRetriever(Retriever):
         if not response:
             next_page_token: Mapping[str, Any] = {FULL_REFRESH_SYNC_COMPLETE_KEY: True}
         else:
-            next_page_token: Mapping[str, Any] = self._next_page_token(response) or {FULL_REFRESH_SYNC_COMPLETE_KEY: True}
+            next_page_token = self._next_page_token(response) or {FULL_REFRESH_SYNC_COMPLETE_KEY: True}
 
         if self.cursor:
             self.cursor.close_slice(StreamSlice(cursor_slice=next_page_token, partition=stream_slice.partition))

@@ -71,7 +71,7 @@ definitions:
       type: CursorPagination
       cursor_value: "{{ headers['link']['next']['url'] }}"
       stop_condition: "{{ 'next' not in headers['link'] }}"
-      page_size: 3
+      page_size: 100
     page_size_option:
       field_name: "per_page"
       inject_into: "request_parameter"
