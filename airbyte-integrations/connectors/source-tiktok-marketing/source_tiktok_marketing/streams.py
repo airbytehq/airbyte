@@ -21,9 +21,8 @@ from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
-# TikTok Initial release date is September 2016
-DEFAULT_START_DATE = "2016-09-01"
-MINIMUM_START_DATE = "2012-01-01"
+DEFAULT_START_DATE = (datetime.today() - timedelta(days=60)).strftime('%Y-%m-%d')
+MINIMUM_START_DATE = (datetime.today() - timedelta(days=60)).strftime('%Y-%m-%d')
 DEFAULT_END_DATE = str(datetime.now().date())
 NOT_AUDIENCE_METRICS = [
     "reach",
