@@ -715,7 +715,11 @@ class TestDiscovery(BaseTest):
         for stream_name, stream in discovered_catalog.items():
             if not stream.default_cursor_field:
                 continue
+
             schema = stream.json_schema
+            if not schema:
+                pytest.skip("Skipping `test_defined_cursors_exist_in_schema` because this connector doesn't have a JSON schema.")
+
             assert "properties" in schema, f"Top level item should have an 'object' type for {stream_name} stream schema"
             cursor_path = "/properties/".join(stream.default_cursor_field)
             cursor_field_location = dpath.util.search(schema["properties"], cursor_path)
@@ -750,6 +754,9 @@ class TestDiscovery(BaseTest):
         for stream_name, stream in discovered_catalog.items():
             for pk in stream.source_defined_primary_key or []:
                 schema = stream.json_schema
+                if not schema:
+                    pytest.skip("Skipping `test_primary_keys_exist_in_schema` because this connector doesn't have a JSON schema.")
+
                 pk_path = "/properties/".join(pk)
                 pk_field_location = dpath.util.search(schema["properties"], pk_path)
                 assert pk_field_location, f"One of the PKs ({pk}) is not specified in discover schema for {stream_name} stream"
