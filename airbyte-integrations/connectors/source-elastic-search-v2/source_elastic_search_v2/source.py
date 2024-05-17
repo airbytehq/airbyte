@@ -568,8 +568,7 @@ class Accounts(IncrementalElasticSearchV2Stream):
 
         payload["sort"] = [
             "date",
-            "updated_at",
-            "account"
+            "updated_at"
         ]
 
         return json.dumps(payload)
