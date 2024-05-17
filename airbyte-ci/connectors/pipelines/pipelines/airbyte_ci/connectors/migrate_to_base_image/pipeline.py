@@ -15,6 +15,7 @@ from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEn
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.helpers import git
+from pipelines.helpers.connectors.yaml import read_dagger_yaml, write_dagger_yaml
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 if TYPE_CHECKING:
@@ -68,7 +69,7 @@ class UpgradeBaseImageMetadata(Step):
             )
 
         metadata_path = self.context.connector.metadata_file_path
-        current_metadata = yaml.safe_load(await self.repo_dir.file(str(metadata_path)).contents())
+        current_metadata = await read_dagger_yaml(self.repo_dir, metadata_path)
         current_base_image_address = current_metadata.get("data", {}).get("connectorBuildOptions", {}).get("baseImage")
 
         if current_base_image_address is None and not self.set_if_not_exists:
@@ -87,7 +88,7 @@ class UpgradeBaseImageMetadata(Step):
                 output=self.repo_dir,
             )
         updated_metadata = self.update_base_image_in_metadata(current_metadata, latest_base_image_address)
-        updated_repo_dir = self.repo_dir.with_new_file(str(metadata_path), contents=yaml.safe_dump(updated_metadata))
+        updated_repo_dir = write_dagger_yaml(self.repo_dir, updated_metadata, metadata_path)
 
         return StepResult(
             step=self,
