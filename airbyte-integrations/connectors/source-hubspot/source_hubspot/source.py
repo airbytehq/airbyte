@@ -8,7 +8,6 @@ from itertools import chain
 from typing import Any, Generator, List, Mapping, Optional, Tuple
 
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from requests import HTTPError
@@ -73,7 +72,7 @@ DEFAULT_START_DATE = "2006-06-01T00:00:00Z"
 
 
 class SourceHubspot(AbstractSource):
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """Check connection"""
