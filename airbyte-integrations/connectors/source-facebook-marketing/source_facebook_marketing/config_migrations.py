@@ -128,8 +128,10 @@ class MigrateSecretsPathInConnector:
     This class stands for migrating the config at runtime.
     This migration is intended for backwards compatibility with the previous version, so existing secrets configurations gets migrated to new path.
 
-    Starting from `X.X.X`, the `client_id`, `client_secret` and `access_token` will be placed at `credentials` path.
+    Starting from `3.0.0`, the `client_id`, `client_secret` and `access_token` will be placed at `credentials` path.
     """
+
+    message_repository: MessageRepository = InMemoryMessageRepository()
 
     @classmethod
     def should_migrate(cls, config: Mapping[str, Any]) -> bool:
@@ -141,7 +143,7 @@ class MigrateSecretsPathInConnector:
             > False, otherwise.
         """
         credentials = config.get("credentials", None)
-        return credentials is None or not all(key in credentials for key in ["client_id", "client_secret", "access_token"])
+        return credentials is None or ("access_token" not in credentials and not ("client_id" in credentials and "client_id" in credentials))
 
     @classmethod
     def migrate(cls, args: List[str], source: Source) -> None:
