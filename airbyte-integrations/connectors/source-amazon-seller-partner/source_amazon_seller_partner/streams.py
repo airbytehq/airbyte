@@ -854,6 +854,8 @@ class VendorInventoryReports(IncrementalAnalyticsStream):
 class VendorTrafficReport(IncrementalAnalyticsStream):
     name = "GET_VENDOR_TRAFFIC_REPORT"
     result_key = "trafficByAsin"
+    availability_sla_days = 3
+    fixed_period_in_days = 1
 
 
 class SellerAnalyticsSalesAndTrafficReports(IncrementalAnalyticsStream):
