@@ -66,14 +66,15 @@ class SnowflakeCortexIndexer(Indexer):
         """Creates Airbyte messages from chunk records."""
         airbyte_messages = []
         for i, chunk in enumerate(document_chunks):
-            chunk = document_chunks[i]
-            message = AirbyteMessage(type=Type.RECORD, record=chunk.record)
-            new_data = {}
-            new_data[DOCUMENT_ID_COLUMN] = self._create_document_id(message)
-            new_data[CHUNK_ID_COLUMN] = str(uuid.uuid4().int)
-            new_data[METADATA_COLUMN] = chunk.metadata
-            new_data[DOCUMENT_CONTENT_COLUMN] = chunk.page_content
-            new_data[EMBEDDING_COLUMN] = chunk.embedding
+            record_copy = copy.deepcopy(chunk.record)
+            message = AirbyteMessage(type=Type.RECORD, record=record_copy)
+            new_data = {
+                DOCUMENT_ID_COLUMN: self._create_document_id(chunk),
+                CHUNK_ID_COLUMN: str(uuid.uuid4().int),
+                METADATA_COLUMN: chunk.metadata,
+                DOCUMENT_CONTENT_COLUMN: chunk.page_content,
+                EMBEDDING_COLUMN: chunk.embedding,
+            }
             message.record.data = new_data
             airbyte_messages.append(message)
         return airbyte_messages
