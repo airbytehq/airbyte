@@ -1,0 +1,53 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "supported_sync_modes": ["full_refresh"],
+    "properties": {
+      "LINKS": {
+        "type": ["null", "string"]
+      },
+      "ASOFDATE": {
+        "type": ["string"],
+        "format": "date-time"
+      },        
+      "ID": {
+        "type": ["number"]
+      },      
+      "EXPENSECOGSACCOUNT": {
+        "type": ["null", "string"]
+      },
+      "ITEMDESCRIPTION": {
+        "type": ["null", "string"]
+      },
+      "ITEMNAME": {
+        "type": ["null", "string"]
+      },
+      "PRODUCTFAMILY": {
+        "type": ["null", "string"]
+      },      
+      "PREFERREDSTOCKLEVEL": {
+        "type": ["null", "number"]
+      },      
+      "QUANTITYAVAILABLE": {
+        "type": ["null", "number"]
+      },
+      "QUANTITYAVAILABLEANDONORDER": {
+        "type": ["null", "number"]
+      },
+      "QUANTITYCOMMITTED": {
+        "type": ["null", "number"]
+      },   
+      "QUANTITYONHAND": {
+        "type": ["null", "number"]
+      },   
+      "QUANTITYONORDER": {
+        "type": ["null", "number"]
+      },   
+      "QUANTITYNEEDED": {
+        "type": ["null", "number"]
+      },
+      "QUANTITYINTRANSIT": {
+        "type": ["null", "number"]
+      }     
+    }
+  }

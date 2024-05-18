@@ -22,6 +22,8 @@ from source_netsuite.constraints import (
     REFERAL_SCHEMA_URL,
     SCHEMA_HEADERS,
     USLESS_SCHEMA_ELEMENTS,
+    QUERY_CUSTOM_INVENTORY,
+    QUERY_CUSTOM_SALES_ORDER,
 )
 from source_netsuite.errors import NETSUITE_ERRORS_MAPPING, DateFormatExeption
 
@@ -287,3 +289,88 @@ class CustomIncrementalNetsuiteStream(IncrementalNetsuiteStream):
     @property
     def cursor_field(self) -> str:
         return CUSTOM_INCREMENTAL_CURSOR
+
+
+class CustomInventory(NetsuiteStream):
+    run_time = datetime.now()
+    
+    @property
+    def name(self):
+        return "custom_inventory"
+    
+    @property
+    def http_method(self) -> str:
+        return "POST"        
+
+    def request_headers(self, stream_state, stream_slice, next_page_token):
+        headers = super().request_headers(stream_state, stream_slice, next_page_token)
+        headers["Content-Type"] = "application/json"
+        headers["Prefer"] = "transient"
+        return headers
+            
+    def path(self, **kwargs) -> str:
+        return "/services/rest/query/v1/suiteql?limit=1000"
+    
+    def get_json_schema(self) -> dict:        
+        return HttpStream.get_json_schema(self)
+
+    def request_body_json(self, **kwargs) -> Optional[Mapping[str, Any]]:
+        return  {
+            "q": QUERY_CUSTOM_INVENTORY
+        }
+    
+    def read_records(
+        self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        yield from HttpStream.read_records(self, stream_slice=stream_slice, stream_state=stream_state, **kwargs)
+                
+    def parse_response(
+        self,
+        response: requests.Response,
+        **kwargs
+    ) -> Iterable[Mapping]:
+        results = response.json().get("items")
+        for result in results:
+            result["asofdate"] = self.run_time
+        yield from results
+        
+
+class CustomSalesOrder(IncrementalNetsuiteStream):
+    @property
+    def name(self):
+        return "custom_sales_order"
+        
+    @property
+    def http_method(self) -> str:
+        return "POST"
+
+    def request_headers(self, stream_state, stream_slice, next_page_token):
+        headers = super().request_headers(stream_state, stream_slice, next_page_token)
+        headers["Content-Type"] = "application/json"
+        headers["Prefer"] = "transient"
+        return headers
+                
+    def path(self, **kwargs) -> str:
+        return "/services/rest/query/v1/suiteql?limit=1000"
+        
+    def get_json_schema(self) -> dict:        
+        return HttpStream.get_json_schema(self)    
+    
+    def request_body_json(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping[str, Any]]:
+        query = str.format(QUERY_CUSTOM_SALES_ORDER, stream_slice["start"], stream_slice["end"])
+        return  {
+            "q": query
+        }
+    
+    def read_records(
+        self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        self.method = "POST"
+        yield from HttpStream.read_records(self, stream_slice=stream_slice, stream_state=stream_state, **kwargs)  
+        
+    def parse_response(
+        self,
+        response: requests.Response,
+        **kwargs
+    ) -> Iterable[Mapping]:
+        yield from response.json().get("items")
