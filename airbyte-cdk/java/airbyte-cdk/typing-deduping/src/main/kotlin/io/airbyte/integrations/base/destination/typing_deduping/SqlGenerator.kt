@@ -95,7 +95,7 @@ interface SqlGenerator {
      * @return
      */
     fun prepareTablesForSoftReset(stream: StreamConfig): Sql {
-        val createTempTable = createTable(stream, TypeAndDedupeTransaction.SOFT_RESET_SUFFIX, true)
+        val createTempTable = createTable(stream, TyperDeduperUtil.SOFT_RESET_SUFFIX, true)
         val clearLoadedAt = clearLoadedAt(stream.id)
         return Sql.Companion.concat(createTempTable, clearLoadedAt)
     }
