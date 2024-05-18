@@ -4,6 +4,11 @@
 # TODO: Move this up to the root of the repo once we are ready for
 #       more stringent linting across the CDK.
 
+[tool.ruff]
+target-version = "py310"
+preview = true
+line-length = 100
+
 [tool.ruff.lint]
 select = [
     # For rules reference, see https://docs.astral.sh/ruff/rules/
