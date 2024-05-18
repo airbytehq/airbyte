@@ -143,7 +143,9 @@ class MigrateSecretsPathInConnector:
             > False, otherwise.
         """
         credentials = config.get("credentials", None)
-        return credentials is None or ("access_token" not in credentials and not ("client_id" in credentials and "client_id" in credentials))
+        return credentials is None or (
+            "access_token" not in credentials and not ("client_id" in credentials and "client_id" in credentials)
+        )
 
     @classmethod
     def migrate(cls, args: List[str], source: Source) -> None:
