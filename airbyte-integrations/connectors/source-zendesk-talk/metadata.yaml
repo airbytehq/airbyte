@@ -35,11 +35,22 @@ data:
       1.0.0:
         upgradeDeadline: "2024-05-31"
         message: >-
-          The source Zendesk Talk connector is being migrated from the Python CDK to our declarative low-code CDK. 
-          Due to changes to the incremental stream state message format and the removal of a nonexistent field from 
-          the ivrs stream schema, this migration constitutes a breaking change. After updating, please reset your source 
-          before resuming syncs. For more information, see our migration documentation for source Zendesk Talk.
+          The source Zendesk Talk connector is being migrated from the Python CDK to our declarative low-code CDK.  Due to changes to the incremental stream state message format and the removal of a nonexistent field from  the ivrs stream schema, this migration constitutes a breaking change. After updating, please reset your source  before resuming syncs. For more information, see our migration documentation for source Zendesk Talk.
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-ZENDESK-TALK_OLD__CREDS
+          fileName: config_old.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-ZENDESK-TALK__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

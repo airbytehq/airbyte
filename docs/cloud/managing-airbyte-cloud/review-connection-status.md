@@ -33,7 +33,7 @@ If a sync starts to fail, it will automatically be disabled after multiple conse
 
 If a new major version of the connector has been released, you will also see a banner on this page indicating the cutoff date for the version. Airbyte recommends upgrading before the cutoff date to ensure your data continues syncing. If you do not upgrade before the cutoff date, Airbyte will automatically disable your connection.
 
-Learn more about version upgrades in our [resolving breaking change documentation](/cloud/managing-airbyte-cloud/manage-schema-changes#resolving-breaking-changes).
+Learn more about version upgrades in our [resolving breaking change documentation](/using-airbyte/schema-change-management.md#resolving-breaking-changes).
 
 ## Review the stream status
 
