@@ -8,7 +8,6 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, Iterable, List, MutableMapping
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamState
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
@@ -18,7 +17,7 @@ if TYPE_CHECKING:
     from airbyte_cdk.sources.file_based.stream.concurrent.adapters import FileBasedStreamPartition
 
 
-class AbstractConcurrentFileBasedCursor(Cursor, AbstractFileBasedCursor, ABC):
+class AbstractConcurrentFileBasedCursor(Cursor, ABC):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         pass
 

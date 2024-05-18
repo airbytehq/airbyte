@@ -38,7 +38,6 @@ from airbyte_cdk.sources.file_based.stream.concurrent.cursor import (
     FileBasedConcurrentCursor,
     FileBasedFinalStateCursor,
 )
-from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
@@ -66,7 +65,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
         parsers: Mapping[Type[Any], FileTypeParser] = default_parsers,
         validation_policies: Mapping[ValidationPolicy, AbstractSchemaValidationPolicy] = DEFAULT_SCHEMA_VALIDATION_POLICIES,
-        cursor_cls: Type[Union[AbstractConcurrentFileBasedCursor, AbstractFileBasedCursor]] = FileBasedConcurrentCursor,
+        cursor_cls: Type[AbstractConcurrentFileBasedCursor] = FileBasedConcurrentCursor,
     ):
         self.stream_reader = stream_reader
         self.spec_class = spec_class
@@ -142,7 +141,6 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         """
         Return a list of this source's streams.
         """
-
         if self.catalog:
             state_manager = ConnectorStateManager(
                 stream_instance_map={s.stream.name: s.stream for s in self.catalog.streams},
@@ -151,8 +149,8 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         else:
             # During `check` operations we don't have a catalog so cannot create a state manager.
             # Since the state manager is only required for incremental syncs, this is fine.
+            # (for now - it will be an issue upstack when everything is incremental, but we'll deal with that then)
             state_manager = None
-
         try:
             parsed_config = self._get_parsed_config(config)
             self.stream_reader.config = parsed_config
@@ -165,11 +163,32 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                     if (state_manager and catalog_stream)
                     else None
                 )
-                self._validate_input_schema(stream_config)
-
+                # Like state_manager, `sync_mode` may be None during `check`
                 sync_mode = self._get_sync_mode_from_catalog(stream_config.name)
 
-                if sync_mode == SyncMode.full_refresh and hasattr(self, "_concurrency_level") and self._concurrency_level is not None:
+                self._validate_input_schema(stream_config)
+
+                assert (
+                    hasattr(self, "_concurrency_level") and self._concurrency_level is not None
+                ), "Concurrency level is not set for the source. Please set the _concurrency_level attribute."
+                assert issubclass(
+                    self.cursor_cls, AbstractConcurrentFileBasedCursor
+                ), "Cursor class must be a subclass of AbstractConcurrentFileBasedCursor."
+
+                if sync_mode is None:  # Some hacky stuff for the check case
+                    cursor = self.cursor_cls(
+                        stream_config,
+                        stream_config.name,
+                        None,
+                        stream_state,
+                        self.message_repository,
+                        state_manager,  # None, but we don't use it in this case
+                        CursorField(DefaultFileBasedStream.ab_last_mod_col),
+                    )
+                    # TODO: should use stream facade
+                    stream = self._make_default_stream(stream_config, cursor)
+
+                elif sync_mode == SyncMode.full_refresh:
                     cursor = FileBasedFinalStateCursor(
                         stream_config=stream_config, stream_namespace=None, message_repository=self.message_repository
                     )
@@ -177,12 +196,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                         self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
                     )
 
-                elif (
-                    sync_mode == SyncMode.incremental
-                    and issubclass(self.cursor_cls, AbstractConcurrentFileBasedCursor)
-                    and hasattr(self, "_concurrency_level")
-                    and self._concurrency_level is not None
-                ):
+                elif sync_mode == SyncMode.incremental:
                     assert (
                         state_manager is not None
                     ), "No ConnectorStateManager was created, but it is required for incremental syncs. This is unexpected. Please contact Support."
@@ -199,9 +213,6 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                     stream = FileBasedStreamFacade.create_from_stream(
                         self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
                     )
-                else:
-                    cursor = self.cursor_cls(stream_config)
-                    stream = self._make_default_stream(stream_config, cursor)
 
                 streams.append(stream)
             return streams
@@ -210,7 +221,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
             raise ConfigValidationError(FileBasedSourceError.CONFIG_VALIDATION_ERROR) from exc
 
     def _make_default_stream(
-        self, stream_config: FileBasedStreamConfig, cursor: Optional[AbstractFileBasedCursor]
+        self, stream_config: FileBasedStreamConfig, cursor: Optional[AbstractConcurrentFileBasedCursor]
     ) -> AbstractFileBasedStream:
         return DefaultFileBasedStream(
             config=stream_config,

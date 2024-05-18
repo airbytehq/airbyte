@@ -18,7 +18,7 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
-from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor import AbstractConcurrentFileBasedCursor
 from airbyte_cdk.sources.file_based.stream.default_file_based_stream import DefaultFileBasedStream
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
@@ -85,7 +85,7 @@ class DefaultFileBasedStreamTest(unittest.TestCase):
         self._parser = Mock(spec=FileTypeParser)
         self._validation_policy = Mock(spec=AbstractSchemaValidationPolicy)
         self._validation_policy.name = "validation policy name"
-        self._cursor = Mock(spec=AbstractFileBasedCursor)
+        self._cursor = Mock(spec=AbstractConcurrentFileBasedCursor)
 
         self._stream = DefaultFileBasedStream(
             config=self._stream_config,

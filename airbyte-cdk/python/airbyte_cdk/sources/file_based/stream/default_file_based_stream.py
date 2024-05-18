@@ -24,7 +24,7 @@ from airbyte_cdk.sources.file_based.exceptions import (
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import SchemaType, merge_schemas, schemaless_schema
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
-from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor import AbstractConcurrentFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.core import JsonSchema
@@ -56,11 +56,11 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         self._cursor.set_initial_state(value)
 
     @property
-    def cursor(self) -> Optional[AbstractFileBasedCursor]:
+    def cursor(self) -> Optional[AbstractConcurrentFileBasedCursor]:
         return self._cursor
 
     @cursor.setter
-    def cursor(self, value: AbstractFileBasedCursor) -> None:
+    def cursor(self, value: AbstractConcurrentFileBasedCursor) -> None:
         if self._cursor is not None:
             raise RuntimeError(f"Cursor for stream {self.name} is already set. This is unexpected. Please contact Support.")
         self._cursor = value
