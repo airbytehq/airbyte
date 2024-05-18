@@ -28,7 +28,6 @@ def test_request_params(patch_base_class):
     stream = AppsflyerStream()
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
     expected_params = {
-        "api_token": "secret",
         "timezone": timezone,
         "maximum_rows": 1_000_000,
         "from": pendulum.yesterday(timezone).to_date_string(),

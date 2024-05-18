@@ -3,6 +3,7 @@
 #
 
 import csv
+import logging
 from abc import ABC
 from datetime import date, datetime, timedelta
 from decimal import Decimal
@@ -12,11 +13,10 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping,
 
 import pendulum
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import NoAuth
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from pendulum.tz.timezone import Timezone
 
@@ -50,7 +50,7 @@ class AppsflyerStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return f"https://hq.appsflyer.com/export/{self.app_id}/"
+        return "https://hq1.appsflyer.com/api/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -59,7 +59,6 @@ class AppsflyerStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = {
-            "api_token": self.api_token,
             "from": pendulum.yesterday(self.timezone).to_date_string(),
             "to": pendulum.today(self.timezone).to_date_string(),
             "timezone": self.timezone.name,
@@ -113,7 +112,7 @@ class AppsflyerStream(HttpStream, ABC):
         else:
             return super().backoff_time(response)
 
-        AirbyteLogger().log("INFO", f"Rate limit exceded. Retry in {wait_time} seconds.")
+        logging.getLogger('airbyte').log(logging.INFO, f"Rate limit exceeded. Retry in {wait_time} seconds.")
         return wait_time
 
     @transformer.registerCustomTransform
@@ -216,7 +215,7 @@ class InAppEvents(RawDataMixin, IncrementalAppsflyerStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return "in_app_events_report/v5"
+        return f"raw-data/export/app/{self.app_id}/in_app_events_report/v5"
 
 
 class UninstallEvents(RawDataMixin, IncrementalAppsflyerStream):
@@ -226,7 +225,7 @@ class UninstallEvents(RawDataMixin, IncrementalAppsflyerStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return "uninstall_events_report/v5"
+        return f"raw-data/export/app/{self.app_id}/uninstall_events_report/v5"
 
 
 class Installs(RawDataMixin, IncrementalAppsflyerStream):
@@ -235,7 +234,7 @@ class Installs(RawDataMixin, IncrementalAppsflyerStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return "installs_report/v5"
+        return f"raw-data/export/app/{self.app_id}/installs_report/v5"
 
 
 class RetargetingInAppEvents(RetargetingMixin, InAppEvents):
@@ -252,7 +251,7 @@ class PartnersReport(AggregateDataMixin, IncrementalAppsflyerStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return "partners_by_date_report/v5"
+        return f"agg-data/export/app/{self.app_id}/partners_by_date_report/v5"
 
 
 class DailyReport(AggregateDataMixin, IncrementalAppsflyerStream):
@@ -261,7 +260,7 @@ class DailyReport(AggregateDataMixin, IncrementalAppsflyerStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return "daily_report/v5"
+        return f"agg-data/export/app/{self.app_id}/daily_report/v5"
 
 
 class GeoReport(AggregateDataMixin, IncrementalAppsflyerStream):
@@ -270,7 +269,7 @@ class GeoReport(AggregateDataMixin, IncrementalAppsflyerStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return "geo_by_date_report/v5"
+        return f"agg-data/export/app/{self.app_id}/geo_by_date_report/v5"
 
 
 class RetargetingPartnersReport(RetargetingMixin, PartnersReport):
@@ -296,9 +295,10 @@ class SourceAppsflyer(AbstractSource):
             api_token = config["api_token"]
             dates = pendulum.now("UTC").to_date_string()
             test_url = (
-                f"https://hq.appsflyer.com/export/{app_id}/partners_report/v5?api_token={api_token}&from={dates}&to={dates}&timezone=UTC"
+                f"https://hq1.appsflyer.com/api/agg-data/export/app/{app_id}/partners_report/v5?from={dates}&to={dates}&timezone=UTC"
             )
-            response = requests.request("GET", url=test_url)
+            headers = {"Authorization": f"Bearer {api_token}"}
+            response = requests.request("GET", url=test_url, headers=headers)
 
             if response.status_code != 200:
                 error_message = "The supplied APP ID is invalid" if response.status_code == 404 else response.text.rstrip("\n")
@@ -312,7 +312,7 @@ class SourceAppsflyer(AbstractSource):
 
     def is_start_date_before_earliest_date(self, start_date, earliest_date):
         if start_date <= earliest_date:
-            AirbyteLogger().log("INFO", f"Start date over 90 days, using start_date: {earliest_date}")
+            logging.getLogger('airbyte').log(logging.INFO, f"Start date over 90 days, using start_date: {earliest_date}")
             return earliest_date
 
         return start_date
@@ -324,8 +324,8 @@ class SourceAppsflyer(AbstractSource):
         start_date = parse_date(config.get("start_date") or pendulum.today(timezone), timezone)
         config["start_date"] = self.is_start_date_before_earliest_date(start_date, earliest_date)
         config["end_date"] = pendulum.now(timezone)
-        AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
-        auth = NoAuth()
+        logging.getLogger('airbyte').log(logging.INFO, f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
+        auth = TokenAuthenticator(token=config["api_token"])
         return [
             InAppEvents(authenticator=auth, **config),
             Installs(authenticator=auth, **config),
