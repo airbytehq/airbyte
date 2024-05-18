@@ -8,11 +8,11 @@
     },
     "canceled_at": {
       "description": "The timestamp at which the subscription was canceled.",
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "cancel_at": {
       "description": "The timestamp at which the subscription will be canceled.",
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "livemode": {
       "description": "Indicates if the subscription is in live mode.",
@@ -62,7 +62,7 @@
     },
     "billing_cycle_anchor": {
       "description": "The anchor point for determining the billing cycle.",
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "billing_cycle_anchor_config": {
       "description": "Configuration for the billing cycle anchor.",
@@ -179,7 +179,7 @@
     },
     "current_period_end": {
       "description": "The timestamp at which the current period ends.",
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "plan": {
       "description": "Details of the plan associated with the subscription.",
@@ -319,7 +319,7 @@
     },
     "ended_at": {
       "description": "The timestamp at which the subscription ended.",
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "customer": {
       "description": "The customer associated with the subscription.",
@@ -331,7 +331,7 @@
     },
     "trial_end": {
       "description": "The end date of the trial period for the subscription.",
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "object": {
       "description": "Type of object, in this case, 'subscription'.",
