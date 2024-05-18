@@ -13,7 +13,7 @@ data:
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 3d2b6f84-7f0d-4e3f-a5e5-7c7d4b50eabd
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   dockerRepository: airbyte/destination-pinecone
   documentationUrl: https://docs.airbyte.com/integrations/destinations/pinecone
   githubIssueLabel: destination-pinecone
@@ -41,4 +41,20 @@ data:
   tags:
     - language:python
     - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-PINECONE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_DESTINATION-PINECONE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
