@@ -118,12 +118,28 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         list(destination.write(self.config, append_dedup_catalog, [self._record("mystream", "Cats are nice too", 4), first_state_message]))
         assert(self._get_record_count("mystream") == 6)
         
-        # perform a query using OpenAI embedding 
-        embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
-        result = self._run_cosine_similarity(embeddings.embed_query("feline animals"), "mystream")
-        assert(len(result) == 1)
-        result[0] == "str_col: Cats are nice"
+        # comment the following so we can use fake for testing
+        # embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
+        # result = self._run_cosine_similarity(embeddings.embed_query("feline animals"), "mystream")
+        # assert(len(result) == 1)
+        # result[0] == "str_col: Cats are nice"
 
+   
+    def test_overwrite_mode_deletes_records(self):  
+        self._delete_table("mystream")
+        catalog = self._get_configured_catalog(DestinationSyncMode.overwrite)
+        first_state_message = self._state({"state": "1"})
+        first_record_chunk = [self._record("mystream", f"Dogs are number {i}", i) for i in range(4)]
+
+        # initial sync with replace 
+        destination = DestinationSnowflakeCortex()
+        list(destination.write(self.config, catalog, [*first_record_chunk, first_state_message]))
+        assert(self._get_record_count("mystream") == 4)
+
+        # following should replace existing records
+        append_catalog = self._get_configured_catalog(DestinationSyncMode.overwrite) 
+        list(destination.write(self.config, append_catalog, [self._record("mystream", "Cats are nice", 6), first_state_message]))
+        assert(self._get_record_count("mystream") == 1)
 
     """
     Following tests are not code specific, but are useful to confirm that the Cortex functions are available and behaving as expcected

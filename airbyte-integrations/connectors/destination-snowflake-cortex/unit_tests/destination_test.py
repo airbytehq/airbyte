@@ -81,5 +81,5 @@ class TestDestinationSnowflakeCortex(unittest.TestCase):
         destination = DestinationSnowflakeCortex()
         list(destination.write(self.config, configured_catalog, input_messages))
 
-        MockedWriter.assert_called_once_with(self.config_model.processing, mock_indexer, mock_embedder, batch_size=32, omit_raw_text=False)
+        MockedWriter.assert_called_once_with(self.config_model.processing, mock_indexer, mock_embedder, batch_size=150, omit_raw_text=False)
         mock_writer.write.assert_called_once_with(configured_catalog, input_messages)
