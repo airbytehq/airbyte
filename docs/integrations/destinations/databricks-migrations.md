@@ -1,6 +1,6 @@
 # Databricks Lakehouse Migration Guide
 
-## Upgrading to 2.X
+## Upgrading to 2.0.0
 
 More to come. this is a preview release.
 
