@@ -1,4 +1,4 @@
-# Databricks Migration Guide
+# Databricks Lakehouse Migration Guide
 
 ## Upgrading to 2.X
 
