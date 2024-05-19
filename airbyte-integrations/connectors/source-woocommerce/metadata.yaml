@@ -28,7 +28,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-woocommerce
-  supportLevel: community
+  supportLevel: certified
   tags:
     - language:python
     - cdk:low-code
