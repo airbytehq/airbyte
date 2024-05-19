@@ -112,7 +112,7 @@ class AppsflyerStream(HttpStream, ABC):
         else:
             return super().backoff_time(response)
 
-        logging.getLogger('airbyte').log(logging.INFO, f"Rate limit exceeded. Retry in {wait_time} seconds.")
+        logging.getLogger("airbyte").log(logging.INFO, f"Rate limit exceeded. Retry in {wait_time} seconds.")
         return wait_time
 
     @transformer.registerCustomTransform
@@ -294,9 +294,7 @@ class SourceAppsflyer(AbstractSource):
             app_id = config["app_id"]
             api_token = config["api_token"]
             dates = pendulum.now("UTC").to_date_string()
-            test_url = (
-                f"https://hq1.appsflyer.com/api/agg-data/export/app/{app_id}/partners_report/v5?from={dates}&to={dates}&timezone=UTC"
-            )
+            test_url = f"https://hq1.appsflyer.com/api/agg-data/export/app/{app_id}/partners_report/v5?from={dates}&to={dates}&timezone=UTC"
             headers = {"Authorization": f"Bearer {api_token}"}
             response = requests.request("GET", url=test_url, headers=headers)
 
@@ -312,7 +310,7 @@ class SourceAppsflyer(AbstractSource):
 
     def is_start_date_before_earliest_date(self, start_date, earliest_date):
         if start_date <= earliest_date:
-            logging.getLogger('airbyte').log(logging.INFO, f"Start date over 90 days, using start_date: {earliest_date}")
+            logging.getLogger("airbyte").log(logging.INFO, f"Start date over 90 days, using start_date: {earliest_date}")
             return earliest_date
 
         return start_date
@@ -324,7 +322,7 @@ class SourceAppsflyer(AbstractSource):
         start_date = parse_date(config.get("start_date") or pendulum.today(timezone), timezone)
         config["start_date"] = self.is_start_date_before_earliest_date(start_date, earliest_date)
         config["end_date"] = pendulum.now(timezone)
-        logging.getLogger('airbyte').log(logging.INFO, f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
+        logging.getLogger("airbyte").log(logging.INFO, f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
         auth = TokenAuthenticator(token=config["api_token"])
         return [
             InAppEvents(authenticator=auth, **config),
