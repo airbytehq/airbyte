@@ -48,7 +48,7 @@ You will need to generate new API key with read permissions and use `Customer ke
 ## Supported sync modes
 
 The WooCommerce source connector supports the
-following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+following [sync modes](https://docs.airbyte.com/using-airbyte/core-concepts/sync-modes/)
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -60,7 +60,7 @@ following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-s
 
 - [Coupons](https://woocommerce.github.io/woocommerce-rest-api-docs/#coupons) \(Incremental\)
 - [Customers](https://woocommerce.github.io/woocommerce-rest-api-docs/#customers) \(Incremental\)
-- [orders](https://woocommerce.github.io/woocommerce-rest-api-docs/#orders) \(Incremental\)
+- [Orders](https://woocommerce.github.io/woocommerce-rest-api-docs/#orders) \(Incremental\)
 - [Order notes](https://woocommerce.github.io/woocommerce-rest-api-docs/#order-notes)
 - [Payment gateways](https://woocommerce.github.io/woocommerce-rest-api-docs/#payment-gateways)
 - [Product attribute terms](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-attribute-terms)
@@ -96,6 +96,25 @@ Useful links:
 | `array`          | `array`      |       |
 | `object`         | `object`     |       |
 | `boolean`        | `boolean`    |       |
+
+
+## Limitations & Troubleshooting
+
+<details>
+<summary>
+Expand to see details about WooCommerce connector limitations and troubleshooting.
+</summary>
+
+### Connector limitations
+
+#### Rate limiting
+
+The WooCommerce API allows to
+set [custom rate limits](https://developer.woocommerce.com/2022/11/22/store-api-now-supports-rate-limiting/) to protect
+your store. If you set a custom rate limit,
+specify it in seconds in the `maxSecondsBetweenMessages` field in the `metadata.yaml` file. This value should be the
+maximum number of seconds between API calls.
+</details>
 
 ## Changelog
 
