@@ -13,11 +13,6 @@ For [historic reasons](https://github.com/airbytehq/airbyte/issues/836), the Air
 
 :::
 
-:::caution
-
-Due to some difficulties in setting up Airflow, we recommend first trying out the deployment using the local example [here](https://github.com/airbytehq/airbyte/tree/master/resources/examples/airflow), as it contains accurate configuration required to get the Airbyte operator up and running.
-
-:::
 
 The Airbyte Provider documentation on Airflow project can be found [here](https://airflow.apache.org/docs/apache-airflow-providers-airbyte/stable/index.html).
 

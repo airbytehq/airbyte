@@ -11,7 +11,7 @@ import java.util.*
  * destinations framework; new implementations should always provide this information). If this
  * value is empty, consumers should assume that the sync wrote nonzero records for this stream.
  */
-class StreamSyncSummary(val recordsWritten: Optional<Long>) {
+data class StreamSyncSummary(val recordsWritten: Optional<Long>) {
 
     companion object {
         @JvmField val DEFAULT: StreamSyncSummary = StreamSyncSummary(Optional.empty())
