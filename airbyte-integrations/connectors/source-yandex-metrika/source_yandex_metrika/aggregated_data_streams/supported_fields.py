@@ -11,6 +11,7 @@ ATTRIBUTION_VALUES = [
     "cross_device_last",
     "cross_device_last_significant",
     "cross_device_last_yandex_direct_click",
+    "automatic",
 ]
 CURRENCY_VALUES = ["RUB", "USD", "EUR", "YND"]
 
