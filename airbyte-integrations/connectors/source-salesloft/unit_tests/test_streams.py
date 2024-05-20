@@ -2,12 +2,13 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import pytest
 from typing import Any, Mapping
 
+import pytest
 from airbyte_cdk.sources.streams import Stream
 from airbyte_protocol.models import SyncMode
 from jsonref import requests
+
 from source_salesloft.source import SourceSalesloft
 
 
