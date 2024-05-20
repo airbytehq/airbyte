@@ -20,7 +20,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /user
           http_method: GET
         record_selector:
@@ -31,14 +31,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/user'
+          $ref: "#/schemas/user"
     team:
       type: DeclarativeStream
       name: team
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /team
           http_method: GET
         record_selector:
@@ -46,18 +46,18 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - '{{ parameters[''name'']}}s'
+              - "{{ parameters['name']}}s"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/team'
+          $ref: "#/schemas/team"
     list:
       type: DeclarativeStream
       name: list
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: folder/{{ config['folder_id'] }}/list
           http_method: GET
         record_selector:
@@ -65,18 +65,18 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - '{{ parameters[''name'']  }}s'
+              - "{{ parameters['name']  }}s"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/list'
+          $ref: "#/schemas/list"
     space:
       type: DeclarativeStream
       name: space
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: team/{{ config['team_id'] }}/space
           http_method: GET
         record_selector:
@@ -84,18 +84,18 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - '{{ parameters[''name'']  }}s'
+              - "{{ parameters['name']  }}s"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/space'
+          $ref: "#/schemas/space"
     folder:
       type: DeclarativeStream
       name: folder
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: space/{{ config['space_id'] }}/folder
           http_method: GET
         record_selector:
@@ -103,28 +103,28 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - '{{ parameters[''name'']  }}s'
+              - "{{ parameters['name']  }}s"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/folder'
+          $ref: "#/schemas/folder"
     task:
       type: DeclarativeStream
       name: task
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: list/{{ config['list_id'] }}/task
           http_method: GET
           request_parameters:
-            include_closed: '{{ config[''include_closed_tasks'']|lower }}'
+            include_closed: "{{ config['include_closed_tasks']|lower }}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - '{{ parameters[''name'']  }}s'
+              - "{{ parameters['name']  }}s"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -151,13 +151,13 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/task'
+          $ref: "#/schemas/task"
   base_requester:
     type: HttpRequester
     url_base: https://api.clickup.com/api/v2
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''api_token''] }}'
+      api_token: "{{ config['api_token'] }}"
       name: user
       url_base: https://api.clickup.com/api/v2
       $parameters:
@@ -169,12 +169,12 @@ definitions:
         inject_into: header
 
 streams:
-  - $ref: '#/definitions/streams/user'
-  - $ref: '#/definitions/streams/team'
-  - $ref: '#/definitions/streams/list'
-  - $ref: '#/definitions/streams/space'
-  - $ref: '#/definitions/streams/folder'
-  - $ref: '#/definitions/streams/task'
+  - $ref: "#/definitions/streams/user"
+  - $ref: "#/definitions/streams/team"
+  - $ref: "#/definitions/streams/list"
+  - $ref: "#/definitions/streams/space"
+  - $ref: "#/definitions/streams/folder"
+  - $ref: "#/definitions/streams/task"
 
 spec:
   type: Spec
@@ -249,19 +249,19 @@ schemas:
         properties:
           color:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           profilePicture:
             type:
-              - 'null'
+              - "null"
               - string
           username:
             type:
-              - 'null'
+              - "null"
               - string
     additionalProperties: true
   team:
@@ -270,15 +270,15 @@ schemas:
     properties:
       avatar:
         type:
-          - 'null'
+          - "null"
           - string
       color:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       members:
         type: array
@@ -287,23 +287,23 @@ schemas:
           properties:
             color:
               type:
-                - 'null'
+                - "null"
                 - string
             id:
               type:
-                - 'null'
+                - "null"
                 - integer
             profilePicture:
               type:
-                - 'null'
+                - "null"
                 - string
             username:
               type:
-                - 'null'
+                - "null"
                 - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
   list:
@@ -312,94 +312,94 @@ schemas:
     properties:
       archived:
         type:
-          - 'null'
+          - "null"
           - boolean
       assignee:
         type:
-          - 'null'
+          - "null"
           - string
       content:
         type:
-          - 'null'
+          - "null"
           - string
       due_date:
         type:
-          - 'null'
+          - "null"
           - string
       folder:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           access:
             type:
-              - 'null'
+              - "null"
               - boolean
           hidden:
             type:
-              - 'null'
+              - "null"
               - boolean
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       orderindex:
         type:
-          - 'null'
+          - "null"
           - integer
       override_statuses:
         type:
-          - 'null'
+          - "null"
           - boolean
       permission_level:
         type:
-          - 'null'
+          - "null"
           - string
       priority:
         type:
-          - 'null'
+          - "null"
           - string
       space:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           access:
             type:
-              - 'null'
+              - "null"
               - boolean
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
       start_date:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
           - object
       task_count:
         type:
-          - 'null'
+          - "null"
           - integer
     additionalProperties: true
   space:
@@ -408,114 +408,114 @@ schemas:
     properties:
       assignees:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
       features:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           checklists:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               enabled:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
           due_dates:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               enabled:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               remap_closed_due_date:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               remap_due_dates:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               start_date:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
           tags:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               enabled:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
           time_estimates:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               enabled:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
           time_tracking:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               enabled:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
       id:
         type:
-          - 'null'
+          - "null"
           - string
       multiple_assignees:
         type:
-          - 'null'
+          - "null"
           - boolean
       name:
         type:
-          - 'null'
+          - "null"
           - string
       private:
         type:
-          - 'null'
+          - "null"
           - boolean
       statuses:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             type:
               type:
-                - 'null'
+                - "null"
                 - string
             color:
               type:
-                - 'null'
+                - "null"
                 - string
             orderindex:
               type:
-                - 'null'
+                - "null"
                 - integer
             status:
               type:
-                - 'null'
+                - "null"
                 - string
     additionalProperties: true
   folder:
@@ -524,52 +524,52 @@ schemas:
     properties:
       hidden:
         type:
-          - 'null'
+          - "null"
           - boolean
       id:
         type:
-          - 'null'
+          - "null"
           - string
       lists:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
       name:
         type:
-          - 'null'
+          - "null"
           - string
       orderindex:
         type:
-          - 'null'
+          - "null"
           - integer
       override_statuses:
         type:
-          - 'null'
+          - "null"
           - boolean
       space:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           access:
             type:
-              - 'null'
+              - "null"
               - boolean
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
       task_count:
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
   task:
@@ -578,143 +578,143 @@ schemas:
     properties:
       assignees:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
       checklists:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
       creator:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           color:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           profilePicture:
             type:
-              - 'null'
+              - "null"
               - string
           username:
             type:
-              - 'null'
+              - "null"
               - string
       date_closed:
         type:
-          - 'null'
+          - "null"
           - string
       date_created:
         type:
-          - 'null'
+          - "null"
           - string
       date_updated:
         type:
-          - 'null'
+          - "null"
           - string
       due_date:
         type:
-          - 'null'
+          - "null"
           - string
       folder:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       list:
         type: object
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       orderindex:
         type:
-          - 'null'
+          - "null"
           - string
       parent:
         type:
-          - 'null'
+          - "null"
           - string
       priority:
         type:
-          - 'null'
+          - "null"
           - object
       space:
         type: object
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
       start_date:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           color:
             type:
-              - 'null'
+              - "null"
               - string
           orderindex:
             type:
-              - 'null'
+              - "null"
               - integer
           status:
             type:
-              - 'null'
+              - "null"
               - string
       tags:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
       time_estimate:
         type:
-          - 'null'
+          - "null"
           - string
       time_spent:
         type:
-          - 'null'
+          - "null"
           - string
       url:
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
