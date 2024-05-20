@@ -12,11 +12,13 @@ tests:
   discovery:
     - config_path: "secrets/config.json"
       backward_compatibility_tests_config:
-        disable_for_version: 0.1.0 # The forms_popup and forms_promotion has schema changes
+        disable_for_version: 0.1.0  # The forms_popup and forms_promotion has schema changes from strings to booleans
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: []
+      empty_streams: 
+        - name: campaigns
+          bypass_reason: The sandbox account cannot seed the stream
   # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
   #      expect_records:
   #        path: "integration_tests/expected_records.jsonl"
