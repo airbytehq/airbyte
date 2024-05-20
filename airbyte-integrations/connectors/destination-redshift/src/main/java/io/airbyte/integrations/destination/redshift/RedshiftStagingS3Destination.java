@@ -179,7 +179,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
 
   @Override
   protected JdbcSqlGenerator getSqlGenerator(final JsonNode config) {
-    return new RedshiftSqlGenerator(getNamingResolver());
+    return new RedshiftSqlGenerator(getNamingResolver(), config);
   }
 
   @Override
@@ -229,7 +229,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
         stream.getStream().setNamespace(defaultNamespace);
       }
     }
-    final RedshiftSqlGenerator sqlGenerator = new RedshiftSqlGenerator(getNamingResolver());
+
+    final RedshiftSqlGenerator sqlGenerator = new RedshiftSqlGenerator(getNamingResolver(), config);
     final ParsedCatalog parsedCatalog;
     final TyperDeduper typerDeduper;
     final JdbcDatabase database = getDatabase(getDataSource(config));
@@ -241,7 +242,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination<Redshi
       catalogParser = new CatalogParser(sqlGenerator, rawNamespace);
     } else {
       rawNamespace = JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
-      catalogParser = new CatalogParser(sqlGenerator);
+      catalogParser = new CatalogParser(sqlGenerator, rawNamespace);
     }
     final RedshiftDestinationHandler redshiftDestinationHandler = new RedshiftDestinationHandler(databaseName, database, rawNamespace);
     parsedCatalog = catalogParser.parseCatalog(catalog);

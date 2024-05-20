@@ -9,17 +9,17 @@ from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optio
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
-from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
+from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.message import MessageRepository
+from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from isodate import Duration, parse_duration
 
 
 @dataclass
-class DatetimeBasedCursor(Cursor):
+class DatetimeBasedCursor(DeclarativeCursor):
     """
     Slices the stream over a datetime range and create a state with format {<cursor_field>: <datetime> }
 
@@ -169,7 +169,7 @@ class DatetimeBasedCursor(Cursor):
         return self._partition_daterange(start_datetime, end_datetime, self._step)
 
     def _calculate_earliest_possible_value(self, end_datetime: datetime.datetime) -> datetime.datetime:
-        lookback_delta = self._parse_timedelta(self._lookback_window.eval(self.config) if self.lookback_window else "P0D")
+        lookback_delta = self._parse_timedelta(self._lookback_window.eval(self.config) if self._lookback_window else "P0D")
         earliest_possible_start_datetime = min(self._start_datetime.get_datetime(self.config), end_datetime)
         cursor_datetime = self._calculate_cursor_datetime_from_state(self.get_stream_state())
         return max(earliest_possible_start_datetime, cursor_datetime) - lookback_delta
