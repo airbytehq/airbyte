@@ -56,6 +56,7 @@ import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.util.AirbyteStreamAware;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mysql.cdc.CdcConfigurationHelper;
 import io.airbyte.integrations.source.mysql.cursor_based.MySqlCursorBasedStateManager;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadGlobalStateManager;
@@ -88,6 +89,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
+
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -497,18 +500,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         emittedAt);
   }
 
-//  private List<AutoCloseableIterator<AirbyteMessage>> decorateWithStreamStatus(List<AutoCloseableIterator<AirbyteMessage>> iterators) {
-//    var ret = new ArrayList<AutoCloseableIterator<AirbyteMessage>>();
-//    iterators.forEach(iter -> {
-//      var sai = (AirbyteStreamAware) iter;
-//      var pair = new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(sai.getAirbyteStream().get().getName(), sai.getAirbyteStream().get().getNamespace());
-//      ret.add(new StatusEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)));
-//      ret.add(iter);
-//      ret.add(new StatusEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
-//
-//    });
-//    return ret;
-//  }
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of(
@@ -658,4 +649,12 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     CDC
   }
 
+  @NotNull
+  @Override
+  public AutoCloseableIterator<AirbyteMessage> augmentWithStreamStatus(@NotNull final ConfiguredAirbyteStream airbyteStream, @NotNull final AutoCloseableIterator<AirbyteMessage> streamItrator) {
+    final var pair = new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
+    final var starterStatus = new StatusEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED));
+    final var completeStatus = new StatusEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE));
+    return AutoCloseableIterators.concatWithEagerClose(starterStatus, streamItrator, completeStatus);
+  }
 }

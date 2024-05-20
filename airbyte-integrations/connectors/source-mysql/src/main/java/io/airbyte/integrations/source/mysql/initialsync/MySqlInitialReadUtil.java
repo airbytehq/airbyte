@@ -251,6 +251,7 @@ public class MySqlInitialReadUtil {
 
     final List<AutoCloseableIterator<AirbyteMessage>> completers = catalog.getStreams().stream()
 //            .filter(stream -> !initialLoadStreams.streamsForInitialLoad.contains(stream))
+            .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
             .map(stream -> (AutoCloseableIterator<AirbyteMessage>)new StatusEmitterIterator(
                     new AirbyteStreamStatusHolder(
                             new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),

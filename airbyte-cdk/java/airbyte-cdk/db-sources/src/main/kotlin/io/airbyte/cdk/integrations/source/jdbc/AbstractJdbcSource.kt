@@ -139,7 +139,7 @@ abstract class AbstractJdbcSource<Datatype>(
         }
 
         // If flag is off, fall back to legacy non-resumable refresh
-        return super.getFullRefreshStream(
+        return augmentWithStreamStatus(airbyteStream, super.getFullRefreshStream(
             database,
             airbyteStream,
             catalog,
@@ -150,7 +150,12 @@ abstract class AbstractJdbcSource<Datatype>(
             emittedAt,
             syncMode,
             cursorField,
-        )
+        ))
+    }
+
+    open fun augmentWithStreamStatus(airbyteStream: ConfiguredAirbyteStream, streamItrator: AutoCloseableIterator<AirbyteMessage>): AutoCloseableIterator<AirbyteMessage> {
+        //no-op
+        return streamItrator
     }
 
     override fun queryTableFullRefresh(
