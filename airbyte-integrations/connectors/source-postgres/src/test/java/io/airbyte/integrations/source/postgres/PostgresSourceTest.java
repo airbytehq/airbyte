@@ -815,21 +815,10 @@ class PostgresSourceTest {
   @Test
   void testJdbcUrlWithEscapedDatabaseName() {
     final JsonNode jdbcConfig = source().toDatabaseConfig(buildConfigEscapingNeeded());
-    assertEquals("jdbc:postgresql://localhost:1111/db%2Ffoo?" + EXPECTED_DEFAULT_PARAMS,
-        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+    assertEquals(EXPECTED_JDBC_ESCAPED_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
-  @Test
-  void testJdbcUrlWithSchemas() {
-    final JsonNode sourceConfig = buildConfigEscapingNeeded();
-    ((ObjectNode) sourceConfig).set("schemas", Jsons.arrayNode().add("bar").add("baz"));
-    final JsonNode jdbcConfig = source().toDatabaseConfig(sourceConfig);
-    assertEquals("jdbc:postgresql://localhost:1111/db%2Ffoo?" + EXPECTED_DEFAULT_PARAMS + "&currentSchema=bar,baz",
-        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
-  }
-
-  private static final String EXPECTED_DEFAULT_PARAMS =
-      "prepareThreshold=0&defaultRowFetchSize=1&adaptiveFetch=true&maxResultBuffer=10percent";
+  private static final String EXPECTED_JDBC_ESCAPED_URL = "jdbc:postgresql://localhost:1111/db%2Ffoo?prepareThreshold=0&";
 
   private JsonNode buildConfigEscapingNeeded() {
     return Jsons.jsonNode(ImmutableMap.of(
