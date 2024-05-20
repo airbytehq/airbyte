@@ -266,7 +266,25 @@ definitions:
       path: "campaign/get/"
     primary_key:
       - campaign_id
-    $ref: "#/definitions/incremental_stream"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        authenticator:
+          $ref: "#/definitions/authenticator"
+        request_body_json: { }
+        request_parameters:
+          filtering: '{{ {"secondary_status": "CAMPAIGN_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
+      record_selector:
+        $ref: "#/definitions/record_selector_with_filter_by_midify_time"
+      paginator:
+        $ref: "#/definitions/incremental_stream/retriever/paginator"
+      partition_router:
+        $ref: "#/definitions/single_id_partition_router"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
 
   ad_groups_stream:
     type: DeclarativeStream
@@ -276,7 +294,25 @@ definitions:
       path: "adgroup/get/"
     primary_key:
       - adgroup_id
-    $ref: "#/definitions/incremental_stream"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        authenticator:
+          $ref: "#/definitions/authenticator"
+        request_body_json: { }
+        request_parameters:
+          filtering: '{{ {"secondary_status": "ADGROUP_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
+      record_selector:
+        $ref: "#/definitions/record_selector_with_filter_by_midify_time"
+      paginator:
+        $ref: "#/definitions/incremental_stream/retriever/paginator"
+      partition_router:
+        $ref: "#/definitions/single_id_partition_router"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
 
   ads_stream:
     type: DeclarativeStream
@@ -286,7 +322,25 @@ definitions:
       path: "ad/get/"
     primary_key:
       - ad_id
-    $ref: "#/definitions/incremental_stream"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        authenticator:
+          $ref: "#/definitions/authenticator"
+        request_body_json: { }
+        request_parameters:
+          filtering: '{{ {"secondary_status": "AD_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
+      record_selector:
+        $ref: "#/definitions/record_selector_with_filter_by_midify_time"
+      paginator:
+        $ref: "#/definitions/incremental_stream/retriever/paginator"
+      partition_router:
+        $ref: "#/definitions/single_id_partition_router"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
   
   creative_assets_images_stream:
     type: DeclarativeStream
