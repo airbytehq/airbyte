@@ -805,4 +805,26 @@ abstract class AbstractJdbcSource<Datatype>(
             return result
         }
     }
+
+    override fun createReadIterator(
+        database: JdbcDatabase,
+        airbyteStream: ConfiguredAirbyteStream,
+        catalog: ConfiguredAirbyteCatalog?,
+        table: TableInfo<CommonField<Datatype>>,
+        stateManager: StateManager?,
+        emittedAt: Instant
+    ): AutoCloseableIterator<AirbyteMessage> {
+        val iterator = super.createReadIterator(
+            database,
+            airbyteStream,
+            catalog,
+            table,
+            stateManager,
+            emittedAt
+        )
+        return when (airbyteStream.syncMode) {
+            SyncMode.INCREMENTAL -> augmentWithStreamStatus(airbyteStream, iterator)
+            else -> iterator
+        }
+    }
 }

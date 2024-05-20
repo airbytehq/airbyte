@@ -491,6 +491,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
                 tableNameToTable,
                 cursorBasedStateManager, emittedAt));
 
+
         return Stream.of(initialLoadIterator, cursorBasedIterator).flatMap(Collection::stream).collect(Collectors.toList());
       }
     }
