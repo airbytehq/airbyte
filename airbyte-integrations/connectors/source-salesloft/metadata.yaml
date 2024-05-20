@@ -25,7 +25,7 @@ data:
   dockerImageTag: 1.2.1
   dockerRepository: airbyte/source-salesloft
   githubIssueLabel: source-salesloft
-  icon: salesloft.svg
+  icon: icon.svg
   license: MIT
   name: Salesloft
   releaseDate: 2021-10-22

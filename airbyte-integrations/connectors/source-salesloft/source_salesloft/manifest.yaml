@@ -1582,179 +1582,2875 @@ spec:
 
 metadata:
   autoImportSchema:
-    users: true
-    account_tiers: true
-    import: true
-    person_stages: true
-    phone_number_assignments: true
-    steps: true
-    team_template_attachments: true
-    email_template_attachments: true
-    crm_users: true
-    groups: true
-    custom_fields: true
-    call_dispositions: true
-    call_sentiments: true
-    meetings: true
-    people: true
-    cadences: true
-    cadence_memberships: true
-    emails: true
-    calls: true
-    accounts: true
-    account_stages: true
-    actions: true
-    email_templates: true
-    notes: true
-    team_templates: true
-    crm_activities: true
-    successes: true
-    call_data_records: true
-    searches: true
+    users: false
+    account_tiers: false
+    import: false
+    person_stages: false
+    phone_number_assignments: false
+    steps: false
+    team_template_attachments: false
+    email_template_attachments: false
+    crm_users: false
+    groups: false
+    custom_fields: false
+    call_dispositions: false
+    call_sentiments: false
+    meetings: false
+    people: false
+    cadences: false
+    cadence_memberships: false
+    emails: false
+    calls: false
+    accounts: false
+    account_stages: false
+    actions: false
+    email_templates: false
+    notes: false
+    team_templates: false
+    crm_activities: false
+    successes: false
+    call_data_records: false
+    searches: false
 
 schemas:
   users:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      guid:
+        type:
+          - 'null'
+          - string
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      name:
+        type:
+          - 'null'
+          - string
+      first_name:
+        type:
+          - 'null'
+          - string
+      last_name:
+        type:
+          - 'null'
+          - string
+      job_role:
+        type:
+          - 'null'
+          - string
+      active:
+        type:
+          - 'null'
+          - boolean
+      time_zone:
+        type:
+          - 'null'
+          - string
+      slack_username:
+        type:
+          - 'null'
+          - string
+      twitter_handle:
+        type:
+          - 'null'
+          - string
+      email:
+        type:
+          - 'null'
+          - string
+      email_client_email_address:
+        type:
+          - 'null'
+          - string
+      sending_email_address:
+        type:
+          - 'null'
+          - string
+      from_address:
+        type:
+          - 'null'
+          - string
+      full_email_address:
+        type:
+          - 'null'
+          - string
+      bcc_email_address:
+        type:
+          - 'null'
+          - string
+      email_signature:
+        type:
+          - 'null'
+          - string
+      email_signature_type:
+        type:
+          - 'null'
+          - string
+      email_signature_click_tracking_disabled:
+        type:
+          - 'null'
+          - boolean
+      team_admin:
+        type:
+          - 'null'
+          - boolean
+      local_dial_enabled:
+        type:
+          - 'null'
+          - boolean
+      click_to_call_enabled:
+        type:
+          - 'null'
+          - boolean
+      email_client_configured:
+        type:
+          - 'null'
+          - boolean
+      crm_connected:
+        type:
+          - 'null'
+          - boolean
+      external_feature_flags:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties: { }
+      phone_client:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      phone_number_assignment:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      group:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      team:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      role:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+              - string
   account_tiers:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      name:
+        type:
+          - 'null'
+          - string
+      order:
+        type:
+          - 'null'
+          - integer
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
   import:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      name:
+        type:
+          - 'null'
+          - string
+      current_people_count:
+        type:
+          - 'null'
+          - integer
+      imported_people_count:
+        type:
+          - 'null'
+          - integer
   person_stages:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      name:
+        type:
+          - 'null'
+          - string
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      order:
+        type:
+          - 'null'
+          - integer
   phone_number_assignments:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      number:
+        type:
+          - 'null'
+          - string
+      user:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
   steps:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      disabled:
+        type:
+          - 'null'
+          - boolean
+      type:
+        type:
+          - 'null'
+          - string
+      name:
+        type:
+          - 'null'
+          - string
+      display_name:
+        type:
+          - 'null'
+          - string
+      day:
+        type:
+          - 'null'
+          - integer
+      step_number:
+        type:
+          - 'null'
+          - integer
+      details:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      cadence:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
   team_template_attachments:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      attachment_id:
+        type:
+          - 'null'
+          - integer
+      team_template:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          _href:
+            type:
+              - 'null'
+              - string
+      name:
+        type:
+          - 'null'
+          - string
+      download_url:
+        type:
+          - 'null'
+          - string
+      attachment_file_size:
+        type:
+          - 'null'
+          - integer
   email_template_attachments:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      attachment_id:
+        type:
+          - 'null'
+          - integer
+      team_template:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      name:
+        type:
+          - 'null'
+          - string
+      download_url:
+        type:
+          - 'null'
+          - string
+      attachment_file_size:
+        type:
+          - 'null'
+          - integer
   crm_users:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      crm_id:
+        type:
+          - 'null'
+          - string
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      user:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
   groups:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      name:
+        type:
+          - 'null'
+          - string
+      parent_id:
+        type:
+          - 'null'
+          - integer
   custom_fields:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type:
+          - 'null'
+          - integer
+      name:
+        type:
+          - 'null'
+          - string
+      field_type:
+        type:
+          - 'null'
+          - string
+      value_type:
+        type:
+          - 'null'
+          - string
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
   call_dispositions:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type:
+          - 'null'
+          - integer
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      name:
+        type:
+          - 'null'
+          - string
   call_sentiments:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type:
+          - 'null'
+          - integer
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      name:
+        type:
+          - 'null'
+          - string
   meetings:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type:
+          - 'null'
+          - integer
+      title:
+        type:
+          - 'null'
+          - string
+      start_time:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      end_time:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      calendar_id:
+        type:
+          - 'null'
+          - string
+      calendar_type:
+        type:
+          - 'null'
+          - string
+      meeting_type:
+        type:
+          - 'null'
+          - string
+      recipient_name:
+        type:
+          - 'null'
+          - string
+      recipient_email:
+        type:
+          - 'null'
+          - string
+      location:
+        type:
+          - 'null'
+          - string
+      description:
+        type:
+          - 'null'
+          - string
+      event_id:
+        type:
+          - 'null'
+          - string
+      account_id:
+        type:
+          - 'null'
+          - string
+      task_id:
+        type:
+          - 'null'
+          - integer
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      guests:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - string
+      attendees:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          additionalProperties: true
+          properties:
+            email:
+              type:
+                - 'null'
+                - string
+            name:
+              type:
+                - 'null'
+                - string
+            organizer:
+              type:
+                - 'null'
+                - boolean
+            status:
+              type:
+                - 'null'
+                - string
+            status_changed:
+              type:
+                - 'null'
+                - boolean
+            deleted_at:
+              type:
+                - 'null'
+                - string
+              format: date-time
+      person:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      cadence:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      step:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      booked_by_user:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          _href:
+            type:
+              - 'null'
+              - string
+      crm_references:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+      event_source:
+        type:
+          - 'null'
+          - string
+      canceled_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      all_day:
+        type:
+          - 'null'
+          - boolean
+      no_show:
+        type:
+          - 'null'
+          - boolean
+      crm_custom_fields:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+      strict_attribution:
+        type:
+          - 'null'
+          - boolean
+      i_cal_uid:
+        type:
+          - 'null'
+          - string
+      status:
+        type:
+          - 'null'
+          - string
+      reschedule_status:
+        type:
+          - 'null'
+          - string
+      owned_by_meetings_settings:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            email_address:
+              - 'null'
+              - string
+      booked_by_meetings_settings:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            email_address:
+              - 'null'
+              - string
   people:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      last_contacted_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      last_replied_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      first_name:
+        type:
+          - 'null'
+          - string
+      last_name:
+        type:
+          - 'null'
+          - string
+      display_name:
+        type:
+          - 'null'
+          - string
+      email_address:
+        type:
+          - 'null'
+          - string
+      full_email_address:
+        type:
+          - 'null'
+          - string
+      secondary_email_address:
+        type:
+          - 'null'
+          - string
+      personal_email_address:
+        type:
+          - 'null'
+          - string
+      phone:
+        type:
+          - 'null'
+          - string
+      phone_extension:
+        type:
+          - 'null'
+          - string
+      home_phone:
+        type:
+          - 'null'
+          - string
+      mobile_phone:
+        type:
+          - 'null'
+          - string
+      linkedin_url:
+        type:
+          - 'null'
+          - string
+      title:
+        type:
+          - 'null'
+          - string
+      city:
+        type:
+          - 'null'
+          - string
+      state:
+        type:
+          - 'null'
+          - string
+      country:
+        type:
+          - 'null'
+          - string
+      work_city:
+        type:
+          - 'null'
+          - string
+      work_state:
+        type:
+          - 'null'
+          - string
+      work_country:
+        type:
+          - 'null'
+          - string
+      crm_url:
+        type:
+          - 'null'
+          - string
+      crm_id:
+        type:
+          - 'null'
+          - string
+      crm_object_type:
+        type:
+          - 'null'
+          - string
+      owner_crm_id:
+        type:
+          - 'null'
+          - string
+      person_company_name:
+        type:
+          - 'null'
+          - string
+      person_company_website:
+        type:
+          - 'null'
+          - string
+      person_company_industry:
+        type:
+          - 'null'
+          - string
+      do_not_contact:
+        type:
+          - 'null'
+          - boolean
+      bouncing:
+        type:
+          - 'null'
+          - boolean
+      locale:
+        type:
+          - 'null'
+          - string
+      personal_website:
+        type:
+          - 'null'
+          - string
+      twitter_handle:
+        type:
+          - 'null'
+          - string
+      last_contacted_type:
+        type:
+          - 'null'
+          - string
+      job_seniority:
+        type:
+          - 'null'
+          - string
+      custom_fields:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties: { }
+      tags:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - string
+      contact_restrictions:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - string
+      counts:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          emails_sent:
+            type:
+              - 'null'
+              - integer
+          emails_viewed:
+            type:
+              - 'null'
+              - integer
+          emails_clicked:
+            type:
+              - 'null'
+              - integer
+          emails_replied_to:
+            type:
+              - 'null'
+              - integer
+          emails_bounced:
+            type:
+              - 'null'
+              - integer
+          calls:
+            type:
+              - 'null'
+              - integer
+      account:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      owner:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      last_contacted_by:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      import:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      person_stage:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      most_recent_cadence:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      last_completed_step_cadence:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      last_completed_step:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
   cadences:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      archived_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      team_cadence:
+        type:
+          - 'null'
+          - boolean
+      shared:
+        type:
+          - 'null'
+          - boolean
+      remove_bounces_enabled:
+        type:
+          - 'null'
+          - boolean
+      remove_replies_enabled:
+        type:
+          - 'null'
+          - boolean
+      opt_out_link_included:
+        type:
+          - 'null'
+          - boolean
+      name:
+        type:
+          - 'null'
+          - string
+      tags:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - string
+      creator:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      owner:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      bounced_stage:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      replied_stage:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      added_stage:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      finished_stage:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      counts:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          cadence_people:
+            type:
+              - 'null'
+              - integer
+          target_daily_people:
+            type:
+              - 'null'
+              - integer
+      latest_active_date:
+        type:
+          - 'null'
+          - string
+        format: date
   cadence_memberships:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      added_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      person_deleted:
+        type:
+          - 'null'
+          - boolean
+      currently_on_cadence:
+        type:
+          - 'null'
+          - boolean
+      current_state:
+        type:
+          - 'null'
+          - string
+      cadence:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      person:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      user:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      latest_action:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      counts:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          views:
+            type:
+              - 'null'
+              - integer
+          clicks:
+            type:
+              - 'null'
+              - integer
+          replies:
+            type:
+              - 'null'
+              - integer
+          calls:
+            type:
+              - 'null'
+              - integer
+          sent_emails:
+            type:
+              - 'null'
+              - integer
+          bounces:
+            type:
+              - 'null'
+              - integer
   emails:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      recipient_email_address:
+        type:
+          - 'null'
+          - string
+      status:
+        type:
+          - 'null'
+          - string
+      bounced:
+        type:
+          - 'null'
+          - boolean
+      send_after:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      sent_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      view_tracking:
+        type:
+          - 'null'
+          - boolean
+      click_tracking:
+        type:
+          - 'null'
+          - boolean
+      personalization:
+        type:
+          - 'null'
+          - string
+      counts:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          clicks:
+            type:
+              - 'null'
+              - integer
+          views:
+            type:
+              - 'null'
+              - integer
+          replies:
+            type:
+              - 'null'
+              - integer
+          unique_devices:
+            type:
+              - 'null'
+              - integer
+          unique_locations:
+            type:
+              - 'null'
+              - integer
+          attachments:
+            type:
+              - 'null'
+              - integer
+      headers:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          In-Reply-To:
+            type:
+              - 'null'
+              - string
+          References:
+            type:
+              - 'null'
+              - string
+          to:
+            type:
+              - 'null'
+              - string
+          cc:
+            type:
+              - 'null'
+              - string
+          in_reply_to:
+            type:
+              - 'null'
+              - string
+          bcc:
+            type:
+              - 'null'
+              - string
+      user:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      recipient:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      mailing:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+      action:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+      crm_activity:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      cadence:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      step:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
+      email_template:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - 'null'
+              - string
+          id:
+            type:
+              - 'null'
+              - integer
   calls:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      to:
+        type:
+          - 'null'
+          - string
+      duration:
+        type:
+          - 'null'
+          - integer
+      sentiment:
+        type:
+          - 'null'
+          - string
+      disposition:
+        type:
+          - 'null'
+          - string
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      user:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      action:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+      called_person:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      crm_activity:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      note:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      cadence:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      step:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
   accounts:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      archived_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      name:
+        type:
+          - 'null'
+          - string
+      domain:
+        type:
+          - 'null'
+          - string
+      conversational_name:
+        type:
+          - 'null'
+          - string
+      description:
+        type:
+          - 'null'
+          - string
+      phone:
+        type:
+          - 'null'
+          - string
+      website:
+        type:
+          - 'null'
+          - string
+      linkedin_url:
+        type:
+          - 'null'
+          - string
+      twitter_handle:
+        type:
+          - 'null'
+          - string
+      street:
+        type:
+          - 'null'
+          - string
+      city:
+        type:
+          - 'null'
+          - string
+      state:
+        type:
+          - 'null'
+          - string
+      postal_code:
+        type:
+          - 'null'
+          - string
+      country:
+        type:
+          - 'null'
+          - string
+      locale:
+        type:
+          - 'null'
+          - string
+      industry:
+        type:
+          - 'null'
+          - string
+      company_type:
+        type:
+          - 'null'
+          - string
+      founded:
+        type:
+          - 'null'
+          - string
+      revenue_range:
+        type:
+          - 'null'
+          - string
+      size:
+        type:
+          - 'null'
+          - string
+      crm_id:
+        type:
+          - 'null'
+          - string
+      crm_url:
+        type:
+          - 'null'
+          - string
+      crm_object_type:
+        type:
+          - 'null'
+          - string
+      owner_crm_id:
+        type:
+          - 'null'
+          - string
+      last_contacted_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      last_contacted_type:
+        type:
+          - 'null'
+          - string
+      do_not_contact:
+        type:
+          - 'null'
+          - boolean
+      counts:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          people:
+            type:
+              - 'null'
+              - integer
+      owner:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      creator:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      last_contacted_by:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      last_contacted_person:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      company_stage:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      account_tier:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      tags:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - string
   account_stages:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      name:
+        type:
+          - 'null'
+          - string
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      order:
+        type:
+          - 'null'
+          - integer
   actions:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      due:
+        type:
+          - 'null'
+          - boolean
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      type:
+        type:
+          - 'null'
+          - string
+      status:
+        type:
+          - 'null'
+          - string
+      due_on:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      multitouch_group_id:
+        type:
+          - 'null'
+          - integer
+      action_details:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      user:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      person:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      cadence:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      step:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
   email_templates:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      title:
+        type:
+          - 'null'
+          - string
+      subject:
+        type:
+          - 'null'
+          - string
+      body:
+        type:
+          - 'null'
+          - string
+      body_preview:
+        type:
+          - 'null'
+          - string
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      last_used_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      archived_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      shared:
+        type:
+          - 'null'
+          - boolean
+      open_tracking_enabled:
+        type:
+          - 'null'
+          - boolean
+      click_tracking_enabled:
+        type:
+          - 'null'
+          - boolean
+      cadence_template:
+        type:
+          - 'null'
+          - boolean
+      counts:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          sent_emails:
+            type:
+              - 'null'
+              - integer
+          views:
+            type:
+              - 'null'
+              - integer
+          clicks:
+            type:
+              - 'null'
+              - integer
+          replies:
+            type:
+              - 'null'
+              - integer
+          bounces:
+            type:
+              - 'null'
+              - integer
+      template_owner:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      team_template:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          _href:
+            type:
+              - 'null'
+              - string
+      _links:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          attachments:
+            type:
+              - 'null'
+              - string
+      groups:
+        type:
+          - 'null'
+          - array
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - 'null'
+                - integer
+            _href:
+              type:
+                - 'null'
+                - string
+      tags:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - string
   notes:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      content:
+        type:
+          - 'null'
+          - string
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      user:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      associated_with:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      call:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
   team_templates:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: string
+      title:
+        type:
+          - 'null'
+          - string
+      subject:
+        type:
+          - 'null'
+          - string
+      body:
+        type:
+          - 'null'
+          - string
+      body_preview:
+        type:
+          - 'null'
+          - string
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      last_used_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      archived_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      last_modified_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      open_tracking_enabled:
+        type:
+          - 'null'
+          - boolean
+      click_tracking_enabled:
+        type:
+          - 'null'
+          - boolean
+      counts:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          sent_emails:
+            type:
+              - 'null'
+              - integer
+          views:
+            type:
+              - 'null'
+              - integer
+          clicks:
+            type:
+              - 'null'
+              - integer
+          replies:
+            type:
+              - 'null'
+              - integer
+          bounces:
+            type:
+              - 'null'
+              - integer
+      last_modified_user:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      _links:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          attachments:
+            type:
+              - 'null'
+              - string
+      tags:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - string
   crm_activities:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      subject:
+        type:
+          - 'null'
+          - string
+      description:
+        type:
+          - 'null'
+          - string
+      crm_id:
+        type:
+          - 'null'
+          - string
+      activity_type:
+        type:
+          - 'null'
+          - string
+      error:
+        type:
+          - 'null'
+          - string
+      custom_crm_fields:
+        type:
+          - 'null'
+          - object
+      person:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      user:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
   successes:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      succeeded_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      success_window_started_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      user:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      person:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      latest_email:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      latest_call:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      latest_action:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+      latest_cadence:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      latest_step:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      counts:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          total_emails:
+            type:
+              - 'null'
+              - integer
+          total_calls:
+            type:
+              - 'null'
+              - integer
+          total_other_touches:
+            type:
+              - 'null'
+              - integer
   call_data_records:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type:
+          - 'null'
+          - integer
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      to:
+        type:
+          - 'null'
+          - string
+      from:
+        type:
+          - 'null'
+          - string
+      duration:
+        type:
+          - 'null'
+          - integer
+      direction:
+        type:
+          - 'null'
+          - string
+      status:
+        type:
+          - 'null'
+          - string
+      call_type:
+        type:
+          - 'null'
+          - string
+      call_uuid:
+        type:
+          - 'null'
+          - string
+      recording:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          url:
+            type:
+              - 'null'
+              - string
+          status:
+            type:
+              - 'null'
+              - string
+          recording_status:
+            type:
+              - 'null'
+              - string
+      call:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      user:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
+      called_person:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - integer
+          _href:
+            type:
+              - 'null'
+              - string
   searches:
+    "$schema": http://json-schema.org/draft-07/schema#
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type:
+          - 'null'
+          - integer
+      user:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - 'null'
+              - string
+          _href:
+            type:
+              - 'null'
+              - string
+      user_slug:
+        type:
+          - 'null'
+          - string
+      primary_calendar_id:
+        type:
+          - 'null'
+          - string
+      primary_calendar_name:
+        type:
+          - 'null'
+          - string
+      email_address:
+        type:
+          - 'null'
+          - string
+      user_details:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+      calendar_type:
+        type:
+          - 'null'
+          - string
+      title:
+        type:
+          - 'null'
+          - string
+      description:
+        type:
+          - 'null'
+          - string
+      location:
+        type:
+          - 'null'
+          - string
+      default_meeting_length:
+        type:
+          - 'null'
+          - integer
+      availability_limit_enabled:
+        type:
+          - 'null'
+          - boolean
+      availability_limit:
+        type:
+          - 'null'
+          - integer
+      schedule_delay:
+        type:
+          - 'null'
+          - integer
+      buffer_time_duration:
+        type:
+          - 'null'
+          - integer
+      schedule_buffer_enabled:
+        type:
+          - 'null'
+          - boolean
+      times_available:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+      allow_booking_on_behalf:
+        type:
+          - 'null'
+          - boolean
+      allow_booking_overtime:
+        type:
+          - 'null'
+          - boolean
+      allow_event_overlap:
+        type:
+          - 'null'
+          - boolean
+      allow_event_detail:
+        type:
+          - 'null'
+          - boolean
+      enable_dynamic_location:
+        type:
+          - 'null'
+          - boolean
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      time_zone:
+        type:
+          - 'null'
+          - string
+      primary_calendar_connection_failed:
+        type:
+          - 'null'
+          - boolean
+      enable_calendar_sync:
+        type:
+          - 'null'
+          - boolean
+      reschedule_meetings_enabled:
+        type:
+          - 'null'
+          - boolean
+      active_meeting_url:
+        type:
+          - 'null'
+          - object
+        additionalProperties: true
+        properties:
+          url:
+            type:
+              - 'null'
+              - string
+          created_at:
+            type:
+              - 'null'
+              - string
+            format: date-time
+          updated_at:
+            type:
+              - 'null'
+              - string
+            format: date-time
