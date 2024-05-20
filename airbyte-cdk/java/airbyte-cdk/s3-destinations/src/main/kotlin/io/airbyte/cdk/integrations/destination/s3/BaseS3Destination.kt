@@ -22,13 +22,15 @@ import org.slf4j.LoggerFactory
 
 abstract class BaseS3Destination
 protected constructor(
-    protected val configFactory: S3DestinationConfigFactory = S3DestinationConfigFactory()
+    protected val configFactory: S3DestinationConfigFactory = S3DestinationConfigFactory(),
+    protected val environment: Map<String, String> = System.getenv()
 ) : BaseConnector(), Destination {
     private val nameTransformer: NamingConventionTransformer = S3NameTransformer()
 
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
         try {
-            val destinationConfig = configFactory.getS3DestinationConfig(config, storageProvider())
+            val destinationConfig =
+                configFactory.getS3DestinationConfig(config, storageProvider(), environment)
             val s3Client = destinationConfig.getS3Client()
 
             S3BaseChecks.testIAMUserHasListObjectPermission(s3Client, destinationConfig.bucketName)
@@ -60,7 +62,7 @@ protected constructor(
         catalog: ConfiguredAirbyteCatalog,
         outputRecordCollector: Consumer<AirbyteMessage>
     ): AirbyteMessageConsumer? {
-        val s3Config = configFactory.getS3DestinationConfig(config, storageProvider())
+        val s3Config = configFactory.getS3DestinationConfig(config, storageProvider(), environment)
         return S3ConsumerFactory()
             .create(
                 outputRecordCollector,
