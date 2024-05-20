@@ -1406,11 +1406,11 @@ where 1 = 1
         return result
 
     def hash_id(self, in_jinja: bool = False) -> str:
-        hash_id_col = f"_airbyte_{self.normalized_stream_name()}_hashid"
+        hash_id_col = f"_daspire_{self.normalized_stream_name()}_hashid"
         if self.parent:
             if self.normalized_stream_name().lower() == self.parent.stream_name.lower():
                 level = len(self.json_path)
-                hash_id_col = f"_airbyte_{self.normalized_stream_name()}_{level}_hashid"
+                hash_id_col = f"_daspire_{self.normalized_stream_name()}_{level}_hashid"
 
         return self.name_transformer.normalize_column_name(hash_id_col, in_jinja)
 

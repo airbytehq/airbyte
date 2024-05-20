@@ -110,7 +110,7 @@ class CatalogProcessor:
                     json_column_name = name_transformer.normalize_column_name(json_column_name, in_jinja=True)
             else:
                 column_inside_single_quote = re.compile(r"\'(.*)\'")
-                raw_schema_name = name_transformer.normalize_schema_name(f"_airbyte_{schema}", truncate=False)
+                raw_schema_name = name_transformer.normalize_schema_name(f"_daspire_{schema}", truncate=False)
                 if not column_inside_single_quote.findall(json_column_name):
                     json_column_name = f"'{json_column_name}'"
 
