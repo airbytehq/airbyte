@@ -31,10 +31,6 @@ public class StatusEmitterIterator implements AutoCloseableIterator<AirbyteMessa
         LOGGER.info("*** trace status: {}", Jsons.serialize(statusHolder.toTraceMessage()));
         return AirbyteTraceMessageUtility.INSTANCE.makeStreamStatusTraceAirbyteMessage(statusHolder);
 
-//        final var status = new AirbyteTraceMessage()
-//                .withStreamStatus(new AirbyteStreamStatusTraceMessage().withStatus(AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED));
-//        return new AirbyteMessage().withType(AirbyteMessage.Type.TRACE).withTrace(status);
-
     }
 
     @Override
