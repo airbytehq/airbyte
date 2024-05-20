@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.0
+Delete deprecated AirbyteLogger, AirbyteSpec, and Authenticators + move public classes to the top level init file. See [migration guide](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/cdk-migrations.md) for more details.
+
 ## 0.90.0
 Python CDK: Adds HttpClient, ErrorHandler, and related interfaces.
 
