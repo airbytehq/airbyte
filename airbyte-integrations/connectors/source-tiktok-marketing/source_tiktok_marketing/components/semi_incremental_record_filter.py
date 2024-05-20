@@ -1,7 +1,9 @@
-from typing import List, Mapping, Any, Optional
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
+from typing import Any, List, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.extractors import RecordFilter
-from airbyte_cdk.sources.declarative.types import StreamState, StreamSlice
+from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
 class PerPartitionRecordFilter(RecordFilter):
