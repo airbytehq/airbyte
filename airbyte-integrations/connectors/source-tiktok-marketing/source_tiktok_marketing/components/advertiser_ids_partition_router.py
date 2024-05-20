@@ -7,7 +7,7 @@ from airbyte_cdk.sources.declarative.types import StreamSlice
 
 class AdvertiserIdsPartitionRouter(SubstreamPartitionRouter):
     def stream_slices(self) -> Iterable[StreamSlice]:
-        if self.config["credentials"].get("advertiser_id"):
+        if self.config.get("credentials", {}).get("advertiser_id"):
             slices = [self.config["credentials"].get("advertiser_id")]
         else:
             slices = [_id.partition["advertiser_ids"] for _id in super().stream_slices()]
@@ -20,7 +20,7 @@ class AdvertiserIdsPartitionRouter(SubstreamPartitionRouter):
 
 class AdvertiserIdPartitionRouter(SubstreamPartitionRouter):
     def stream_slices(self) -> Iterable[StreamSlice]:
-        if self.config["credentials"].get("advertiser_id"):
+        if self.config.get("credentials", {}).get("advertiser_id"):
             yield StreamSlice(partition={"advertiser_id": self.config["credentials"].get("advertiser_id"), "parent_slice": {}}, cursor_slice={})
         else:
             yield from super().stream_slices()

@@ -26,6 +26,7 @@ definitions:
   
   record_selector:
     type: RecordSelector
+    schema_normalization: Default
     extractor:
       type: DpathExtractor
       field_path: [ "data", "list" ]
@@ -219,6 +220,7 @@ definitions:
         request_body_json: { }
       record_selector:
         type: RecordSelector
+        schema_normalization: Default
         extractor:
           type: DpathExtractor
           field_path: [ "data", "musics" ]
@@ -247,6 +249,7 @@ definitions:
         request_body_json: { }
       record_selector:
         type: RecordSelector
+        schema_normalization: Default
         extractor:
           type: DpathExtractor
           field_path: [ "data", "creative_portfolios" ]
@@ -262,7 +265,7 @@ definitions:
       name: "campaigns"
       path: "campaign/get/"
     primary_key:
-      - creative_portfolio_id
+      - campaign_id
     $ref: "#/definitions/incremental_stream"
 
   ad_groups_stream:
@@ -574,6 +577,10 @@ definitions:
             value: "{{ record.dimensions.stat_time_day }}"
           - path: [ "campaign_id" ]
             value: "{{ record.dimensions.campaign_id }}"
+          - path: [ "gender" ]
+            value: "{{ record.dimensions.gender }}"
+          - path: [ "age" ]
+            value: "{{ record.dimensions.age }}"
 
   ad_group_audience_reports_daily_stream:
     type: DeclarativeStream
@@ -598,6 +605,10 @@ definitions:
             value: "{{ record.dimensions.stat_time_day }}"
           - path: [ "adgroup_id" ]
             value: "{{ record.dimensions.adgroup_id }}"
+          - path: [ "gender" ]
+            value: "{{ record.dimensions.gender }}"
+          - path: [ "age" ]
+            value: "{{ record.dimensions.age }}"
 
   ads_audience_reports_daily_stream:
     type: DeclarativeStream
@@ -622,6 +633,10 @@ definitions:
             value: "{{ record.dimensions.stat_time_day }}"
           - path: [ "ad_id" ]
             value: "{{ record.dimensions.ad_id }}"
+          - path: [ "gender" ]
+            value: "{{ record.dimensions.gender }}"
+          - path: [ "age" ]
+            value: "{{ record.dimensions.age }}"
 
   advertisers_audience_reports_daily_stream:
     type: DeclarativeStream
@@ -644,8 +659,12 @@ definitions:
         fields:
           - path: [ "stat_time_day" ]
             value: "{{ record.dimensions.stat_time_day }}"
-          - path: [ "ad_id" ]
+          - path: [ "advertiser_id" ]
             value: "{{ record.dimensions.advertiser_id }}"
+          - path: [ "gender" ]
+            value: "{{ record.dimensions.gender }}"
+          - path: [ "age" ]
+            value: "{{ record.dimensions.age }}"
 
   campaigns_audience_reports_by_country_daily_stream:
     type: DeclarativeStream
@@ -669,6 +688,8 @@ definitions:
             value: "{{ record.dimensions.stat_time_day }}"
           - path: [ "campaign_id" ]
             value: "{{ record.dimensions.campaign_id }}"
+          - path: [ "country_code" ]
+            value: "{{ record.dimensions.country_code }}"
 
   ad_group_audience_reports_by_country_daily_stream:
     type: DeclarativeStream
@@ -692,6 +713,8 @@ definitions:
             value: "{{ record.dimensions.stat_time_day }}"
           - path: [ "adgroup_id" ]
             value: "{{ record.dimensions.adgroup_id }}"
+          - path: [ "country_code" ]
+            value: "{{ record.dimensions.country_code }}"
 
   ads_audience_reports_by_country_daily_stream:
     type: DeclarativeStream
@@ -715,6 +738,8 @@ definitions:
             value: "{{ record.dimensions.stat_time_day }}"
           - path: [ "ad_id" ]
             value: "{{ record.dimensions.ad_id }}"
+          - path: [ "country_code" ]
+            value: "{{ record.dimensions.country_code }}"
 
   advertisers_audience_reports_by_country_daily_stream:
     type: DeclarativeStream
@@ -738,6 +763,8 @@ definitions:
             value: "{{ record.dimensions.stat_time_day }}"
           - path: [ "advertiser_id" ]
             value: "{{ record.dimensions.advertiser_id }}"
+          - path: [ "country_code" ]
+            value: "{{ record.dimensions.country_code }}"
 
   campaigns_audience_reports_by_platform_daily_stream:
     type: DeclarativeStream
@@ -760,7 +787,9 @@ definitions:
           - path: [ "stat_time_day" ]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: [ "campaign_id" ]
-            value: "{{ record.dimensions.advertiser_id }}"
+            value: "{{ record.dimensions.campaign_id }}"
+          - path: [ "platform" ]
+            value: "{{ record.dimensions.platform }}"
 
   ad_group_audience_reports_by_platform_daily_stream:
     type: DeclarativeStream
@@ -784,6 +813,8 @@ definitions:
             value: "{{ record.dimensions.stat_time_day }}"
           - path: [ "adgroup_id" ]
             value: "{{ record.dimensions.adgroup_id }}"
+          - path: [ "platform" ]
+            value: "{{ record.dimensions.platform }}"
 
   ads_audience_reports_by_platform_daily_stream:
     type: DeclarativeStream
@@ -807,6 +838,8 @@ definitions:
             value: "{{ record.dimensions.stat_time_day }}"
           - path: [ "ad_id" ]
             value: "{{ record.dimensions.ad_id }}"
+          - path: [ "platform" ]
+            value: "{{ record.dimensions.platform }}"
 
   advertisers_audience_reports_by_platform_daily_stream:
     type: DeclarativeStream
@@ -830,6 +863,8 @@ definitions:
             value: "{{ record.dimensions.stat_time_day }}"
           - path: [ "advertiser_id" ]
             value: "{{ record.dimensions.advertiser_id }}"
+          - path: [ "platform" ]
+            value: "{{ record.dimensions.platform }}"
   
   ads_audience_reports_by_province_daily_stream:
     type: DeclarativeStream
@@ -853,6 +888,8 @@ definitions:
             value: "{{ record.dimensions.stat_time_day }}"
           - path: [ "ad_id" ]
             value: "{{ record.dimensions.ad_id }}"
+          - path: [ "province_id" ]
+            value: "{{ record.dimensions.province_id }}"
 
   ads_reports_hourly_stream:
     type: DeclarativeStream
@@ -1054,7 +1091,7 @@ definitions:
       name: "advertisers_audience_reports_lifetime"
       path: "report/integrated/get/"
       data_level: "AUCTION_ADVERTISER"
-      schema_name: "basic_reports"
+      schema_name: "audience_reports"
       report_metrics: None
       dimensions: [ "advertiser_id", "gender", "age" ]
     primary_key:
@@ -1065,8 +1102,12 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "adgroup_id" ]
-            value: "{{ record.dimensions.adgroup_id }}"
+          - path: [ "advertiser_id" ]
+            value: "{{ record.dimensions.advertiser_id }}"
+          - path: [ "gender" ]
+            value: "{{ record.dimensions.gender }}"
+          - path: [ "age" ]
+            value: "{{ record.dimensions.age }}"
 
 streams:
   - $ref: "#/definitions/advertiser_ids_stream"
