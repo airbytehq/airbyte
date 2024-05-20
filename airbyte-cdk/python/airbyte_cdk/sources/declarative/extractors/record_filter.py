@@ -5,7 +5,7 @@ import datetime
 from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, Mapping, Optional, Union
 
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, PerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
@@ -45,14 +45,19 @@ class ClientSideIncrementalRecordFilterDecorator:
 
     :param DatetimeBasedCursor date_time_based_cursor: Cursor used to extract datetime values
     :param RecordFilter record_filter: Optional filter to apply after date-time filtering
-    :param str partition_id: Optional string used for mapping cursor value in nested stream_state
+    :param PerPartitionCursor per_partition_cursor: Optional Cursor used for mapping cursor value in nested stream_state
 
     """
 
-    def __init__(self, date_time_based_cursor: DatetimeBasedCursor, record_filter: Optional[RecordFilter], partition_id: str = ""):
+    def __init__(
+        self,
+        date_time_based_cursor: DatetimeBasedCursor,
+        record_filter: Optional[RecordFilter],
+        per_partition_cursor: Optional[PerPartitionCursor] = None,
+    ):
         self._date_time_based_cursor = date_time_based_cursor
         self._delegate = record_filter
-        self._partition_id = partition_id
+        self._per_partition_cursor = per_partition_cursor
 
     @property
     def _cursor_field(self) -> Union[str, Any]:
@@ -80,18 +85,9 @@ class ClientSideIncrementalRecordFilterDecorator:
         return records
 
     def get_state_value(self, stream_state: StreamState, stream_slice: StreamSlice) -> Optional[str]:
-        state_value = None
         if stream_state.get("states"):
-            state = [
-                x
-                for x in stream_state.get("states", [])
-                if x["partition"][self._partition_id] == stream_slice.partition[self._partition_id]
-            ]
-            if state:
-                state_value = state[0]["cursor"][self._cursor_field]
-        else:
-            state_value = stream_state.get(self._cursor_field)
-        return state_value
+            stream_state = self._per_partition_cursor.select_state(stream_slice=stream_slice)
+        return stream_state.get(self._cursor_field)
 
     def get_filter_date(self, state_value: Optional[str]) -> Optional[datetime.datetime]:
         start_date_parsed = self._start_date_from_config or None
