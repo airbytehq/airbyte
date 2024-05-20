@@ -28,6 +28,11 @@ data:
       enabled: true
       packageName: airbyte-source-declarative-manifest
   supportLevel: community
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: Version 1.0.0 deletes a few deprecated classes. See the [cdk-migrations.md doc](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/cdk-migrations.md#upgrading-to-100) for more details on how to upgrade.
+        upgradeDeadline: "2024-05-20"
   tags:
     - language:python
   connectorTestSuitesOptions:
