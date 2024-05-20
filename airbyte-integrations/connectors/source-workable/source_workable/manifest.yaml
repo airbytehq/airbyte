@@ -20,11 +20,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /spi/v3/jobs
           http_method: GET
           request_parameters:
-            created_after: '{{ config[''start_date''] }}'
+            created_after: "{{ config['start_date'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -64,12 +64,12 @@ definitions:
               path: /spi/v3/jobs
               field_path:
                 - jobs
-            cursor_value: '{{ response.paging.next }}'
-            stop_condition: '{{ ''next'' not in response[''paging''] }}'
+            cursor_value: "{{ response.paging.next }}"
+            stop_condition: "{{ 'next' not in response['paging'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/jobs'
+          $ref: "#/schemas/jobs"
     candidates:
       type: DeclarativeStream
       name: candidates
@@ -78,11 +78,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /spi/v3/candidates
           http_method: GET
           request_parameters:
-            created_after: '{{ config[''start_date''] }}'
+            created_after: "{{ config['start_date'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -122,12 +122,12 @@ definitions:
               path: /spi/v3/candidates
               field_path:
                 - candidates
-            cursor_value: '{{ response.paging.next }}'
-            stop_condition: '{{ ''next'' not in response[''paging''] }}'
+            cursor_value: "{{ response.paging.next }}"
+            stop_condition: "{{ 'next' not in response['paging'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/candidates'
+          $ref: "#/schemas/candidates"
     stages:
       type: DeclarativeStream
       name: stages
@@ -136,11 +136,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /spi/v3/stages
           http_method: GET
           request_parameters:
-            created_after: '{{ config[''start_date''] }}'
+            created_after: "{{ config['start_date'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -180,12 +180,12 @@ definitions:
               path: /spi/v3/stages
               field_path:
                 - stages
-            cursor_value: '{{ response.paging.next }}'
-            stop_condition: '{{ ''next'' not in response[''paging''] }}'
+            cursor_value: "{{ response.paging.next }}"
+            stop_condition: "{{ 'next' not in response['paging'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/stages'
+          $ref: "#/schemas/stages"
     recruiters:
       type: DeclarativeStream
       name: recruiters
@@ -194,11 +194,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /spi/v3/recruiters
           http_method: GET
           request_parameters:
-            created_after: '{{ config[''start_date''] }}'
+            created_after: "{{ config['start_date'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -238,18 +238,18 @@ definitions:
               path: /spi/v3/recruiters
               field_path:
                 - recruiters
-            cursor_value: '{{ response.paging.next }}'
-            stop_condition: '{{ ''next'' not in response[''paging''] }}'
+            cursor_value: "{{ response.paging.next }}"
+            stop_condition: "{{ 'next' not in response['paging'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/recruiters'
+          $ref: "#/schemas/recruiters"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['account_subdomain'] }}.workable.com
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
       name: jobs
       primary_key: id
       path: /spi/v3/jobs
@@ -263,10 +263,10 @@ definitions:
           - jobs
 
 streams:
-  - $ref: '#/definitions/streams/jobs'
-  - $ref: '#/definitions/streams/candidates'
-  - $ref: '#/definitions/streams/stages'
-  - $ref: '#/definitions/streams/recruiters'
+  - $ref: "#/definitions/streams/jobs"
+  - $ref: "#/definitions/streams/candidates"
+  - $ref: "#/definitions/streams/stages"
+  - $ref: "#/definitions/streams/recruiters"
 
 spec:
   type: Spec
@@ -296,7 +296,7 @@ spec:
       start_date:
         type: string
         title: Start Date
-        description: 'Get data that was created since this date (format: YYYYMMDDTHHMMSSZ).'
+        description: "Get data that was created since this date (format: YYYYMMDDTHHMMSSZ)."
         pattern: ^[0-9]{8}T[0-9]{6}Z$
         examples:
           - 20150708T115616Z
@@ -318,19 +318,19 @@ schemas:
     properties:
       application_url:
         type:
-          - 'null'
+          - "null"
           - string
       code:
         type:
-          - 'null'
+          - "null"
           - string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       department:
         type:
-          - 'null'
+          - "null"
           - string
       department_hierarchy:
         type: array
@@ -344,64 +344,64 @@ schemas:
         minItems: 0
       full_title:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       location:
         type: object
         properties:
           city:
             type:
-              - 'null'
+              - "null"
               - string
           country:
             type:
-              - 'null'
+              - "null"
               - string
           country_code:
             type:
-              - 'null'
+              - "null"
               - string
           location_str:
             type:
-              - 'null'
+              - "null"
               - string
           region:
             type:
-              - 'null'
+              - "null"
               - string
           region_code:
             type:
-              - 'null'
+              - "null"
               - string
           telecommuting:
             type: boolean
           zip_code:
             type:
-              - 'null'
+              - "null"
               - string
       shortcode:
         type:
-          - 'null'
+          - "null"
           - string
       shortlink:
         type:
-          - 'null'
+          - "null"
           - string
       state:
         type:
-          - 'null'
+          - "null"
           - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
       url:
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
   candidates:
@@ -410,23 +410,23 @@ schemas:
     properties:
       email:
         type:
-          - 'null'
+          - "null"
           - string
       headline:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       role:
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
   stages:
@@ -435,19 +435,19 @@ schemas:
     properties:
       kind:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       position:
         type:
-          - 'null'
+          - "null"
           - number
       slug:
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
   recruiters:
@@ -456,14 +456,14 @@ schemas:
     properties:
       email:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
