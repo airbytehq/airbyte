@@ -76,6 +76,7 @@ function getDestinationConnectors() {
   return getFilenamesInDir("integrations/destinations/", destinationDocs, [
     "readme",
     "s3",
+    "postgres",
   ]);
 }
 
@@ -149,6 +150,22 @@ const destinationS3 = {
       type: "doc",
       label: "Troubleshooting",
       id: "integrations/destinations/s3/s3-troubleshooting",
+    },
+  ],
+};
+
+const destinationPostgres = {
+  type: "category",
+  label: "Postgres",
+  link: {
+    type: "doc",
+    id: "integrations/destinations/postgres",
+  },
+  items: [
+    {
+      type: "doc",
+      label: "Troubleshooting",
+      id: "integrations/destinations/postgres/postgres-troubleshooting",
     },
   ],
 };
@@ -331,9 +348,11 @@ const connectorCatalog = {
         type: "doc",
         id: "integrations/destinations/README",
       },
-      items: [destinationS3, ...getDestinationConnectors()].sort(
-        (itemA, itemB) => itemA.label.localeCompare(itemB.label)
-      ),
+      items: [
+        destinationS3,
+        destinationPostgres,
+        ...getDestinationConnectors(),
+      ].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
     },
     {
       type: "doc",
