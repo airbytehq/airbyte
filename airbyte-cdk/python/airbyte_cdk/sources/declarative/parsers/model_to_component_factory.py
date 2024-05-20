@@ -7,7 +7,7 @@ from __future__ import annotations
 import importlib
 import inspect
 import re
-from typing import Any, Callable, List, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
+from typing import Any, Callable, Dict, List, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
 
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
@@ -617,7 +617,9 @@ class ModelToComponentFactory:
             client_side_incremental_sync = {
                 "date_time_based_cursor": self._create_component_from_model(model=model.incremental_sync, config=config),
                 "partition_id": model.retriever.partition_router.parent_stream_configs[0].partition_field
-                if hasattr(model.retriever, "partition_router") and model.retriever.partition_router
+                if hasattr(model.retriever, "partition_router")
+                and model.retriever.partition_router
+                and hasattr(model.retriever.partition_router, "parent_stream_configs")
                 else "",
             }
         transformations = []
@@ -988,7 +990,7 @@ class ModelToComponentFactory:
         config: Config,
         *,
         transformations: List[RecordTransformation],
-        client_side_incremental_sync: dict = None,
+        client_side_incremental_sync: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> RecordSelector:
         assert model.schema_normalization is not None  # for mypy
@@ -1047,7 +1049,7 @@ class ModelToComponentFactory:
         primary_key: Optional[Union[str, List[str], List[List[str]]]],
         stream_slicer: Optional[StreamSlicer],
         stop_condition_on_cursor: bool = False,
-        client_side_incremental_sync: {} = None,
+        client_side_incremental_sync: Optional[Dict[str, Any]] = None,
         transformations: List[RecordTransformation],
     ) -> SimpleRetriever:
         requester = self._create_component_from_model(model=model.requester, config=config, name=name)
