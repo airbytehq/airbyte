@@ -4,8 +4,6 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "source_github/spec.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "1.4.3"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -17,11 +15,7 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "1.4.3"
       - config_path: "secrets/config_oauth.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "0.4.8"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
