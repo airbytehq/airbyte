@@ -191,7 +191,12 @@ Apache Parquet is a column-oriented data storage format of the Apache Hadoop eco
 The Avro parser uses the [Fastavro library](https://fastavro.readthedocs.io/en/latest/). The following settings are available:
 - **Convert Double Fields to Strings**: Whether to convert double fields to strings. This is recommended if you have decimal numbers with a high degree of precision because there can be a loss precision when handling floating point numbers.
 
-### JSONL
+#### Xlsx
+
+The Xlsx parser uses the [python-calamine library](https://github.com/dimastbk/python-calamine). The following settings are available:
+- **Sheet Name or Index**: The name or index of the sheet within the excel workbook that you want to parse. If the sheet name is provided, the connector will look for the sheet with the exact name. If the sheet index is provided, the connector will look for the sheet at the specified index (0-indexed).
+
+#### JSONL
 
 There are currently no options for JSONL parsing.
 

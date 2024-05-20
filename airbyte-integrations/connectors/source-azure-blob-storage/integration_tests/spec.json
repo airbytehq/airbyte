@@ -350,7 +350,7 @@
                       "type": "string"
                     },
                     "sheet_name": {
-                      "title": "Sheet Name Or Index",
+                      "title": "Sheet Name or Index",
                       "description": "The name or index of the sheet that will be read from the workbook into the stream.",
                       "type": "string"
                     }
