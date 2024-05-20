@@ -64,7 +64,7 @@ public class ElasticsearchConnection {
     if (config.getCaCertificate() != null && !config.getCaCertificate().isEmpty()) {
       builder.setHttpClientConfigCallback(clientBuilder -> {
         clientBuilder.setSSLContext(SSLCertificateUtils.createContextFromCaCert(config.getCaCertificate()));
-        clientBuilder.setSocketTimeout(30000000000);//increase from default 30,000 millisecs
+        clientBuilder.setSocketTimeout(90000000);//increase from default 30,000 millisecs
         return clientBuilder;
       });
     }
