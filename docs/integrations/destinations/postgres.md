@@ -261,6 +261,15 @@ Now that you have set up the Postgres destination connector, check out the follo
 - [Migrate from mysql to postgres](https://airbyte.com/tutorials/migrate-from-mysql-to-postgresql)
 - [Postgres replication](https://airbyte.com/tutorials/postgres-replication)
 
+## Vendor-Specific Connector Limitations
+
+:::warning
+
+Not all implementations or deployments of a database will be the same. This section lists specific limitations and known issues with the connector based on _how_ or
+_where_ it is deployed.
+
+:::
+
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                  |
