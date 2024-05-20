@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /emailCampaigns
           http_method: GET
         record_selector:
@@ -42,7 +42,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/campaigns'
+          $ref: "#/schemas/campaigns"
     templates:
       type: DeclarativeStream
       name: templates
@@ -51,7 +51,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /smtp/templates
           http_method: GET
         record_selector:
@@ -76,7 +76,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/templates'
+          $ref: "#/schemas/templates"
     contacts:
       type: DeclarativeStream
       name: contacts
@@ -85,7 +85,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /contacts
           http_method: GET
         record_selector:
@@ -114,12 +114,12 @@ definitions:
         primary_key: id
         path: /contacts
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%f%z'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '2000-01-01T00:00:00Z'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "2000-01-01T00:00:00Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -127,22 +127,22 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/contacts'
+          $ref: "#/schemas/contacts"
   base_requester:
     type: HttpRequester
     url_base: https://api.sendinblue.com/v3
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
       inject_into:
         type: RequestOption
         field_name: api-key
         inject_into: header
 
 streams:
-  - $ref: '#/definitions/streams/campaigns'
-  - $ref: '#/definitions/streams/templates'
-  - $ref: '#/definitions/streams/contacts'
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/templates"
+  - $ref: "#/definitions/streams/contacts"
 
 spec:
   type: Spec
@@ -176,101 +176,101 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       abTesting:
         type:
-          - 'null'
+          - "null"
           - boolean
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
       footer:
         type:
-          - 'null'
+          - "null"
           - string
       header:
         type:
-          - 'null'
+          - "null"
           - string
       htmlContent:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       inlineImageActivation:
         type:
-          - 'null'
+          - "null"
           - boolean
       mirrorActive:
         type:
-          - 'null'
+          - "null"
           - boolean
       modifiedAt:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       previewText:
         type:
-          - 'null'
+          - "null"
           - string
       recipients:
         type:
-          - 'null'
+          - "null"
           - object
       replyTo:
         type:
-          - 'null'
+          - "null"
           - string
       scheduledAt:
         type:
-          - 'null'
+          - "null"
           - string
       sendAtBestTime:
         type:
-          - 'null'
+          - "null"
           - boolean
       sender:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties: {}
       shareLink:
         type:
-          - 'null'
+          - "null"
           - string
       statistics:
         type:
-          - 'null'
+          - "null"
           - object
       status:
         type:
-          - 'null'
+          - "null"
           - string
       subject:
         type:
-          - 'null'
+          - "null"
           - string
       tag:
         type:
-          - 'null'
+          - "null"
           - string
       testSent:
         type:
-          - 'null'
+          - "null"
           - boolean
       toField:
         type:
-          - 'null'
+          - "null"
           - string
   templates:
     type: object
@@ -279,57 +279,57 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
       htmlContent:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       isActive:
         type:
-          - 'null'
+          - "null"
           - boolean
       modifiedAt:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       replyTo:
         type:
-          - 'null'
+          - "null"
           - string
       sender:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties: {}
       subject:
         type:
-          - 'null'
+          - "null"
           - string
       tag:
         type:
-          - 'null'
+          - "null"
           - string
       testSent:
         type:
-          - 'null'
+          - "null"
           - boolean
       toField:
         type:
-          - 'null'
+          - "null"
           - string
   contacts:
     type: object
@@ -338,35 +338,35 @@ schemas:
     properties:
       attributes:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties: {}
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
       email:
         type:
-          - 'null'
+          - "null"
           - string
       emailBlacklisted:
         type:
-          - 'null'
+          - "null"
           - boolean
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       listIds:
         type:
-          - 'null'
+          - "null"
           - array
       modifiedAt:
         type:
-          - 'null'
+          - "null"
           - string
       smsBlacklisted:
         type:
-          - 'null'
+          - "null"
           - boolean

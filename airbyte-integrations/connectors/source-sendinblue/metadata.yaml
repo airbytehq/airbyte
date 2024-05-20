@@ -20,7 +20,7 @@ data:
   icon: sendinblue.svg
   license: MIT
   name: Sendinblue
-  releaseDate: TODO
+  releaseDate: 2022-11-01
   remoteRegistries:
     pypi:
       enabled: true
