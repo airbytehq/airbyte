@@ -18,7 +18,7 @@ include = "destination_weaviate"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = {version = "0.2.18"]}
+airbyte-cdk = {version = "0.81.6", extras = ["vector-db-based"]}
 weaviate-client = "3.25.2"
 
 [tool.poetry.group.dev.dependencies]
