@@ -210,12 +210,12 @@ Follow these instructions to add the Airbyte helm repository:
 
 2. Paste the following into your newly created `values.yaml` file. This is required to deploy Airbyte Self-Managed Enterprise:
 
-```yml
+```yaml
 global:
   edition: enterprise
 ```
 
-3. To enable SSO authentication, add instance admin details [SSO auth details](/access-management/sso) to your `values.yaml` file, under `global`. See the [following guide](/access-management/sso-providers/) on how to collect this information for various IDPs, such as Okta and Azure Entra ID.
+3. To enable SSO authentication, add instance admin details [SSO auth details](/access-management/sso) to your `values.yaml` file, under `global`. See the [following guide](/access-management/sso#set-up) on how to collect this information for various IDPs, such as Okta and Azure Entra ID.
 
 ```yaml
 auth:
