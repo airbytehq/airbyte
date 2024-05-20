@@ -8,6 +8,27 @@ check:
     - users
 
 definitions:
+  custom_oauth_authenticator:
+    type: CustomAuthenticator
+    class_name: source_salesloft.custom_authenticators.Oauth2Authenticator
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: "{{ config['credentials']['refresh_token'] }}"
+    refresh_request_body: {}
+    token_refresh_endpoint: "https://accounts.salesloft.com/oauth/token"
+    grant_type: refresh_token
+
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['api_key'] }}"
+
+  selective_authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      oauth2.0: "#/definitions/custom_oauth_authenticator"
+      api_key: "#/definitions/bearer_authenticator"
+
   streams:
     users:
       type: DeclarativeStream
@@ -1466,8 +1487,7 @@ definitions:
     type: HttpRequester
     url_base: https://api.salesloft.com/v2
     authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config['credentials']['api_key'] }}"
+      $ref: "#/definitions/selective_authenticator"
 
 streams:
   - $ref: "#/definitions/streams/users"

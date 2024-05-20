@@ -15,6 +15,7 @@ from source_salesloft.source import SourceSalesloft
 def mock_response():
     return {"data": [{"id": "mock1"}, {"id": "mock2"}]}
 
+
 def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
     source = SourceSalesloft()
     matches_by_name = [stream_config for stream_config in source.streams(config) if stream_config.name == stream_name]
@@ -23,12 +24,11 @@ def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
     return matches_by_name[0]
 
 
-
 def test_request_params(config):
     stream = get_stream_by_name("users", config)
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
     expected_params = {}
-    assert  stream.retriever.requester.get_request_params(**inputs) == expected_params
+    assert stream.retriever.requester.get_request_params(**inputs) == expected_params
 
 
 def test_incremental_request_params(config):
@@ -69,7 +69,9 @@ def test_get_updated_state(config):
     assert stream.get_updated_state(**inputs) == expected_state
 
 
-@pytest.mark.parametrize("return_value, expected_records", (({"metadata": {}}, []), ({"data": [{"id": 1}, {"id": 2}], "metadata": {}}, [{"id": 1}, {"id": 2}])))
+@pytest.mark.parametrize(
+    "return_value, expected_records", (({"metadata": {}}, []), ({"data": [{"id": 1}, {"id": 2}], "metadata": {}}, [{"id": 1}, {"id": 2}]))
+)
 def test_parse_response(requests_mock, config, return_value, expected_records):
     stream = get_stream_by_name("users", config)
     requests_mock.post("https://accounts.salesloft.com/oauth/token", json={"access_token": "token", "expires_in": 7200})

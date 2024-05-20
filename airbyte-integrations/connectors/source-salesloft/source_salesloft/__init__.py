@@ -5,4 +5,4 @@
 
 from .source import SourceSalesloft
 
-__all__ = ["SourceSalesloft"]
+__all__ = ["SourceSalesloft", "custom_authenticators"]
