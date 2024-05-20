@@ -2,11 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from abc import ABC, abstractmethod
 from traceback import format_exc
 from typing import Any, List, Mapping, Optional, Tuple
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification, SyncMode
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -43,7 +43,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
         :return: link to docs page for this source e.g. "https://docs.airbyte.com/integrations/sources/s3"
         """
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
         This method checks two things:
             - That the credentials provided in config are valid for access.
