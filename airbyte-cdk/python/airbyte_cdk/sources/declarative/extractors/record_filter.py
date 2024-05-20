@@ -5,9 +5,9 @@ import datetime
 from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, Mapping, Optional, Union
 
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
-from sources.declarative.incremental import DatetimeBasedCursor
 
 
 @dataclass

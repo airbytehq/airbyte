@@ -22,6 +22,7 @@ from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
+from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, PerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.models import CheckStream as CheckStreamModel
@@ -76,7 +77,6 @@ from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFie
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
-from sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
 from unit_tests.sources.declarative.parsers.testing_components import TestingCustomSubstreamPartitionRouter, TestingSomeComponent
 
 factory = ModelToComponentFactory()
@@ -750,7 +750,7 @@ list_stream:
     type: DatetimeBasedCursor
     $parameters:
       datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-    start_datetime: 
+    start_datetime:
       type: MinMaxDatetime
       datetime: "{{ config.get('start_date', '1970-01-01T00:00:00.0Z') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
