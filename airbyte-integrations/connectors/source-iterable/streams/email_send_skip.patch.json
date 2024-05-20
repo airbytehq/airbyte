@@ -1,8 +1,7 @@
 {
-    "properties":{
+  "properties": {
         "transactionalData": {
-            "type": ["null", "object", "string"]
+          "type": ["string", "object", "null"]
         }
-    },
-    "type":"object"
+  }
 }
