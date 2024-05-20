@@ -250,7 +250,11 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
         # Install the airbyte-cdk package from the local directory
         # We use --no-deps to avoid conflicts with the airbyte-cdk version required by the connector
         connector_container = connector_container.with_mounted_directory(f"/{path_to_cdk}", directory_to_mount).with_exec(
-            ["pip", "install", "--no-deps", f"/{path_to_cdk}"], skip_entrypoint=True
+            ["pip", "install", f"/{path_to_cdk}"], skip_entrypoint=True
+        )
+        # Install requirements required by the local cdk to function
+        connector_container = connector_container.with_mounted_directory(f"/{path_to_cdk}", directory_to_mount).with_exec(
+            ["pip", "install", "-r", f"/{path_to_cdk}/local-cdk-requirements.txt"], skip_entrypoint=True
         )
 
     return connector_container
