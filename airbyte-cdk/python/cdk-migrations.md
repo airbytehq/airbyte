@@ -5,10 +5,11 @@ Starting from 1.0.0, CDK classes and functions should be imported directly from 
 
 Introducing breaking changes to a class or function exported from the top level `__init__.py` will require a major version bump and a migration note to help developer upgrade.
 
-Note that the following packages are not part of the top level init either because they require extras dependencies, or because they should not be used in production by a connector module:
+Note that the following packages are not part of the top level init because they require extras dependencies, but are still considered stable:
 - `destination.vector_db_based`
 - `source.file_based`
-- `test`
+
+The `test` package is not included in the top level init either. The `test` package is still evolving and isn't considered stable.
 
 ## Upgrading to 1.0.0
 A few classes were deleted from the Airbyte CDK in version 1.0.0:
