@@ -129,9 +129,7 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector_empty_dpath"
         record_filter:
-          condition: |
-            {%- set filter_date = stream_state.created or stream_slice.start_time -%}
-            "{{ record['created'] >= filter_date if filter_date else true }}"
+          condition: "{{ record.created >= stream_interval.start_time }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: created
@@ -177,9 +175,7 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
         record_filter:
-          condition: |
-            {%- set filter_date = stream_state.last_seen or stream_slice.start_time -%}
-            "{{ record['$properties']['$last_seen'] >= filter_date if filter_date else true }}"
+          condition: "{{ record['$properties']['$last_seen'] >= stream_interval.start_time }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: last_seen
@@ -222,14 +218,7 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
         record_filter:
-          condition: |
-            {%- set partition_state = namespace(value=config.start_date) -%}
-            {%- for state in stream_state.get('states', []) -%}
-                {%- if state['partition']['id'] == stream_slice['id'] -%}
-                    {%- set partition_state.value = state['cursor']['last_seen'] -%}
-                {%- endif -%}
-            {%- endfor -%}
-            {{ true if not partition_state.value or record['$properties']['$last_seen'] >= partition_state.value else false }}
+          condition: "{{ record['$properties']['$last_seen'] >= stream_interval.start_time }}"
       partition_router:
         class_name: "source_mixpanel.components.CohortMembersSubstreamPartitionRouter"
         parent_stream_configs:

@@ -185,8 +185,109 @@ def test_engage_stream_incremental(requests_mock, engage_response, config_raw):
     assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"last_seen": "2024-03-01T11:20:47"}
 
 
-
-def test_cohort_members_stream_incremental(requests_mock, engage_response, config_raw):
+@pytest.mark.parametrize(
+    "test_name, state, record_count, updated_state",
+    (
+        (
+            "empty_state",
+            {},
+            2,
+            {
+                'states': [
+                    {
+                        'cursor': {'last_seen': '2024-03-01T11:20:47'},
+                        'partition': {'id': 1111, 'parent_slice': {}},
+                    }
+                ]
+            }
+        ),
+        (
+            "abnormal_state",
+            {
+                'states': [
+                    {
+                        'cursor': {'last_seen': '2030-01-01T00:00:00'},
+                        'partition': {'id': 1111, 'parent_slice': {}},
+                    }
+                ]
+            },
+            0,
+            {
+                'states': [
+                    {
+                        'cursor': {'last_seen': '2030-01-01T00:00:00'},
+                        'partition': {'id': 1111, 'parent_slice': {}},
+                    }
+                ]
+            }
+        ),
+        (
+            "medium_state",
+            {
+                'states': [
+                    {
+                        'cursor': {'last_seen': '2024-03-01T11:20:00'},
+                        'partition': {'id': 1111, 'parent_slice': {}},
+                    }
+                ]
+            },
+            1,
+            {
+                'states': [
+                    {
+                        'cursor': {'last_seen': '2024-03-01T11:20:47'},
+                        'partition': {'id': 1111, 'parent_slice': {}},
+                    }
+                ]
+            }
+        ),
+        (
+            "early_state",
+            {
+                'states': [
+                    {
+                        'cursor': {'last_seen': '2024-02-01T00:00:00'},
+                        'partition': {'id': 1111, 'parent_slice': {}},
+                    }
+                ]
+            },
+            2,
+            {
+                'states': [
+                    {
+                        'cursor': {'last_seen': '2024-03-01T11:20:47'},
+                        'partition': {'id': 1111, 'parent_slice': {}},
+                    }
+                ]
+            }
+        ),
+        (
+            "state_for_different_partition",
+            {
+                'states': [
+                    {
+                        'cursor': {'last_seen': '2024-02-01T00:00:00'},
+                        'partition': {'id': 2222, 'parent_slice': {}},
+                    }
+                ]
+            },
+            2,
+            {
+                'states': [
+                    {
+                        'cursor': {'last_seen': '2024-02-01T00:00:00'},
+                        'partition': {'id': 2222, 'parent_slice': {}},
+                    },
+                    {
+                        'cursor': {'last_seen': '2024-03-01T11:20:47'},
+                        'partition': {'id': 1111, 'parent_slice': {}},
+                    }
+                ]
+            }
+        ),
+    ),
+)
+def test_cohort_members_stream_incremental(requests_mock, engage_response, config_raw, test_name, state, record_count, updated_state):
     """Cohort_members stream has legacy state but actually it should always return all records
     because members in cohorts can be updated at any time
     """
@@ -211,29 +312,11 @@ def test_cohort_members_stream_incremental(requests_mock, engage_response, confi
 
     stream = init_stream('cohort_members', config=config_raw)
 
-    stream_state = {"states":
-        [{
-            "partition": {
-              "id": 1111,
-              "parent_slice": {}
-            },
-            "cursor": {
-              "last_seen": "2024-02-01T11:20:47"
-            }
-        }]
-    }
+    records = list(read_incremental(stream, stream_state=state, cursor_field=["last_seen"]))
 
-    records = list(read_incremental(stream, stream_state=stream_state, cursor_field=["last_seen"]))
-
-    assert len(records) == 2
-    assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {
-        'states': [
-            {
-                'cursor': {'last_seen': '2024-03-01T11:20:47'},
-                'partition': {'id': 1111, 'parent_slice': {}},
-            }
-        ]
-    }
+    assert len(records) == record_count
+    new_updated_state = stream.get_updated_state(current_stream_state=state, latest_record=records[-1] if records else None)
+    assert new_updated_state == updated_state
 
 
 
