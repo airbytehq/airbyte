@@ -12,7 +12,7 @@ definitions:
 
   authenticator:
     type: ApiKeyAuthenticator
-    api_token: '{{ config[''credentials''][''access_token''] }}'
+    api_token: '{{ config[''credentials''][''access_token''] if config.get(''credentials'') else config[''access_token''] }}'
     inject_into:
       type: RequestOption
       inject_into: header
@@ -20,7 +20,7 @@ definitions:
 
   requester:
     type: HttpRequester
-    url_base: '{{ "https://sandbox-ads.tiktok.com/open_api/v1.3/" if config[''credentials''][''auth_type''] == "sandbox_access_token" else "https://business-api.tiktok.com/open_api/v1.3/" }}'
+    url_base: '{{ "https://sandbox-ads.tiktok.com/open_api/v1.3/" if config.get(''credentials'', {})[''auth_type''] == "sandbox_access_token" else "https://business-api.tiktok.com/open_api/v1.3/" }}'
     path: "{{ parameters['path'] }}"
     http_method: GET
   
