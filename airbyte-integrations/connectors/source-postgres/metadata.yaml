@@ -19,8 +19,10 @@ data:
   name: Postgres
   registries:
     cloud:
+      dockerImageTag: 3.4.5
       enabled: true
     oss:
+      dockerImageTag: 3.4.5
       enabled: true
   releaseStage: generally_available
   supportLevel: certified
