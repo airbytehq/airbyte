@@ -3,12 +3,12 @@
 #
 
 import json
+import logging
 from datetime import timedelta
 from unittest.mock import MagicMock
 
 import pendulum
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.utils import AirbyteTracedException
@@ -18,7 +18,7 @@ from source_mixpanel.utils import read_full_refresh
 
 from .utils import get_url_to_mock, read_incremental, setup_response
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 MIXPANEL_BASE_URL = "https://mixpanel.com/api/2.0/"
 

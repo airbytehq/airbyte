@@ -3,16 +3,16 @@
 #
 
 import copy
+import logging
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.utils import AirbyteTracedException
 from source_mixpanel.source import SourceMixpanel, TokenAuthenticatorBase64
 from source_mixpanel.streams import Export
 
 from .utils import command_check, get_url_to_mock, setup_response
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
 @pytest.fixture
