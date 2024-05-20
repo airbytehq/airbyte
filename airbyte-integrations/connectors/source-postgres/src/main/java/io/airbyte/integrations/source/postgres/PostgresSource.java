@@ -831,7 +831,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   @Override
-  public boolean supportResumableFullRefresh(final JdbcDatabase database, final ConfiguredAirbyteStream airbyteStream) {
+  public boolean supportResumableFullRefresh(final JdbcDatabase database, final AirbyteStream airbyteStream) {
     // finalListOfStreamsToBeSyncedViaCtid will be initialized as part of state manager initialization
     // for non CDC only.
     if (!ctidStateManager.getFileNodeHandler().hasFileNode(new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(
