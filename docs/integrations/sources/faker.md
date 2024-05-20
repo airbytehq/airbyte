@@ -101,7 +101,7 @@ None!
 
 | Version | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 | :------ | :--------- | :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
-| 6.1.1 | 2024-05-15 | [38256](https://github.com/airbytehq/airbyte/pull/38256) | Replace AirbyteLogger with logging.Logger |
+| 6.1.1 | 2024-05-20 | [38256](https://github.com/airbytehq/airbyte/pull/38256) | Replace AirbyteLogger with logging.Logger |
 | 6.1.0 | 2024-04-08 | [36898](https://github.com/airbytehq/airbyte/pull/36898) | Update car prices and years |
 | 6.0.3 | 2024-03-15 | [36167](https://github.com/airbytehq/airbyte/pull/36167) | Make 'count' an optional config parameter. |
 | 6.0.2 | 2024-02-12 | [35174](https://github.com/airbytehq/airbyte/pull/35174) | Manage dependencies with Poetry. |
