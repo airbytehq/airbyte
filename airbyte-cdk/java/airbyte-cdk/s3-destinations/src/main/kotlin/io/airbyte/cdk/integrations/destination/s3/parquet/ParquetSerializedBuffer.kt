@@ -122,7 +122,12 @@ class ParquetSerializedBuffer(
     }
 
     @Throws(Exception::class)
-    override fun accept(recordString: String, airbyteMetaString: String, emittedAt: Long): Long {
+    override fun accept(
+        recordString: String,
+        airbyteMetaString: String,
+        generationId: Long,
+        emittedAt: Long
+    ): Long {
         throw UnsupportedOperationException(
             "This method is not supported for ParquetSerializedBuffer"
         )

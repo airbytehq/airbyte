@@ -24,7 +24,7 @@ interface StorageOperation<Data> {
     fun cleanupStage(streamId: StreamId)
 
     /** Write data to stage. */
-    fun writeToStage(streamId: StreamId, data: Data)
+    fun writeToStage(streamConfig: StreamConfig, data: Data)
 
     /*
      *  ==================== Final Table Operations ================================

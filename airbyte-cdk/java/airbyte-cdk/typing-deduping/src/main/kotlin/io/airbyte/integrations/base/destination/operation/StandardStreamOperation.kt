@@ -25,6 +25,6 @@ class StandardStreamOperation<DestinationState : MinimumDestinationState>(
         disableTypeDedupe
     ) {
     override fun writeRecords(streamConfig: StreamConfig, stream: Stream<PartialAirbyteMessage>) {
-        storageOperation.writeToStage(streamConfig.id, stream)
+        storageOperation.writeToStage(streamConfig, stream)
     }
 }

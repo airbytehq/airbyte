@@ -42,6 +42,7 @@ class StagingStreamOperations<DestinationState : MinimumDestinationState>(
                 it.accept(
                     record.serialized!!,
                     Jsons.serialize(record.record!!.meta),
+                    streamConfig.generationId,
                     record.record!!.emittedAt
                 )
             }
@@ -49,7 +50,7 @@ class StagingStreamOperations<DestinationState : MinimumDestinationState>(
             log.info {
                 "Buffer flush complete for stream ${streamConfig.id.originalName} (${FileUtils.byteCountToDisplaySize(it.byteCount)}) to staging"
             }
-            storageOperation.writeToStage(streamConfig.id, writeBuffer)
+            storageOperation.writeToStage(streamConfig, writeBuffer)
         }
     }
 }

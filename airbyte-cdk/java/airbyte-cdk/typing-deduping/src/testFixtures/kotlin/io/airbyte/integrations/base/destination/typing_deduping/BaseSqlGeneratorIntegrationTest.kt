@@ -122,7 +122,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         includeCdcDeletedAt: Boolean,
         streamId: StreamId,
         suffix: String?,
-        records: List<JsonNode>
+        records: List<JsonNode>,
+        generationId: Long,
     )
 
     /**
@@ -1084,7 +1085,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         """.trimIndent()
                 )
             )
-        insertFinalTableRecords(false, streamId, "_tmp", records)
+        insertFinalTableRecords(false, streamId, "_tmp", records, 0)
 
         val sql = generator.overwriteFinalTable(streamId, "_tmp")
         destinationHandler.execute(sql)
@@ -1201,7 +1202,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             "",
             BaseTypingDedupingTest.Companion.readRecords(
                 "sqlgenerator/cdcupdate_inputrecords_final.jsonl"
-            )
+            ),
+            0
         )
 
         executeTypeAndDedupe(
@@ -1286,7 +1288,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             "",
             BaseTypingDedupingTest.Companion.readRecords(
                 "sqlgenerator/cdcordering_insertafterdelete_inputrecords_final.jsonl"
-            )
+            ),
+            0
         )
 
         val tableState = getInitialRawTableState(cdcIncrementalAppendStream)
@@ -1347,7 +1350,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
             """.trimIndent()
                 )
-            )
+            ),
+            0
         )
 
         executeSoftReset(generator, destinationHandler, incrementalAppendStream)
@@ -1949,6 +1953,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 "_airbyte_raw_id",
                 "_airbyte_extracted_at",
                 "_airbyte_meta",
+                "_airbyte_generation_id",
                 "id1",
                 "id2",
                 "updated_at",
