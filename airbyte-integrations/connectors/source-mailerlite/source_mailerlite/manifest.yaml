@@ -1797,7 +1797,7 @@ schemas:
             items:
               type: string
           schedule:
-            type: string
+            type: boolean
           schedule_from:
             type: string
           schedule_timezone_id:
