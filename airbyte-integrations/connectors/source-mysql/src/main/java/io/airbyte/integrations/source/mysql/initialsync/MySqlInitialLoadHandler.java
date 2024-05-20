@@ -81,7 +81,9 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
                                                                              final ConfiguredAirbyteCatalog catalog,
                                                                              final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
-                                                                             final Instant emittedAt) {
+                                                                             final Instant emittedAt,
+                                                                             final boolean decorateWithStartedStatus,
+                                                                             final boolean decorateWithCompletedStatus) {
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
@@ -91,7 +93,14 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
       if (airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL)) {
         final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(namespace, streamName);
         final TableInfo<CommonField<MysqlType>> table = tableNameToTable.get(fullyQualifiedTableName);
+        if (decorateWithStartedStatus) {
+          iteratorList.add(new StatusEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)));
+        }
+
         iteratorList.add(getIteratorForStream(airbyteStream, table, emittedAt));
+        if (decorateWithCompletedStatus) {
+          iteratorList.add(new StatusEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
+        }
       }
     }
     return iteratorList;
@@ -118,9 +127,9 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
     final AutoCloseableIterator<AirbyteMessage> recordIterator =
         getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
     final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream, pair);
-    final var statusEmitter = new StatusEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED));
+//    final var statusEmitter = new StatusEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED));
 
-    return AutoCloseableIterators.concatWithEagerClose(statusEmitter, augmentWithLogs(recordAndMessageIterator, pair, streamName));
+    return augmentWithLogs(recordAndMessageIterator, pair, streamName);
 
   }
 

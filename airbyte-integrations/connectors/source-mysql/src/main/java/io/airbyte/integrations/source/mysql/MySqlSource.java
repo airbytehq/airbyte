@@ -478,7 +478,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>(initialLoadHandler.getIncrementalIterators(
             new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
             tableNameToTable,
-            emittedAt));
+            emittedAt, true, true));
 
         // Build Cursor based iterator
         final List<AutoCloseableIterator<AirbyteMessage>> cursorBasedIterator =
@@ -493,22 +493,22 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     }
 
     LOGGER.info("using CDC: {}", false);
-    return decorateWithStreamStatus(super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager,
-        emittedAt));
+    return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager,
+        emittedAt);
   }
 
-  private List<AutoCloseableIterator<AirbyteMessage>> decorateWithStreamStatus(List<AutoCloseableIterator<AirbyteMessage>> iterators) {
-    var ret = new ArrayList<AutoCloseableIterator<AirbyteMessage>>();
-    iterators.forEach(iter -> {
-      var sai = (AirbyteStreamAware) iter;
-      var pair = new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(sai.getAirbyteStream().get().getName(), sai.getAirbyteStream().get().getNamespace());
-      ret.add(new StatusEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)));
-      ret.add(iter);
-      ret.add(new StatusEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
-
-    });
-    return ret;
-  }
+//  private List<AutoCloseableIterator<AirbyteMessage>> decorateWithStreamStatus(List<AutoCloseableIterator<AirbyteMessage>> iterators) {
+//    var ret = new ArrayList<AutoCloseableIterator<AirbyteMessage>>();
+//    iterators.forEach(iter -> {
+//      var sai = (AirbyteStreamAware) iter;
+//      var pair = new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(sai.getAirbyteStream().get().getName(), sai.getAirbyteStream().get().getNamespace());
+//      ret.add(new StatusEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)));
+//      ret.add(iter);
+//      ret.add(new StatusEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
+//
+//    });
+//    return ret;
+//  }
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of(

@@ -223,7 +223,7 @@ public class MySqlInitialReadUtil {
       initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
           tableNameToTable,
-          emittedAt));
+          emittedAt, true, false));
     }
 
     final List<AutoCloseableIterator<AirbyteMessage>> starters = catalog.getStreams().stream()
