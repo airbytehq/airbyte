@@ -2052,26 +2052,23 @@ class OrderRisk(ShopifyBulkQuery):
         }
     }
     """
-    
+
     query_name = "orders"
     sort_key = "UPDATED_AT"
-    
+
     action_fields: List[Field] = [
         "title",
         "url",
         Field(name="id", alias="action_id"),
     ]
-    
-    failed_reqirements_fields: List[Field] = [
-        "message",
-        Field(name="action", fields=action_fields)
-    ]
-    
+
+    failed_reqirements_fields: List[Field] = ["message", Field(name="action", fields=action_fields)]
+
     feedback_fields: List[Field] = [
         Field(name="link", fields=["label", "url"]),
         Field(name="messages", fields=["field", "message"]),
     ]
-    
+
     provider_fields: List[Field] = [
         "features",
         "description",
@@ -2097,18 +2094,18 @@ class OrderRisk(ShopifyBulkQuery):
         Field(name="failedRequirements", alias="failed_requirements", fields=failed_reqirements_fields),
         Field(name="feedback", fields=feedback_fields),
     ]
-    
+
     assessments_fields: List[Field] = [
         Field(name="riskLevel", alias="risk_level"),
         Field(name="facts", fields=["description", "sentiment"]),
         Field(name="provider", fields=provider_fields),
     ]
-    
+
     risk_fields: List[Field] = [
         "recommendation",
         Field(name="assessments", fields=assessments_fields),
     ]
-    
+
     # main query
     query_nodes: List[Field] = [
         "__typename",
@@ -2116,12 +2113,12 @@ class OrderRisk(ShopifyBulkQuery):
         Field(name="id", alias="order_id"),
         Field(name="risk", fields=risk_fields),
     ]
-    
+
     record_composition = {
         "new_record": "Order",
         # there are no record components provided for this stream.
     }
-    
+
     def _process_assessments(self, assessments: Iterable[MutableMapping[str, Any]]) -> Iterable[MutableMapping[str, Any]]:
         for assessment in assessments:
             provider = assessment.get("provider", {})
@@ -2130,22 +2127,22 @@ class OrderRisk(ShopifyBulkQuery):
                 provider["admin_graphql_api_id"] = provider.get("provider_id")
                 provider["provider_id"] = self.tools.resolve_str_id(provider.get("provider_id"))
         return assessments
-    
+
     def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
         """
         Defines how to process collected components.
         """
-        
+
         # save and resolve id
         record["admin_graphql_api_id"] = record.get("order_id")
         record["order_id"] = self.tools.resolve_str_id(record.get("order_id"))
-        
+
         # unnest mandatory fields from their placeholders
         risk = record.get("risk", {})
         record["recommendation"] = risk.get("recommendation") if risk else None
         assessments = risk.get("assessments", []) if risk else None
         record["assessments"] = self._process_assessments(assessments) if assessments else None
-        
+
         # convert date-time cursors
         record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
 

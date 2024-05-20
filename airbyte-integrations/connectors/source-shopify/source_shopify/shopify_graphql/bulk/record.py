@@ -121,7 +121,6 @@ class ShopifyBulkRecord:
             return record
         elif not id or isinstance(id, int):
             return record
-        
 
     def produce_records(self, filename: str) -> Iterable[MutableMapping[str, Any]]:
         """
