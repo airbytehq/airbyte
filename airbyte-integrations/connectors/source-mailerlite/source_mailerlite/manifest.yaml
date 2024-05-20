@@ -36,23 +36,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
-            name: subscribers
-            primary_key: id
-            path: /subscribers
-            $parameters:
-              name: subscribers
-              primary_key: id
-              path: /subscribers
           pagination_strategy:
             type: PageIncrement
             page_size: 25
-            name: subscribers
-            primary_key: id
-            path: /subscribers
-            $parameters:
-              name: subscribers
-              primary_key: id
-              path: /subscribers
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -84,23 +70,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
-            name: segments
-            primary_key: id
-            path: /segments
-            $parameters:
-              name: segments
-              primary_key: id
-              path: /segments
           pagination_strategy:
             type: PageIncrement
             page_size: 50
-            name: segments
-            primary_key: id
-            path: /segments
-            $parameters:
-              name: segments
-              primary_key: id
-              path: /segments
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -132,23 +104,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
-            name: automations
-            primary_key: id
-            path: /automations
-            $parameters:
-              name: automations
-              primary_key: id
-              path: /automations
           pagination_strategy:
             type: PageIncrement
             page_size: 10
-            name: automations
-            primary_key: id
-            path: /automations
-            $parameters:
-              name: automations
-              primary_key: id
-              path: /automations
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -180,23 +138,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
-            name: campaigns
-            primary_key: id
-            path: /campaigns
-            $parameters:
-              name: campaigns
-              primary_key: id
-              path: /campaigns
           pagination_strategy:
             type: PageIncrement
             page_size: 25
-            name: campaigns
-            primary_key: id
-            path: /campaigns
-            $parameters:
-              name: campaigns
-              primary_key: id
-              path: /campaigns
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -249,23 +193,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
-            name: forms_popup
-            primary_key: id
-            path: /forms/popup
-            $parameters:
-              name: forms_popup
-              primary_key: id
-              path: /forms/popup
           pagination_strategy:
             type: PageIncrement
             page_size: 25
-            name: forms_popup
-            primary_key: id
-            path: /forms/popup
-            $parameters:
-              name: forms_popup
-              primary_key: id
-              path: /forms/popup
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -297,23 +227,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
-            name: forms_embedded
-            primary_key: id
-            path: /forms/embedded
-            $parameters:
-              name: forms_embedded
-              primary_key: id
-              path: /forms/embedded
           pagination_strategy:
             type: PageIncrement
             page_size: 25
-            name: forms_embedded
-            primary_key: id
-            path: /forms/embedded
-            $parameters:
-              name: forms_embedded
-              primary_key: id
-              path: /forms/embedded
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -345,23 +261,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
-            name: forms_promotion
-            primary_key: id
-            path: /forms/promotion
-            $parameters:
-              name: forms_promotion
-              primary_key: id
-              path: /forms/promotion
           pagination_strategy:
             type: PageIncrement
             page_size: 25
-            name: forms_promotion
-            primary_key: id
-            path: /forms/promotion
-            $parameters:
-              name: forms_promotion
-              primary_key: id
-              path: /forms/promotion
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -372,13 +274,6 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: '{{ config[''api_token''] }}'
-      name: subscribers
-      primary_key: id
-      path: /subscribers
-      $parameters:
-        name: subscribers
-        primary_key: id
-        path: /subscribers
 
 streams:
   - $ref: '#/definitions/streams/subscribers'
