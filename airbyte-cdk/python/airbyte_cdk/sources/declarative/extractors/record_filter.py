@@ -85,8 +85,9 @@ class ClientSideIncrementalRecordFilterDecorator:
         return records
 
     def get_state_value(self, stream_state: StreamState, stream_slice: StreamSlice) -> Optional[str]:
-        if stream_state.get("states"):
-            stream_state = self._per_partition_cursor.select_state(stream_slice=stream_slice)
+        if self._per_partition_cursor:
+            partition_state = self._per_partition_cursor.select_state(stream_slice=stream_slice)
+            return partition_state.get(self._cursor_field) if partition_state else None
         return stream_state.get(self._cursor_field)
 
     def get_filter_date(self, state_value: Optional[str]) -> Optional[datetime.datetime]:

@@ -616,7 +616,7 @@ class ModelToComponentFactory:
         ):
             client_side_incremental_sync = {
                 "date_time_based_cursor": self._create_component_from_model(model=model.incremental_sync, config=config),
-                "per_partition_cursor": combined_slicers,
+                "per_partition_cursor": combined_slicers if isinstance(combined_slicers, PerPartitionCursor) else None,
             }
         transformations = []
         if model.transformations:
