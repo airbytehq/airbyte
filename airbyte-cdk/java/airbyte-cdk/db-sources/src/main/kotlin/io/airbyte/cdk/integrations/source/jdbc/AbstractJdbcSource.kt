@@ -55,7 +55,9 @@ import io.airbyte.commons.util.AutoCloseableIterator
 import io.airbyte.commons.util.AutoCloseableIterators
 import io.airbyte.protocol.models.CommonField
 import io.airbyte.protocol.models.JsonSchemaType
+import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
@@ -112,6 +114,17 @@ abstract class AbstractJdbcSource<Datatype>(
         stateManager: StateManager?
     ): InitialLoadHandler<Datatype>? {
         return null
+    }
+
+    override fun discover(config: JsonNode): AirbyteCatalog {
+        var catalog = super.discover(config)
+        val database = createDatabase(config)
+        // Fill in isResumeable field for all streams
+        catalog.streams.forEach { airbyteStream: AirbyteStream ->
+//            val configuredAirbyteStream = convertToConfiguredAirbyteStream(airbyteStream)
+            airbyteStream.withIsResumeable(supportResumableFullRefresh(database, airbyteStream))
+        }
+        return catalog
     }
 
     override fun getFullRefreshStream(
