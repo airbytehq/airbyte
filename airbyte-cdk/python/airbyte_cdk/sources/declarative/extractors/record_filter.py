@@ -67,7 +67,8 @@ class ClientSideIncrementalRecordFilterDecorator:
     ) -> Iterable[Mapping[str, Any]]:
         state_value = self.get_state_value(stream_state, stream_slice)
         filter_date = self.get_filter_date(state_value)
-        records = (record for record in records if self._date_time_based_cursor.parse_date(record[self._cursor_field]) > filter_date)
+        if filter_date:
+            records = (record for record in records if self._date_time_based_cursor.parse_date(record[self._cursor_field]) > filter_date)
         if self._delegate:
             return self._delegate.filter_records(
                 records=records, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
@@ -88,7 +89,7 @@ class ClientSideIncrementalRecordFilterDecorator:
             state_value = stream_state.get(self._cursor_field)
         return state_value
 
-    def get_filter_date(self, state_value: Optional[str]) -> datetime.datetime:
+    def get_filter_date(self, state_value: Optional[str]) -> Optional[datetime.datetime]:
         start_date_parsed = self._start_date_from_config or None
         state_date_parsed = self._date_time_based_cursor.parse_date(state_value) if state_value else None
-        return max((x for x in (start_date_parsed, state_date_parsed) if x), default=datetime.datetime.min)
+        return max((x for x in (start_date_parsed, state_date_parsed) if x), default=None)
