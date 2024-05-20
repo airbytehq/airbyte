@@ -25,7 +25,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - '{{ parameters[''name''] }}'
+              - campaigns
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -36,23 +36,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
-            name: campaigns
-            primary_key: id
-            path: /emailCampaigns
-            $parameters:
-              name: campaigns
-              primary_key: id
-              path: /emailCampaigns
           pagination_strategy:
             type: OffsetIncrement
             page_size: 100
-            name: campaigns
-            primary_key: id
-            path: /emailCampaigns
-            $parameters:
-              name: campaigns
-              primary_key: id
-              path: /emailCampaigns
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -73,7 +59,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - '{{ parameters[''name''] }}'
+              - templates
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -84,23 +70,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
-            name: templates
-            primary_key: id
-            path: /smtp/templates
-            $parameters:
-              name: templates
-              primary_key: id
-              path: /smtp/templates
           pagination_strategy:
             type: OffsetIncrement
             page_size: 100
-            name: templates
-            primary_key: id
-            path: /smtp/templates
-            $parameters:
-              name: templates
-              primary_key: id
-              path: /smtp/templates
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -121,7 +93,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - '{{ parameters[''name''] }}'
+              - contacts
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -132,23 +104,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
-            name: contacts
-            primary_key: id
-            path: /contacts
-            $parameters:
-              name: contacts
-              primary_key: id
-              path: /contacts
           pagination_strategy:
             type: OffsetIncrement
             page_size: 100
-            name: contacts
-            primary_key: id
-            path: /contacts
-            $parameters:
-              name: contacts
-              primary_key: id
-              path: /contacts
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modifiedAt
@@ -166,13 +124,6 @@ definitions:
           type: RequestOption
           inject_into: request_parameter
           field_name: modifiedSince
-          name: contacts
-          primary_key: id
-          path: /contacts
-          $parameters:
-            name: contacts
-            primary_key: id
-            path: /contacts
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -183,13 +134,6 @@ definitions:
     authenticator:
       type: ApiKeyAuthenticator
       api_token: '{{ config[''api_key''] }}'
-      name: campaigns
-      primary_key: id
-      path: /emailCampaigns
-      $parameters:
-        name: campaigns
-        primary_key: id
-        path: /emailCampaigns
       inject_into:
         type: RequestOption
         field_name: api-key
