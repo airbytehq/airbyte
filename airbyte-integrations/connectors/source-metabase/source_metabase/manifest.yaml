@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: card
           http_method: GET
         record_selector:
@@ -28,7 +28,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/cards'
+          $ref: "#/schemas/cards"
     collections:
       type: DeclarativeStream
       name: collections
@@ -37,7 +37,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: collection
           http_method: GET
         record_selector:
@@ -48,7 +48,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/collections'
+          $ref: "#/schemas/collections"
     dashboards:
       type: DeclarativeStream
       name: dashboards
@@ -57,7 +57,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /dashboard/{{stream_slice.id}}
           http_method: GET
         record_selector:
@@ -72,11 +72,11 @@ definitions:
                 parent_key: id
                 partition_field: id
                 stream:
-                  $ref: '#/definitions/streams/collections_items_dashboards'
+                  $ref: "#/definitions/streams/collections_items_dashboards"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/dashboards'
+          $ref: "#/schemas/dashboards"
     users:
       type: DeclarativeStream
       name: users
@@ -85,7 +85,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: user
           http_method: GET
         record_selector:
@@ -97,7 +97,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/users'
+          $ref: "#/schemas/users"
     databases:
       type: DeclarativeStream
       name: databases
@@ -106,7 +106,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: database
           http_method: GET
         record_selector:
@@ -118,7 +118,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/databases'
+          $ref: "#/schemas/databases"
     native_query_snippets:
       type: DeclarativeStream
       name: native_query_snippets
@@ -127,7 +127,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: native-query-snippet
           http_method: GET
         record_selector:
@@ -138,7 +138,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/native_query_snippets'
+          $ref: "#/schemas/native_query_snippets"
     collections_items_dashboards:
       type: DeclarativeStream
       name: collections_items_dashboards
@@ -147,7 +147,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: collection/{{stream_slice.id}}/items?models=dashboard
           http_method: GET
         record_selector:
@@ -163,11 +163,11 @@ definitions:
                 parent_key: id
                 partition_field: id
                 stream:
-                  $ref: '#/definitions/streams/collections'
+                  $ref: "#/definitions/streams/collections"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/collections_items_dashboards'
+          $ref: "#/schemas/collections_items_dashboards"
   base_requester:
     url_base: "{{ config['instance_api_url'] }}"
     http_method: "GET"
@@ -182,13 +182,13 @@ definitions:
       validate_session_url: "user/current"
 
 streams:
-  - $ref: '#/definitions/streams/cards'
-  - $ref: '#/definitions/streams/collections'
-  - $ref: '#/definitions/streams/dashboards'
-  - $ref: '#/definitions/streams/users'
-  - $ref: '#/definitions/streams/databases'
-  - $ref: '#/definitions/streams/native_query_snippets'
-  - $ref: '#/definitions/streams/collections_items_dashboards'
+  - $ref: "#/definitions/streams/cards"
+  - $ref: "#/definitions/streams/collections"
+  - $ref: "#/definitions/streams/dashboards"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/databases"
+  - $ref: "#/definitions/streams/native_query_snippets"
+  - $ref: "#/definitions/streams/collections_items_dashboards"
 
 spec:
   type: Spec
@@ -252,255 +252,255 @@ schemas:
     properties:
       archived:
         type:
-          - 'null'
+          - "null"
           - boolean
       cache_ttl:
         type:
-          - 'null'
+          - "null"
           - integer
       collection:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           archived:
             type:
-              - 'null'
+              - "null"
               - boolean
           authority_level:
             type:
-              - 'null'
+              - "null"
               - string
           color:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           location:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           namespace:
             type:
-              - 'null'
+              - "null"
               - string
           personal_owner_id:
             type:
-              - 'null'
+              - "null"
               - integer
           slug:
             type:
-              - 'null'
+              - "null"
               - string
       collection_id:
         type:
-          - 'null'
+          - "null"
           - integer
       collection_position:
         type:
-          - 'null'
+          - "null"
           - integer
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       creator:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           common_name:
             type:
-              - 'null'
+              - "null"
               - string
           date_joined:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           first_name:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           is_qbnewb:
             type:
-              - 'null'
+              - "null"
               - boolean
           is_superuser:
             type:
-              - 'null'
+              - "null"
               - boolean
           last_login:
             type:
-              - 'null'
+              - "null"
               - string
           last_name:
             type:
-              - 'null'
+              - "null"
               - string
       creator_id:
         type:
-          - 'null'
+          - "null"
           - integer
       database_id:
         type:
-          - 'null'
+          - "null"
           - integer
       dataset:
         type:
-          - 'null'
+          - "null"
           - boolean
       dataset_query:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           database:
             type:
-              - 'null'
+              - "null"
               - integer
           native:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               query:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               template-tags:
                 type:
-                  - 'null'
+                  - "null"
                   - object
       description:
         type:
-          - 'null'
+          - "null"
           - string
       display:
         type:
-          - 'null'
+          - "null"
           - string
       embedding_params:
         type:
-          - 'null'
+          - "null"
           - string
       enable_embedding:
         type:
-          - 'null'
+          - "null"
           - boolean
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       last-edit-info:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           email:
             type:
-              - 'null'
+              - "null"
               - string
           first_name:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           last_name:
             type:
-              - 'null'
+              - "null"
               - string
           timestamp:
             type:
-              - 'null'
+              - "null"
               - string
       made_public_by_id:
         type:
-          - 'null'
+          - "null"
           - integer
       name:
         type:
-          - 'null'
+          - "null"
           - string
       public_uuid:
         type:
-          - 'null'
+          - "null"
           - string
       query_type:
         type:
-          - 'null'
+          - "null"
           - string
       result_metadata:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           properties:
             base_type:
               type:
-                - 'null'
+                - "null"
                 - string
             display_name:
               type:
-                - 'null'
+                - "null"
                 - string
             effective_type:
               type:
-                - 'null'
+                - "null"
                 - string
             field_ref:
               type:
-                - 'null'
+                - "null"
                 - string
                 - array
             fingerprint:
               type:
-                - 'null'
+                - "null"
                 - object
             name:
               type:
-                - 'null'
+                - "null"
                 - string
             semantic_type:
               type:
-                - 'null'
+                - "null"
                 - string
       table_id:
         type:
-          - 'null'
+          - "null"
           - integer
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
       visualization_settings:
         type:
-          - 'null'
+          - "null"
           - object
   collections:
     type: object
@@ -509,48 +509,48 @@ schemas:
     properties:
       archived:
         type:
-          - 'null'
+          - "null"
           - boolean
       authority_level:
         type:
-          - 'null'
+          - "null"
           - string
       can_write:
         type:
-          - 'null'
+          - "null"
           - boolean
       color:
         type:
-          - 'null'
+          - "null"
           - string
       description:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
           - string
       location:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       namespace:
         type:
-          - 'null'
+          - "null"
           - string
       personal_owner_id:
         type:
-          - 'null'
+          - "null"
           - integer
       slug:
         type:
-          - 'null'
+          - "null"
           - string
   dashboards:
     type: object
@@ -559,179 +559,179 @@ schemas:
     properties:
       archived:
         type:
-          - 'null'
+          - "null"
           - boolean
       cache_ttl:
         type:
-          - 'null'
+          - "null"
           - integer
       can_write:
         type:
-          - 'null'
+          - "null"
           - boolean
       caveats:
         type:
-          - 'null'
+          - "null"
           - string
       collection:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
       collection_authority_level:
         type:
-          - 'null'
+          - "null"
           - string
       collection_id:
         type:
-          - 'null'
+          - "null"
           - integer
       collection_position:
         type:
-          - 'null'
+          - "null"
           - integer
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       creator_id:
         type:
-          - 'null'
+          - "null"
           - integer
       dashcards:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties: {}
       description:
         type:
-          - 'null'
+          - "null"
           - string
       embedding_params:
         type:
-          - 'null'
+          - "null"
           - object
       enable_embedding:
         type:
-          - 'null'
+          - "null"
           - boolean
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       last-edit-info:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           email:
             type:
-              - 'null'
+              - "null"
               - string
           first_name:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - integer
           last_name:
             type:
-              - 'null'
+              - "null"
               - string
           timestamp:
             type:
-              - 'null'
+              - "null"
               - string
       made_public_by_id:
         type:
-          - 'null'
+          - "null"
           - integer
       name:
         type:
-          - 'null'
+          - "null"
           - string
       param_fields:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
       param_values:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
       parameters:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           properties:
             type:
               type:
-                - 'null'
+                - "null"
                 - string
             default:
               type:
-                - 'null'
+                - "null"
                 - array
                 - string
               items:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                   - boolean
                   - integer
                   - string
             id:
               type:
-                - 'null'
+                - "null"
                 - string
             name:
               type:
-                - 'null'
+                - "null"
                 - string
             sectionId:
               type:
-                - 'null'
+                - "null"
                 - string
             slug:
               type:
-                - 'null'
+                - "null"
                 - string
       points_of_interest:
         type:
-          - 'null'
+          - "null"
           - string
       position:
         type:
-          - 'null'
+          - "null"
           - string
       public_uuid:
         type:
-          - 'null'
+          - "null"
           - string
       show_in_getting_started:
         type:
-          - 'null'
+          - "null"
           - boolean
       tabs:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties: {}
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
   users:
     type: object
@@ -740,23 +740,23 @@ schemas:
     properties:
       common_name:
         type:
-          - 'null'
+          - "null"
           - string
       email:
         type:
-          - 'null'
+          - "null"
           - string
       first_name:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       last_name:
         type:
-          - 'null'
+          - "null"
           - string
   databases:
     type: object
@@ -765,181 +765,181 @@ schemas:
     properties:
       auto_run_queries:
         type:
-          - 'null'
+          - "null"
           - boolean
       cache_field_values_schedule:
         type:
-          - 'null'
+          - "null"
           - string
       cache_ttl:
         type:
-          - 'null'
+          - "null"
           - integer
       can_upload:
         type:
-          - 'null'
+          - "null"
           - boolean
       caveats:
         type:
-          - 'null'
+          - "null"
           - string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       creator_id:
         type:
-          - 'null'
+          - "null"
           - integer
       dbms_version:
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           version:
             type:
-              - 'null'
+              - "null"
               - string
           flavor:
             type:
-              - 'null'
+              - "null"
               - string
           semantic-version:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - integer
-                - 'null'
+                - "null"
       description:
         type:
           - string
-          - 'null'
+          - "null"
       details:
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           advanced-options:
             type:
-              - 'null'
+              - "null"
               - boolean
           cloud-ip-address-info:
             type:
-              - 'null'
+              - "null"
               - string
           dataset-filters-patterns:
             type:
-              - 'null'
+              - "null"
               - string
           dataset-filters-type:
             type:
-              - 'null'
+              - "null"
               - string
           db:
             type:
-              - 'null'
+              - "null"
               - string
           include-user-id-and-hash:
             type:
-              - 'null'
+              - "null"
               - boolean
           let-user-control-scheduling:
             type:
-              - 'null'
+              - "null"
               - boolean
           project-id:
             type:
-              - 'null'
+              - "null"
               - string
           project-id-from-credentials:
             type:
-              - 'null'
+              - "null"
               - string
           service-account-json:
             type:
-              - 'null'
+              - "null"
               - string
           ssl:
             type:
-              - 'null'
+              - "null"
               - boolean
           use-jvm-timezone:
             type:
-              - 'null'
+              - "null"
               - boolean
       engine:
         type:
-          - 'null'
+          - "null"
           - string
       features:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       id:
         type:
           - integer
-          - 'null'
+          - "null"
       initial_sync_status:
         type:
-          - 'null'
+          - "null"
           - string
       is_audit:
         type:
-          - 'null'
+          - "null"
           - boolean
       is_full_sync:
         type:
-          - 'null'
+          - "null"
           - boolean
       is_on_demand:
         type:
-          - 'null'
+          - "null"
           - boolean
       is_sample:
         type:
-          - 'null'
+          - "null"
           - boolean
       metadata_sync_schedule:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       native_permissions:
         type:
-          - 'null'
+          - "null"
           - string
       options:
         type:
-          - 'null'
+          - "null"
           - string
       points_of_interest:
         type:
-          - 'null'
+          - "null"
           - string
       refingerprint:
         type:
-          - 'null'
+          - "null"
           - boolean
       settings:
         type:
-          - 'null'
+          - "null"
           - string
       timezone:
         type:
-          - 'null'
+          - "null"
           - string
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
   native_query_snippets:
     type: object
@@ -948,84 +948,84 @@ schemas:
     properties:
       archived:
         type:
-          - 'null'
+          - "null"
           - boolean
       collection_id:
         type:
-          - 'null'
+          - "null"
           - integer
       content:
         type:
-          - 'null'
+          - "null"
           - string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       creator:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           common_name:
             type:
-              - 'null'
+              - "null"
               - string
           date_joined:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           first_name:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
               - integer
-              - 'null'
+              - "null"
           is_qbnewb:
             type:
-              - 'null'
+              - "null"
               - boolean
           is_superuser:
             type:
-              - 'null'
+              - "null"
               - boolean
           last_login:
             type:
-              - 'null'
+              - "null"
               - string
           last_name:
             type:
-              - 'null'
+              - "null"
               - string
       creator_id:
         type:
-          - 'null'
+          - "null"
           - integer
       description:
         type:
-          - 'null'
+          - "null"
           - string
       entity_id:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
           - integer
-          - 'null'
+          - "null"
       name:
         type:
-          - 'null'
+          - "null"
           - string
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
   collections_items_dashboards:
     type: object
