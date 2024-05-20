@@ -51,6 +51,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH")
 public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MssqlSource, MsSQLTestDatabase> {
 
   protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
@@ -463,6 +464,16 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Mssq
 
     expectedMessages.addAll(createExpectedTestMessages(List.of(state), 2L));
     return expectedMessages;
+  }
+
+  @Override
+  protected void validateFullRefreshStateMessageReadSuccess(final List<? extends AirbyteStateMessage> stateMessages) {
+    var finalStateMessage = stateMessages.get(stateMessages.size() - 1);
+    assertEquals(
+        finalStateMessage.getStream().getStreamState().get("state_type").textValue(),
+        "ordered_column");
+    assertEquals(finalStateMessage.getStream().getStreamState().get("ordered_col").textValue(), "id");
+    assertEquals(finalStateMessage.getStream().getStreamState().get("ordered_col_val").textValue(), "3");
   }
 
 }

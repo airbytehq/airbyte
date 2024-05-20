@@ -8,7 +8,7 @@ import logging
 import os
 import pkgutil
 from abc import ABC, abstractmethod
-from typing import Any, Generic, List, Mapping, Optional, Protocol, TypeVar, Union
+from typing import Any, Generic, Mapping, Optional, Protocol, TypeVar
 
 import yaml
 from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification
@@ -20,17 +20,6 @@ def load_optional_package_file(package: str, filename: str) -> Optional[bytes]:
         return pkgutil.get_data(package, filename)
     except FileNotFoundError:
         return None
-
-
-class AirbyteSpec(object):
-    @staticmethod
-    def from_file(file_name: str):
-        with open(file_name) as file:
-            spec_text = file.read()
-        return AirbyteSpec(spec_text)
-
-    def __init__(self, spec_string):
-        self.spec_string = spec_string
 
 
 TConfig = TypeVar("TConfig", bound=Mapping[str, Any])
@@ -57,7 +46,7 @@ class BaseConnector(ABC, Generic[TConfig]):
             )
 
     @staticmethod
-    def _read_json_file(file_path: str) -> Union[None, bool, float, int, str, List[Any], Mapping[str, Any]]:
+    def _read_json_file(file_path: str) -> Any:
         with open(file_path, "r") as file:
             contents = file.read()
 
@@ -67,7 +56,7 @@ class BaseConnector(ABC, Generic[TConfig]):
             raise ValueError(f"Could not read json file {file_path}: {error}. Please ensure that it is a valid JSON.")
 
     @staticmethod
-    def write_config(config: TConfig, config_path: str):
+    def write_config(config: TConfig, config_path: str) -> None:
         with open(config_path, "w") as fh:
             fh.write(json.dumps(config))
 
@@ -107,7 +96,7 @@ class BaseConnector(ABC, Generic[TConfig]):
 
 class _WriteConfigProtocol(Protocol):
     @staticmethod
-    def write_config(config: Mapping[str, Any], config_path: str):
+    def write_config(config: Mapping[str, Any], config_path: str) -> None:
         ...
 
 

@@ -155,9 +155,11 @@ def test_streams(connector_config_without_start_date):
         assert isinstance(stream, Stream)
 
 
-def test_streams_connector_config_without_start_date(connector_config_without_start_date):
-    for stream in SourceAmazonSellerPartner().streams(connector_config_without_start_date):
-        assert isinstance(stream, Stream)
+@pytest.mark.parametrize(("deployment_mode", "expected_streams_count"), (("cloud", 44), ("oss", 53)))
+def test_streams_count(deployment_mode, expected_streams_count, connector_config_without_start_date, monkeypatch):
+    monkeypatch.setenv("DEPLOYMENT_MODE", deployment_mode)
+    streams = SourceAmazonSellerPartner().streams(connector_config_without_start_date)
+    assert len(streams) == expected_streams_count
 
 
 @pytest.mark.parametrize(
@@ -177,3 +179,22 @@ def test_replication_dates_validation(config, should_raise):
         assert e.value.message == "End Date should be greater than or equal to Start Date"
     else:
         assert SourceAmazonSellerPartner().validate_replication_dates(config) is None
+
+
+@pytest.mark.parametrize(("deployment_mode", "common_streams_count"), (("cloud", 0), ("oss", 8)))
+def test_spec(deployment_mode, common_streams_count, monkeypatch):
+    monkeypatch.setenv("DEPLOYMENT_MODE", deployment_mode)
+    oss_only_streams = {
+        "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT",
+        "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT",
+        "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT",
+        "GET_SALES_AND_TRAFFIC_REPORT",
+        "GET_VENDOR_SALES_REPORT",
+        "GET_VENDOR_INVENTORY_REPORT",
+        "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+        "GET_VENDOR_TRAFFIC_REPORT",
+    }
+    streams_with_report_options = SourceAmazonSellerPartner().spec(
+        logger
+    ).connectionSpecification["properties"]["report_options_list"]["items"]["properties"]["stream_name"]["enum"]
+    assert len(set(streams_with_report_options).intersection(oss_only_streams)) == common_streams_count

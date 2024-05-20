@@ -4,13 +4,18 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import com.google.cloud.bigquery.TableId;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.DestinationColumns;
+import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction;
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage;
 import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.cdk.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.cdk.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
-import io.airbyte.cdk.integrations.destination_async.DestinationFlushFunction;
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.Map;
@@ -24,15 +29,15 @@ import org.apache.commons.io.FileUtils;
 @Slf4j
 class BigQueryAsyncFlush implements DestinationFlushFunction {
 
-  private final Map<StreamDescriptor, BigQueryWriteConfig> streamDescToWriteConfig;
-  private final BigQueryStagingOperations stagingOperations;
+  private final Map<StreamDescriptor, StreamConfig> streamConfigMap;
+  private final BigQueryGcsOperations stagingOperations;
   private final ConfiguredAirbyteCatalog catalog;
 
   public BigQueryAsyncFlush(
-                            final Map<StreamDescriptor, BigQueryWriteConfig> streamDescToWriteConfig,
-                            final BigQueryStagingOperations stagingOperations,
+                            final Map<StreamDescriptor, StreamConfig> streamConfigMap,
+                            final BigQueryGcsOperations stagingOperations,
                             final ConfiguredAirbyteCatalog catalog) {
-    this.streamDescToWriteConfig = streamDescToWriteConfig;
+    this.streamConfigMap = streamConfigMap;
     this.stagingOperations = stagingOperations;
     this.catalog = catalog;
   }
@@ -43,12 +48,12 @@ class BigQueryAsyncFlush implements DestinationFlushFunction {
     try {
       writer = new CsvSerializedBuffer(
           new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX),
-          new StagingDatabaseCsvSheetGenerator(true),
+          new StagingDatabaseCsvSheetGenerator(DestinationColumns.V2_WITHOUT_META),
           true);
 
       stream.forEach(record -> {
         try {
-          writer.accept(record.getSerialized(), record.getRecord().getEmittedAt());
+          writer.accept(record.getSerialized(), Jsons.serialize(record.getRecord().getMeta()), record.getRecord().getEmittedAt());
         } catch (final Exception e) {
           throw new RuntimeException(e);
         }
@@ -59,20 +64,20 @@ class BigQueryAsyncFlush implements DestinationFlushFunction {
 
     writer.flush();
     log.info("Flushing CSV buffer for stream {} ({}) to staging", decs.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
-    if (!streamDescToWriteConfig.containsKey(decs)) {
+    if (!streamConfigMap.containsKey(decs)) {
       throw new IllegalArgumentException(
           String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)));
     }
 
-    final BigQueryWriteConfig writeConfig = streamDescToWriteConfig.get(decs);
+    final StreamId streamId = streamConfigMap.get(decs).getId();
     try {
-      final String stagedFileName = stagingOperations.uploadRecordsToStage(writeConfig.datasetId(), writeConfig.streamName(), writer);
+      final String stagedFileName = stagingOperations.uploadRecordsToStage(streamId.getRawNamespace(), streamId.getOriginalName(), writer);
 
       stagingOperations.copyIntoTableFromStage(
-          writeConfig.datasetId(),
-          writeConfig.streamName(),
-          writeConfig.targetTableId(),
-          writeConfig.tableSchema(),
+          streamId.getRawNamespace(),
+          streamId.getOriginalName(),
+          TableId.of(streamId.getRawNamespace(), streamId.getRawName()),
+          BigQueryRecordFormatter.SCHEMA_V2,
           stagedFileName);
     } catch (final Exception e) {
       log.error("Failed to flush and commit buffer data into destination's raw table", e);

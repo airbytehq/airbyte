@@ -4,11 +4,10 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import com.google.cloud.bigquery.BigQuery;
 import com.google.common.util.concurrent.RateLimiter;
-import io.airbyte.cdk.integrations.destination_async.DestinationFlushFunction;
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
-import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
+import io.airbyte.cdk.integrations.destination.async.function.DestinationFlushFunction;
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage;
+import io.airbyte.integrations.destination.bigquery.uploader.BigQueryDirectUploader;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.concurrent.ConcurrentMap;
@@ -22,20 +21,16 @@ public class BigQueryAsyncStandardFlush implements DestinationFlushFunction {
 
   // TODO remove this once the async framework supports rate-limiting/backpressuring
   private static final RateLimiter rateLimiter = RateLimiter.create(0.07);
+  private final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, BigQueryDirectUploader>> uploaderMap;
 
-  private final BigQuery bigQuery;
-  private final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> uploaderMap;
-
-  public BigQueryAsyncStandardFlush(final BigQuery bigQuery,
-                                    final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> uploaderMap) {
-    this.bigQuery = bigQuery;
+  public BigQueryAsyncStandardFlush(final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, BigQueryDirectUploader>> uploaderMap) {
     this.uploaderMap = uploaderMap;
   }
 
   @Override
   public void flush(final StreamDescriptor decs, final Stream<PartialAirbyteMessage> stream) throws Exception {
     rateLimiter.acquire();
-    final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMapSupplied = uploaderMap.get();
+    final ConcurrentMap<AirbyteStreamNameNamespacePair, BigQueryDirectUploader> uploaderMapSupplied = uploaderMap.get();
     final AtomicInteger recordCount = new AtomicInteger();
     stream.forEach(aibyteMessage -> {
       try {

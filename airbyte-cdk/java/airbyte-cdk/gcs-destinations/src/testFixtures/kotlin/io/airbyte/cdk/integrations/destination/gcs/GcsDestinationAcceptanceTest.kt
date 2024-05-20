@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
-import io.airbyte.cdk.integrations.destination.s3.S3Format
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations
 import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest
 import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion
@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory
  * * Get the GCS bucket path from the constructor
  * * Get the format config from [.getFormatConfig]
  */
-abstract class GcsDestinationAcceptanceTest(protected val outputFormat: S3Format) :
+abstract class GcsDestinationAcceptanceTest(protected val outputFormat: FileUploadFormat) :
     DestinationAcceptanceTest() {
     protected var configJson: JsonNode? = null
     // Not a big fan of those mocks(). Here to make spotbugs happy

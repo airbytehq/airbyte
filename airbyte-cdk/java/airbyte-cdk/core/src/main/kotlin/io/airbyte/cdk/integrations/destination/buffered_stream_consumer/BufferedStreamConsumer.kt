@@ -143,14 +143,14 @@ internal constructor(
      * AcceptTracked will still process AirbyteMessages as usual with the addition of periodically
      * flushing buffer and writing data to destination storage
      *
-     * @param message [AirbyteMessage] to be processed
+     * @param msg [AirbyteMessage] to be processed
      * @throws Exception
      */
     @Throws(Exception::class)
-    override fun acceptTracked(message: AirbyteMessage) {
+    override fun acceptTracked(msg: AirbyteMessage) {
         Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started")
-        if (message.type == AirbyteMessage.Type.RECORD) {
-            val record = message.record
+        if (msg.type == AirbyteMessage.Type.RECORD) {
+            val record = msg.record
             if (Strings.isNullOrEmpty(record.namespace)) {
                 record.namespace = defaultNamespace
             }
@@ -159,7 +159,7 @@ internal constructor(
             // if stream is not part of list of streams to sync to then throw invalid stream
             // exception
             if (!streamNames.contains(stream)) {
-                throwUnrecognizedStream(catalog, message)
+                throwUnrecognizedStream(catalog, msg)
             }
 
             if (!isValidRecord.apply(record.data)!!) {
@@ -168,9 +168,9 @@ internal constructor(
                 return
             }
 
-            val flushType = bufferingStrategy.addRecord(stream, message)
+            val flushType = bufferingStrategy.addRecord(stream, msg)
             // if present means that a flush occurred
-            if (flushType!!.isPresent) {
+            if (flushType.isPresent) {
                 if (BufferFlushType.FLUSH_ALL == flushType.get()) {
                     markStatesAsFlushedToDestination()
                 } else if (BufferFlushType.FLUSH_SINGLE_STREAM == flushType.get()) {
@@ -185,10 +185,10 @@ internal constructor(
                      */
                 }
             }
-        } else if (message.type == AirbyteMessage.Type.STATE) {
-            stateManager.addState(message)
+        } else if (msg.type == AirbyteMessage.Type.STATE) {
+            stateManager.addState(msg)
         } else {
-            LOGGER.warn("Unexpected message: " + message.type)
+            LOGGER.warn("Unexpected message: " + msg.type)
         }
         periodicBufferFlush()
     }
@@ -277,7 +277,7 @@ internal constructor(
              * is stream but no states were flushed in both of these cases, if there was a failure, we should
              * not bother committing. otherwise attempt to commit
              */
-            if (stateManager.listFlushed()!!.isEmpty()) {
+            if (stateManager.listFlushed().isEmpty()) {
                 // Not updating this class to track record count, because we want to kill it in
                 // favor of the
                 // AsyncStreamConsumer

@@ -4,45 +4,58 @@
   "type": ["null", "object"],
   "properties": {
     "author_id": {
+      "description": "The unique identifier of the author of the comment.",
       "type": ["null", "integer"]
     },
     "body": {
+      "description": "The content of the comment.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The timestamp when the comment was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "html_url": {
+      "description": "The URL to access the comment in HTML format.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier of the comment.",
       "type": ["null", "integer"]
     },
     "non_author_editor_id": {
+      "description": "The unique identifier of the non-author editor of the comment.",
       "type": ["null", "integer"]
     },
     "non_author_updated_at": {
+      "description": "The timestamp when the comment was last updated by a non-author editor.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "official": {
+      "description": "Indicates if the comment is from an official source.",
       "type": ["null", "boolean"]
     },
     "post_id": {
+      "description": "The unique identifier of the post to which the comment belongs.",
       "type": ["null", "integer"]
     },
     "updated_at": {
+      "description": "The timestamp when the comment was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "url": {
+      "description": "The URL to access the comment.",
       "type": ["null", "string"]
     },
     "vote_count": {
+      "description": "The total count of votes the comment has received.",
       "type": ["null", "integer"]
     },
     "vote_sum": {
+      "description": "The sum of all votes (positive and negative) the comment has received.",
       "type": ["null", "integer"]
     }
   }
