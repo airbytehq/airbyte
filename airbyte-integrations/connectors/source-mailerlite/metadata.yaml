@@ -10,12 +10,23 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dc3b9003-2432-4e93-a7f4-4620b0f14674
-  dockerImageTag: 0.1.1
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-mailerlite
   githubIssueLabel: source-mailerlite
   icon: mailerlite.svg
   license: MIT
   name: MailerLite
+  releases:
+    breakingChanges:
+      1.0.0:
+        upgradeDeadline: "2024-06-30"
+        message:
+          "The verison migrates the MailerLite connector to the be compatable for connector builder.
+          Important: 
+          The forms_popup stream schema from API has a breaking change to schema['properties']['settings']['properties']['schedule'] 
+          field to an array contain booleans instead of strings,
+          The forms_promotion stream schema from API has a breaking change to schema['properties']['double_optin']
+          field to an array contain booleans instead of strings"
   remoteRegistries:
     pypi:
       enabled: true

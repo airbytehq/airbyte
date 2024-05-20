@@ -875,14 +875,6 @@ schemas:
               type: string
             id:
               type: string
-          required:
-            - id
-            - type
-            - group_id
-            - group
-            - exclude_group_ids
-            - excluded_groups
-            - broken
       warnings:
         type: array
         items:
@@ -1524,7 +1516,7 @@ schemas:
             items:
               type: string
           schedule:
-            type: string
+            type: boolean
           scroll_percentage:
             type: integer
           timeout_seconds:
@@ -1766,7 +1758,7 @@ schemas:
       double_optin:
         type:
           - string
-          - "null"
+          - "boolean"
       groups:
         type: array
         items:
