@@ -308,7 +308,8 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
-| ------- | ---------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.6 | 2024-05-16 | [38289](https://github.com/airbytehq/airbyte/pull/38289) | Connect with adaptiveFetch=true |
 | 3.4.5   | 2024-05-16 | [38303](https://github.com/airbytehq/airbyte/pull/38303) | Streams not in the CDC publication still have a cursor and PK.                                                                                                             |
 | 3.4.4   | 2024-05-15 | [38208](https://github.com/airbytehq/airbyte/pull/38208) | disable counts in full refresh stream in state message.                                                                                                                    |
 | 3.4.3   | 2024-05-13 | [38104](https://github.com/airbytehq/airbyte/pull/38104) | Handle transient error messages.                                                                                                                                           |
