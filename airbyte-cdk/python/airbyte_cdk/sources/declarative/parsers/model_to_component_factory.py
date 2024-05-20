@@ -617,7 +617,7 @@ class ModelToComponentFactory:
             client_side_incremental_sync = {
                 "date_time_based_cursor": self._create_component_from_model(model=model.incremental_sync, config=config),
                 "partition_id": model.retriever.partition_router.parent_stream_configs[0].partition_field
-                if model.retriever.partition_router.parent_stream_configs
+                if hasattr(model.retriever, "partition_router") and model.retriever.partition_router
                 else "",
             }
         transformations = []
