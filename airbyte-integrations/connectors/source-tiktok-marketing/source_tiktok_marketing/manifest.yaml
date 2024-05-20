@@ -352,6 +352,7 @@ definitions:
   report_daily_incremental_sync:
     type: DatetimeBasedCursor
     cursor_field: "stat_time_day"
+    lookback_window: "P{{ config.get('attribution_window', 0) }}D"
     cursor_granularity: "P1D"
     step: P30D
     cursor_datetime_formats:
@@ -370,6 +371,7 @@ definitions:
   report_hourly_incremental_sync:
     type: DatetimeBasedCursor
     cursor_field: "stat_time_hour"
+    lookback_window: "P{{ config.get('attribution_window', 0) }}D"
     cursor_granularity: "PT1H"
     step: P1D
     cursor_datetime_formats:
