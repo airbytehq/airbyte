@@ -3,7 +3,7 @@
 #
 import datetime
 from dataclasses import InitVar, dataclass
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any, Iterable, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
@@ -51,23 +51,23 @@ class ClientSideIncrementalRecordFilterDecorator:
         self._partition_id = partition_id
 
     @property
-    def _cursor_field(self) -> str:
+    def _cursor_field(self) -> Union[str, Any]:
         return self._date_time_based_cursor._cursor_field.eval(self._date_time_based_cursor.config)
 
     @property
-    def _start_date_from_config(self) -> datetime.datetime:
+    def _start_date_from_config(self) -> Union[datetime.datetime, Any]:
         return self._date_time_based_cursor._start_datetime.get_datetime(self._date_time_based_cursor.config)
 
     def filter_records(
         self,
         records: Iterable[Mapping[str, Any]],
         stream_state: StreamState,
-        stream_slice: Optional[StreamSlice] = None,
+        stream_slice: StreamSlice,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         state_value = self.get_state_value(stream_state, stream_slice)
         filter_date = self.get_filter_date(state_value)
-        records = [record for record in records if self._date_time_based_cursor.parse_date(record[self._cursor_field]) > filter_date]
+        records = (record for record in records if self._date_time_based_cursor.parse_date(record[self._cursor_field]) > filter_date)
         if self._delegate:
             return self._delegate.filter_records(
                 records=records, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
@@ -88,10 +88,7 @@ class ClientSideIncrementalRecordFilterDecorator:
             state_value = stream_state.get(self._cursor_field)
         return state_value
 
-    def get_filter_date(self, state_value: str) -> datetime.datetime:
+    def get_filter_date(self, state_value: Optional[str]) -> datetime.datetime:
         start_date_parsed = self._start_date_from_config or None
         state_date_parsed = self._date_time_based_cursor.parse_date(state_value) if state_value else None
-
-        # Return the max of the two dates if both are present. Otherwise return whichever is present, or None.
-        if start_date_parsed or state_date_parsed:
-            return max(filter(None, [start_date_parsed, state_date_parsed]), default=None)
+        return max((x for x in (start_date_parsed, state_date_parsed) if x), default=datetime.datetime.min)
