@@ -135,7 +135,7 @@ abstract class AbstractJdbcSource<Datatype>(
                     ?: throw IllegalStateException(
                         "Must provide initialLoadHandler for resumable full refresh."
                     )
-            return initialLoadHandler.getIteratorForStream(airbyteStream, table, Instant.now())
+            return augmentWithStreamStatus(airbyteStream, initialLoadHandler.getIteratorForStream(airbyteStream, table, Instant.now()))
         }
 
         // If flag is off, fall back to legacy non-resumable refresh
