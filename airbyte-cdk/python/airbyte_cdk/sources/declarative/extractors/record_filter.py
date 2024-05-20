@@ -41,8 +41,12 @@ class RecordFilter:
 
 class ClientSideIncrementalRecordFilterDecorator:
     """
-    Filter applied on a list of Records to exclude ones that are older than stream_state/start_date
-    config (Config): The user-provided configuration as specified by the source's spec
+    Applies a filter to a list of records to exclude those that are older than the stream_state/start_date.
+
+    :param DatetimeBasedCursor date_time_based_cursor: Cursor used to extract datetime values
+    :param RecordFilter record_filter: Optional filter to apply after date-time filtering
+    :param str partition_id: Optional string used for mapping cursor value in nested stream_state
+
     """
 
     def __init__(self, date_time_based_cursor: DatetimeBasedCursor, record_filter: Optional[RecordFilter], partition_id: str = ""):
