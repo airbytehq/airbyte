@@ -15,7 +15,7 @@ import com.google.cloud.bigquery.WriteChannelConfiguration
 import com.google.common.util.concurrent.RateLimiter
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.commons.exceptions.ConfigErrorException
-import io.airbyte.integrations.base.destination.typing_deduping.StreamId
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter.SCHEMA_V2
@@ -56,16 +56,16 @@ class BigQueryDirectLoadingStorageOperation(
             |More details:
             |""".trimMargin()
     }
-    override fun writeToStage(streamId: StreamId, data: Stream<PartialAirbyteMessage>) {
+    override fun writeToStage(streamConfig: StreamConfig, data: Stream<PartialAirbyteMessage>) {
         // TODO: why do we need ratelimiter, and using unstable API from Google's guava
         rateLimiter.acquire()
-        val tableId = TableId.of(streamId.rawNamespace, streamId.rawName)
+        val tableId = TableId.of(streamConfig.id.rawNamespace, streamConfig.id.rawName)
         log.info { "Writing data to table $tableId with schema $SCHEMA_V2" }
         val writeChannel = initWriteChannel(tableId)
         writeChannel.use {
             data.forEach { record ->
                 val byteArray =
-                    "${bigQueryRecordFormatter.formatRecord(record)} ${System.lineSeparator()}".toByteArray(
+                    "${bigQueryRecordFormatter.formatRecord(record, streamConfig.generationId)} ${System.lineSeparator()}".toByteArray(
                         StandardCharsets.UTF_8,
                     )
                 it.write(ByteBuffer.wrap(byteArray))

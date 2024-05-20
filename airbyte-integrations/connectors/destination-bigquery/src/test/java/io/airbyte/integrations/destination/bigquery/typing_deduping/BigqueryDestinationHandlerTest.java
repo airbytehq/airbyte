@@ -120,13 +120,15 @@ public class BigqueryDestinationHandlerTest {
   @Test
   public void testSchemaContainAllFinalTableV2AirbyteColumns() {
     Assertions.assertTrue(
-        BigQueryDestinationHandler.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_airbyte_meta", "_airbyte_extracted_at", "_airbyte_raw_id")));
+        BigQueryDestinationHandler.schemaContainAllFinalTableV2AirbyteColumns(
+            Set.of("_airbyte_meta", "_airbyte_generation_id", "_airbyte_extracted_at", "_airbyte_raw_id")));
     Assertions.assertFalse(BigQueryDestinationHandler.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_airbyte_extracted_at", "_airbyte_raw_id")));
     Assertions.assertFalse(BigQueryDestinationHandler.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_airbyte_meta", "_airbyte_raw_id")));
     Assertions.assertFalse(BigQueryDestinationHandler.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_airbyte_meta", "_airbyte_extracted_at")));
     Assertions.assertFalse(BigQueryDestinationHandler.schemaContainAllFinalTableV2AirbyteColumns(Set.of()));
     Assertions.assertTrue(
-        BigQueryDestinationHandler.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_AIRBYTE_META", "_AIRBYTE_EXTRACTED_AT", "_AIRBYTE_RAW_ID")));
+        BigQueryDestinationHandler.schemaContainAllFinalTableV2AirbyteColumns(
+            Set.of("_AIRBYTE_META", "_AIRBYTE_GENERATION_ID", "_AIRBYTE_EXTRACTED_AT", "_AIRBYTE_RAW_ID")));
   }
 
 }

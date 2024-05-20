@@ -15,6 +15,7 @@ import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig
 import io.airbyte.cdk.integrations.destination.gcs.GcsNameTransformer
 import io.airbyte.cdk.integrations.destination.gcs.GcsStorageOperations
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
@@ -60,9 +61,9 @@ class BigQueryGcsStorageOperation(
         gcsStorageOperations.dropBucketObject(stagingRootPath)
     }
 
-    override fun writeToStage(streamId: StreamId, data: SerializableBuffer) {
-        val stagedFileName: String = uploadRecordsToStage(streamId, data)
-        copyIntoTableFromStage(streamId, stagedFileName)
+    override fun writeToStage(streamConfig: StreamConfig, data: SerializableBuffer) {
+        val stagedFileName: String = uploadRecordsToStage(streamConfig.id, data)
+        copyIntoTableFromStage(streamConfig.id, stagedFileName)
     }
 
     private fun uploadRecordsToStage(streamId: StreamId, buffer: SerializableBuffer): String {

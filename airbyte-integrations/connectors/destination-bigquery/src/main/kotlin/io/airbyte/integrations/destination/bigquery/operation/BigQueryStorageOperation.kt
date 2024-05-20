@@ -68,8 +68,6 @@ abstract class BigQueryStorageOperation<Data>(
         log.info { "Nothing to cleanup in stage for Streaming inserts" }
     }
 
-    abstract override fun writeToStage(streamId: StreamId, data: Data)
-
     override fun createFinalTable(streamConfig: StreamConfig, suffix: String, replace: Boolean) {
         destinationHandler.execute(sqlGenerator.createTable(streamConfig, suffix, replace))
     }
