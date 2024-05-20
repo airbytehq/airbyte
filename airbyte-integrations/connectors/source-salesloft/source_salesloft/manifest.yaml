@@ -1,0 +1,1760 @@
+version: 0.78.1
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/users'
+    account_tiers:
+      type: DeclarativeStream
+      name: account_tiers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /account_tiers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/account_tiers'
+    import:
+      type: DeclarativeStream
+      name: import
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /imports
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/import'
+    person_stages:
+      type: DeclarativeStream
+      name: person_stages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /person_stages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/person_stages'
+    phone_number_assignments:
+      type: DeclarativeStream
+      name: phone_number_assignments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /phone_number_assignments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/phone_number_assignments'
+    steps:
+      type: DeclarativeStream
+      name: steps
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /steps
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/steps'
+    team_template_attachments:
+      type: DeclarativeStream
+      name: team_template_attachments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /team_template_attachments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/team_template_attachments'
+    email_template_attachments:
+      type: DeclarativeStream
+      name: email_template_attachments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: email_template_attachments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/email_template_attachments'
+    crm_users:
+      type: DeclarativeStream
+      name: crm_users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: crm_users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/crm_users'
+    groups:
+      type: DeclarativeStream
+      name: groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/groups'
+    custom_fields:
+      type: DeclarativeStream
+      name: custom_fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /custom_fields
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/custom_fields'
+    call_dispositions:
+      type: DeclarativeStream
+      name: call_dispositions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /call_dispositions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/call_dispositions'
+    call_sentiments:
+      type: DeclarativeStream
+      name: call_sentiments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /call_sentiments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/call_sentiments'
+    meetings:
+      type: DeclarativeStream
+      name: meetings
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /meetings
+          http_method: GET
+          request_parameters:
+            created_at[gt]: '{{ config[''start_date''] }}'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/meetings'
+    people:
+      type: DeclarativeStream
+      name: people
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /people
+          http_method: GET
+          request_parameters:
+            created_at[gt]: '{{ config[''start_date''] }}'
+            updated_at[gt]: >-
+             {{ 
+                format_datetime(
+                (config['start_date'] if stream_state['updated_at'] is not defined else
+                (stream_state.updated_at if stream_state.updated_at < now_utc() else now_utc())), 
+                '%Y-%m-%dT%H:%M:%S.%fZ'
+                ) 
+              }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%S.%f%z'
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/people'
+    cadences:
+      type: DeclarativeStream
+      name: cadences
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /cadences
+          http_method: GET
+          request_parameters:
+            updated_at[gt]: >-
+              {{ 
+                 format_datetime(
+                 (config['start_date'] if stream_state['updated_at'] is not defined else
+                 (stream_state.updated_at if stream_state.updated_at < now_utc() else now_utc())), 
+                 '%Y-%m-%dT%H:%M:%S.%fZ'
+                 ) 
+               }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%S.%f%z'
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/cadences'
+    cadence_memberships:
+      type: DeclarativeStream
+      name: cadence_memberships
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /cadence_memberships
+          http_method: GET
+          request_parameters:
+            created_at[gt]: '{{ config[''start_date''] }}'
+            updated_at[gt]: >-
+              {{ 
+                 format_datetime(
+                 (config['start_date'] if stream_state['updated_at'] is not defined else
+                 (stream_state.updated_at if stream_state.updated_at < now_utc() else now_utc())), 
+                 '%Y-%m-%dT%H:%M:%S.%fZ'
+                 ) 
+               }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%S.%f%z'
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/cadence_memberships'
+    emails:
+      type: DeclarativeStream
+      name: emails
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /activities/emails
+          http_method: GET
+          request_parameters:
+            sent_at[gt]: '{{ config[''start_date''] }}'
+            updated_at[gt]: >-
+              {{ 
+                 format_datetime(
+                 (config['start_date'] if stream_state['updated_at'] is not defined else
+                 (stream_state.updated_at if stream_state.updated_at < now_utc() else now_utc())), 
+                 '%Y-%m-%dT%H:%M:%S.%fZ'
+                 ) 
+               }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%S.%f%z'
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/emails'
+    calls:
+      type: DeclarativeStream
+      name: calls
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /activities/calls
+          http_method: GET
+          request_parameters:
+            created_at[gt]: '{{ config[''start_date''] }}'
+            updated_at[gt]: >-
+              {{ 
+                 format_datetime(
+                 (config['start_date'] if stream_state['updated_at'] is not defined else
+                 (stream_state.updated_at if stream_state.updated_at < now_utc() else now_utc())), 
+                 '%Y-%m-%dT%H:%M:%S.%fZ'
+                 ) 
+               }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%S.%f%z'
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/calls'
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /accounts
+          http_method: GET
+          request_parameters:
+            created_at[gt]: '{{ config[''start_date''] }}'
+            updated_at[gt]: >-
+              {{ 
+                 format_datetime(
+                 (config['start_date'] if stream_state['updated_at'] is not defined else
+                 (stream_state.updated_at if stream_state.updated_at < now_utc() else now_utc())), 
+                 '%Y-%m-%dT%H:%M:%S.%fZ'
+                 ) 
+               }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%S.%f%z'
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/accounts'
+    account_stages:
+      type: DeclarativeStream
+      name: account_stages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /account_stages
+          http_method: GET
+          request_parameters:
+            updated_at[gt]: >-
+              {{ 
+                 format_datetime(
+                 (config['start_date'] if stream_state['updated_at'] is not defined else
+                 (stream_state.updated_at if stream_state.updated_at < now_utc() else now_utc())), 
+                 '%Y-%m-%dT%H:%M:%S.%fZ'
+                 ) 
+               }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%S.%f%z'
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/account_stages'
+    actions:
+      type: DeclarativeStream
+      name: actions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /actions
+          http_method: GET
+          request_parameters:
+            updated_at[gt]: >-
+              {{ 
+                 format_datetime(
+                 (config['start_date'] if stream_state['updated_at'] is not defined else
+                 (stream_state.updated_at if stream_state.updated_at < now_utc() else now_utc())), 
+                 '%Y-%m-%dT%H:%M:%S.%fZ'
+                 ) 
+               }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%S.%f%z'
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/actions'
+    email_templates:
+      type: DeclarativeStream
+      name: email_templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /email_templates
+          http_method: GET
+          request_parameters:
+            updated_at[gt]: >-
+              {{ 
+                 format_datetime(
+                 (config['start_date'] if stream_state['updated_at'] is not defined else
+                 (stream_state.updated_at if stream_state.updated_at < now_utc() else now_utc())), 
+                 '%Y-%m-%dT%H:%M:%S.%fZ'
+                 ) 
+               }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%S.%f%z'
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/email_templates'
+    notes:
+      type: DeclarativeStream
+      name: notes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /notes
+          http_method: GET
+          request_parameters:
+            updated_at[gt]: >-
+              {{ 
+                 format_datetime(
+                 (config['start_date'] if stream_state['updated_at'] is not defined else
+                 (stream_state.updated_at if stream_state.updated_at < now_utc() else now_utc())), 
+                 '%Y-%m-%dT%H:%M:%S.%fZ'
+                 ) 
+               }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%S.%f%z'
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/notes'
+    team_templates:
+      type: DeclarativeStream
+      name: team_templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /team_templates
+          http_method: GET
+          request_parameters:
+            updated_at[gt]: >-
+              {{ 
+                 format_datetime(
+                 (config['start_date'] if stream_state['updated_at'] is not defined else
+                 (stream_state.updated_at if stream_state.updated_at < now_utc() else now_utc())), 
+                 '%Y-%m-%dT%H:%M:%S.%fZ'
+                 ) 
+               }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%S.%f%z'
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/team_templates'
+    crm_activities:
+      type: DeclarativeStream
+      name: crm_activities
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /crm_activities
+          http_method: GET
+          request_parameters:
+            updated_at[gt]: >-
+              {{ 
+                 format_datetime(
+                 (config['start_date'] if stream_state['updated_at'] is not defined else
+                 (stream_state.updated_at if stream_state.updated_at < now_utc() else now_utc())), 
+                 '%Y-%m-%dT%H:%M:%S.%fZ'
+                 ) 
+               }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%S.%f%z'
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/crm_activities'
+    successes:
+      type: DeclarativeStream
+      name: successes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /successes
+          http_method: GET
+          request_parameters:
+            updated_at[gt]: >-
+              {{ 
+                 format_datetime(
+                 (config['start_date'] if stream_state['updated_at'] is not defined else
+                 (stream_state.updated_at if stream_state.updated_at < now_utc() else now_utc())), 
+                 '%Y-%m-%dT%H:%M:%S.%fZ'
+                 ) 
+               }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%S.%f%z'
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/successes'
+    call_data_records:
+      type: DeclarativeStream
+      name: call_data_records
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /call_data_records
+          http_method: GET
+          request_parameters:
+            updated_at[gt]: >-
+              {{ 
+                 format_datetime(
+                 (config['start_date'] if stream_state['updated_at'] is not defined else
+                 (stream_state.updated_at if stream_state.updated_at < now_utc() else now_utc())), 
+                 '%Y-%m-%dT%H:%M:%S.%fZ'
+                 ) 
+               }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%S.%f%z'
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/call_data_records'
+    searches:
+      type: DeclarativeStream
+      name: searches
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /meetings/settings/searches
+          http_method: POST
+          request_parameters:
+            created_at[gt]: '{{ config[''start_date''] }}'
+            updated_at[gt]: >-
+              {{ 
+                 format_datetime(
+                 (config['start_date'] if stream_state['updated_at'] is not defined else
+                 (stream_state.updated_at if stream_state.updated_at < now_utc() else now_utc())), 
+                 '%Y-%m-%dT%H:%M:%S.%fZ'
+                 ) 
+               }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: '{{ response[''metadata''][''paging''][''next_page''] }}'
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%S.%f%z'
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/searches'
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.salesloft.com/v2
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config[''credentials''][''api_key''] }}'
+
+streams:
+  - $ref: '#/definitions/streams/users'
+  - $ref: '#/definitions/streams/account_tiers'
+  - $ref: '#/definitions/streams/import'
+  - $ref: '#/definitions/streams/person_stages'
+  - $ref: '#/definitions/streams/phone_number_assignments'
+  - $ref: '#/definitions/streams/steps'
+  - $ref: '#/definitions/streams/team_template_attachments'
+  - $ref: '#/definitions/streams/email_template_attachments'
+  - $ref: '#/definitions/streams/crm_users'
+  - $ref: '#/definitions/streams/groups'
+  - $ref: '#/definitions/streams/custom_fields'
+  - $ref: '#/definitions/streams/call_dispositions'
+  - $ref: '#/definitions/streams/call_sentiments'
+  - $ref: '#/definitions/streams/meetings'
+  - $ref: '#/definitions/streams/people'
+  - $ref: '#/definitions/streams/cadences'
+  - $ref: '#/definitions/streams/cadence_memberships'
+  - $ref: '#/definitions/streams/emails'
+  - $ref: '#/definitions/streams/calls'
+  - $ref: '#/definitions/streams/accounts'
+  - $ref: '#/definitions/streams/account_stages'
+  - $ref: '#/definitions/streams/actions'
+  - $ref: '#/definitions/streams/email_templates'
+  - $ref: '#/definitions/streams/notes'
+  - $ref: '#/definitions/streams/team_templates'
+  - $ref: '#/definitions/streams/crm_activities'
+  - $ref: '#/definitions/streams/successes'
+  - $ref: '#/definitions/streams/call_data_records'
+  - $ref: '#/definitions/streams/searches'
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - credentials
+      - start_date
+    properties:
+      credentials:
+        type: object
+        oneOf:
+          - type: object
+            title: Authenticate via OAuth
+            required:
+              - client_id
+              - client_secret
+              - refresh_token
+              - access_token
+              - token_expiry_date
+              - auth_type
+            properties:
+              auth_type:
+                type: string
+                const: oauth2.0
+              client_id:
+                type: string
+                title: Client ID
+                description: The Client ID of your Salesloft developer application.
+              access_token:
+                type: string
+                description: Access Token for making authenticated requests.
+                airbyte_secret: true
+              client_secret:
+                type: string
+                title: Client Secret
+                description: The Client Secret of your Salesloft developer application.
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: The token for obtaining a new access token.
+                airbyte_secret: true
+              token_expiry_date:
+                type: string
+                format: date-time
+                description: The date-time when the access token should be refreshed.
+          - type: object
+            title: Authenticate via API Key
+            required:
+              - api_key
+              - auth_type
+            properties:
+              api_key:
+                type: string
+                title: API Key
+                description: >-
+                  API Key for making authenticated requests. More instruction on
+                  how to find this value in our <a
+                  href="https://docs.airbyte.com/integrations/sources/salesloft#setup-guide">docs</a>
+                airbyte_secret: true
+              auth_type:
+                type: string
+                const: api_key
+        order: 0
+        title: Credentials
+      start_date:
+        type: string
+        title: Start Date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+        examples:
+          - '2020-11-16T00:00:00Z'
+        description: >-
+          The date from which you'd like to replicate data for Salesloft API, in
+          the format YYYY-MM-DDT00:00:00Z. All data generated after this date
+          will be replicated.
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    users: true
+    account_tiers: true
+    import: true
+    person_stages: true
+    phone_number_assignments: true
+    steps: true
+    team_template_attachments: true
+    email_template_attachments: true
+    crm_users: true
+    groups: true
+    custom_fields: true
+    call_dispositions: true
+    call_sentiments: true
+    meetings: true
+    people: true
+    cadences: true
+    cadence_memberships: true
+    emails: true
+    calls: true
+    accounts: true
+    account_stages: true
+    actions: true
+    email_templates: true
+    notes: true
+    team_templates: true
+    crm_activities: true
+    successes: true
+    call_data_records: true
+    searches: true
+
+schemas:
+  users:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  account_tiers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  import:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  person_stages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  phone_number_assignments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  steps:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  team_template_attachments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  email_template_attachments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  crm_users:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  groups:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  custom_fields:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  call_dispositions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  call_sentiments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  meetings:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  people:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  cadences:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  cadence_memberships:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  emails:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  calls:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  accounts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  account_stages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  actions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  email_templates:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  notes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  team_templates:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  crm_activities:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  successes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  call_data_records:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  searches:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
