@@ -177,7 +177,6 @@ class ShopifyBulkQuery:
         Overide this method to build multiple queries in one, if needed.
         """
         # return the constructed query operation
-        print(Operation(type="", queries=[query]).render())
         return Operation(type="", queries=[query]).render()
 
     def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
