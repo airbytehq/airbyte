@@ -12,9 +12,9 @@ There are three major components to know in Airbyte:
 
 1. **The connector catalog**
    - **350+ pre-built connectors**: Airbyte’s connector catalog comes “out-of-the-box” with over 350 pre-built connectors. These connectors can be used to start replicating data from a source to a destination in just a few minutes.
-   - **No-Code Connector Builder**: You can easily extend Airbyte’s functionality to support your custom use cases through tools like the [No-Code Connector Builder](https://docs.airbyte.com/connector-development/connector-builder-ui/overview).
+   - **No-Code Connector Builder**: You can easily extend Airbyte’s functionality to support your custom use cases through tools like the [No-Code Connector Builder](/connector-development/connector-builder-ui/overview).
 2. **The platform:** Airbyte’s platform provides all the horizontal services required to configure and scale data movement operations, available as [cloud-managed](https://airbyte.com/product/airbyte-cloud) or [self-managed](https://airbyte.com/product/airbyte-enterprise).
-3. **The user interface:** Airbyte features a UI, [**PyAirbyte**](https://docs.airbyte.com/pyairbyte) (Python library), [**API**](https://docs.airbyte.com/api-documentation), and [**Terraform Provider**](https://docs.airbyte.com/terraform-documentation) to integrate with your preferred tooling and approach to infrastructure management.
+3. **The user interface:** Airbyte features a UI, [**PyAirbyte**](/using-airbyte/pyairbyte/getting-started) (Python library), [**API**](/api-documentation), and [**Terraform Provider**](/terraform-documentation) to integrate with your preferred tooling and approach to infrastructure management.
 
 Airbyte is suitable for a wide range of data integration use cases, including AI data infrastructure and EL(T) workloads. Airbyte is also [embeddable](https://airbyte.com/product/powered-by-airbyte) within your own application or platform to power your product.
 
