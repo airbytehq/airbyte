@@ -971,7 +971,6 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_record_filter(model: RecordFilterModel, config: Config, **kwargs: Any) -> RecordFilter:
-        # TODO: use ClientSideIncrementalRecordFilterDecorator if Datetimestreamslice has flag is_client_side_incremental
         return RecordFilter(condition=model.condition or "", config=config, parameters=model.parameters or {})
 
     @staticmethod
