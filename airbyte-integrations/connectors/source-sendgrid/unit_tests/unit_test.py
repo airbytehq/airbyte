@@ -3,6 +3,7 @@
 #
 
 import json
+import logging
 import os
 import unittest
 from unittest.mock import MagicMock, Mock, patch
@@ -11,7 +12,6 @@ import pandas as pd
 import pendulum
 import pytest
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from numpy import nan
 from requests import codes
@@ -49,7 +49,7 @@ def mock_pendulum_now(monkeypatch):
 
 def test_source_wrong_credentials():
     source = SourceSendgrid()
-    status, error = source.check_connection(logger=AirbyteLogger(), config={"api_key": "wrong.api.key123"})
+    status, error = source.check_connection(logger=logging.getLogger("airbyte"), config={"api_key": "wrong.api.key123"})
     assert not status
 
 
