@@ -6,11 +6,10 @@ from dataclasses import dataclass
 from typing import Any, Mapping, Tuple
 
 import requests
-from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
-
+from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 
 @dataclass
-class Oauth2Authenticator(SingleUseRefreshTokenOauth2Authenticator):
+class Oauth2Authenticator(DeclarativeOauth2Authenticator):
     @property
     def auth_header(self) -> str:
         return "Authorization"
