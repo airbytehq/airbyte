@@ -64,7 +64,6 @@ public class ElasticsearchConnection {
     if (config.getCaCertificate() != null && !config.getCaCertificate().isEmpty()) {
       builder.setHttpClientConfigCallback(clientBuilder -> {
         clientBuilder.setSSLContext(SSLCertificateUtils.createContextFromCaCert(config.getCaCertificate()));
-        clientBuilder.setSocketTimeout(90000000);//increase from default 30,000 millisecs
         return clientBuilder;
       });
     }
@@ -72,6 +71,7 @@ public class ElasticsearchConnection {
     restClient = builder
         .setDefaultHeaders(configureHeaders(config))
         .setFailureListener(new FailureListener())
+        .setSocketTimeout(3600000);//increase from default 30,000 millisecs to 1 hour
         .build();
     // Create the transport that provides JSON and http services to API clients
     Transport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
