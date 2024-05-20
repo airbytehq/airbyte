@@ -8,6 +8,7 @@ from typing import Any, Mapping, Tuple
 import requests
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 
+
 @dataclass
 class Oauth2Authenticator(DeclarativeOauth2Authenticator):
     @property
