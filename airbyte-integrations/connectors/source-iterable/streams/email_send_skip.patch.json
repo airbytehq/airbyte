@@ -1,0 +1,8 @@
+{
+    "properties":{
+        "transactionalData": {
+            "type": ["null", "object", "string"]
+        }
+    },
+    "type":"object"
+}
