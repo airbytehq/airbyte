@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 from __future__ import annotations
 
+import functools
 import logging
 import os
 import textwrap
@@ -12,11 +13,13 @@ from typing import TYPE_CHECKING, Optional
 
 import dagger
 import pytest
-from airbyte_protocol.models import ConfiguredAirbyteCatalog  # type: ignore
+from airbyte_protocol.models import AirbyteCatalog, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification  # type: ignore
 from connection_retriever.audit_logging import get_user_email  # type: ignore
 from connection_retriever.retrieval import ConnectionNotFoundError, NotPermittedError  # type: ignore
+from live_tests import stash_keys
 from live_tests.commons.connection_objects_retrieval import ConnectionObject, get_connection_objects
 from live_tests.commons.connector_runner import ConnectorRunner, Proxy
+from live_tests.commons.evaluation_modes import TestEvaluationMode
 from live_tests.commons.models import (
     ActorType,
     Command,
@@ -30,10 +33,9 @@ from live_tests.commons.models import (
 from live_tests.commons.secret_access import get_airbyte_api_key
 from live_tests.commons.segment_tracking import track_usage
 from live_tests.commons.utils import build_connection_url, clean_up_artifacts
-from live_tests.regression_tests import stash_keys
+from live_tests.report import Report, ReportState
+from live_tests.utils import get_catalog, get_spec
 from rich.prompt import Confirm, Prompt
-
-from .report import Report, ReportState
 
 if TYPE_CHECKING:
     from _pytest.config import Config
@@ -41,15 +43,15 @@ if TYPE_CHECKING:
     from _pytest.fixtures import SubRequest
     from pytest_sugar import SugarTerminalReporter  # type: ignore
 
-## CONSTS
-LOGGER = logging.getLogger("regression_tests")
+# CONSTS
+LOGGER = logging.getLogger("regression")
 MAIN_OUTPUT_DIRECTORY = Path("/tmp/regression_tests_artifacts")
 
 # It's used by Dagger and its very verbose
 logging.getLogger("httpx").setLevel(logging.ERROR)
 
 
-## PYTEST HOOKS
+# PYTEST HOOKS
 def pytest_addoption(parser: Parser) -> None:
     parser.addoption(
         "--connector-image",
@@ -82,6 +84,12 @@ def pytest_addoption(parser: Parser) -> None:
         help="Whether to run the `read` command with state. \n"
         "We recommend reading with state to properly test incremental sync. \n"
         "But if the target version introduces a breaking change in the state, you might want to run without state. \n",
+    )
+    parser.addoption(
+        "--validation-test-mode",
+        choices=[e.value for e in TestEvaluationMode],
+        default=TestEvaluationMode.STRICT.value,
+        help='If "diagnostic" mode is selected, all tests will pass as long as there is no exception; warnings will be logged. In "strict" mode, tests may fail.',
     )
 
 
@@ -124,6 +132,7 @@ def pytest_configure(config: Config) -> None:
     custom_configured_catalog_path = config.getoption("--catalog-path")
     custom_state_path = config.getoption("--state-path")
     config.stash[stash_keys.SELECTED_STREAMS] = set(config.getoption("--stream") or [])
+    config.stash[stash_keys.VALIDATION_TEST_MODE] = TestEvaluationMode(config.getoption("--validation-test-mode", "strict"))
 
     if config.stash[stash_keys.RUN_IN_AIRBYTE_CI]:
         config.stash[stash_keys.SHOULD_READ_WITH_STATE] = bool(get_option_or_fail(config, "--should-read-with-state"))
@@ -242,7 +251,7 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo) -> Gener
         )
 
 
-## HELPERS
+# HELPERS
 
 
 def get_option_or_fail(config: pytest.Config, option: str) -> str:
@@ -288,7 +297,7 @@ def prompt_for_read_with_or_without_state() -> bool:
     return Prompt.ask(message) == "1"
 
 
-## FIXTURES
+# FIXTURES
 
 
 @pytest.fixture(scope="session")
@@ -352,6 +361,16 @@ def configured_catalog(connection_objects: ConnectionObjects, selected_streams: 
         pytest.skip("Catalog is not provided. The catalog fixture can't be used.")
     assert connection_objects.configured_catalog is not None
     return connection_objects.configured_catalog
+
+
+@pytest.fixture(scope="session")
+def target_discovered_catalog(discover_target_execution_result: ExecutionResult) -> AirbyteCatalog:
+    return get_catalog(discover_target_execution_result)
+
+
+@pytest.fixture(scope="session")
+def target_spec(spec_target_execution_result: ExecutionResult) -> ConnectorSpecification:
+    return get_spec(spec_target_execution_result)
 
 
 @pytest.fixture(scope="session", autouse=True)

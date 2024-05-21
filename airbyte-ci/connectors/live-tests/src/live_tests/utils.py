@@ -7,13 +7,15 @@ from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Union
 
+import docker  # type: ignore
 import pytest
-from airbyte_protocol.models import AirbyteMessage, Type  # type: ignore
+from airbyte_protocol.models import AirbyteCatalog, AirbyteMessage, ConnectorSpecification, Status, Type  # type: ignore
 from deepdiff import DeepDiff  # type: ignore
+from live_tests import stash_keys
 from live_tests.commons.models import ExecutionResult
-
-from . import stash_keys
-from .consts import MAX_LINES_IN_REPORT
+from live_tests.consts import MAX_LINES_IN_REPORT
+from mitmproxy import http, io  # type: ignore
+from mitmproxy.addons.savehar import SaveHar  # type: ignore
 
 if TYPE_CHECKING:
     from _pytest.fixtures import SubRequest
@@ -122,3 +124,39 @@ def tail_file(file_path: Path, n: int = MAX_LINES_IN_REPORT) -> list[str]:
 
         # Return the last n lines
         return lines[-n:]
+
+
+def is_successful_check(execution_result: ExecutionResult) -> bool:
+    for message in execution_result.airbyte_messages:
+        if message.type is Type.CONNECTION_STATUS and message.connectionStatus.status is Status.SUCCEEDED:
+            return True
+    return False
+
+
+def get_catalog(execution_result: ExecutionResult) -> AirbyteCatalog:
+    catalog = [m.catalog for m in execution_result.airbyte_messages if m.type is Type.CATALOG and m.catalog]
+    try:
+        return catalog[0]
+    except ValueError:
+        raise ValueError(f"Expected exactly one catalog in the execution result, but got {len(catalog)}.")
+
+
+def get_spec(execution_result: ExecutionResult) -> ConnectorSpecification:
+    spec = [m.spec for m in execution_result.airbyte_messages if m.type is Type.SPEC]
+    try:
+        return spec[0]
+    except ValueError:
+        raise ValueError(f"Expected exactly one spec in the execution result, but got {len(spec)}.")
+
+
+def find_all_values_for_key_in_schema(schema: dict, searched_key: str):
+    """Retrieve all (nested) values in a schema for a specific searched key"""
+    if isinstance(schema, list):
+        for schema_item in schema:
+            yield from find_all_values_for_key_in_schema(schema_item, searched_key)
+    if isinstance(schema, dict):
+        for key, value in schema.items():
+            if key == searched_key:
+                yield value
+            if isinstance(value, dict) or isinstance(value, list):
+                yield from find_all_values_for_key_in_schema(value, searched_key)
