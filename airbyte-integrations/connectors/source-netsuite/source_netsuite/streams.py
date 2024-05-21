@@ -336,6 +336,8 @@ class CustomInventory(NetsuiteStream):
         
 
 class CustomSalesOrder(IncrementalNetsuiteStream):
+    offset = 0
+    
     @property
     def name(self):
         return "custom_sales_order"
@@ -351,21 +353,31 @@ class CustomSalesOrder(IncrementalNetsuiteStream):
         return headers
                 
     def path(self, **kwargs) -> str:
-        return "/services/rest/query/v1/suiteql?limit=1000"
+        return f"/services/rest/query/v1/suiteql?limit=1000&offset={self.offset}"
         
     def get_json_schema(self) -> dict:        
         return HttpStream.get_json_schema(self)    
     
+    def format_datetime(self, input_date: str) -> str:
+        date = datetime.strptime(input_date, "%m/%d/%Y")
+        return date.strftime("%Y-%m-%d")
+    
     def request_body_json(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping[str, Any]]:
-        query = str.format(QUERY_CUSTOM_SALES_ORDER, stream_slice["start"], stream_slice["end"])
+        from_date = self.format_datetime(stream_slice["start"])
+        to_date = self.format_datetime(stream_slice["end"])
+        query = QUERY_CUSTOM_SALES_ORDER.format(from_date=from_date, to_date=to_date)
         return  {
             "q": query
         }
+        
+    def request_params(
+        self, **kwargs
+    ) -> MutableMapping[str, Any]:
+        NetsuiteStream.request_params(self, **kwargs)        
     
     def read_records(
         self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
-        self.method = "POST"
         yield from HttpStream.read_records(self, stream_slice=stream_slice, stream_state=stream_state, **kwargs)  
         
     def parse_response(
@@ -373,4 +385,12 @@ class CustomSalesOrder(IncrementalNetsuiteStream):
         response: requests.Response,
         **kwargs
     ) -> Iterable[Mapping]:
+        # Prepare next page offset for the next call.
+        resp = response.json()
+        has_more = resp.get("hasMore")
+        if has_more:
+            self.offset = resp["offset"] + resp["count"]
+        else:
+            self.offset = 0
+                
         yield from response.json().get("items")
