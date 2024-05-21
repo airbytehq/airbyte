@@ -42,6 +42,7 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus;
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -277,6 +278,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     validateStateMessages(stateMessages);
     validateAllStreamsComplete(stateMessages, List.of(
         new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
+    validateAllStreamsStatuses(messages, List.of(
+        new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
     assertFalse(lastStateMessage.getGlobal().getStreamStates().stream().anyMatch(
         createStateStreamFilter(new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName))));
 
@@ -295,6 +298,10 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     validateStateMessages(stateMessages2);
     validateAllStreamsComplete(stateMessages2, List.of(
+        new StreamDescriptor().withName(collectionName).withNamespace(databaseName),
+        new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName)));
+
+    validateAllStreamsStatuses(messages2, List.of(
         new StreamDescriptor().withName(collectionName).withNamespace(databaseName),
         new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName)));
   }
@@ -349,6 +356,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     validateStateMessages(stateMessages);
     validateAllStreamsComplete(stateMessages, List.of(
         new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
+    validateAllStreamsStatuses(messages, List.of(
+        new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
 
     final var result = mongoClient.getDatabase(databaseName).getCollection(collectionName).insertOne(createDocument(1));
     final var insertedId = result.getInsertedId();
@@ -366,6 +375,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final AirbyteStateMessage lastStateMessage2 = Iterables.getLast(stateMessages2);
     validateStateMessages(stateMessages2);
     validateAllStreamsComplete(stateMessages2, List.of(
+        new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
+    validateAllStreamsStatuses(messages2, List.of(
         new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
 
     final var idFilter = new Document(DOCUMENT_ID_FIELD, insertedId);
@@ -385,6 +396,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     validateStateMessages(stateMessages3);
     validateAllStreamsComplete(stateMessages3, List.of(
         new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
+    validateAllStreamsStatuses(messages3, List.of(
+        new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
 
     mongoClient.getDatabase(databaseName).getCollection(collectionName).deleteOne(idFilter);
 
@@ -399,9 +412,10 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     validateCdcEventRecordData(recordMessages4.get(0), insertedId, true);
 
     validateStateMessages(stateMessages4);
-    validateAllStreamsComplete(stateMessages3, List.of(
+    validateAllStreamsComplete(stateMessages4, List.of(
         new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
-
+    validateAllStreamsStatuses(messages4, List.of(
+        new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
   }
 
   @Test
@@ -431,6 +445,11 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     validateStateMessages(stateMessages);
     validateAllStreamsComplete(stateMessages, List.of(
+        new StreamDescriptor().withName(collectionName).withNamespace(databaseName),
+        new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName),
+        new StreamDescriptor().withName(otherCollection2Name).withNamespace(databaseName)));
+
+    validateAllStreamsStatuses(messages, List.of(
         new StreamDescriptor().withName(collectionName).withNamespace(databaseName),
         new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName),
         new StreamDescriptor().withName(otherCollection2Name).withNamespace(databaseName)));
@@ -466,6 +485,10 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
         new StreamDescriptor().withName(collectionName).withNamespace(databaseName),
         new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName),
         new StreamDescriptor().withName(otherCollection2Name).withNamespace(databaseName)));
+    validateAllStreamsStatuses(messages2, List.of(
+        new StreamDescriptor().withName(collectionName).withNamespace(databaseName),
+        new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName),
+        new StreamDescriptor().withName(otherCollection2Name).withNamespace(databaseName)));
 
     // Insert more data for one stream
     insertData(databaseName, otherCollection1Name, otherCollection1Count);
@@ -486,6 +509,10 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     assertEquals(1, stateMessages3.size());
     validateStateMessages(stateMessages3);
     validateAllStreamsComplete(stateMessages, List.of(
+        new StreamDescriptor().withName(collectionName).withNamespace(databaseName),
+        new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName),
+        new StreamDescriptor().withName(otherCollection2Name).withNamespace(databaseName)));
+    validateAllStreamsStatuses(messages3, List.of(
         new StreamDescriptor().withName(collectionName).withNamespace(databaseName),
         new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName),
         new StreamDescriptor().withName(otherCollection2Name).withNamespace(databaseName)));
@@ -624,6 +651,21 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
       assertTrue(lastStateMessage.getGlobal().getStreamStates().stream().anyMatch(createStateStreamFilter(s)));
       Assertions.assertEquals(InitialSnapshotStatus.COMPLETE,
           Jsons.object(getStreamState(lastStateMessage, s).get().getStreamState(), MongoDbStreamState.class).status());
+    });
+  }
+
+  private void validateAllStreamsStatuses(final List<AirbyteMessage> allMessages, final List<StreamDescriptor> completedStreams) {
+
+    completedStreams.forEach(s -> {
+      var streamStatusMessage = allMessages.stream()
+          .filter(airbyteMessage -> airbyteMessage.getType() == Type.TRACE
+              && airbyteMessage.getTrace().getStreamStatus().getStreamDescriptor().equals(completedStreams))
+          .collect(
+              Collectors.toList());
+
+      assertTrue(streamStatusMessage.size() == 2);
+      assertTrue(streamStatusMessage.get(0).getTrace().getStreamStatus().getStatus() == AirbyteStreamStatus.STARTED);
+      assertTrue(streamStatusMessage.get(1).getTrace().getStreamStatus().getStatus() == AirbyteStreamStatus.COMPLETE);
     });
   }
 
