@@ -126,10 +126,8 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
     final AutoCloseableIterator<AirbyteMessage> recordIterator =
         getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
     final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream, pair);
-//    final var statusEmitter = new StatusEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED));
 
     return augmentWithLogs(recordAndMessageIterator, pair, streamName);
-
   }
 
   private static boolean isCompositePrimaryKey(final ConfiguredAirbyteStream stream) {
