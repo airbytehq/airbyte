@@ -744,8 +744,11 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                  |
-| ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| 4.13.0  | [#32715](https://github.com/airbytehq/airbyte/pull/32715)  | Tag connector metadata with git info                                                                                       |
+|---------|------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
+| 4.13.3  | [#38221](https://github.com/airbytehq/airbyte/pull/38221)  | Add dagster cloud dev deployment pipeline opitions                                                                           |
+| 4.13.2  | [#38246](https://github.com/airbytehq/airbyte/pull/38246)  | Remove invalid connector test step options.                                                                                  |
+| 4.13.1  | [#38020](https://github.com/airbytehq/airbyte/pull/38020)  | Add `auto_merge` as an internal package to test.                                                                             |
+| 4.13.0  | [#32715](https://github.com/airbytehq/airbyte/pull/32715)  | Tag connector metadata with git info                                                                                         |
 | 4.12.7  | [#37787](https://github.com/airbytehq/airbyte/pull/37787)  | Remove requirements on dockerhub credentials to run QA checks.                                                               |
 | 4.12.6  | [#36497](https://github.com/airbytehq/airbyte/pull/36497)  | Add airbyte-cdk to list of poetry packages for testing                                                                       |
 | 4.12.5  | [#37785](https://github.com/airbytehq/airbyte/pull/37785)  | Set the `--yes-auto-update` flag to `True` by default.                                                                       |
