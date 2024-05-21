@@ -93,7 +93,6 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
   private static final List<JsonNode> DATE_TIME_RECORDS = ImmutableList.of(
       Jsons.jsonNode(ImmutableMap.of(COL_ID, 120, COL_DATE_TIME, "'2023-00-00 20:37:47'")));
 
-/*
   @Override
   protected void assertExpectedStateMessageCountMatches(final List<? extends AirbyteStateMessage> stateMessages, long totalCount) {
     AtomicLong count = new AtomicLong(0L);
@@ -102,7 +101,6 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
               stateMessage.getSourceStats().getRecordCount().longValue() : 0L));
     assertEquals(totalCount, count.get());
   }
-*/
 
   @Override
   protected MySQLTestDatabase createTestDatabase() {

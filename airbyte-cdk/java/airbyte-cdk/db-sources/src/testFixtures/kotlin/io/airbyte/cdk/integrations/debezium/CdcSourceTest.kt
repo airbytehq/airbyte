@@ -783,7 +783,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         } else {
             assertExpectedStateMessageCountMatches(
                 stateMessages1,
-                MODEL_RECORDS.size.toLong() + MODEL_RECORDS_2.size.toLong()
+                MODEL_RECORDS.size.toLong()
             )
 
             // Expect state and record message from MODEL_RECORDS_2.
