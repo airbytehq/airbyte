@@ -122,8 +122,8 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
         record_filter:
-          type: CustomRecordFilter
-          class_name: source_pinterest.components.record_filter.PinterestSemiIncrementalRecordFilter
+          type: RecordFilter
+          condition: "{{ record['updated_time'] >= stream_slice['start_time'] | int }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "updated_time"

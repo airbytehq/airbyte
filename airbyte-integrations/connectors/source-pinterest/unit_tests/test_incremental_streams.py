@@ -89,17 +89,29 @@ def test_should_retry(test_config, http_status, should_retry):
         ("2024-04-02", {}, [{"id": "campaign_id_2", "ad_account_id": "ad_account_id", "updated_time": 1712102400}]),
         (
             "2024-03-30",
-            {"states": [{"partition": {"id": "ad_account_id"}, "cursor": {"updated_time": 1712016000}}]},
+            {
+                "states": [
+                    {"partition": {"id": "ad_account_id", "parent_slice": {}}, "cursor": {"updated_time": 1712016000}},
+                ],
+            },
             [{"id": "campaign_id_2", "ad_account_id": "ad_account_id", "updated_time": 1712102400}],
         ),
         (
             "2024-04-02",
-            {"states": [{"partition": {"id": "ad_account_id"}, "cursor": {"updated_time": 1711929599}}]},
+            {
+                "states": [
+                    {"partition": {"id": "ad_account_id", "parent_slice": {}}, "cursor": {"updated_time": 1711929599}},
+                ],
+            },
             [{"id": "campaign_id_2", "ad_account_id": "ad_account_id", "updated_time": 1712102400}],
         ),
         (
             None,
-            {"states": [{"partition": {"id": "ad_account_id"}, "cursor": {"updated_time": 1712016000}}]},
+            {
+                "states": [
+                    {"partition": {"id": "ad_account_id", "parent_slice": {}}, "cursor": {"updated_time": 1712016000}},
+                ],
+            },
             [{"id": "campaign_id_2", "ad_account_id": "ad_account_id", "updated_time": 1712102400}],
         ),
     ),
