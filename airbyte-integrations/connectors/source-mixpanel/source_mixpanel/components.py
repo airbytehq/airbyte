@@ -281,6 +281,10 @@ class EngagePaginationStrategy(PageIncrement):
             self._total = None
             return None
 
+    def reset(self) -> None:
+        super().reset()
+        self._total = 0
+
 
 class EngageJsonFileSchemaLoader(JsonFileSchemaLoader):
     """Engage schema combines static and dynamic approaches"""

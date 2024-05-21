@@ -319,6 +319,147 @@ def test_cohort_members_stream_incremental(requests_mock, engage_response, confi
     assert new_updated_state == updated_state
 
 
+def test_cohort_members_stream_pagination(requests_mock, engage_response, config_raw):
+    """Cohort_members pagination"""
+    engage_properties = {
+        "results": {
+            "$browser": {
+                "count": 124,
+                "type": "string"
+            },
+            "$browser_version": {
+                "count": 124,
+                "type": "string"
+            }
+        }
+    }
+    config_raw['start_date'] = '2024-02-01T00:00:00Z'
+    config_raw['end_date'] = '2024-03-01T00:00:00Z'
+
+    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "cohorts/list", json=[
+        {'id': 0000, "name":'bla', 'created': '2024-02-01T00:00:00Z'}, 
+        {'id': 1111, "name":'bla', 'created': '2024-02-02T00:00:00Z'}, 
+        {'id': 2222, "name":'bla', 'created': '2024-02-01T00:00:00Z'},
+        {'id': 3333, "name":'bla', 'created': '2024-02-03T00:00:00Z'},
+    ])
+    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "engage/properties", json=engage_properties)
+    requests_mock.register_uri("POST", MIXPANEL_BASE_URL + "engage?page_size=1000", [
+        {  # initial request for 0000 cohort
+            'status_code': 200,
+            'json': {
+                "page": 0,
+                "page_size": 1000,
+                "session_id": "1234567890",
+                "status": "ok",
+                "total": 0,
+                "results": []
+            }
+        },{  # initial request for 1111 cohort and further pagination
+            'status_code': 200,
+            'json': {
+                "page": 0,
+                "page_size": 1000,
+                "session_id": "1234567890",
+                "status": "ok",
+                "total": 2002,
+                "results": [
+                    {
+                        "$distinct_id": "1111_1",
+                        "$properties": {
+                            "$created": "2024-03-01T11:20:47",
+                            "$last_seen": "2024-03-01T11:20:47",
+
+                        },
+                    },
+                    {
+                        "$distinct_id": "1111_2",
+                        "$properties": {
+                            "$created": "2024-02-01T11:20:47",
+                            "$last_seen": "2024-02-01T11:20:47",
+                        }
+                    }
+                ]
+            }
+        }, {  # initial request for 2222 cohort without further pagination
+            'status_code': 200,
+            'json': {
+                "page": 0,
+                "page_size": 1000,
+                "session_id": "1234567890",
+                "status": "ok",
+                "total": 1,
+                "results": [
+                    {
+                        "$distinct_id": "2222_1",
+                        "$properties": {
+                            "$created": "2024-02-01T11:20:47",
+                            "$last_seen": "2024-02-01T11:20:47",
+                        }
+                    }
+                ]
+            }
+        },{  # initial request for 333 cohort
+            'status_code': 200,
+            'json': {
+                "page": 0,
+                "page_size": 1000,
+                "session_id": "1234567890",
+                "status": "ok",
+                "total": 0,
+                "results": []
+            }
+        }
+    ]
+    )
+    # request for 1 page for 1111 cohort
+    requests_mock.register_uri("POST", MIXPANEL_BASE_URL + "engage?page_size=1000&session_id=1234567890&page=1", json={
+            "page": 1,
+            "session_id": "1234567890",
+            "status": "ok",
+            "results": [
+                {
+                    "$distinct_id": "1111_3",
+                    "$properties": {
+                        "$created": "2024-02-01T11:20:47",
+                        "$last_seen": "2024-02-01T11:20:47",
+                    }
+                }
+            ]
+        }
+    )
+    # request for 2 page for 1111 cohort
+    requests_mock.register_uri("POST", MIXPANEL_BASE_URL + "engage?page_size=1000&session_id=1234567890&page=2", json={
+            "page": 2,
+            "session_id": "1234567890",
+            "status": "ok",
+            "results": [
+                {
+                    "$distinct_id": "1111_4",
+                    "$properties": {
+                        "$created": "2024-02-01T11:20:47",
+                        "$last_seen": "2024-02-01T11:20:47",
+                    }
+                }
+            ]
+        }
+    )
+
+    stream = init_stream('cohort_members', config=config_raw)
+    
+    records = list(read_incremental(stream, stream_state={}, cursor_field=["last_seen"]))
+    assert len(records) == 5
+    new_updated_state = stream.get_updated_state(current_stream_state={}, latest_record=records[-1] if records else None)
+    assert new_updated_state == {'states': [
+        {
+            'cursor': {'last_seen': '2024-03-01T11:20:47'},
+            'partition': {'id': 1111, 'parent_slice': {}}
+        },
+        {
+            'cursor': {'last_seen': '2024-02-01T11:20:47'},
+            'partition': {'id': 2222, 'parent_slice': {}}
+        }
+    ]}
+
 
 @pytest.fixture
 def funnels_response(start_date):
