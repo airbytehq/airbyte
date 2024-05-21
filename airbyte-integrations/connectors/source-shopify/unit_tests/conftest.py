@@ -697,57 +697,6 @@ def fulfillment_orders_response_expected_result():
 def order_risks_response_expected_result():
     return [
         {
-            "updated_at": "2023-09-09T09:57:43+00:00",
-            "order_id": 3944273805501,
-            "admin_graphql_api_id": "gid://shopify/Order/3944273805501",
-            "recommendation": "NONE",
-            "assessments": [
-                {
-                    "risk_level": "NONE",
-                    "facts": [
-                        {
-                            "description": "Card Verification Value (CVV) isn't available",
-                            "sentiment": "NEUTRAL"
-                        },
-                        {
-                            "description": "Billing address or credit card's address wasn't available",
-                            "sentiment": "NEUTRAL"
-                        },
-                        {
-                            "description": "Billing address ZIP or postal code isn't available to match with credit card's registered address",
-                            "sentiment": "NEUTRAL"
-                        },
-                        {
-                            "description": "The payment method used isn't available",
-                            "sentiment": "NEUTRAL"
-                        },
-                        {
-                            "description": "Location of IP address used to place the order isn't available",
-                            "sentiment": "NEUTRAL"
-                        },
-                        {
-                            "description": "Distance between shipping address and location of IP address isn't available",
-                            "sentiment": "NEUTRAL"
-                        },
-                        {
-                            "description": "The billing country or the country of the IP used to place the order isn't available",
-                            "sentiment": "NEUTRAL"
-                        },
-                        {
-                            "description": "Can't determine if a high risk internet connection was used because the IP address isn't available",
-                            "sentiment": "NEUTRAL"
-                        },
-                        {
-                            "description": "There was 1 payment attempt",
-                            "sentiment": "POSITIVE"
-                        }
-                    ],
-                    "provider": None
-                }
-            ],
-            "shop_url": "test_shop"
-        },
-        {
             "updated_at": "2023-09-19T14:29:22+00:00",
             "order_id": 3945528492221,
             "admin_graphql_api_id": "gid://shopify/Order/3945528492221",

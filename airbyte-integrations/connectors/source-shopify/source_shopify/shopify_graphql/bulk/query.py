@@ -1491,7 +1491,7 @@ class Transaction(ShopifyBulkQuery):
         record = self.tools.fields_names_to_snake_case(record)
         return record
 
-    def record_process_components(self, record: MutableMapping[str, Any]) -> Optional[MutableMapping[str, Any]]:
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Optional[Iterable[MutableMapping[str, Any]]]:
         """
         Defines how to process collected components.
         """
@@ -2127,25 +2127,31 @@ class OrderRisk(ShopifyBulkQuery):
                 provider["provider_id"] = self.tools.resolve_str_id(provider.get("provider_id"))
         return assessments
 
-    def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
+    def _has_risk_recommendation(self, recommendation: Optional[str]) -> bool:
+        # if there are no risk recommendation, the value is literally "NONE",
+        # we should skip such record, because there is no risk info for it.
+        no_risk_pattern = "NONE"
+        return recommendation != no_risk_pattern if recommendation else False
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Optional[Iterable[MutableMapping[str, Any]]]:
         """
         Defines how to process collected components.
         """
-
-        # save and resolve id
-        record["admin_graphql_api_id"] = record.get("order_id")
-        record["order_id"] = self.tools.resolve_str_id(record.get("order_id"))
-
         # unnest mandatory fields from their placeholders
         risk = record.get("risk", {})
-        record["recommendation"] = risk.get("recommendation") if risk else None
-        assessments = risk.get("assessments", []) if risk else None
-        record["assessments"] = self._process_assessments(assessments) if assessments else None
+        recommendation = risk.get("recommendation") if risk else None
+        # process records which has some risk recommendation
+        if self._has_risk_recommendation(recommendation):
+            # save and resolve id
+            record["admin_graphql_api_id"] = record.get("order_id")
+            record["order_id"] = self.tools.resolve_str_id(record.get("order_id"))
+            # add the `recommendation` field to the root lvl
+            record["recommendation"] = recommendation
+            assessments = risk.get("assessments", []) if risk else None
+            record["assessments"] = self._process_assessments(assessments) if assessments else None
+            # convert date-time cursors
+            record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+            # clean up the leftovers
+            record.pop("risk", None)
 
-        # convert date-time cursors
-        record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
-
-        # clean up the leftovers
-        record.pop("risk", None)
-
-        yield record
+            yield record
