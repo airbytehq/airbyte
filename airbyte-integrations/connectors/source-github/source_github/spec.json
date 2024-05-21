@@ -38,7 +38,7 @@
               },
               "client_secret": {
                 "type": "string",
-                "title": "Client ssecret",
+                "title": "Client secret",
                 "description": "OAuth Client secret",
                 "airbyte_secret": true
               }
