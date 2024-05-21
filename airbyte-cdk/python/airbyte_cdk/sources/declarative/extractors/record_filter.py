@@ -69,7 +69,11 @@ class ClientSideIncrementalRecordFilterDecorator:
 
     @property
     def _end_datetime(self) -> Union[datetime.datetime, Any]:
-        return self._date_time_based_cursor._end_datetime.get_datetime(self._date_time_based_cursor.config) if self._date_time_based_cursor._end_datetime else datetime.datetime.max
+        return (
+            self._date_time_based_cursor._end_datetime.get_datetime(self._date_time_based_cursor.config)
+            if self._date_time_based_cursor._end_datetime
+            else datetime.datetime.max
+        )
 
     def filter_records(
         self,
@@ -81,7 +85,11 @@ class ClientSideIncrementalRecordFilterDecorator:
         state_value = self._get_state_value(stream_state, stream_slice)
         filter_date = self._get_filter_date(state_value)
         if filter_date:
-            records = (record for record in records if self._end_datetime > self._date_time_based_cursor.parse_date(record[self._cursor_field]) > filter_date)
+            records = (
+                record
+                for record in records
+                if self._end_datetime > self._date_time_based_cursor.parse_date(record[self._cursor_field]) > filter_date
+            )
         if self._delegate:
             return self._delegate.filter_records(
                 records=records, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token

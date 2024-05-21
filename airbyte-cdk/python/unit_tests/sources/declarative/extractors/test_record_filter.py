@@ -1,10 +1,10 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from typing import Mapping, List, Optional
+from typing import List, Mapping, Optional
 
 import pytest
-from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter, ClientSideIncrementalRecordFilterDecorator
+from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator, RecordFilter
 from sources.declarative.datetime import MinMaxDatetime
 from sources.declarative.incremental import DatetimeBasedCursor
 from sources.declarative.interpolation import InterpolatedString
