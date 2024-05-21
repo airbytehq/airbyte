@@ -44,6 +44,9 @@ data:
               - "ads_insights_region"
               - "ads_insights_dma"
               - "ads_insights_action_product_id"
+      3.0.0:
+        message: "Credentials schema has been updated. Migration will be required to ensure backward compatibility. For more information [visit](https://docs.airbyte.com/integrations/sources/facebook-marketing-migrations)"
+        upgradeDeadline: "2024-05-18"
   suggestedStreams:
     streams:
       - ads_insights
