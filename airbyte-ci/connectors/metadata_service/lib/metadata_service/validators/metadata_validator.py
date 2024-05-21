@@ -25,6 +25,7 @@ Validator = Callable[[ConnectorMetadataDefinitionV0, ValidatorOptions], Validati
 
 _SOURCE_DECLARATIVE_MANIFEST_DEFINITION_ID = "64a2f99c-542f-4af8-9a6f-355f1217b436"
 
+
 def validate_metadata_images_in_dockerhub(
     metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions
 ) -> ValidationResult:
