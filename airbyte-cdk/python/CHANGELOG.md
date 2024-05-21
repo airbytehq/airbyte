@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.1
+File-based CDK: avoid error on empty stream when running discover
+
 ## 1.0.0
 Delete deprecated AirbyteLogger, AirbyteSpec, and Authenticators + move public classes to the top level init file. See [migration guide](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/cdk-migrations.md) for more details.
 
