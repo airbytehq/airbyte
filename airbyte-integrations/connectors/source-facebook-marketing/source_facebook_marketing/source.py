@@ -254,6 +254,7 @@ class SourceFacebookMarketing(AbstractSource):
                 )
                 raise AirbyteTracedException(
                     message=message,
+                    internal_message=message,
                     failure_type=FailureType.config_error,
                 )
             stream = AdsInsights(

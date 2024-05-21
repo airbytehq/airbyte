@@ -224,5 +224,6 @@ class API:
             )
             raise AirbyteTracedException(
                 message=message,
+                internal_message=message,
                 failure_type=FailureType.config_error,
             ) from exc

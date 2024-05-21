@@ -124,9 +124,11 @@ class AdsInsights(FBMarketingIncrementalStream):
             for obj in job.get_result():
                 yield obj.export_all_data()
         except FacebookBadObjectError as e:
+            message = f"API error occurs on Facebook side during job: {job}, wrong (empty) response received with errors: {e} "
+            f"Please try again later"
             raise AirbyteTracedException(
-                message=f"API error occurs on Facebook side during job: {job}, wrong (empty) response received with errors: {e} "
-                f"Please try again later",
+                message=message,
+                internal_message=message,
                 failure_type=FailureType.system_error,
             ) from e
 
