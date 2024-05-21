@@ -126,11 +126,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   public static final String CDC_LOG_FILE = "_ab_cdc_log_file";
   public static final String CDC_LOG_POS = "_ab_cdc_log_pos";
   public static final String CDC_DEFAULT_CURSOR = "_ab_cdc_cursor";
-  public static final List<String> SSL_PARAMETERS = List.of(
-      "useSSL=true",
-      "requireSSL=true");
 
-  public static Source sshWrappedSource(MySqlSource source) {
+  public static Source sshWrappedSource(final MySqlSource source) {
     return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
@@ -144,7 +141,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   @Override
-  public ConnectorSpecification spec() throws Exception {
+  public @NotNull ConnectorSpecification spec() throws Exception {
     if (cloudDeploymentMode()) {
       return getCloudDeploymentSpec(super.spec());
     }
@@ -152,7 +149,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   @Override
-  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
+  public AirbyteConnectionStatus check(final @NotNull JsonNode config) throws Exception {
     // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting directly
     // and not over SSH tunnel
     if (cloudDeploymentMode()) {
@@ -193,13 +190,13 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   protected void initializeForStateManager(final JdbcDatabase database,
-                                           final ConfiguredAirbyteCatalog catalog,
-                                           final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
-                                           final StateManager stateManager) {
+                                           final @NotNull ConfiguredAirbyteCatalog catalog,
+                                           final @NotNull Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
+                                           final @NotNull StateManager stateManager) {
     if (initialLoadStateManager != null) {
       return;
     }
-    var sourceConfig = database.getSourceConfig();
+    final var sourceConfig = database.getSourceConfig();
 
     if (isCdc(sourceConfig)) {
       isSavedOffsetStillPresentOnServer = isSavedOffsetStillPresentOnServer(database, catalog, stateManager);
