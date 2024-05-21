@@ -13,6 +13,7 @@ fun interface StreamOperationFactory<DestinationState> {
      * implementation.
      */
     fun createInstance(
-        destinationInitialStatus: DestinationInitialStatus<DestinationState>
+        destinationInitialStatus: DestinationInitialStatus<DestinationState>,
+        disableTypeDedupe: Boolean,
     ): StreamOperation<DestinationState>
 }
