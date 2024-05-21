@@ -22,4 +22,4 @@ Then authorize your source with `access_token`.
 3. Click `Reset saved source` button. 
 
 
-As Xero API now only supports date-precision instead of second precision filtering through If-Modified-Since header, reads are streamlined to incremental through client side.
+As Xero API now only supports date-precision, instead of second precision filtering through If-Modified-Since header, reads are now streamlined to incremental through client side.
