@@ -30,9 +30,6 @@ interface StorageOperation<Data> {
      *  ==================== Final Table Operations ================================
      */
 
-    /** Create final namespace extracted from [StreamId] */
-    fun createFinalNamespace(streamId: StreamId)
-
     /** Create final table extracted from [StreamId] */
     fun createFinalTable(streamConfig: StreamConfig, suffix: String, replace: Boolean)
 
