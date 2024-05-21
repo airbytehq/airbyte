@@ -67,6 +67,10 @@ class ClientSideIncrementalRecordFilterDecorator:
     def _start_date_from_config(self) -> Union[datetime.datetime, Any]:
         return self._date_time_based_cursor._start_datetime.get_datetime(self._date_time_based_cursor.config)
 
+    @property
+    def _end_datetime(self) -> Union[datetime.datetime, Any]:
+        return self._date_time_based_cursor._end_datetime.get_datetime(self._date_time_based_cursor.config) if self._date_time_based_cursor._end_datetime else datetime.datetime.max
+
     def filter_records(
         self,
         records: Iterable[Mapping[str, Any]],
@@ -74,23 +78,23 @@ class ClientSideIncrementalRecordFilterDecorator:
         stream_slice: StreamSlice,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        state_value = self.get_state_value(stream_state, stream_slice)
-        filter_date = self.get_filter_date(state_value)
+        state_value = self._get_state_value(stream_state, stream_slice)
+        filter_date = self._get_filter_date(state_value)
         if filter_date:
-            records = (record for record in records if self._date_time_based_cursor.parse_date(record[self._cursor_field]) > filter_date)
+            records = (record for record in records if self._end_datetime > self._date_time_based_cursor.parse_date(record[self._cursor_field]) > filter_date)
         if self._delegate:
             return self._delegate.filter_records(
                 records=records, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
             )
         return records
 
-    def get_state_value(self, stream_state: StreamState, stream_slice: StreamSlice) -> Optional[str]:
+    def _get_state_value(self, stream_state: StreamState, stream_slice: StreamSlice) -> Optional[str]:
         if self._per_partition_cursor:
             partition_state = self._per_partition_cursor.select_state(stream_slice=stream_slice)
             return partition_state.get(self._cursor_field) if partition_state else None
         return stream_state.get(self._cursor_field)
 
-    def get_filter_date(self, state_value: Optional[str]) -> Optional[datetime.datetime]:
+    def _get_filter_date(self, state_value: Optional[str]) -> Optional[datetime.datetime]:
         start_date_parsed = self._start_date_from_config or None
         state_date_parsed = self._date_time_based_cursor.parse_date(state_value) if state_value else None
         return max((x for x in (start_date_parsed, state_date_parsed) if x), default=None)
