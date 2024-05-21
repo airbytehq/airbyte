@@ -341,8 +341,8 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         while start_date < end_date:
             end_date_slice = start_date.add(days=self.period_in_days)
             yield {
-                "dataStartTime": start_date.strftime(DATE_TIME_FORMAT),
-                "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).strftime(DATE_TIME_FORMAT),
+                "dataStartTime": start_date.astimezone(pendulum.UTC).strftime(DATE_TIME_FORMAT),
+                "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).astimezone(pendulum.UTC).strftime(DATE_TIME_FORMAT),
             }
             start_date = end_date_slice
 
@@ -739,8 +739,8 @@ class AnalyticsStream(ReportsAmazonSPStream):
             raise Exception([{"message": "This reportPeriod is not implemented."}])
 
         return {
-            "dataStartTime": data_start_time.strftime(DATE_TIME_FORMAT),
-            "dataEndTime": data_end_time.strftime(DATE_TIME_FORMAT),
+            "dataStartTime": data_start_time.astimezone(pendulum.UTC).strftime(DATE_TIME_FORMAT),
+            "dataEndTime": data_end_time.astimezone(pendulum.UTC).strftime(DATE_TIME_FORMAT),
             "reportOptions": report_options,
         }
 
@@ -804,8 +804,8 @@ class IncrementalAnalyticsStream(AnalyticsStream):
 
             end_date_slice = start_date.add(days=slice_range)
             yield {
-                "dataStartTime": start_date.strftime(DATE_TIME_FORMAT),
-                "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).strftime(DATE_TIME_FORMAT),
+                "dataStartTime": start_date.astimezone(pendulum.UTC).strftime(DATE_TIME_FORMAT),
+                "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).astimezone(pendulum.UTC).strftime(DATE_TIME_FORMAT),
             }
             start_date = end_date_slice
 
@@ -1445,8 +1445,8 @@ class FlatFileSettlementV2Reports(IncrementalReportsAmazonSPStream):
         params = {
             "reportTypes": self.name,
             "pageSize": 100,
-            "createdSince": create_date.strftime(DATE_TIME_FORMAT),
-            "createdUntil": end_date.strftime(DATE_TIME_FORMAT),
+            "createdSince": create_date.astimezone(pendulum.UTC).strftime(DATE_TIME_FORMAT),
+            "createdUntil": end_date.astimezone(pendulum.UTC).strftime(DATE_TIME_FORMAT),
         }
         unique_records = list()
         complete = False
