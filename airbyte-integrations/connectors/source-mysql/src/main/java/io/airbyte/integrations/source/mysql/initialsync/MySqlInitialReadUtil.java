@@ -29,12 +29,11 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
-import io.airbyte.commons.stream.StreamStatusUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mysql.MySqlQueryUtils;
 import io.airbyte.integrations.source.mysql.MySqlSourceOperations;
-import io.airbyte.integrations.source.mysql.StatusEmitterIterator;
+import io.airbyte.integrations.source.mysql.StreamStatusTraceEmitterIterator;
 import io.airbyte.integrations.source.mysql.cdc.MySqlCdcConnectorMetadataInjector;
 import io.airbyte.integrations.source.mysql.cdc.MySqlCdcPosition;
 import io.airbyte.integrations.source.mysql.cdc.MySqlCdcProperties;
@@ -228,7 +227,7 @@ public class MySqlInitialReadUtil {
 
     final List<AutoCloseableIterator<AirbyteMessage>> starters = catalog.getStreams().stream()
             .filter(stream -> !initialLoadStreams.streamsForInitialLoad.contains(stream))
-            .map(stream -> (AutoCloseableIterator<AirbyteMessage>)new StatusEmitterIterator(
+            .map(stream -> (AutoCloseableIterator<AirbyteMessage>)new StreamStatusTraceEmitterIterator(
                     new AirbyteStreamStatusHolder(
                             new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
                             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)))
@@ -252,7 +251,7 @@ public class MySqlInitialReadUtil {
     final List<AutoCloseableIterator<AirbyteMessage>> completers = catalog.getStreams().stream()
 //            .filter(stream -> !initialLoadStreams.streamsForInitialLoad.contains(stream))
             .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
-            .map(stream -> (AutoCloseableIterator<AirbyteMessage>)new StatusEmitterIterator(
+            .map(stream -> (AutoCloseableIterator<AirbyteMessage>)new StreamStatusTraceEmitterIterator(
                     new AirbyteStreamStatusHolder(
                             new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
                             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)))

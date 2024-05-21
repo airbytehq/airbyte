@@ -24,7 +24,7 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mysql.MySqlQueryUtils.TableSizeInfo;
 import io.airbyte.integrations.source.mysql.MySqlSourceOperations;
-import io.airbyte.integrations.source.mysql.StatusEmitterIterator;
+import io.airbyte.integrations.source.mysql.StreamStatusTraceEmitterIterator;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CommonField;
@@ -41,7 +41,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import kotlin.collections.AbstractIterator;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,12 +93,12 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
         final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(namespace, streamName);
         final TableInfo<CommonField<MysqlType>> table = tableNameToTable.get(fullyQualifiedTableName);
         if (decorateWithStartedStatus) {
-          iteratorList.add(new StatusEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)));
+          iteratorList.add(new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)));
         }
 
         iteratorList.add(getIteratorForStream(airbyteStream, table, emittedAt));
         if (decorateWithCompletedStatus) {
-          iteratorList.add(new StatusEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
+          iteratorList.add(new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
         }
       }
     }
