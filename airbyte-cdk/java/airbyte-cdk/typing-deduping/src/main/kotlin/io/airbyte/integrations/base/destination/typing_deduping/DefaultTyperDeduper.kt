@@ -7,9 +7,9 @@ import io.airbyte.cdk.integrations.base.IntegrationRunner
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil.getResultsOrLogAndThrowFirst
 import io.airbyte.commons.concurrency.CompletableFutures
-import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.Companion.executeRawTableMigrations
-import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.Companion.executeWeirdMigrations
-import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.Companion.prepareSchemas
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.executeRawTableMigrations
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.executeWeirdMigrations
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.prepareSchemas
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
 import io.airbyte.protocol.models.v0.DestinationSyncMode
@@ -186,7 +186,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                             // Make sure it has the right schema.
                             // Also, if a raw table migration wants us to do a soft reset, do that
                             // here.
-                            TypeAndDedupeTransaction.executeSoftReset(
+                            TyperDeduperUtil.executeSoftReset(
                                 sqlGenerator,
                                 destinationHandler,
                                 stream
@@ -267,7 +267,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
 
                     val initialRawTableStatus =
                         initialRawTableStateByStream.getValue(streamConfig.id)
-                    TypeAndDedupeTransaction.executeTypeAndDedupe(
+                    TyperDeduperUtil.executeTypeAndDedupe(
                         sqlGenerator,
                         destinationHandler,
                         streamConfig,
