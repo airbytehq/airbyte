@@ -16,7 +16,7 @@ data:
       1.0.0:
         upgradeDeadline: "2024-06-30"
         message:
-          The source Xero connector is being migrated from the Python CDK to our declarative low-code CDK. The authorization method was changed from OAuth 2.0 to Access Token. Due to changes in the authorization users will need to generate their Access Token and reset source configuration. For more information, see our migration documentation for source Xero.
+          The source Xero connector is being migrated from the Python CDK to our declarative low-code CDK. The authorization method was changed from OAuth 2.0 to Access Token. Due to changes in authorization, users will need to generate an access token within source Xero and reset source configuration. For more information, see our migration documentation for source Xero.
           Important - The authentication scheme is using access_token instead of Oauth 2.0 from this version.
   connectorBuildOptions:
     # Please update to the latest version of the connector base image.
