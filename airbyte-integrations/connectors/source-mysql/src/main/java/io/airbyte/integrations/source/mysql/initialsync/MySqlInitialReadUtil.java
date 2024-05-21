@@ -84,9 +84,9 @@ public class MySqlInitialReadUtil {
     if (!initialLoadStreams.streamsForInitialLoad().isEmpty()) {
 
       // Filter on initialLoadStream
-      var pair = new AirbyteStreamNameNamespacePair(fullRefreshStream.getStream().getName(), fullRefreshStream.getStream().getNamespace());
-      var pkStatus = initialLoadStreams.pairToInitialLoadStatus.get(pair);
-      Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> fullRefreshPkStatus;
+      final var pair = new AirbyteStreamNameNamespacePair(fullRefreshStream.getStream().getName(), fullRefreshStream.getStream().getNamespace());
+      final var pkStatus = initialLoadStreams.pairToInitialLoadStatus.get(pair);
+      final Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> fullRefreshPkStatus;
       if (pkStatus == null) {
         fullRefreshPkStatus = Map.of();
       } else {
@@ -465,7 +465,7 @@ public class MySqlInitialReadUtil {
       return Optional.empty();
     }
 
-    final String pkFieldName = stream.getStream().getSourceDefinedPrimaryKey().get(0).get(0);
+    final String pkFieldName = stream.getStream().getSourceDefinedPrimaryKey().getFirst().getFirst();
     final MysqlType pkFieldType = table.getFields().stream()
         .filter(field -> field.getName().equals(pkFieldName))
         .findFirst().get().getType();
