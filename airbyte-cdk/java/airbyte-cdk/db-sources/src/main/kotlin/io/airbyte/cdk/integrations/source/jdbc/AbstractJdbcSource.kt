@@ -60,6 +60,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
+import io.airbyte.protocol.models.v0.SyncMode.*
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -128,7 +129,7 @@ abstract class AbstractJdbcSource<Datatype>(
     ): AutoCloseableIterator<AirbyteMessage> {
         if (
             supportResumableFullRefresh(database, airbyteStream) &&
-                syncMode == SyncMode.FULL_REFRESH
+                syncMode == FULL_REFRESH
         ) {
             val initialLoadHandler =
                 getInitialLoadHandler(database, airbyteStream, catalog, stateManager)
@@ -139,7 +140,7 @@ abstract class AbstractJdbcSource<Datatype>(
         }
 
         // If flag is off, fall back to legacy non-resumable refresh
-        return augmentWithStreamStatus(airbyteStream, super.getFullRefreshStream(
+        var iterator = super.getFullRefreshStream(
             database,
             airbyteStream,
             catalog,
@@ -150,7 +151,12 @@ abstract class AbstractJdbcSource<Datatype>(
             emittedAt,
             syncMode,
             cursorField,
-        ))
+        )
+
+        return when (airbyteStream.syncMode) {
+            FULL_REFRESH -> augmentWithStreamStatus(airbyteStream, iterator)
+            else -> iterator
+        }
     }
 
     open fun augmentWithStreamStatus(airbyteStream: ConfiguredAirbyteStream, streamItrator: AutoCloseableIterator<AirbyteMessage>): AutoCloseableIterator<AirbyteMessage> {
@@ -205,7 +211,7 @@ abstract class AbstractJdbcSource<Datatype>(
                                 // must be sorted by the cursor
                                 // field
                                 if (
-                                    syncMode == SyncMode.INCREMENTAL && stateEmissionFrequency > 0
+                                    syncMode == INCREMENTAL && stateEmissionFrequency > 0
                                 ) {
                                     val quotedCursorField: String =
                                         enquoteIdentifier(cursorField.get(), quoteString)
@@ -769,7 +775,7 @@ abstract class AbstractJdbcSource<Datatype>(
 
         return catalog.streams
             .stream()
-            .filter { c: ConfiguredAirbyteStream -> c.syncMode == SyncMode.INCREMENTAL }
+            .filter { c: ConfiguredAirbyteStream -> c.syncMode == INCREMENTAL }
             .filter { stream: ConfiguredAirbyteStream ->
                 newlyAddedStreams.contains(
                     AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.stream)
@@ -823,7 +829,7 @@ abstract class AbstractJdbcSource<Datatype>(
             emittedAt
         )
         return when (airbyteStream.syncMode) {
-            SyncMode.INCREMENTAL -> augmentWithStreamStatus(airbyteStream, iterator)
+            INCREMENTAL -> augmentWithStreamStatus(airbyteStream, iterator)
             else -> iterator
         }
     }
