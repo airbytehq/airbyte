@@ -253,7 +253,7 @@ internal constructor(
                     ConnectorExceptionUtil.getDisplayMessage(rootConfigErrorThrowable),
                 )
                 // On receiving a config error, the container should be immediately shut down.
-                System.exit(1);
+                System.exit(1)
             } else if (ConnectorExceptionUtil.isTransientError(rootTransientErrorThrowable)) {
                 AirbyteTraceMessageUtility.emitTransientErrorTrace(
                     e,
