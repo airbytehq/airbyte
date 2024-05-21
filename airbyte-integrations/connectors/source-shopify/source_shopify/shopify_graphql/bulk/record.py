@@ -119,8 +119,7 @@ class ShopifyBulkRecord:
             # extracting the int(id) and reassign
             record["id"] = self.tools.resolve_str_id(id)
             return record
-        elif not id or isinstance(id, int):
-            return record
+        return record
 
     def produce_records(self, filename: str) -> Iterable[MutableMapping[str, Any]]:
         """
