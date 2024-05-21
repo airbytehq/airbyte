@@ -32,4 +32,4 @@ Not all implementations or deployments of a database will be the same. This sect
 
 #### Disk Access
 
-The Airbyte Postgres destination relies on sending files to the database's temporary storage to then load in bulk. If your Postgres database does not have access to teh `/tmp` file system, data loading will not succeed.
+The Airbyte Postgres destination relies on sending files to the database's temporary storage to then load in bulk. If your Postgres database does not have access to the `/tmp` file system, data loading will not succeed.
