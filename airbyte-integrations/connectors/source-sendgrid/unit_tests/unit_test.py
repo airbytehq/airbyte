@@ -183,8 +183,9 @@ def test_uncompressed_contact_response(requests_mock, mock_authenticator):
         assert recs == expected_records
 
 
-def test_bad_job_response(requests_mock):
+def test_bad_job_response(requests_mock, mock_authenticator):
     stream = Contacts()
+    stream._session.auth = mock_authenticator
     url = "https://api.sendgrid.com/v3/marketing/contacts/exports"
 
     requests_mock.register_uri(
