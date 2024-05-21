@@ -33,6 +33,7 @@ gcsfs = "==2022.7.1"
 pyxlsb = "==1.0.10"
 genson = "==1.2.2"
 fastparquet = "^2024.2.0"
+mergedeep = "^1.3.4"
 
 [tool.poetry.scripts]
 source-file = "source_file.run:run"

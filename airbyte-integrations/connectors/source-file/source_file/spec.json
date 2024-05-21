@@ -168,6 +168,16 @@
                 "title": "Port",
                 "default": "22",
                 "description": ""
+              },
+              "transport_params": {
+                "type": "string",
+                "title": "Transport Params",
+                "description": "This should be a string in JSON format. See <a href=\"https://github.com/piskvorky/smart_open\">smart_open documentation</a> for more details.",
+                "examples": [
+                  "{}",
+                  "{\"timeout\": 120}",
+                  "{\"timeout\": 120, \"buffer_size\": 1024}"
+                ]
               }
             }
           },
@@ -201,6 +211,16 @@
                 "title": "Port",
                 "default": "22",
                 "description": ""
+              },
+              "transport_params": {
+                "type": "string",
+                "title": "Transport Params",
+                "description": "This should be a string in JSON format. See <a href=\"https://github.com/piskvorky/smart_open\">smart_open documentation</a> for more details.",
+                "examples": [
+                  "{}",
+                  "{\"timeout\": 120}",
+                  "{\"timeout\": 120, \"buffer_size\": 1024}"
+                ]
               }
             }
           },
@@ -234,6 +254,16 @@
                 "title": "Port",
                 "default": "22",
                 "description": ""
+              },
+              "transport_params": {
+                "type": "string",
+                "title": "Transport Params",
+                "description": "This should be a string in JSON format. See <a href=\"https://github.com/piskvorky/smart_open\">smart_open documentation</a> for more details.",
+                "examples": [
+                  "{}",
+                  "{\"timeout\": 120}",
+                  "{\"timeout\": 120, \"buffer_size\": 1024}"
+                ]
               }
             }
           },

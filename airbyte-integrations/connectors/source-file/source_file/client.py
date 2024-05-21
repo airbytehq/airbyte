@@ -11,8 +11,9 @@ import tempfile
 import traceback
 import urllib
 import zipfile
+import mergedeep
 from os import environ
-from typing import Iterable
+from typing import Iterable, Mapping, Any
 from urllib.parse import urlparse
 from zipfile import BadZipFile
 
@@ -41,6 +42,8 @@ from yaml import safe_load
 from .utils import LOCAL_STORAGE_NAME, backoff_handler
 
 SSH_TIMEOUT = 60
+
+DEFAULT_SMART_OPEN_TRANSPORT_PARAMS = {"connect_kwargs": {"look_for_keys": False}, "timeout": SSH_TIMEOUT}
 
 # Force the log level of the smart-open logger to ERROR - https://github.com/airbytehq/airbyte/pull/27157
 logging.getLogger("smart_open").setLevel(logging.ERROR)
@@ -140,7 +143,7 @@ class URLFile:
             except ValueError as err:
                 raise ValueError(f"{_port_value} is not a valid integer for the port") from err
             # Explicitly turn off ssh keys stored in ~/.ssh
-            transport_params = {"connect_kwargs": {"look_for_keys": False}, "timeout": SSH_TIMEOUT}
+            transport_params = self._parse_smart_open_transport_params()
             if "password" in self._provider:
                 password = urllib.parse.quote(self._provider["password"])
                 uri = f"{storage}{user}:{password}@{host}:{port}/{url}"
@@ -155,6 +158,16 @@ class URLFile:
             logger.info(f"TransportParams: {transport_params}")
             return smart_open.open(self.full_url, transport_params=transport_params, **self.args)
         return smart_open.open(self.full_url, **self.args)
+
+    def _parse_smart_open_transport_params(self) -> Mapping[str, Any]:
+        try:
+            transport_params_overrides = json.loads(self._provider.get("transport_params", "{}"))
+        except json.decoder.JSONDecodeError as err:
+            error_msg = f"Failed to parse smart_open's transport_params json: {repr(err)}"
+            logger.error(f"{error_msg}\n{traceback.format_exc()}")
+            raise AirbyteTracedException(message=error_msg, internal_message=error_msg, failure_type=FailureType.config_error) from err
+
+        return mergedeep.merge({}, DEFAULT_SMART_OPEN_TRANSPORT_PARAMS, transport_params_overrides)
 
     @property
     def url(self) -> str:
