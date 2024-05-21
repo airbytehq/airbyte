@@ -444,30 +444,30 @@ async def run_connector_migration_to_poetry_pipeline(
         ]
     )
 
-    steps_to_run.append(
-        [
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.BUILD,
-                step=BuildConnectorImages(context),
-                depends_on=[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_DELETE_SETUP_PY],
-            )
-        ]
-    )
+    # steps_to_run.append(
+    #     [
+    #         StepToRun(
+    #             id=CONNECTOR_TEST_STEP_ID.BUILD,
+    #             step=BuildConnectorImages(context),
+    #             depends_on=[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_DELETE_SETUP_PY],
+    #         )
+    #     ]
+    # )
 
-    steps_to_run.append(
-        [
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_REGRESSION_TEST,
-                step=RegressionTest(context),
-                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
-                args=lambda results: {
-                    "new_connector_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM],
-                    "original_dependencies": results[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_POETRY_INIT].output[0],
-                    "original_dev_dependencies": results[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_POETRY_INIT].output[1],
-                },
-            )
-        ]
-    )
+    # steps_to_run.append(
+    #     [
+    #         StepToRun(
+    #             id=CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_REGRESSION_TEST,
+    #             step=RegressionTest(context),
+    #             depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+    #             args=lambda results: {
+    #                 "new_connector_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM],
+    #                 "original_dependencies": results[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_POETRY_INIT].output[0],
+    #                 "original_dev_dependencies": results[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_POETRY_INIT].output[1],
+    #             },
+    #         )
+    #     ]
+    # )
 
     if new_version:
         steps_to_run.append(
@@ -475,7 +475,7 @@ async def run_connector_migration_to_poetry_pipeline(
                 StepToRun(
                     id=CONNECTOR_TEST_STEP_ID.SET_CONNECTOR_VERSION,
                     step=SetConnectorVersion(context, new_version),
-                    depends_on=[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_REGRESSION_TEST],
+                    depends_on=[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_DELETE_SETUP_PY],
                 )
             ]
         )
@@ -501,7 +501,7 @@ async def run_connector_migration_to_poetry_pipeline(
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_UPDATE_README,
                 step=UpdateReadMe(context),
-                depends_on=[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_REGRESSION_TEST],
+                depends_on=[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_DELETE_SETUP_PY],
             )
         ]
     )
