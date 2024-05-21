@@ -45,6 +45,7 @@ the MeiliSearch docs.
 
 | Version | Date       | Pull Request                                              | Subject                                                |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------- |
+| 1.0.3 | 2024-05-20 | [38415](https://github.com/airbytehq/airbyte/pull/38415) | [autopull] base image + poetry + up_to_date |
 | 1.0.2   | 2024-03-05 | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector                                   |
 | 1.0.1   | 2023-12-19 | [27692](https://github.com/airbytehq/airbyte/pull/27692)  | Fix incomplete data indexing                           |
 | 1.0.0   | 2022-10-26 | [18036](https://github.com/airbytehq/airbyte/pull/18036)  | Migrate MeiliSearch to Python CDK                      |
