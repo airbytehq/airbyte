@@ -421,13 +421,24 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         setEmittedAtToNull(actualMessages)
 
-        val expectedMessages = airbyteMessagesReadOneColumn
+        val expectedMessages: MutableList<AirbyteMessage> = airbyteMessagesReadOneColumn
+
+        expectedMessages.addFirst(AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
+            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(streamName(), defaultNamespace), AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)
+        ))
+
+        expectedMessages.addLast(AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
+            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(streamName(), defaultNamespace), AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)
+        ))
+        setTraceEmittedAtToNull(actualMessages)
+        setTraceEmittedAtToNull(expectedMessages)
+
         Assertions.assertEquals(expectedMessages.size, actualMessages.size)
         Assertions.assertTrue(expectedMessages.containsAll(actualMessages))
         Assertions.assertTrue(actualMessages.containsAll(expectedMessages))
     }
 
-    protected open val airbyteMessagesReadOneColumn: List<AirbyteMessage>
+    protected open val airbyteMessagesReadOneColumn: MutableList<AirbyteMessage>
         get() {
             val expectedMessages =
                 testMessages
@@ -765,10 +776,19 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                 .count()
                 .toInt(),
         )
-        val expectedMessages = getExpectedAirbyteMessagesSecondSync(namespace)
+        val expectedMessages: MutableList<AirbyteMessage> = getExpectedAirbyteMessagesSecondSync(namespace)
 
         setEmittedAtToNull(actualMessagesSecondSync)
 
+        expectedMessages.addFirst(AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
+            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(configuredCatalog.streams[0].stream.name, defaultNamespace), AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)
+        ))
+
+        expectedMessages.addLast(AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
+            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(configuredCatalog.streams[0].stream.name, defaultNamespace), AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)
+        ))
+        setTraceEmittedAtToNull(actualMessagesSecondSync)
+        setTraceEmittedAtToNull(expectedMessages)
         Assertions.assertEquals(expectedMessages.size, actualMessagesSecondSync.size)
         Assertions.assertTrue(expectedMessages.containsAll(actualMessagesSecondSync))
         Assertions.assertTrue(actualMessagesSecondSync.containsAll(expectedMessages))
@@ -788,7 +808,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected open fun getExpectedAirbyteMessagesSecondSync(
         namespace: String?
-    ): List<AirbyteMessage> {
+    ): MutableList<AirbyteMessage> {
         val expectedMessages: MutableList<AirbyteMessage> = ArrayList()
         expectedMessages.add(
             AirbyteMessage()
