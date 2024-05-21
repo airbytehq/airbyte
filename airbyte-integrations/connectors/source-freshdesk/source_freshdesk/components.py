@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 from dataclasses import dataclass
-from typing import Any, List, Mapping, MutableMapping, Optional
+from typing import Any, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
@@ -13,8 +13,8 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
     RequestInput,
 )
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.types import Record
 from source_freshdesk.utils import CallCredit
-from sources.types import Record
 
 
 @dataclass
