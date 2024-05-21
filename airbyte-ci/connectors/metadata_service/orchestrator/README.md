@@ -171,6 +171,14 @@ open http://localhost:3000
 And run the `generate_registry` job
 
 ## Additional Notes
+### How to publish to Dagster Cloud Dev
+Pre-requisites:
+- You need to have `airbyte-ci` installed. You can install it by running `make tools.airbyte-ci-dev.install` from the root of the repository.
+- You need to have the `DAGSTER_CLOUD_METADATA_API_TOKEN` environment variable set to an API token from the Airbyte Dagster Cloud account.
+
+```sh
+DAGSTER_CLOUD_METADATA_API_TOKEN=<SECRET> DAGSTER_CLOUD_DEPLOYMENT="dev" airbyte-ci metadata deploy orchestrator
+```
 
 ### Testing Slack Notifications
 You will need to add the following environment variables to your `.env` file:
