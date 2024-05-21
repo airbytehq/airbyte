@@ -102,6 +102,13 @@ def validate_major_version_bump_has_breaking_change_entry(
     if not is_major_version(image_tag):
         return True, None
 
+    # We are updating the same version since connector builder projects have a different concept of
+    # versioning.
+    # We do not check for breaking changes for source-declarative-connector in the metadata because the conenctor isn't directly used by any workspace.
+    # Breaking changes are instead tracked at the CDK level
+    if str(metadata_definition.data.definitionId) == "64a2f99c-542f-4af8-9a6f-355f1217b436":
+        return True, None
+
     docker_repo = get(metadata_definition_dict, "data.dockerRepository")
     releases = get(metadata_definition_dict, "data.releases")
     if not releases:
