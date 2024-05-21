@@ -98,7 +98,6 @@ class AbstractStreamOperationTest {
 
             verifySequence {
                 storageOperation.prepareStage(streamId, streamConfig.destinationSyncMode)
-                storageOperation.createFinalNamespace(streamId)
                 storageOperation.createFinalTable(streamConfig, "", false)
             }
             confirmVerified(storageOperation)
@@ -143,7 +142,6 @@ class AbstractStreamOperationTest {
 
             verifySequence {
                 storageOperation.prepareStage(streamId, streamConfig.destinationSyncMode)
-                storageOperation.createFinalNamespace(streamId)
                 storageOperation.createFinalTable(streamConfig, EXPECTED_OVERWRITE_SUFFIX, true)
             }
             confirmVerified(storageOperation)
@@ -186,7 +184,6 @@ class AbstractStreamOperationTest {
 
             verifySequence {
                 storageOperation.prepareStage(streamId, streamConfig.destinationSyncMode)
-                storageOperation.createFinalNamespace(streamId)
                 // No table creation - we can just reuse the existing table.
             }
             confirmVerified(storageOperation)
@@ -227,7 +224,6 @@ class AbstractStreamOperationTest {
 
             verifySequence {
                 storageOperation.prepareStage(streamId, streamConfig.destinationSyncMode)
-                storageOperation.createFinalNamespace(streamId)
                 storageOperation.createFinalTable(streamConfig, EXPECTED_OVERWRITE_SUFFIX, true)
             }
             confirmVerified(storageOperation)
@@ -274,7 +270,6 @@ class AbstractStreamOperationTest {
 
             verifySequence {
                 storageOperation.prepareStage(streamId, streamConfig.destinationSyncMode)
-                storageOperation.createFinalNamespace(streamId)
                 storageOperation.createFinalTable(streamConfig, EXPECTED_OVERWRITE_SUFFIX, true)
             }
             confirmVerified(storageOperation)
@@ -316,7 +311,6 @@ class AbstractStreamOperationTest {
 
             verifySequence {
                 storageOperation.prepareStage(streamId, streamConfig.destinationSyncMode)
-                storageOperation.createFinalNamespace(streamId)
                 storageOperation.createFinalTable(streamConfig, "", false)
             }
             confirmVerified(storageOperation)
@@ -360,7 +354,6 @@ class AbstractStreamOperationTest {
 
             verifySequence {
                 storageOperation.prepareStage(streamId, streamConfig.destinationSyncMode)
-                storageOperation.createFinalNamespace(streamId)
                 storageOperation.softResetFinalTable(streamConfig)
             }
             confirmVerified(storageOperation)
@@ -402,7 +395,6 @@ class AbstractStreamOperationTest {
 
             verifySequence {
                 storageOperation.prepareStage(streamId, streamConfig.destinationSyncMode)
-                storageOperation.createFinalNamespace(streamId)
                 // No soft reset - we can just reuse the existing table.
             }
             confirmVerified(storageOperation)
@@ -440,7 +432,6 @@ class AbstractStreamOperationTest {
 
             verifySequence {
                 storageOperation.prepareStage(streamId, streamConfig.destinationSyncMode)
-                storageOperation.createFinalNamespace(streamId)
                 storageOperation.softResetFinalTable(streamConfig)
             }
             confirmVerified(storageOperation)
@@ -493,7 +484,6 @@ class AbstractStreamOperationTest {
 
             verifySequence {
                 storageOperation.prepareStage(streamId, streamConfig.destinationSyncMode)
-                storageOperation.createFinalNamespace(streamId)
             }
             confirmVerified(storageOperation)
 
