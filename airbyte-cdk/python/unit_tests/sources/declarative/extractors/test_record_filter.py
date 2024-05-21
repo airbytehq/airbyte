@@ -4,10 +4,12 @@
 from typing import List, Mapping, Optional
 
 import pytest
+from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator, RecordFilter
-from sources.declarative.datetime import MinMaxDatetime
-from sources.declarative.incremental import DatetimeBasedCursor
-from sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.incremental import CursorFactory, DatetimeBasedCursor, PerPartitionCursor
+from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.models import CustomRetriever, DeclarativeStream, ParentStreamConfig, SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.types import StreamSlice
 
 
 @pytest.mark.parametrize(
@@ -97,3 +99,64 @@ def test_client_side_record_filter_decorator_no_parent_stream(stream_state: Opti
 
     assert len(filtered_records) == count_expected_records
 
+
+@pytest.mark.parametrize(
+    "stream_state, count_expected_records",
+    [
+        ({},  2),
+        ({"states": [{"some_parent_id": {"created_at": "2021-01-03"}}]},  1),
+    ],
+    ids=["no_stream_state_no_record_filter", "with_stream_state_no_record_filter"]
+)
+def test_client_side_record_filter_decorator_with_parent_stream(stream_state: Optional[Mapping], count_expected_records: int):
+    records_to_filter = [
+        {"id": 1, "created_at": "2020-01-03"},
+        {"id": 2, "created_at": "2021-01-03"},
+        {"id": 3, "created_at": "2021-01-04"},
+        {"id": 4, "created_at": "2021-02-01"},
+    ]
+    date_time_based_cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d", parameters={}),
+        end_datetime=MinMaxDatetime(datetime="2021-01-05", datetime_format="%Y-%m-%d", parameters={}),
+        step="P10Y",
+        cursor_field=InterpolatedString.create("created_at", parameters={}),
+        datetime_format="%Y-%m-%d",
+        cursor_granularity="P1D",
+        config={},
+        parameters={},
+    )
+    per_partition_cursor = PerPartitionCursor(
+        cursor_factory=CursorFactory(
+            lambda: date_time_based_cursor),
+        partition_router=SubstreamPartitionRouter(
+            type="SubstreamPartitionRouter",
+            parent_stream_configs=[
+                ParentStreamConfig(
+                    type="ParentStreamConfig",
+                    parent_key="id",
+                    partition_field="id",
+                    stream=DeclarativeStream(
+                        type="DeclarativeStream",
+                        retriever=CustomRetriever(
+                            type="CustomRetriever",
+                            class_name="a_class_name"
+                        )
+                    )
+                )
+            ]
+        ),
+    )
+    if stream_state:
+        per_partition_cursor.set_initial_state({"states": [{"partition": {"id": "some_parent_id", "parent_slice": {}}, "cursor": {'created_at': '2021-01-03'}}]})
+    record_filter_decorator = ClientSideIncrementalRecordFilterDecorator(
+        date_time_based_cursor=date_time_based_cursor,
+        record_filter=None,
+        per_partition_cursor=per_partition_cursor
+    )
+    filtered_records = list(
+        record_filter_decorator.filter_records(records=records_to_filter, stream_state=stream_state,
+                                               stream_slice=StreamSlice(partition={"id": "some_parent_id", "parent_slice": {}}, cursor_slice={}),
+                                               next_page_token=None)
+    )
+
+    assert len(filtered_records) == count_expected_records
