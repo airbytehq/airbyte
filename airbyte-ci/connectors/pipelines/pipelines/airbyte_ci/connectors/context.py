@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 from types import TracebackType
@@ -15,6 +16,7 @@ import yaml  # type: ignore
 from asyncer import asyncify
 from dagger import Directory, Platform, Secret
 from github import PullRequest
+from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.consts import BUILD_PLATFORMS
 from pipelines.dagger.actions import secrets
@@ -28,6 +30,13 @@ from pipelines.models.contexts.pipeline_context import PipelineContext
 if TYPE_CHECKING:
     from pathlib import Path as NativePath
     from typing import Dict, FrozenSet, List, Optional, Sequence
+
+# These test suite names are declared in metadata.yaml files
+TEST_SUITE_NAME_TO_STEP_ID = {
+    "unitTests": CONNECTOR_TEST_STEP_ID.UNIT,
+    "integrationTests": CONNECTOR_TEST_STEP_ID.INTEGRATION,
+    "acceptanceTests": CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
+}
 
 
 class ConnectorContext(PipelineContext):
@@ -140,7 +149,7 @@ class ConnectorContext(PipelineContext):
             ci_gcs_credentials=ci_gcs_credentials,
             ci_git_user=ci_git_user,
             ci_github_access_token=ci_github_access_token,
-            run_step_options=run_step_options,
+            run_step_options=self._skip_metadata_disabled_test_suites(run_step_options),
             enable_report_auto_open=enable_report_auto_open,
         )
 
@@ -286,3 +295,28 @@ class ConnectorContext(PipelineContext):
 
     def create_slack_message(self) -> str:
         raise NotImplementedError
+
+    def _get_step_id_to_skip_according_to_metadata(self) -> List[CONNECTOR_TEST_STEP_ID]:
+        """The connector metadata have a connectorTestSuitesOptions field.
+        It allows connector developers to declare the test suites that are enabled for a connector.
+        This function retrieved enabled test suites according to this field value and returns the test suites steps that are skipped (because they're not declared in this field.)
+        The skippable test suites steps are declared in TEST_SUITE_NAME_TO_STEP_ID.
+
+        Returns:
+            List[CONNECTOR_TEST_STEP_ID]: List of step ids that should be skipped according to connector metadata.
+        """
+        enabled_test_suites = [option["suite"] for option in self.metadata.get("connectorTestSuitesOptions", [])]
+        return [step_id for test_suite_name, step_id in TEST_SUITE_NAME_TO_STEP_ID.items() if test_suite_name not in enabled_test_suites]
+
+    def _skip_metadata_disabled_test_suites(self, run_step_options: RunStepOptions) -> RunStepOptions:
+        """Updated the original run_step_options to skip the disabled test suites according to connector metadata.
+
+        Args:
+            run_step_options (RunStepOptions): Original run step options.
+
+        Returns:
+            RunStepOptions: Updated run step options.
+        """
+        run_step_options = deepcopy(run_step_options)
+        run_step_options.skip_steps += self._get_step_id_to_skip_according_to_metadata()
+        return run_step_options
