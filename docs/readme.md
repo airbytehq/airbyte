@@ -18,7 +18,7 @@ There are three major components to know in Airbyte:
 
 Airbyte is suitable for a wide range of data integration use cases, including AI data infrastructure and EL(T) workloads. Airbyte is also [embeddable](https://airbyte.com/product/powered-by-airbyte) within your own application or platform to power your product.
 
-<Arcade id="0k75Pa9c9EvrJb8zFsuU" title="Airbyte Demo" />
+<Arcade id="0k75Pa9c9EvrJb8zFsuU" title="Airbyte Demo" paddingBottom="calc(61.416666666666664% + 41px)" />
 
 ## For Airbyte Cloud users
 
