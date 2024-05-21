@@ -695,7 +695,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         configuredCatalog.withStreams(streams)
 
         val read1 = source().read(config()!!, configuredCatalog, null)
-        val actualRecords1 = AutoCloseableIterators.toListAndClose(read1)
+        val actualMessages1 = AutoCloseableIterators.toListAndClose(read1)
 
         // The first message will be start of the incremental stream.
         // The last message will be the end of the full refresh stream.
@@ -703,7 +703,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         // resumeable full refresh.
         assertStreamStatusTraceMessageIndex(
             0,
-            actualRecords1,
+            actualMessages1,
             createAirbteStreanStatusTraceMessage(
                 modelsSchema(),
                 MODELS_STREAM_NAME,
@@ -711,8 +711,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             )
         )
         assertStreamStatusTraceMessageIndex(
-            actualRecords1.size - 1,
-            actualRecords1,
+            actualMessages1.size - 1,
+            actualMessages1,
             createAirbteStreanStatusTraceMessage(
                 modelsSchema(),
                 MODELS_STREAM_NAME_2,
@@ -720,8 +720,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             )
         )
 
-        val recordMessages1 = extractRecordMessages(actualRecords1)
-        val stateMessages1 = extractStateMessages(actualRecords1)
+        val recordMessages1 = extractRecordMessages(actualMessages1)
+        val stateMessages1 = extractStateMessages(actualMessages1)
         stateMessages1.map { state -> assertStateDoNotHaveDuplicateStreams(state) }
         val names = HashSet(STREAM_NAMES)
         names.add(MODELS_STREAM_NAME_2)
@@ -746,7 +746,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
             assertStreamStatusTraceMessageIndex(
                 MODEL_RECORDS_2.size,
-                actualRecords1,
+                actualMessages1,
                 createAirbteStreanStatusTraceMessage(
                     modelsSchema(),
                     MODELS_STREAM_NAME_2,
@@ -755,7 +755,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             )
             assertStreamStatusTraceMessageIndex(
                 MODEL_RECORDS_2.size + 1,
-                actualRecords1,
+                actualMessages1,
                 createAirbteStreanStatusTraceMessage(
                     modelsSchema(),
                     MODELS_STREAM_NAME,
@@ -788,20 +788,20 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
             // Expect state and record message from MODEL_RECORDS_2.
             assertStreamStatusTraceMessageIndex(
-                2 * MODEL_RECORDS_2.size,
-                actualRecords1,
+                2 * MODEL_RECORDS_2.size + 2,
+                actualMessages1,
                 createAirbteStreanStatusTraceMessage(
                     modelsSchema(),
-                    MODELS_STREAM_NAME_2,
+                    MODELS_STREAM_NAME,
                     AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
                 )
             )
             assertStreamStatusTraceMessageIndex(
-                2 * MODEL_RECORDS_2.size + 1,
-                actualRecords1,
+                2 * MODEL_RECORDS_2.size + 3,
+                actualMessages1,
                 createAirbteStreanStatusTraceMessage(
                     modelsSchema(),
-                    MODELS_STREAM_NAME,
+                    MODELS_STREAM_NAME_2,
                     AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED
                 )
             )
