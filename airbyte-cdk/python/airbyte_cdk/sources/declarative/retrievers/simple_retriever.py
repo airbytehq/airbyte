@@ -64,7 +64,8 @@ class SimpleRetriever(Retriever):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._paginator = self.paginator or NoPagination(parameters=parameters)
         self._last_response: Optional[requests.Response] = None
-        self._records_from_last_response: List[Record] = []
+        self._last_page_size: int = 0
+        self._last_record: Optional[Record] = None
         self._parameters = parameters
         self._name = InterpolatedString(self._name, parameters=parameters) if isinstance(self._name, str) else self._name
 
@@ -223,19 +224,21 @@ class SimpleRetriever(Retriever):
     ) -> Iterable[Record]:
         if not response:
             self._last_response = None
-            self._records_from_last_response = []
             return []
 
         self._last_response = response
-        records = self.record_selector.select_records(
+        record_generator = self.record_selector.select_records(
             response=response,
             stream_state=stream_state,
             records_schema=records_schema,
             stream_slice=stream_slice,
             next_page_token=next_page_token,
         )
-        self._records_from_last_response = records
-        return records
+        self._last_page_size = 0
+        for record in record_generator:
+            self._last_page_size += 1
+            self._last_record = record
+            yield record
 
     @property  # type: ignore
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -255,7 +258,7 @@ class SimpleRetriever(Retriever):
 
         :return: The token for the next page from the input response object. Returning None means there are no more pages to read in this response.
         """
-        return self._paginator.next_page_token(response, self._records_from_last_response)
+        return self._paginator.next_page_token(response, self._last_page_size, self._last_record)
 
     def _fetch_next_page(
         self, stream_state: Mapping[str, Any], stream_slice: StreamSlice, next_page_token: Optional[Mapping[str, Any]] = None
