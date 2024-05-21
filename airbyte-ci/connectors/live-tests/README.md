@@ -275,6 +275,10 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
+### 0.17.1
+
+Bump the connection-retriever version to fix deprecated query.
+
 ### 0.17.0
 
 Enable running in GitHub actions.
