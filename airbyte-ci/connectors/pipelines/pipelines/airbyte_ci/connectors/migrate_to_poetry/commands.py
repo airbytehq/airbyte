@@ -51,7 +51,7 @@ async def migrate_to_poetry(ctx: click.Context, changelog: bool, bump: str | Non
             ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
             ci_git_user=ctx.obj["ci_git_user"],
             ci_github_access_token=ctx.obj["ci_github_access_token"],
-            enable_report_auto_open=True,
+            enable_report_auto_open=False,
             docker_hub_username=ctx.obj.get("docker_hub_username"),
             docker_hub_password=ctx.obj.get("docker_hub_password"),
             s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
