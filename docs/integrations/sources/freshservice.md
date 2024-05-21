@@ -53,7 +53,8 @@ Please read [How to find your API key](https://api.freshservice.com/#authenticat
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| :------ | :--------- | :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
+| 1.3.6   | 2024-05-15 | [38195](https://github.com/airbytehq/airbyte/pull/38195) | Make connector compatible with builder                                                 |
 | 1.3.5   | 2024-04-19 | [37162](https://github.com/airbytehq/airbyte/pull/37162) | Updating to 0.80.0 CDK                                                                 |
 | 1.3.4   | 2024-04-18 | [37162](https://github.com/airbytehq/airbyte/pull/37162) | Manage dependencies with Poetry.                                                       |
 | 1.3.3   | 2024-04-15 | [37162](https://github.com/airbytehq/airbyte/pull/37162) | Base image migration: remove Dockerfile and use the python-connector-base image        |
