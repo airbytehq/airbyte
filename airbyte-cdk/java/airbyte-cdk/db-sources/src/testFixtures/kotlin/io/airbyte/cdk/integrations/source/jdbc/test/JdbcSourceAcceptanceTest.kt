@@ -19,10 +19,10 @@ import io.airbyte.commons.resources.MoreResources
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder
 import io.airbyte.commons.util.MoreIterators
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair
-import io.airbyte.protocol.models.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.*
 import java.math.BigDecimal
 import java.sql.SQLException
 import java.util.*
@@ -202,12 +202,11 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
     private fun createAirbteStreanStatusTraceMessage(
         namespace: String,
         streamName: String,
-        status: AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+        status: AirbyteStreamStatus
     ): AirbyteStreamStatusTraceMessage {
         return AirbyteStreamStatusTraceMessage()
             .withStreamDescriptor(
-                io.airbyte.protocol.models
-                    .StreamDescriptor()
+                StreamDescriptor()
                     .withNamespace(namespace)
                     .withName(streamName)
             )
@@ -453,7 +452,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             createAirbteStreanStatusTraceMessage(
                 defaultNamespace,
                 streamName(),
-                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED
+                AirbyteStreamStatus.STARTED
             )
         )
         assertStreamStatusTraceMessageIndex(
@@ -462,7 +461,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             createAirbteStreanStatusTraceMessage(
                 defaultNamespace,
                 streamName(),
-                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+                AirbyteStreamStatus.COMPLETE
             )
         )
 
@@ -471,11 +470,11 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         val expectedMessages: MutableList<AirbyteMessage> = airbyteMessagesReadOneColumn
 
         expectedMessages.addFirst(AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
-            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(streamName(), defaultNamespace), io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)
+            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(streamName(), defaultNamespace), AirbyteStreamStatus.STARTED)
         ))
 
         expectedMessages.addLast(AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
-            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(streamName(), defaultNamespace), io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)
+            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(streamName(), defaultNamespace), AirbyteStreamStatus.COMPLETE)
         ))
         setTraceEmittedAtToNull(actualMessages)
         setTraceEmittedAtToNull(expectedMessages)
@@ -567,8 +566,6 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         expectedMessages.addAll(getAirbyteMessagesSecondSync(streamName2))
 
-        System.out.println("catalog: " + catalog)
-
         val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
 
         assertStreamStatusTraceMessageIndex(
@@ -576,17 +573,17 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             actualMessages,
             createAirbteStreanStatusTraceMessage(
                 defaultNamespace,
-                streamName(),
-                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED
+                streamName2,
+                AirbyteStreamStatus.STARTED
             )
         )
         assertStreamStatusTraceMessageIndex(
-            actualMessages.size - 5,
+            actualMessages.size - 7,
             actualMessages,
             createAirbteStreanStatusTraceMessage(
                 defaultNamespace,
                 streamName2,
-                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED
+                AirbyteStreamStatus.COMPLETE
             )
         )
         assertStreamStatusTraceMessageIndex(
@@ -595,7 +592,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             createAirbteStreanStatusTraceMessage(
                 defaultNamespace,
                 streamName(),
-                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+                AirbyteStreamStatus.STARTED
             )
         )
         assertStreamStatusTraceMessageIndex(
@@ -603,8 +600,8 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             actualMessages,
             createAirbteStreanStatusTraceMessage(
                 defaultNamespace,
-                streamName2,
-                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+                streamName(),
+                AirbyteStreamStatus.COMPLETE
             )
         )
 
@@ -841,7 +838,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             createAirbteStreanStatusTraceMessage(
                 defaultNamespace,
                 streamName(),
-                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED
+                AirbyteStreamStatus.STARTED
             )
         )
         assertStreamStatusTraceMessageIndex(
@@ -850,7 +847,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             createAirbteStreanStatusTraceMessage(
                 defaultNamespace,
                 streamName(),
-                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+                AirbyteStreamStatus.COMPLETE
             )
         )
 
@@ -878,7 +875,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             createAirbteStreanStatusTraceMessage(
                 defaultNamespace,
                 streamName(),
-                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED
+                AirbyteStreamStatus.STARTED
             )
         )
         assertStreamStatusTraceMessageIndex(
@@ -887,7 +884,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             createAirbteStreanStatusTraceMessage(
                 defaultNamespace,
                 streamName(),
-                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+                AirbyteStreamStatus.COMPLETE
             )
         )
 
@@ -904,11 +901,11 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         setEmittedAtToNull(actualMessagesSecondSync)
 
         expectedMessages.addFirst(AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
-            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(configuredCatalog.streams[0].stream.name, defaultNamespace), io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)
+            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(configuredCatalog.streams[0].stream.name, defaultNamespace), AirbyteStreamStatus.STARTED)
         ))
 
         expectedMessages.addLast(AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
-            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(configuredCatalog.streams[0].stream.name, defaultNamespace), io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)
+            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(configuredCatalog.streams[0].stream.name, defaultNamespace), AirbyteStreamStatus.COMPLETE)
         ))
         setTraceEmittedAtToNull(actualMessagesSecondSync)
         setTraceEmittedAtToNull(expectedMessages)
@@ -1391,11 +1388,11 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         )
 
         expectedMessages.addFirst(AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
-            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(airbyteStream.stream.name, airbyteStream.stream.namespace), io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)
+            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(airbyteStream.stream.name, airbyteStream.stream.namespace), AirbyteStreamStatus.STARTED)
         ))
 
         expectedMessages.addLast(AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
-            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(airbyteStream.stream.name, airbyteStream.stream.namespace), io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)
+            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(airbyteStream.stream.name, airbyteStream.stream.namespace), AirbyteStreamStatus.COMPLETE)
         ))
         setTraceEmittedAtToNull(actualMessages)
         setTraceEmittedAtToNull(expectedMessages)
