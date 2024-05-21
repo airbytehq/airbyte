@@ -481,6 +481,10 @@ class FlatFileOrdersReports(IncrementalReportsAmazonSPStream):
     primary_key = "amazon-order-id"
     cursor_field = "last-updated-date"
 
+    def parse_document(self, document):
+        return csv.DictReader(
+            StringIO(document), delimiter="\t", quotechar=None, quoting=csv.QUOTE_NONE
+        )
 
 class FbaStorageFeesReports(IncrementalReportsAmazonSPStream):
     """
@@ -1023,6 +1027,11 @@ class FlatFileOrdersReportsByLastUpdate(IncrementalReportsAmazonSPStream):
     primary_key = "amazon-order-id"
     cursor_field = "last-updated-date"
     replication_start_date_limit_in_days = 30
+
+    def parse_document(self, document):
+        return csv.DictReader(
+            StringIO(document), delimiter="\t", quotechar=None, quoting=csv.QUOTE_NONE
+        )
 
 
 class Orders(IncrementalAmazonSPStream):
