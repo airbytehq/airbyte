@@ -41,6 +41,7 @@ The Copper source connector supports the following [sync modes](https://docs.air
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.5   | 2024-05-17 | [38214](https://github.com/airbytehq/airbyte/pull/38214)  | Make connector compatable with builder                                          |
 | 0.3.4   | 2024-04-19 | [37145](https://github.com/airbytehq/airbyte/pull/37145)  | Updating to 0.80.0 CDK                                                          |
 | 0.3.3   | 2024-04-18 | [37145](https://github.com/airbytehq/airbyte/pull/37145)  | Manage dependencies with Poetry.                                                |
 | 0.3.2   | 2024-04-15 | [37145](https://github.com/airbytehq/airbyte/pull/37145)  | Base image migration: remove Dockerfile and use the python-connector-base image |
