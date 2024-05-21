@@ -61,13 +61,13 @@ class Contacts(SendgridStream):
     @default_backoff_handler(max_tries=5, factor=15)
     def _send_http_request(self, method: str, url: str, stream: bool = False, enable_auth: bool = True):
         headers = self._session.auth.get_auth_header() if enable_auth else None
-        print(f"Headers in stream_request: {headers}")
-        print(f"Session before request: {id(self._session)}")
+        print(f"\n\n\nHeaders in stream_request: {headers}\n\n\n")
+        # print(f"Session before request: {id(self._session)}")
         response = self._session.request(method, url=url, headers=headers, stream=stream)
-        print(f"Session after request: {id(self._session)}")
-        print(f"Request headers: {headers}")
-        print(f"Response headers: {response.headers}")
-        print(f"Response text: {response.text}")
+        # print(f"Session after request: {id(self._session)}")
+        # print(f"Request headers: {headers}")
+        # print(f"Response headers: {response.headers}")
+        # print(f"Response text: {response.text}")
         if response.status_code not in [200, 202]:
             self.logger.error(f"error body: {response.text}")
         response.raise_for_status()
@@ -167,7 +167,8 @@ class Contacts(SendgridStream):
 
         url_parsed = urlparse(url)
         tmp_file = os.path.realpath(os.path.basename(url_parsed.path[1:-5]))
-        with closing(self._send_http_request("GET", f"{url}", stream=True, enable_auth=False)) as response, open(
+        download_session = requests.get(f"{url}", stream=True)
+        with closing(download_session) as response, open(
             tmp_file, "wb"
         ) as data_file:
             for chunk in response.iter_content(chunk_size=chunk_size):
