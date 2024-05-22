@@ -71,7 +71,6 @@ public class ElasticsearchConnection {
     restClient = builder
         .setDefaultHeaders(configureHeaders(config))
         .setFailureListener(new FailureListener())
-        .setSocketTimeout(3600000);//increase from default 30,000 millisecs to 1 hour
         .build();
     // Create the transport that provides JSON and http services to API clients
     Transport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
