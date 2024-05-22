@@ -60,15 +60,15 @@ class ClientSideIncrementalRecordFilterDecorator:
         self._per_partition_cursor = per_partition_cursor
 
     @property
-    def _cursor_field(self) -> Union[str, Any]:
-        return self._date_time_based_cursor.cursor_field.eval(self._date_time_based_cursor.config)
+    def _cursor_field(self) -> str:
+        return self._date_time_based_cursor.cursor_field.eval(self._date_time_based_cursor.config)  # type: ignore # eval returns a string in this context
 
     @property
-    def _start_date_from_config(self) -> Union[datetime.datetime, Any]:
+    def _start_date_from_config(self) -> datetime.datetime:
         return self._date_time_based_cursor._start_datetime.get_datetime(self._date_time_based_cursor.config)
 
     @property
-    def _end_datetime(self) -> Union[datetime.datetime, Any]:
+    def _end_datetime(self) -> datetime.datetime:
         return (
             self._date_time_based_cursor._end_datetime.get_datetime(self._date_time_based_cursor.config)
             if self._date_time_based_cursor._end_datetime
