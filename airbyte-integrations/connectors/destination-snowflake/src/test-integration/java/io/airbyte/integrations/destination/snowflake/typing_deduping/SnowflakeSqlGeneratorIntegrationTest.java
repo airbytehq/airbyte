@@ -25,7 +25,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus;
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeTransaction;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase;
 import io.airbyte.integrations.destination.snowflake.SnowflakeSourceOperations;
@@ -570,7 +570,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                           }
                           """)));
 
-    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalDedupStream(),
+    TyperDeduperUtil.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalDedupStream(),
         initialState.initialRawTableStatus().getMaxProcessedTimestamp(), "");
 
     getDIFFER().diffFinalTableRecords(
@@ -664,7 +664,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                           }
                           """)));
 
-    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalDedupStream(),
+    TyperDeduperUtil.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalDedupStream(),
         initialState.initialRawTableStatus().getMaxProcessedTimestamp(), "");
 
     getDIFFER().diffFinalTableRecords(
@@ -739,7 +739,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                           }
                           """)));
 
-    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalDedupStream(),
+    TyperDeduperUtil.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalDedupStream(),
         initialState.initialRawTableStatus().getMaxProcessedTimestamp(), "");
 
     getDIFFER().diffFinalTableRecords(
@@ -794,7 +794,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                           }
                           """)));
 
-    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalDedupStream(),
+    TyperDeduperUtil.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalDedupStream(),
         initialState2.initialRawTableStatus().getMaxProcessedTimestamp(), "");
 
     getDIFFER().diffFinalTableRecords(
@@ -946,7 +946,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                           }
                           """)));
 
-    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalAppendStream(),
+    TyperDeduperUtil.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalAppendStream(),
         initialState.initialRawTableStatus().getMaxProcessedTimestamp(), "");
 
     getDIFFER().diffFinalTableRecords(
@@ -1085,7 +1085,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                           }
                           """)));
 
-    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalAppendStream(),
+    TyperDeduperUtil.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalAppendStream(),
         initialState.initialRawTableStatus().getMaxProcessedTimestamp(), "");
 
     getDIFFER().diffFinalTableRecords(
@@ -1182,7 +1182,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                           }
                           """)));
 
-    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalAppendStream(),
+    TyperDeduperUtil.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalAppendStream(),
         initialState.initialRawTableStatus().getMaxProcessedTimestamp(), "");
 
     getDIFFER().diffFinalTableRecords(
@@ -1259,7 +1259,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                           }
                           """)));
 
-    TypeAndDedupeTransaction.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalAppendStream(),
+    TyperDeduperUtil.executeTypeAndDedupe(this.getGenerator(), this.getDestinationHandler(), this.getIncrementalAppendStream(),
         initialState2.initialRawTableStatus().getMaxProcessedTimestamp(), "");
 
     getDIFFER().diffFinalTableRecords(
