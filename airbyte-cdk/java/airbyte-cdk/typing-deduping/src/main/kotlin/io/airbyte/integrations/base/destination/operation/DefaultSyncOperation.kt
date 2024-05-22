@@ -29,6 +29,7 @@ class DefaultSyncOperation<DestinationState : MinimumDestinationState>(
     private val defaultNamespace: String,
     private val streamOperationFactory: StreamOperationFactory<DestinationState>,
     private val migrations: List<Migration<DestinationState>>,
+    private val disableTypeDedupe: Boolean = false,
     private val executorService: ExecutorService =
         Executors.newFixedThreadPool(
             10,
@@ -47,7 +48,8 @@ class DefaultSyncOperation<DestinationState : MinimumDestinationState>(
 
     private fun createPerStreamOpClients(): Map<StreamId, StreamOperation<DestinationState>> {
         log.info { "Preparing required schemas and tables for all streams" }
-        val streamsInitialStates = destinationHandler.gatherInitialState(parsedCatalog.streams)
+        val streamConfigs = parsedCatalog.streams
+        val streamsInitialStates = destinationHandler.gatherInitialState(streamConfigs)
 
         val postMigrationInitialStates =
             tdutils.executeRawTableMigrations(
@@ -60,11 +62,23 @@ class DefaultSyncOperation<DestinationState : MinimumDestinationState>(
             postMigrationInitialStates.associate { it.streamConfig.id to it.destinationState }
         )
 
+        // Prepare raw and final schemas
+        val rawNamespaces = streamConfigs.map { it.id.rawNamespace }.toSet()
+        val finalNamespaces = streamConfigs.map { it.id.finalNamespace }.toSet()
+        val allNamespaces =
+            if (disableTypeDedupe) rawNamespaces else rawNamespaces + finalNamespaces
+        destinationHandler.createNamespaces(allNamespaces)
+
         val initializationFutures =
             postMigrationInitialStates
                 .map {
                     CompletableFuture.supplyAsync(
-                        { Pair(it.streamConfig.id, streamOperationFactory.createInstance(it)) },
+                        {
+                            Pair(
+                                it.streamConfig.id,
+                                streamOperationFactory.createInstance(it, disableTypeDedupe)
+                            )
+                        },
                         executorService,
                     )
                 }
