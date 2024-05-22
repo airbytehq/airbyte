@@ -39,24 +39,18 @@ class RecordFilter:
                 yield record
 
 
-class ClientSideIncrementalRecordFilterDecorator:
+class ClientSideIncrementalRecordFilterDecorator(RecordFilter):
     """
     Applies a filter to a list of records to exclude those that are older than the stream_state/start_date.
 
     :param DatetimeBasedCursor date_time_based_cursor: Cursor used to extract datetime values
-    :param RecordFilter record_filter: Optional filter to apply after date-time filtering
     :param PerPartitionCursor per_partition_cursor: Optional Cursor used for mapping cursor value in nested stream_state
 
     """
 
-    def __init__(
-        self,
-        date_time_based_cursor: DatetimeBasedCursor,
-        record_filter: Optional[RecordFilter],
-        per_partition_cursor: Optional[PerPartitionCursor] = None,
-    ):
+    def __init__(self, date_time_based_cursor: DatetimeBasedCursor, per_partition_cursor: Optional[PerPartitionCursor] = None, **kwargs):
+        super().__init__(**kwargs)
         self._date_time_based_cursor = date_time_based_cursor
-        self._delegate = record_filter
         self._per_partition_cursor = per_partition_cursor
 
     @property
@@ -89,11 +83,11 @@ class ClientSideIncrementalRecordFilterDecorator:
             for record in records
             if self._end_datetime > self._date_time_based_cursor.parse_date(record[self._cursor_field]) > filter_date
         )
-        if self._delegate:
-            return self._delegate.filter_records(
+        if self.condition:
+            records = super().filter_records(
                 records=records, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
             )
-        return records
+        yield from records
 
     def _get_state_value(self, stream_state: StreamState, stream_slice: StreamSlice) -> Optional[str]:
         if self._per_partition_cursor:

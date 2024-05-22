@@ -86,10 +86,11 @@ def test_client_side_record_filter_decorator_no_parent_stream(stream_state: Opti
                         parameters={},
                     )
 
-    record_filter = RecordFilter(config={}, condition=record_filter_expression, parameters={}) if record_filter_expression else None
     record_filter_decorator = ClientSideIncrementalRecordFilterDecorator(
+        config={},
+        condition=record_filter_expression,
+        parameters={},
         date_time_based_cursor=date_time_based_cursor,
-        record_filter=record_filter,
         per_partition_cursor=None
     )
 
@@ -149,8 +150,9 @@ def test_client_side_record_filter_decorator_with_parent_stream(stream_state: Op
     if stream_state:
         per_partition_cursor.set_initial_state({"states": [{"partition": {"id": "some_parent_id", "parent_slice": {}}, "cursor": {'created_at': '2021-01-03'}}]})
     record_filter_decorator = ClientSideIncrementalRecordFilterDecorator(
+        config={},
+        parameters={},
         date_time_based_cursor=date_time_based_cursor,
-        record_filter=None,
         per_partition_cursor=per_partition_cursor
     )
     filtered_records = list(

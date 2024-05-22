@@ -993,7 +993,12 @@ class ModelToComponentFactory:
         extractor = self._create_component_from_model(model=model.extractor, config=config)
         record_filter = self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
         if client_side_incremental_sync:
-            record_filter = ClientSideIncrementalRecordFilterDecorator(record_filter=record_filter, **client_side_incremental_sync)
+            record_filter = ClientSideIncrementalRecordFilterDecorator(
+                config=config,
+                parameters=model.parameters,
+                condition=model.record_filter.condition if model.record_filter else None,
+                **client_side_incremental_sync,
+            )
         schema_normalization = TypeTransformer(SCHEMA_TRANSFORMER_TYPE_MAPPING[model.schema_normalization])
 
         return RecordSelector(
