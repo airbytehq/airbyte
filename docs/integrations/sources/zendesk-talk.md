@@ -65,17 +65,18 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 
 ## Data type map
 
-| Integration Type | Airbyte Type | Notes |
-| :--------------- | :----------- | :---- |
-| `string`         | `string`     |       |
-| `number`         | `number`     |       |
-| `array`          | `array`      |       |
-| `object`         | `object`     |       |
+| Integration Type | Airbyte Type |
+|:-----------------|:-------------|
+| `string`         | `string`     |
+| `number`         | `number`     |
+| `array`          | `array`      |
+| `object`         | `object`     |
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                     |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------|
+| 1.0.0   | 2024-05-06 | [35780](https://github.com/airbytehq/airbyte/pull/35780) | Migrate implementation to low-code CDK                                      |
 | 0.2.1   | 2024-05-02 | [36625](https://github.com/airbytehq/airbyte/pull/36625) | Schema descriptions and CDK 0.80.0                                          |
 | 0.2.0   | 2024-03-25 | [36459](https://github.com/airbytehq/airbyte/pull/36459) | Unpin CDK version, add record counts in state messages                      |
 | 0.1.13  | 2024-03-04 | [35783](https://github.com/airbytehq/airbyte/pull/35783) | Change order of authentication methods in spec                              |

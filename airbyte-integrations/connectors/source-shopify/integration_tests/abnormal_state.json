@@ -420,13 +420,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "id": 99999999999999,
-        "products": {
-          "updated_at": "2027-07-11T13:07:45-07:00",
-          "deleted": {
-            "deleted_at": "2027-07-11T13:07:45-07:00"
-          }
-        }
+        "updated_at": "2027-07-11T13:07:45-07:00"
       },
       "stream_descriptor": {
         "name": "product_images"
@@ -454,13 +448,6 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "id": 99999999999999,
-        "products": {
-          "updated_at": "2027-07-11T13:07:45-07:00",
-          "deleted": {
-            "deleted_at": "2027-07-11T13:07:45-07:00"
-          }
-        },
         "updated_at": "2027-07-11T13:07:45-07:00"
       },
       "stream_descriptor": {

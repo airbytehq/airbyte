@@ -380,9 +380,9 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
     https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export
 
     @ param response_list_name: the main nested entity to look at inside of response, default = "ticket_events"
-    @ param response_target_entity: nested property inside of `response_list_name`, default = "child_events"
+    @ param response_target_entity: nested property inside `response_list_name`, default = "child_events"
     @ param list_entities_from_event : the list of nested child_events entities to include from parent record
-    @ param event_type : specific event_type to check ["Audit", "Change", "Comment", etc]
+    @ param event_type : specific event_type to check ["Audit", "Change", "Comment", etc.]
     @ param sideload_param : parameter variable to include various information to response
     """
 
@@ -507,15 +507,17 @@ class TicketSubstream(HttpSubStream, IncrementalZendeskSupportStream):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_stream_state = None
         if stream_state:
-            cursor_value = pendulum.parse(stream_state.get(self.cursor_field)).int_timestamp
-            parent_stream_state = {self.parent.cursor_field: cursor_value}
+            cursor_value = stream_state.get(self.cursor_field)
+            parent_stream_state = {self.parent.cursor_field: pendulum.parse(cursor_value).int_timestamp}
+        else:
+            cursor_value = self._start_date
 
         parent_records = self.parent.read_records(
             sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=None, stream_state=parent_stream_state
         )
 
         for record in parent_records:
-            yield {"ticket_id": record["id"]}
+            yield {"ticket_id": record["id"], self.cursor_field: cursor_value}
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 404:
@@ -527,7 +529,7 @@ class TicketSubstream(HttpSubStream, IncrementalZendeskSupportStream):
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
     """
-    Fetch the TicketComments incrementaly from TicketEvents Export stream
+    Fetch the TicketComments incrementally from TicketEvents Export stream
     """
 
     list_entities_from_event = ["via_reference_id", "ticket_id", "timestamp"]
@@ -603,7 +605,13 @@ class TicketMetrics(TicketSubstream):
     ) -> str:
         return f"tickets/{stream_slice['ticket_id']}/metrics"
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        **kwargs,
+    ) -> Iterable[Mapping]:
         """try to select relevant data only"""
 
         try:
@@ -613,13 +621,10 @@ class TicketMetrics(TicketSubstream):
 
         # no data in case of http errors
         if data:
-            if not self.cursor_field:
+            cursor_date = (stream_slice or {}).get(self.cursor_field)
+            updated = data[self.cursor_field]
+            if not cursor_date or updated >= cursor_date:
                 yield data
-            else:
-                cursor_date = (stream_state or {}).get(self.cursor_field)
-                updated = data[self.cursor_field]
-                if not cursor_date or updated >= cursor_date:
-                    yield data
 
 
 class TicketSkips(CursorPaginationZendeskSupportStream):

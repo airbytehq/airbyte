@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1e9086ab-ddac-4c1d-aafd-ba43ff575fe4
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   dockerRepository: airbyte/source-google-pagespeed-insights
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-pagespeed-insights
   githubIssueLabel: source-google-pagespeed-insights
@@ -28,4 +28,12 @@ data:
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-GOOGLE-PAGESPEED-INSIGHTS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
