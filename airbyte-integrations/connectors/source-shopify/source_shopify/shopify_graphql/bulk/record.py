@@ -118,7 +118,6 @@ class ShopifyBulkRecord:
             record["admin_graphql_api_id"] = id
             # extracting the int(id) and reassign
             record["id"] = self.tools.resolve_str_id(id)
-            return record
         return record
 
     def produce_records(self, filename: str) -> Iterable[MutableMapping[str, Any]]:
