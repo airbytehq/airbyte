@@ -40,7 +40,7 @@ import org.mockito.Mockito
 @SuppressFBWarnings(
     value = ["MS_SHOULD_BE_FINAL"],
     justification =
-    "The static variables are updated in subclasses for convenience, and cannot be final.",
+        "The static variables are updated in subclasses for convenience, and cannot be final.",
 )
 abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
     @JvmField protected var testdb: T? = null
@@ -205,11 +205,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         status: AirbyteStreamStatus
     ): AirbyteStreamStatusTraceMessage {
         return AirbyteStreamStatusTraceMessage()
-            .withStreamDescriptor(
-                StreamDescriptor()
-                    .withNamespace(namespace)
-                    .withName(streamName)
-            )
+            .withStreamDescriptor(StreamDescriptor().withNamespace(namespace).withName(streamName))
             .withStatus(status)
     }
 
@@ -392,11 +388,11 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         catalogStreams.addAll(expected.streams)
         catalogStreams.add(
             CatalogHelpers.createAirbyteStream(
-                TABLE_NAME,
-                SCHEMA_NAME2,
-                Field.of(COL_ID, JsonSchemaType.STRING),
-                Field.of(COL_NAME, JsonSchemaType.STRING),
-            )
+                    TABLE_NAME,
+                    SCHEMA_NAME2,
+                    Field.of(COL_ID, JsonSchemaType.STRING),
+                    Field.of(COL_NAME, JsonSchemaType.STRING),
+                )
                 .withSupportedSyncModes(
                     java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
                 ),
@@ -469,13 +465,23 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         val expectedMessages: MutableList<AirbyteMessage> = airbyteMessagesReadOneColumn
 
-        expectedMessages.addFirst(AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
-            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(streamName(), defaultNamespace), AirbyteStreamStatus.STARTED)
-        ))
+        expectedMessages.addFirst(
+            AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
+                AirbyteStreamStatusHolder(
+                    AirbyteStreamNameNamespacePair(streamName(), defaultNamespace),
+                    AirbyteStreamStatus.STARTED
+                )
+            )
+        )
 
-        expectedMessages.addLast(AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
-            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(streamName(), defaultNamespace), AirbyteStreamStatus.COMPLETE)
-        ))
+        expectedMessages.addLast(
+            AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
+                AirbyteStreamStatusHolder(
+                    AirbyteStreamNameNamespacePair(streamName(), defaultNamespace),
+                    AirbyteStreamStatus.COMPLETE
+                )
+            )
+        )
         setTraceEmittedAtToNull(actualMessages)
         setTraceEmittedAtToNull(expectedMessages)
 
@@ -896,17 +902,34 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                 .count()
                 .toInt(),
         )
-        val expectedMessages: MutableList<AirbyteMessage> = getExpectedAirbyteMessagesSecondSync(namespace)
+        val expectedMessages: MutableList<AirbyteMessage> =
+            getExpectedAirbyteMessagesSecondSync(namespace)
 
         setEmittedAtToNull(actualMessagesSecondSync)
 
-        expectedMessages.addFirst(AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
-            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(configuredCatalog.streams[0].stream.name, defaultNamespace), AirbyteStreamStatus.STARTED)
-        ))
+        expectedMessages.addFirst(
+            AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
+                AirbyteStreamStatusHolder(
+                    AirbyteStreamNameNamespacePair(
+                        configuredCatalog.streams[0].stream.name,
+                        defaultNamespace
+                    ),
+                    AirbyteStreamStatus.STARTED
+                )
+            )
+        )
 
-        expectedMessages.addLast(AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
-            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(configuredCatalog.streams[0].stream.name, defaultNamespace), AirbyteStreamStatus.COMPLETE)
-        ))
+        expectedMessages.addLast(
+            AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
+                AirbyteStreamStatusHolder(
+                    AirbyteStreamNameNamespacePair(
+                        configuredCatalog.streams[0].stream.name,
+                        defaultNamespace
+                    ),
+                    AirbyteStreamStatus.COMPLETE
+                )
+            )
+        )
         setTraceEmittedAtToNull(actualMessagesSecondSync)
         setTraceEmittedAtToNull(expectedMessages)
         Assertions.assertEquals(expectedMessages.size, actualMessagesSecondSync.size)
@@ -1387,13 +1410,29 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             createExpectedTestMessages(expectedStreams, expectedRecordMessages.size.toLong()),
         )
 
-        expectedMessages.addFirst(AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
-            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(airbyteStream.stream.name, airbyteStream.stream.namespace), AirbyteStreamStatus.STARTED)
-        ))
+        expectedMessages.addFirst(
+            AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
+                AirbyteStreamStatusHolder(
+                    AirbyteStreamNameNamespacePair(
+                        airbyteStream.stream.name,
+                        airbyteStream.stream.namespace
+                    ),
+                    AirbyteStreamStatus.STARTED
+                )
+            )
+        )
 
-        expectedMessages.addLast(AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
-            AirbyteStreamStatusHolder(AirbyteStreamNameNamespacePair(airbyteStream.stream.name, airbyteStream.stream.namespace), AirbyteStreamStatus.COMPLETE)
-        ))
+        expectedMessages.addLast(
+            AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
+                AirbyteStreamStatusHolder(
+                    AirbyteStreamNameNamespacePair(
+                        airbyteStream.stream.name,
+                        airbyteStream.stream.namespace
+                    ),
+                    AirbyteStreamStatus.COMPLETE
+                )
+            )
+        )
         setTraceEmittedAtToNull(actualMessages)
         setTraceEmittedAtToNull(expectedMessages)
         Assertions.assertEquals(expectedMessages.size, actualMessages.size)
@@ -1434,34 +1473,34 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             .withStreams(
                 java.util.List.of(
                     CatalogHelpers.createAirbyteStream(
-                        TABLE_NAME,
-                        defaultNamespace,
-                        Field.of(COL_ID, JsonSchemaType.INTEGER),
-                        Field.of(COL_NAME, JsonSchemaType.STRING),
-                        Field.of(COL_UPDATED_AT, JsonSchemaType.STRING),
-                    )
+                            TABLE_NAME,
+                            defaultNamespace,
+                            Field.of(COL_ID, JsonSchemaType.INTEGER),
+                            Field.of(COL_NAME, JsonSchemaType.STRING),
+                            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING),
+                        )
                         .withSupportedSyncModes(
                             java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
                         )
                         .withSourceDefinedPrimaryKey(java.util.List.of(java.util.List.of(COL_ID))),
                     CatalogHelpers.createAirbyteStream(
-                        TABLE_NAME_WITHOUT_PK,
-                        defaultNamespace,
-                        Field.of(COL_ID, JsonSchemaType.INTEGER),
-                        Field.of(COL_NAME, JsonSchemaType.STRING),
-                        Field.of(COL_UPDATED_AT, JsonSchemaType.STRING),
-                    )
+                            TABLE_NAME_WITHOUT_PK,
+                            defaultNamespace,
+                            Field.of(COL_ID, JsonSchemaType.INTEGER),
+                            Field.of(COL_NAME, JsonSchemaType.STRING),
+                            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING),
+                        )
                         .withSupportedSyncModes(
                             java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
                         )
                         .withSourceDefinedPrimaryKey(emptyList()),
                     CatalogHelpers.createAirbyteStream(
-                        TABLE_NAME_COMPOSITE_PK,
-                        defaultNamespace,
-                        Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
-                        Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
-                        Field.of(COL_UPDATED_AT, JsonSchemaType.STRING),
-                    )
+                            TABLE_NAME_COMPOSITE_PK,
+                            defaultNamespace,
+                            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
+                            Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
+                            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING),
+                        )
                         .withSupportedSyncModes(
                             java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
                         )

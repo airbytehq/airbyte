@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.integrations.source.relationaldb.streamstatus
 
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage
@@ -17,9 +21,7 @@ class StreamStatusTraceEmitterIterator(private val statusHolder: AirbyteStreamSt
 
     override fun next(): AirbyteMessage {
         emitted = true
-        return makeStreamStatusTraceAirbyteMessage(
-            statusHolder
-        )
+        return makeStreamStatusTraceAirbyteMessage(statusHolder)
     }
 
     @Throws(Exception::class)
@@ -28,10 +30,11 @@ class StreamStatusTraceEmitterIterator(private val statusHolder: AirbyteStreamSt
     }
 
     override fun remove() {
-        //no-op
+        // no-op
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(StreamStatusTraceEmitterIterator::class.java)
+        private val LOGGER: Logger =
+            LoggerFactory.getLogger(StreamStatusTraceEmitterIterator::class.java)
     }
 }

@@ -46,7 +46,6 @@ import io.airbyte.integrations.source.mysql.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.*;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -226,12 +225,12 @@ public class MySqlInitialReadUtil {
     }
 
     final List<AutoCloseableIterator<AirbyteMessage>> starters = catalog.getStreams().stream()
-            .filter(stream -> !initialLoadStreams.streamsForInitialLoad.contains(stream))
-            .map(stream -> (AutoCloseableIterator<AirbyteMessage>)new StreamStatusTraceEmitterIterator(
-                    new AirbyteStreamStatusHolder(
-                            new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
-                            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)))
-            .toList();
+        .filter(stream -> !initialLoadStreams.streamsForInitialLoad.contains(stream))
+        .map(stream -> (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(
+            new AirbyteStreamStatusHolder(
+                new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)))
+        .toList();
 
     // Build the incremental CDC iterators.
     final AirbyteDebeziumHandler<MySqlCdcPosition> handler = new AirbyteDebeziumHandler<MySqlCdcPosition>(
@@ -249,12 +248,12 @@ public class MySqlInitialReadUtil {
         propertiesManager, eventConverter, new MySqlCdcSavedInfoFetcher(stateToBeUsed), new MySqlCdcStateHandler(stateManager));
 
     final List<AutoCloseableIterator<AirbyteMessage>> completers = catalog.getStreams().stream()
-            .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
-            .map(stream -> (AutoCloseableIterator<AirbyteMessage>)new StreamStatusTraceEmitterIterator(
-                    new AirbyteStreamStatusHolder(
-                            new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
-                            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)))
-            .toList();
+        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
+        .map(stream -> (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(
+            new AirbyteStreamStatusHolder(
+                new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)))
+        .toList();
 
     // This starts processing the binglogs as soon as initial sync is complete, this is a bit different
     // from the current cdc syncs.
@@ -264,9 +263,8 @@ public class MySqlInitialReadUtil {
         AutoCloseableIterators.concatWithEagerClose(
             Stream
                 .of(initialLoadIterator,
-                        starters,
-                        Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null))
-                        ,completers)
+                    starters,
+                    Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)), completers)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList()),
             AirbyteTraceMessageUtility::emitStreamStatusTrace));

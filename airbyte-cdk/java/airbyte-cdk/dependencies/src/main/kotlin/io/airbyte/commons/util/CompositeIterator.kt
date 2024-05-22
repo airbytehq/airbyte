@@ -42,7 +42,7 @@ internal constructor(
     private var i: Int
     private val seenIterators: MutableSet<Optional<AirbyteStreamNameNamespacePair>>
     private var hasClosed: Boolean
-    private var emitStatus: Boolean = emitStatus;
+    private var emitStatus: Boolean = emitStatus
 
     init {
         Preconditions.checkNotNull(iterators)
@@ -76,11 +76,11 @@ internal constructor(
                 }
             } catch (e: Exception) {
                 if (emitStatus) {
-                StreamStatusUtils.emitIncompleteStreamStatus(
-                    airbyteStream,
-                    airbyteStreamStatusConsumer
-                )
-                    }
+                    StreamStatusUtils.emitIncompleteStreamStatus(
+                        airbyteStream,
+                        airbyteStreamStatusConsumer
+                    )
+                }
                 throw RuntimeException(e)
             }
 

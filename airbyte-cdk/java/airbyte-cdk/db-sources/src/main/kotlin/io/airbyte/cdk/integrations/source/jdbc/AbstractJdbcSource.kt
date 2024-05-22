@@ -127,31 +127,32 @@ abstract class AbstractJdbcSource<Datatype>(
         syncMode: SyncMode,
         cursorField: Optional<String>
     ): AutoCloseableIterator<AirbyteMessage> {
-        if (
-            supportResumableFullRefresh(database, airbyteStream) &&
-                syncMode == FULL_REFRESH
-        ) {
+        if (supportResumableFullRefresh(database, airbyteStream) && syncMode == FULL_REFRESH) {
             val initialLoadHandler =
                 getInitialLoadHandler(database, airbyteStream, catalog, stateManager)
                     ?: throw IllegalStateException(
                         "Must provide initialLoadHandler for resumable full refresh."
                     )
-            return augmentWithStreamStatus(airbyteStream, initialLoadHandler.getIteratorForStream(airbyteStream, table, Instant.now()))
+            return augmentWithStreamStatus(
+                airbyteStream,
+                initialLoadHandler.getIteratorForStream(airbyteStream, table, Instant.now())
+            )
         }
 
         // If flag is off, fall back to legacy non-resumable refresh
-        var iterator = super.getFullRefreshStream(
-            database,
-            airbyteStream,
-            catalog,
-            stateManager,
-            namespace,
-            selectedDatabaseFields,
-            table,
-            emittedAt,
-            syncMode,
-            cursorField,
-        )
+        var iterator =
+            super.getFullRefreshStream(
+                database,
+                airbyteStream,
+                catalog,
+                stateManager,
+                namespace,
+                selectedDatabaseFields,
+                table,
+                emittedAt,
+                syncMode,
+                cursorField,
+            )
 
         return when (airbyteStream.syncMode) {
             FULL_REFRESH -> augmentWithStreamStatus(airbyteStream, iterator)
@@ -159,8 +160,11 @@ abstract class AbstractJdbcSource<Datatype>(
         }
     }
 
-    open fun augmentWithStreamStatus(airbyteStream: ConfiguredAirbyteStream, streamItrator: AutoCloseableIterator<AirbyteMessage>): AutoCloseableIterator<AirbyteMessage> {
-        //no-op
+    open fun augmentWithStreamStatus(
+        airbyteStream: ConfiguredAirbyteStream,
+        streamItrator: AutoCloseableIterator<AirbyteMessage>
+    ): AutoCloseableIterator<AirbyteMessage> {
+        // no-op
         return streamItrator
     }
 
@@ -210,9 +214,7 @@ abstract class AbstractJdbcSource<Datatype>(
                                 // if the connector emits intermediate states, the incremental query
                                 // must be sorted by the cursor
                                 // field
-                                if (
-                                    syncMode == INCREMENTAL && stateEmissionFrequency > 0
-                                ) {
+                                if (syncMode == INCREMENTAL && stateEmissionFrequency > 0) {
                                     val quotedCursorField: String =
                                         enquoteIdentifier(cursorField.get(), quoteString)
                                     sql.append(String.format(" ORDER BY %s ASC", quotedCursorField))
@@ -820,14 +822,15 @@ abstract class AbstractJdbcSource<Datatype>(
         stateManager: StateManager?,
         emittedAt: Instant
     ): AutoCloseableIterator<AirbyteMessage> {
-        val iterator = super.createReadIterator(
-            database,
-            airbyteStream,
-            catalog,
-            table,
-            stateManager,
-            emittedAt
-        )
+        val iterator =
+            super.createReadIterator(
+                database,
+                airbyteStream,
+                catalog,
+                table,
+                stateManager,
+                emittedAt
+            )
         return when (airbyteStream.syncMode) {
             INCREMENTAL -> augmentWithStreamStatus(airbyteStream, iterator)
             else -> iterator

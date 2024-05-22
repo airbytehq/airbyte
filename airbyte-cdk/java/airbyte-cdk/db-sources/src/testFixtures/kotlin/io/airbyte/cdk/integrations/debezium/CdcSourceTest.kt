@@ -125,10 +125,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     ): AirbyteStreamStatusTraceMessage {
 
         return AirbyteStreamStatusTraceMessage()
-            .withStreamDescriptor(StreamDescriptor()
-                    .withNamespace(namespace)
-                    .withName(streamName)
-            )
+            .withStreamDescriptor(StreamDescriptor().withNamespace(namespace).withName(streamName))
             .withStatus(status)
     }
 
@@ -781,10 +778,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 modelsSchema(),
             )
         } else {
-            assertExpectedStateMessageCountMatches(
-                stateMessages1,
-                MODEL_RECORDS.size.toLong()
-            )
+            assertExpectedStateMessageCountMatches(stateMessages1, MODEL_RECORDS.size.toLong())
 
             // Expect state and record message from MODEL_RECORDS_2.
             assertStreamStatusTraceMessageIndex(
