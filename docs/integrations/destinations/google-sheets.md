@@ -152,6 +152,7 @@ EXAMPLE:
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | ------- | ---------- | -------------------------------------------------------- | ---------------------------------------------------------- |
+| 0.2.5 | 2024-05-22 | [38516](https://github.com/airbytehq/airbyte/pull/38516) | [autopull] base image + poetry + up_to_date |
 | 0.2.4 | 2024-05-21 | [38516](https://github.com/airbytehq/airbyte/pull/38516) | [autopull] base image + poetry + up_to_date |
 | 0.2.3 | 2023-09-25 | [30748](https://github.com/airbytehq/airbyte/pull/30748) | Performance testing - include socat binary in docker image |
 | 0.2.2 | 2023-07-06 | [28035](https://github.com/airbytehq/airbyte/pull/28035) | Migrate from authSpecification to advancedAuth |
