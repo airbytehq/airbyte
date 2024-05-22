@@ -1,10 +1,9 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import logging
 from functools import wraps
 from time import sleep
 from typing import Any, Callable, Final, Optional, Tuple, Type
-
-from airbyte_cdk import AirbyteLogger
 
 from .exceptions import ShopifyBulkExceptions
 
@@ -14,7 +13,7 @@ BULK_RETRY_ERRORS: Final[Tuple] = (
 )
 
 
-def bulk_retry_on_exception(logger: AirbyteLogger, more_exceptions: Optional[Tuple[Type[Exception], ...]] = None) -> Callable:
+def bulk_retry_on_exception(logger: logging.Logger, more_exceptions: Optional[Tuple[Type[Exception], ...]] = None) -> Callable:
     """
     A decorator to retry a function when specified exceptions are raised.
 
