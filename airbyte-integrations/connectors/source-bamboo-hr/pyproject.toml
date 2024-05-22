@@ -16,7 +16,7 @@ packages = [ { include = "source_bamboo_hr" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+airbyte-cdk = "^1"
 
 [tool.poetry.scripts]
 source-bamboo-hr = "source_bamboo_hr.run:run"
