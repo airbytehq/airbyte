@@ -1,10 +1,11 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import pendulum
-import pytest
 import os
 from pathlib import Path
+
+import pendulum
+import pytest
 
 
 @pytest.fixture
