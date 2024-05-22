@@ -98,6 +98,7 @@ class ClientSideIncrementalRecordFilterDecorator:
 
     def _get_state_value(self, stream_state: StreamState, stream_slice: StreamSlice) -> Optional[str]:
         if self._per_partition_cursor:
+            # self._per_partition_cursor is the same object that DeclarativeStream uses to save/update stream_state
             partition_state = self._per_partition_cursor.select_state(stream_slice=stream_slice)
             return partition_state.get(self._cursor_field) if partition_state else None
         return stream_state.get(self._cursor_field)
