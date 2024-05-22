@@ -83,7 +83,6 @@ class InlineSchemas(Step):
                     with open(filepath, "r", encoding="utf-8") as file:
                         content = file.read()
 
-                    # Replace the text
                     new_content = content.replace(old_text, new_text)
 
                     if new_content != content:
