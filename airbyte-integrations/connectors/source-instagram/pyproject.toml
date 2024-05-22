@@ -17,7 +17,7 @@ include = "source_instagram"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-facebook-business = "==18.0.5"
+facebook-business = "==19.0.3"
 airbyte-cdk = "0.80.0"
 cached-property = "==1.5.2"
 
