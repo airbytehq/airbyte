@@ -9,13 +9,14 @@ from typing import Any, List, Mapping, Optional, Tuple
 import backoff
 import requests  # type: ignore[import]
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType, StreamDescriptor
 from requests import adapters as request_adapters
 from requests.exceptions import HTTPError, RequestException  # type: ignore[import]
 
 from .exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING, TypeSalesforceException
-from .rate_limiting import default_backoff_handler
+from .rate_limiting import default_backoff_handler, SalesforceErrorHandler
 from .utils import filter_streams_by_criteria
 
 STRING_TYPES = [
@@ -248,6 +249,12 @@ class Salesforce:
         # Change the connection pool size. Default value is not enough for parallel tasks
         adapter = request_adapters.HTTPAdapter(pool_connections=self.parallel_tasks_size, pool_maxsize=self.parallel_tasks_size)
         self.session.mount("https://", adapter)
+        self._http_client = HttpClient(
+            "sf_api",
+            self.logger,
+            session=self.session,
+            error_handler=SalesforceErrorHandler()
+        )
 
         self.is_sandbox = is_sandbox in [True, "true"]
         if self.is_sandbox:
@@ -301,19 +308,10 @@ class Salesforce:
         validated_streams = [stream_name for stream_name in stream_names if self.filter_streams(stream_name)]
         return {stream_name: sobject_options for stream_name, sobject_options in stream_objects.items() if stream_name in validated_streams}
 
-    @default_backoff_handler(max_tries=5, backoff_method=backoff.expo, backoff_params={"factor": 5})
     def _make_request(
-        self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None
+        self, http_method: str, url: str, headers: dict = None, body: dict = None
     ) -> requests.models.Response:
-        try:
-            if http_method == "GET":
-                resp = self.session.get(url, headers=headers, stream=stream, params=params)
-            elif http_method == "POST":
-                resp = self.session.post(url, headers=headers, data=body)
-            resp.raise_for_status()
-        except HTTPError as err:
-            self.logger.warning(f"http error body: {err.response.text}")
-            raise
+        _, resp = self._http_client.send_request(http_method, url, headers=headers, data=body, request_kwargs={})
         return resp
 
     def login(self):
