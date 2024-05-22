@@ -318,5 +318,7 @@ class ConnectorContext(PipelineContext):
             RunStepOptions: Updated run step options.
         """
         run_step_options = deepcopy(run_step_options)
-        run_step_options.skip_steps += self._get_step_id_to_skip_according_to_metadata()
+        # If any `skip_steps` are present, we will run everything except the skipped steps, instead of just `keep_steps`.
+        if not run_step_options.keep_steps:
+            run_step_options.skip_steps += self._get_step_id_to_skip_according_to_metadata()
         return run_step_options

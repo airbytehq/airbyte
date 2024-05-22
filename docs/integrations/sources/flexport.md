@@ -46,6 +46,7 @@ Authentication uses a pre-created API token which can be [created in the UI](htt
 
 | Version | Date       | Pull Request                                             | Subject                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------ |
-| 0.2.0   | 2023-08-23 | [29151](https://github.com/airbytehq/airbyte/pull/29151) | Migrate to low-code             |
-| 0.1.1   | 2022-07-26 | [15033](https://github.com/airbytehq/airbyte/pull/15033) | Source Flexport: Update schemas |
-| 0.1.0   | 2021-12-14 | [8777](https://github.com/airbytehq/airbyte/pull/8777)   | New Source: Flexport            |
+| 0.2.1 | 2024-05-20 | [38427](https://github.com/airbytehq/airbyte/pull/38427) | [autopull] base image + poetry + up_to_date |
+| 0.2.0 | 2023-08-23 | [29151](https://github.com/airbytehq/airbyte/pull/29151) | Migrate to low-code |
+| 0.1.1 | 2022-07-26 | [15033](https://github.com/airbytehq/airbyte/pull/15033) | Source Flexport: Update schemas |
+| 0.1.0 | 2021-12-14 | [8777](https://github.com/airbytehq/airbyte/pull/8777) | New Source: Flexport |
