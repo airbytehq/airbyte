@@ -5,13 +5,19 @@ plugins {
 airbyteJavaConnector {
     cdkVersionRequired = '0.35.8'
     features = ['db-destinations', 's3-destinations', 'typing-deduping']
-    useLocalCdk = false
+    useLocalCdk = true
 }
 
 java {
     // TODO: rewrite code to avoid javac wornings in the first place
     compileJava {
         options.compilerArgs += "-Xlint:-this-escape"
+    }
+}
+
+compileKotlin {
+    compilerOptions {
+        allWarningsAsErrors = false
     }
 }
 

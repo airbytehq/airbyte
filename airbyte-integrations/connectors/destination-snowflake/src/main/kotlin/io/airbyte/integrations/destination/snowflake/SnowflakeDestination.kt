@@ -92,11 +92,11 @@ constructor(
         }
     }
 
-    private fun getDataSource(config: JsonNode?): DataSource {
+    private fun getDataSource(config: JsonNode): DataSource {
         return SnowflakeDatabase.createDataSource(config, airbyteEnvironment)
     }
 
-    private fun getDatabase(dataSource: DataSource?): JdbcDatabase {
+    private fun getDatabase(dataSource: DataSource): JdbcDatabase {
         return SnowflakeDatabase.getDatabase(dataSource)
     }
 
