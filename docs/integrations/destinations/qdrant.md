@@ -70,6 +70,7 @@ You should now have all the requirements needed to configure Qdrant as a destina
 
 | Version | Date       | Pull Request                                              | Subject                                                                  |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------------------------- |
+| 0.0.13 | 2024-05-22 | [38386](https://github.com/airbytehq/airbyte/pull/38386) | [autopull] base image + poetry + up_to_date |
 | 0.0.12 | 2024-05-20 | [38386](https://github.com/airbytehq/airbyte/pull/38386) | [autopull] base image + poetry + up_to_date |
 | 0.0.11  | 2024-04-15 | [#37333](https://github.com/airbytehq/airbyte/pull/37333) | Updated CDK and pytest versions to fix security vulnerabilities          |
 | 0.0.10  | 2023-12-11 | [#33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens                                    |
