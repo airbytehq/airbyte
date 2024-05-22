@@ -3,10 +3,10 @@
 #
 
 
+import logging
 import re
 from typing import List
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from pygsheets import Spreadsheet, Worksheet
 from pygsheets.exceptions import WorksheetNotFound
@@ -14,7 +14,7 @@ from pygsheets.exceptions import WorksheetNotFound
 STREAMS_COUNT_LIMIT = 200
 
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
 def get_spreadsheet_id(id_or_url: str) -> str:
