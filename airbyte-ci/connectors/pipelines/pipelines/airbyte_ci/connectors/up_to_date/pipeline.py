@@ -355,14 +355,15 @@ async def run_connector_up_to_date_pipeline(
             ]
         )
 
-    steps_to_run.append(
-        [
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.UPDATE_PULL_REQUEST,
-                step=MakePullRequest(context, pull, no_bump, semaphore),
-                depends_on=steps_before_pull,
-            )
-        ]
-    )
+    if pull:
+        steps_to_run.append(
+            [
+                StepToRun(
+                    id=CONNECTOR_TEST_STEP_ID.UPDATE_PULL_REQUEST,
+                    step=MakePullRequest(context, pull, no_bump, semaphore),
+                    depends_on=steps_before_pull,
+                )
+            ]
+        )
 
     return await run_connector_steps(context, semaphore, steps_to_run, restore_original_state=restore_original_state)
