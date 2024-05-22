@@ -202,11 +202,15 @@ class SourceGoogleAds(AbstractSource):
                 # The same will be done during read, but with start and end date from config
                 if self.is_custom_query_incremental(query):
                     month_back = today().subtract(months=1).to_date_string()
-                    query = IncrementalCustomQuery.insert_segments_date_expr(query, month_back, month_back)
+                    start_date = config.get("start_date", month_back)
+
+                    query_date = month_back if start_date > month_back else start_date
+
+                    query = IncrementalCustomQuery.insert_segments_date_expr(query, query_date, query_date)
 
                 query = query.set_limit(1)
                 try:
-                    logger.debug(f"Running the query for account {customer.id}: {query}")
+                    logger.info(f"Running the query for account {customer.id}: {query}")
                     response = google_api.send_request(
                         str(query),
                         customer_id=customer.id,
