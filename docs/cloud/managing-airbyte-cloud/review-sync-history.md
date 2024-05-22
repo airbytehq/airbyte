@@ -35,4 +35,10 @@ In the event of a failure, Airbyte will make several attempts to sync your data 
 
 :::
 
+:::info
+
+For Airbyte Cloud syncs which [price based on the size of records moved](https://airbyte.com/pricing), we use the information presented in the sync summary in Airbyte user interface. As every database stores and compresses data differently, the measure of data volume which is used is that observed by the Airbyte Platform. When the data is in transit, is is serialized to the [Airbyte Protocol format](/understanding-airbyte/airbyte-protocol/#airbyterecordmessage). This is likely to be a larger representation of your data than you will see if you were to query your database directly.
+
+:::
+
 On this page, you can also view the complete logs and find any relevant errors, find a link to the job to share with Support, or download a copy of the logs locally.
