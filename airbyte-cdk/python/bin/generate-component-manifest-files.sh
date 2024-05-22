@@ -20,9 +20,7 @@ function main() {
       --output "$ROOT_DIR/$OUTPUT_DIR/$filename_wo_ext.py" \
       --disable-timestamp \
       --enum-field-as-literal one \
-      --set-default-enum-member \
-      --use-double-quotes \
-      --remove-special-field-name-prefix
+      --set-default-enum-member
 
     # There is a limitation of Pydantic where a model's private fields starting with an underscore are inaccessible.
     # The Pydantic model generator replaces special characters like $ with the underscore which results in all
