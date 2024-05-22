@@ -6,7 +6,7 @@ from typing import Any, List, Mapping
 
 import pytest
 from airbyte_cdk.sources.declarative.transformations import RemoveFields
-from airbyte_cdk.sources.declarative.types import FieldPointer
+from airbyte_cdk.sources.types import FieldPointer
 
 
 @pytest.mark.parametrize(

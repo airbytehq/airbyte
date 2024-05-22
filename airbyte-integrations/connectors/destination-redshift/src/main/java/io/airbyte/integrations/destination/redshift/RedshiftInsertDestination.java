@@ -128,8 +128,8 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination<RedshiftS
   }
 
   @Override
-  protected JdbcSqlGenerator getSqlGenerator() {
-    return new RedshiftSqlGenerator(super.getNamingResolver());
+  protected JdbcSqlGenerator getSqlGenerator(final JsonNode config) {
+    return new RedshiftSqlGenerator(super.getNamingResolver(), config);
   }
 
   @Override

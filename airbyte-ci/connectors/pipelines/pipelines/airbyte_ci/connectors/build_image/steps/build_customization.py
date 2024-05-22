@@ -22,9 +22,11 @@ def get_build_customization_module(connector: Connector) -> Optional[ModuleType]
     """
     build_customization_spec_path = connector.code_directory / BUILD_CUSTOMIZATION_SPEC_NAME
 
-    if not build_customization_spec_path.exists() or not (build_customization_spec := importlib.util.spec_from_file_location(
-        f"{connector.code_directory.name}_{BUILD_CUSTOMIZATION_MODULE_NAME}", build_customization_spec_path
-    )):
+    if not build_customization_spec_path.exists() or not (
+        build_customization_spec := importlib.util.spec_from_file_location(
+            f"{connector.code_directory.name}_{BUILD_CUSTOMIZATION_MODULE_NAME}", build_customization_spec_path
+        )
+    ):
         return None
 
     if build_customization_spec.loader is None:

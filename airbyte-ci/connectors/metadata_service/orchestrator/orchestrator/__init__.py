@@ -4,7 +4,7 @@
 from dagster import Definitions, EnvVar, ScheduleDefinition, load_assets_from_modules
 from dagster_slack import SlackResource
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
-from orchestrator.assets import connector_test_report, github, metadata, registry, registry_entry, registry_report, specs_secrets_mask
+from orchestrator.assets import connector_test_report, github, metadata, registry, registry_entry, registry_report, specs_secrets_mask, slack
 from orchestrator.config import (
     CI_MASTER_TEST_OUTPUT_REGEX,
     CI_TEST_REPORT_PREFIX,
@@ -22,6 +22,7 @@ from orchestrator.jobs.connector_test_report import generate_connector_test_summ
 from orchestrator.jobs.metadata import generate_stale_gcs_latest_metadata_file
 from orchestrator.jobs.registry import (
     add_new_metadata_partitions,
+    remove_stale_metadata_partitions,
     generate_cloud_registry,
     generate_oss_registry,
     generate_registry_entry,
@@ -41,6 +42,7 @@ from orchestrator.sensors.registry import registry_updated_sensor
 
 ASSETS = load_assets_from_modules(
     [
+        slack,
         github,
         specs_secrets_mask,
         metadata,
@@ -183,6 +185,7 @@ JOBS = [
     generate_registry_entry,
     generate_nightly_reports,
     add_new_metadata_partitions,
+    remove_stale_metadata_partitions,
     generate_stale_gcs_latest_metadata_file,
 ]
 

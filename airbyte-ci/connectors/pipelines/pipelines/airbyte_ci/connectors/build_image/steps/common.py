@@ -15,6 +15,7 @@ from pipelines.models.steps import Step, StepResult, StepStatus
 if TYPE_CHECKING:
     from typing import Any
 
+
 class BuildConnectorImagesBase(Step, ABC):
     """
     A step to build connector images for a set of platforms.
@@ -39,11 +40,17 @@ class BuildConnectorImagesBase(Step, ABC):
                     await connector.with_exec(["spec"])
                 except ExecError as e:
                     return StepResult(
-                        step=self, status=StepStatus.FAILURE, stderr=str(e), stdout=f"Failed to run the spec command on the connector container for platform {platform}."
+                        step=self,
+                        status=StepStatus.FAILURE,
+                        stderr=str(e),
+                        stdout=f"Failed to run the spec command on the connector container for platform {platform}.",
+                        exc_info=e,
                     )
                 build_results_per_platform[platform] = connector
             except QueryError as e:
-                return StepResult(step=self, status=StepStatus.FAILURE, stderr=f"Failed to build connector image for platform {platform}: {e}")
+                return StepResult(
+                    step=self, status=StepStatus.FAILURE, stderr=f"Failed to build connector image for platform {platform}: {e}"
+                )
         success_message = (
             f"The {self.context.connector.technical_name} docker image "
             f"was successfully built for platform(s) {', '.join(self.build_platforms)}"
@@ -84,6 +91,7 @@ class LoadContainerToLocalDockerHost(Step):
 
     async def _run(self) -> StepResult:
         loaded_images = []
+        image_sha = None
         multi_platforms = len(self.containers) > 1
         for platform, container in self.containers.items():
             _, exported_tar_path = await export_container_to_tarball(self.context, container, platform)
@@ -107,4 +115,6 @@ class LoadContainerToLocalDockerHost(Step):
                     step=self, status=StepStatus.FAILURE, stderr=f"Something went wrong while interacting with the local docker client: {e}"
                 )
 
-        return StepResult(step=self, status=StepStatus.SUCCESS, stdout=f"Loaded image {','.join(loaded_images)} to your Docker host ({image_sha}).")
+        return StepResult(
+            step=self, status=StepStatus.SUCCESS, stdout=f"Loaded image {','.join(loaded_images)} to your Docker host ({image_sha})."
+        )

@@ -15,7 +15,7 @@ replicated. Please check each destination to learn if Typing and Deduping is sup
 
 - One-to-one table mapping: Data in one stream will always be mapped to one table in your data
   warehouse. No more sub-tables.
-- Improved per-row error handling with `_airbyte_meta`: Airbyte will now populate typing errors in
+- Improved per-row error/change handling with `_airbyte_meta`: Airbyte will now populate typing changes in
   the `_airbyte_meta` column instead of failing your sync. You can query these results to audit
   misformatted or unexpected data.
 - Internal Airbyte tables in the `airbyte_internal` schema: Airbyte will now generate all raw tables
@@ -23,38 +23,41 @@ replicated. Please check each destination to learn if Typing and Deduping is sup
 - Incremental delivery for large syncs: Data will be incrementally delivered to your final tables
   when possible. No more waiting hours to see the first rows in your destination table.
 
-## `_airbyte_meta` Errors
+## `_airbyte_meta` Changes
 
-"Per-row error handling" is a new paradigm for Airbyte which provides greater flexibility for our
+"Per-row change handling" is a new paradigm for Airbyte which provides greater flexibility for our
 users. Airbyte now separates `data-moving problems` from `data-content problems`. Prior to
 Destinations V2, both types of errors were handled the same way: by failing the sync. Now, a failing
 sync means that Airbyte could not _move_ all of your data. You can query the `_airbyte_meta` column
 to see which rows failed for _content_ reasons, and why. This is a more flexible approach, as you
-can now decide how to handle rows with errors on a case-by-case basis.
+can now decide how to handle rows with errors/changes on a case-by-case basis.
 
 :::tip
 
 When using data downstream from Airbyte, we generally recommend you only include rows which do not
-have an error, e.g:
+have an change, e.g:
 
 ```sql
 -- postgres syntax
-SELECT COUNT(*) FROM _table_ WHERE json_array_length(_airbyte_meta ->> errors) = 0
+SELECT COUNT(*) FROM _table_ WHERE json_array_length(_airbyte_meta ->> changes) = 0
 ```
 
 :::
 
-The types of errors which will be stored in `_airbyte_meta.errors` include:
+The types of changes which will be stored in `_airbyte_meta.changes` include:
 
-- **Typing errors**: the source declared that the type of the column `id` should be an integer, but
+- **Typing changes**: the source declared that the type of the column `id` should be an integer, but
   a string value was returned.
-- **Size errors (coming soon)**: the source returned content which cannot be stored within this this
+- **Size changes**: the source returned content which cannot be stored within this this
   row or column (e.g.
   [a Redshift Super column has a 16mb limit](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html)).
   Destinations V2 will allow us to trim records which cannot fit into destinations, but retain the
-  primary key(s) and cursors and include "too big" error messages.
+  primary key(s) and cursors and include "too big" changes messages.
 
-Depending on your use-case, it may still be valuable to consider rows with errors, especially for
+Also, sources can make use of the same tooling to denote that there was a problem emitting the Airbyte record to begin with, 
+possibly also creating an entry in `_airbyte_meta.changes`.
+
+Depending on your use-case, it may still be valuable to consider rows with changes, especially for
 aggregations. For example, you may have a table `user_reviews`, and you would like to know the count
 of new reviews received today. You can choose to include reviews regardless of whether your data
 warehouse had difficulty storing the full contents of the `message` column. For this use case,
@@ -83,7 +86,7 @@ The data from one stream will now be mapped to one table in your schema as below
 | _(note, not in actual table)_                | \_airbyte_raw_id | \_airbyte_extracted_at | \_airbyte_meta                                                 | id  | first_name | age  | address                                   |
 | -------------------------------------------- | ---------------- | ---------------------- | -------------------------------------------------------------- | --- | ---------- | ---- | ----------------------------------------- |
 | Successful typing and de-duping ⟶            | xxx-xxx-xxx      | 2022-01-01 12:00:00    | `{}`                                                           | 1   | sarah      | 39   | `{ city: “San Francisco”, zip: “94131” }` |
-| Failed typing that didn’t break other rows ⟶ | yyy-yyy-yyy      | 2022-01-01 12:00:00    | `{ errors: {[“fish” is not a valid integer for column “age”]}` | 2   | evan       | NULL | `{ city: “Menlo Park”, zip: “94002” }`    |
+| Failed typing that didn’t break other rows ⟶ | yyy-yyy-yyy      | 2022-01-01 12:00:00    | `{ changes: {"field": "age", "change": "NULLED", "reason": "DESTINATION_TYPECAST_ERROR"}}` | 2   | evan       | NULL | `{ city: “Menlo Park”, zip: “94002” }`    |
 | Not-yet-typed ⟶                              |                  |                        |                                                                |     |            |      |                                           |
 
 In legacy normalization, columns of
@@ -127,6 +130,7 @@ recommend altering the final tables (e.g. adding constraints) as it may cause is
 
 In some cases, you need to manually run a soft reset - for example, if you accidentally delete some
 records from the final table and want to repopulate them from the raw data. This can be done by:
+
 1. Dropping the final table entirely (`DROP TABLE <your_final_table>`)
 1. Unsetting the raw table's `_airbyte_loaded_at` column
    (`UPDATE airbyte_internal.<your_raw_table> SET _airbyte_loaded_at = NULL`)

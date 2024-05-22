@@ -10,8 +10,6 @@ import io.airbyte.cdk.integrations.destination.record_buffer.FlushBufferFunction
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve
-import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -46,8 +44,6 @@ object SerialFlush {
         stagingOperations: StagingOperations,
         writeConfigs: List<WriteConfig>,
         catalog: ConfiguredAirbyteCatalog,
-        typerDeduperValve: TypeAndDedupeOperationValve,
-        typerDeduper: TyperDeduper
     ): FlushBufferFunction {
         // TODO: (ryankfu) move this block of code that executes before the lambda to
         // #onStartFunction
@@ -79,11 +75,9 @@ object SerialFlush {
         return FlushBufferFunction {
             pair: AirbyteStreamNameNamespacePair,
             writer: SerializableBuffer ->
-            log.info(
-                "Flushing buffer for stream {} ({}) to staging",
-                pair.name,
-                FileUtils.byteCountToDisplaySize(writer.byteCount)
-            )
+            log.info {
+                "Flushing buffer for stream ${pair.name} (${FileUtils.byteCountToDisplaySize(writer.byteCount)}) to staging"
+            }
             require(pairToWriteConfig.containsKey(pair)) {
                 String.format(
                     "Message contained record from a stream that was not in the catalog. \ncatalog: %s",
@@ -121,14 +115,12 @@ object SerialFlush {
                         writeConfig.outputTableName,
                         schemaName,
                         stagingOperations,
-                        writeConfig.namespace,
-                        writeConfig.streamName,
-                        typerDeduperValve,
-                        typerDeduper
                     )
                 }
             } catch (e: Exception) {
-                log.error("Failed to flush and commit buffer data into destination's raw table", e)
+                log.error(e) {
+                    "Failed to flush and commit buffer data into destination's raw table"
+                }
                 throw RuntimeException(
                     "Failed to upload buffer to stage and commit to destination",
                     e

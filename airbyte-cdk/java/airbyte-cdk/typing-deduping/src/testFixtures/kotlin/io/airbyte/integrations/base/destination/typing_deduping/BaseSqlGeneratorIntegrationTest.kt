@@ -7,8 +7,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.collect.Streams
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.string.Strings
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeTransaction.executeSoftReset
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeTransaction.executeTypeAndDedupe
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.executeSoftReset
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.executeTypeAndDedupe
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -21,8 +21,12 @@ import java.util.function.Consumer
 import java.util.function.Function
 import java.util.stream.Collectors
 import java.util.stream.Stream
+import kotlin.test.assertFails
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assumptions.assumeFalse
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -74,13 +78,13 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     private var COLUMNS: LinkedHashMap<ColumnId, AirbyteType> = mock()
 
     protected abstract val sqlGenerator: SqlGenerator
-        get
+    protected abstract val supportsSafeCast: Boolean
 
     /**
      * Subclasses should override this method if they need to make changes to the stream ID. For
      * example, you could upcase the final table name here.
      */
-    protected fun buildStreamId(
+    open protected fun buildStreamId(
         namespace: String,
         finalTableName: String,
         rawTableName: String
@@ -99,7 +103,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      * Do any setup work to create a namespace for this test run. For example, this might create a
      * BigQuery dataset, or a Snowflake schema.
      */
-    @Throws(Exception::class) protected abstract fun createNamespace(namespace: String?)
+    @Throws(Exception::class) protected abstract fun createNamespace(namespace: String)
 
     /** Create a raw table using the StreamId's rawTableId. */
     @Throws(Exception::class) protected abstract fun createRawTable(streamId: StreamId)
@@ -143,13 +147,13 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      * Clean up all resources in the namespace. For example, this might delete the BigQuery dataset
      * created in [.createNamespace].
      */
-    @Throws(Exception::class) protected abstract fun teardownNamespace(namespace: String?)
+    @Throws(Exception::class) protected abstract fun teardownNamespace(namespace: String)
 
     protected val rawMetadataColumnNames: Map<String, String>
         /** Identical to [BaseTypingDedupingTest.getRawMetadataColumnNames]. */
         get() = HashMap()
 
-    protected val finalMetadataColumnNames: Map<String, String>
+    open protected val finalMetadataColumnNames: Map<String, String>
         /** Identical to [BaseTypingDedupingTest.getFinalMetadataColumnNames]. */
         get() = HashMap()
 
@@ -218,39 +222,47 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         incrementalDedupStream =
             StreamConfig(
                 streamId,
-                SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND_DEDUP,
                 primaryKey,
                 Optional.of(cursor),
-                COLUMNS
+                COLUMNS,
+                0,
+                0,
+                0,
             )
         incrementalAppendStream =
             StreamConfig(
                 streamId,
-                SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND,
                 primaryKey,
                 Optional.of(cursor),
-                COLUMNS
+                COLUMNS,
+                0,
+                0,
+                0,
             )
 
         cdcIncrementalDedupStream =
             StreamConfig(
                 streamId,
-                SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND_DEDUP,
                 primaryKey,
                 Optional.of(cursor),
-                cdcColumns
+                cdcColumns,
+                0,
+                0,
+                0,
             )
         cdcIncrementalAppendStream =
             StreamConfig(
                 streamId,
-                SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND,
                 primaryKey,
                 Optional.of(cursor),
-                cdcColumns
+                cdcColumns,
+                0,
+                0,
+                0,
             )
 
         LOGGER.info("Running with namespace {}", namespace)
@@ -287,8 +299,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val createTable = generator.createTable(incrementalDedupStream, "", false)
         destinationHandler.execute(createTable)
         val destinationInitialStatus = getDestinationInitialState(incrementalDedupStream)
-        Assertions.assertFalse(
-            destinationInitialStatus.isSchemaMismatch,
+        assertFalse(
+            destinationInitialStatus!!.isSchemaMismatch,
             "Unchanged schema was incorrectly detected as a schema change."
         )
     }
@@ -349,11 +361,13 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val stream =
             StreamConfig(
                 streamId,
-                SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND_DEDUP,
                 incrementalDedupStream.primaryKey,
                 incrementalDedupStream.cursor,
-                incrementalDedupStream.columns
+                incrementalDedupStream.columns,
+                0,
+                0,
+                0,
             )
 
         createRawTable(streamId)
@@ -368,7 +382,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
               "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
               "_airbyte_data": {"id1": 1, "id2": 100}
             }
-            
+
             """.trimIndent()
                 )
             )
@@ -402,26 +416,16 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      */
     @Test
     @Throws(Exception::class)
-    fun allTypes() {
-        // Add case-sensitive columnName to test json path querying
-        incrementalDedupStream.columns!!.put(
-            generator.buildColumnId("IamACaseSensitiveColumnName"),
-            AirbyteProtocolType.STRING
+    fun allTypes_safeCast() {
+        assumeTrue(
+            supportsSafeCast,
+            "Skipping test because this connector does not support safe casting"
         )
         createRawTable(streamId)
         createFinalTable(incrementalDedupStream, "")
         insertRawTableRecords(
             streamId,
-            BaseTypingDedupingTest.Companion.readRecords("sqlgenerator/alltypes_inputrecords.jsonl")
-        )
-
-        var initialState =
-            getOnly(
-                destinationHandler.gatherInitialState(java.util.List.of(incrementalDedupStream))
-            )
-        Assertions.assertTrue(
-            initialState.isFinalTableEmpty,
-            "Final table should be empty before T+D"
+            readAllTypesInputRecords(includeSafeCastRecords = true),
         )
 
         executeTypeAndDedupe(
@@ -438,50 +442,132 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             "sqlgenerator/alltypes_expectedrecords_final.jsonl",
             dumpFinalTableRecords(streamId, "")
         )
-        initialState =
-            getOnly(
-                destinationHandler.gatherInitialState(java.util.List.of(incrementalDedupStream))
-            )
-        Assertions.assertFalse(
-            initialState.isFinalTableEmpty,
-            "Final table should not be empty after T+D"
-        )
     }
 
     /** Run a basic test to verify that we don't throw an exception on basic data values. */
     @Test
     @Throws(Exception::class)
-    fun allTypesUnsafe() {
+    fun allTypes_safeCast_handleGoodData() {
+        assumeTrue(
+            supportsSafeCast,
+            "Skipping test because this connector does not support safe casting"
+        )
         createRawTable(streamId)
         createFinalTable(incrementalDedupStream, "")
         insertRawTableRecords(
             streamId,
-            BaseTypingDedupingTest.Companion.readRecords(
-                "sqlgenerator/alltypes_unsafe_inputrecords.jsonl"
-            )
-        )
-
-        var initialState =
-            getOnly(
-                destinationHandler.gatherInitialState(java.util.List.of(incrementalDedupStream))
-            )
-        Assertions.assertTrue(
-            initialState.isFinalTableEmpty,
-            "Final table should be empty before T+D"
+            readAllTypesInputRecords(includeSafeCastRecords = false),
         )
 
         // Instead of using the full T+D transaction, explicitly run with useSafeCasting=false.
         val unsafeSql = generator.updateTable(incrementalDedupStream, "", Optional.empty(), false)
         destinationHandler.execute(unsafeSql)
+    }
+
+    /**
+     * Similar to [allTypes_safeCast], but just the records with good data. This verifies that the
+     * connector handles all types correctly.
+     */
+    @Test
+    @Throws(Exception::class)
+    fun allTypes_noSafeCast_handleGoodData() {
+        assumeFalse(supportsSafeCast, "Skipping test because this connector supports safe casting")
+
+        createRawTable(streamId)
+        createFinalTable(incrementalDedupStream, "")
+        insertRawTableRecords(
+            streamId,
+            readAllTypesInputRecords(includeSafeCastRecords = false),
+        )
+
+        executeTypeAndDedupe(
+            generator,
+            destinationHandler,
+            incrementalDedupStream,
+            Optional.empty(),
+            ""
+        )
+
+        verifyRecords(
+            "sqlgenerator/alltypes_expectedrecords_raw.jsonl",
+            dumpRawTableRecords(streamId),
+            "sqlgenerator/alltypes_expectedrecords_final.jsonl",
+            dumpFinalTableRecords(streamId, "")
+        )
+    }
+
+    /**
+     * Run a basic test to verify that we don't throw an exception on basic data values. Similar to
+     * {@link #allTypes_safeCast()}, but just the records with bad data. This verifies that the
+     * connector throws an error when it encounters bad data.
+     */
+    @Test
+    fun allTypes_noSafeCast_crashOnBadData() {
+        assumeFalse(supportsSafeCast, "Skipping test because this connector supports safe casting")
+
+        createRawTable(streamId)
+        createFinalTable(incrementalDedupStream, "")
+        insertRawTableRecords(streamId, readAllTypesInputRecords(includeSafeCastRecords = true))
+
+        assertFails {
+            executeTypeAndDedupe(
+                generator,
+                destinationHandler,
+                incrementalDedupStream,
+                Optional.empty(),
+                ""
+            )
+        }
+    }
+
+    /**
+     * Verifies two behaviors:
+     * 1. The isFinalTableEmpty method behaves correctly during a sync
+     * 2. Column names with mixed case are handled correctly
+     *
+     * The first behavior technically should be its own test, but we might as well just throw it
+     * into a random testcase to avoid running test setup/teardown again.
+     */
+    @Test
+    @Throws(java.lang.Exception::class)
+    fun mixedCaseTest() {
+        // Add case-sensitive columnName to test json path querying
+        incrementalDedupStream.columns!![generator.buildColumnId("IamACaseSensitiveColumnName")] =
+            AirbyteProtocolType.STRING
+        createRawTable(streamId)
+        createFinalTable(incrementalDedupStream, "")
+        insertRawTableRecords(
+            streamId,
+            BaseTypingDedupingTest.readRecords(
+                "sqlgenerator/mixedcasecolumnname_inputrecords.jsonl"
+            )
+        )
+
+        var initialState =
+            getOnly(destinationHandler.gatherInitialState(listOf(incrementalDedupStream)))
+        Assertions.assertTrue(
+            initialState.isFinalTableEmpty,
+            "Final table should be empty before T+D"
+        )
+
+        executeTypeAndDedupe(
+            generator,
+            destinationHandler,
+            incrementalDedupStream,
+            Optional.empty(),
+            ""
+        )
+
+        verifyRecords(
+            "sqlgenerator/mixedcasecolumnname_expectedrecords_raw.jsonl",
+            dumpRawTableRecords(streamId),
+            "sqlgenerator/mixedcasecolumnname_expectedrecords_final.jsonl",
+            dumpFinalTableRecords(streamId, "")
+        )
 
         initialState =
-            getOnly(
-                destinationHandler.gatherInitialState(java.util.List.of(incrementalDedupStream))
-            )
-        Assertions.assertFalse(
-            initialState.isFinalTableEmpty,
-            "Final table should not be empty after T+D"
-        )
+            getOnly(destinationHandler.gatherInitialState(listOf(incrementalDedupStream)))
+        assertFalse(initialState.isFinalTableEmpty, "Final table should not be empty after T+D")
     }
 
     @Throws(Exception::class)
@@ -522,7 +608,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                   "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
                   "_airbyte_data": {}
                 }
-                
+
                 """.trimIndent()
                 ),
                 Jsons.deserialize(
@@ -532,7 +618,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                   "_airbyte_extracted_at": "2023-01-02T00:00:00Z",
                   "_airbyte_data": {}
                 }
-                
+
                 """.trimIndent()
                 )
             )
@@ -582,7 +668,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
               "_airbyte_extracted_at": "2023-01-01T12:00:00Z",
               "_airbyte_data": {}
             }
-            
+
             """.trimIndent()
                 )
             )
@@ -608,7 +694,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             "When some raw records have null loaded_at, the min timestamp should be earlier than the oldest unloaded record (2023-01-01 12:00Z). Was actually " +
                 tableState
         )
-        Assertions.assertFalse(
+        assertFalse(
             tableState.maxProcessedTimestamp.get().isBefore(Instant.parse("2023-01-01T00:00:00Z")),
             "When some raw records have null loaded_at, the min timestamp should be later than the newest loaded record older than the oldest unloaded record (2023-01-01 00:00Z). Was actually " +
                 tableState
@@ -630,10 +716,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         )
         createRawTable(streamId)
         createFinalTable(incrementalDedupStream, "")
-        insertRawTableRecords(
-            streamId,
-            BaseTypingDedupingTest.Companion.readRecords("sqlgenerator/alltypes_inputrecords.jsonl")
-        )
+        insertRawTableRecords(streamId, readAllTypesInputRecords())
 
         val tableState = getInitialRawTableState(incrementalDedupStream)
         Assertions.assertAll(
@@ -674,16 +757,11 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     @Test
     @Throws(Exception::class)
     fun handleNoPreexistingRecords() {
-        // Add case-sensitive columnName to test json path querying
-        incrementalDedupStream.columns!!.put(
-            generator.buildColumnId("IamACaseSensitiveColumnName"),
-            AirbyteProtocolType.STRING
-        )
         createRawTable(streamId)
         val tableState = getInitialRawTableState(incrementalDedupStream)
         Assertions.assertAll(
             Executable {
-                Assertions.assertFalse(
+                assertFalse(
                     tableState.hasUnprocessedRecords,
                     "With an empty raw table, we should recognize that there are no unprocessed records"
                 )
@@ -698,10 +776,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         )
 
         createFinalTable(incrementalDedupStream, "")
-        insertRawTableRecords(
-            streamId,
-            BaseTypingDedupingTest.Companion.readRecords("sqlgenerator/alltypes_inputrecords.jsonl")
-        )
+        insertRawTableRecords(streamId, readAllTypesInputRecords())
 
         executeTypeAndDedupe(
             generator,
@@ -728,7 +803,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      */
     @Test
     @Throws(Exception::class)
-    fun ignoreOldRawRecords() {
+    open fun ignoreOldRawRecords() {
         createRawTable(streamId)
         createFinalTable(incrementalAppendStream, "")
         insertRawTableRecords(
@@ -743,7 +818,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                     "string": "foo"
                   }
                 }
-                
+
                 """.trimIndent()
                 ),
                 Jsons.deserialize(
@@ -755,7 +830,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                     "string": "bar"
                   }
                 }
-                
+
                 """.trimIndent()
                 )
             )
@@ -856,12 +931,20 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     fun incrementalDedup() {
         createRawTable(streamId)
         createFinalTable(incrementalDedupStream, "")
-        insertRawTableRecords(
-            streamId,
-            BaseTypingDedupingTest.Companion.readRecords(
-                "sqlgenerator/incrementaldedup_inputrecords.jsonl"
+        val inputRecords: MutableList<JsonNode> =
+            ArrayList(
+                BaseTypingDedupingTest.readRecords(
+                    "sqlgenerator/incrementaldedup_inputrecords.jsonl"
+                )
             )
-        )
+        if (supportsSafeCast) {
+            inputRecords.addAll(
+                BaseTypingDedupingTest.readRecords(
+                    "sqlgenerator/safe_cast/incrementaldedup_inputrecords.jsonl"
+                )
+            )
+        }
+        insertRawTableRecords(streamId, inputRecords)
 
         executeTypeAndDedupe(
             generator,
@@ -889,11 +972,13 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val streamConfig =
             StreamConfig(
                 streamId,
-                SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND_DEDUP,
                 primaryKey,
                 Optional.empty(),
-                COLUMNS
+                COLUMNS,
+                0,
+                0,
+                0,
             )
         createRawTable(streamId)
         createFinalTable(streamConfig, "")
@@ -911,7 +996,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                     "string": "foo"
                   }
                 }
-                
+
                 """.trimIndent()
                 ),
                 Jsons.deserialize(
@@ -925,7 +1010,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                     "string": "bar"
                   }
                 }
-                
+
                 """.trimIndent()
                 )
             )
@@ -947,12 +1032,20 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     fun incrementalAppend() {
         createRawTable(streamId)
         createFinalTable(incrementalAppendStream, "")
-        insertRawTableRecords(
-            streamId,
-            BaseTypingDedupingTest.Companion.readRecords(
-                "sqlgenerator/incrementaldedup_inputrecords.jsonl"
+        val inputRecords: MutableList<JsonNode> =
+            ArrayList(
+                BaseTypingDedupingTest.readRecords(
+                    "sqlgenerator/incrementaldedup_inputrecords.jsonl"
+                )
             )
-        )
+        if (supportsSafeCast) {
+            inputRecords.addAll(
+                BaseTypingDedupingTest.readRecords(
+                    "sqlgenerator/safe_cast/incrementaldedup_inputrecords.jsonl"
+                )
+            )
+        }
+        insertRawTableRecords(streamId, inputRecords)
 
         executeTypeAndDedupe(
             generator,
@@ -962,7 +1055,12 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             ""
         )
 
-        verifyRecordCounts(3, dumpRawTableRecords(streamId), 3, dumpFinalTableRecords(streamId, ""))
+        verifyRecordCounts(
+            if (supportsSafeCast) 4 else 3,
+            dumpRawTableRecords(streamId),
+            if (supportsSafeCast) 4 else 3,
+            dumpFinalTableRecords(streamId, "")
+        )
     }
 
     /**
@@ -982,7 +1080,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
           "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
           "_airbyte_meta": {}
         }
-        
+
         """.trimIndent()
                 )
             )
@@ -1014,7 +1112,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
               }
             }
-            
+
             """.trimIndent()
                 )
             )
@@ -1055,7 +1153,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
               }
             }
-            
+
             """.trimIndent()
                 )
             )
@@ -1085,12 +1183,18 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     fun cdcComplexUpdate() {
         createRawTable(streamId)
         createFinalTable(cdcIncrementalDedupStream, "")
-        insertRawTableRecords(
-            streamId,
-            BaseTypingDedupingTest.Companion.readRecords(
-                "sqlgenerator/cdcupdate_inputrecords_raw.jsonl"
+        val inputRecords: MutableList<JsonNode> =
+            ArrayList(
+                BaseTypingDedupingTest.readRecords("sqlgenerator/cdcupdate_inputrecords_raw.jsonl")
             )
-        )
+        if (supportsSafeCast) {
+            inputRecords.addAll(
+                BaseTypingDedupingTest.readRecords(
+                    "sqlgenerator/safe_cast/cdcupdate_inputrecords_raw.jsonl"
+                )
+            )
+        }
+        insertRawTableRecords(streamId, inputRecords)
         insertFinalTableRecords(
             true,
             streamId,
@@ -1109,7 +1213,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         )
 
         verifyRecordCounts(
-            11,
+            if (supportsSafeCast) 11 else 10,
             dumpRawTableRecords(streamId),
             6,
             dumpFinalTableRecords(streamId, "")
@@ -1220,7 +1324,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
               }
             }
-            
+
             """.trimIndent()
                 )
             )
@@ -1240,7 +1344,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
               "id2": 100,
               "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
             }
-            
+
             """.trimIndent()
                 )
             )
@@ -1277,7 +1381,6 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val stream =
             StreamConfig(
                 streamId,
-                SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND_DEDUP,
                 primaryKey,
                 Optional.of(cursor),
@@ -1295,7 +1398,10 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                     generator.buildColumnId("includes$\$doubledollar") to
                         AirbyteProtocolType.STRING,
                     generator.buildColumnId("endswithbackslash\\") to AirbyteProtocolType.STRING
-                )
+                ),
+                0,
+                0,
+                0,
             )
 
         val createTable = generator.createTable(stream, "", false)
@@ -1319,7 +1425,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         strings = ["$", "\${", "\${\${", "\${foo}", "\"", "'", "`", ".", "$$", "\\", "{", "}"]
     )
     @Throws(Exception::class)
-    fun noCrashOnSpecialCharacters(specialChars: String) {
+    open fun noCrashOnSpecialCharacters(specialChars: String) {
         val str = specialChars + "_" + namespace + "_" + specialChars
         val originalStreamId = generator.buildStreamId(str, str, "unused")
         val modifiedStreamId =
@@ -1350,11 +1456,13 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             val stream =
                 StreamConfig(
                     modifiedStreamId,
-                    SyncMode.INCREMENTAL,
                     DestinationSyncMode.APPEND_DEDUP,
                     java.util.List.of(columnId),
                     Optional.of(columnId),
-                    linkedMapOf(columnId to AirbyteProtocolType.STRING)
+                    linkedMapOf(columnId to AirbyteProtocolType.STRING),
+                    0,
+                    0,
+                    0,
                 )
 
             val createTable = generator.createTable(stream, "", false)
@@ -1383,14 +1491,16 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val stream =
             StreamConfig(
                 streamId,
-                SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND,
                 emptyList(),
                 Optional.empty(),
                 linkedMapOf(
                     generator.buildColumnId("current_date") to AirbyteProtocolType.STRING,
                     generator.buildColumnId("join") to AirbyteProtocolType.STRING
-                )
+                ),
+                0,
+                0,
+                0,
             )
 
         val createTable = generator.createTable(stream, "", false)
@@ -1423,7 +1533,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
               "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
               "_airbyte_data": {}
             }
-            
+
             """.trimIndent()
                 )
             )
@@ -1431,11 +1541,13 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val stream =
             StreamConfig(
                 streamId,
-                SyncMode.INCREMENTAL,
                 DestinationSyncMode.APPEND,
                 emptyList<ColumnId>(),
                 Optional.empty(),
-                LinkedHashMap()
+                LinkedHashMap(),
+                0,
+                0,
+                0,
             )
 
         val createTable = generator.createTable(stream, "", false)
@@ -1452,24 +1564,32 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
     @Test
     @Throws(Exception::class)
-    fun testV1V2migration() {
+    open fun testV1V2migration() {
         // This is maybe a little hacky, but it avoids having to refactor this entire class and
         // subclasses
         // for something that is going away
-        // Add case-sensitive columnName to test json path querying
-        incrementalDedupStream.columns!!.put(
-            generator.buildColumnId("IamACaseSensitiveColumnName"),
-            AirbyteProtocolType.STRING
-        )
         val v1RawTableStreamId =
-            StreamId(null, null, streamId.finalNamespace, "v1_" + streamId.rawName, null, null)
-        createV1RawTable(v1RawTableStreamId)
-        insertV1RawTableRecords(
-            v1RawTableStreamId,
-            BaseTypingDedupingTest.Companion.readRecords(
-                "sqlgenerator/all_types_v1_inputrecords.jsonl"
+            StreamId(
+                "fake",
+                "fake",
+                streamId.finalNamespace,
+                "v1_" + streamId.rawName,
+                "fake",
+                "fake"
             )
-        )
+        createV1RawTable(v1RawTableStreamId)
+        val inputRecords: MutableList<JsonNode> =
+            ArrayList(
+                BaseTypingDedupingTest.readRecords("sqlgenerator/all_types_v1_inputrecords.jsonl")
+            )
+        if (supportsSafeCast) {
+            inputRecords.addAll(
+                BaseTypingDedupingTest.readRecords(
+                    "sqlgenerator/safe_cast/all_types_v1_inputrecords.jsonl"
+                )
+            )
+        }
+        insertV1RawTableRecords(v1RawTableStreamId, inputRecords)
         val migration =
             generator.migrateFromV1toV2(
                 streamId,
@@ -1508,18 +1628,17 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         // different
         // indexing/partitioning/etc.
         val createOldTempTable =
-            generator.createTable(
-                incrementalDedupStream,
-                TypeAndDedupeTransaction.SOFT_RESET_SUFFIX,
-                false
-            )
+            generator.createTable(incrementalDedupStream, TyperDeduperUtil.SOFT_RESET_SUFFIX, false)
         destinationHandler.execute(createOldTempTable)
 
         // Execute a soft reset. This should not crash.
         executeSoftReset(generator, destinationHandler, incrementalAppendStream)
     }
 
-    protected fun migrationAssertions(v1RawRecords: List<JsonNode>, v2RawRecords: List<JsonNode>) {
+    protected open fun migrationAssertions(
+        v1RawRecords: List<JsonNode>,
+        v2RawRecords: List<JsonNode>
+    ) {
         val v2RecordMap =
             v2RawRecords
                 .stream()
@@ -1529,9 +1648,16 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                         Function.identity()
                     )
                 )
+        val expectedRecordCount: Int =
+            if (supportsSafeCast) {
+                5
+            } else {
+                // safe_cast_unsupported excludes one record with invalid data.
+                4
+            }
         Assertions.assertAll(
-            Executable { Assertions.assertEquals(6, v1RawRecords.size) },
-            Executable { Assertions.assertEquals(6, v2RawRecords.size) }
+            Executable { Assertions.assertEquals(expectedRecordCount, v1RawRecords.size) },
+            Executable { Assertions.assertEquals(expectedRecordCount, v2RawRecords.size) }
         )
         v1RawRecords.forEach(
             Consumer { v1Record: JsonNode ->
@@ -1570,7 +1696,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     }
 
     @Throws(Exception::class)
-    protected fun dumpV1RawTableRecords(streamId: StreamId): List<JsonNode> {
+    open protected fun dumpV1RawTableRecords(streamId: StreamId): List<JsonNode> {
         return dumpRawTableRecords(streamId)
     }
 
@@ -1592,15 +1718,15 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
     @Test
     @Throws(Exception::class)
-    fun testStateHandling() {
+    open fun testStateHandling() {
         // Fetch state from an empty destination. This should not throw an error.
         val initialState =
             destinationHandler
                 .gatherInitialState(java.util.List.of((incrementalDedupStream)))
                 .first()
         // The initial state should not need a soft reset.
-        Assertions.assertFalse(
-            initialState.destinationState.needsSoftReset(),
+        assertFalse(
+            initialState!!.destinationState!!.needsSoftReset(),
             "Empty state table should have needsSoftReset = false"
         )
 
@@ -1624,7 +1750,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         // Commit a state belonging to a different stream
         destinationHandler.commitDestinationStates(
             java.util.Map.of(
-                StreamId(null, null, null, null, null, "some_other_stream"),
+                StreamId("fake", "fake", "fake", "fake", "fake", "some_other_stream"),
                 initialState.destinationState.withSoftReset(true)
             )
         )
@@ -1642,9 +1768,12 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     }
 
     @Test
-    fun testLongIdentifierHandling() {
+    open fun testLongIdentifierHandling() {
         val randomSuffix = Strings.addRandomSuffix("", "_", 5)
-        val rawNamespace = "a".repeat(512) + randomSuffix
+        // Hardcode this value.
+        // This comes directly from the config, and currently we don't validate/mangle it.
+        // TODO we should eventually switch this to be "a".repeat(512) + randomSuffix
+        val rawNamespace = "some_namespace$randomSuffix"
         val finalNamespace = "b".repeat(512) + randomSuffix
         val streamName = "c".repeat(512) + randomSuffix
         // Limiting to total 127 column length for redshift. Postgres is 63.
@@ -1689,9 +1818,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
         val streamId = stream.id
         val columnId1: ColumnId =
-            stream.columns?.filter { columnName1 == it.key.originalName }?.keys?.first()!!
+            stream.columns.filter { columnName1 == it.key.originalName }.keys.first()
         val columnId2: ColumnId =
-            stream.columns?.filter { columnName2 == it.key.originalName }?.keys?.first()!!
+            stream.columns.filter { columnName2 == it.key.originalName }.keys.first()
         LOGGER.info("Trying to use column names {} and {}", columnId1.name, columnId2.name)
 
         try {
@@ -1840,5 +1969,20 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val FINAL_TABLE_COLUMN_NAMES_CDC: List<String> =
             Streams.concat(FINAL_TABLE_COLUMN_NAMES.stream(), Stream.of("_ab_cdc_deleted_at"))
                 .toList()
+    }
+
+    private fun readAllTypesInputRecords(
+        includeSafeCastRecords: Boolean = supportsSafeCast
+    ): List<JsonNode> {
+        val baseRecords =
+            BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_inputrecords.jsonl")
+        return if (includeSafeCastRecords) {
+            baseRecords +
+                BaseTypingDedupingTest.readRecords(
+                    "sqlgenerator/safe_cast/alltypes_inputrecords.jsonl"
+                )
+        } else {
+            baseRecords
+        }
     }
 }

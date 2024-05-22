@@ -27,7 +27,7 @@ If you have a `free` subscription plan, you will have two limitations to the pla
 
 1. Limit of 1,000 API calls per month
 2. You won't be able to specify the `base` parameter, meaning that you will be only be allowed to use the default base value which is `EUR`.
-:::
+   :::
 
 ### Step 2: Set up the Exchange Rates connector in Airbyte
 
@@ -58,10 +58,10 @@ Each record in the stream contains many fields:
 
 ## Data type map
 
-| Field                     | Airbyte Type |
-| :------------------------ | :----------- |
-| Currency                  | `number`     |
-| Date                      | `string`     |
+| Field    | Airbyte Type |
+| :------- | :----------- |
+| Currency | `number`     |
+| Date     | `string`     |
 
 ## Limitations & Troubleshooting
 
@@ -78,8 +78,8 @@ The Exchange Rates API has rate limits that vary per pricing plan. The free plan
 
 ### Troubleshooting
 
-* With the free plan, you won't be able to specify the `base` parameter, meaning that you will be only be allowed to use the default base value which is `EUR`.
-* Check out common troubleshooting issues for the Exchange Rates API source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+- With the free plan, you won't be able to specify the `base` parameter, meaning that you will be only be allowed to use the default base value which is `EUR`.
+- Check out common troubleshooting issues for the Exchange Rates API source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
@@ -87,8 +87,8 @@ The Exchange Rates API has rate limits that vary per pricing plan. The free plan
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                             |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------ |
-| 1.3.0   | 2023-08-25 | [29299](https://github.com/airbytehq/airbyte/pull/29299) | Migrate to low-code |
-| 1.2.9   | 2023-08-15 | [23000](https://github.com/airbytehq/airbyte/pull/23000) | Fix schema and tests  |
+| 1.3.0   | 2023-08-25 | [29299](https://github.com/airbytehq/airbyte/pull/29299) | Migrate to low-code                                                                                                 |
+| 1.2.9   | 2023-08-15 | [23000](https://github.com/airbytehq/airbyte/pull/23000) | Fix schema and tests                                                                                                |
 | 1.2.8   | 2023-02-14 | [23000](https://github.com/airbytehq/airbyte/pull/23000) | Specified date formatting in specification                                                                          |
 | 1.2.7   | 2022-10-31 | [18726](https://github.com/airbytehq/airbyte/pull/18726) | Fix handling error during check connection                                                                          |
 | 1.2.6   | 2022-08-23 | [15884](https://github.com/airbytehq/airbyte/pull/15884) | Migrated to new API Layer endpoint                                                                                  |
