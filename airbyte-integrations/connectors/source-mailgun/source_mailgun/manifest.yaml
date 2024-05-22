@@ -101,7 +101,7 @@ definitions:
     authenticator:
       type: BasicHttpAuthenticator
       password: "{{ config['private_key'] }}"
-      username: "{{ config['username_do_not_edit'] if config['username_do_not_edit'] is defined else 'api'}}"
+      username: "api"
 
 streams:
   - $ref: "#/definitions/streams/domains"
@@ -143,14 +143,6 @@ spec:
         description: >-
           UTC date and time in the format 2020-10-01 00:00:00. Any data before
           this date will not be replicated. If omitted, defaults to 3 days ago.
-      username_do_not_edit:
-        type: string
-        order: 3
-        title: Username (Do Not Edit)
-        description: >-
-          Please don't edit this value. This is needed for the stream to work.
-          Editing this will break the connector.
-        default: api
     additionalProperties: true
 
 metadata:
