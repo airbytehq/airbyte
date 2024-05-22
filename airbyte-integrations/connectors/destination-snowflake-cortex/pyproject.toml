@@ -19,8 +19,7 @@ include = "destination_snowflake_cortex"
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 airbyte-cdk = {version = "0.81.6", extras = ["vector-db-based"]}
-airbyte = "0.10.5"
-
+airbyte = "^0.11.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2"
@@ -29,3 +28,9 @@ mypy = "^1.9.0"
 
 [tool.poetry.scripts]
 destination-snowflake-cortex = "destination_snowflake_cortex.run:run"
+
+[tool.ruff]
+tests = [
+    "integration_tests",
+    "unit_tests",
+]
