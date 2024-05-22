@@ -21,4 +21,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/oracle
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

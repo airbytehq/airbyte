@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import com.google.cloud.bigquery.BigQuery;
 import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer;
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager;
 import io.airbyte.cdk.integrations.destination.async.state.FlushFailure;
@@ -28,17 +27,16 @@ public class BigQueryRecordStandardConsumer extends AsyncStreamConsumer {
   public BigQueryRecordStandardConsumer(Consumer<AirbyteMessage> outputRecordCollector,
                                         OnStartFunction onStart,
                                         OnCloseFunction onClose,
-                                        BigQuery bigQuery,
                                         ConfiguredAirbyteCatalog catalog,
-                                        Optional<String> defaultNamespace,
+                                        String defaultNamespace,
                                         Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, BigQueryDirectUploader>> uploaderMap) {
     super(outputRecordCollector,
         onStart,
         onClose,
-        new BigQueryAsyncStandardFlush(bigQuery, uploaderMap),
+        new BigQueryAsyncStandardFlush(uploaderMap),
         catalog,
         new BufferManager((long) (Runtime.getRuntime().maxMemory() * 0.5)),
-        defaultNamespace,
+        Optional.ofNullable(defaultNamespace),
         new FlushFailure(),
         Executors.newFixedThreadPool(2));
   }
