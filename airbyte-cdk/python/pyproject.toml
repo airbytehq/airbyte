@@ -62,9 +62,10 @@ unstructured = { version = "0.10.27", extras = ["docx", "pptx"], optional = true
 pyjwt = "^2.8.0"
 cryptography = "^42.0.5"
 pytz = "2024.1"
+datamodel-code-generator = "0.11.19"
 
 [tool.poetry.group.dev.dependencies]
-datamodel_code_generator = "0.25.4"
+datamodel_code_generator = "0.11.19"
 freezegun = "*"
 mypy = "*"
 pandas = "2.0.3"
