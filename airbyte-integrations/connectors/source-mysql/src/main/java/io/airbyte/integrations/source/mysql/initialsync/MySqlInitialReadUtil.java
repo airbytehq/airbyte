@@ -249,7 +249,6 @@ public class MySqlInitialReadUtil {
         propertiesManager, eventConverter, new MySqlCdcSavedInfoFetcher(stateToBeUsed), new MySqlCdcStateHandler(stateManager));
 
     final List<AutoCloseableIterator<AirbyteMessage>> completers = catalog.getStreams().stream()
-//            .filter(stream -> !initialLoadStreams.streamsForInitialLoad.contains(stream))
             .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
             .map(stream -> (AutoCloseableIterator<AirbyteMessage>)new StreamStatusTraceEmitterIterator(
                     new AirbyteStreamStatusHolder(
@@ -257,7 +256,6 @@ public class MySqlInitialReadUtil {
                             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)))
             .toList();
 
-    LOGGER.info("*** starters: {}, completeres: {}", starters.size(), completers.size());
     // This starts processing the binglogs as soon as initial sync is complete, this is a bit different
     // from the current cdc syncs.
     // We finish the current CDC once the initial snapshot is complete and the next sync starts
