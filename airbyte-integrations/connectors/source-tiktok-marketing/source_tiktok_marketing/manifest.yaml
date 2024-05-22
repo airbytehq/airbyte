@@ -3,7 +3,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - advertiser_ids
+    - advertisers
 
 definitions:
   authenticator:
@@ -19,6 +19,14 @@ definitions:
     url_base: '{{ "https://sandbox-ads.tiktok.com/open_api/v1.3/" if config.get(''credentials'', {})[''auth_type''] == "sandbox_access_token" else "https://business-api.tiktok.com/open_api/v1.3/" }}'
     path: "{{ parameters['path'] }}"
     http_method: GET
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: "DefaultErrorHandler"
+          response_filters:
+            - predicate: "{{ response.get('code') != 0 }}"
+              action: FAIL
+              error_message: "{{ response['message'] }}"
 
   record_selector:
     type: RecordSelector
@@ -33,6 +41,8 @@ definitions:
       type: CustomRecordFilter
       class_name: "source_tiktok_marketing.components.semi_incremental_record_filter.PerPartitionRecordFilter"
       condition: "{{ record['modify_time'] >= stream_state.get('modify_time', config.get('start_date', '')) }}"
+      $parameters:
+        partition_field: advertiser_id
 
   retriever:
     type: SimpleRetriever
@@ -71,11 +81,16 @@ definitions:
     datetime_format: "%Y-%m-%d %H:%M:%SZ"
     start_datetime:
       type: MinMaxDatetime
-      datetime: "{{ config.get('start_date', '1990-01-01') }}"
+      datetime: "{{ config.get('start_date', '2016-09-01') }}"
       datetime_format: "%Y-%m-%d"
 
   single_id_partition_router:
-    - class_name: "source_tiktok_marketing.components.advertiser_ids_partition_router.AdvertiserIdPartitionRouter"
+    - class_name: "source_tiktok_marketing.components.advertiser_ids_partition_router.SingleAdvertiserIdPartitionRouter"
+      $parameters:
+        path_in_config:
+          - ["credentials", "advertiser_id"]
+          - ["environment", "advertiser_id"]
+        partition_field: advertiser_id
       parent_stream_configs:
         - type: ParentStreamConfig
           parent_key: advertiser_id
@@ -88,7 +103,12 @@ definitions:
             $ref: "#/definitions/advertiser_ids_stream"
 
   multiple_id_partition_router:
-    - class_name: "source_tiktok_marketing.components.advertiser_ids_partition_router.AdvertiserIdsPartitionRouter"
+    - class_name: "source_tiktok_marketing.components.advertiser_ids_partition_router.MultipleAdvertiserIdsPartitionRouter"
+      $parameters:
+        path_in_config:
+          - ["credentials", "advertiser_id"]
+          - ["environment", "advertiser_id"]
+        partition_field: advertiser_ids
       parent_stream_configs:
         - type: ParentStreamConfig
           parent_key: advertiser_id
@@ -378,6 +398,8 @@ definitions:
       type: CustomRecordFilter
       class_name: "source_tiktok_marketing.components.semi_incremental_record_filter.PerPartitionRecordFilter"
       condition: "{{ record['dimensions']['stat_time_day'] >= stream_state.get('stat_time_day', config.get('start_date', '')) }}"
+      $parameters:
+        partition_field: advertiser_id
 
   record_selector_for_hourly_reports_streams:
     $ref: "#/definitions/record_selector"
@@ -385,6 +407,8 @@ definitions:
       type: CustomRecordFilter
       class_name: "source_tiktok_marketing.components.semi_incremental_record_filter.PerPartitionRecordFilter"
       condition: "{{ record['dimensions']['stat_time_hour'] >= stream_state.get('stat_time_hour', config.get('start_date', '')) }}"
+      $parameters:
+        partition_field: advertiser_id
 
   base_report_retriever:
     type: SimpleRetriever
@@ -428,7 +452,7 @@ definitions:
     datetime_format: "%Y-%m-%d"
     start_datetime:
       type: MinMaxDatetime
-      datetime: "{{ config.get('start_date', '1990-01-01') }}"
+      datetime: "{{ config.get('start_date', '2016-09-01') }}"
       datetime_format: "%Y-%m-%d"
     end_datetime:
       type: MinMaxDatetime
@@ -447,7 +471,7 @@ definitions:
     datetime_format: "%Y-%m-%d"
     start_datetime:
       type: MinMaxDatetime
-      datetime: "{{ config.get('start_date', '1990-01-01') }}"
+      datetime: "{{ config.get('start_date', '2016-09-01') }}"
       datetime_format: "%Y-%m-%d"
     end_datetime:
       type: MinMaxDatetime
@@ -1477,7 +1501,7 @@ definitions:
           data_level: '{{ parameters["data_level"] }}'
           dimensions: '{{ parameters["dimensions"] | string }}'
           metrics: '{{ (parameters["report_metrics"] + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr"] if parameters["report_metrics"] != "None" else ["spend", "cpc", "cpm", "impressions", "clicks", "ctr"] ) | string  }}'
-          start_date: '{{ day_delta(-365, "%Y-%m-%d") if config.get("start_date", "1990-01-01") < day_delta(-365, "%Y-%m-%d") else config["start_date"] }}'
+          start_date: '{{ day_delta(-365, "%Y-%m-%d") if config.get("start_date", "2016-09-01") < day_delta(-365, "%Y-%m-%d") else config["start_date"] }}'
           end_date: "{{ today_utc() }}"
           lifetime: "true"
           filters: '{{ [
@@ -1531,7 +1555,7 @@ definitions:
           description:
             The unique identifier for each advertiser in the TikTok marketing
             platform.
-          type: integer
+          type: string
         advertiser_name:
           description: The name of the advertiser registered in the TikTok marketing platform.
           type: string
