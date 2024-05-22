@@ -154,7 +154,7 @@ class SetConnectorVersion(Step):
     async def get_repo_dir(self) -> Directory:
         if self.repo_dir is not None:
             return self.repo_dir
-        self.repo_dir = await self.context.get_repo_dir()       
+        self.repo_dir = await self.context.get_repo_dir()
         return self.repo_dir
 
     async def _run(self) -> StepResult:
