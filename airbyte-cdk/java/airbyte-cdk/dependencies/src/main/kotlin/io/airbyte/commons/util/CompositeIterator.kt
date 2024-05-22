@@ -107,7 +107,12 @@ internal constructor(
             }
             return next
         } catch (e: RuntimeException) {
-            /*StreamStatusUtils.emitIncompleteStreamStatus(airbyteStream, airbyteStreamStatusConsumer)*/
+            if (emitStatus) {
+                StreamStatusUtils.emitIncompleteStreamStatus(
+                    airbyteStream,
+                    airbyteStreamStatusConsumer
+                )
+            }
             throw e
         }
     }

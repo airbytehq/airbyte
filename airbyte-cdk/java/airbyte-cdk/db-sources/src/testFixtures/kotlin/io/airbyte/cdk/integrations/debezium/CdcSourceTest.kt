@@ -334,21 +334,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     }
 
     protected fun extractStateMessages(messages: List<AirbyteMessage>): List<AirbyteStateMessage> {
-        return messages
-            .stream()
-            .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.STATE }
-            .map { obj: AirbyteMessage -> obj.state }
-            .collect(Collectors.toList())
-    }
-
-    protected fun extractTraceMessages(
-        messages: List<AirbyteMessage>
-    ): MutableList<io.airbyte.protocol.models.v0.AirbyteTraceMessage>? {
-        return messages
-            .stream()
-            .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.TRACE }
-            .map { obj: AirbyteMessage -> obj.trace }
-            .collect(Collectors.toList())
+        return messages.filter { it.type == AirbyteMessage.Type.STATE }.map { it.state }.toList()
     }
 
     protected fun assertExpectedRecords(

@@ -473,6 +473,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
             new MySqlInitialLoadHandler(sourceConfig, database, new MySqlSourceOperations(), getQuoteString(), initialLoadStateManager,
                 Optional.of(namespacePair -> Jsons.jsonNode(pairToCursorBasedStatus.get(convertNameNamespacePairFromV0(namespacePair)))),
                 getTableSizeInfoForStreams(database, catalog.getStreams(), getQuoteString()));
+        // Cursor based incremental iterators are decorated with start and complete status traces
         final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>(initialLoadHandler.getIncrementalIterators(
             new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
             tableNameToTable,

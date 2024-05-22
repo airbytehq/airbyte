@@ -218,13 +218,16 @@ public class MySqlInitialReadUtil {
           getMySqlInitialLoadHandler(database, emittedAt, quoteString, initialLoadStreams, initialLoadGlobalStateManager,
               Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
 
+      // Because initial load streams will be followed by cdc read of those stream, we only decorate with
+      // complete status trace
+      // after CDC read is done.
       initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
           tableNameToTable,
           emittedAt, true, false));
     }
 
-    final List<AutoCloseableIterator<AirbyteMessage>> starters = catalog.getStreams().stream()
+    final List<AutoCloseableIterator<AirbyteMessage>> cdcStreamsStartStatusEmitters = catalog.getStreams().stream()
         .filter(stream -> !initialLoadStreams.streamsForInitialLoad.contains(stream))
         .map(stream -> (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(
             new AirbyteStreamStatusHolder(
@@ -247,7 +250,7 @@ public class MySqlInitialReadUtil {
     final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
         propertiesManager, eventConverter, new MySqlCdcSavedInfoFetcher(stateToBeUsed), new MySqlCdcStateHandler(stateManager));
 
-    final List<AutoCloseableIterator<AirbyteMessage>> completers = catalog.getStreams().stream()
+    final List<AutoCloseableIterator<AirbyteMessage>> allStreamsCompleteStatusEmitters = catalog.getStreams().stream()
         .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
         .map(stream -> (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(
             new AirbyteStreamStatusHolder(
@@ -263,8 +266,9 @@ public class MySqlInitialReadUtil {
         AutoCloseableIterators.concatWithEagerClose(
             Stream
                 .of(initialLoadIterator,
-                    starters,
-                    Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)), completers)
+                    cdcStreamsStartStatusEmitters,
+                    Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
+                    allStreamsCompleteStatusEmitters)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList()),
             AirbyteTraceMessageUtility::emitStreamStatusTrace));
