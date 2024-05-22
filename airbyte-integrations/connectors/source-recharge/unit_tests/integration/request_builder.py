@@ -13,19 +13,21 @@ from airbyte_cdk.test.mock_http.request import HttpRequest
 from .config import ACCESS_TOKEN, DATE_TIME_FORMAT
 
 
-def get_stream_request(stream_name: str) -> RequestBuilder:
-    return RequestBuilder.get_endpoint(stream_name).with_limit(250)
+def get_stream_request(stream_name: str, api_version: str = "2021-11", with_limit: bool = True) -> RequestBuilder:
+    result = RequestBuilder.get_endpoint(stream_name, api_version)
+    if with_limit:
+        result = result.with_limit(250)
+    return result
 
 
 class RequestBuilder:
-
     @classmethod
-    def get_endpoint(cls, endpoint: str) -> RequestBuilder:
-        return cls(endpoint=endpoint)
+    def get_endpoint(cls, endpoint: str, api_version: str = "2021-11") -> RequestBuilder:
+        return cls(endpoint=endpoint, api_version=api_version)
 
-    def __init__(self, endpoint: str) -> None:
+    def __init__(self, endpoint: str, api_version: str) -> None:
         self._endpoint: str = endpoint
-        self._api_version: str = "2021-11"
+        self._api_version: str = api_version
         self._query_params: MutableMapping[str, Any] = {}
 
     def with_limit(self, limit: int) -> RequestBuilder:
