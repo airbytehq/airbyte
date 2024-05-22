@@ -6,19 +6,18 @@ from __future__ import annotations
 import dataclasses
 from pathlib import Path
 from textwrap import dedent, indent
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
-import sqlalchemy
 from overrides import overrides
-from sqlalchemy import text
 
-from airbyte import exceptions as exc
-from airbyte._future_cdk.record_processor import RecordProcessorBase
-from airbyte._future_cdk.state_writers import StdOutStateWriter
 from airbyte._processors.sql.snowflake import (
     SnowflakeConfig,
     SnowflakeSqlProcessor,
-    SnowflakeTypeConverter,
+)
+from airbyte_protocol.models import (
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    Type,
 )
 
 
@@ -40,96 +39,25 @@ class SnowflakeCortexConfig(SnowflakeConfig):
 
     vector_length: int
 
+    @property
+    def cortex_embedding_model(self) -> str | None:
+        """Return the Cortex embedding model name.
 
-class SnowflakeCortexTypeConverter(SnowflakeTypeConverter):
-    """A class to convert array type into vector."""
+        If 'None', then we are loading pre-calculated embeddings.
 
-    def __init__(
-        self,
-        conversion_map: dict | None = None,
-        *,
-        vector_length: int,
-    ) -> None:
-        self.vector_length = vector_length
-        super().__init__(conversion_map)
-
-    @overrides
-    def to_sql_type(
-        self,
-        json_schema_property_def: dict[str, str | dict | list],
-    ) -> sqlalchemy.types.TypeEngine:
-        """Convert a value to a SQL type."""
-        sql_type = super().to_sql_type(json_schema_property_def)
-        if isinstance(sql_type, sqlalchemy.types.ARRAY):
-            # SQLAlchemy doesn't yet support the `VECTOR` data type.
-            # We may want to remove this or update once this resolves:
-            # https://github.com/snowflakedb/snowflake-sqlalchemy/issues/499
-            return f"VECTOR(FLOAT, {self.vector_length})"
-
-        return sql_type
+        TODO: Implement this property or remap.
+        """
+        return None
 
 
 class SnowflakeCortexSqlProcessor(SnowflakeSqlProcessor):
     """A Snowflake implementation for use with Cortex functions."""
 
-    supports_merge_insert = True
-    type_converter_class = SnowflakeCortexTypeConverter
+    # Use the "emulated merge" code path because each primary key has multiple rows (chunks)
+    supports_merge_insert = False
+
+    # Custom config type includes the vector_length parameter
     sql_config: SnowflakeCortexConfig
-
-    def __init__(
-        self,
-        *,
-        catalog_provider: CatalogProvider,
-        state_writer: StateWriterBase | None = None,
-        sql_config: SnowflakeCortexConfig,
-        file_writer: FileWriterBase | None = None,
-        temp_dir: Path | None = None,
-        temp_file_cleanup: bool = True,
-    ) -> None:
-        """Custom initialization: Initialize type_converter with vector_length."""
-        if not temp_dir and not file_writer:
-            raise exc.PyAirbyteInternalError(
-                message="Either `temp_dir` or `file_writer` must be provided.",
-            )
-
-        state_writer = state_writer or StdOutStateWriter()
-
-        self._sql_config: SnowflakeCortexConfig = sql_config
-
-        # Skip the direct parent's initialization and call the grandparent
-        RecordProcessorBase.__init__(
-            self,
-            state_writer=state_writer,
-            catalog_provider=catalog_provider,
-        )
-        self.file_writer = file_writer or self.file_writer_class(
-            cache_dir=cast(Path, temp_dir),
-            cleanup=temp_file_cleanup,
-        )
-
-        # This is the only line that is different from the base class implementation:
-        self.type_converter = self.type_converter_class(vector_length=self.sql_config.vector_length)
-
-        self._cached_table_definitions: dict[str, sqlalchemy.Table] = {}
-        self._ensure_schema_exists()
-
-    def _get_column_list_from_table(
-        self,
-        table_name: str,
-    ) -> list[str]:
-        """Get column names for passed stream.
-
-        This is overridden due to lack of SQLAlchemy compatibility for the
-        `VECTOR` data type.
-        """
-        conn: Connection = self.sql_config.get_vendor_client()
-        cursor = conn.cursor()
-        cursor.execute(f"DESCRIBE TABLE {table_name};")
-        results = cursor.fetchall()
-        column_names = [row[0].lower() for row in results]
-        cursor.close()
-        conn.close()
-        return column_names
 
     @overrides
     def _write_files_to_new_table(
@@ -154,11 +82,14 @@ class SnowflakeCortexSqlProcessor(SnowflakeSqlProcessor):
         files_list = ", ".join([f"'{f.name}'" for f in files])
         columns_list_str: str = indent("\n, ".join(columns_list), " " * 12)
 
-        # following two lines are different from SnowflakeSqlProcessor
+        # following block is different from SnowflakeSqlProcessor
         vector_suffix = f"::Vector(Float, {self.sql_config.vector_length})"
         variant_cols_str: str = ("\n" + " " * 21 + ", ").join(
             [f"$1:{self.normalizer.normalize(col)}{vector_suffix if 'embedding' in col else ''}" for col in columns_list]
         )
+        if self.sql_config.cortex_embedding_model:
+            # WARNING: This is untested and may not work as expected.
+            variant_cols_str += f"snowflake.cortex.embed('{self.sql_config.cortex_embedding_model}', $1:{DOCUMENT_CONTENT_COLUMN})"
 
         copy_statement = dedent(
             f"""
@@ -178,31 +109,70 @@ class SnowflakeCortexSqlProcessor(SnowflakeSqlProcessor):
         self._execute_sql(copy_statement)
         return temp_table_name
 
-    @overrides
-    def _add_missing_columns_to_table(
+    def _emulated_merge_temp_table_to_final_table(
         self,
         stream_name: str,
-        table_name: str,
+        temp_table_name: str,
+        final_table_name: str,
     ) -> None:
-        """Use Snowflake Python connector to add new columns to the table"""
-        columns = self._get_sql_column_definitions(stream_name)
-        existing_columns = self._get_column_list_from_table(table_name)
-        for column_name, column_type in columns.items():
-            if column_name not in existing_columns:
-                self._add_new_column_to_table(table_name, column_name, column_type)
-            self._invalidate_table_cache(table_name)
-        pass
+        """Emulate the merge operation using a series of SQL commands.
 
-    def _add_new_column_to_table(
-        self,
-        table_name: str,
-        column_name: str,
-        column_type: sqlalchemy.types.TypeEngine,
-    ) -> None:
-        conn: Connection = self.sql_config.get_vendor_client()
-        cursor = conn.cursor()
-        cursor.execute(
-            text(f"ALTER TABLE {self._fully_qualified(table_name)} " f"ADD COLUMN {column_name} {column_type}"),
+        This method varies from the SnowflakeSqlProcessor implementation in that multiple rows will exist for each
+        primary key. And we need to remove all rows (chunks) for a given primary key before inserting new ones.
+
+        So instead of using UPDATE and then INSERT, we will DELETE all rows for included primary keys and then call
+        the append implementation to insert new rows.
+        """
+        columns_list: list[str] = list(self._get_sql_column_definitions(stream_name=stream_name).keys())
+
+        delete_statement = dedent(
+            f"""
+            DELETE FROM {final_table_name}
+            WHERE {DOCUMENT_ID_COLUMN} IN (
+                SELECT {DOCUMENT_ID_COLUMN}
+                FROM {temp_table_name}
+            );
+            """
         )
-        cursor.close()
-        conn.close()
+        append_statement = dedent(
+            f"""
+            INSERT INTO {final_table_name}
+                ({', '.join(columns_list)})
+            SELECT ({', '.join(columns_list)})
+            FROM {temp_table_name};
+            """
+        )
+
+        with self.get_sql_connection() as conn:
+            # This is a transactional operation to avoid outages, in case
+            # a user queries the data during the operation.
+            conn.execute(delete_statement)
+            conn.execute(append_statement)
+
+    def process_record_message(
+        self,
+        record_msg: AirbyteRecordMessage,
+        stream_schema: dict,
+    ) -> None:
+        """Write a record to the cache.
+
+        We override the SQLProcessor implementation in order to handle chunking, embedding, etc.
+
+        This method is called for each record message, before the record is written to local file.
+        """
+
+        airbyte_messages = []
+        for i, chunk in enumerate(document_chunks):
+            chunk = document_chunks[i]
+            message = AirbyteMessage(type=Type.RECORD, record=chunk.record)
+            new_data = {}
+            new_data[DOCUMENT_ID_COLUMN] = self._create_document_id(message)
+            new_data[CHUNK_ID_COLUMN] = str(uuid.uuid4().int)
+            new_data[METADATA_COLUMN] = chunk.metadata
+            new_data[DOCUMENT_CONTENT_COLUMN] = chunk.page_content
+            new_data[EMBEDDING_COLUMN] = chunk.embedding
+
+        self.file_writer.process_record_message(
+            record_msg,
+            stream_schema=stream_schema,
+        )

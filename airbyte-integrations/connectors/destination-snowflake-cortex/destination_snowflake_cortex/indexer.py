@@ -1,15 +1,15 @@
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
 import copy
 import uuid
-from typing import Any, Iterable, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 import dpath.util
+
 from airbyte._processors.sql.snowflake import SnowflakeSqlProcessor
-from airbyte._processors.sql.snowflakecortex import SnowflakeCortexSqlProcessor
-from airbyte.caches import SnowflakeCache
 from airbyte.strategies import WriteStrategy
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
@@ -46,7 +46,7 @@ class SnowflakeCortexIndexer(Indexer):
 
     def __init__(self, config: SnowflakeCortexIndexingModel, embedding_dimensions: int, configured_catalog: ConfiguredAirbyteCatalog):
         super().__init__(config)
-        self.cache = SnowflakeCache(
+        self.sql_config = SnowflakeCortexConfig(
             # Note: Host maps to account in the cache
             account=config.host,
             role=config.role,
@@ -55,6 +55,7 @@ class SnowflakeCortexIndexer(Indexer):
             username=config.username,
             password=config.credentials.password,
             schema_name=config.default_schema,
+            vector_length=embedding_dimensions,
         )
         self.embedding_dimensions = embedding_dimensions
         self.catalog = configured_catalog
@@ -67,7 +68,7 @@ class SnowflakeCortexIndexer(Indexer):
         """
         self.default_processor = SnowflakeSqlProcessor(cache=self.cache)
 
-    def _get_airbyte_messsages_from_chunks(
+    def _get_airbyte_messages_from_chunks(
         self,
         document_chunks: Iterable[Any],
     ) -> Iterable[AirbyteMessage]:
@@ -162,8 +163,9 @@ class SnowflakeCortexIndexer(Indexer):
         return WriteStrategy.AUTO
 
     def index(self, document_chunks: Iterable[Any], namespace: str, stream: str):
+        cortex_processor.process_airbyte_messages(airbyte_messages, self.get_write_strategy(stream))
         # get list of airbyte messages from the document chunks
-        airbyte_messages = self._get_airbyte_messsages_from_chunks(document_chunks)
+        airbyte_messages = self._get_airbyte_messages_from_chunks(document_chunks)
         # todo: remove state messages and see if things still work
         airbyte_messages.append(self._create_state_message(stream, namespace, {}))
 
@@ -171,10 +173,8 @@ class SnowflakeCortexIndexer(Indexer):
         if airbyte_messages is not None and len(airbyte_messages) > 0:
             updated_catalog = self._get_updated_catalog()
             cortex_processor = SnowflakeCortexSqlProcessor(
-                cache=self.cache,
+                sql_config=self.sql_config,
                 catalog=updated_catalog,
-                vector_length=self.embedding_dimensions,
-                source_name="vector_db_based",
                 stream_names=[stream],
             )
             cortex_processor.process_airbyte_messages(airbyte_messages, self.get_write_strategy(stream))
