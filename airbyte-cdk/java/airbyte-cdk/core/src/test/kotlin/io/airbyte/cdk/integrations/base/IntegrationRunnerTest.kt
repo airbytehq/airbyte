@@ -522,7 +522,7 @@ ${Jsons.serialize(message2)}""".toByteArray(
                 try {
                     TimeUnit.MINUTES.sleep(5)
                 } catch (e: Exception) {
-                    LOGGER.info{"Caught Exception $e"}
+                    LOGGER.info("Caught Exception", e)
                     caughtExceptions.add(e)
                     if (!ignoreInterrupt) {
                         executorService.shutdownNow()
