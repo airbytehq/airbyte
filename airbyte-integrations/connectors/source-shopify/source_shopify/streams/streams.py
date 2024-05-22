@@ -262,7 +262,6 @@ class OrderRisks(IncrementalShopifyGraphQlBulkStream):
     bulk_query: OrderRisk = OrderRisk
     # the updated stream work only with >= `2024-04` shopify api version
     api_version = "2024-04"
-    primary_key = "order_id"
 
 
 class Transactions(IncrementalShopifySubstream):

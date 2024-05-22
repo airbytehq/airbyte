@@ -2145,6 +2145,8 @@ class OrderRisk(ShopifyBulkQuery):
             # save and resolve id
             record["admin_graphql_api_id"] = record.get("order_id")
             record["order_id"] = self.tools.resolve_str_id(record.get("order_id"))
+            # add old pk
+            record["id"] = record.get("order_id")
             # add the `recommendation` field to the root lvl
             record["recommendation"] = recommendation
             assessments = risk.get("assessments", []) if risk else None

@@ -698,6 +698,7 @@ def order_risks_response_expected_result():
     return [
         {
             "updated_at": "2023-09-19T14:29:22+00:00",
+            "id": 3945528492221,
             "order_id": 3945528492221,
             "admin_graphql_api_id": "gid://shopify/Order/3945528492221",
             "recommendation": "CANCEL",
