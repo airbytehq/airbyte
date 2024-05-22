@@ -47,7 +47,9 @@ class ClientSideIncrementalRecordFilterDecorator(RecordFilter):
     :param PerPartitionCursor per_partition_cursor: Optional Cursor used for mapping cursor value in nested stream_state
     """
 
-    def __init__(self, date_time_based_cursor: DatetimeBasedCursor, per_partition_cursor: Optional[PerPartitionCursor] = None, **kwargs):
+    def __init__(
+        self, date_time_based_cursor: DatetimeBasedCursor, per_partition_cursor: Optional[PerPartitionCursor] = None, **kwargs: Any
+    ):
         super().__init__(**kwargs)
         self._date_time_based_cursor = date_time_based_cursor
         self._per_partition_cursor = per_partition_cursor
@@ -72,10 +74,10 @@ class ClientSideIncrementalRecordFilterDecorator(RecordFilter):
         self,
         records: Iterable[Mapping[str, Any]],
         stream_state: StreamState,
-        stream_slice: StreamSlice,
+        stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        state_value = self._get_state_value(stream_state, stream_slice)
+        state_value = self._get_state_value(stream_state, stream_slice or StreamSlice(partition={}, cursor_slice={}))
         filter_date: datetime.datetime = self._get_filter_date(state_value)
         records = (
             record
