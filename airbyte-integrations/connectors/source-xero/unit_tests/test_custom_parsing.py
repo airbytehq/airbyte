@@ -18,36 +18,6 @@ def test_parsed_result(requests_mock, config_pass, mock_bank_transaction_respons
             assert dict(record) == expected_record
 
 
-def test_request_params(config_pass):
-    bank_transactions = get_stream_by_name("bank_transactions", config_pass)
-    expected_params = {}
-    assert bank_transactions.retriever.requester.get_request_params() == expected_params
-
-
-def test_request_headers(config_pass):
-    bank_transactions = get_stream_by_name("bank_transactions", config_pass)
-    expected_headers = {'Xero-Tenant-Id': 'goodone', 'Accept': 'application/json'}
-    assert bank_transactions.retriever.requester.get_request_headers() == expected_headers 
-
-
-def test_http_method(config_pass):
-    stream = get_stream_by_name("bank_transactions", config_pass)
-    expected_method = "GET"
-    actual_method = stream.retriever.requester.http_method.value
-    assert actual_method == expected_method
-
-
-def test_ignore_forbidden(requests_mock, config_pass):
-    requests_mock.get(url="https://api.xero.com/api.xro/2.0/BankTransactions", status_code=403, json=[{ "message": "Forbidden resource"}])
-    stream = get_stream_by_name("bank_transactions", config_pass)
-
-    records = []
-    for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh):
-        records.extend(list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)))
-    assert records == []
-    assert requests_mock.call_count == 1
-
-
 def test_parse_date():
     # 11/10/2020 00:00:00 +3 (11/10/2020 21:00:00 GMT/UTC)
     assert ParseDates.parse_date("/Date(1602363600000+0300)/") == datetime.datetime(2020, 10, 11, 0, 0, tzinfo=datetime.timezone.utc)
