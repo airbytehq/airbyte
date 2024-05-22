@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 from dataclasses import dataclass
-from typing import Any, Mapping, MutableMapping, Optional
+from typing import Any, List, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
@@ -13,7 +13,6 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
     RequestInput,
 )
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-from airbyte_cdk.sources.types import Record
 from source_freshdesk.utils import CallCredit
 
 
@@ -122,15 +121,15 @@ class FreshdeskTicketsPaginationStrategy(PageIncrement):
 
     PAGE_LIMIT = 300
 
-    def next_page_token(self, response: requests.Response, last_page_size: int, last_record: Optional[Record]) -> Optional[Any]:
+    def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
         # Stop paginating when there are fewer records than the page size or the current page has no records, or maximum page number is hit
-        if (self._page_size and last_page_size < self._page_size) or last_page_size == 0:
+        if (self._page_size and len(last_records) < self._page_size) or len(last_records) == 0:
             return None
         elif self._page >= self.PAGE_LIMIT:
             # reset page count as cursor parameter will be updated in the stream slicer
             self.reset()
             # get last_record from latest batch, pos. -1, because of ACS order of records
-            last_record_updated_at = last_record["updated_at"]
+            last_record_updated_at = last_records[-1]["updated_at"]
             # updating slicer request parameters with last_record state
             return last_record_updated_at
         else:

@@ -74,7 +74,7 @@ class SimpleRetriever(Retriever):
 
         # This mapping is used during a resumable full refresh syncs to indicate whether a partition has started syncing
         # records. Partitions serve as the key and map to True if they already began processing records
-        self._synced_partitions: MutableMapping[Any, bool] = dict()
+        self._partition_started: MutableMapping[Any, bool] = dict()
 
     @property  # type: ignore
     def name(self) -> str:
@@ -363,8 +363,8 @@ class SimpleRetriever(Retriever):
             # The first attempt to read a page for the current partition should reset the paginator to the current
             # cursor state which is initially assigned to the incoming state from the platform
             partition_key = self._to_partition_key(_slice.partition)
-            if partition_key not in self._synced_partitions:
-                self._synced_partitions[partition_key] = True
+            if partition_key not in self._partition_started:
+                self._partition_started[partition_key] = True
                 self._paginator.reset(reset_value=cursor_value)
 
             yield from self._read_page(record_generator, stream_state, _slice)
