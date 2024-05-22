@@ -24,7 +24,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /docs
           http_method: GET
         record_selector:
@@ -39,11 +39,11 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ last_record[''href''] }}'
+            cursor_value: "{{ last_record['href'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/docs'
+          $ref: "#/schemas/docs"
     categories:
       type: DeclarativeStream
       name: categories
@@ -52,7 +52,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /categories
           http_method: GET
         record_selector:
@@ -64,7 +64,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/categories'
+          $ref: "#/schemas/categories"
     permissions:
       type: DeclarativeStream
       name: permissions
@@ -73,7 +73,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /docs/{{ stream_partition.doc_id }}/acl/permissions
           http_method: GET
         record_selector:
@@ -88,7 +88,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ last_record[''href''] }}'
+            cursor_value: "{{ last_record['href'] }}"
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -96,11 +96,11 @@ definitions:
                 parent_key: id
                 partition_field: doc_id
                 stream:
-                  $ref: '#/definitions/streams/docs'
+                  $ref: "#/definitions/streams/docs"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/permissions'
+          $ref: "#/schemas/permissions"
     pages:
       type: DeclarativeStream
       name: pages
@@ -109,7 +109,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /docs/{{ stream_partition.doc_id }}/pages
           http_method: GET
         record_selector:
@@ -124,7 +124,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ last_record[''href''] }}'
+            cursor_value: "{{ last_record['href'] }}"
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -132,11 +132,11 @@ definitions:
                 parent_key: id
                 partition_field: doc_id
                 stream:
-                  $ref: '#/definitions/streams/docs'
+                  $ref: "#/definitions/streams/docs"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/pages'
+          $ref: "#/schemas/pages"
     tables:
       type: DeclarativeStream
       name: tables
@@ -145,7 +145,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /docs/{{ stream_partition.doc_id }}/tables
           http_method: GET
         record_selector:
@@ -160,7 +160,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ last_record[''href''] }}'
+            cursor_value: "{{ last_record['href'] }}"
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -168,11 +168,11 @@ definitions:
                 parent_key: id
                 partition_field: doc_id
                 stream:
-                  $ref: '#/definitions/streams/docs'
+                  $ref: "#/definitions/streams/docs"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/tables'
+          $ref: "#/schemas/tables"
     formulas:
       type: DeclarativeStream
       name: formulas
@@ -181,7 +181,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /docs/{{ stream_partition.doc_id }}/formulas
           http_method: GET
         record_selector:
@@ -196,7 +196,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ last_record[''href''] }}'
+            cursor_value: "{{ last_record['href'] }}"
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -204,11 +204,11 @@ definitions:
                 parent_key: id
                 partition_field: doc_id
                 stream:
-                  $ref: '#/definitions/streams/docs'
+                  $ref: "#/definitions/streams/docs"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/formulas'
+          $ref: "#/schemas/formulas"
     controls:
       type: DeclarativeStream
       name: controls
@@ -217,7 +217,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /docs/{{ stream_partition.doc_id }}/controls
           http_method: GET
         record_selector:
@@ -232,7 +232,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ last_record[''href''] }}'
+            cursor_value: "{{ last_record['href'] }}"
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -240,11 +240,11 @@ definitions:
                 parent_key: id
                 partition_field: doc_id
                 stream:
-                  $ref: '#/definitions/streams/docs'
+                  $ref: "#/definitions/streams/docs"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/controls'
+          $ref: "#/schemas/controls"
     rows:
       type: DeclarativeStream
       name: rows
@@ -253,7 +253,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: >-
             /docs/{{ stream_partition.doc_id }}/tables/{{
             stream_partition.table_id }}/rows
@@ -270,7 +270,7 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ last_record[''href''] }}'
+            cursor_value: "{{ last_record['href'] }}"
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -278,34 +278,34 @@ definitions:
                 parent_key: id
                 partition_field: doc_id
                 stream:
-                  $ref: '#/definitions/streams/docs'
+                  $ref: "#/definitions/streams/docs"
           - type: SubstreamPartitionRouter
             parent_stream_configs:
               - type: ParentStreamConfig
                 parent_key: id
                 partition_field: table_id
                 stream:
-                  $ref: '#/definitions/streams/tables'
+                  $ref: "#/definitions/streams/tables"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/rows'
+          $ref: "#/schemas/rows"
   base_requester:
     type: HttpRequester
     url_base: https://coda.io/apis/v1
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config[''auth_token''] }}'
+      api_token: "{{ config['auth_token'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/docs'
-  - $ref: '#/definitions/streams/categories'
-  - $ref: '#/definitions/streams/permissions'
-  - $ref: '#/definitions/streams/pages'
-  - $ref: '#/definitions/streams/tables'
-  - $ref: '#/definitions/streams/formulas'
-  - $ref: '#/definitions/streams/controls'
-  - $ref: '#/definitions/streams/rows'
+  - $ref: "#/definitions/streams/docs"
+  - $ref: "#/definitions/streams/categories"
+  - $ref: "#/definitions/streams/permissions"
+  - $ref: "#/definitions/streams/pages"
+  - $ref: "#/definitions/streams/tables"
+  - $ref: "#/definitions/streams/formulas"
+  - $ref: "#/definitions/streams/controls"
+  - $ref: "#/definitions/streams/rows"
 
 spec:
   type: Spec
@@ -337,239 +337,239 @@ metadata:
 schemas:
   docs:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       browserLink:
         type:
-          - 'null'
+          - "null"
           - string
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
       docSize:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           overApiSizeLimit:
             type:
-              - 'null'
+              - "null"
               - boolean
           pageCount:
             type:
-              - 'null'
+              - "null"
               - integer
           tableViewCount:
             type:
-              - 'null'
+              - "null"
               - integer
           totalRowCount:
             type:
-              - 'null'
+              - "null"
               - integer
       folder:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           browserLink:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
       folderId:
         type:
-          - 'null'
+          - "null"
           - string
       href:
         type:
-          - 'null'
+          - "null"
           - string
       icon:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           browserLink:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       owner:
         type:
-          - 'null'
+          - "null"
           - string
       ownerName:
         type:
-          - 'null'
+          - "null"
           - string
       published:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           browserLink:
             type:
-              - 'null'
+              - "null"
               - string
           categories:
             type:
-              - 'null'
+              - "null"
               - string
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           discoverable:
             type:
-              - 'null'
+              - "null"
               - boolean
           earnCredit:
             type:
-              - 'null'
+              - "null"
               - boolean
           imageLink:
             type:
-              - 'null'
+              - "null"
               - string
           mode:
             type:
-              - 'null'
+              - "null"
               - string
       sourceDoc:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           browserLink:
             type:
-              - 'null'
+              - "null"
               - string
           href:
             type:
-              - 'null'
+              - "null"
               - string
           totalRowCount:
             type:
-              - 'null'
+              - "null"
               - string
       updatedAt:
         type:
-          - 'null'
+          - "null"
           - string
       workspace:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           browserLink:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           organizationId:
             type:
-              - 'null'
+              - "null"
               - string
       workspaceId:
         type:
-          - 'null'
+          - "null"
           - string
   categories:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       name:
         type:
-          - 'null'
+          - "null"
           - string
   permissions:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       access:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       principal:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
   pages:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
@@ -578,14 +578,14 @@ schemas:
         type: string
       authors:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: object
           properties:
-            '@context':
+            "@context":
               type: string
-            '@type':
+            "@type":
               type: string
             additionalType:
               type: string
@@ -603,12 +603,12 @@ schemas:
             type: string
           createdBy:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
-              '@context':
+              "@context":
                 type: string
-              '@type':
+              "@type":
                 type: string
               additionalType:
                 type: string
@@ -618,12 +618,12 @@ schemas:
                 type: string
           items:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
-              '@context':
+              "@context":
                 type: string
-              '@type':
+              "@type":
                 type: string
               additionalType:
                 type: string
@@ -633,12 +633,12 @@ schemas:
                 type: string
           updatedBy:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
-              '@context':
+              "@context":
                 type: string
-              '@type':
+              "@type":
                 type: string
               additionalType:
                 type: string
@@ -648,7 +648,7 @@ schemas:
                 type: string
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             type:
@@ -663,21 +663,21 @@ schemas:
               type: string
       contentType:
         type:
-          - 'null'
+          - "null"
           - string
         enum:
           - canvas
           - embed
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
       createdBy:
         type: object
         properties:
-          '@context':
+          "@context":
             type: string
-          '@type':
+          "@type":
             type: string
           additionalType:
             type: string
@@ -689,7 +689,7 @@ schemas:
         type: string
       icon:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
@@ -702,7 +702,7 @@ schemas:
         type: string
       image:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
@@ -717,7 +717,7 @@ schemas:
         type: string
       parent:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
@@ -734,16 +734,16 @@ schemas:
         type: string
       updatedAt:
         type:
-          - 'null'
+          - "null"
           - string
       updatedBy:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
-          '@context':
+          "@context":
             type: string
-          '@type':
+          "@type":
             type: string
           additionalType:
             type: string
@@ -753,155 +753,155 @@ schemas:
             type: string
   tables:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       browserLink:
         type:
-          - 'null'
+          - "null"
           - string
       href:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       parent:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           browserLink:
             type:
-              - 'null'
+              - "null"
               - string
           href:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
       tableType:
         type:
-          - 'null'
+          - "null"
           - string
   formulas:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       href:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       parent:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           browserLink:
             type:
-              - 'null'
+              - "null"
               - string
           href:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
   controls:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       href:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       parent:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           browserLink:
             type:
-              - 'null'
+              - "null"
               - string
           href:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
   rows:
     type: object
@@ -933,5 +933,5 @@ schemas:
               - object
               - array
               - boolean
-              - 'null'
+              - "null"
     additionalProperties: true
