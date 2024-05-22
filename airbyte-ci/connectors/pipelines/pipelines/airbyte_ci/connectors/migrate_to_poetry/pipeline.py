@@ -34,7 +34,6 @@ class CheckIsMigrationCandidate(Step):
     """Check if the connector is a candidate for migration to poetry.
     Candidate conditions:
     - The connector is a Python connector.
-    - The connector is a source connector.
     - The connector has a setup.py file.
     - The connector has a base image defined in the metadata.
     - The connector has not been migrated to poetry yet.
@@ -52,12 +51,6 @@ class CheckIsMigrationCandidate(Step):
                 step=self,
                 status=StepStatus.SKIPPED,
                 stderr="The connector is not a Python connector.",
-            )
-        if self.context.connector.connector_type != "source":
-            return StepResult(
-                step=self,
-                status=StepStatus.SKIPPED,
-                stderr="The connector is not a source connector.",
             )
         if "poetry.lock" in connector_dir_entries and "pyproject.toml" in connector_dir_entries:
             return StepResult(
