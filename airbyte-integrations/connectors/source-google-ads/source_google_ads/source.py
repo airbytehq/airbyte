@@ -199,8 +199,9 @@ class SourceGoogleAds(AbstractSource):
                     continue
 
                 # Add segments.date to where clause of incremental custom queries if they are not present.
-                # The same will be done during read, but with start and end date from config
+                # The same will be done during read, but with start and end date from config.
                 if self.is_custom_query_incremental(query):
+                    # Set default date value 1 month ago, as some tables have a limited lookback time frame.
                     month_back = today().subtract(months=1).to_date_string()
                     start_date = config.get("start_date", month_back)
 
