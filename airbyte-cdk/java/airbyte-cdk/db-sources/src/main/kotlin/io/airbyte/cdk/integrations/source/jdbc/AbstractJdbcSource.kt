@@ -59,6 +59,7 @@ import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
+import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
@@ -102,9 +103,24 @@ abstract class AbstractJdbcSource<Datatype>(
 
     open fun supportResumableFullRefresh(
         database: JdbcDatabase,
-        airbyteStream: AirbyteStream
+        airbyteStream: ConfiguredAirbyteStream
     ): Boolean {
         return false
+    }
+
+    override fun discover(config: JsonNode): AirbyteCatalog {
+        var catalog = super.discover(config)
+        var database = createDatabase(config)
+        catalog.streams.forEach(
+            Consumer { stream: AirbyteStream ->
+                stream.isResumable =
+                    supportResumableFullRefresh(
+                        database,
+                        CatalogHelpers.toDefaultConfiguredStream(stream)
+                    )
+            }
+        )
+        return catalog
     }
 
     open fun getInitialLoadHandler(
@@ -114,17 +130,6 @@ abstract class AbstractJdbcSource<Datatype>(
         stateManager: StateManager?
     ): InitialLoadHandler<Datatype>? {
         return null
-    }
-
-    override fun discover(config: JsonNode): AirbyteCatalog {
-        var catalog = super.discover(config)
-        val database = createDatabase(config)
-        // Fill in isResumeable field for all streams
-        catalog.streams.forEach { airbyteStream: AirbyteStream ->
-//            val configuredAirbyteStream = convertToConfiguredAirbyteStream(airbyteStream)
-            airbyteStream.withIsResumeable(supportResumableFullRefresh(database, airbyteStream))
-        }
-        return catalog
     }
 
     override fun getFullRefreshStream(
@@ -140,7 +145,7 @@ abstract class AbstractJdbcSource<Datatype>(
         cursorField: Optional<String>
     ): AutoCloseableIterator<AirbyteMessage> {
         if (
-            supportResumableFullRefresh(database, airbyteStream.stream) &&
+            supportResumableFullRefresh(database, airbyteStream) &&
                 syncMode == SyncMode.FULL_REFRESH
         ) {
             val initialLoadHandler =

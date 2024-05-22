@@ -198,8 +198,8 @@ public class PostgresQueryUtils {
   }
 
   public static FileNodeHandler fileNodeForStreams(final JdbcDatabase database,
-      final List<AirbyteStream> streams,
-      final String quoteString) {
+                                                   final List<AirbyteStream> streams,
+                                                   final String quoteString) {
     final FileNodeHandler fileNodeHandler = new FileNodeHandler();
     streams.forEach(stream -> {
       try {
