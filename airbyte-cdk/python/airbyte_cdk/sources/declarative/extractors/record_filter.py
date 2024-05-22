@@ -104,5 +104,7 @@ class ClientSideIncrementalRecordFilterDecorator:
 
     def _get_filter_date(self, state_value: Optional[str]) -> datetime.datetime:
         start_date_parsed = self._start_date_from_config
-        state_date_parsed = self._date_time_based_cursor.parse_date(state_value) if state_value else None
-        return max((x for x in (start_date_parsed, state_date_parsed) if x))
+        if state_value:
+            return max(start_date_parsed, self._date_time_based_cursor.parse_date(state_value))
+        else:
+            return start_date_parsed
