@@ -4,11 +4,13 @@
 
 In this release, we introduce breaking change for `CohortMembers` stream: 
 - State is changed to per-partition format.
-- Key is changed to a unique key (based on 'distinct_id' and 'cohort_id' fields).  The previous key was not unique and didn't support the possibility for user be in multiple cohorts.
-Semi-incremental `Cohorts`, `CohortMembers` and `Engage` streams with client-side filtering extract records since user provided or default (1 year old) start_date.
+- Key is changed to a unique key (based on `distinct_id` and `cohort_id` fields).  The previous key was not unique and didn't support the possibility for user be in multiple cohorts.
 
 To gracefully handle these changes for your existing connections, we highly recommend resetting your data before resuming your data syncs with the new version.
 
+:::note
+To add start date filtering for the `Cohorts`, `CohortMembers`, and `Engage` streams, the default retrieval range has been updated from all existing records to only include records created within the past year if start date not provided.
+::: 
 ## Migration Steps
 
 ### For Airbyte Open Source: Update the local connector image
