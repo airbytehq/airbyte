@@ -1,0 +1,28 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.4"
+name = "destination-databend"
+description = "Destination implementation for Databend."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/destinations/databend"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "destination_databend"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+databend-sqlalchemy = "==0.1.6"
+airbyte-cdk = "==0.68.1"
+requests = "==2.31.0"
+
+[tool.poetry.scripts]
+destination-databend = "destination_databend.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^6.1"
