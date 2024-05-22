@@ -38,7 +38,7 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 25
+            page_size: 2
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -75,7 +75,7 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 25
+            page_size: 2
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -109,7 +109,7 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 25
+            page_size: 3
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -146,7 +146,7 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 25
+            page_size: 2
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -182,7 +182,7 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 25
+            page_size: 2
       schema_loader:
         type: InlineSchemaLoader
         schema:
