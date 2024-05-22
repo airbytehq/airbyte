@@ -375,10 +375,7 @@ class BulkSalesforceStream(SalesforceStream):
         json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
         try:
             response = self._send_http_request("POST", url, json=json)
-            json_response = response.json()
-            if isinstance(json_response, dict):
-                return json_response.get("id")  # type: ignore  # based on the API, `id` will be a string
-            return None
+            return response.json().get("id")  # type: ignore  # based on the API, `id` will be a string
         except BulkNotSupportedException:
             return None
 
