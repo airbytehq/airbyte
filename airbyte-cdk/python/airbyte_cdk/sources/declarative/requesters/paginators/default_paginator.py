@@ -154,7 +154,10 @@ class DefaultPaginator(Paginator):
         return self._get_request_options(RequestOptionType.body_json)
 
     def reset(self, reset_value: Optional[Any] = None) -> None:
-        self.pagination_strategy.reset(reset_value=reset_value)
+        if reset_value:
+            self.pagination_strategy.reset(reset_value=reset_value)
+        else:
+            self.pagination_strategy.reset()
         self._token = self.pagination_strategy.initial_token
 
     def _get_request_options(self, option_type: RequestOptionType) -> MutableMapping[str, Any]:

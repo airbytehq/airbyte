@@ -79,26 +79,43 @@ class CursorBasedCheckpointReader(CheckpointReader):
     """
     CursorBasedCheckpointReader is used by streams that implement a Cursor in order to manage state. This allows the checkpoint
     reader to delegate the complexity of fetching state to the cursor and focus on the iteration over a stream's partitions.
-    Right now only low-code connectors provide cursor implementations, but the logic is extensible to any stream that adheres
-    to the Cursor interface.
+
+    This reader supports the Cursor interface used by Python and low-code sources. Not to be confused with Cursor interface
+    that belongs to the Concurrent CDK.
     """
 
     def __init__(self, cursor: Cursor, stream_slices: Iterable[Optional[Mapping[str, Any]]], read_state_from_cursor: bool = False):
-        # The first attempt of an RFR stream has an empty {} incoming state, but should still make a first attempt to read records
-        # from the first page in next().
         self._cursor = cursor
         self._stream_slices = iter(stream_slices)
+        # read_state_from_cursor is used to delineate that partitions should determine when to stop syncing dynamically according
+        # to the value of the state at runtime. This currently only applies to streams that use resumable full refresh.
         self._read_state_from_cursor = read_state_from_cursor
         self._current_slice: Optional[StreamSlice] = None
         self._finished_sync = False
 
     def next(self) -> Optional[Mapping[str, Any]]:
+        """
+        The next() method returns the next slice of data should be synced for the current stream according to its cursor.
+        This function support iterating over a stream's slices across two dimensions. The first dimension is the stream's
+        partitions like parent records for a substream. The inner dimension is iterating over the cursor value like a
+        date range for incremental streams or a pagination checkpoint for resumable full refresh.
+
+        basic algorithm for iterating through a stream's slices is:
+        1. The first time next() is invoked we get the first partition and return it
+        2. For streams whose cursor value is determined dynamically using stream state
+            1. Get the current state for the current partition
+            2. If the current partition's state is complete, get the next partition
+            3. If the current partition's state is still in progress, emit the next cursor value
+        3. If a stream has processed all partitions, the iterator will raise a StopIteration exception signaling there are no more
+           slices left for extracting more records.
+        """
+
         try:
             if self._current_slice is None:
                 self._current_slice = self._get_next_slice()
                 return self._current_slice
             if self._read_state_from_cursor:
-                state_for_slice = self._cursor.select_state(self._current_slice.get("partition"))
+                state_for_slice = self._cursor.select_state(self._current_slice)
                 if state_for_slice == {"__ab_full_refresh_sync_complete": True}:
                     self._current_slice = self._get_next_slice()
                 else:

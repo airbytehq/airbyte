@@ -73,5 +73,8 @@ def test_offset_increment_reset(reset_value, expected_initial_token, expected_er
         with pytest.raises(expected_error):
             paginator_strategy.reset(reset_value=reset_value)
     else:
-        paginator_strategy.reset(reset_value=reset_value)
+        if reset_value is None:
+            paginator_strategy.reset()
+        else:
+            paginator_strategy.reset(reset_value=reset_value)
         assert paginator_strategy.initial_token == expected_initial_token

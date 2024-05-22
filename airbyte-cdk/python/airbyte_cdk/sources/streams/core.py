@@ -412,6 +412,8 @@ class Stream(ABC):
                 stream_slices=slices, cursor=cursor, read_state_from_cursor=checkpoint_mode == CheckpointMode.RESUMABLE_FULL_REFRESH
             )
         if checkpoint_mode == CheckpointMode.RESUMABLE_FULL_REFRESH:
+            # Resumable full refresh readers rely on the stream state dynamically being updated during pagination and does
+            # not iterate over a static set of slices.
             return ResumableFullRefreshCheckpointReader(stream_state=stream_state)
         else:
             slices = self.stream_slices(

@@ -71,6 +71,9 @@ class SimpleRetriever(Retriever):
         self._last_record: Optional[Record] = None
         self._parameters = parameters
         self._name = InterpolatedString(self._name, parameters=parameters) if isinstance(self._name, str) else self._name
+
+        # This mapping is used during a resumable full refresh syncs to indicate whether a partition has started syncing
+        # records. Partitions serve as the key and map to True if they already began processing records
         self._synced_partitions: MutableMapping[Any, bool] = dict()
 
     @property  # type: ignore
@@ -357,8 +360,8 @@ class SimpleRetriever(Retriever):
                 return
             cursor_value = stream_state.get("next_page_token")
 
-            # The first attempt to read a page for the current partition should have the paginator reset to the current
-            # cursor state which is initially set to the incoming state from the platform
+            # The first attempt to read a page for the current partition should reset the paginator to the current
+            # cursor state which is initially assigned to the incoming state from the platform
             partition_key = self._to_partition_key(_slice.partition)
             if partition_key not in self._synced_partitions:
                 self._synced_partitions[partition_key] = True
