@@ -1,5 +1,7 @@
 # Airbyte Quickstart
 
+Airbyte has a single binary tool called `abctl` which can be used to quickly standup Airbyte.
+
 ## Setup & launch Airbyte
 
 - Install `Docker Desktop` \(see [instructions](https://docs.docker.com/desktop/install/mac-install/)\).
@@ -14,6 +16,8 @@ brew install abctl
 ```
 
 :::
+
+Then you can run Airbyte with the following command:
 
 ```bash
 abctl local install
