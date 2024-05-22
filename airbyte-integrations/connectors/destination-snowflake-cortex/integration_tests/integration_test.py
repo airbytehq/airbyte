@@ -1,17 +1,19 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
 import json
 import logging
 
-from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
-from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
-from airbyte_cdk.models import DestinationSyncMode, Status
 from destination_snowflake_cortex.destination import DestinationSnowflakeCortex
 from destination_snowflake_cortex.indexer import SnowflakeCortexIndexer
 from langchain.embeddings import OpenAIEmbeddings
 from snowflake import connector
+
+from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
+from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
+from airbyte_cdk.models import DestinationSyncMode, Status
 
 
 class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
@@ -39,13 +41,11 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
                 "indexing": {
                     "host": "MYACCOUNT",
                     "role": "MYUSERNAME",
-                    "warehouse": "MYWAREHOUSE", 
+                    "warehouse": "MYWAREHOUSE",
                     "database": "MYDATABASE",
                     "default_schema": "MYSCHEMA",
                     "username": "MYUSERNAME",
-                    "credentials": {
-                        "password": "xxxxxxx"
-                    }
+                    "credentials": {"password": "xxxxxxx"},
                 },
             },
         )
@@ -61,7 +61,7 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
             user=self.config["indexing"]["username"],
             password=self.config["indexing"]["credentials"]["password"],
         )
-    
+
     def _get_record_count(self, table_name):
         conn = self._get_db_connection()
         cursor = conn.cursor()
@@ -103,41 +103,40 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         first_state_message = self._state({"state": "1"})
         first_record_chunk = [self._record("mystream", f"Dogs are number {i}", i) for i in range(5)]
 
-        # initial sync with replace 
+        # initial sync with replace
         destination = DestinationSnowflakeCortex()
         list(destination.write(self.config, catalog, [*first_record_chunk, first_state_message]))
         assert(self._get_record_count("mystream") == 5)
-    
+
         # subsequent sync with append
-        append_catalog = self._get_configured_catalog(DestinationSyncMode.append) 
+        append_catalog = self._get_configured_catalog(DestinationSyncMode.append)
         list(destination.write(self.config, append_catalog, [self._record("mystream", "Cats are nice", 6), first_state_message]))
         assert(self._get_record_count("mystream") == 6)
 
         # subsequent sync with append_dedup
-        append_dedup_catalog = self._get_configured_catalog(DestinationSyncMode.append_dedup) 
+        append_dedup_catalog = self._get_configured_catalog(DestinationSyncMode.append_dedup)
         list(destination.write(self.config, append_dedup_catalog, [self._record("mystream", "Cats are nice too", 4), first_state_message]))
         assert(self._get_record_count("mystream") == 6)
-        
-        # perform a query using OpenAI embedding 
+
+        # perform a query using OpenAI embedding
         embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
         result = self._run_cosine_similarity(embeddings.embed_query("feline animals"), "mystream")
         assert(len(result) == 1)
         result[0] == "str_col: Cats are nice"
 
-   
-    def test_overwrite_mode_deletes_records(self):  
+    def test_overwrite_mode_deletes_records(self):
         self._delete_table("mystream")
         catalog = self._get_configured_catalog(DestinationSyncMode.overwrite)
         first_state_message = self._state({"state": "1"})
         first_record_chunk = [self._record("mystream", f"Dogs are number {i}", i) for i in range(4)]
 
-        # initial sync with replace 
+        # initial sync with replace
         destination = DestinationSnowflakeCortex()
         list(destination.write(self.config, catalog, [*first_record_chunk, first_state_message]))
         assert(self._get_record_count("mystream") == 4)
 
         # following should replace existing records
-        append_catalog = self._get_configured_catalog(DestinationSyncMode.overwrite) 
+        append_catalog = self._get_configured_catalog(DestinationSyncMode.overwrite)
         list(destination.write(self.config, append_catalog, [self._record("mystream", "Cats are nice", 6), first_state_message]))
         assert(self._get_record_count("mystream") == 1)
 
@@ -181,6 +180,3 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         cur.execute("DROP TABLE temp_document_content")
         cur.close()
         conn.close()
-
-
-
