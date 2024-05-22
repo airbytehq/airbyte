@@ -30,7 +30,7 @@ class DebeziumShutdownProcedure<T>(
             Executors.newSingleThreadExecutor { r: Runnable? ->
                 val thread = Thread(r, "queue-data-transfer-thread")
                 thread.uncaughtExceptionHandler =
-                    Thread.UncaughtExceptionHandler { t: Thread?, e: Throwable? -> exception = e }
+                    Thread.UncaughtExceptionHandler { _: Thread, e: Throwable -> exception = e }
                 thread
             }
     }

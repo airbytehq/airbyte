@@ -2,15 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
 import uuid
 from typing import Optional
 
+import asyncclick as click
 import dagger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
 from pipelines.airbyte_ci.steps.poetry import PoetryRunStep
-from pipelines.consts import DOCS_DIRECTORY_ROOT_PATH, INTERNAL_TOOL_PATHS
+from pipelines.consts import DOCS_DIRECTORY_ROOT_PATH, GIT_DIRECTORY_ROOT_PATH, INTERNAL_TOOL_PATHS
 from pipelines.dagger.actions.python.common import with_pip_packages
 from pipelines.dagger.containers.python import with_python_base
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
@@ -81,6 +83,7 @@ class MetadataUpload(SimpleDockerStep):
             title=title,
             context=context,
             paths_to_mount=[
+                MountPath(GIT_DIRECTORY_ROOT_PATH),
                 MountPath(context.connector.metadata_file_path),
                 MountPath(DOCS_DIRECTORY_ROOT_PATH),
                 MountPath(context.connector.icon_path, optional=True),
@@ -113,8 +116,6 @@ class DeployOrchestrator(Step):
         "dagster_cloud.yaml",
         "--organization",
         "airbyte-connectors",
-        "--deployment",
-        "prod",
         "--python-version",
         "3.9",
     ]
@@ -123,16 +124,23 @@ class DeployOrchestrator(Step):
         # mount metadata_service/lib and metadata_service/orchestrator
         parent_dir = self.context.get_repo_dir("airbyte-ci/connectors/metadata_service")
         python_base = with_python_base(self.context, "3.9")
-        python_with_dependencies = with_pip_packages(python_base, ["dagster-cloud==1.5.14", "poetry2setup==1.1.0"])
+        python_with_dependencies = with_pip_packages(python_base, ["dagster-cloud[serverless]==1.5.14", "poetry2setup==1.1.0"])
         dagster_cloud_api_token_secret: dagger.Secret = get_secret_host_variable(
             self.context.dagger_client, "DAGSTER_CLOUD_METADATA_API_TOKEN"
         )
 
+        # get env var DAGSTER_CLOUD_DEPLOYMENT default to dev
+        target_deployment = os.getenv("DAGSTER_CLOUD_DEPLOYMENT", "dev")
+
+        self.context.logger.info(f"Deploying to deployment: {target_deployment}")
+
         container_to_run = (
             python_with_dependencies.with_mounted_directory("/src", parent_dir)
             .with_secret_variable("DAGSTER_CLOUD_API_TOKEN", dagster_cloud_api_token_secret)
+            .with_env_variable("DAGSTER_CLOUD_DEPLOYMENT", target_deployment)
             .with_workdir("/src/orchestrator")
             .with_exec(["/bin/sh", "-c", "poetry2setup >> setup.py"])
+            .with_exec(["/bin/sh", "-c", "cat setup.py"])
             .with_exec(self.deploy_dagster_command)
         )
         return await self.get_step_result(container_to_run)
@@ -153,9 +161,12 @@ class TestOrchestrator(PoetryRunStep):
 
 
 async def run_metadata_orchestrator_deploy_pipeline(
+    ctx: click.Context,
     is_local: bool,
     git_branch: str,
     git_revision: str,
+    diffed_branch: str,
+    git_repo_url: str,
     report_output_prefix: str,
     gha_workflow_run_url: Optional[str],
     dagger_logs_url: Optional[str],
@@ -165,10 +176,12 @@ async def run_metadata_orchestrator_deploy_pipeline(
     success: bool = False
 
     metadata_pipeline_context = PipelineContext(
-        pipeline_name="Metadata Service Orchestrator Unit Test Pipeline",
+        pipeline_name="Metadata Service Orchestrator Deploy Pipeline",
         is_local=is_local,
         git_branch=git_branch,
         git_revision=git_revision,
+        diffed_branch=diffed_branch,
+        git_repo_url=git_repo_url,
         report_output_prefix=report_output_prefix,
         gha_workflow_run_url=gha_workflow_run_url,
         dagger_logs_url=dagger_logs_url,

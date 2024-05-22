@@ -210,7 +210,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         assertSameRecords(
             recordMessagesFirstRun,
             recordMessagesSecondRun,
-            "Expected two full refresh syncs to produce the same records"
+            "Expected two full refresh syncs to produce the same records."
         )
     }
 
@@ -405,6 +405,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
             expected
                 .stream()
                 .map { m: AirbyteRecordMessage -> this.pruneEmittedAt(m) }
+                .map { m: AirbyteRecordMessage -> this.pruneCdcMetadata(m) }
                 .collect(Collectors.toList())
         val prunedActual =
             actual
@@ -453,6 +454,24 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
                 .filter { m: AirbyteMessage -> m.type == AirbyteMessage.Type.RECORD }
                 .map { obj: AirbyteMessage -> obj.record }
                 .collect(Collectors.toList())
+        }
+
+        @JvmStatic
+        public fun extractLatestState(stateMessages: List<AirbyteStateMessage>): JsonNode? {
+            var latestState: JsonNode? = null
+            for (stateMessage in stateMessages) {
+                if (stateMessage.type == AirbyteStateMessage.AirbyteStateType.STREAM) {
+                    latestState = Jsons.jsonNode(stateMessages)
+                    break
+                } else if (stateMessage.type == AirbyteStateMessage.AirbyteStateType.GLOBAL) {
+                    latestState =
+                        Jsons.jsonNode(java.util.List.of(Iterables.getLast(stateMessages)))
+                    break
+                } else {
+                    throw RuntimeException("Unknown state type " + stateMessage.type)
+                }
+            }
+            return latestState
         }
     }
 }

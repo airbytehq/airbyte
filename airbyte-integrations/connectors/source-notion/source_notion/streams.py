@@ -2,13 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging as Logger
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
 
 import pendulum
 import pydantic
 import requests
-from airbyte_cdk.logger import AirbyteLogger as Logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
@@ -16,8 +16,6 @@ from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
 from requests import HTTPError
-
-from .utils import transform_properties
 
 # maximum block hierarchy recursive request depth
 MAX_BLOCK_DEPTH = 30
@@ -221,7 +219,7 @@ class IncrementalNotionStream(NotionStream, ABC):
             if isinstance(state_lmd, StateValueWrapper):
                 state_lmd = state_lmd.value
             if (not stream_state or record_lmd >= state_lmd) and record_lmd >= self.start_date:
-                yield from transform_properties(record)
+                yield record
 
     def get_updated_state(
         self,
@@ -236,48 +234,6 @@ class IncrementalNotionStream(NotionStream, ABC):
         state_value.max_cursor_time = max(state_value.max_cursor_time, record_time)
 
         return {self.cursor_field: state_value}
-
-
-class Users(NotionStream):
-    """
-    Docs: https://developers.notion.com/reference/get-users
-    """
-
-    def path(self, **kwargs) -> str:
-        return "users"
-
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = {"page_size": self.page_size}
-        if next_page_token:
-            params["start_cursor"] = next_page_token["next_cursor"]
-        return params
-
-    def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        owner = record.get("bot", {}).get("owner")
-        if owner:
-            owner_type = owner.get("type")
-            owner_info = owner.get(owner_type)
-            if owner_type and owner_info:
-                record["bot"]["owner"]["info"] = owner_info
-                del record["bot"]["owner"][owner_type]
-        return record
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        # sometimes notion api returns response without results object
-        data = response.json().get("results", [])
-        for record in data:
-            yield self.transform(record)
-
-
-class Databases(IncrementalNotionStream):
-    """
-    Docs: https://developers.notion.com/reference/post-search
-    """
-
-    state_checkpoint_interval = 100
-
-    def __init__(self, **kwargs):
-        super().__init__(obj_type="database", **kwargs)
 
 
 class Pages(IncrementalNotionStream):
@@ -390,64 +346,3 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
             else:
                 return super().should_retry(response)
         return super().should_retry(response)
-
-
-class Comments(HttpSubStream, IncrementalNotionStream):
-    """
-    Comments Object Docs: https://developers.notion.com/reference/comment-object
-    Comments Endpoint Docs: https://developers.notion.com/reference/retrieve-a-comment
-    """
-
-    http_method = "GET"
-    # We can use the "last edited time" of the parent Page as the cursor field,
-    # since we cannot guarantee the order of comments between pages.
-    cursor_field = "page_last_edited_time"
-
-    def path(self, **kwargs) -> str:
-        return "comments"
-
-    def request_params(
-        self, next_page_token: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
-        block_id = stream_slice.get("block_id")
-        params = {"block_id": block_id, "page_size": self.page_size}
-
-        if next_page_token:
-            params["start_cursor"] = next_page_token["next_cursor"]
-
-        return params
-
-    def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
-    ) -> Iterable[Mapping]:
-
-        # Get the parent's "last edited time" to compare against state
-        page_last_edited_time = stream_slice.get("page_last_edited_time", "")
-        records = response.json().get("results", [])
-
-        for record in records:
-            record["page_last_edited_time"] = page_last_edited_time
-            state_last_edited_time = stream_state.get(self.cursor_field, "")
-
-            if isinstance(state_last_edited_time, StateValueWrapper):
-                state_last_edited_time = state_last_edited_time.value
-
-            if not stream_state or page_last_edited_time >= state_last_edited_time:
-                yield from transform_properties(record)
-
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-
-        yield from IncrementalNotionStream.read_records(self, **kwargs)
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, **kwargs
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-
-        # Gather parent stream records in full
-        parent_records = self.parent.read_records(sync_mode=SyncMode.full_refresh, cursor_field=self.parent.cursor_field)
-
-        # The parent stream is the Pages stream, but we have to pass its id to the request_params as "block_id"
-        # because pages are also blocks in the Notion API.
-        # We also grab the last_edited_time from the parent record to use as the cursor field.
-        for record in parent_records:
-            yield {"block_id": record["id"], "page_last_edited_time": record["last_edited_time"]}

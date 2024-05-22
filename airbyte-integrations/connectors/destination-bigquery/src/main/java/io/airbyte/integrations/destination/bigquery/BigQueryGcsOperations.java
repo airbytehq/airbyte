@@ -27,7 +27,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQueryGcsOperations implements BigQueryStagingOperations {
+public class BigQueryGcsOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryGcsOperations.class);
 
@@ -35,6 +35,8 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   private final StandardNameTransformer gcsNameTransformer;
   private final GcsDestinationConfig gcsConfig;
   private final GcsStorageOperations gcsStorageOperations;
+
+  private final String datasetLocation;
   private final UUID randomStagingId;
   private final DateTime syncDatetime;
   private final boolean keepStagingFiles;
@@ -44,6 +46,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
                                final StandardNameTransformer gcsNameTransformer,
                                final GcsDestinationConfig gcsConfig,
                                final GcsStorageOperations gcsStorageOperations,
+                               final String datasetLocation,
                                final UUID randomStagingId,
                                final DateTime syncDatetime,
                                final boolean keepStagingFiles) {
@@ -51,6 +54,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
     this.gcsNameTransformer = gcsNameTransformer;
     this.gcsConfig = gcsConfig;
     this.gcsStorageOperations = gcsStorageOperations;
+    this.datasetLocation = datasetLocation;
     this.randomStagingId = randomStagingId;
     this.syncDatetime = syncDatetime;
     this.keepStagingFiles = keepStagingFiles;
@@ -69,7 +73,6 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   /**
    * @return {@code <bucket-path>/<dataset-id>_<stream-name>/<year>/<month>/<day>/<hour>/<uuid>/}
    */
-  @Override
   public String getStagingFullPath(final String datasetId, final String stream) {
     return gcsNameTransformer.applyDefaultCase(String.format("%s/%s/%02d/%02d/%02d/%s/",
         getStagingRootPath(datasetId, stream),
@@ -80,8 +83,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
         randomStagingId));
   }
 
-  @Override
-  public void createSchemaIfNotExists(final String datasetId, final String datasetLocation) {
+  public void createSchemaIfNotExists(final String datasetId) {
     if (!existingSchemas.contains(datasetId)) {
       LOGGER.info("Creating dataset {}", datasetId);
       try {
@@ -97,20 +99,17 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
     }
   }
 
-  @Override
   public void createTableIfNotExists(final TableId tableId, final Schema tableSchema) {
     LOGGER.info("Creating target table {}", tableId);
     BigQueryUtils.createPartitionedTableIfNotExists(bigQuery, tableId, tableSchema);
   }
 
-  @Override
   public void createStageIfNotExists(final String datasetId, final String stream) {
     final String objectPath = getStagingFullPath(datasetId, stream);
     LOGGER.info("Creating staging path for stream {} (dataset {}): {}", stream, datasetId, objectPath);
     gcsStorageOperations.createBucketIfNotExists();
   }
 
-  @Override
   public String uploadRecordsToStage(final String datasetId, final String stream, final SerializableBuffer writer) {
     final String objectPath = getStagingFullPath(datasetId, stream);
     LOGGER.info("Uploading records to staging for stream {} (dataset {}): {}", stream, datasetId, objectPath);
@@ -125,7 +124,6 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
    * Reference
    * https://googleapis.dev/java/google-cloud-clients/latest/index.html?com/google/cloud/bigquery/package-summary.html
    */
-  @Override
   public void copyIntoTableFromStage(final String datasetId,
                                      final String stream,
                                      final TableId tableId,
@@ -159,7 +157,6 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
     }
   }
 
-  @Override
   @Deprecated
   public void cleanUpStage(final String datasetId, final String stream, final List<String> stagedFiles) {
     if (keepStagingFiles) {
@@ -170,13 +167,11 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
     gcsStorageOperations.cleanUpBucketObject(getStagingRootPath(datasetId, stream), stagedFiles);
   }
 
-  @Override
   public void dropTableIfExists(final String datasetId, final TableId tableId) {
     LOGGER.info("Deleting target table {} (dataset {})", tableId, datasetId);
     bigQuery.delete(tableId);
   }
 
-  @Override
   public void dropStageIfExists(final String datasetId, final String stream) {
     if (keepStagingFiles) {
       return;
@@ -200,7 +195,6 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
    * @param tableId table name
    * @param schema schema of the table to be deleted/created
    */
-  @Override
   public void truncateTableIfExists(final String datasetId,
                                     final TableId tableId,
                                     final Schema schema) {

@@ -55,7 +55,11 @@ function getFilenamesInDir(prefix, dir, excludes) {
         };
       }
 
-      return { type: "doc", id: path.join(prefix, filename), label: contentTitle };
+      return {
+        type: "doc",
+        id: path.join(prefix, filename),
+        label: contentTitle,
+      };
     });
 }
 
@@ -63,13 +67,16 @@ function getSourceConnectors() {
   return getFilenamesInDir("integrations/sources/", sourcesDocs, [
     "readme",
     "postgres",
-    "mysql"
+    "mongodb-v2",
+    "mysql",
   ]);
 }
 
 function getDestinationConnectors() {
   return getFilenamesInDir("integrations/destinations/", destinationDocs, [
     "readme",
+    "s3",
+    "postgres",
   ]);
 }
 
@@ -94,6 +101,27 @@ const sourcePostgres = {
   ],
 };
 
+const sourceMongoDB = {
+  type: "category",
+  label: "Mongo DB",
+  link: {
+    type: "doc",
+    id: "integrations/sources/mongodb-v2",
+  },
+  items: [
+    {
+      type: "doc",
+      label: "Migration Guide",
+      id: "integrations/sources/mongodb-v2/mongodb-v2-migrations",
+    },
+    {
+      type: "doc",
+      label: "Troubleshooting",
+      id: "integrations/sources/mongodb-v2/mongodb-v2-troubleshooting",
+    },
+  ],
+};
+
 const sourceMysql = {
   type: "category",
   label: "MySQL",
@@ -106,6 +134,38 @@ const sourceMysql = {
       type: "doc",
       label: "Troubleshooting",
       id: "integrations/sources/mysql/mysql-troubleshooting",
+    },
+  ],
+};
+
+const destinationS3 = {
+  type: "category",
+  label: "S3",
+  link: {
+    type: "doc",
+    id: "integrations/destinations/s3",
+  },
+  items: [
+    {
+      type: "doc",
+      label: "Troubleshooting",
+      id: "integrations/destinations/s3/s3-troubleshooting",
+    },
+  ],
+};
+
+const destinationPostgres = {
+  type: "category",
+  label: "Postgres",
+  link: {
+    type: "doc",
+    id: "integrations/destinations/postgres",
+  },
+  items: [
+    {
+      type: "doc",
+      label: "Troubleshooting",
+      id: "integrations/destinations/postgres/postgres-troubleshooting",
     },
   ],
 };
@@ -235,20 +295,19 @@ const buildAConnector = {
         "connector-development/tutorials/cdk-speedrun",
         {
           type: "category",
-          label: "Python CDK: Creating a HTTP API Source",
+          label: "Python CDK: Creating a Python Source",
           items: [
-            "connector-development/tutorials/cdk-tutorial-python-http/getting-started",
-            "connector-development/tutorials/cdk-tutorial-python-http/creating-the-source",
-            "connector-development/tutorials/cdk-tutorial-python-http/install-dependencies",
-            "connector-development/tutorials/cdk-tutorial-python-http/define-inputs",
-            "connector-development/tutorials/cdk-tutorial-python-http/connection-checking",
-            "connector-development/tutorials/cdk-tutorial-python-http/declare-schema",
-            "connector-development/tutorials/cdk-tutorial-python-http/read-data",
-            "connector-development/tutorials/cdk-tutorial-python-http/use-connector-in-airbyte",
-            "connector-development/tutorials/cdk-tutorial-python-http/test-your-connector",
+            "connector-development/tutorials/custom-python-connector/getting-started",
+            "connector-development/tutorials/custom-python-connector/environment-setup",
+            "connector-development/tutorials/custom-python-connector/reading-a-page",
+            "connector-development/tutorials/custom-python-connector/reading-multiple-pages",
+            "connector-development/tutorials/custom-python-connector/check-and-error-handling",
+            "connector-development/tutorials/custom-python-connector/discover",
+            "connector-development/tutorials/custom-python-connector/incremental-reads",
+            "connector-development/tutorials/custom-python-connector/reading-from-a-subresource",
+            "connector-development/tutorials/custom-python-connector/concurrency",
           ],
         },
-        "connector-development/tutorials/building-a-python-source",
         "connector-development/tutorials/building-a-java-destination",
       ],
     },
@@ -275,7 +334,12 @@ const connectorCatalog = {
         type: "doc",
         id: "integrations/sources/README",
       },
-      items: [sourcePostgres, sourceMysql, ...getSourceConnectors()].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
+      items: [
+        sourcePostgres,
+        sourceMongoDB,
+        sourceMysql,
+        ...getSourceConnectors(),
+      ].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
     },
     {
       type: "category",
@@ -284,7 +348,11 @@ const connectorCatalog = {
         type: "doc",
         id: "integrations/destinations/README",
       },
-      items: getDestinationConnectors(),
+      items: [
+        destinationS3,
+        destinationPostgres,
+        ...getDestinationConnectors(),
+      ].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
     },
     {
       type: "doc",
@@ -330,6 +398,11 @@ const deployAirbyte = {
       type: "doc",
       label: "On your local machine",
       id: "deploying-airbyte/local-deployment",
+    },
+    {
+      type: "doc",
+      label: "Using docker compose",
+      id: "deploying-airbyte/docker-compose",
     },
     {
       type: "doc",
@@ -424,7 +497,7 @@ module.exports = {
       label: "Configuring Connections",
       link: {
         type: "doc",
-        id: "cloud/managing-airbyte-cloud/configuring-connections"
+        id: "cloud/managing-airbyte-cloud/configuring-connections",
       },
       items: [
         "using-airbyte/core-concepts/sync-schedules",
@@ -434,7 +507,7 @@ module.exports = {
           label: "Sync Modes",
           link: {
             type: "doc",
-            id: "using-airbyte/core-concepts/sync-modes/README"
+            id: "using-airbyte/core-concepts/sync-modes/README",
           },
           items: [
             "using-airbyte/core-concepts/sync-modes/incremental-append-deduped",
@@ -448,13 +521,11 @@ module.exports = {
           label: "Typing and Deduping",
           link: {
             type: "doc",
-            id: "using-airbyte/core-concepts/typing-deduping"
+            id: "using-airbyte/core-concepts/typing-deduping",
           },
-          items: [
-            "using-airbyte/core-concepts/basic-normalization"
-          ],
+          items: ["using-airbyte/core-concepts/basic-normalization"],
         },
-        "cloud/managing-airbyte-cloud/manage-schema-changes",
+        "using-airbyte/schema-change-management",
         {
           type: "category",
           label: "Transformations",
@@ -463,9 +534,9 @@ module.exports = {
             "operator-guides/transformation-and-normalization/transformations-with-sql",
             "operator-guides/transformation-and-normalization/transformations-with-dbt",
             "operator-guides/transformation-and-normalization/transformations-with-airbyte",
-          ]
+          ],
         },
-      ]
+      ],
     },
     {
       type: "category",
@@ -477,18 +548,6 @@ module.exports = {
         "operator-guides/reset",
         "cloud/managing-airbyte-cloud/manage-connection-state",
       ],
-    },
-    {
-      type: "category",
-      label: "Workspace Management",
-      items: [
-        "cloud/managing-airbyte-cloud/manage-data-residency",
-        "using-airbyte/workspaces",
-        "cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications",
-        "cloud/managing-airbyte-cloud/manage-credits",
-        "operator-guides/using-custom-connectors",
-        
-      ]
     },
     sectionHeader("Managing Airbyte"),
     deployAirbyte,
@@ -503,7 +562,7 @@ module.exports = {
         "enterprise-setup/implementation-guide",
         "enterprise-setup/api-access-config",
         "enterprise-setup/upgrading-from-community",
-      ]
+      ],
     },
     "operator-guides/upgrading-airbyte",
     {
@@ -517,7 +576,7 @@ module.exports = {
         "operator-guides/configuring-airbyte-db",
         "operator-guides/configuring-connector-resources",
         "operator-guides/telemetry",
-      ]
+      ],
     },
     {
       type: "category",
@@ -528,13 +587,16 @@ module.exports = {
           label: "Single Sign-On (SSO)",
           link: {
             type: "doc",
-            id: "access-management/sso"
+            id: "access-management/sso",
           },
           items: [
-            { type: "autogenerated", dirName: "access-management/sso-providers" },
-          ]
+            {
+              type: "autogenerated",
+              dirName: "access-management/sso-providers",
+            },
+          ],
         },
-      ]
+      ],
     },
     {
       type: "category",
@@ -543,7 +605,7 @@ module.exports = {
         "operator-guides/collecting-metrics",
         "operator-guides/scaling-airbyte",
         "cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits",
-      ]
+      ],
     },
     "operating-airbyte/security",
     {
@@ -554,6 +616,17 @@ module.exports = {
         "operator-guides/using-prefect-task",
         "operator-guides/using-dagster-integration",
         "operator-guides/using-kestra-plugin",
+      ],
+    },
+    {
+      type: "category",
+      label: "Account Management",
+      items: [
+        "cloud/managing-airbyte-cloud/manage-data-residency",
+        "using-airbyte/workspaces",
+        "cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications",
+        "cloud/managing-airbyte-cloud/manage-credits",
+        "operator-guides/using-custom-connectors",
       ],
     },
     sectionHeader("Developer Guides"),
@@ -602,6 +675,8 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/april_2024",
+        "release_notes/march_2024",
         "release_notes/february_2024",
         "release_notes/january_2024",
         "release_notes/december_2023",

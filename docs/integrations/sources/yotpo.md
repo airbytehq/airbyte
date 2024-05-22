@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the [Yotpo](htt
 
 ## Prerequisites
 
-Access Token (which acts as bearer token) is mandate for this connector to work, It could be generated from the auth token call (ref - https://apidocs.yotpo.com/reference/yotpo-authentication). 
+Access Token (which acts as bearer token) is mandate for this connector to work, It could be generated from the auth token call (ref - https://apidocs.yotpo.com/reference/yotpo-authentication).
 
 ## Setup guide
 
@@ -13,10 +13,10 @@ Access Token (which acts as bearer token) is mandate for this connector to work,
 - Generate an Yotpo access token via auth endpoint (ref - https://apidocs.yotpo.com/reference/yotpo-authentication)
 - Setup params (All params are required)
 - Available params
-    - access_token: The generated access token
-    - app_key: Seen at the yotpo settings (ref - https://settings.yotpo.com/#/general_settings)
-    - start_date: Date filter for eligible streams, enter
-    - email: Registered email address
+  - access_token: The generated access token
+  - app_key: Seen at the yotpo settings (ref - https://settings.yotpo.com/#/general_settings)
+  - start_date: Date filter for eligible streams, enter
+  - email: Registered email address
 
 ## Step 2: Set up the Yotpo connector in Airbyte
 
@@ -33,7 +33,7 @@ Access Token (which acts as bearer token) is mandate for this connector to work,
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 3. Enter your `access_token, app_key, start_date and email`.
-5. Click **Set up source**.
+4. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -66,6 +66,6 @@ Yotpo [API reference](https://api.yotpo.com/v1/) has v1 at present. The connecto
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject        |
-| :------ | :--------- | :----------------------------------------------------- | :------------- |
-| 0.1.0   | 2023-04-14 | [Init](https://github.com/airbytehq/airbyte/pull/25532)| Initial commit |
+| Version | Date       | Pull Request                                            | Subject        |
+| :------ | :--------- | :------------------------------------------------------ | :------------- |
+| 0.1.0   | 2023-04-14 | [Init](https://github.com/airbytehq/airbyte/pull/25532) | Initial commit |

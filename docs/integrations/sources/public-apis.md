@@ -8,26 +8,26 @@ This source can sync data for the [Public APIs](https://api.publicapis.org/) RES
 
 This Source is capable of syncing the following Streams:
 
-* [Services](https://api.publicapis.org#get-entries)
-* [Categories](https://api.publicapis.org#get-categories)
+- [Services](https://api.publicapis.org#get-entries)
+- [Categories](https://api.publicapis.org#get-categories)
 
 ### Data type mapping
 
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `integer`, `number` | `number` |  |
-| `boolean` | `boolean` |  |
+| Integration Type    | Airbyte Type | Notes |
+| :------------------ | :----------- | :---- |
+| `string`            | `string`     |       |
+| `integer`, `number` | `number`     |       |
+| `boolean`           | `boolean`    |       |
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
-| SSL connection | Yes |
-| Namespaces | No |  |
-| Pagination | No |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | No                   |       |
+| SSL connection    | Yes                  |
+| Namespaces        | No                   |       |
+| Pagination        | No                   |       |
 
 ## Getting started
 
@@ -41,7 +41,7 @@ This source requires no setup.
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.2.0 | 2023-06-15 | [29391](https://github.com/airbytehq/airbyte/pull/29391) |  Migrated to Low Code |
-| 0.1.0 | 2022-10-28 | [18471](https://github.com/airbytehq/airbyte/pull/18471) |  Initial Release      |
+| Version | Date       | Pull Request                                             | Subject              |
+| :------ | :--------- | :------------------------------------------------------- | :------------------- |
+| 0.2.0   | 2023-06-15 | [29391](https://github.com/airbytehq/airbyte/pull/29391) | Migrated to Low Code |
+| 0.1.0   | 2022-10-28 | [18471](https://github.com/airbytehq/airbyte/pull/18471) | Initial Release      |
