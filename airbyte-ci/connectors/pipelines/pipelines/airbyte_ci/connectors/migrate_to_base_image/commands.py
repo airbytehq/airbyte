@@ -16,10 +16,27 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
     short_help="Make the selected connectors use our base image: remove dockerfile, update metadata.yaml and update documentation.",
 )
 @click.option("--pull-request-number", type=str, required=False, default=None)
+@click.option(
+    "--changelog",
+    help="Add message to the changelog.",
+    type=bool,
+    is_flag=True,
+    required=False,
+    default=False,
+)
+@click.option(
+    "--bump",
+    help="Bump the metadata.yaml version. Can be `major`, `minor`, or `patch`.",
+    type=click.Choice(["patch", "minor", "major"]),
+    required=False,
+    default=None,
+)
 @click.pass_context
 async def migrate_to_base_image(
     ctx: click.Context,
     pull_request_number: str | None,
+    changelog: bool,
+    bump: str | None,
 ) -> bool:
     """
     Bump a connector version: update metadata.yaml, changelog and delete legacy files.
@@ -64,6 +81,8 @@ async def migrate_to_base_image(
         ctx.obj["dagger_logs_path"],
         ctx.obj["execute_timeout"],
         pull_request_number,
+        changelog,
+        bump,
     )
 
     return True
