@@ -45,7 +45,6 @@ class ClientSideIncrementalRecordFilterDecorator(RecordFilter):
 
     :param DatetimeBasedCursor date_time_based_cursor: Cursor used to extract datetime values
     :param PerPartitionCursor per_partition_cursor: Optional Cursor used for mapping cursor value in nested stream_state
-
     """
 
     def __init__(self, date_time_based_cursor: DatetimeBasedCursor, per_partition_cursor: Optional[PerPartitionCursor] = None, **kwargs):
