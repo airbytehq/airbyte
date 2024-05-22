@@ -7,6 +7,7 @@ import com.google.common.collect.AbstractIterator
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.airbyte.protocol.models.v0.SyncMode
 import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -41,9 +42,11 @@ open class SourceStateIterator<T>(
             ) {
                 val stateMessage =
                     sourceStateMessageProducer.generateStateMessageAtCheckpoint(stream)
-                stateMessage!!.withSourceStats(
-                    AirbyteStateStats().withRecordCount(recordCount.toDouble())
-                )
+                if (shouldAttachCountWithState()) {
+                    stateMessage!!.withSourceStats(
+                        AirbyteStateStats().withRecordCount(recordCount.toDouble())
+                    )
+                }
 
                 recordCount = 0L
                 lastCheckpoint = Instant.now()
@@ -64,9 +67,11 @@ open class SourceStateIterator<T>(
             hasEmittedFinalState = true
             val finalStateMessageForStream =
                 sourceStateMessageProducer.createFinalStateMessage(stream)
-            finalStateMessageForStream!!.withSourceStats(
-                AirbyteStateStats().withRecordCount(recordCount.toDouble())
-            )
+            if (shouldAttachCountWithState()) {
+                finalStateMessageForStream!!.withSourceStats(
+                    AirbyteStateStats().withRecordCount(recordCount.toDouble())
+                )
+            }
             recordCount = 0L
             return AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
@@ -74,6 +79,14 @@ open class SourceStateIterator<T>(
         } else {
             return endOfData()
         }
+    }
+
+    /**
+     * We are disabling counts for FULL_REFRESH streams cause there is are issues with it. We should
+     * re-enable it once we do the work for project Counts: Emit Counts in Full Refresh
+     */
+    private fun shouldAttachCountWithState(): Boolean {
+        return stream?.syncMode != SyncMode.FULL_REFRESH
     }
 
     // This method is used to check if we should emit a state message. If the record count is set to

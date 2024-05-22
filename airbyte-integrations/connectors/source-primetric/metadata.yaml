@@ -15,9 +15,7 @@ data:
     breakingChanges:
       1.0.0:
         upgradeDeadline: "2024-05-30"
-        message:
-          "The verison migrates the Primetric connector to the low-code framework for greater maintainability.
-          !! Important: The uuid field now have a string format (without 'format: uuid') for all streams"
+        message: "The verison migrates the Primetric connector to the low-code framework for greater maintainability. !! Important: The uuid field now have a string format (without 'format: uuid') for all streams"
   connectorBuildOptions:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
@@ -42,4 +40,13 @@ data:
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-PRIMETRIC__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
