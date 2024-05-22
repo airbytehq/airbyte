@@ -3,9 +3,6 @@
 import os
 
 import pytest
-from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
-
-os.environ[ENV_REQUEST_CACHE_PATH] = ENV_REQUEST_CACHE_PATH
 
 
 @pytest.fixture(autouse=True)
@@ -13,6 +10,13 @@ def patch_sleep(mocker):
     mocker.patch("time.sleep")
 
 
-@pytest.fixture(autouse=True)
-def disable_cache(mocker):
-    mocker.patch("source_tiktok_marketing.streams.AdvertiserIds.use_cache", new_callable=mocker.PropertyMock, return_value=False)
+@pytest.fixture(name="config")
+def config_fixture():
+    config = {
+        "account_id": 123,
+        "access_token": "TOKEN",
+        "start_date": "2019-10-10T00:00:00",
+        "end_date": "2020-10-10T00:00:00",
+    }
+    return config
+
