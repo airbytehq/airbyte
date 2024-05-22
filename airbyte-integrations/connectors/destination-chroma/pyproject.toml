@@ -18,7 +18,7 @@ include = "destination_chroma"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = {version = "0.0.11"]}
+airbyte-cdk = {version = "0.81.6", extras = ["vector-db-based"]
 chromadb = "*"
 
 [tool.poetry.group.dev.dependencies]
