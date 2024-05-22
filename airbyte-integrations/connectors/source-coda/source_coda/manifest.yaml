@@ -273,9 +273,18 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            /docs/{{ stream_partition.parent_slice.doc_id }}/tables/{{
+            /docs/{{ stream_partition.doc_id }}/tables/{{
             stream_partition.table_id }}/rows
           http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
         record_selector:
           type: RecordSelector
           extractor:
