@@ -24,13 +24,21 @@ from airbyte_cdk.models import (
     Type,
 )
 from destination_snowflake_cortex.config import SnowflakeCortexIndexingModel
+from destination_snowflake_cortex.cortex_processor import (
+    SnowflakeCortexConfig,
+    SnowflakeCortexSqlProcessor,
+)
+from destination_snowflake_cortex.globals import (
+    CHUNK_ID_COLUMN,
+    DOCUMENT_CONTENT_COLUMN,
+    DOCUMENT_ID_COLUMN,
+    EMBEDDING_COLUMN,
+    METADATA_COLUMN,
+)
 
-# extra columns to be added to the Airbyte message
-DOCUMENT_ID_COLUMN = "document_id"
-CHUNK_ID_COLUMN = "chunk_id"
-METADATA_COLUMN = "metadata"
-DOCUMENT_CONTENT_COLUMN = "document_content"
-EMBEDDING_COLUMN = "embedding"
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 class SnowflakeCortexIndexer(Indexer):

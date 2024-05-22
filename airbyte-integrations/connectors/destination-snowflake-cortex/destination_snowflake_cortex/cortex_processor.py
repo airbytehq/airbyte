@@ -25,12 +25,13 @@ from airbyte._processors.sql.snowflake import (
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from sqlalchemy.engine import Connection
-
-    from airbyte._future_cdk.catalog_providers import CatalogProvider
-    from airbyte._future_cdk.state_writers import StateWriterBase
-    from airbyte._processors.file.base import FileWriterBase
-
+from destination_snowflake_cortex.globals import (
+    CHUNK_ID_COLUMN,
+    DOCUMENT_CONTENT_COLUMN,
+    DOCUMENT_ID_COLUMN,
+    EMBEDDING_COLUMN,
+    METADATA_COLUMN,
+)
 
 
 @dataclasses.dataclass
