@@ -3185,6 +3185,7 @@ csv_no_files_scenario: TestScenario[InMemoryFilesSource] = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
