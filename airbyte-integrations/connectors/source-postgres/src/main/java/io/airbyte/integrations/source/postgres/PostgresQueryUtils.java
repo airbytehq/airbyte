@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -198,7 +197,7 @@ public class PostgresQueryUtils {
   }
 
   public static FileNodeHandler fileNodeForStreams(final JdbcDatabase database,
-                                                   final List<AirbyteStream> streams,
+                                                   final List<ConfiguredAirbyteStream> streams,
                                                    final String quoteString) {
     final FileNodeHandler fileNodeHandler = new FileNodeHandler();
     streams.forEach(stream -> {
@@ -216,13 +215,6 @@ public class PostgresQueryUtils {
       }
     });
     return fileNodeHandler;
-  }
-
-  public static FileNodeHandler fileNodeForStreams(final JdbcDatabase database,
-                                                   final List<ConfiguredAirbyteStream> streams,
-                                                   final String quoteString) {
-    final List<AirbyteStream> airbyteStreams = streams.stream().map(stream -> stream.getStream()).collect(Collectors.toList());
-    return fileNodeForStreams(database, streams, quoteString);
   }
 
   public static Optional<Long> fileNodeForIndividualStream(final JdbcDatabase database,
