@@ -61,7 +61,7 @@ class ClientSideIncrementalRecordFilterDecorator:
 
     @property
     def _cursor_field(self) -> Union[str, Any]:
-        return self._date_time_based_cursor._cursor_field.eval(self._date_time_based_cursor.config)
+        return self._date_time_based_cursor.cursor_field.eval(self._date_time_based_cursor.config)
 
     @property
     def _start_date_from_config(self) -> Union[datetime.datetime, Any]:
