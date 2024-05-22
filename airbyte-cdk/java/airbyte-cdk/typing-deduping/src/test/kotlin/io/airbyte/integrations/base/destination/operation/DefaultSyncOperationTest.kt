@@ -57,7 +57,7 @@ class DefaultSyncOperationTest {
     private val streamOperations: MutableMap<StreamConfig, StreamOperation<MockState>> =
         mutableMapOf()
     private val streamOperationFactory: StreamOperationFactory<MockState> =
-        StreamOperationFactory { initialStatus: DestinationInitialStatus<MockState> ->
+        StreamOperationFactory { initialStatus: DestinationInitialStatus<MockState>, _ ->
             streamOperations.computeIfAbsent(initialStatus.streamConfig) {
                 spyk(TestStreamOperation(initialStatus.destinationState))
             }
@@ -117,6 +117,9 @@ class DefaultSyncOperationTest {
                             nonSoftResetMigrationCompleted = true,
                         ),
                 ),
+            )
+            destinationHandler.createNamespaces(
+                setOf(appendStreamConfig.id.rawNamespace, appendStreamConfig.id.finalNamespace)
             )
             streamOperations.values.onEach { it.updatedDestinationState }
             destinationHandler.commitDestinationStates(
@@ -200,6 +203,9 @@ class DefaultSyncOperationTest {
                             nonSoftResetMigrationCompleted = true,
                         ),
                 ),
+            )
+            destinationHandler.createNamespaces(
+                setOf(appendStreamConfig.id.rawNamespace, appendStreamConfig.id.finalNamespace)
             )
             streamOperations.values.onEach { it.updatedDestinationState }
             destinationHandler.commitDestinationStates(
