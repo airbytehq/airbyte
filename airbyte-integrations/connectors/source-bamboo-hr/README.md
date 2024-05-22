@@ -1,6 +1,6 @@
 # Bamboo Hr Source
 
-This is the repository for the Bamboo Hr configuration based source connector.
+This is the repository for the Bamboo HR source connector.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/bamboo-hr).
 
 ## Local development
