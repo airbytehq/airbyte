@@ -75,7 +75,7 @@ class InlineSchemas(Step):
 
         return StepResult(step=self, status=StepStatus.SUCCESS)
 
-    def replace_text_in_files(self, root_dir, old_text, new_text):
+    def replace_text_in_files(self, root_dir: str, old_text: str, new_text: str) -> None:
         for dirpath, dirnames, filenames in os.walk(root_dir):
             for filename in filenames:
                 if filename.endswith(".py"):
