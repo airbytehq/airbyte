@@ -53,8 +53,8 @@ public class ElasticsearchConnection {
 
     HttpHost httpHost = HttpHost.create(config.getEndpoint());
 
-    RestClientBuilder builder = RestClient.builder(httpHost).
-            setDefaultHeaders(configureHeaders(config))
+    RestClientBuilder builder = RestClient.builder(httpHost)
+            .setDefaultHeaders(configureHeaders(config))
             .setSocketTimeout(3600000);//increase from default 30,000 millisecs to 1 hour
             .setFailureListener((new FailureListener()));
     client = new RestHighLevelClient(builder);
