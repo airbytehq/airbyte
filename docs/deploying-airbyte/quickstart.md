@@ -23,7 +23,7 @@ Then you can run Airbyte with the following command:
 abctl local install
 ```
 
-- Your browser should open to the Airbyte Application, if it does not visit [http://localhost](http://localhost)
+- Your browser should open to the Airbyte Application, if it does not visit [http://localhost:8000](http://localhost:8000)
 - You will be asked for a username and password. By default, that's username `airbyte` and password `password`. You can set these values through command line flags or environment variables. For example, to set the username and password to `foo` and `bar` respectively, you can run the following command:
 
 ```bash
