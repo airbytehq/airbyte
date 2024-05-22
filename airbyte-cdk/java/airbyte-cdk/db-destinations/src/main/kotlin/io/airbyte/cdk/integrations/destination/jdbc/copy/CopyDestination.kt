@@ -20,6 +20,7 @@ import javax.sql.DataSource
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+// TODO: Delete this class, this is only used in StarburstGalaxyDestination
 abstract class CopyDestination : BaseConnector, Destination {
     /**
      * The default database schema field in the destination config is "schema". To change it, pass
