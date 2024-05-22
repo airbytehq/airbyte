@@ -76,6 +76,7 @@ class SourceTwilio(AbstractSource):
                 config["auth_token"],
             ),
         )
+        print(f"Auth passed to stream: {auth.get_auth_header()}")
         full_refresh_stream_kwargs = {"authenticator": auth}
         incremental_stream_kwargs = {
             "authenticator": auth,
