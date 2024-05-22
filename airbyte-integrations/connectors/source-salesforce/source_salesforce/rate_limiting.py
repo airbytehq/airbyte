@@ -5,14 +5,13 @@
 import logging
 import re
 import sys
-from typing import Optional, Union, Mapping, Any
+from typing import Any, Mapping, Optional, Union
 
 import backoff
 import requests
-from airbyte_protocol.models import FailureType
-
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ResponseAction, ErrorResolution
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+from airbyte_protocol.models import FailureType
 from requests import codes, exceptions  # type: ignore[import]
 
 RESPONSE_CONSUMPTION_EXCEPTIONS = (
@@ -64,7 +63,7 @@ class SalesforceErrorHandler(ErrorHandler):
             return ErrorResolution(
                 ResponseAction.RETRY,
                 FailureType.transient_error,
-                f"Error of type {type(response)} is considered transient. Try again later. (full error message is {response})"
+                f"Error of type {type(response)} is considered transient. Try again later. (full error message is {response})",
             )
         elif isinstance(response, requests.Response):
             if response.ok:
@@ -74,19 +73,21 @@ class SalesforceErrorHandler(ErrorHandler):
                 return ErrorResolution(
                     ResponseAction.RETRY,
                     FailureType.transient_error,
-                    f"Response with status code {response.status_code} is considered transient. Try again later. (full error message is {response.content})"
+                    f"Response with status code {response.status_code} is considered transient. Try again later. (full error message is {response.content})",
                 )
 
             error_code, error_message = self._extract_error_code_and_message(response)
             if self._is_bulk_job_creation(response) and response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
                 return self._handle_bulk_job_creation_endpoint_specific_errors(response, error_code, error_message)
 
-            if response.status_code == codes.too_many_requests or (response.status_code == codes.forbidden and error_code == "REQUEST_LIMIT_EXCEEDED"):
+            if response.status_code == codes.too_many_requests or (
+                response.status_code == codes.forbidden and error_code == "REQUEST_LIMIT_EXCEEDED"
+            ):
                 # It is unclear as to why we don't retry on those. The rate limit window is 24 hours but it is rolling so we could end up being able to sync more records before 24 hours. Note that there is also a limit of concurrent long running requests which can fall in this bucket.
                 return ErrorResolution(
                     ResponseAction.FAIL,
                     FailureType.transient_error,
-                    f"Request limit reached with HTTP status {response.status_code}. body: {response.text}"
+                    f"Request limit reached with HTTP status {response.status_code}. body: {response.text}",
                 )
 
             if (
@@ -96,13 +97,13 @@ class SalesforceErrorHandler(ErrorHandler):
                 return ErrorResolution(
                     ResponseAction.FAIL,
                     FailureType.config_error,
-                    'A transient authentication error occurred. To prevent future syncs from failing, assign the "Exempt from Transaction Security" user permission to the authenticated user.'
+                    'A transient authentication error occurred. To prevent future syncs from failing, assign the "Exempt from Transaction Security" user permission to the authenticated user.',
                 )
 
         return ErrorResolution(
             ResponseAction.RETRY,
             FailureType.system_error,
-            f"Unknown error {response}. Attempting to retry in case this would succeed..."  # FIXME maybe check some statuses of remove retry
+            f"Unknown error {response}. Attempting to retry in case this would succeed...",  # FIXME maybe check some statuses of remove retry
         )
 
     @staticmethod
@@ -110,7 +111,9 @@ class SalesforceErrorHandler(ErrorHandler):
         # TODO comment on PR: I don't like that because it duplicates the format of the URL but with a test at least we should be fine to valide once it changes
         return bool(re.compile(r"services/data/[A-Za-z0-9.]+/jobs/query/?$").search(response.url))
 
-    def _handle_bulk_job_creation_endpoint_specific_errors(self, response: requests.Response, error_code: Optional[str], error_message: str) -> ErrorResolution:
+    def _handle_bulk_job_creation_endpoint_specific_errors(
+        self, response: requests.Response, error_code: Optional[str], error_message: str
+    ) -> ErrorResolution:
         # A part of streams can't be used by BULK API. Every API version can have a custom list of
         # these sobjects. Another part of them can be generated dynamically. That's why we can't track
         # them preliminarily and there is only one way is to except error with necessary messages about
@@ -124,7 +127,7 @@ class SalesforceErrorHandler(ErrorHandler):
         #    The second variant forces customisation for every case (ActivityHistory, ActivityHistories etc).
         #    And the main problem is these subqueries doesn't support CSV response format.
         if error_message == "Selecting compound data not supported in Bulk Query" or (
-                error_code == "INVALIDENTITY" and "is not supported by the Bulk API" in error_message
+            error_code == "INVALIDENTITY" and "is not supported by the Bulk API" in error_message
         ):
             logger.error(
                 f"Cannot receive data for stream '{self._stream_name}' using BULK API, "
@@ -188,7 +191,10 @@ def default_backoff_handler(max_tries: int, retry_on=None):
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...")
 
     def should_give_up(exc):
-        give_up = SalesforceErrorHandler().interpret_response(exc if exc.response is None else exc.response).response_action != ResponseAction.RETRY
+        give_up = (
+            SalesforceErrorHandler().interpret_response(exc if exc.response is None else exc.response).response_action
+            != ResponseAction.RETRY
+        )
         if give_up:
             logger.info(f"Giving up for returned HTTP status: {exc.response.status_code}, body: {exc.response.text}")
         return give_up

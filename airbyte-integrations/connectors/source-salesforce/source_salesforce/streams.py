@@ -27,14 +27,19 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
 from numpy import nan
 from pendulum import DateTime  # type: ignore[attr-defined]
-from requests import exceptions, JSONDecodeError
+from requests import JSONDecodeError, exceptions
 from requests.models import PreparedRequest
 
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .availability_strategy import SalesforceAvailabilityStrategy
 from .exceptions import SalesforceException, TmpFileIOError
-from .rate_limiting import TRANSIENT_EXCEPTIONS, default_backoff_handler, SalesforceErrorHandler, BulkNotSupportedException, \
-    RESPONSE_CONSUMPTION_EXCEPTIONS
+from .rate_limiting import (
+    RESPONSE_CONSUMPTION_EXCEPTIONS,
+    TRANSIENT_EXCEPTIONS,
+    BulkNotSupportedException,
+    SalesforceErrorHandler,
+    default_backoff_handler,
+)
 
 # https://stackoverflow.com/a/54517228
 CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
@@ -72,7 +77,7 @@ class SalesforceStream(HttpStream, ABC):
             self.stream_name,
             self.logger,
             session=self._session,  # no need to specific api_budget and authenticator as HttpStream sets them in self._session
-            error_handler=SalesforceErrorHandler(stream_name=self.stream_name, sobject_options=self.sobject_options)
+            error_handler=SalesforceErrorHandler(stream_name=self.stream_name, sobject_options=self.sobject_options),
         )
 
     @staticmethod
@@ -367,7 +372,9 @@ class BulkSalesforceStream(SalesforceStream):
         This method should be used when you don't have to read data from the HTTP body. Else, you will have to retry when you actually read
         the response buffer (which is either by calling `json` or `iter_content`)
         """
-        headers = self.authenticator.get_auth_header() if not headers else headers | self.authenticator.get_auth_header()  # FIXME can we remove this?
+        headers = (
+            self.authenticator.get_auth_header() if not headers else headers | self.authenticator.get_auth_header()
+        )  # FIXME can we remove this?
         return self._http_client.send_request(method, url, headers=headers, json=json, request_kwargs={})[1]
 
     @default_backoff_handler(max_tries=5, retry_on=RESPONSE_CONSUMPTION_EXCEPTIONS)
@@ -501,7 +508,9 @@ class BulkSalesforceStream(SalesforceStream):
 
         return self.encoding
 
-    @default_backoff_handler(max_tries=5, retry_on=RESPONSE_CONSUMPTION_EXCEPTIONS)  # We need the default_backoff_handler here because the HttpClient does not handle errors during the streaming of the response
+    @default_backoff_handler(
+        max_tries=5, retry_on=RESPONSE_CONSUMPTION_EXCEPTIONS
+    )  # We need the default_backoff_handler here because the HttpClient does not handle errors during the streaming of the response
     def download_data(self, url: str, chunk_size: int = 1024) -> tuple[str, str, dict]:
         """
         Retrieves binary data result from successfully `executed_job`, using chunks, to avoid local memory limitations.
@@ -511,10 +520,10 @@ class BulkSalesforceStream(SalesforceStream):
         """
         # set filepath for binary data from response
         tmp_file = str(uuid.uuid4())
-        _, streamed_response = self._http_client.send_request("GET", url, headers={"Accept-Encoding": "gzip"}, request_kwargs={"stream": True})
-        with closing(streamed_response) as response, open(
-            tmp_file, "wb"
-        ) as data_file:
+        _, streamed_response = self._http_client.send_request(
+            "GET", url, headers={"Accept-Encoding": "gzip"}, request_kwargs={"stream": True}
+        )
+        with closing(streamed_response) as response, open(tmp_file, "wb") as data_file:
             response_headers = response.headers
             response_encoding = self.get_response_encoding(response_headers)
             for chunk in response.iter_content(chunk_size=chunk_size):
