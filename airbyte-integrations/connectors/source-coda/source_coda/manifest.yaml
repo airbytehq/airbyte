@@ -37,11 +37,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-            field_name: "from"
-            inject_into: "url_base"
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ last_record['href'] }}"
+            cursor_value: "{{ response.nextPageLink }}"
+            stop_condition: >-
+              {{ 'nextPageLink' not in response or response.nextPageLink == ''
+              }}
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -88,11 +89,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-            field_name: "from"
-            inject_into: "url_base"
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ last_record['href'] }}"
+            cursor_value: "{{ response.nextPageLink }}"
+            stop_condition: >-
+              {{ 'nextPageLink' not in response or response.nextPageLink == ''
+              }}
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -126,11 +128,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-            field_name: "from"
-            inject_into: "url_base"
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ last_record['href'] }}"
+            cursor_value: "{{ response.nextPageLink }}"
+            stop_condition: >-
+              {{ 'nextPageLink' not in response or response.nextPageLink == ''
+              }}
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -164,11 +167,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-            field_name: "from"
-            inject_into: "url_base"
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ last_record['href'] }}"
+            cursor_value: "{{ response.nextPageLink }}"
+            stop_condition: >-
+              {{ 'nextPageLink' not in response or response.nextPageLink == ''
+              }}
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -202,11 +206,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-            field_name: "from"
-            inject_into: "url_base"
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ last_record['href'] }}"
+            cursor_value: "{{ response.nextPageLink }}"
+            stop_condition: >-
+              {{ 'nextPageLink' not in response or response.nextPageLink == ''
+              }}
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -240,11 +245,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-            field_name: "from"
-            inject_into: "url_base"
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ last_record['href'] }}"
+            cursor_value: "{{ response.nextPageLink }}"
+            stop_condition: >-
+              {{ 'nextPageLink' not in response or response.nextPageLink == ''
+              }}
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -280,11 +286,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-            field_name: "from"
-            inject_into: "url_base"
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ last_record['href'] }}"
+            cursor_value: "{{ response.nextPageLink }}"
+            stop_condition: >-
+              {{ 'nextPageLink' not in response or response.nextPageLink == ''
+              }}
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
