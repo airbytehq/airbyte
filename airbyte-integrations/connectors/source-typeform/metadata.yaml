@@ -32,15 +32,34 @@ data:
   releases:
     breakingChanges:
       1.1.0:
-        message:
-          This version migrates the Typeform connector to the low-code framework
-          for greater maintainability. This introduces a breaking change to the state
-          format for the `responses` stream. If you are using the incremental sync
-          mode for this stream, you will need to reset affected connections after
-          upgrading to prevent sync failures.
+        message: This version migrates the Typeform connector to the low-code framework for greater maintainability. This introduces a breaking change to the state format for the `responses` stream. If you are using the incremental sync mode for this stream, you will need to reset affected connections after upgrading to prevent sync failures.
         upgradeDeadline: "2023-09-25"
   supportLevel: certified
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-TYPEFORM_OAUTH__CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TYPEFORM__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TYPEFORM__CREDS_INCREMENTAL
+          fileName: incremental_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TYPEFORM__CREDS_TOKEN
+          fileName: config_token.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
