@@ -47,7 +47,7 @@ open class StreamStateManager
             )
         }
 
-    override val rawStateMessages: List<AirbyteStateMessage?>?
+    override val rawStateMessages: List<AirbyteStateMessage>?
         get() = rawAirbyteStateMessages
 
     override fun toState(pair: Optional<AirbyteStreamNameNamespacePair>): AirbyteStateMessage {

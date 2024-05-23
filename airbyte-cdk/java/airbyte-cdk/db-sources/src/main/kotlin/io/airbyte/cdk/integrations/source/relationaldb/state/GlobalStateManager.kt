@@ -53,7 +53,7 @@ class GlobalStateManager(
             )
     }
 
-    override val rawStateMessages: List<AirbyteStateMessage?>?
+    override val rawStateMessages: List<AirbyteStateMessage>?
         get() {
             throw UnsupportedOperationException(
                 "Raw state retrieval not supported by global state manager."

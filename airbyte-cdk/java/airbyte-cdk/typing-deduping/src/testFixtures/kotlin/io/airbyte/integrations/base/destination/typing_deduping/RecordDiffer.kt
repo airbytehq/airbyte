@@ -132,7 +132,7 @@ constructor(
         if (airbyteData.isTextual) {
             airbyteData = Jsons.deserializeExact(airbyteData.asText())
         }
-        Streams.stream(airbyteData.fields()).forEach { field: Map.Entry<String, JsonNode?> ->
+        Streams.stream(airbyteData.fields()).forEach { field: Map.Entry<String, JsonNode> ->
             if (!copy.has(field.key)) {
                 copy.set<JsonNode>(field.key, field.value)
             } else {

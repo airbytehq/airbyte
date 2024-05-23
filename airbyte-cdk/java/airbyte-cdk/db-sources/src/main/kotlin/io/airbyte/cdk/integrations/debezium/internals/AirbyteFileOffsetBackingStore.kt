@@ -58,8 +58,8 @@ class AirbyteFileOffsetBackingStore(
         save(mappedAsStrings)
     }
 
-    private fun updateStateForDebezium2_1(mapAsString: Map<String, String?>): Map<String, String?> {
-        val updatedMap: MutableMap<String, String?> = LinkedHashMap()
+    private fun updateStateForDebezium2_1(mapAsString: Map<String, String>): Map<String, String> {
+        val updatedMap: MutableMap<String, String> = LinkedHashMap()
         if (mapAsString.size > 0) {
             // We're getting the 1st of a map. Something fishy going on here
             val key = mapAsString.keys.toList()[0]
@@ -76,7 +76,7 @@ class AirbyteFileOffsetBackingStore(
                 if (dbName.isPresent)
                     SQL_SERVER_STATE_MUTATION.apply(key.substring(i, i1 + 1), dbName.get())
                 else key.substring(i, i1 + 1)
-            val value = mapAsString[key]
+            val value = mapAsString.getValue(key)
             updatedMap[newKey] = value
         }
         return updatedMap
@@ -103,9 +103,9 @@ class AirbyteFileOffsetBackingStore(
         } catch (e: NoSuchFileException) {
             // NoSuchFileException: Ignore, may be new.
             // EOFException: Ignore, this means the file was missing or corrupt
-            return emptyMap<ByteBuffer?, ByteBuffer>()
+            return emptyMap()
         } catch (e: EOFException) {
-            return emptyMap<ByteBuffer?, ByteBuffer>()
+            return emptyMap()
         } catch (e: IOException) {
             throw ConnectException(e)
         } catch (e: ClassNotFoundException) {

@@ -115,7 +115,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
     @Throws(IOException::class)
     private fun runExecutableInternal(cmd: Command): Path {
         LOGGER.info("testRoot = $testRoot")
-        val dockerCmd: List<String?> =
+        val dockerCmd: List<String> =
             Lists.newArrayList(
                 "docker",
                 "run",

@@ -46,8 +46,8 @@ class StreamingJdbcDatabase(
     @MustBeClosed
     @Throws(SQLException::class)
     override fun <T> unsafeQuery(
-        statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException?>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+        statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException>,
+        recordTransform: CheckedFunction<ResultSet, T, SQLException>
     ): Stream<T> {
         try {
             val connection = dataSource.connection
@@ -79,7 +79,7 @@ class StreamingJdbcDatabase(
      */
     protected fun <T> toUnsafeStream(
         resultSet: ResultSet,
-        mapper: CheckedFunction<ResultSet, T, SQLException?>,
+        mapper: CheckedFunction<ResultSet, T, SQLException>,
         streamingConfig: JdbcStreamingQueryConfig
     ): Stream<T> {
         return StreamSupport.stream(
