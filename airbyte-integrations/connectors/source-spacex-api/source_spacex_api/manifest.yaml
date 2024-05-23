@@ -29,7 +29,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /launches/{{config['options'] or config['id'] or 'latest'}}
           http_method: GET
         record_selector:
@@ -40,7 +40,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/launches'
+          $ref: "#/schemas/launches"
     capsules:
       type: DeclarativeStream
       name: capsules
@@ -49,7 +49,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /capsules
           http_method: GET
         record_selector:
@@ -60,7 +60,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/capsules'
+          $ref: "#/schemas/capsules"
     company:
       type: DeclarativeStream
       name: company
@@ -69,7 +69,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /company
           http_method: GET
         record_selector:
@@ -80,7 +80,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/company'
+          $ref: "#/schemas/company"
     crew:
       type: DeclarativeStream
       name: crew
@@ -89,7 +89,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /crew
           http_method: GET
         record_selector:
@@ -100,7 +100,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/crew'
+          $ref: "#/schemas/crew"
     cores:
       type: DeclarativeStream
       name: cores
@@ -109,7 +109,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /cores
           http_method: GET
         record_selector:
@@ -120,7 +120,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/cores'
+          $ref: "#/schemas/cores"
     dragons:
       type: DeclarativeStream
       name: dragons
@@ -129,7 +129,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /dragons
           http_method: GET
         record_selector:
@@ -140,7 +140,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/dragons'
+          $ref: "#/schemas/dragons"
     landpads:
       type: DeclarativeStream
       name: landpads
@@ -149,7 +149,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /landpads
           http_method: GET
         record_selector:
@@ -160,7 +160,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/landpads'
+          $ref: "#/schemas/landpads"
     payloads:
       type: DeclarativeStream
       name: payloads
@@ -169,7 +169,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /payloads
           http_method: GET
         record_selector:
@@ -180,7 +180,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/payloads'
+          $ref: "#/schemas/payloads"
     history:
       type: DeclarativeStream
       name: history
@@ -189,7 +189,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /history
           http_method: GET
         record_selector:
@@ -200,7 +200,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/history'
+          $ref: "#/schemas/history"
     rockets:
       type: DeclarativeStream
       name: rockets
@@ -209,7 +209,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /rockets
           http_method: GET
         record_selector:
@@ -220,7 +220,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/rockets'
+          $ref: "#/schemas/rockets"
     roadster:
       type: DeclarativeStream
       name: roadster
@@ -229,7 +229,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /roadster
           http_method: GET
         record_selector:
@@ -240,7 +240,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/roadster'
+          $ref: "#/schemas/roadster"
     ships:
       type: DeclarativeStream
       name: ships
@@ -249,7 +249,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /ships
           http_method: GET
         record_selector:
@@ -260,7 +260,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/ships'
+          $ref: "#/schemas/ships"
     starlink:
       type: DeclarativeStream
       name: starlink
@@ -269,7 +269,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /starlink
           http_method: GET
         record_selector:
@@ -280,25 +280,25 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/starlink'
+          $ref: "#/schemas/starlink"
   base_requester:
     type: HttpRequester
     url_base: https://api.spacexdata.com/v4/
 
 streams:
-  - $ref: '#/definitions/streams/launches'
-  - $ref: '#/definitions/streams/capsules'
-  - $ref: '#/definitions/streams/company'
-  - $ref: '#/definitions/streams/crew'
-  - $ref: '#/definitions/streams/cores'
-  - $ref: '#/definitions/streams/dragons'
-  - $ref: '#/definitions/streams/landpads'
-  - $ref: '#/definitions/streams/payloads'
-  - $ref: '#/definitions/streams/history'
-  - $ref: '#/definitions/streams/rockets'
-  - $ref: '#/definitions/streams/roadster'
-  - $ref: '#/definitions/streams/ships'
-  - $ref: '#/definitions/streams/starlink'
+  - $ref: "#/definitions/streams/launches"
+  - $ref: "#/definitions/streams/capsules"
+  - $ref: "#/definitions/streams/company"
+  - $ref: "#/definitions/streams/crew"
+  - $ref: "#/definitions/streams/cores"
+  - $ref: "#/definitions/streams/dragons"
+  - $ref: "#/definitions/streams/landpads"
+  - $ref: "#/definitions/streams/payloads"
+  - $ref: "#/definitions/streams/history"
+  - $ref: "#/definitions/streams/rockets"
+  - $ref: "#/definitions/streams/roadster"
+  - $ref: "#/definitions/streams/ships"
+  - $ref: "#/definitions/streams/starlink"
 
 spec:
   type: Spec
@@ -348,7 +348,7 @@ schemas:
         type: array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       cores:
         type: array
@@ -357,7 +357,7 @@ schemas:
           properties:
             core:
               type:
-                - 'null'
+                - "null"
                 - string
             flight:
               type: number
@@ -369,11 +369,11 @@ schemas:
               type: boolean
             landing_type:
               type:
-                - 'null'
+                - "null"
                 - string
             landpad:
               type:
-                - 'null'
+                - "null"
                 - string
             legs:
               type: boolean
@@ -383,21 +383,21 @@ schemas:
         type: array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       date_local:
         type:
-          - 'null'
+          - "null"
           - string
       date_precision:
         type:
-          - 'null'
+          - "null"
           - string
       date_unix:
         type: number
       date_utc:
         type:
-          - 'null'
+          - "null"
           - string
       details:
         type: string
@@ -416,28 +416,28 @@ schemas:
             type: array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
       flight_number:
         type: number
       id:
         type:
-          - 'null'
+          - "null"
           - string
       launch_library_id:
         type:
-          - 'null'
+          - "null"
           - string
       launchpad:
         type:
-          - 'null'
+          - "null"
           - string
       links:
         type: object
         properties:
           article:
             type:
-              - 'null'
+              - "null"
               - string
           flickr:
             type: object
@@ -446,7 +446,7 @@ schemas:
                 type: array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - string
               small:
                 type: array
@@ -455,34 +455,34 @@ schemas:
             properties:
               large:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               small:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           reddit:
             type: object
             properties:
               launch:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           webcast:
             type:
-              - 'null'
+              - "null"
               - string
           wikipedia:
             type:
-              - 'null'
+              - "null"
               - string
           youtube_id:
             type:
-              - 'null'
+              - "null"
               - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       net:
         type: boolean
@@ -490,21 +490,21 @@ schemas:
         type: array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       rocket:
         type:
-          - 'null'
+          - "null"
           - string
       ships:
         type: array
       static_fire_date_unix:
         type:
-          - 'null'
+          - "null"
           - number
       static_fire_date_utc:
         type:
-          - 'null'
+          - "null"
           - string
       success:
         type: boolean
@@ -514,7 +514,7 @@ schemas:
         type: boolean
       window:
         type:
-          - 'null'
+          - "null"
           - number
     additionalProperties: true
   capsules:
@@ -523,33 +523,33 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       land_landings:
         type: number
       last_update:
         type:
-          - 'null'
+          - "null"
           - string
       launches:
         type: array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       reuse_count:
         type: number
       serial:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
       water_landings:
         type: number
@@ -560,19 +560,19 @@ schemas:
     properties:
       ceo:
         type:
-          - 'null'
+          - "null"
           - string
       coo:
         type:
-          - 'null'
+          - "null"
           - string
       cto:
         type:
-          - 'null'
+          - "null"
           - string
       cto_propulsion:
         type:
-          - 'null'
+          - "null"
           - string
       employees:
         type: number
@@ -580,26 +580,26 @@ schemas:
         type: number
       founder:
         type:
-          - 'null'
+          - "null"
           - string
       headquarters:
         type: object
         properties:
           address:
             type:
-              - 'null'
+              - "null"
               - string
           city:
             type:
-              - 'null'
+              - "null"
               - string
           state:
             type:
-              - 'null'
+              - "null"
               - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       launch_sites:
         type: number
@@ -608,27 +608,27 @@ schemas:
         properties:
           elon_twitter:
             type:
-              - 'null'
+              - "null"
               - string
           flickr:
             type:
-              - 'null'
+              - "null"
               - string
           twitter:
             type:
-              - 'null'
+              - "null"
               - string
           website:
             type:
-              - 'null'
+              - "null"
               - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       summary:
         type:
-          - 'null'
+          - "null"
           - string
       test_sites:
         type: number
@@ -643,33 +643,33 @@ schemas:
     properties:
       agency:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       image:
         type:
-          - 'null'
+          - "null"
           - string
       launches:
         type: array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
       wikipedia:
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
   cores:
@@ -682,21 +682,21 @@ schemas:
         type: number
       block:
         type:
-          - 'null'
+          - "null"
           - number
       id:
         type:
-          - 'null'
+          - "null"
           - string
       last_update:
         type:
-          - 'null'
+          - "null"
           - string
       launches:
         type: array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       reuse_count:
         type: number
@@ -706,11 +706,11 @@ schemas:
         type: number
       serial:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
   dragons:
@@ -719,7 +719,7 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       active:
         type: boolean
@@ -727,7 +727,7 @@ schemas:
         type: number
       description:
         type:
-          - 'null'
+          - "null"
           - string
       diameter:
         type: object
@@ -742,24 +742,24 @@ schemas:
         type: number
       first_flight:
         type:
-          - 'null'
+          - "null"
           - string
       flickr_images:
         type: array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       heat_shield:
         type: object
         properties:
           dev_partner:
             type:
-              - 'null'
+              - "null"
               - string
           material:
             type:
-              - 'null'
+              - "null"
               - string
           size_meters:
             type: number
@@ -774,7 +774,7 @@ schemas:
             type: number
       id:
         type:
-          - 'null'
+          - "null"
           - string
       launch_payload_mass:
         type: object
@@ -792,7 +792,7 @@ schemas:
             type: number
       name:
         type:
-          - 'null'
+          - "null"
           - string
       orbit_duration_yr:
         type: number
@@ -829,17 +829,17 @@ schemas:
           properties:
             type:
               type:
-                - 'null'
+                - "null"
                 - string
             amount:
               type: number
             fuel_1:
               type:
-                - 'null'
+                - "null"
                 - string
             fuel_2:
               type:
-                - 'null'
+                - "null"
                 - string
             isp:
               type: number
@@ -871,7 +871,7 @@ schemas:
                 type: number
       wikipedia:
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
   landpads:
@@ -880,19 +880,19 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       details:
         type:
-          - 'null'
+          - "null"
           - string
       full_name:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       images:
         type: object
@@ -901,7 +901,7 @@ schemas:
             type: array
             items:
               type:
-                - 'null'
+                - "null"
                 - string
       landing_attempts:
         type: number
@@ -913,29 +913,29 @@ schemas:
         type: array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       locality:
         type:
-          - 'null'
+          - "null"
           - string
       longitude:
         type: number
       name:
         type:
-          - 'null'
+          - "null"
           - string
       region:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
       wikipedia:
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
   payloads:
@@ -944,112 +944,112 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       apoapsis_km:
         type:
-          - 'null'
+          - "null"
           - number
       arg_of_pericenter:
         type:
-          - 'null'
+          - "null"
           - number
       customers:
         type: array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       dragon:
         type: object
         properties:
           capsule:
             type:
-              - 'null'
+              - "null"
               - string
           flight_time_sec:
             type:
-              - 'null'
+              - "null"
               - number
           land_landing:
             type:
               - boolean
-              - 'null'
+              - "null"
           manifest:
             type:
-              - 'null'
+              - "null"
               - string
           mass_returned_kg:
             type:
-              - 'null'
+              - "null"
               - number
           mass_returned_lbs:
             type:
-              - 'null'
+              - "null"
               - number
           water_landing:
             type:
               - boolean
-              - 'null'
+              - "null"
       eccentricity:
         type:
-          - 'null'
+          - "null"
           - number
       epoch:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       inclination_deg:
         type:
-          - 'null'
+          - "null"
           - number
       launch:
         type:
-          - 'null'
+          - "null"
           - string
       lifespan_years:
         type:
-          - 'null'
+          - "null"
           - number
       longitude:
         type:
-          - 'null'
+          - "null"
           - number
       manufacturers:
         type: array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       mass_kg:
         type:
-          - 'null'
+          - "null"
           - number
       mass_lbs:
         type:
-          - 'null'
+          - "null"
           - number
       mean_anomaly:
         type:
-          - 'null'
+          - "null"
           - number
       mean_motion:
         type:
-          - 'null'
+          - "null"
           - number
       name:
         type:
-          - 'null'
+          - "null"
           - string
       nationalities:
         type: array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       norad_ids:
         type: array
@@ -1057,33 +1057,33 @@ schemas:
           type: number
       orbit:
         type:
-          - 'null'
+          - "null"
           - string
       periapsis_km:
         type:
-          - 'null'
+          - "null"
           - number
       period_min:
         type:
-          - 'null'
+          - "null"
           - number
       raan:
         type:
-          - 'null'
+          - "null"
           - number
       reference_system:
         type:
-          - 'null'
+          - "null"
           - string
       regime:
         type:
-          - 'null'
+          - "null"
           - string
       reused:
         type: boolean
       semi_major_axis_km:
         type:
-          - 'null'
+          - "null"
           - number
     additionalProperties: true
   history:
@@ -1092,28 +1092,28 @@ schemas:
     properties:
       details:
         type:
-          - 'null'
+          - "null"
           - string
       event_date_unix:
         type: number
       event_date_utc:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       links:
         type: object
         properties:
           article:
             type:
-              - 'null'
+              - "null"
               - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
   rockets:
@@ -1122,7 +1122,7 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       active:
         type: boolean
@@ -1130,17 +1130,17 @@ schemas:
         type: number
       company:
         type:
-          - 'null'
+          - "null"
           - string
       cost_per_launch:
         type: number
       country:
         type:
-          - 'null'
+          - "null"
           - string
       description:
         type:
-          - 'null'
+          - "null"
           - string
       diameter:
         type: object
@@ -1154,15 +1154,15 @@ schemas:
         properties:
           version:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           engine_loss_max:
             type:
-              - 'null'
+              - "null"
               - number
           isp:
             type: object
@@ -1173,17 +1173,17 @@ schemas:
                 type: number
           layout:
             type:
-              - 'null'
+              - "null"
               - string
           number:
             type: number
           propellant_1:
             type:
-              - 'null'
+              - "null"
               - string
           propellant_2:
             type:
-              - 'null'
+              - "null"
               - string
           thrust_sea_level:
             type: object
@@ -1203,14 +1203,14 @@ schemas:
                 type: number
       first_flight:
         type:
-          - 'null'
+          - "null"
           - string
       first_stage:
         type: object
         properties:
           burn_time_sec:
             type:
-              - 'null'
+              - "null"
               - number
           engines:
             type: number
@@ -1236,7 +1236,7 @@ schemas:
         type: array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       height:
         type: object
@@ -1247,14 +1247,14 @@ schemas:
             type: number
       id:
         type:
-          - 'null'
+          - "null"
           - string
       landing_legs:
         type: object
         properties:
           material:
             type:
-              - 'null'
+              - "null"
               - string
           number:
             type: number
@@ -1267,7 +1267,7 @@ schemas:
             type: number
       name:
         type:
-          - 'null'
+          - "null"
           - string
       payload_weights:
         type: array
@@ -1276,7 +1276,7 @@ schemas:
           properties:
             id:
               type:
-                - 'null'
+                - "null"
                 - string
             kg:
               type: number
@@ -1284,14 +1284,14 @@ schemas:
               type: number
             name:
               type:
-                - 'null'
+                - "null"
                 - string
       second_stage:
         type: object
         properties:
           burn_time_sec:
             type:
-              - 'null'
+              - "null"
               - number
           engines:
             type: number
@@ -1308,26 +1308,26 @@ schemas:
                     properties:
                       feet:
                         type:
-                          - 'null'
+                          - "null"
                           - number
                       meters:
                         type:
-                          - 'null'
+                          - "null"
                           - number
                   height:
                     type: object
                     properties:
                       feet:
                         type:
-                          - 'null'
+                          - "null"
                           - number
                       meters:
                         type:
-                          - 'null'
+                          - "null"
                           - number
               option_1:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           reusable:
             type: boolean
@@ -1344,7 +1344,7 @@ schemas:
         type: number
       wikipedia:
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
   roadster:
@@ -1355,7 +1355,7 @@ schemas:
         type: number
       details:
         type:
-          - 'null'
+          - "null"
           - string
       earth_distance_km:
         type: number
@@ -1369,11 +1369,11 @@ schemas:
         type: array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       inclination:
         type: number
@@ -1381,7 +1381,7 @@ schemas:
         type: number
       launch_date_utc:
         type:
-          - 'null'
+          - "null"
           - string
       launch_mass_kg:
         type: number
@@ -1395,13 +1395,13 @@ schemas:
         type: number
       name:
         type:
-          - 'null'
+          - "null"
           - string
       norad_id:
         type: number
       orbit_type:
         type:
-          - 'null'
+          - "null"
           - string
       periapsis_arg:
         type: number
@@ -1417,11 +1417,11 @@ schemas:
         type: number
       video:
         type:
-          - 'null'
+          - "null"
           - string
       wikipedia:
         type:
-          - 'null'
+          - "null"
           - string
     additionalProperties: true
   ships:
@@ -1430,101 +1430,101 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       abs:
         type:
-          - 'null'
+          - "null"
           - number
       active:
         type: boolean
       class:
         type:
-          - 'null'
+          - "null"
           - number
       course_deg:
         type:
-          - 'null'
+          - "null"
           - number
       home_port:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       image:
         type:
-          - 'null'
+          - "null"
           - string
       imo:
         type:
-          - 'null'
+          - "null"
           - number
       last_ais_update:
         type:
-          - 'null'
+          - "null"
           - string
       latitude:
         type:
-          - 'null'
+          - "null"
           - number
       launches:
         type: array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       legacy_id:
         type:
-          - 'null'
+          - "null"
           - string
       link:
         type:
-          - 'null'
+          - "null"
           - string
       longitude:
         type:
-          - 'null'
+          - "null"
           - number
       mass_kg:
         type:
-          - 'null'
+          - "null"
           - number
       mass_lbs:
         type:
-          - 'null'
+          - "null"
           - number
       mmsi:
         type:
-          - 'null'
+          - "null"
           - number
       model:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       roles:
         type: array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       speed_kn:
         type:
-          - 'null'
+          - "null"
           - number
       status:
         type:
-          - 'null'
+          - "null"
           - string
       year_built:
         type:
-          - 'null'
+          - "null"
           - number
     additionalProperties: true
   starlink:
@@ -1533,27 +1533,27 @@ schemas:
     properties:
       version:
         type:
-          - 'null'
+          - "null"
           - string
       height_km:
         type:
-          - 'null'
+          - "null"
           - number
       id:
         type:
-          - 'null'
+          - "null"
           - string
       latitude:
         type:
-          - 'null'
+          - "null"
           - number
       launch:
         type:
-          - 'null'
+          - "null"
           - string
       longitude:
         type:
-          - 'null'
+          - "null"
           - number
       spaceTrack:
         type: object
@@ -1566,33 +1566,33 @@ schemas:
             type: number
           CCSDS_OMM_VERS:
             type:
-              - 'null'
+              - "null"
               - string
           CENTER_NAME:
             type:
-              - 'null'
+              - "null"
               - string
           CLASSIFICATION_TYPE:
             type:
-              - 'null'
+              - "null"
               - string
           COMMENT:
             type:
-              - 'null'
+              - "null"
               - string
           COUNTRY_CODE:
             type:
-              - 'null'
+              - "null"
               - string
           CREATION_DATE:
             type:
-              - 'null'
+              - "null"
               - string
           DECAYED:
             type: number
           DECAY_DATE:
             type:
-              - 'null'
+              - "null"
               - string
           ECCENTRICITY:
             type: number
@@ -1602,7 +1602,7 @@ schemas:
             type: number
           EPOCH:
             type:
-              - 'null'
+              - "null"
               - string
           FILE:
             type: number
@@ -1612,13 +1612,13 @@ schemas:
             type: number
           LAUNCH_DATE:
             type:
-              - 'null'
+              - "null"
               - string
           MEAN_ANOMALY:
             type: number
           MEAN_ELEMENT_THEORY:
             type:
-              - 'null'
+              - "null"
               - string
           MEAN_MOTION:
             type: number
@@ -1630,19 +1630,19 @@ schemas:
             type: number
           OBJECT_ID:
             type:
-              - 'null'
+              - "null"
               - string
           OBJECT_NAME:
             type:
-              - 'null'
+              - "null"
               - string
           OBJECT_TYPE:
             type:
-              - 'null'
+              - "null"
               - string
           ORIGINATOR:
             type:
-              - 'null'
+              - "null"
               - string
           PERIAPSIS:
             type: number
@@ -1652,11 +1652,11 @@ schemas:
             type: number
           RCS_SIZE:
             type:
-              - 'null'
+              - "null"
               - string
           REF_FRAME:
             type:
-              - 'null'
+              - "null"
               - string
           REV_AT_EPOCH:
             type: number
@@ -1664,26 +1664,26 @@ schemas:
             type: number
           SITE:
             type:
-              - 'null'
+              - "null"
               - string
           TIME_SYSTEM:
             type:
-              - 'null'
+              - "null"
               - string
           TLE_LINE0:
             type:
-              - 'null'
+              - "null"
               - string
           TLE_LINE1:
             type:
-              - 'null'
+              - "null"
               - string
           TLE_LINE2:
             type:
-              - 'null'
+              - "null"
               - string
       velocity_kms:
         type:
-          - 'null'
+          - "null"
           - number
     additionalProperties: true
