@@ -1,4 +1,4 @@
-version: "0.29.0"
+version: 0.79.1
 
 type: DeclarativeSource
 
@@ -7,66 +7,74 @@ check:
   stream_names:
     - conversation_export
 
+definitions:
+  streams:
+    conversation_export:
+      type: DeclarativeStream
+      name: conversation_export
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: conversation_export
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - '%ms'
+        datetime_format: '%ms'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%d'') }}'
+          datetime_format: '%Y-%m-%d'
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_after
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_before
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ now_utc().strftime(''%Y-%m-%d'') }}'
+          datetime_format: '%Y-%m-%d'
+        step: P{{ config.batch_size }}D
+        cursor_granularity: P1D
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/conversation_export'
+  base_requester:
+    type: HttpRequester
+    url_base: https://exports.dixa.io/v1/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config[''api_token''] }}'
+
 streams:
-  - type: DeclarativeStream
-    name: conversation_export
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://exports.dixa.io/v1/
-        path: conversation_export
-        http_method: GET
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['api_token'] }}"
-        error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 60
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
-      paginator:
-        type: NoPagination
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: updated_at
-      cursor_datetime_formats:
-        - "%ms"
-      datetime_format: "%ms"
-      step: P{{ config.batch_size }}D
-      cursor_granularity: P1D
-      start_datetime:
-        datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
-        datetime_format: "%Y-%m-%d"
-      start_time_option:
-        type: RequestOption
-        inject_into: request_parameter
-        field_name: updated_after
-      end_datetime:
-        datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
-        datetime_format: "%Y-%m-%d"
-      end_time_option:
-        type: RequestOption
-        inject_into: request_parameter
-        field_name: updated_before
+  - $ref: '#/definitions/streams/conversation_export'
 
 spec:
   type: Spec
-  documentation_url: https://docs.airbyte.com/integrations/sources/dixa
   connection_specification:
-    $schema: http://json-schema.org/draft-07/schema#
     type: object
-    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_token
       - start_date
@@ -75,7 +83,7 @@ spec:
         type: string
         description: Dixa API token
         airbyte_secret: true
-        order: 1
+        order: 0
       batch_size:
         type: integer
         description: Number of days to batch into one request. Max 31.
@@ -84,7 +92,7 @@ spec:
           - 1
           - 31
         default: 31
-        order: 2
+        order: 1
       start_date:
         type: string
         title: Start date
@@ -92,4 +100,314 @@ spec:
         description: The connector pulls records updated from this date onwards.
         examples:
           - YYYY-MM-DD
-        order: 3
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    conversation_export: false
+
+schemas:
+  conversation_export:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      anonymized_at:
+        type:
+          - 'null'
+          - integer
+      assigned_at:
+        type:
+          - 'null'
+          - integer
+      assignee_email:
+        type:
+          - 'null'
+          - string
+      assignee_id:
+        type:
+          - 'null'
+          - string
+      assignee_name:
+        type:
+          - 'null'
+          - string
+      assignee_phone_number:
+        type:
+          - 'null'
+          - string
+      closed_at:
+        type:
+          - 'null'
+          - integer
+      conversation_wrapup_notes:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - string
+      created_at:
+        type:
+          - 'null'
+          - integer
+      custom_fields:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          additionalProperties: true
+          properties:
+            archived:
+              type:
+                - 'null'
+                - boolean
+            attribute_id:
+              type:
+                - 'null'
+                - string
+            data_type:
+              type:
+                - 'null'
+                - string
+            identifier:
+              type:
+                - 'null'
+                - string
+            value:
+              type:
+                - 'null'
+                - array
+                - string
+      direction:
+        type:
+          - 'null'
+          - string
+      dixa_email_integration_id:
+        type:
+          - 'null'
+          - string
+      dixa_email_integration_sender_name:
+        type:
+          - 'null'
+          - string
+      facebook_page_id:
+        type:
+          - 'null'
+          - string
+      facebook_page_name:
+        type:
+          - 'null'
+          - string
+      forwarding_email:
+        type:
+          - 'null'
+          - string
+      from_provisioned_phone_number_id:
+        type:
+          - 'null'
+          - string
+      from_provisioned_phone_number_name:
+        type:
+          - 'null'
+          - string
+      handling_duration:
+        type:
+          - 'null'
+          - integer
+      id:
+        type:
+          - 'null'
+          - integer
+      initial_channel:
+        type:
+          - 'null'
+          - string
+      last_message_created_at:
+        type:
+          - 'null'
+          - integer
+      originating_country:
+        type:
+          - 'null'
+          - string
+      queue_id:
+        type:
+          - 'null'
+          - string
+      queue_name:
+        type:
+          - 'null'
+          - string
+      queued_at:
+        type:
+          - 'null'
+          - integer
+      rating_message:
+        type:
+          - 'null'
+          - string
+      rating_score:
+        type:
+          - 'null'
+          - integer
+      ratings:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          properties:
+            rating_cancelled_timestamp:
+              type:
+                - 'null'
+                - integer
+            rating_created_timestamp:
+              type:
+                - 'null'
+                - integer
+            rating_language:
+              type:
+                - 'null'
+                - string
+            rating_message:
+              type:
+                - 'null'
+                - string
+            rating_modified_timestamp:
+              type:
+                - 'null'
+                - integer
+            rating_offered_timestamp:
+              type:
+                - 'null'
+                - integer
+            rating_rated_timestamp:
+              type:
+                - 'null'
+                - integer
+            rating_scheduled_for_timestamp:
+              type:
+                - 'null'
+                - integer
+            rating_scheduled_timestamp:
+              type:
+                - 'null'
+                - integer
+            rating_score:
+              type:
+                - 'null'
+                - integer
+            rating_status:
+              type:
+                - 'null'
+                - string
+            rating_type:
+              type:
+                - 'null'
+                - string
+            rating_unscheduled_timestamp:
+              type:
+                - 'null'
+                - integer
+      requester_additional_emails:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - string
+      requester_additional_phone_numbers:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - string
+      requester_email:
+        type:
+          - 'null'
+          - string
+      requester_id:
+        type:
+          - 'null'
+          - string
+      requester_name:
+        type:
+          - 'null'
+          - string
+      requester_phone_number:
+        type:
+          - 'null'
+          - string
+      status:
+        type:
+          - 'null'
+          - string
+      subject:
+        type:
+          - 'null'
+          - string
+      tags:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - string
+      tags_info:
+        type:
+          - 'null'
+          - array
+        items:
+          type:
+            - 'null'
+            - object
+          additionalProperties: true
+      to_provisioned_phone_number_id:
+        type:
+          - 'null'
+          - string
+      to_provisioned_phone_number_name:
+        type:
+          - 'null'
+          - string
+      total_duration:
+        type:
+          - 'null'
+          - integer
+      transfer_time:
+        type:
+          - 'null'
+          - integer
+      transferee_name:
+        type:
+          - 'null'
+          - string
+      transferee_number:
+        type:
+          - 'null'
+          - string
+      updated_at:
+        type:
+          - 'null'
+          - integer
+      widget_id:
+        type:
+          - 'null'
+          - string
+      widget_name:
+        type:
+          - 'null'
+          - string
+    title: Conversation Export
