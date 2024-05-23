@@ -4,7 +4,7 @@
 
 from typing import Any, Final, Optional, Union
 
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 
 
 class ResponseStatus:
