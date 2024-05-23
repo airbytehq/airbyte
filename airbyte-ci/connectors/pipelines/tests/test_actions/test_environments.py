@@ -2,10 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import asyncclick as click
 import pytest
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.python import common
+from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 
 pytestmark = [
     pytest.mark.anyio,
@@ -16,7 +16,7 @@ pytestmark = [
 def connector_context(dagger_client):
     context = ConnectorContext(
         pipeline_name="test",
-        connector="source-faker",
+        connector=ConnectorWithModifiedFiles("source-faker", modified_files={}),
         git_branch="test",
         git_revision="test",
         diffed_branch="test",
