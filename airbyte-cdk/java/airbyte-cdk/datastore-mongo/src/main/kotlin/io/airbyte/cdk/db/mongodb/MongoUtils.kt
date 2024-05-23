@@ -127,10 +127,10 @@ object MongoUtils {
         val field = node.data
         if (node.hasChildren()) {
             val subFields =
-                node.children!!
-                    .stream()
-                    .map { obj: TreeNode<CommonField<BsonType>> -> nodeToCommonField(obj) }
-                    .toList()
+                node.children!!.map { obj: TreeNode<CommonField<BsonType>> ->
+                    nodeToCommonField(obj)
+                }
+
             return CommonField(field.name, field.type, subFields)
         } else {
             return CommonField(field.name, field.type)
@@ -221,7 +221,7 @@ object MongoUtils {
         fieldName: String
     ): JsonNode {
         reader.readStartArray()
-        val elements = Lists.newArrayList<Any?>()
+        val elements = Lists.newArrayList<Any>()
 
         while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
             val arrayFieldType = reader.currentBsonType
@@ -295,18 +295,15 @@ object MongoUtils {
     ): List<TreeNode<CommonField<BsonType>>> {
         val allkeys = HashSet(getFieldsName(collection))
 
-        return allkeys
-            .stream()
-            .map { key: String ->
-                val types = getTypes(collection, key)
-                val type = getUniqueType(types)
-                val fieldNode = TreeNode(CommonField(transformName(types, key), type))
-                if (type == BsonType.DOCUMENT) {
-                    setSubFields(collection, fieldNode, key)
-                }
-                fieldNode
+        return allkeys.map { key: String ->
+            val types = getTypes(collection, key)
+            val type = getUniqueType(types)
+            val fieldNode = TreeNode(CommonField(transformName(types, key), type))
+            if (type == BsonType.DOCUMENT) {
+                setSubFields(collection, fieldNode, key)
             }
-            .toList()
+            fieldNode
+        }
     }
 
     /**

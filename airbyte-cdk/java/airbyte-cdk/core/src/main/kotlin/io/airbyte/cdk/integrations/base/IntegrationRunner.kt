@@ -175,7 +175,7 @@ internal constructor(
                     val catalog =
                         parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog::class.java)!!
                     val stateOptional =
-                        parsed.getStatePath().map { path: Path? -> parseConfig(path) }
+                        parsed.getStatePath().map { path: Path -> parseConfig(path) }
                     try {
                         if (featureFlags.concurrentSourceStreamRead()) {
                             LOGGER.info("Concurrent source stream read enabled.")
@@ -271,11 +271,11 @@ internal constructor(
         messageIterator: AutoCloseableIterator<AirbyteMessage>,
         recordCollector: Consumer<AirbyteMessage>
     ) {
-        messageIterator.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+        messageIterator.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
             LOGGER.debug("Producing messages for stream {}...", s)
         }
         messageIterator.forEachRemaining(recordCollector)
-        messageIterator.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+        messageIterator.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
             LOGGER.debug("Finished producing messages for stream {}...", s)
         }
     }
@@ -284,7 +284,7 @@ internal constructor(
     private fun readConcurrent(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        stateOptional: Optional<JsonNode?>
+        stateOptional: Optional<JsonNode>
     ) {
         val streams = source!!.readStreams(config, catalog, stateOptional.orElse(null))
 
@@ -301,7 +301,7 @@ internal constructor(
                      * stream consumer.
                      */
                     val partitionSize = streamConsumer.parallelism
-                    val partitions = Lists.partition(streams.stream().toList(), partitionSize)
+                    val partitions = Lists.partition(streams.toList(), partitionSize)
 
                     // Submit each stream partition for concurrent execution
                     partitions.forEach(
@@ -327,7 +327,7 @@ internal constructor(
     private fun readSerial(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        stateOptional: Optional<JsonNode?>
+        stateOptional: Optional<JsonNode>
     ) {
         try {
             source!!.read(config, catalog, stateOptional.orElse(null)).use { messageIterator ->
@@ -352,7 +352,7 @@ internal constructor(
                 )
             produceMessages(stream, streamStatusTrackingRecordConsumer)
         } catch (e: Exception) {
-            stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+            stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
                 LOGGER.error("Failed to consume from stream {}.", s, e)
             }
             throw RuntimeException(e)
@@ -481,7 +481,7 @@ internal constructor(
         ) {
             val currentThread = Thread.currentThread()
 
-            val runningThreads = ThreadUtils.getAllThreads().filter(::filterOrphanedThread).toList()
+            val runningThreads = ThreadUtils.getAllThreads().filter(::filterOrphanedThread)
             if (runningThreads.isNotEmpty()) {
                 LOGGER.warn(
                     """
@@ -520,7 +520,7 @@ internal constructor(
                 scheduledExecutorService.schedule(
                     {
                         if (
-                            ThreadUtils.getAllThreads().stream().anyMatch { runningThread: Thread ->
+                            ThreadUtils.getAllThreads().any { runningThread: Thread ->
                                 !runningThread.isDaemon && runningThread.name != currentThread.name
                             }
                         ) {

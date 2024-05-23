@@ -24,25 +24,25 @@ class EnvVariableFeatureFlags : FeatureFlags {
         return getEnvOrDefault(APPLY_FIELD_SELECTION, false) { s: String -> s.toBoolean() }
     }
 
-    override fun fieldSelectionWorkspaces(): String? {
-        return getEnvOrDefault(FIELD_SELECTION_WORKSPACES, "") { arg: String? -> arg }
+    override fun fieldSelectionWorkspaces(): String {
+        return getEnvOrDefault(FIELD_SELECTION_WORKSPACES, "") { arg: String -> arg }
     }
 
     override fun strictComparisonNormalizationWorkspaces(): String? {
-        return getEnvOrDefault(STRICT_COMPARISON_NORMALIZATION_WORKSPACES, "") { arg: String? ->
+        return getEnvOrDefault(STRICT_COMPARISON_NORMALIZATION_WORKSPACES, "") { arg: String ->
             arg
         }
     }
 
     override fun strictComparisonNormalizationTag(): String? {
         return getEnvOrDefault(STRICT_COMPARISON_NORMALIZATION_TAG, "strict_comparison2") {
-            arg: String? ->
+            arg: String ->
             arg
         }
     }
 
     override fun deploymentMode(): String? {
-        return getEnvOrDefault(DEPLOYMENT_MODE, "") { arg: String? -> arg }
+        return getEnvOrDefault(DEPLOYMENT_MODE, "") { arg: String -> arg }
     }
 
     // TODO: refactor in order to use the same method than the ones in EnvConfigs.java

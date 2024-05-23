@@ -16,7 +16,6 @@ import java.io.IOException
 import java.sql.SQLException
 import java.util.*
 import java.util.function.Consumer
-import java.util.stream.Collectors
 import java.util.stream.Stream
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.tuple.ImmutablePair
@@ -97,16 +96,14 @@ constructor(
     }
 
     @Throws(Exception::class)
-    override fun unsafeQuery(sql: String?, vararg params: String?): Stream<JsonNode> {
+    override fun unsafeQuery(sql: String?, vararg params: String): Stream<JsonNode> {
         val parameterValueList =
-            Arrays.stream(params)
-                .map { param: String? ->
-                    QueryParameterValue.newBuilder()
-                        .setValue(param)
-                        .setType(StandardSQLTypeName.STRING)
-                        .build()
-                }
-                .collect(Collectors.toList())
+            params.map { param: String ->
+                QueryParameterValue.newBuilder()
+                    .setValue(param)
+                    .setType(StandardSQLTypeName.STRING)
+                    .build()
+            }
 
         return query(sql, parameterValueList)
     }

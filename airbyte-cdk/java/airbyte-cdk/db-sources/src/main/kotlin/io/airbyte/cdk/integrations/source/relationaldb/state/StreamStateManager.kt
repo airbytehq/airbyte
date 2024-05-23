@@ -11,7 +11,6 @@ import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import java.util.*
 import java.util.function.Supplier
-import java.util.stream.Collectors
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -35,9 +34,7 @@ open class StreamStateManager
 ) :
     AbstractStateManager<AirbyteStateMessage, AirbyteStreamState>(
         catalog,
-        Supplier {
-            rawAirbyteStateMessages.stream().map { it.stream }.collect(Collectors.toList())
-        },
+        Supplier { rawAirbyteStateMessages.map { it.stream } },
         StateGeneratorUtils.CURSOR_FUNCTION,
         StateGeneratorUtils.CURSOR_FIELD_FUNCTION,
         StateGeneratorUtils.CURSOR_RECORD_COUNT_FUNCTION,
@@ -50,7 +47,7 @@ open class StreamStateManager
             )
         }
 
-    override val rawStateMessages: List<AirbyteStateMessage?>?
+    override val rawStateMessages: List<AirbyteStateMessage>?
         get() = rawAirbyteStateMessages
 
     override fun toState(pair: Optional<AirbyteStreamNameNamespacePair>): AirbyteStateMessage {

@@ -24,7 +24,7 @@ class DebeziumRecordPublisher(private val debeziumPropertiesManager: DebeziumPro
     private var engine: DebeziumEngine<ChangeEvent<String?, String?>>? = null
     private val hasClosed = AtomicBoolean(false)
     private val isClosing = AtomicBoolean(false)
-    private val thrownError = AtomicReference<Throwable?>()
+    private val thrownError = AtomicReference<Throwable>()
     private val engineLatch = CountDownLatch(1)
 
     fun start(

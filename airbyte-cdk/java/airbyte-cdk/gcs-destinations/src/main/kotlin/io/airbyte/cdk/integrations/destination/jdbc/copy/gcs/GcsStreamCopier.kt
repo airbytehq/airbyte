@@ -54,7 +54,7 @@ abstract class GcsStreamCopier(
             GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES.toLong()
         )
     private val channels = HashMap<String, WriteChannel>()
-    private val csvPrinters = HashMap<String?, CSVPrinter>()
+    private val csvPrinters = HashMap<String, CSVPrinter>()
 
     private fun prepareGcsStagingFile(): String {
         return java.lang.String.join(
@@ -65,7 +65,7 @@ abstract class GcsStreamCopier(
         )
     }
 
-    override fun prepareStagingFile(): String? {
+    override fun prepareStagingFile(): String {
         val name = prepareGcsStagingFile()
         if (!gcsStagingFiles.contains(name)) {
             gcsStagingFiles.add(name)

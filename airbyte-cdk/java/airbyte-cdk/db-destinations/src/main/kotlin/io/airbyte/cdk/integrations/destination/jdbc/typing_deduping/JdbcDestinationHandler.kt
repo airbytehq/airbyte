@@ -84,7 +84,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
     @Throws(Exception::class)
     private fun getInitialRawTableState(id: StreamId): InitialRawTableStatus {
         val tableExists =
-            jdbcDatabase.executeMetadataQuery { dbmetadata: DatabaseMetaData? ->
+            jdbcDatabase.executeMetadataQuery { dbmetadata: DatabaseMetaData ->
                 LOGGER.info(
                     "Retrieving table from Db metadata: {} {} {}",
                     catalogName,
@@ -92,7 +92,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                     id.rawName
                 )
                 try {
-                    getTableFromMetadata(dbmetadata!!, id).use { table ->
+                    getTableFromMetadata(dbmetadata, id).use { table ->
                         return@executeMetadataQuery table.next()
                     }
                 } catch (e: SQLException) {
@@ -124,7 +124,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                 // records).
                 val minUnloadedTimestamp: Optional<Timestamp> =
                     timestampStream
-                        .filter(Predicate<Timestamp> { obj: Timestamp? -> Objects.nonNull(obj) })
+                        .filter(Predicate<Timestamp> { obj: Timestamp -> Objects.nonNull(obj) })
                         .findFirst()
                 if (minUnloadedTimestamp.isPresent) {
                     // Decrement by 1 second since timestamp precision varies between databases.
@@ -152,7 +152,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                 // all).
                 val minUnloadedTimestamp: Optional<Timestamp> =
                     timestampStream
-                        .filter(Predicate<Timestamp> { obj: Timestamp? -> Objects.nonNull(obj) })
+                        .filter(Predicate<Timestamp> { obj: Timestamp -> Objects.nonNull(obj) })
                         .findFirst()
                 return InitialRawTableStatus(
                     true,
@@ -207,12 +207,10 @@ abstract class JdbcDestinationHandler<DestinationState>(
             }
 
         val initialStates =
-            streamConfigs
-                .stream()
-                .map { streamConfig: StreamConfig ->
-                    retrieveState(destinationStatesFuture, streamConfig)
-                }
-                .toList()
+            streamConfigs.map { streamConfig: StreamConfig ->
+                retrieveState(destinationStatesFuture, streamConfig)
+            }
+
         val states = CompletableFutures.allOf(initialStates).toCompletableFuture().join()
         return getResultsOrLogAndThrowFirst("Failed to retrieve initial state", states)
     }
@@ -399,26 +397,12 @@ abstract class JdbcDestinationHandler<DestinationState>(
             )
 
         // Filter out Meta columns since they don't exist in stream config.
-        val actualColumns =
-            existingTable.columns.entries
-                .stream()
-                .filter { column: Map.Entry<String?, ColumnDefinition> ->
-                    JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream().noneMatch {
-                        airbyteColumnName: String ->
-                        airbyteColumnName == column.key
-                    }
-                }
-                .collect(
-                    { LinkedHashMap() },
-                    {
-                        map: LinkedHashMap<String?, String>,
-                        column: Map.Entry<String?, ColumnDefinition> ->
-                        map[column.key] = column.value.type.lowercase()
-                    },
-                    { obj: LinkedHashMap<String?, String>, m: LinkedHashMap<String?, String>? ->
-                        obj.putAll(m!!)
-                    }
-                )
+        val actualColumns = LinkedHashMap<String?, String>()
+        existingTable.columns.entries
+            .filter { column: Map.Entry<String?, ColumnDefinition> ->
+                JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.none { it == column.key }
+            }
+            .forEach { actualColumns[it.key] = it.value.type.lowercase() }
 
         return actualColumns == intendedColumns
     }
@@ -430,7 +414,6 @@ abstract class JdbcDestinationHandler<DestinationState>(
             .deleteFrom(table(quotedName(rawTableNamespace, DESTINATION_STATE_TABLE_NAME)))
             .where(
                 destinationStates.keys
-                    .stream()
                     .map { streamId: StreamId ->
                         field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME))
                             .eq(streamId.originalName)
@@ -439,9 +422,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                                     .eq(streamId.originalNamespace)
                             )
                     }
-                    .reduce(DSL.falseCondition()) { obj: Condition, arg2: Condition? ->
-                        obj.or(arg2)
-                    }
+                    .reduce { obj: Condition, arg2: Condition? -> obj.or(arg2) }
             )
             .getSQL(ParamType.INLINED)
     }
@@ -526,12 +507,12 @@ abstract class JdbcDestinationHandler<DestinationState>(
             tableName: String?
         ): Optional<TableDefinition> {
             val retrievedColumnDefns =
-                jdbcDatabase.executeMetadataQuery { dbMetadata: DatabaseMetaData? ->
+                jdbcDatabase.executeMetadataQuery { dbMetadata: DatabaseMetaData ->
 
                     // TODO: normalize namespace and finalName strings to quoted-lowercase (as
                     // needed. Snowflake
                     // requires uppercase)
-                    val columnDefinitions = LinkedHashMap<String?, ColumnDefinition>()
+                    val columnDefinitions = LinkedHashMap<String, ColumnDefinition>()
                     LOGGER.info(
                         "Retrieving existing columns for {}.{}.{}",
                         catalogName,
@@ -539,7 +520,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                         tableName
                     )
                     try {
-                        dbMetadata!!.getColumns(catalogName, schemaName, tableName, null).use {
+                        dbMetadata.getColumns(catalogName, schemaName, tableName, null).use {
                             columns ->
                             while (columns.next()) {
                                 val columnName = columns.getString("COLUMN_NAME")

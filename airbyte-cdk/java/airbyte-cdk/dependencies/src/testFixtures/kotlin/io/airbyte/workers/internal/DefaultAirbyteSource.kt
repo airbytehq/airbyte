@@ -41,7 +41,7 @@ internal constructor(
     featureFlags: FeatureFlags
 ) : AirbyteSource {
     private var sourceProcess: Process? = null
-    private var messageIterator: Iterator<AirbyteMessage?>? = null
+    private var messageIterator: Iterator<AirbyteMessage>? = null
 
     private var exitValueIsSet = false
     @get:Throws(IllegalStateException::class)
@@ -110,7 +110,7 @@ internal constructor(
         // stdout logs are logged elsewhere since stdout also contains data
         LineGobbler.gobble(
             sourceProcess!!.errorStream,
-            { msg: String? -> LOGGER.error(msg) },
+            { msg: String -> LOGGER.error(msg) },
             "airbyte-source",
             CONTAINER_LOG_MDC_BUILDER
         )
@@ -127,7 +127,7 @@ internal constructor(
         messageIterator =
             streamFactory
                 .create(IOs.newBufferedReader(sourceProcess!!.inputStream))
-                .peek { message: AirbyteMessage? -> heartbeatMonitor.beat() }
+                .peek { message: AirbyteMessage -> heartbeatMonitor.beat() }
                 .filter { message: AirbyteMessage -> acceptedMessageTypes.contains(message.type) }
                 .iterator()
     }

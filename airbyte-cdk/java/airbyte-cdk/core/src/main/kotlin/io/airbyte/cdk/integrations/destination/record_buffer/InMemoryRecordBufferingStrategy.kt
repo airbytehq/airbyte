@@ -52,7 +52,7 @@ class InMemoryRecordBufferingStrategy(
         }
 
         val bufferedRecords =
-            streamBuffer.computeIfAbsent(stream) { _: AirbyteStreamNameNamespacePair? ->
+            streamBuffer.computeIfAbsent(stream) { _: AirbyteStreamNameNamespacePair ->
                 ArrayList()
             }
         bufferedRecords.add(message.record)
@@ -71,7 +71,7 @@ class InMemoryRecordBufferingStrategy(
             stream.name,
             streamBuffer[stream]!!.size
         )
-        recordWriter.accept(stream, streamBuffer[stream]!!.toList())
+        recordWriter.accept(stream, streamBuffer[stream]!!)
         LOGGER.info("Flushing completed for {}", stream.name)
     }
 

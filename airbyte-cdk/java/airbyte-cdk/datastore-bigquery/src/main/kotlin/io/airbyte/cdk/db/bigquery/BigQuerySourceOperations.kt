@@ -31,7 +31,7 @@ import java.util.function.Consumer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class BigQuerySourceOperations : SourceOperations<BigQueryResultSet, StandardSQLTypeName?> {
+class BigQuerySourceOperations : SourceOperations<BigQueryResultSet, StandardSQLTypeName> {
     private val BIG_QUERY_DATE_FORMAT: DateFormat = SimpleDateFormat("yyyy-MM-dd")
     private val BIG_QUERY_DATETIME_FORMAT: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
     private val BIG_QUERY_TIMESTAMP_FORMAT: DateFormat =
@@ -152,7 +152,7 @@ class BigQuerySourceOperations : SourceOperations<BigQueryResultSet, StandardSQL
         return parsedValue
     }
 
-    override fun getAirbyteType(sourceType: StandardSQLTypeName?): JsonSchemaType {
+    override fun getAirbyteType(sourceType: StandardSQLTypeName): JsonSchemaType {
         return when (sourceType) {
             StandardSQLTypeName.BOOL -> JsonSchemaType.BOOLEAN
             StandardSQLTypeName.INT64 -> JsonSchemaType.INTEGER

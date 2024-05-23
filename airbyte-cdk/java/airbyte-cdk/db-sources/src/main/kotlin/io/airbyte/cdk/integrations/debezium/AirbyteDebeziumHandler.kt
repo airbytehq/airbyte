@@ -87,7 +87,7 @@ class AirbyteDebeziumHandler<T>(
             )
         val schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage> =
             if (trackSchemaHistory)
-                Optional.of<AirbyteSchemaHistoryStorage?>(
+                Optional.of<AirbyteSchemaHistoryStorage>(
                     AirbyteSchemaHistoryStorage.Companion.initializeDBHistory(
                         cdcSavedInfoFetcher.savedSchemaHistory,
                         cdcStateHandler.compressSchemaHistoryForState()
@@ -155,9 +155,8 @@ class AirbyteDebeziumHandler<T>(
         @JvmStatic
         fun isAnyStreamIncrementalSyncMode(catalog: ConfiguredAirbyteCatalog): Boolean {
             return catalog.streams
-                .stream()
                 .map { obj: ConfiguredAirbyteStream -> obj.syncMode }
-                .anyMatch { syncMode: SyncMode -> syncMode == SyncMode.INCREMENTAL }
+                .any { syncMode: SyncMode -> syncMode == SyncMode.INCREMENTAL }
         }
     }
 }

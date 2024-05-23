@@ -377,7 +377,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         @Deprecated("")
         @Throws(Exception::class)
         fun attemptSQLCreateAndDropTableOperations(
-            outputSchema: String?,
+            outputSchema: String,
             database: JdbcDatabase,
             namingResolver: NamingConventionTransformer,
             sqlOps: SqlOperations
@@ -406,7 +406,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         @JvmStatic
         @Throws(Exception::class)
         fun attemptTableOperations(
-            outputSchema: String?,
+            outputSchema: String,
             database: JdbcDatabase,
             namingResolver: NamingConventionTransformer,
             sqlOps: SqlOperations,
@@ -419,8 +419,8 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                 // Get metadata from the database to see whether connection is possible
                 database.bufferedResultSetQuery(
                     { conn: Connection -> conn.metaData.catalogs },
-                    { queryContext: ResultSet? ->
-                        JdbcUtils.defaultSourceOperations.rowToJson(queryContext!!)
+                    { queryContext: ResultSet ->
+                        JdbcUtils.defaultSourceOperations.rowToJson(queryContext)
                     },
                 )
 

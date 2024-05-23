@@ -246,8 +246,8 @@ abstract class AbstractJdbcSource<Datatype>(
                 )
                 database.bufferedResultSetQuery(
                     CheckedFunction { connection: Connection -> connection.metaData.catalogs },
-                    CheckedFunction { queryResult: ResultSet? ->
-                        sourceOperations.rowToJson(queryResult!!)
+                    CheckedFunction { queryResult: ResultSet ->
+                        sourceOperations.rowToJson(queryResult)
                     }
                 )
             }
@@ -265,7 +265,7 @@ abstract class AbstractJdbcSource<Datatype>(
         database: JdbcDatabase,
         schema: String?
     ): List<TableInfo<CommonField<Datatype>>> {
-        val internalSchemas: Set<String?> = HashSet(excludedInternalNameSpaces)
+        val internalSchemas: Set<String> = HashSet(excludedInternalNameSpaces)
         LOGGER.info("Internal schemas to exclude: {}", internalSchemas)
         val tablesWithSelectGrantPrivilege =
             getPrivilegesTableForCurrentUser<JdbcPrivilegeDto>(database, schema)
@@ -277,31 +277,25 @@ abstract class AbstractJdbcSource<Datatype>(
                 // each column
                 { resultSet: ResultSet -> this.getColumnMetadata(resultSet) }
             )
-            .stream()
             .filter(
-                excludeNotAccessibleTables(internalSchemas, tablesWithSelectGrantPrivilege)
+                excludeNotAccessibleTables(internalSchemas, tablesWithSelectGrantPrivilege)::test
             ) // group by schema and table name to handle the case where a table with the same name
             // exists in
             // multiple schemas.
-            .collect(
-                Collectors.groupingBy<JsonNode, ImmutablePair<String, String>>(
-                    Function<JsonNode, ImmutablePair<String, String>> { t: JsonNode ->
-                        ImmutablePair.of<String, String>(
-                            t.get(INTERNAL_SCHEMA_NAME).asText(),
-                            t.get(INTERNAL_TABLE_NAME).asText()
-                        )
-                    }
+            .groupBy { t: JsonNode ->
+                ImmutablePair.of<String, String>(
+                    t.get(INTERNAL_SCHEMA_NAME).asText(),
+                    t.get(INTERNAL_TABLE_NAME).asText()
                 )
-            )
+            }
             .values
-            .stream()
-            .map<TableInfo<CommonField<Datatype>>> { fields: List<JsonNode> ->
+            .map { fields: List<JsonNode> ->
                 TableInfo<CommonField<Datatype>>(
                     nameSpace = fields[0].get(INTERNAL_SCHEMA_NAME).asText(),
                     name = fields[0].get(INTERNAL_TABLE_NAME).asText(),
                     fields =
                         fields
-                            .stream() // read the column metadata Json object, and determine its
+                            // read the column metadata Json object, and determine its
                             // type
                             .map { f: JsonNode ->
                                 val datatype = sourceOperations.getDatabaseFieldType(f)
@@ -320,40 +314,32 @@ abstract class AbstractJdbcSource<Datatype>(
                                         f.get(INTERNAL_COLUMN_NAME).asText(),
                                         datatype
                                     ) {}
-                            }
-                            .collect(Collectors.toList<CommonField<Datatype>>()),
+                            },
                     cursorFields = extractCursorFields(fields)
                 )
             }
-            .collect(Collectors.toList<TableInfo<CommonField<Datatype>>>())
     }
 
     private fun extractCursorFields(fields: List<JsonNode>): List<String> {
         return fields
-            .stream()
             .filter { field: JsonNode ->
                 isCursorType(sourceOperations.getDatabaseFieldType(field))
             }
-            .map<String>(
-                Function<JsonNode, String> { field: JsonNode ->
-                    field.get(INTERNAL_COLUMN_NAME).asText()
-                }
-            )
-            .collect(Collectors.toList<String>())
+            .map { it.get(INTERNAL_COLUMN_NAME).asText() }
     }
 
     protected fun excludeNotAccessibleTables(
-        internalSchemas: Set<String?>,
+        internalSchemas: Set<String>,
         tablesWithSelectGrantPrivilege: Set<JdbcPrivilegeDto>?
     ): Predicate<JsonNode> {
         return Predicate<JsonNode> { jsonNode: JsonNode ->
             if (tablesWithSelectGrantPrivilege!!.isEmpty()) {
                 return@Predicate isNotInternalSchema(jsonNode, internalSchemas)
             }
-            (tablesWithSelectGrantPrivilege.stream().anyMatch { e: JdbcPrivilegeDto ->
+            (tablesWithSelectGrantPrivilege.any { e: JdbcPrivilegeDto ->
                 e.schemaName == jsonNode.get(INTERNAL_SCHEMA_NAME).asText()
             } &&
-                tablesWithSelectGrantPrivilege.stream().anyMatch { e: JdbcPrivilegeDto ->
+                tablesWithSelectGrantPrivilege.any { e: JdbcPrivilegeDto ->
                     e.tableName == jsonNode.get(INTERNAL_TABLE_NAME).asText()
                 } &&
                 !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText()))
@@ -364,7 +350,7 @@ abstract class AbstractJdbcSource<Datatype>(
     // getPrivilegesTableForCurrentUser()
     protected open fun isNotInternalSchema(
         jsonNode: JsonNode,
-        internalSchemas: Set<String?>
+        internalSchemas: Set<String>
     ): Boolean {
         return !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText())
     }
@@ -423,10 +409,7 @@ abstract class AbstractJdbcSource<Datatype>(
     ): Map<String, MutableList<String>> {
         LOGGER.info(
             "Discover primary keys for tables: " +
-                tableInfos
-                    .stream()
-                    .map { obj: TableInfo<CommonField<Datatype>> -> obj.name }
-                    .collect(Collectors.toSet())
+                tableInfos.map { obj: TableInfo<CommonField<Datatype>> -> obj.name }.toSet()
         )
         try {
             // Get all primary keys without specifying a table name
@@ -734,7 +717,7 @@ abstract class AbstractJdbcSource<Datatype>(
 
     override fun close() {
         dataSources.forEach(
-            Consumer { d: DataSource? ->
+            Consumer { d: DataSource ->
                 try {
                     close(d)
                 } catch (e: Exception) {
@@ -763,7 +746,6 @@ abstract class AbstractJdbcSource<Datatype>(
             HashSet(Sets.difference(allStreams, alreadySyncedStreams))
 
         return catalog.streams
-            .stream()
             .filter { c: ConfiguredAirbyteStream -> c.syncMode == SyncMode.INCREMENTAL }
             .filter { stream: ConfiguredAirbyteStream ->
                 newlyAddedStreams.contains(
@@ -771,7 +753,6 @@ abstract class AbstractJdbcSource<Datatype>(
                 )
             }
             .map { `object`: ConfiguredAirbyteStream -> Jsons.clone(`object`) }
-            .collect(Collectors.toList())
     }
 
     companion object {
@@ -789,8 +770,7 @@ abstract class AbstractJdbcSource<Datatype>(
         ): Map<String, MutableList<String>> {
             val result: MutableMap<String, MutableList<String>> = HashMap()
             entries
-                .stream()
-                .sorted(Comparator.comparingInt(PrimaryKeyAttributesFromDb::keySequence))
+                .sortedWith(Comparator.comparingInt(PrimaryKeyAttributesFromDb::keySequence))
                 .forEach { entry: PrimaryKeyAttributesFromDb ->
                     if (!result.containsKey(entry.streamName)) {
                         result[entry.streamName] = ArrayList()

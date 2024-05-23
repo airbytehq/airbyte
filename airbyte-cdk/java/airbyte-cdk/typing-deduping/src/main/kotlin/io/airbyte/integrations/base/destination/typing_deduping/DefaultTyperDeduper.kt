@@ -122,7 +122,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
 
         val prepareTablesFutureResult =
             CompletableFutures.allOf(
-                    destinationInitialStatuses.map { this.prepareTablesFuture(it) }.toList()
+                    destinationInitialStatuses.map { this.prepareTablesFuture(it) }
                 )
                 .toCompletableFuture()
                 .join()
@@ -292,7 +292,6 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
         LOGGER.info("Typing and deduping all tables")
         val typeAndDedupeTasks: MutableSet<CompletableFuture<Optional<Exception>>> = HashSet()
         parsedCatalog.streams
-            .stream()
             .filter { streamConfig: StreamConfig ->
                 // Skip if stream setup failed.
                 if (!streamSetupSucceeded(streamConfig)) {

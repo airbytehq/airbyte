@@ -24,7 +24,6 @@ import io.airbyte.configoss.StandardCheckConnectionOutput
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import java.nio.file.Path
 import java.util.*
-import java.util.stream.Collectors
 import org.apache.commons.lang3.RandomStringUtils
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -116,16 +115,13 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: FileUplo
             s3Client
                 .listObjects(config.bucketName, parentFolder)
                 .objectSummaries
-                .stream()
                 .filter { o: S3ObjectSummary -> o.key.contains("$streamNameStr/") }
-                .sorted(Comparator.comparingLong { o: S3ObjectSummary -> o.lastModified.time })
-                .collect(Collectors.toList())
+                .sortedWith(Comparator.comparingLong { o: S3ObjectSummary -> o.lastModified.time })
         LOGGER.info(
             "All objects: {}",
-            objectSummaries
-                .stream()
-                .map { o: S3ObjectSummary -> String.format("%s/%s", o.bucketName, o.key) }
-                .collect(Collectors.toList())
+            objectSummaries.map { o: S3ObjectSummary ->
+                String.format("%s/%s", o.bucketName, o.key)
+            }
         )
         return objectSummaries
     }

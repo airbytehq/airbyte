@@ -64,7 +64,7 @@ class DockerProcessFactory(
         jobMetadata: Map<String, String>,
         internalToExternalPorts: Map<Int?, Int?>?,
         additionalEnvironmentVariables: Map<String, String>,
-        vararg args: String?
+        vararg args: String
     ): Process {
         try {
             if (!checkImageExists(imageName)) {
@@ -79,7 +79,7 @@ class DockerProcessFactory(
                 IOs.writeFile(jobRoot, key, value)
             }
 
-            val cmd: MutableList<String?> =
+            val cmd: MutableList<String> =
                 Lists.newArrayList(
                     "docker",
                     "run",
@@ -130,7 +130,7 @@ class DockerProcessFactory(
                 cmd.add("$key=$value")
             }
 
-            if (!Strings.isNullOrEmpty(entrypoint)) {
+            if (!entrypoint.isNullOrEmpty()) {
                 cmd.add("--entrypoint")
                 cmd.add(entrypoint)
             }
@@ -149,7 +149,7 @@ class DockerProcessFactory(
             }
 
             cmd.add(imageName)
-            cmd.addAll(Arrays.asList(*args))
+            cmd.addAll(args)
 
             LOGGER.info("Preparing command: {}", Joiner.on(" ").join(cmd))
 
@@ -169,8 +169,8 @@ class DockerProcessFactory(
     fun checkImageExists(imageName: String?): Boolean {
         try {
             val process = ProcessBuilder(imageExistsScriptPath.toString(), imageName).start()
-            LineGobbler.gobble(process.errorStream, { msg: String? -> LOGGER.error(msg) })
-            LineGobbler.gobble(process.inputStream, { msg: String? -> LOGGER.info(msg) })
+            LineGobbler.gobble(process.errorStream, { msg: String -> LOGGER.error(msg) })
+            LineGobbler.gobble(process.inputStream, { msg: String -> LOGGER.info(msg) })
 
             TestHarnessUtils.gentleClose(process, 10, TimeUnit.MINUTES)
 
@@ -226,12 +226,12 @@ class DockerProcessFactory(
          * @return A list with debugging arguments or an empty list
          * ```
          */
-        fun localDebuggingOptions(containerName: String): List<String?> {
+        fun localDebuggingOptions(containerName: String): List<String> {
             val shouldAddDebuggerOptions =
                 (Optional.ofNullable<String>(System.getenv("DEBUG_CONTAINER_IMAGE"))
-                    .filter { cs: String? -> StringUtils.isNotEmpty(cs) }
+                    .filter { cs: String -> StringUtils.isNotEmpty(cs) }
                     .map<Boolean>(
-                        Function<String, Boolean> { imageName: String? ->
+                        Function<String, Boolean> { imageName: String ->
                             ProcessFactory.Companion.extractShortImageName(containerName)
                                 .startsWith(imageName!!)
                         }

@@ -49,7 +49,7 @@ constructor(
 
     private var destinationProcess: Process? = null
     private var writer: AirbyteMessageBufferedWriter? = null
-    private var messageIterator: Iterator<AirbyteMessage?>? = null
+    private var messageIterator: Iterator<AirbyteMessage>? = null
 
     private var exitValueIsSet = false
     override val exitValue: Int
@@ -86,7 +86,7 @@ constructor(
         // stdout logs are logged elsewhere since stdout also contains data
         LineGobbler.gobble(
             destinationProcess!!.errorStream,
-            { msg: String? -> LOGGER.error(msg) },
+            { msg: String -> LOGGER.error(msg) },
             "airbyte-destination",
             createContainerLogMdcBuilder()
         )
