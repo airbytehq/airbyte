@@ -8,6 +8,7 @@ import java.util.*
 
 data class InitialRawTableStatus(
     val rawTableExists: Boolean,
+    val tempRawTableExists: Boolean,
     val hasUnprocessedRecords: Boolean,
     val maxProcessedTimestamp: Optional<Instant>
 )

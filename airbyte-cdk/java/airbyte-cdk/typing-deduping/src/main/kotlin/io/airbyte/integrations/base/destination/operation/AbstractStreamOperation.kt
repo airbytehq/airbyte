@@ -37,8 +37,49 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
 
     init {
         val stream = destinationInitialStatus.streamConfig
-        rawTableSuffix = NO_SUFFIX
-        storageOperation.prepareStage(stream.id, NO_SUFFIX)
+
+        when (stream.minimumGenerationId) {
+            0L -> {
+                // Normal sync or merge refresh
+                if (initialRawTableStatus.tempRawTableExists) {
+                    // There was a previous truncate refresh attempt, which failed, and left some
+                    // records behind.
+                    // Retrieve those records and put them in the real stage.
+                    storageOperation.transferFromTempStage(stream.id, TMP_OVERWRITE_TABLE_SUFFIX)
+                }
+                rawTableSuffix = NO_SUFFIX
+                storageOperation.prepareStage(stream.id, NO_SUFFIX)
+            }
+            stream.generationId -> {
+                // truncate refresh
+                if (initialRawTableStatus.tempRawTableExists) {
+                    val tempStageGeneration =
+                        storageOperation.getStageGeneration(stream.id, TMP_OVERWRITE_TABLE_SUFFIX)
+                    if (tempStageGeneration != stream.generationId) {
+                        // The temp stage is from the wrong generation. Nuke it.
+                        storageOperation.prepareStage(
+                            stream.id,
+                            TMP_OVERWRITE_TABLE_SUFFIX,
+                            replace = true,
+                        )
+                    }
+                    // (if the existing temp stage is from the correct generation, then we're resuming
+                    // a truncate refresh, and should keep the previous temp stage).
+                } else {
+                    // We're initiating a new truncate refresh. Create a new temp stage.
+                    storageOperation.prepareStage(
+                        stream.id,
+                        TMP_OVERWRITE_TABLE_SUFFIX,
+                    )
+                }
+                rawTableSuffix = TMP_OVERWRITE_TABLE_SUFFIX
+            }
+            else -> {
+                // This is technically already handled in CatalogParser.
+                throw IllegalArgumentException("Hybrid refreshes are not yet supported.")
+            }
+        }
+
         if (!disableTypeDedupe) {
             // Prepare final tables based on sync mode.
             finalTmpTableSuffix = prepareFinalTable(destinationInitialStatus)
@@ -70,27 +111,22 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
         log.info { "Final Table exists for stream ${stream.id.finalName}" }
         // The table already exists. Decide whether we're writing to it directly, or
         // using a tmp table.
-        when (stream.destinationSyncMode) {
-            // For overwrite, it's wasteful to do T+D, so we don't do soft-reset in prepare.
-            // Instead,
-            // we do type-dedupe on a suffixed table and do a swap in finalizeTable when we have to
-            // for schema mismatches.
-            DestinationSyncMode.OVERWRITE -> return prepareFinalTableForOverwrite(initialStatus)
-            DestinationSyncMode.APPEND,
-            DestinationSyncMode.APPEND_DEDUP -> {
-                if (
-                    initialStatus.isSchemaMismatch ||
-                        initialStatus.destinationState.needsSoftReset()
-                ) {
-                    // We're loading data directly into the existing table.
-                    // Make sure it has the right schema.
-                    // Also, if a raw table migration wants us to do a soft reset, do that
-                    // here.
-                    log.info { "Executing soft-reset on final table of stream $stream" }
-                    storageOperation.softResetFinalTable(stream)
-                }
-                return NO_SUFFIX
+        if (stream.minimumGenerationId == stream.generationId) {
+            // Truncate refresh. Use a temp final table.
+            return prepareFinalTableForOverwrite(initialStatus)
+        } else {
+            if (
+                initialStatus.isSchemaMismatch ||
+                initialStatus.destinationState.needsSoftReset()
+            ) {
+                // We're loading data directly into the existing table.
+                // Make sure it has the right schema.
+                // Also, if a raw table migration wants us to do a soft reset, do that
+                // here.
+                log.info { "Executing soft-reset on final table of stream $stream" }
+                storageOperation.softResetFinalTable(stream)
             }
+            return NO_SUFFIX
         }
     }
 
