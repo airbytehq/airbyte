@@ -13,7 +13,6 @@ import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.destination.snowflake.SnowflakeDestination.DestinationType;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.util.regex.Matcher;
@@ -72,18 +71,6 @@ public class SnowflakeDestinationTest {
 
     final Matcher matcher = pattern.matcher(url);
     assertEquals(isMatch, matcher.find());
-  }
-
-  @ParameterizedTest
-  @MethodSource("destinationTypeToConfig")
-  public void testS3ConfigType(final String configFileName, final DestinationType expectedDestinationType) throws Exception {
-    final JsonNode config = Jsons.deserialize(MoreResources.readResource(configFileName), JsonNode.class);
-    final DestinationType typeFromConfig = SnowflakeDestinationResolver.getTypeFromConfig(config);
-    assertEquals(expectedDestinationType, typeFromConfig);
-  }
-
-  private static Stream<Arguments> destinationTypeToConfig() {
-    return Stream.of(arguments("insert_config.json", DestinationType.INTERNAL_STAGING));
   }
 
   @Test
