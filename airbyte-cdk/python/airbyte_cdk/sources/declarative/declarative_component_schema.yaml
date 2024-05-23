@@ -21,6 +21,7 @@ properties:
       "$ref": "#/definitions/DeclarativeStream"
   version:
     type: string
+    description: The version of the Airbyte CDK used to build and test the source.
   schemas:
     "$ref": "#/definitions/Schemas"
   definitions:
