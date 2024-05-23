@@ -11,7 +11,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from requests.auth import AuthBase
 
 BASE_URL = "https://www.googleapis.com/webmasters/v3/"
 ROW_LIMIT = 25000
@@ -30,7 +30,7 @@ class GoogleSearchConsole(HttpStream, ABC):
 
     def __init__(
         self,
-        authenticator: Union[HttpAuthenticator, requests.auth.AuthBase],
+        authenticator: AuthBase,
         site_urls: list,
         start_date: str,
         end_date: str,
