@@ -3,8 +3,10 @@
 #
 
 from dataclasses import dataclass
+from typing import Optional
 
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
+from airbyte_cdk.sources.types import StreamState
 
 
 @dataclass
@@ -17,7 +19,7 @@ class PartitionRouter(StreamSlicer):
         get_parent_state(): Get the state of the parent streams.
     """
 
-    def set_parent_state(self, stream_state):
+    def set_parent_state(self, stream_state: StreamState) -> None:
         """
         Set the state of the parent streams.
 
@@ -26,7 +28,7 @@ class PartitionRouter(StreamSlicer):
         """
         pass
 
-    def get_parent_state(self):
+    def get_parent_state(self) -> Optional[StreamState]:
         """
         Get the state of the parent streams.
 

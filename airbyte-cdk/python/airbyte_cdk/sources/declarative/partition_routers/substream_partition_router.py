@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
 
 import dpath
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
@@ -59,7 +59,7 @@ class SubstreamPartitionRouter(PartitionRouter):
         if not self.parent_stream_configs:
             raise ValueError("SubstreamPartitionRouter needs at least 1 parent stream")
         self._parameters = parameters
-        self._parent_state = {}
+        self._parent_state: Dict[str, Any] = {}
 
     def get_request_params(
         self,
