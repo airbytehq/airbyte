@@ -246,8 +246,8 @@ abstract class AbstractJdbcSource<Datatype>(
                 )
                 database.bufferedResultSetQuery(
                     CheckedFunction { connection: Connection -> connection.metaData.catalogs },
-                    CheckedFunction { queryResult: ResultSet? ->
-                        sourceOperations.rowToJson(queryResult!!)
+                    CheckedFunction { queryResult: ResultSet ->
+                        sourceOperations.rowToJson(queryResult)
                     }
                 )
             }
@@ -734,7 +734,7 @@ abstract class AbstractJdbcSource<Datatype>(
 
     override fun close() {
         dataSources.forEach(
-            Consumer { d: DataSource? ->
+            Consumer { d: DataSource ->
                 try {
                     close(d)
                 } catch (e: Exception) {
@@ -771,7 +771,7 @@ abstract class AbstractJdbcSource<Datatype>(
                 )
             }
             .map { `object`: ConfiguredAirbyteStream -> Jsons.clone(`object`) }
-            .collect(Collectors.toList())
+            .toList()
     }
 
     companion object {

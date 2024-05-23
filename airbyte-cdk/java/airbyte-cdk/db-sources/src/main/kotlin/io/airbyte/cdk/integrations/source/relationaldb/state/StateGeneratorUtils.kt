@@ -16,7 +16,6 @@ import io.airbyte.configoss.helpers.StateMessageHelper
 import io.airbyte.protocol.models.v0.*
 import java.util.*
 import java.util.function.Function
-import java.util.stream.Collectors
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -102,7 +101,7 @@ object StateGeneratorUtils {
                 generateStreamState(e.key, e.value)
             }
             .filter { s: AirbyteStreamState -> isValidStreamDescriptor(s.streamDescriptor) }
-            .collect(Collectors.toList())
+            .toList()
     }
 
     /**
@@ -126,7 +125,7 @@ object StateGeneratorUtils {
                     .map { e: Map.Entry<AirbyteStreamNameNamespacePair, CursorInfo> ->
                         generateDbStreamState(e.key, e.value)
                     }
-                    .collect(Collectors.toList())
+                    .toList()
             )
     }
 
@@ -217,7 +216,7 @@ object StateGeneratorUtils {
                                 )
                                 .withStreamState(Jsons.jsonNode(s))
                         }
-                        .collect(Collectors.toList())
+                        .toList()
                 )
         return AirbyteStateMessage()
             .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
@@ -250,7 +249,7 @@ object StateGeneratorUtils {
                             .withStreamState(Jsons.jsonNode(s))
                     )
             }
-            .collect(Collectors.toList())
+            .toList()
     }
 
     fun convertStateMessage(

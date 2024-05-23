@@ -127,17 +127,20 @@ def _get_acceptance_test_steps(context: ConnectorContext) -> List[StepToRun]:
     """
     Generate the steps to run the acceptance tests for a Java connector.
     """
+
     # Run tests in parallel
     return [
         StepToRun(
             id=CONNECTOR_TEST_STEP_ID.INTEGRATION,
-            step=IntegrationTests(context),
+            step=IntegrationTests(context, secrets=context.get_secrets_for_step_id(CONNECTOR_TEST_STEP_ID.INTEGRATION)),
             args=_create_integration_step_args_factory(context),
             depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
         ),
         StepToRun(
             id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
-            step=AcceptanceTests(context, True),
+            step=AcceptanceTests(
+                context, secrets=context.get_secrets_for_step_id(CONNECTOR_TEST_STEP_ID.ACCEPTANCE), concurrent_test_run=True
+            ),
             args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
             depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
         ),
@@ -151,7 +154,13 @@ def get_test_steps(context: ConnectorContext) -> STEP_TREE:
 
     steps: STEP_TREE = [
         [StepToRun(id=CONNECTOR_TEST_STEP_ID.BUILD_TAR, step=BuildConnectorDistributionTar(context))],
-        [StepToRun(id=CONNECTOR_TEST_STEP_ID.UNIT, step=UnitTests(context), depends_on=[CONNECTOR_TEST_STEP_ID.BUILD_TAR])],
+        [
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.UNIT,
+                step=UnitTests(context, secrets=context.get_secrets_for_step_id(CONNECTOR_TEST_STEP_ID.UNIT)),
+                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD_TAR],
+            )
+        ],
         [
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.BUILD,

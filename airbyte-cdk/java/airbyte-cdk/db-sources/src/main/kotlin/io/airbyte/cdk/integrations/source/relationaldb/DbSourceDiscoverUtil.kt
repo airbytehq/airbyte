@@ -49,7 +49,7 @@ object DbSourceDiscoverUtil {
                         toField(commonField, airbyteTypeConverter)
                     }
                     .distinct()
-                    .collect(Collectors.toList())
+                    .toList()
             val currentJsonSchema = CatalogHelpers.fieldsToJsonSchema(fields)
             val catalogSchema = stream.jsonSchema
             val currentSchemaProperties = currentJsonSchema["properties"]
@@ -105,7 +105,7 @@ object DbSourceDiscoverUtil {
                                 toField(commonField, airbyteTypeConverter)
                             }
                             .distinct()
-                            .collect(Collectors.toList())
+                            .toList()
                     val fullyQualifiedTableName = getFullyQualifiedTableName(t.nameSpace, t.name)
                     val primaryKeys =
                         fullyQualifiedTableNameToPrimaryKeys.getOrDefault(
@@ -120,16 +120,15 @@ object DbSourceDiscoverUtil {
                         cursorFields = t.cursorFields
                     )
                 }
-                .collect(Collectors.toList())
+                .toList()
 
         val streams =
             tableInfoFieldList
-                .stream()
                 .map { tableInfo: TableInfo<Field> ->
                     val primaryKeys =
                         tableInfo.primaryKeys
                             .stream()
-                            .filter { obj: String? -> Objects.nonNull(obj) }
+                            .filter { obj: String -> Objects.nonNull(obj) }
                             .map { listOf(it) }
                             .toList()
                     CatalogHelpers.createAirbyteStream(
@@ -144,7 +143,9 @@ object DbSourceDiscoverUtil {
                         )
                         .withSourceDefinedPrimaryKey(primaryKeys)
                 }
-                .collect(Collectors.toList())
+                // This is ugly. Some of our tests change the streams on the AirbyteCatalog
+                // object...
+                .toMutableList()
         return AirbyteCatalog().withStreams(streams)
     }
 

@@ -37,7 +37,7 @@ data class Sql(val transactions: List<List<String>>) {
                 builder.append(begin)
                 builder.append(";\n")
                 transaction.forEach(
-                    Consumer { statement: String? ->
+                    Consumer { statement: String ->
                         builder.append(statement)
                         // No semicolon - statements already end with a semicolon
                         builder.append("\n")
@@ -54,7 +54,7 @@ data class Sql(val transactions: List<List<String>>) {
         transactions.forEach(
             Consumer { transaction: List<String> ->
                 require(!transaction.isEmpty()) { "Transaction must not be empty" }
-                require(!transaction.stream().anyMatch { s: String? -> s == null || s.isEmpty() }) {
+                require(!transaction.stream().anyMatch { s: String -> s.isNullOrEmpty() }) {
                     "Transaction must not contain empty statements"
                 }
             }
@@ -122,7 +122,7 @@ data class Sql(val transactions: List<List<String>>) {
                     .map { transaction: List<String> ->
                         transaction
                             .stream()
-                            .filter { statement: String? -> !statement.isNullOrEmpty() }
+                            .filter { statement: String -> !statement.isNullOrEmpty() }
                             .map internalMap@{ statement: String ->
                                 if (!statement.trim { it <= ' ' }.endsWith(";")) {
                                     return@internalMap "$statement;"

@@ -28,7 +28,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import java.util.function.Function
-import java.util.stream.Collectors
 import java.util.stream.Stream
 import kotlin.test.assertFails
 import org.apache.commons.lang3.RandomStringUtils
@@ -953,7 +952,7 @@ abstract class BaseTypingDedupingTest {
         return Collections.nCopies(n, list)
             .stream()
             .flatMap { obj: List<T> -> obj.stream() }
-            .collect(Collectors.toList())
+            .toList()
     }
 
     @Throws(Exception::class)
@@ -1145,7 +1144,7 @@ abstract class BaseTypingDedupingTest {
                 .map { obj: String -> obj.trim { it <= ' ' } }
                 .filter { line: String -> !line.isEmpty() }
                 .filter { line: String -> !line.startsWith("//") }
-                .map { jsonString: String? -> Jsons.deserializeExact(jsonString) }
+                .map { jsonString: String -> Jsons.deserializeExact(jsonString) }
                 .toList()
         }
 
@@ -1157,7 +1156,7 @@ abstract class BaseTypingDedupingTest {
         ): List<AirbyteMessage> {
             return readRecords(filename)
                 .stream()
-                .map { record: JsonNode? -> Jsons.convertValue(record, AirbyteMessage::class.java) }
+                .map { record: JsonNode -> Jsons.convertValue(record, AirbyteMessage::class.java) }
                 .peek { message: AirbyteMessage ->
                     message.record.namespace = streamNamespace
                     message.record.stream = streamName

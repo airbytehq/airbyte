@@ -361,7 +361,7 @@ class JsonToAvroSchemaConverter {
                     )
                 }
                 .distinct()
-                .collect(Collectors.toList())
+                .toList()
 
         return mergeRecordSchemas(fieldName, fieldNamespace, schemas, appendExtraProps)
     }
@@ -494,7 +494,7 @@ class JsonToAvroSchemaConverter {
                                 .filter { s: Schema -> s != NULL_SCHEMA }
                         }
                         .distinct()
-                        .collect(Collectors.toList())
+                        .toList()
                 val subfieldNamespace: String =
                     if (fieldNamespace == null) fieldName else ("$fieldNamespace.$fieldName")
                 // recursively merge schemas of a subfield because they may include multiple record
@@ -538,7 +538,6 @@ class JsonToAvroSchemaConverter {
         // Filter out null types, which will be added back in the end.
         val nonNullFieldTypes: MutableList<Schema> =
             getNonNullTypes(fieldName, fieldDefinition)
-                .stream()
                 .flatMap { fieldType: JsonSchemaType ->
                     val singleFieldSchema: Schema =
                         parseSingleType(
@@ -550,15 +549,15 @@ class JsonToAvroSchemaConverter {
                             addStringToLogicalTypes,
                         )
                     if (singleFieldSchema.isUnion) {
-                        return@flatMap singleFieldSchema.types.stream()
+                        return@flatMap singleFieldSchema.types
                     } else {
-                        return@flatMap Stream.of<Schema>(
+                        return@flatMap listOf(
                             singleFieldSchema,
                         )
                     }
                 }
                 .distinct()
-                .collect(Collectors.toList())
+                .toMutableList()
 
         if (nonNullFieldTypes.isEmpty()) {
             return Schema.create(Schema.Type.NULL)
@@ -667,7 +666,7 @@ class JsonToAvroSchemaConverter {
                             s.asText(),
                         )
                     }
-                    .collect(Collectors.toList())
+                    .toList()
             }
 
             if (hasTextValue(typeProperty)) {

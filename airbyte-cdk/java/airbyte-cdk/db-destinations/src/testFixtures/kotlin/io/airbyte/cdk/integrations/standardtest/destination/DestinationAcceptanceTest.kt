@@ -62,7 +62,6 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
-import java.util.stream.Collectors
 import java.util.stream.Stream
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.*
@@ -367,8 +366,12 @@ abstract class DestinationAcceptanceTest {
                 workspaceRoot.toString(),
                 localRoot.toString(),
                 "host",
-                emptyMap()
+                getConnectorEnv()
             )
+    }
+
+    open fun getConnectorEnv(): Map<String, String> {
+        return emptyMap()
     }
 
     @AfterEach
@@ -482,7 +485,7 @@ abstract class DestinationAcceptanceTest {
                             else message.toString()
                         }
                 )
-                .collect(Collectors.toList())
+                .toList()
 
         val config = getConfig()
         runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false)
@@ -857,7 +860,7 @@ abstract class DestinationAcceptanceTest {
                     }
                     message
                 }
-                .collect(Collectors.toList())
+                .toList()
         assertSameMessages(expectedMessages, actualMessages, true)
     }
 
@@ -1027,7 +1030,7 @@ abstract class DestinationAcceptanceTest {
                             it.record.data["NZD"].asText()
                     (it.record.emittedAt == latestMessagesOnly[key]!!.record.emittedAt)
                 }
-                .collect(Collectors.toList())
+                .toList()
 
         val defaultSchema = getDefaultSchema(config)
         retrieveRawRecordsAndAssertSameMessages(
@@ -1719,7 +1722,7 @@ abstract class DestinationAcceptanceTest {
             val msgList =
                 retrieveRecords(testEnv, streamName, schema, stream.jsonSchema)
                     .stream()
-                    .map { data: JsonNode? ->
+                    .map { data: JsonNode ->
                         AirbyteRecordMessage()
                             .withStream(streamName)
                             .withNamespace(schema)
@@ -1750,7 +1753,7 @@ abstract class DestinationAcceptanceTest {
                     if (pruneAirbyteInternalFields) safePrune(recordMessage) else recordMessage
                 }
                 .map { obj: AirbyteRecordMessage -> obj.data }
-                .collect(Collectors.toList())
+                .toList()
 
         val actualProcessed =
             actual
@@ -1759,7 +1762,7 @@ abstract class DestinationAcceptanceTest {
                     if (pruneAirbyteInternalFields) safePrune(recordMessage) else recordMessage
                 }
                 .map { obj: AirbyteRecordMessage -> obj.data }
-                .collect(Collectors.toList())
+                .toList()
 
         _testDataComparator.assertSameData(expectedProcessed, actualProcessed)
     }
@@ -1777,7 +1780,7 @@ abstract class DestinationAcceptanceTest {
             val msgList =
                 retrieveNormalizedRecords(testEnv, streamName, defaultSchema)
                     .stream()
-                    .map { data: JsonNode? ->
+                    .map { data: JsonNode ->
                         AirbyteRecordMessage().withStream(streamName).withData(data)
                     }
                     .toList()
