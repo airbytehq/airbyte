@@ -483,8 +483,8 @@ async def test_get_unique_state_messages(non_unique_states, expected_unique_stat
         get_record_count = operator.attrgetter("state.sourceStats.recordCount")
         
         for actual_state, expected_state in zip(actual_unique_states, expected_unique_states):
-            assert get_state(actual_state) == get_state(expected_state)
-            assert get_record_count(actual_state) == get_record_count(expected_state)
+            assert get_state(actual_state[0]) == get_state(expected_state)
+            assert get_record_count(actual_state[0]) == get_record_count(expected_state)
 
 
 @pytest.mark.parametrize(

@@ -3,12 +3,21 @@
 #
 
 import json
+import logging
 import operator
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Tuple, Union
+from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import pytest
-from airbyte_protocol.models import AirbyteMessage, AirbyteStateMessage, AirbyteStateType, ConfiguredAirbyteCatalog, SyncMode, Type
+from airbyte_protocol.models import (
+    AirbyteMessage,
+    AirbyteStateMessage,
+    AirbyteStateStats,
+    AirbyteStateType,
+    ConfiguredAirbyteCatalog,
+    SyncMode,
+    Type,
+)
 from connector_acceptance_test import BaseTest
 from connector_acceptance_test.config import CheckpointingStrategies, Config, EmptyStreamConfiguration, IncrementalConfig
 from connector_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, incremental_only_catalog
@@ -202,6 +211,7 @@ class TestIncremental(BaseTest):
 
             if checkpoint_testing_strategy == CheckpointingStrategies.use_state_variation:
                 if len(unique_state_messages) < 3:
+                    logging.warning(f"Skipping stream {stream.stream.name}. Not enough unique state messages to proceed")
                     continue
 
             # To avoid spamming APIs we only test a fraction of batches (4 or 5 states by default)
@@ -209,8 +219,7 @@ class TestIncremental(BaseTest):
             sample_rate = (len(unique_state_messages) // min_batches_to_test) or 1
 
             mutating_stream_name_to_per_stream_state = dict()
-            expected_record_count_per_state = self.get_expected_record_count_per_state(unique_state_messages)
-            for idx, state_message_data in enumerate(expected_record_count_per_state):
+            for idx, state_message_data in enumerate(unique_state_messages):
                 state_message, expected_records_count = state_message_data
                 assert state_message.type == Type.STATE
 
@@ -295,8 +304,14 @@ class TestIncremental(BaseTest):
         if len(states) <= 1:
             return states
 
+        stream_state_attr = "state.stream.stream_state"
+        record_count_attr = "state.sourceStats.recordCount"
+
         # Define a function to get the stream state attribute from an AirbyteStateMessage object
-        get_state = operator.attrgetter("state.stream.stream_state")
+        get_state = operator.attrgetter(stream_state_attr)
+
+        # Define a function to get the record count attribute from an AirbyteStateMessage object
+        get_record_count = operator.attrgetter(record_count_attr)
 
         current_idx = 0
         result = []
@@ -307,6 +322,8 @@ class TestIncremental(BaseTest):
             # Check if consecutive messages have the same stream state
             while get_state(states[current_idx]) == get_state(states[next_idx]) and next_idx < len(states) - 1:
                 next_idx += 1
+
+            states[current_idx].state.sourceStats = AirbyteStateStats(recordCount=sum(map(get_record_count, states[current_idx:next_idx])))
             # Append the first message with a unique stream state to the result list
             result.append(states[current_idx])
             # If the last message has a different stream state than the previous one, append it to the result list
@@ -314,20 +331,87 @@ class TestIncremental(BaseTest):
                 result.append(states[next_idx])
             current_idx = next_idx
 
-        return result
+        return list(self.get_expected_record_count_per_state(result))
 
     def get_expected_record_count_per_state(self, states: List[AirbyteStateMessage]) -> Iterator[Tuple[AirbyteStateMessage, float]]:
         """
         Calculates the expected record count per state based on the total record count and distribution across states.
+        The expected record count is the number of records we expect to receive when applying a specific state checkpoint.
+
+        This function takes a list of state objects, calculates the total record count, and then
+        yields the expected record count for each state in reverse cumulative order. The expected
+        record count for each state is the total record count minus the sum of record counts of all
+        previous states in the list.
+
+        Args:
+            states (list): A non-empty list of state objects.
+
+        Yields:
+            tuple: A tuple containing a state object and its expected record count.
+
+        Raises:
+            Exception: If the 'states' list is empty.
         """
         if not states:
+            # Raise an exception if the 'states' list is empty
             raise Exception("`states` expected to be a non empty list.")
 
-        # Define a function to get the record count attribute from a AirbyteStateMessage object
+        # Function to extract the record count from a state object
         get_record_count = operator.attrgetter("state.sourceStats.recordCount")
 
-        # Calculate the total record count across all states
+        # Calculate the total record count from all states
         total_count = sum(map(get_record_count, states))
 
-        # Zip the StateMessage objects with their expected record counts
-        return zip(states, [total_count - sum(map(get_record_count, states[: idx + 1])) for idx in range(len(states))])
+        # Create an iterator of states and their reverse cumulative expected record counts
+        expected_record_count_per_state = zip(
+            states, [total_count - sum(map(get_record_count, states[: idx + 1])) for idx in range(len(states))]
+        )
+
+        # Yield expected record counts using the helper function
+        yield from self._get_expected_record_count_per_state(expected_record_count_per_state, total_count)
+
+    def _get_expected_record_count_per_state(self, expected_record_count_per_state, total_count, current_record_count_and_state=None):
+        """
+        Helper generator function to yield the expected record count per state.
+
+        This function is a recursive generator that processes the states and their respective
+        record counts, yielding them one by one and ensures that the states are yielded only when
+        their expected record count changes from the total record count.
+
+        Why do we need this:
+            When two or more consecutive expected record counts have the same value despite their states being different,
+            it means no records were produced for all of their respective states except the last one.
+            Applying those states will result in the same set of records during stream reading, leading to a test failure (diff check). That is why such states are skipped.
+
+        Args:
+            expected_record_count_per_state (iterator): An iterator of tuples, where each tuple contains a state object and its expected record count.
+            total_count (int): The total record count from all states combined.
+            current_record_count_and_state (tuple, optional): A tuple containing the current state object and its record count. Defaults to None.
+
+        Yields:
+            tuple: A tuple containing a state object and its expected record count.
+        """
+        if current_record_count_and_state is None:
+            # Initialize the current record count and state if not provided
+            current_record_count_and_state = next(expected_record_count_per_state)
+
+        state, record_count = current_record_count_and_state
+
+        while record_count == total_count:
+            # Loop until the record count is different from the total count
+            try:
+                # Get the next state and its record count
+                next_state, next_record_count = next(expected_record_count_per_state)
+            except StopIteration:
+                # If there are no more states, yield the current state and record count and return
+                yield state, record_count
+                return
+            else:
+                # If the next record count is different from the total count, yield the current state and record count
+                if next_record_count != total_count:
+                    yield state, record_count
+                # Update the state and record count to the next state and record count
+                state, record_count = next_state, next_record_count
+
+        # Recursively call the function to yield the next expected record counts
+        yield from self._get_expected_record_count_per_state(expected_record_count_per_state, record_count, (state, record_count))
