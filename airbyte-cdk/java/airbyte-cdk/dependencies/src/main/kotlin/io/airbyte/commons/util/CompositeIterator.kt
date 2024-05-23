@@ -8,11 +8,11 @@ import com.google.common.collect.AbstractIterator
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder
 import io.airbyte.commons.stream.StreamStatusUtils
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.function.Consumer
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * Composes multiple [AutoCloseableIterator]s. For each internal iterator, after the first time its
  * [Iterator.hasNext] function returns false, the composite iterator will call
@@ -125,7 +125,7 @@ internal constructor(
             try {
                 iterator.close()
             } catch (e: Exception) {
-                LOGGER.error("exception while closing", e)
+                LOGGER.error(e) { "exception while closing" }
                 exceptions.add(e)
             }
         }
@@ -142,7 +142,5 @@ internal constructor(
         Preconditions.checkState(!hasClosed)
     }
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(CompositeIterator::class.java)
-    }
+    companion object {}
 }

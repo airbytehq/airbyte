@@ -6,6 +6,9 @@ package io.airbyte.cdk.testutils
 import com.google.common.collect.Lists
 import io.airbyte.commons.logging.LoggingHelper
 import io.airbyte.commons.logging.MdcScope
+import io.github.oshai.kotlinlogging.DelegatingKLogger
+import io.github.oshai.kotlinlogging.KLogger
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.lang.reflect.InvocationTargetException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -14,12 +17,12 @@ import java.util.function.Consumer
 import java.util.function.Supplier
 import kotlin.concurrent.Volatile
 import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.output.OutputFrame
 import org.testcontainers.containers.output.Slf4jLogConsumer
 import org.testcontainers.utility.DockerImageName
 
+private val LOGGER: KLogger = KotlinLogging.logger {}
 /**
  * ContainerFactory is the companion to [TestDatabase] and provides it with suitable testcontainer
  * instances.
@@ -191,8 +194,9 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
             Lists.transform(namedContainerModifiers) { c: NamedContainerModifier<C> -> c.name() }
         )
         val container = createNewContainer(imageName)
+        @Suppress("unchecked_cast")
         val logConsumer: Slf4jLogConsumer =
-            object : Slf4jLogConsumer(LOGGER) {
+            object : Slf4jLogConsumer((LOGGER as DelegatingKLogger<Logger>).underlyingLogger) {
                 override fun accept(frame: OutputFrame) {
                     if (frame.utf8StringWithoutLineEnding.trim { it <= ' ' }.isNotEmpty()) {
                         super.accept(frame)
@@ -219,8 +223,6 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(ContainerFactory::class.java)
-
         private val SHARED_CONTAINERS: ConcurrentMap<ContainerKey<*>, ContainerOrException> =
             ConcurrentHashMap()
         private val containerId: AtomicInteger = AtomicInteger(0)

@@ -4,6 +4,7 @@
 package io.airbyte.cdk.integrations.standardtest.source.performancetest
 
 import io.airbyte.cdk.db.Database
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.stream.Stream
 import org.jooq.DSLContext
@@ -12,8 +13,8 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 /** This abstract class contains common methods for Fill Db scripts. */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -62,7 +63,7 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
                     ctx.fetch(String.format(insertQueryTemplate, currentTableName))
                 }
 
-                c.info("Finished processing for stream $currentSteamNumber")
+                LOGGER.info { "Finished processing for stream $currentSteamNumber" }
             }
             null
         }
@@ -146,9 +147,6 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
             "CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, %s)"
         private const val INSERT_INTO_DB_TABLE_QUERY_TEMPLATE = "INSERT INTO %s.%s (%s) VALUES %s"
         private const val TEST_DB_FIELD_TYPE = "varchar(10)"
-
-        protected val c: Logger =
-            LoggerFactory.getLogger(AbstractSourceFillDbWithTestData::class.java)
         private const val TEST_VALUE_TEMPLATE_POSTGRES = "\'Value id_placeholder\'"
     }
 }

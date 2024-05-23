@@ -9,16 +9,15 @@ import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.exceptions.ConnectionErrorException
 import io.airbyte.commons.exceptions.TransientErrorException
 import io.airbyte.commons.functional.Either
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.EOFException
 import java.sql.SQLException
 import java.sql.SQLSyntaxErrorException
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /** Utility class defining methods for handling configuration exceptions in connectors. */
 object ConnectorExceptionUtil {
-    private val LOGGER: Logger = LoggerFactory.getLogger(ConnectorExceptionUtil::class.java)
 
     const val COMMON_EXCEPTION_MESSAGE_TEMPLATE: String =
         "Could not connect with provided configuration. Error: %s"
@@ -113,7 +112,7 @@ object ConnectorExceptionUtil {
                 throwables.joinToString("\n") { throwable: Throwable ->
                     ExceptionUtils.getStackTrace(throwable)
                 }
-            LOGGER.error("$initialMessage$stacktraces\nRethrowing first exception.")
+            LOGGER.error { "$initialMessage$stacktraces\nRethrowing first exception." }
             throw throwables.iterator().next()
         }
     }

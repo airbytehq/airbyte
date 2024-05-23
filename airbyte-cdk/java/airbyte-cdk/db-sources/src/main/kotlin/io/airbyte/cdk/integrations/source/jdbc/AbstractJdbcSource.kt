@@ -60,6 +60,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -73,9 +74,8 @@ import java.util.function.Supplier
 import java.util.stream.Collectors
 import javax.sql.DataSource
 import org.apache.commons.lang3.tuple.ImmutablePair
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * This class contains helper functions and boilerplate for implementing a source connector for a
  * relational DB source which can be accessed via JDBC driver. If you are implementing a connector
@@ -161,7 +161,7 @@ abstract class AbstractJdbcSource<Datatype>(
         syncMode: SyncMode,
         cursorField: Optional<String>
     ): AutoCloseableIterator<AirbyteRecordData> {
-        AbstractDbSource.LOGGER.info("Queueing query for table: {}", tableName)
+        LOGGER.info { "Queueing query for table: $tableName" }
         val airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName)
         return AutoCloseableIterators.lazyIterator<AirbyteRecordData>(
             Supplier<AutoCloseableIterator<AirbyteRecordData>> {
@@ -169,10 +169,7 @@ abstract class AbstractJdbcSource<Datatype>(
                     val stream =
                         database.unsafeQuery(
                             { connection: Connection ->
-                                AbstractDbSource.LOGGER.info(
-                                    "Preparing query for table: {}",
-                                    tableName
-                                )
+                                LOGGER.info { "Preparing query for table: $tableName" }
                                 val fullTableName: String =
                                     RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting(
                                         schemaName,
@@ -190,11 +187,7 @@ abstract class AbstractJdbcSource<Datatype>(
                                     )
                                 val sql =
                                     java.lang.StringBuilder(
-                                        String.format(
-                                            "SELECT %s FROM %s",
-                                            wrappedColumnNames,
-                                            fullTableName
-                                        )
+                                        "SELECT $wrappedColumnNames FROM $fullTableName"
                                     )
                                 // if the connector emits intermediate states, the incremental query
                                 // must be sorted by the cursor
@@ -204,15 +197,13 @@ abstract class AbstractJdbcSource<Datatype>(
                                 ) {
                                     val quotedCursorField: String =
                                         enquoteIdentifier(cursorField.get(), quoteString)
-                                    sql.append(String.format(" ORDER BY %s ASC", quotedCursorField))
+                                    sql.append(" ORDER BY $quotedCursorField ASC")
                                 }
 
                                 val preparedStatement = connection.prepareStatement(sql.toString())
-                                AbstractDbSource.LOGGER.info(
-                                    "Executing query for table {}: {}",
-                                    tableName,
-                                    preparedStatement
-                                )
+                                LOGGER.info {
+                                    "Executing query for table $tableName: $preparedStatement"
+                                }
                                 preparedStatement
                             },
                             sourceOperations::convertDatabaseRowToAirbyteRecordData
@@ -241,9 +232,9 @@ abstract class AbstractJdbcSource<Datatype>(
     ): List<CheckedConsumer<JdbcDatabase, Exception>> {
         return ImmutableList.of(
             CheckedConsumer { database: JdbcDatabase ->
-                LOGGER.info(
+                LOGGER.info {
                     "Attempting to get metadata from the database to see if we can connect."
-                )
+                }
                 database.bufferedResultSetQuery(
                     CheckedFunction { connection: Connection -> connection.metaData.catalogs },
                     CheckedFunction { queryResult: ResultSet ->
@@ -266,7 +257,7 @@ abstract class AbstractJdbcSource<Datatype>(
         schema: String?
     ): List<TableInfo<CommonField<Datatype>>> {
         val internalSchemas: Set<String> = HashSet(excludedInternalNameSpaces)
-        LOGGER.info("Internal schemas to exclude: {}", internalSchemas)
+        LOGGER.info { "Internal schemas to exclude: $internalSchemas" }
         val tablesWithSelectGrantPrivilege =
             getPrivilegesTableForCurrentUser<JdbcPrivilegeDto>(database, schema)
         return database
@@ -300,15 +291,11 @@ abstract class AbstractJdbcSource<Datatype>(
                             .map { f: JsonNode ->
                                 val datatype = sourceOperations.getDatabaseFieldType(f)
                                 val jsonType = getAirbyteType(datatype)
-                                LOGGER.debug(
-                                    "Table {} column {} (type {}[{}], nullable {}) -> {}",
-                                    fields[0].get(INTERNAL_TABLE_NAME).asText(),
-                                    f.get(INTERNAL_COLUMN_NAME).asText(),
-                                    f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
-                                    f.get(INTERNAL_COLUMN_SIZE).asInt(),
-                                    f.get(INTERNAL_IS_NULLABLE).asBoolean(),
-                                    jsonType
-                                )
+                                LOGGER.debug {
+                                    "Table ${fields[0].get(INTERNAL_TABLE_NAME).asText()} column ${f.get(INTERNAL_COLUMN_NAME).asText()}" +
+                                        "(type ${f.get(INTERNAL_COLUMN_TYPE_NAME).asText()}[${f.get(INTERNAL_COLUMN_SIZE).asInt()}], " +
+                                        "nullable ${f.get(INTERNAL_IS_NULLABLE).asBoolean()}) -> $jsonType"
+                                }
                                 object :
                                     CommonField<Datatype>(
                                         f.get(INTERNAL_COLUMN_NAME).asText(),
@@ -407,10 +394,7 @@ abstract class AbstractJdbcSource<Datatype>(
         database: JdbcDatabase,
         tableInfos: List<TableInfo<CommonField<Datatype>>>
     ): Map<String, MutableList<String>> {
-        LOGGER.info(
-            "Discover primary keys for tables: " +
-                tableInfos.map { obj: TableInfo<CommonField<Datatype>> -> obj.name }.toSet()
-        )
+        LOGGER.info { "Discover primary keys for tables: ${tableInfos.map { it.name }}" }
         try {
             // Get all primary keys without specifying a table name
             val tablePrimaryKeys =
@@ -439,20 +423,14 @@ abstract class AbstractJdbcSource<Datatype>(
                 return tablePrimaryKeys
             }
         } catch (e: SQLException) {
-            LOGGER.debug(
-                String.format(
-                    "Could not retrieve primary keys without a table name (%s), retrying",
-                    e
-                )
-            )
+            LOGGER.debug { "Could not retrieve primary keys without a table name ($e), retrying" }
         }
         // Get primary keys one table at a time
         return tableInfos
             .stream()
             .collect(
-                Collectors.toMap<TableInfo<CommonField<Datatype>>, String, MutableList<String>>(
-                    Function<TableInfo<CommonField<Datatype>>, String> {
-                        tableInfo: TableInfo<CommonField<Datatype>> ->
+                Collectors.toMap(
+                    { tableInfo: TableInfo<CommonField<Datatype>> ->
                         getFullyQualifiedTableName(tableInfo.nameSpace, tableInfo.name)
                     },
                     Function<TableInfo<CommonField<Datatype>>, MutableList<String>> toMap@{
@@ -484,13 +462,7 @@ abstract class AbstractJdbcSource<Datatype>(
                                 mutableListOf<String>()
                             )
                         } catch (e: SQLException) {
-                            LOGGER.error(
-                                String.format(
-                                    "Could not retrieve primary keys for %s: %s",
-                                    streamName,
-                                    e
-                                )
-                            )
+                            LOGGER.error { "Could not retrieve primary keys for $streamName: $e" }
                             return@toMap mutableListOf<String>()
                         }
                     }
@@ -510,7 +482,7 @@ abstract class AbstractJdbcSource<Datatype>(
         cursorInfo: CursorInfo,
         cursorFieldType: Datatype
     ): AutoCloseableIterator<AirbyteRecordData> {
-        AbstractDbSource.LOGGER.info("Queueing query for table: {}", tableName)
+        LOGGER.info { "Queueing query for table: $tableName" }
         val airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName)
         return AutoCloseableIterators.lazyIterator(
             {
@@ -518,10 +490,8 @@ abstract class AbstractJdbcSource<Datatype>(
                     val stream =
                         database.unsafeQuery(
                             { connection: Connection ->
-                                AbstractDbSource.LOGGER.info(
-                                    "Preparing query for table: {}",
-                                    tableName
-                                )
+                                LOGGER.info { "Preparing query for table: $tableName" }
+
                                 val fullTableName: String =
                                     RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting(
                                         schemaName,
@@ -542,12 +512,9 @@ abstract class AbstractJdbcSource<Datatype>(
                                             cursorFieldType,
                                             cursorInfo.cursor
                                         )
-                                    AbstractDbSource.LOGGER.info(
-                                        "Table {} cursor count: expected {}, actual {}",
-                                        tableName,
-                                        cursorInfo.cursorRecordCount,
-                                        actualRecordCount
-                                    )
+                                    LOGGER.info {
+                                        "Table $tableName cursor count: expected ${cursorInfo.cursorRecordCount}, actual $actualRecordCount"
+                                    }
                                     operator =
                                         if (actualRecordCount == cursorInfo.cursorRecordCount) {
                                             ">"
@@ -580,11 +547,9 @@ abstract class AbstractJdbcSource<Datatype>(
                                     sql.append(String.format(" ORDER BY %s ASC", quotedCursorField))
                                 }
                                 val preparedStatement = connection.prepareStatement(sql.toString())
-                                AbstractDbSource.LOGGER.info(
-                                    "Executing query for table {}: {}",
-                                    tableName,
-                                    preparedStatement
-                                )
+                                LOGGER.info {
+                                    "Executing query for table $tableName: $preparedStatement"
+                                }
                                 sourceOperations.setCursorField(
                                     preparedStatement,
                                     1,
@@ -635,12 +600,7 @@ abstract class AbstractJdbcSource<Datatype>(
         val cursorRecordStatement: PreparedStatement
         if (cursor == null) {
             val cursorRecordQuery =
-                String.format(
-                    "SELECT COUNT(*) AS %s FROM %s WHERE %s IS NULL",
-                    columnName,
-                    fullTableName,
-                    quotedCursorField
-                )
+                "SELECT COUNT(*) AS $columnName FROM $fullTableName WHERE $quotedCursorField IS NULL"
             cursorRecordStatement = connection.prepareStatement(cursorRecordQuery)
         } else {
             val cursorRecordQuery =
@@ -708,11 +668,9 @@ abstract class AbstractJdbcSource<Datatype>(
      */
     @Throws(SQLException::class)
     override fun logPreSyncDebugData(database: JdbcDatabase, catalog: ConfiguredAirbyteCatalog?) {
-        LOGGER.info(
-            "Data source product recognized as {}:{}",
-            database.metaData.databaseProductName,
-            database.metaData.databaseProductVersion
-        )
+        LOGGER.info {
+            "Data source product recognized as ${database.metaData.databaseProductName}:${database.metaData.databaseProductVersion}"
+        }
     }
 
     override fun close() {
@@ -721,7 +679,7 @@ abstract class AbstractJdbcSource<Datatype>(
                 try {
                     close(d)
                 } catch (e: Exception) {
-                    LOGGER.warn("Unable to close data source.", e)
+                    LOGGER.warn(e) { "Unable to close data source." }
                 }
             }
         )
@@ -756,7 +714,6 @@ abstract class AbstractJdbcSource<Datatype>(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(AbstractJdbcSource::class.java)
 
         /**
          * Aggregate list of @param entries of StreamName and PrimaryKey and

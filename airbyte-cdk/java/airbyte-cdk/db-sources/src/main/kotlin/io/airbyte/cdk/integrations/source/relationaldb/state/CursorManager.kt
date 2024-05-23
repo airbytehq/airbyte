@@ -6,13 +6,13 @@ package io.airbyte.cdk.integrations.source.relationaldb.state
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo
 import io.airbyte.protocol.models.v0.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.concurrent.*
 import java.util.function.Function
 import java.util.function.Supplier
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * Manages the map of streams to current cursor values for state management.
  *
@@ -202,44 +202,36 @@ class CursorManager<S : Any>(
                     // indicates a CDC stream
                     // and we shouldn't log anything.
                     if (cursor != null) {
-                        LOGGER.info(
-                            "Found matching cursor in state. Stream: {}. Cursor Field: {} Value: {} Count: {}",
-                            pair,
-                            cursorField,
-                            cursor,
-                            cursorRecordCount
-                        )
+                        LOGGER.info {
+                            "Found matching cursor in state. Stream: $pair. Cursor Field: $cursorField Value: $cursor Count: $cursorRecordCount"
+                        }
                     }
                     // if cursor field in catalog and state are different.
                 } else {
                     cursor = null
                     cursorRecordCount = 0L
-                    LOGGER.info(
-                        "Found cursor field. Does not match previous cursor field. Stream: {}. Original Cursor Field: {} (count {}). New Cursor Field: {}. Resetting cursor value.",
-                        pair,
-                        originalCursorField,
-                        originalCursorRecordCount,
-                        cursorField
-                    )
+                    LOGGER.info {
+                        "Found cursor field. Does not match previous cursor field. Stream: $pair." +
+                            " Original Cursor Field: $originalCursorField (count $originalCursorRecordCount). " +
+                            "New Cursor Field: $cursorField. Resetting cursor value."
+                    }
                 }
                 // if cursor field is not set in state but is set in catalog.
             } else {
-                LOGGER.info(
-                    "No cursor field set in catalog but not present in state. Stream: {}, New Cursor Field: {}. Resetting cursor value",
-                    pair,
-                    cursorField
-                )
+                LOGGER.info {
+                    "No cursor field set in catalog but not present in state. " +
+                        "Stream: $pair, New Cursor Field: $cursorField. Resetting cursor value"
+                }
                 cursor = null
                 cursorRecordCount = 0L
             }
             // if cursor field is not set in catalog.
         } else {
-            LOGGER.info(
-                "Cursor field set in state but not present in catalog. Stream: {}. Original Cursor Field: {}. Original value: {}. Resetting cursor.",
-                pair,
-                originalCursorField,
-                originalCursor
-            )
+            LOGGER.info {
+                "Cursor field set in state but not present in catalog. " +
+                    "Stream: $pair. Original Cursor Field: $originalCursorField. " +
+                    "Original value: $originalCursor. Resetting cursor."
+            }
             cursorField = null
             cursor = null
             cursorRecordCount = 0L
@@ -291,7 +283,5 @@ class CursorManager<S : Any>(
         return getCursorInfo(pair).map { obj: CursorInfo -> obj.cursor }
     }
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(CursorManager::class.java)
-    }
+    companion object {}
 }

@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.debezium.internals
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.base.Preconditions
 import io.airbyte.commons.json.Jsons
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.EOFException
 import java.io.IOException
 import java.io.ObjectOutputStream
@@ -19,9 +20,8 @@ import java.util.function.BiFunction
 import org.apache.commons.io.FileUtils
 import org.apache.kafka.connect.errors.ConnectException
 import org.apache.kafka.connect.util.SafeObjectInputStream
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * This class handles reading and writing a debezium offset file. In many cases it is duplicating
  * logic in debezium because that logic is not exposed in the public API. We mostly treat the
@@ -71,7 +71,7 @@ class AirbyteFileOffsetBackingStore(
                 return mapAsString
             }
 
-            LOGGER.info("Mutating sate to make it Debezium 2.1 compatible")
+            LOGGER.info { "Mutating sate to make it Debezium 2.1 compatible" }
             val newKey =
                 if (dbName.isPresent)
                     SQL_SERVER_STATE_MUTATION.apply(key.substring(i, i1 + 1), dbName.get())
@@ -157,8 +157,6 @@ class AirbyteFileOffsetBackingStore(
     }
 
     companion object {
-        private val LOGGER: Logger =
-            LoggerFactory.getLogger(AirbyteFileOffsetBackingStore::class.java)
         private val SQL_SERVER_STATE_MUTATION = BiFunction { key: String, databaseName: String ->
             (key.substring(0, key.length - 2) +
                 ",\"database\":\"" +

@@ -6,8 +6,6 @@ package io.airbyte.cdk.integrations.destination.jdbc
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * SQL queries required for successfully syncing to a destination connector. These operations
@@ -139,7 +137,5 @@ interface SqlOperations {
      */
     val isSchemaRequired: Boolean
 
-    companion object {
-        val LOGGER: Logger = LoggerFactory.getLogger(SqlOperations::class.java)
-    }
+    companion object {}
 }

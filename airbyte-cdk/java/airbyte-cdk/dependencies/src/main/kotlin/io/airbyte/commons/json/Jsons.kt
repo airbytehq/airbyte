@@ -18,15 +18,15 @@ import com.google.common.base.Charsets
 import com.google.common.base.Preconditions
 import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.stream.MoreStreams
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.IOException
 import java.util.*
 import java.util.function.BiConsumer
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 object Jsons {
-    private val LOGGER: Logger = LoggerFactory.getLogger(Jsons::class.java)
 
     // Object Mapper is thread-safe
     private val OBJECT_MAPPER: ObjectMapper = MoreMappers.initMapper()
@@ -434,7 +434,7 @@ object Jsons {
                 sb.append(traceElement.toString())
             }
         }
-        LOGGER.warn("Failed to deserialize json due to {}", sb)
+        LOGGER.warn { "Failed to deserialize json due to $sb" }
         return Optional.empty()
     }
 

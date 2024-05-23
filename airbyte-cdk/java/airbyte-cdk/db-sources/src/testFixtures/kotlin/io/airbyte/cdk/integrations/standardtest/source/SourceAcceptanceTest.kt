@@ -10,11 +10,12 @@ import com.google.common.collect.Sets
 import io.airbyte.commons.json.Jsons
 import io.airbyte.configoss.StandardCheckConnectionOutput
 import io.airbyte.protocol.models.v0.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     /**
@@ -426,8 +427,6 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         const val CDC_LOG_POS: String = "_ab_cdc_log_pos"
         const val CDC_DEFAULT_CURSOR: String = "_ab_cdc_cursor"
         const val CDC_EVENT_SERIAL_NO: String = "_ab_cdc_event_serial_no"
-
-        private val LOGGER: Logger = LoggerFactory.getLogger(SourceAcceptanceTest::class.java)
 
         @JvmStatic
         protected fun filterRecords(

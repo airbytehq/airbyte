@@ -52,6 +52,7 @@ import io.airbyte.workers.normalization.NormalizationRunner
 import io.airbyte.workers.process.AirbyteIntegrationLauncher
 import io.airbyte.workers.process.DockerProcessFactory
 import io.airbyte.workers.process.ProcessFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.io.UncheckedIOException
 import java.net.URISyntaxException
@@ -71,8 +72,8 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
 import org.junit.jupiter.params.provider.ArgumentsSource
 import org.mockito.Mockito
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 abstract class DestinationAcceptanceTest {
     protected var testSchemas: HashSet<String> = HashSet()
@@ -2178,8 +2179,6 @@ abstract class DestinationAcceptanceTest {
         private const val JOB_ATTEMPT = 0
 
         private const val DUMMY_CATALOG_NAME = "DummyCatalog"
-
-        private val LOGGER: Logger = LoggerFactory.getLogger(DestinationAcceptanceTest::class.java)
 
         /**
          * Reverses a list by creating a new list with the same elements of the input list and then
