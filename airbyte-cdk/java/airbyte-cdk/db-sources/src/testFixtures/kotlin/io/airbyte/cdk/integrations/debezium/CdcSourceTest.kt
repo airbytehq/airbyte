@@ -102,6 +102,8 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected abstract fun addCdcMetadataColumns(stream: AirbyteStream?)
 
+    protected abstract fun addIsResumableFlagForNonPkTable(stream: AirbyteStream?)
+
     protected abstract fun addCdcDefaultCursorField(stream: AirbyteStream?)
 
     protected abstract fun assertExpectedStateMessages(stateMessages: List<AirbyteStateMessage>)
@@ -1316,6 +1318,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         val streams = expectedCatalog.streams
         // stream with PK
         streams[0].sourceDefinedCursor = true
+        streams[0].isResumable = true
         addCdcMetadataColumns(streams[0])
         addCdcDefaultCursorField(streams[0])
 
@@ -1331,6 +1334,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         streamWithoutPK.supportedSyncModes = java.util.List.of(SyncMode.FULL_REFRESH)
         addCdcDefaultCursorField(streamWithoutPK)
         addCdcMetadataColumns(streamWithoutPK)
+        addIsResumableFlagForNonPkTable(streamWithoutPK)
 
         val randomStream =
             CatalogHelpers.createAirbyteStream(
@@ -1347,6 +1351,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 .withSourceDefinedPrimaryKey(
                     java.util.List.of(java.util.List.of(COL_ID + "_random")),
                 )
+                .withIsResumable(true)
 
         addCdcDefaultCursorField(randomStream)
         addCdcMetadataColumns(randomStream)
