@@ -251,7 +251,7 @@ abstract class JdbcSqlOperations : SqlOperations {
     )
 
     companion object {
-        protected const val SHOW_SCHEMAS: String = "show schemas;"
-        protected const val NAME: String = "name"
+        const val SHOW_SCHEMAS: String = "show schemas;"
+        const val NAME: String = "name"
     }
 }
