@@ -5,14 +5,14 @@
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
-import static io.airbyte.integrations.destination.snowflake.SnowflakeInternalStagingDestination.RAW_SCHEMA_OVERRIDE;
+import static io.airbyte.integrations.destination.snowflake.SnowflakeDestination.RAW_SCHEMA_OVERRIDE;
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeTransaction;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil;
 import io.airbyte.integrations.base.destination.typing_deduping.V2TableMigrator;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.sql.SQLException;
@@ -64,7 +64,7 @@ public class SnowflakeV2TableMigrator implements V2TableMigrator {
           "Executing upcasing migration for {}.{}",
           streamConfig.getId().getOriginalNamespace(),
           streamConfig.getId().getOriginalName());
-      TypeAndDedupeTransaction.executeSoftReset(generator, handler, streamConfig);
+      TyperDeduperUtil.executeSoftReset(generator, handler, streamConfig);
     }
   }
 
