@@ -174,6 +174,8 @@ corresponds to that version.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.35.11 | 2024-05-23 | [\#38357](https://github.com/airbytehq/airbyte/pull/38357) | This release fixes an error on the previous release.                                                                                                           |
+| 0.35.10 | 2024-05-23 | [\#38357](https://github.com/airbytehq/airbyte/pull/38357) | Add shared code for db sources stream status trace messages and testing.                                                                                       |
 | 0.35.8  | 2024-05-22 | [\#38572](https://github.com/airbytehq/airbyte/pull/38572) | Add a temporary static method to decouple SnowflakeDestination from AbstractJdbcDestination                                                                    |
 | 0.35.7  | 2024-05-20 | [\#38357](https://github.com/airbytehq/airbyte/pull/38357) | Decouple create namespace from per stream operation interface.                                                                                                 |
 | 0.35.6  | 2024-05-17 | [\#38107](https://github.com/airbytehq/airbyte/pull/38107) | New interfaces for Destination connectors to plug into AsyncStreamConsumer                                                                                     |

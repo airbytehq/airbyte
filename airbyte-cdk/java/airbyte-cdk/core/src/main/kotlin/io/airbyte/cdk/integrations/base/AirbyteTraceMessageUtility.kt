@@ -126,7 +126,7 @@ object AirbyteTraceMessageUtility {
             )
     }
 
-    private fun makeStreamStatusTraceAirbyteMessage(
+    fun makeStreamStatusTraceAirbyteMessage(
         airbyteStreamStatusHolder: AirbyteStreamStatusHolder
     ): AirbyteMessage {
         return makeAirbyteMessageFromTraceMessage(airbyteStreamStatusHolder.toTraceMessage())

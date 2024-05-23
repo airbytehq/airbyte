@@ -73,7 +73,8 @@ internal class CompositeIteratorTest {
                         airbyteStream3
                     )
                 ),
-                airbyteStreamStatusConsumer
+                airbyteStreamStatusConsumer,
+                true
             )
 
         assertOnCloseInvocations(ImmutableList.of(), ImmutableList.of(onClose1, onClose2, onClose3))
@@ -122,7 +123,8 @@ internal class CompositeIteratorTest {
                         airbyteStream3
                     )
                 ),
-                airbyteStreamStatusConsumer
+                airbyteStreamStatusConsumer,
+                true
             )
 
         assertOnCloseInvocations(ImmutableList.of(), ImmutableList.of(onClose1, onClose2, onClose3))
@@ -150,7 +152,8 @@ internal class CompositeIteratorTest {
                         airbyteStream1
                     )
                 ),
-                airbyteStreamStatusConsumer
+                airbyteStreamStatusConsumer,
+                true
             )
 
         assertOnCloseInvocations(ImmutableList.of(), ImmutableList.of(onClose1))
@@ -174,7 +177,8 @@ internal class CompositeIteratorTest {
                         airbyteStream1
                     )
                 ),
-                airbyteStreamStatusConsumer
+                airbyteStreamStatusConsumer,
+                true
             )
 
         assertOnCloseInvocations(ImmutableList.of(), ImmutableList.of(onClose1))

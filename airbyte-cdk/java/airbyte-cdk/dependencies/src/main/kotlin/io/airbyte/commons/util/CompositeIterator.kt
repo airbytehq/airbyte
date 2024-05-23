@@ -33,7 +33,8 @@ private val LOGGER = KotlinLogging.logger {}
 class CompositeIterator<T>
 internal constructor(
     iterators: List<AutoCloseableIterator<T>>,
-    airbyteStreamStatusConsumer: Consumer<AirbyteStreamStatusHolder>?
+    airbyteStreamStatusConsumer: Consumer<AirbyteStreamStatusHolder>?,
+    emitStatus: Boolean = false
 ) : AbstractIterator<T>(), AutoCloseableIterator<T> {
     private val airbyteStreamStatusConsumer: Optional<Consumer<AirbyteStreamStatusHolder>>
     private val iterators: List<AutoCloseableIterator<T>>
@@ -41,6 +42,7 @@ internal constructor(
     private var i: Int
     private val seenIterators: MutableSet<Optional<AirbyteStreamNameNamespacePair>>
     private var hasClosed: Boolean
+    private var emitStatus: Boolean = emitStatus
 
     init {
         Preconditions.checkNotNull(iterators)
@@ -65,16 +67,20 @@ internal constructor(
         while (!currentIterator().hasNext()) {
             try {
                 currentIterator().close()
-                emitStartStreamStatus(currentIterator().airbyteStream)
-                StreamStatusUtils.emitCompleteStreamStatus(
-                    airbyteStream,
-                    airbyteStreamStatusConsumer
-                )
+                if (emitStatus) {
+                    emitStartStreamStatus(currentIterator().airbyteStream)
+                    StreamStatusUtils.emitCompleteStreamStatus(
+                        airbyteStream,
+                        airbyteStreamStatusConsumer
+                    )
+                }
             } catch (e: Exception) {
-                StreamStatusUtils.emitIncompleteStreamStatus(
-                    airbyteStream,
-                    airbyteStreamStatusConsumer
-                )
+                if (emitStatus) {
+                    StreamStatusUtils.emitIncompleteStreamStatus(
+                        airbyteStream,
+                        airbyteStreamStatusConsumer
+                    )
+                }
                 throw RuntimeException(e)
             }
 
@@ -86,17 +92,27 @@ internal constructor(
         }
 
         try {
-            val isFirstRun = emitStartStreamStatus(currentIterator().airbyteStream)
+            var isFirstRun = false
+            if (emitStatus) {
+                isFirstRun = emitStartStreamStatus(currentIterator().airbyteStream)
+            }
             val next = currentIterator().next()
-            if (isFirstRun) {
-                StreamStatusUtils.emitRunningStreamStatus(
+            if (emitStatus) {
+                if (isFirstRun) {
+                    StreamStatusUtils.emitRunningStreamStatus(
+                        airbyteStream,
+                        airbyteStreamStatusConsumer
+                    )
+                }
+            }
+            return next
+        } catch (e: RuntimeException) {
+            if (emitStatus) {
+                StreamStatusUtils.emitIncompleteStreamStatus(
                     airbyteStream,
                     airbyteStreamStatusConsumer
                 )
             }
-            return next
-        } catch (e: RuntimeException) {
-            StreamStatusUtils.emitIncompleteStreamStatus(airbyteStream, airbyteStreamStatusConsumer)
             throw e
         }
     }
