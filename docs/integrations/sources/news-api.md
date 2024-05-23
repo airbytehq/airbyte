@@ -56,7 +56,8 @@ The following fields are required fields for the connector to work:
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                  |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------- |
-| 0.1.1   | 2023-04-30 | [25554](https://github.com/airbytehq/airbyte/pull/25554) | Make manifest connector builder friendly |
-| 0.1.0   | 2022-10-21 | [18301](https://github.com/airbytehq/airbyte/pull/18301) | New source                               |
+| Version | Date       | Pull Request                                             | Subject                                                 |
+| :------ | :--------- | :------------------------------------------------------- |:--------------------------------------------------------|
+| 0.1.2   | 2024-05-24 | [38635](https://github.com/airbytehq/airbyte/pull/38635) | Use Poetry, remove $parameters, make Builder compatible |
+| 0.1.1   | 2023-04-30 | [25554](https://github.com/airbytehq/airbyte/pull/25554) | Make manifest connector builder friendly                |
+| 0.1.0   | 2022-10-21 | [18301](https://github.com/airbytehq/airbyte/pull/18301) | New source                                              |
