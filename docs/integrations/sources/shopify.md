@@ -208,6 +208,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.1.2   | 2024-05-23 | [38352](https://github.com/airbytehq/airbyte/pull/38352) | Migrated `Order Risks` stream to `GraphQL BULK` |
 | 2.1.1 | 2024-05-20 | [38251](https://github.com/airbytehq/airbyte/pull/38251) | Replace AirbyteLogger with logging.Logger |
 | 2.1.0 | 2024-05-02 | [37767](https://github.com/airbytehq/airbyte/pull/37767) | Migrated `Products`, `Product Images` and `Product Variants` to `GraphQL BULK` |
 | 2.0.8 | 2024-05-02 | [37589](https://github.com/airbytehq/airbyte/pull/37589) | Added retry for known HTTP Errors for BULK streams |

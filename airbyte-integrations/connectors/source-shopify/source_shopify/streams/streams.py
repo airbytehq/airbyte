@@ -24,6 +24,7 @@ from source_shopify.shopify_graphql.bulk.query import (
     MetafieldProduct,
     MetafieldProductImage,
     MetafieldProductVariant,
+    OrderRisk,
     Product,
     ProductImage,
     ProductVariant,
@@ -257,15 +258,10 @@ class OrderRefunds(IncrementalShopifyNestedStream):
     nested_entity = "refunds"
 
 
-class OrderRisks(IncrementalShopifySubstream):
-    parent_stream_class = Orders
-    slice_key = "order_id"
-    data_field = "risks"
-    cursor_field = "id"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        order_id = stream_slice["order_id"]
-        return f"orders/{order_id}/{self.data_field}.json"
+class OrderRisks(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: OrderRisk = OrderRisk
+    # the updated stream work only with >= `2024-04` shopify api version
+    api_version = "2024-04"
 
 
 class Transactions(IncrementalShopifySubstream):
