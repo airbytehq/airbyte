@@ -518,7 +518,7 @@ def order_risks_jsonl_content_example():
 
 @pytest.fixture
 def products_jsonl_content_example():
-    return """{"__typename":"Product","id":"gid:\/\/shopify\/Product\/123","publishedAt":"2021-06-23T01:09:29Z","createdAt":"2021-06-23T01:09:29Z","status":"ACTIVE","vendor":"Blanda, O'Kon and Bartell","updatedAt":"2023-04-20T11:12:26Z","bodyHtml":"Gold and silver glitter iPhone 7 cases with geometric line patterns, stacked","productType":"Music","tags":["developer-tools-generator"],"handle":"gold-silver-iphone-7-case","templateSuffix":null,"title":"Gold Silver iPhone 7 Case","options":[{"id":"gid:\/\/shopify\/ProductOption\/444","name":"Title","values":["Plastic","indigo"],"position":1}]}
+    return """{"__typename":"Product","id":"gid:\/\/shopify\/Product\/123","publishedAt":"2021-06-23T01:09:29Z","createdAt":"2021-06-23T01:09:29Z","status":"ACTIVE","vendor":"Blanda, O'Kon and Bartell","updatedAt":"2023-04-20T11:12:26Z","bodyHtml":"Gold and silver glitter iPhone 7 cases with geometric line patterns, stacked","productType":"Music","tags":["developer-tools-generator"],"handle":"gold-silver-iphone-7-case","templateSuffix":null,"title":"Gold Silver iPhone 7 Case","description":"Gold and silver glitter iPhone 7 cases with geometric line patterns, stacked","descriptionHtml":"Gold and silver glitter iPhone 7 cases with geometric line patterns, stacked","isGiftCard":false,"legacyResourceId":"6796218335421","onlineStorePreviewUrl":"https:\/\/airbyte-integration-test.myshopify.com\/products\/gold-silver-iphone-7-case","onlineStoreUrl":null,"totalInventory":58,"tracksInventory":true,"total_variants":{"total_variants":2},"media_count":{"media_count":1},"options":[{"id":"gid:\/\/shopify\/ProductOption\/444","name":"Title","values":["Plastic","indigo"],"position":1}]}
 {"__typename":"Image","id":"gid:\/\/shopify\/ProductImage\/111","__parentId":"gid:\/\/shopify\/Product\/123"}
 {"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/111","__parentId":"gid:\/\/shopify\/Product\/123"}
 {"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/222","__parentId":"gid:\/\/shopify\/Product\/123"}\n"""
@@ -801,6 +801,16 @@ def products_response_expected_result():
             "handle": "gold-silver-iphone-7-case",
             "template_suffix": None,
             "title": "Gold Silver iPhone 7 Case",
+            "description": "Gold and silver glitter iPhone 7 cases with geometric line patterns, stacked",
+            "description_html": "Gold and silver glitter iPhone 7 cases with geometric line patterns, stacked",
+            "is_gift_card": False,
+            "legacy_resource_id": "6796218335421",
+            "online_store_preview_url": "https://airbyte-integration-test.myshopify.com/products/gold-silver-iphone-7-case",
+            "online_store_url": None,
+            "total_inventory": 58,
+            "tracks_inventory": True,
+            "total_variants": 2,
+            "media_count": 1,
             "options": [
                 {
                     "id": 444,

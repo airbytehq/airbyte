@@ -1548,6 +1548,20 @@ class Product(ShopifyBulkQuery):
                             }
                         }
                     }
+                    description
+                    descriptionHtml
+                    isGiftCard
+                    legacyResourceId
+                    media_count: mediaCount {
+                        media_count: count
+                    }
+                    onlineStorePreviewUrl
+                    onlineStoreUrl
+                    totalInventory
+                    tracksInventory
+                    total_variants: variantsCount {
+                        total_variants: count
+                    }
                 }
             }
         }
@@ -1575,6 +1589,16 @@ class Product(ShopifyBulkQuery):
         "handle",
         "templateSuffix",
         "title",
+        "description",
+        "descriptionHtml",
+        "isGiftCard",
+        "legacyResourceId",
+        "onlineStorePreviewUrl",
+        "onlineStoreUrl",
+        "totalInventory",
+        "tracksInventory",
+        Field(name="variantsCount", alias="total_variants", fields=[Field(name="count", alias="total_variants")]),
+        Field(name="mediaCount", alias="media_count", fields=[Field(name="count", alias="media_count")]),
         Field(name="options", fields=["id", "name", "values", "position"]),
         Field(name="images", fields=images_fields),
         Field(name="variants", fields=variants_fields),
@@ -1625,6 +1649,10 @@ class Product(ShopifyBulkQuery):
             record.pop("record_components")
         # unnest the `tags` (the list of 1)
         record["tags"] = self._unnest_tags(record)
+        # unnest `total_variants`
+        record["total_variants"] = record.get("total_variants", {}).get("total_variants")
+        # unnest `media_count`
+        record["media_count"] = record.get("media_count", {}).get("media_count")
         # convert dates from ISO-8601 to RFC-3339
         record["published_at"] = self.tools.from_iso8601_to_rfc3339(record, "publishedAt")
         record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
