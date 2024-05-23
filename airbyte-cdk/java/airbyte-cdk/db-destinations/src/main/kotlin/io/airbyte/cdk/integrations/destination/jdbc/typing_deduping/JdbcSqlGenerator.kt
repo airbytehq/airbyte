@@ -172,20 +172,16 @@ constructor(
         metaColumns: Map<String, DataType<*>>
     ): List<Field<*>> {
         val fields =
-            metaColumns.entries
-                .stream()
-                .map { metaColumn: Map.Entry<String?, DataType<*>?> ->
-                    DSL.field(DSL.quotedName(metaColumn.key), metaColumn.value)
-                }
-                .toList()
+            metaColumns.entries.map { metaColumn: Map.Entry<String?, DataType<*>?> ->
+                DSL.field(DSL.quotedName(metaColumn.key), metaColumn.value)
+            }
+
         val dataFields =
             columns.entries
-                .stream()
-                .map { column: Map.Entry<ColumnId?, AirbyteType> ->
-                    DSL.field(DSL.quotedName(column.key!!.name), toDialectType(column.value))
+                .map { column: Map.Entry<ColumnId, AirbyteType> ->
+                    DSL.field(DSL.quotedName(column.key.name), toDialectType(column.value))
                 }
-                .toList()
-        dataFields.addAll(fields)
+                .toList() + fields
         return dataFields
     }
 
@@ -223,12 +219,10 @@ constructor(
         useExpensiveSaferCasting: Boolean
     ): List<Field<*>> {
         val fields =
-            metaColumns.entries
-                .stream()
-                .map { metaColumn: Map.Entry<String?, DataType<*>?> ->
-                    DSL.field(DSL.quotedName(metaColumn.key), metaColumn.value)
-                }
-                .toList()
+            metaColumns.entries.map { metaColumn: Map.Entry<String?, DataType<*>?> ->
+                DSL.field(DSL.quotedName(metaColumn.key), metaColumn.value)
+            }
+
         // Use originalName with non-sanitized characters when extracting data from _airbyte_data
         val dataFields = extractRawDataFields(columns, useExpensiveSaferCasting)
         dataFields.addAll(fields)

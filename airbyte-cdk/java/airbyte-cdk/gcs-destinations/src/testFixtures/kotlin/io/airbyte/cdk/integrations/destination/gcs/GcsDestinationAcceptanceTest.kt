@@ -22,6 +22,7 @@ import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
 import io.airbyte.configoss.StandardCheckConnectionOutput
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.util.*
 import org.apache.commons.lang3.RandomStringUtils
@@ -30,8 +31,8 @@ import org.joda.time.DateTimeZone
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 /**
  * When adding a new GCS destination acceptance test, extend this class and do the following:
@@ -115,16 +116,13 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: FileUplo
             s3Client
                 .listObjects(config.bucketName, parentFolder)
                 .objectSummaries
-                .stream()
                 .filter { o: S3ObjectSummary -> o.key.contains("$streamNameStr/") }
-                .sorted(Comparator.comparingLong { o: S3ObjectSummary -> o.lastModified.time })
-                .toList()
+                .sortedWith(Comparator.comparingLong { o: S3ObjectSummary -> o.lastModified.time })
         LOGGER.info(
             "All objects: {}",
-            objectSummaries
-                .stream()
-                .map { o: S3ObjectSummary -> String.format("%s/%s", o.bucketName, o.key) }
-                .toList()
+            objectSummaries.map { o: S3ObjectSummary ->
+                String.format("%s/%s", o.bucketName, o.key)
+            }
         )
         return objectSummaries
     }
@@ -268,8 +266,6 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: FileUplo
     }
 
     companion object {
-        protected val LOGGER: Logger =
-            LoggerFactory.getLogger(GcsDestinationAcceptanceTest::class.java)
         @JvmStatic protected val MAPPER: ObjectMapper = MoreMappers.initMapper()
 
         protected const val SECRET_FILE_PATH: String = "secrets/config.json"

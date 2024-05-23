@@ -3,9 +3,10 @@
  */
 package io.airbyte.commons.features
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.function.Function
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val log = KotlinLogging.logger {}
 
 class EnvVariableFeatureFlags : FeatureFlags {
     override fun autoDetectSchema(): Boolean {
@@ -24,7 +25,7 @@ class EnvVariableFeatureFlags : FeatureFlags {
         return getEnvOrDefault(APPLY_FIELD_SELECTION, false) { s: String -> s.toBoolean() }
     }
 
-    override fun fieldSelectionWorkspaces(): String? {
+    override fun fieldSelectionWorkspaces(): String {
         return getEnvOrDefault(FIELD_SELECTION_WORKSPACES, "") { arg: String -> arg }
     }
 
@@ -51,13 +52,12 @@ class EnvVariableFeatureFlags : FeatureFlags {
         if (value != null && !value.isEmpty()) {
             return parser.apply(value)
         } else {
-            log.debug("Using default value for environment variable {}: '{}'", key, defaultValue)
+            log.debug { "Using default value for environment variable $key: '$defaultValue'" }
             return defaultValue
         }
     }
 
     companion object {
-        private val log: Logger = LoggerFactory.getLogger(EnvVariableFeatureFlags::class.java)
 
         const val AUTO_DETECT_SCHEMA: String = "AUTO_DETECT_SCHEMA"
 

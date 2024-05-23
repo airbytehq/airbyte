@@ -117,7 +117,7 @@ object JsonSchemas {
     fun <T> traverseJsonSchemaWithCollector(
         jsonSchema: JsonNode,
         mapper: BiFunction<JsonNode?, List<FieldNameOrList>?, T>
-    ): List<T?> {
+    ): List<T> {
         // for the sake of code reuse, use the filtered collector method but makes sure the filter
         // always
         // returns true.
@@ -150,7 +150,7 @@ object JsonSchemas {
         traverseJsonSchema(jsonSchema) { node: JsonNode?, path: List<FieldNameOrList> ->
             mapper.apply(node, path).ifPresent { e: T -> collector.add(e) }
         }
-        return collector.stream().toList() // make list unmodifiable
+        return collector // make list unmodifiable
     }
 
     /**
@@ -173,7 +173,7 @@ object JsonSchemas {
             node: JsonNode?,
             path: List<FieldNameOrList> ->
             if (predicate.test(node)) {
-                return@traverseJsonSchemaWithFilteredCollector Optional.of<List<FieldNameOrList>?>(
+                return@traverseJsonSchemaWithFilteredCollector Optional.of<List<FieldNameOrList>>(
                     path
                 )
             } else {
@@ -300,10 +300,10 @@ object JsonSchemas {
     fun getType(jsonSchema: JsonNode): List<String> {
         if (jsonSchema.has(JSON_SCHEMA_TYPE_KEY)) {
             return if (jsonSchema[JSON_SCHEMA_TYPE_KEY].isArray) {
-                MoreIterators.toList(jsonSchema[JSON_SCHEMA_TYPE_KEY].iterator())
-                    .stream()
-                    .map { obj: JsonNode -> obj.asText() }
-                    .toList()
+                MoreIterators.toList(jsonSchema[JSON_SCHEMA_TYPE_KEY].iterator()).map {
+                    obj: JsonNode ->
+                    obj.asText()
+                }
             } else {
                 java.util.List.of(jsonSchema[JSON_SCHEMA_TYPE_KEY].asText())
             }
