@@ -27,14 +27,12 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils import AirbyteTracedException
 from conftest import encoding_symbols_parameters, generate_stream
-from requests.exceptions import ChunkedEncodingError, HTTPError
+from requests.exceptions import ChunkedEncodingError
 from salesforce_job_response_builder import JobInfoResponseBuilder
 from source_salesforce.api import Salesforce
-from source_salesforce.exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING
 from source_salesforce.source import SourceSalesforce
 from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
@@ -84,30 +82,27 @@ def test_stream_slice_step_validation(stream_slice_step: str, expected_error_mes
 
 
 @pytest.mark.parametrize(
-    "login_status_code, login_json_resp, expected_error_msg, is_config_error",
+    "login_status_code, login_json_resp, expected_error_msg",
     [
         (
             400,
             {"error": "invalid_grant", "error_description": "expired access/refresh token"},
-            AUTHENTICATION_ERROR_MESSAGE_MAPPING.get("expired access/refresh token"),
-            True,
+            "The authentication to SalesForce has expired. Re-authenticate to restore access to SalesForce.",
         ),
         (
             400,
             {"error": "invalid_grant", "error_description": "Authentication failure."},
             'An error occurred: {"error": "invalid_grant", "error_description": "Authentication failure."}',
-            False,
         ),
         (
             401,
             {"error": "Unauthorized", "error_description": "Unautorized"},
             'An error occurred: {"error": "Unauthorized", "error_description": "Unautorized"}',
-            False,
         ),
     ],
 )
 def test_login_authentication_error_handler(
-    stream_config, requests_mock, login_status_code, login_json_resp, expected_error_msg, is_config_error
+    stream_config, requests_mock, login_status_code, login_json_resp, expected_error_msg
 ):
     source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
     logger = logging.getLogger("airbyte")
@@ -115,14 +110,9 @@ def test_login_authentication_error_handler(
         "POST", "https://login.salesforce.com/services/oauth2/token", json=login_json_resp, status_code=login_status_code
     )
 
-    if is_config_error:
-        with pytest.raises(AirbyteTracedException) as err:
-            source.check_connection(logger, stream_config)
-        assert err.value.message == expected_error_msg
-    else:
-        result, msg = source.check_connection(logger, stream_config)
-        assert result is False
-        assert msg == expected_error_msg
+    with pytest.raises(AirbyteTracedException) as err:
+        source.check_connection(logger, stream_config)
+    assert err.value.message == expected_error_msg
 
 
 def test_bulk_sync_creation_failed(stream_config, stream_api):
@@ -360,9 +350,9 @@ def test_check_connection_rate_limit(
         m.register_uri(
             "GET", "https://instance_url/services/data/v57.0/sobjects", json=discovery_resp_json, status_code=discovery_status_code
         )
-        result, msg = source.check_connection(logger, stream_config)
-        assert result is False
-        assert msg == expected_error_msg
+        with pytest.raises(AirbyteTracedException) as exception:
+            source.check_connection(logger, stream_config)
+        assert exception.value.message == expected_error_msg
 
 
 def configure_request_params_mock(stream_1, stream_2):

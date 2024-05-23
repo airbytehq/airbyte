@@ -44,6 +44,9 @@ _RETRYABLE_400_STATUS_CODES = {
     420,
     codes.too_many_requests,
 }
+_AUTHENTICATION_ERROR_MESSAGE_MAPPING = {
+    "expired access/refresh token": "The authentication to SalesForce has expired. Re-authenticate to restore access to SalesForce."
+}
 
 
 logger = logging.getLogger("airbyte")
@@ -77,6 +80,13 @@ class SalesforceErrorHandler(ErrorHandler):
                 )
 
             error_code, error_message = self._extract_error_code_and_message(response)
+            if self._is_login_request(response):
+                return ErrorResolution(
+                    ResponseAction.FAIL,
+                    FailureType.config_error,
+                    _AUTHENTICATION_ERROR_MESSAGE_MAPPING.get(error_message) if error_message in _AUTHENTICATION_ERROR_MESSAGE_MAPPING else f"An error occurred: {response.content.decode()}",
+                )
+
             if self._is_bulk_job_creation(response) and response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
                 return self._handle_bulk_job_creation_endpoint_specific_errors(response, error_code, error_message)
 
@@ -101,9 +111,9 @@ class SalesforceErrorHandler(ErrorHandler):
                 )
 
         return ErrorResolution(
-            ResponseAction.RETRY,
+            ResponseAction.FAIL,
             FailureType.system_error,
-            f"Unknown error {response}. Attempting to retry in case this would succeed...",  # FIXME maybe check some statuses of remove retry
+            f"An error occurred: {response.content.decode()}",
         )
 
     @staticmethod
@@ -176,7 +186,13 @@ class SalesforceErrorHandler(ErrorHandler):
                 f"The response for `{response.request.url}` was expected to be a list with at least one element but was `{response.content}`"
             )
 
+            if "error" in response.json() and "error_description" in response.json():
+                return response.json()["error"], response.json()["error_description"]
+
         return None, f"Unknown error on response `{response.content}`"
+
+    def _is_login_request(self, response: requests.Response) -> bool:
+        return "salesforce.com/services/oauth2/token" in response.request.url
 
 
 def default_backoff_handler(max_tries: int, retry_on=None):

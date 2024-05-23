@@ -15,7 +15,7 @@ from airbyte_protocol.models import FailureType, StreamDescriptor
 from requests import adapters as request_adapters
 from requests.exceptions import HTTPError, RequestException  # type: ignore[import]
 
-from .exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING, TypeSalesforceException
+from .exceptions import TypeSalesforceException
 from .rate_limiting import SalesforceErrorHandler, default_backoff_handler
 from .utils import filter_streams_by_criteria
 
@@ -315,13 +315,7 @@ class Salesforce:
             "client_secret": self.client_secret,
             "refresh_token": self.refresh_token,
         }
-        try:
-            resp = self._make_request("POST", login_url, body=login_body, headers={"Content-Type": "application/x-www-form-urlencoded"})
-        except HTTPError as err:
-            if err.response.status_code == requests.codes.BAD_REQUEST:
-                if error_message := AUTHENTICATION_ERROR_MESSAGE_MAPPING.get(err.response.json().get("error_description")):
-                    raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error)
-            raise
+        resp = self._make_request("POST", login_url, body=login_body, headers={"Content-Type": "application/x-www-form-urlencoded"})
         auth = resp.json()
         self.access_token = auth["access_token"]
         self.instance_url = auth["instance_url"]
