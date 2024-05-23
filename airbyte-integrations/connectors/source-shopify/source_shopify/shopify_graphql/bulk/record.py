@@ -10,8 +10,6 @@ from json import loads
 from os import remove
 from typing import Any, Callable, Final, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk import AirbyteLogger
-
 from .exceptions import ShopifyBulkExceptions
 from .query import ShopifyBulkQuery
 from .tools import END_OF_FILE, BulkTools
@@ -25,7 +23,7 @@ class ShopifyBulkRecord:
     buffer: List[MutableMapping[str, Any]] = field(init=False, default_factory=list)
 
     # default logger
-    logger: Final[AirbyteLogger] = logging.getLogger("airbyte")
+    logger: Final[logging.Logger] = logging.getLogger("airbyte")
 
     def __post_init__(self) -> None:
         self.composition: Optional[Mapping[str, Any]] = self.query.record_composition
