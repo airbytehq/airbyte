@@ -49,7 +49,7 @@ def test_record_filter(test_name, filter_template, records, expected_records):
     next_page_token = {"last_seen_id": 14}
     record_filter = RecordFilter(config=config, condition=filter_template, parameters=parameters)
 
-    actual_records = record_filter.filter_records(
+    actual_records = list(record_filter.filter_records(
         records, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
-    )
+    ))
     assert actual_records == expected_records

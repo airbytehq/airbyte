@@ -27,7 +27,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
-import io.airbyte.integrations.destination.snowflake.typing_deduping.migrations.SnowflakeState;
+import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.sql.ResultSet;
@@ -43,6 +43,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import net.snowflake.client.jdbc.SnowflakeSQLException;
 import org.apache.commons.text.StringSubstitutor;
+import org.jetbrains.annotations.NotNull;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,8 +71,8 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
     final LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> existingTables = new LinkedHashMap<>();
     final String paramHolder = String.join(",", Collections.nCopies(streamIds.size(), "?"));
     // convert list stream to array
-    final String[] namespaces = streamIds.stream().map(StreamId::finalNamespace).toArray(String[]::new);
-    final String[] names = streamIds.stream().map(StreamId::finalName).toArray(String[]::new);
+    final String[] namespaces = streamIds.stream().map(StreamId::getFinalNamespace).toArray(String[]::new);
+    final String[] names = streamIds.stream().map(StreamId::getFinalName).toArray(String[]::new);
     final String query = """
                          SELECT table_schema, table_name, column_name, data_type, is_nullable
                          FROM information_schema.columns
@@ -103,8 +104,8 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
     final LinkedHashMap<String, LinkedHashMap<String, Integer>> tableRowCounts = new LinkedHashMap<>();
     final String paramHolder = String.join(",", Collections.nCopies(streamIds.size(), "?"));
     // convert list stream to array
-    final String[] namespaces = streamIds.stream().map(StreamId::finalNamespace).toArray(String[]::new);
-    final String[] names = streamIds.stream().map(StreamId::finalName).toArray(String[]::new);
+    final String[] namespaces = streamIds.stream().map(StreamId::getFinalNamespace).toArray(String[]::new);
+    final String[] names = streamIds.stream().map(StreamId::getFinalName).toArray(String[]::new);
     final String query = """
                          SELECT table_schema, table_name, row_count
                          FROM information_schema.tables
@@ -131,12 +132,18 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
     if (destinationSyncMode == DestinationSyncMode.OVERWRITE) {
       return new InitialRawTableStatus(false, false, Optional.empty());
     }
-    final ResultSet tables = database.getMetaData().getTables(
-        databaseName,
-        id.rawNamespace(),
-        id.rawName(),
-        null);
-    if (!tables.next()) {
+    final boolean tableExists = database.executeMetadataQuery(databaseMetaData -> {
+      LOGGER.info("Retrieving table from Db metadata: {} {}",
+          id.getRawNamespace(),
+          id.getRawName());
+      try (final ResultSet tables = databaseMetaData.getTables(databaseName, id.getRawNamespace(), id.getRawName(), null)) {
+        return tables.next();
+      } catch (SQLException e) {
+        LOGGER.error("Failed to retrieve table metadata", e);
+        throw new RuntimeException(e);
+      }
+    });
+    if (!tableExists) {
       return new InitialRawTableStatus(false, false, Optional.empty());
     }
     // Snowflake timestamps have nanosecond precision, so decrement by 1ns
@@ -162,7 +169,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
                 ) SELECT TO_VARCHAR(MIN_TIMESTAMP,'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MIN_TIMESTAMP_UTC from MIN_TS;
                 """)),
         // The query will always return exactly one record, so use .get(0)
-        record -> record.getString("MIN_TIMESTAMP_UTC")).get(0));
+        record -> record.getString("MIN_TIMESTAMP_UTC")).getFirst());
     if (minUnloadedTimestamp.isPresent()) {
       return new InitialRawTableStatus(true, true, minUnloadedTimestamp.map(Instant::parse));
     }
@@ -193,7 +200,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
                     )
                 ),'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MAX_TIMESTAMP_UTC from MAX_TS;
                 """)),
-        record -> record.getString("MAX_TIMESTAMP_UTC")).get(0));
+        record -> record.getString("MAX_TIMESTAMP_UTC")).getFirst());
     return new InitialRawTableStatus(true, false, maxTimestamp.map(Instant::parse));
   }
 
@@ -227,28 +234,29 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
   }
 
   private Set<String> getPks(final StreamConfig stream) {
-    return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).collect(Collectors.toSet()) : Collections.emptySet();
+    return stream.getPrimaryKey() != null ? stream.getPrimaryKey().stream().map(ColumnId::getName).collect(Collectors.toSet())
+        : Collections.emptySet();
   }
 
-  private boolean isAirbyteRawIdColumnMatch(final TableDefinition existingTable) {
+  protected boolean isAirbyteRawIdColumnMatch(final TableDefinition existingTable) {
     final String abRawIdColumnName = COLUMN_NAME_AB_RAW_ID.toUpperCase();
     return existingTable.columns().containsKey(abRawIdColumnName) &&
-        toJdbcTypeName(AirbyteProtocolType.STRING).equals(existingTable.columns().get(abRawIdColumnName).type());
+        toJdbcTypeName(AirbyteProtocolType.STRING).equals(existingTable.columns().get(abRawIdColumnName).getType());
   }
 
-  private boolean isAirbyteExtractedAtColumnMatch(final TableDefinition existingTable) {
+  protected boolean isAirbyteExtractedAtColumnMatch(final TableDefinition existingTable) {
     final String abExtractedAtColumnName = COLUMN_NAME_AB_EXTRACTED_AT.toUpperCase();
     return existingTable.columns().containsKey(abExtractedAtColumnName) &&
-        toJdbcTypeName(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE).equals(existingTable.columns().get(abExtractedAtColumnName).type());
+        toJdbcTypeName(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE).equals(existingTable.columns().get(abExtractedAtColumnName).getType());
   }
 
-  private boolean isAirbyteMetaColumnMatch(TableDefinition existingTable) {
+  protected boolean isAirbyteMetaColumnMatch(TableDefinition existingTable) {
     final String abMetaColumnName = COLUMN_NAME_AB_META.toUpperCase();
     return existingTable.columns().containsKey(abMetaColumnName) &&
-        "VARIANT".equals(existingTable.columns().get(abMetaColumnName).type());
+        "VARIANT".equals(existingTable.columns().get(abMetaColumnName).getType());
   }
 
-  protected boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final TableDefinition existingTable) {
+  protected boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final @NotNull TableDefinition existingTable) {
     final Set<String> pks = getPks(stream);
     // This is same as JdbcDestinationHandler#existingSchemaMatchesStreamConfig with upper case
     // conversion.
@@ -259,9 +267,9 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
       // Missing AB meta columns from final table, we need them to do proper T+D so trigger soft-reset
       return false;
     }
-    final LinkedHashMap<String, String> intendedColumns = stream.columns().entrySet().stream()
+    final LinkedHashMap<String, String> intendedColumns = stream.getColumns().entrySet().stream()
         .collect(LinkedHashMap::new,
-            (map, column) -> map.put(column.getKey().name(), toJdbcTypeName(column.getValue())),
+            (map, column) -> map.put(column.getKey().getName(), toJdbcTypeName(column.getValue())),
             LinkedHashMap::putAll);
 
     // Filter out Meta columns since they don't exist in stream config.
@@ -269,10 +277,9 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
         .filter(column -> V2_FINAL_TABLE_METADATA_COLUMNS.stream().map(String::toUpperCase)
             .noneMatch(airbyteColumnName -> airbyteColumnName.equals(column.getKey())))
         .collect(LinkedHashMap::new,
-            (map, column) -> map.put(column.getKey(), column.getValue().type()),
+            (map, column) -> map.put(column.getKey(), column.getValue().getType()),
             LinkedHashMap::putAll);
     // soft-resetting https://github.com/airbytehq/airbyte/pull/31082
-    @SuppressWarnings("deprecation")
     final boolean hasPksWithNonNullConstraint = existingTable.columns().entrySet().stream()
         .anyMatch(c -> pks.contains(c.getKey()) && !c.getValue().isNullable());
 
@@ -282,16 +289,16 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
   }
 
   @Override
-  public List<DestinationInitialStatus<SnowflakeState>> gatherInitialState(List<StreamConfig> streamConfigs) throws Exception {
+  public @NotNull List<DestinationInitialStatus<SnowflakeState>> gatherInitialState(List<StreamConfig> streamConfigs) throws Exception {
     final Map<AirbyteStreamNameNamespacePair, SnowflakeState> destinationStates = super.getAllDestinationStates();
 
-    List<StreamId> streamIds = streamConfigs.stream().map(StreamConfig::id).toList();
+    List<StreamId> streamIds = streamConfigs.stream().map(StreamConfig::getId).toList();
     final LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> existingTables = findExistingTables(database, databaseName, streamIds);
     final LinkedHashMap<String, LinkedHashMap<String, Integer>> tableRowCounts = getFinalTableRowCount(streamIds);
     return streamConfigs.stream().map(streamConfig -> {
       try {
-        final String namespace = streamConfig.id().finalNamespace().toUpperCase();
-        final String name = streamConfig.id().finalName().toUpperCase();
+        final String namespace = streamConfig.getId().getFinalNamespace().toUpperCase();
+        final String name = streamConfig.getId().getFinalName().toUpperCase();
         boolean isSchemaMismatch = false;
         boolean isFinalTableEmpty = true;
         boolean isFinalTablePresent = existingTables.containsKey(namespace) && existingTables.get(namespace).containsKey(name);
@@ -301,8 +308,9 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
           isSchemaMismatch = !existingSchemaMatchesStreamConfig(streamConfig, existingTable);
           isFinalTableEmpty = hasRowCount && tableRowCounts.get(namespace).get(name) == 0;
         }
-        final InitialRawTableStatus initialRawTableState = getInitialRawTableState(streamConfig.id(), streamConfig.destinationSyncMode());
-        final SnowflakeState destinationState = destinationStates.getOrDefault(streamConfig.id().asPair(), toDestinationState(Jsons.emptyObject()));
+        final InitialRawTableStatus initialRawTableState = getInitialRawTableState(streamConfig.getId(), streamConfig.getDestinationSyncMode());
+        final SnowflakeState destinationState =
+            destinationStates.getOrDefault(streamConfig.getId().asPair(), toDestinationState(Jsons.emptyObject()));
         return new DestinationInitialStatus<>(
             streamConfig,
             isFinalTablePresent,
@@ -317,7 +325,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
   }
 
   @Override
-  protected String toJdbcTypeName(AirbyteType airbyteType) {
+  protected @NotNull String toJdbcTypeName(@NotNull AirbyteType airbyteType) {
     if (airbyteType instanceof final AirbyteProtocolType p) {
       return toJdbcTypeName(p);
     }
@@ -351,6 +359,10 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
       case DATE -> "DATE";
       case UNKNOWN -> "VARIANT";
     };
+  }
+
+  public void createNamespaces(@NotNull Set<String> schemas) {
+    // do nothing?
   }
 
 }

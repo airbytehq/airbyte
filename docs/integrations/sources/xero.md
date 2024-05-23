@@ -8,6 +8,7 @@ This page contains the setup guide and reference information for the Xero source
 - Start Date
 
 **Required list of scopes to sync all streams:**
+
 - accounting.attachments.read
 - accounting.budgets.read
 - accounting.contacts.read
@@ -20,20 +21,18 @@ This page contains the setup guide and reference information for the Xero source
 - offline_access
 
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
 - OAuth 2.0
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 Please follow [instruction](https://developer.xero.com/documentation/guides/oauth2/auth-flow/) to obtain all requirements:
-- Client ID
-- Client Secret
-- Refresh Token
 - Access Token
-- Token Expiry Date
 <!-- /env:oss -->
 
 ## Setup guide
@@ -41,6 +40,7 @@ Please follow [instruction](https://developer.xero.com/documentation/guides/oaut
 ### Step 1: Set up Xero
 
 <!-- env:cloud -->
+
 ### Step 2: Set up the Xero connector in Airbyte
 
 **For Airbyte Cloud:**
@@ -55,6 +55,7 @@ Please follow [instruction](https://developer.xero.com/documentation/guides/oaut
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 1. Create an application in [Xero development center](https://developer.xero.com/app/manage/).
@@ -64,9 +65,9 @@ Please follow [instruction](https://developer.xero.com/documentation/guides/oaut
 
 The Xero source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 
 ## Supported streams
 
@@ -104,10 +105,12 @@ The connector is restricted by Xero [API rate limits](https://developer.xero.com
 
 | Version | Date       | Pull Request                                             | Subject                           |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------|
-| 0.2.5   | 2024-01-11 | [34154](https://github.com/airbytehq/airbyte/pull/34154) | prepare for airbyte-lib                                                        |
-| 0.2.4   | 2023-11-24 | [32837](https://github.com/airbytehq/airbyte/pull/32837) | Handle 403 error                  |
-| 0.2.3   | 2023-06-19 | [27471](https://github.com/airbytehq/airbyte/pull/27471) | Update CDK to 0.40                |
-| 0.2.2   | 2023-06-06 | [27007](https://github.com/airbytehq/airbyte/pull/27007) | Update CDK                        |
-| 0.2.1   | 2023-03-20 | [24217](https://github.com/airbytehq/airbyte/pull/24217) | Certify to Beta                   |
-| 0.2.0   | 2023-03-14 | [24005](https://github.com/airbytehq/airbyte/pull/24005) | Enable in Cloud                   |
-| 0.1.0   | 2021-11-11 | [18666](https://github.com/airbytehq/airbyte/pull/18666) | 🎉 New Source - Xero [python cdk] |
+| 1.0.0   | 2024-04-30 | [36878](https://github.com/airbytehq/airbyte/pull/36878) | Migrate to low code               |
+| 0.2.6 | 2024-05-17 | [38330](https://github.com/airbytehq/airbyte/pull/38330) | Updating python dependencies |
+| 0.2.5 | 2024-01-11 | [34154](https://github.com/airbytehq/airbyte/pull/34154) | prepare for airbyte-lib |
+| 0.2.4 | 2023-11-24 | [32837](https://github.com/airbytehq/airbyte/pull/32837) | Handle 403 error |
+| 0.2.3 | 2023-06-19 | [27471](https://github.com/airbytehq/airbyte/pull/27471) | Update CDK to 0.40 |
+| 0.2.2 | 2023-06-06 | [27007](https://github.com/airbytehq/airbyte/pull/27007) | Update CDK |
+| 0.2.1 | 2023-03-20 | [24217](https://github.com/airbytehq/airbyte/pull/24217) | Certify to Beta |
+| 0.2.0 | 2023-03-14 | [24005](https://github.com/airbytehq/airbyte/pull/24005) | Enable in Cloud |
+| 0.1.0 | 2021-11-11 | [18666](https://github.com/airbytehq/airbyte/pull/18666) | 🎉 New Source - Xero [python cdk] |

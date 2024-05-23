@@ -1,23 +1,35 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-primetric:dev
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "source_primetric/spec.yaml"
+    tests:
+      - spec_path: "source_primetric/spec.yaml"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
+    tests:
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config: # Wrong format: uuid given in version 0.1.0, rag_ratings has schema changes
+          disable_for_version: "0.1.0"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      validate_schema: True
-      empty_streams: ["organization_rag_scopes"]
-      timeout_seconds: 7200
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: organization_identity_providers
+            bypass_reason: Stream cannot be seeded with sandbox credentials
+          - name: organization_roles
+            bypass_reason: Stream cannot be seeded with sandbox credentials
+          - name: projects_vacancies
+            bypass_reason: Stream cannot be seeded with sandbox credentials
+  incremental:
+    bypass_reason: "This connector does not implement incremental sync"
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 7200
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

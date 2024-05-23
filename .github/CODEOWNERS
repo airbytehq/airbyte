@@ -4,6 +4,7 @@
 /airbyte-integrations/connectors/destination-milvus @airbytehq/ai-language-models
 /airbyte-integrations/connectors/destination-qdrant @airbytehq/ai-language-models
 /airbyte-integrations/connectors/destination-chroma @airbytehq/ai-language-models
+/airbyte-integrations/connectors/destination-snowflake-cortex @airbytehq/ai-language-models
 /airbyte-cdk/python/airbyte_cdk/destinations/vector_db_based @airbytehq/ai-language-models
 
 # CI/CD

@@ -210,7 +210,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         assertSameRecords(
             recordMessagesFirstRun,
             recordMessagesSecondRun,
-            "Expected two full refresh syncs to produce the same records"
+            "Expected two full refresh syncs to produce the same records."
         )
     }
 
@@ -405,6 +405,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
             expected
                 .stream()
                 .map { m: AirbyteRecordMessage -> this.pruneEmittedAt(m) }
+                .map { m: AirbyteRecordMessage -> this.pruneCdcMetadata(m) }
                 .collect(Collectors.toList())
         val prunedActual =
             actual

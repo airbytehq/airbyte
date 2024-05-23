@@ -5,14 +5,14 @@
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
-import static io.airbyte.integrations.destination.snowflake.SnowflakeInternalStagingDestination.RAW_SCHEMA_OVERRIDE;
+import static io.airbyte.integrations.destination.snowflake.SnowflakeDestination.RAW_SCHEMA_OVERRIDE;
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeTransaction;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil;
 import io.airbyte.integrations.base.destination.typing_deduping.V2TableMigrator;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.sql.SQLException;
@@ -46,25 +46,25 @@ public class SnowflakeV2TableMigrator implements V2TableMigrator {
   @Override
   public void migrateIfNecessary(final StreamConfig streamConfig) throws Exception {
     final StreamId caseSensitiveStreamId = buildStreamId_caseSensitive(
-        streamConfig.id().originalNamespace(),
-        streamConfig.id().originalName(),
+        streamConfig.getId().getOriginalNamespace(),
+        streamConfig.getId().getOriginalName(),
         rawNamespace);
-    final boolean syncModeRequiresMigration = streamConfig.destinationSyncMode() != DestinationSyncMode.OVERWRITE;
+    final boolean syncModeRequiresMigration = streamConfig.getDestinationSyncMode() != DestinationSyncMode.OVERWRITE;
     final boolean existingTableCaseSensitiveExists = findExistingTable(caseSensitiveStreamId).isPresent();
-    final boolean existingTableUppercaseDoesNotExist = findExistingTable(streamConfig.id()).isEmpty();
+    final boolean existingTableUppercaseDoesNotExist = findExistingTable(streamConfig.getId()).isEmpty();
     LOGGER.info(
         "Checking whether upcasing migration is necessary for {}.{}. Sync mode requires migration: {}; existing case-sensitive table exists: {}; existing uppercased table does not exist: {}",
-        streamConfig.id().originalNamespace(),
-        streamConfig.id().originalName(),
+        streamConfig.getId().getOriginalNamespace(),
+        streamConfig.getId().getOriginalName(),
         syncModeRequiresMigration,
         existingTableCaseSensitiveExists,
         existingTableUppercaseDoesNotExist);
     if (syncModeRequiresMigration && existingTableCaseSensitiveExists && existingTableUppercaseDoesNotExist) {
       LOGGER.info(
           "Executing upcasing migration for {}.{}",
-          streamConfig.id().originalNamespace(),
-          streamConfig.id().originalName());
-      TypeAndDedupeTransaction.executeSoftReset(generator, handler, streamConfig);
+          streamConfig.getId().getOriginalNamespace(),
+          streamConfig.getId().getOriginalName());
+      TyperDeduperUtil.executeSoftReset(generator, handler, streamConfig);
     }
   }
 
@@ -94,8 +94,8 @@ public class SnowflakeV2TableMigrator implements V2TableMigrator {
     // VARIANT as VARCHAR
     LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> existingTableMap =
         SnowflakeDestinationHandler.findExistingTables(database, databaseName, List.of(id));
-    if (existingTableMap.containsKey(id.finalNamespace()) && existingTableMap.get(id.finalNamespace()).containsKey(id.finalName())) {
-      return Optional.of(existingTableMap.get(id.finalNamespace()).get(id.finalName()));
+    if (existingTableMap.containsKey(id.getFinalNamespace()) && existingTableMap.get(id.getFinalNamespace()).containsKey(id.getFinalName())) {
+      return Optional.of(existingTableMap.get(id.getFinalNamespace()).get(id.getFinalName()));
     }
     return Optional.empty();
   }
