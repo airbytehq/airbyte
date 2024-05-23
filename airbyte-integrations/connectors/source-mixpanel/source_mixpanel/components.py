@@ -9,8 +9,6 @@ import requests
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
-from airbyte_cdk.sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
-from airbyte_cdk.sources.declarative.models import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
@@ -261,6 +259,8 @@ class EngagePaginationStrategy(PageIncrement):
     page - incremental page number
     """
 
+    _total = 0
+
     def next_page_token(self, response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         """
         Determines page and subpage numbers for the `items` stream
@@ -280,6 +280,10 @@ class EngagePaginationStrategy(PageIncrement):
         else:
             self._total = None
             return None
+
+    def reset(self) -> None:
+        super().reset()
+        self._total = 0
 
 
 class EngageJsonFileSchemaLoader(JsonFileSchemaLoader):
