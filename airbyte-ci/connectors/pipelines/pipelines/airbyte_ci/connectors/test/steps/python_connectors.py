@@ -15,7 +15,7 @@ from pipelines import hacks
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, RegressionTests
+from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, RegressionTests, get_connector_secrets_for_test_suite
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.python.poetry import with_poetry
@@ -149,7 +149,7 @@ class PytestStep(Step, ABC):
         Returns:
             Container: The container with the test environment installed.
         """
-        secret_mounting_function = await secrets.mounted_connector_secrets(self.context, "secrets")
+        secret_mounting_function = await secrets.mounted_connector_secrets(self.context, "secrets", self.secrets)
 
         container_with_test_deps = (
             # Install the connector python package in /test_environment with the extra dependencies
@@ -179,6 +179,7 @@ class UnitTests(PytestStep):
 
     title = "Unit tests"
     test_directory_name = "unit_tests"
+
     common_test_dependencies = ["pytest-cov==4.1.0"]
     MINIMUM_COVERAGE_FOR_CERTIFIED_CONNECTORS = 90
 
@@ -243,6 +244,7 @@ class IntegrationTests(PytestStep):
 
     title = "Integration tests"
     test_directory_name = "integration_tests"
+
     bind_to_docker_host = True
 
 
@@ -250,12 +252,21 @@ def get_test_steps(context: ConnectorContext) -> STEP_TREE:
     """
     Get all the tests steps for a Python connector.
     """
+    connector_test_suites_options = context.metadata.get("connectorTestSuitesOptions", [])
+    local_secrets = context.local_secret_store.get_all_secrets() if context.local_secret_store else []
+    unit_tests_secrets = get_connector_secrets_for_test_suite("unitTests", context, connector_test_suites_options, local_secrets)
+    integration_tests_secrets = get_connector_secrets_for_test_suite(
+        "integrationTests", context, connector_test_suites_options, local_secrets
+    )
+    acceptance_tests_secrets = get_connector_secrets_for_test_suite(
+        "acceptanceTests", context, connector_test_suites_options, local_secrets
+    )
     return [
         [StepToRun(id=CONNECTOR_TEST_STEP_ID.BUILD, step=BuildConnectorImages(context))],
         [
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.UNIT,
-                step=UnitTests(context),
+                step=UnitTests(context, secrets=unit_tests_secrets),
                 args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             )
@@ -263,7 +274,7 @@ def get_test_steps(context: ConnectorContext) -> STEP_TREE:
         [
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.INTEGRATION,
-                step=IntegrationTests(context),
+                step=IntegrationTests(context, secrets=integration_tests_secrets),
                 args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),
@@ -275,7 +286,7 @@ def get_test_steps(context: ConnectorContext) -> STEP_TREE:
             ),
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
-                step=AcceptanceTests(context, context.concurrent_cat),
+                step=AcceptanceTests(context, secrets=acceptance_tests_secrets, concurrent_test_run=context.concurrent_cat),
                 args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),

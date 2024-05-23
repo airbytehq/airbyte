@@ -101,7 +101,6 @@ class PublishToPythonRegistry(Step):
             return await self._poetry_publish(package_dir_to_publish)
 
     async def _poetry_publish(self, package_dir_to_publish: Directory) -> StepResult:
-        python_registry_token = self.context.dagger_client.set_secret("python_registry_token", self.context.python_registry_token)
         pyproject_toml = package_dir_to_publish.file(PYPROJECT_TOML_FILE_PATH)
         pyproject_toml_content = await pyproject_toml.contents()
         contents = tomli.loads(pyproject_toml_content)
@@ -112,7 +111,7 @@ class PublishToPythonRegistry(Step):
         contents["tool"]["poetry"]["authors"] = ["Airbyte <contact@airbyte.io>"]
         poetry_publish = (
             self._get_base_container()
-            .with_secret_variable("PYTHON_REGISTRY_TOKEN", python_registry_token)
+            .with_secret_variable("PYTHON_REGISTRY_TOKEN", self.context.python_registry_token.as_dagger_secret(self.dagger_client))
             .with_directory("package", package_dir_to_publish)
             .with_workdir("package")
             .with_new_file(PYPROJECT_TOML_FILE_PATH, contents=tomli_w.dumps(contents))
@@ -128,8 +127,6 @@ class PublishToPythonRegistry(Step):
 
     async def _pip_publish(self, package_dir_to_publish: Directory) -> StepResult:
         files = await package_dir_to_publish.entries()
-        pypi_username = self.context.dagger_client.set_secret("pypi_username", "__token__")
-        pypi_password = self.context.dagger_client.set_secret("pypi_password", self.context.python_registry_token)
         metadata: Dict[str, str] = {
             "name": str(self.context.package_metadata.name),
             "version": str(self.context.package_metadata.version),
@@ -161,8 +158,8 @@ class PublishToPythonRegistry(Step):
             # Make sure these steps are always executed and not cached as they are triggering a side-effect (calling the registry)
             # Env var setting needs to be in this block as well to make sure a change of the env var will be propagated correctly
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
-            .with_secret_variable("TWINE_USERNAME", pypi_username)
-            .with_secret_variable("TWINE_PASSWORD", pypi_password)
+            .with_secret_variable("TWINE_USERNAME", self.context.dagger_client.set_secret("pypi_username", "__token__"))
+            .with_secret_variable("TWINE_PASSWORD", self.context.python_registry_token.as_dagger_secret(self.dagger_client))
             .with_exec(["twine", "upload", "--verbose", "--repository-url", self.context.registry, "dist/*"])
         )
 

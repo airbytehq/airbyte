@@ -41,11 +41,9 @@ class TestUnitTests:
             git_repo_url="test",
             report_output_prefix="test",
             is_local=True,
-            use_remote_secrets=True,
             targeted_platforms=[current_platform],
         )
         context.dagger_client = dagger_client
-        context.get_connector_secrets = mocker.AsyncMock(return_value={})
         return context
 
     @pytest.fixture
@@ -64,11 +62,9 @@ class TestUnitTests:
             git_repo_url="test",
             report_output_prefix="test",
             is_local=True,
-            use_remote_secrets=True,
             targeted_platforms=[current_platform],
         )
         context.dagger_client = dagger_client
-        context.get_connector_secrets = mocker.AsyncMock(return_value={})
         return context
 
     @pytest.fixture
@@ -134,7 +130,6 @@ class TestPyAirbyteValidationTests:
             git_repo_url="test",
             report_output_prefix="test",
             is_local=True,
-            use_remote_secrets=True,
             targeted_platforms=[current_platform],
         )
         context.dagger_client = dagger_client
@@ -151,7 +146,6 @@ class TestPyAirbyteValidationTests:
             git_repo_url="test",
             report_output_prefix="test",
             is_local=True,
-            use_remote_secrets=True,
             targeted_platforms=[current_platform],
         )
         context.dagger_client = dagger_client
