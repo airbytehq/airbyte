@@ -66,7 +66,7 @@ To access the Sandbox environment:
 ## Supported streams and sync modes
 
 | Stream                                    | Environment  | Key                                        | Incremental |
-| :---------------------------------------- | :----------- | :----------------------------------------- | :---------- |
+| :---------------------------------------- | :----------- | :----------------------------------------- |:------------|
 | Advertisers                               | Prod,Sandbox | advertiser_id                              | No          |
 | AdGroups                                  | Prod,Sandbox | adgroup_id                                 | Yes         |
 | Ads                                       | Prod,Sandbox | ad_id                                      | Yes         |
@@ -85,10 +85,10 @@ To access the Sandbox environment:
 | CampaignsReportsDaily                     | Prod,Sandbox | campaign_id, stat_time_day                 | Yes         |
 | CampaignsReportsLifetime                  | Prod,Sandbox | campaign_id                                | No          |
 | CreativeAssetsImages                      | Prod,Sandbox | image_id                                   | Yes         |
-| CreativeAssetsMusic                       | Prod,Sandbox | music_id                                   | Yes         |
+| CreativeAssetsMusic                       | Prod,Sandbox | music_id                                   | No          |
 | CreativeAssetsPortfolios                  | Prod,Sandbox | creative_portfolio_id                      | No          |
 | CreativeAssetsVideos                      | Prod,Sandbox | video_id                                   | Yes         |
-| AdvertiserIds                             | Prod         | advertiser_id                              | Yes         |
+| AdvertiserIds                             | Prod         | advertiser_id                              | No          |
 | AdvertisersAudienceReportsDaily           | Prod         | advertiser_id, stat_time_day, gender, age  | Yes         |
 | AdvertisersAudienceReportsByCountryDaily  | Prod         | advertiser_id, stat_time_day, country_code | Yes         |
 | AdvertisersAudienceReportsByPlatformDaily | Prod         | advertiser_id, stat_time_day, platform     | Yes         |
@@ -122,7 +122,8 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
+| 4.0.0   | 2024-05-22 | [38316](https://github.com/airbytehq/airbyte/pull/38316) | Migration to low-code CDK; Support include deleted statuses for Ads, Ad Groups and Campaign streams.        |
 | 3.9.6   | 2024-04-19 | [36665](https://github.com/airbytehq/airbyte/pull/36665) | Updating to 0.80.0 CDK                                                                                      |
 | 3.9.5   | 2024-04-12 | [36665](https://github.com/airbytehq/airbyte/pull/36665) | Schema descriptions                                                                                         |
 | 3.9.4   | 2024-03-20 | [36302](https://github.com/airbytehq/airbyte/pull/36302) | Don't extract state from the latest record if stream doesn't have a cursor_field                            |
