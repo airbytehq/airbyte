@@ -248,7 +248,7 @@ constructor(
 
 fun main(args: Array<String>) {
     IntegrationRunner.addOrphanedThreadFilter { t: Thread ->
-        for (stackTraceElement in IntegrationRunner.getThreadCreationInfo(t)?.stack!!) {
+        for (stackTraceElement in IntegrationRunner.getThreadCreationInfo(t).stack) {
             val stackClassName = stackTraceElement.className
             val stackMethodName = stackTraceElement.methodName
             if (
