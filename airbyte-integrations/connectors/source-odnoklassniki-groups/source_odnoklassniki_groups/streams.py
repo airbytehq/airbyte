@@ -130,7 +130,8 @@ class GetStatTrendsStream(Stream):
             params["start_time"] = self.start_time
         if self._end_timestamp:
             params["end_time"] = self.end_time
-        return f"{self.URL}?{urlencode(params)}"
+        url = f"{self.URL}?{urlencode(params)}"
+        return url
 
     def _calculate_sig(self, gid: str) -> str:
         secret_key = self.credentials.session_secret_key.get_secret_value()

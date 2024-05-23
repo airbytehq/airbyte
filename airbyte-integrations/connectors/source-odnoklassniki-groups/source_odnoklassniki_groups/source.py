@@ -47,7 +47,7 @@ class SourceOdnoklassnikiGroups(AbstractSource):
             return CredentialsCraftAuthenticator(
                 host=credentials["credentials_craft_host"],
                 bearer_token=credentials["credentials_craft_token"],
-                token_id=credentials["credentials_craft_odnoklassniki_token_id"],
+                token_id=credentials["credentials_craft_token_id"],
             )
         if auth_type == "token_auth":
             return lambda: OKCredentials(
@@ -62,15 +62,29 @@ class SourceOdnoklassnikiGroups(AbstractSource):
 
     @staticmethod
     def _prepare_dates(config: Mapping[str, Any]) -> Tuple[StartDate | None, EndDate | None]:
-        if last_days := config.get("last_days"):
-            date_from = date.today() - timedelta(days=last_days)
-            date_to = date.today() - timedelta(days=1)  # yesterday
-            return date_from, date_to
+        date_range: Mapping[str, Any] = config.get("date_range", {})
+        date_range_type: str = date_range.get("date_range_type")
+        date_from: datetime = None
+        date_to: datetime = None
+        today_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        from_user_date_format = "%Y-%m-%d"
 
-        date_from_str = config.get("date_from")
-        date_to_str = config.get("date_to")
-        date_from = date.fromisoformat(date_from_str) if date_from_str else None
-        date_to = date.fromisoformat(date_to_str) if date_to_str else None
+        if date_range_type == "custom_date":
+            date_from = datetime.strptime(date_range.get("date_from"), from_user_date_format)
+            date_to = datetime.strptime(date_range.get("date_to"), from_user_date_format)
+        elif date_range_type == "from_start_date_to_today":
+            date_from = datetime.strptime(date_range.get("date_from"), from_user_date_format)
+            if date_range.get("should_load_today"):
+                date_to = today_date
+            else:
+                date_to = today_date - timedelta(days=1)
+        elif date_range_type == "last_n_days":
+            date_from = today_date - timedelta(date_range.get("last_days_count"))
+            if date_range.get("should_load_today"):
+                date_to = today_date
+            else:
+                date_to = today_date - timedelta(days=1)
+
         return date_from, date_to
 
     @staticmethod
