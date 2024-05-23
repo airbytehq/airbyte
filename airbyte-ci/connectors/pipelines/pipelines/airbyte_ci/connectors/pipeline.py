@@ -98,9 +98,7 @@ async def run_connectors_pipelines(
         docker_hub_password = contexts[0].docker_hub_password
 
         if docker_hub_username and docker_hub_password:
-            docker_hub_username_secret = dagger_client.set_secret("DOCKER_HUB_USERNAME", docker_hub_username)
-            docker_hub_password_secret = dagger_client.set_secret("DOCKER_HUB_PASSWORD", docker_hub_password)
-            dockerd_service = docker.with_global_dockerd_service(dagger_client, docker_hub_username_secret, docker_hub_password_secret)
+            dockerd_service = docker.with_global_dockerd_service(dagger_client, docker_hub_username, docker_hub_password)
         else:
             dockerd_service = docker.with_global_dockerd_service(dagger_client)
 

@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
 import static io.airbyte.integrations.base.destination.typing_deduping.Sql.concat;
 import static io.airbyte.integrations.base.destination.typing_deduping.Sql.transactionally;
-import static io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeTransaction.SOFT_RESET_SUFFIX;
+import static io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.SOFT_RESET_SUFFIX;
 import static java.util.stream.Collectors.joining;
 
 import com.google.common.annotations.VisibleForTesting;
