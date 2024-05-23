@@ -20,7 +20,6 @@ import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
 import java.math.BigDecimal
-import java.nio.ByteBuffer
 import java.sql.Connection
 import java.util.*
 import org.junit.jupiter.api.Assertions
@@ -161,7 +160,7 @@ abstract class JdbcStressTest {
     private fun runTest(configuredCatalog: ConfiguredAirbyteCatalog, testName: String) {
         LOGGER.info("running stress test for: $testName")
         val read: Iterator<AirbyteMessage> =
-            source!!.read(config!!, configuredCatalog, Jsons.jsonNode(emptyMap<Any, Any>()))
+            source!!.read(config, configuredCatalog, Jsons.jsonNode(emptyMap<Any, Any>()))
         val actualCount =
             MoreStreams.toStream(read)
                 .filter { m: AirbyteMessage -> m.type == AirbyteMessage.Type.RECORD }
@@ -172,7 +171,6 @@ abstract class JdbcStressTest {
                 }
                 .peek { m: AirbyteMessage -> assertExpectedMessage(m) }
                 .count()
-        var a: ByteBuffer
         val expectedRoundedRecordsCount = TOTAL_RECORDS - TOTAL_RECORDS % 1000
         LOGGER.info("expected records count: " + TOTAL_RECORDS)
         LOGGER.info("actual records count: $actualCount")

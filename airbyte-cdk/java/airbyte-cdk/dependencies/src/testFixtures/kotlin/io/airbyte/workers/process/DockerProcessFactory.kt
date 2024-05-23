@@ -169,8 +169,8 @@ class DockerProcessFactory(
     fun checkImageExists(imageName: String?): Boolean {
         try {
             val process = ProcessBuilder(imageExistsScriptPath.toString(), imageName).start()
-            LineGobbler.gobble(process.errorStream, { msg: String? -> LOGGER.error(msg) })
-            LineGobbler.gobble(process.inputStream, { msg: String? -> LOGGER.info(msg) })
+            LineGobbler.gobble(process.errorStream, { msg: String -> LOGGER.error(msg) })
+            LineGobbler.gobble(process.inputStream, { msg: String -> LOGGER.info(msg) })
 
             TestHarnessUtils.gentleClose(process, 10, TimeUnit.MINUTES)
 
@@ -229,9 +229,9 @@ class DockerProcessFactory(
         fun localDebuggingOptions(containerName: String): List<String?> {
             val shouldAddDebuggerOptions =
                 (Optional.ofNullable<String>(System.getenv("DEBUG_CONTAINER_IMAGE"))
-                    .filter { cs: String? -> StringUtils.isNotEmpty(cs) }
+                    .filter { cs: String -> StringUtils.isNotEmpty(cs) }
                     .map<Boolean>(
-                        Function<String, Boolean> { imageName: String? ->
+                        Function<String, Boolean> { imageName: String ->
                             ProcessFactory.Companion.extractShortImageName(containerName)
                                 .startsWith(imageName!!)
                         }

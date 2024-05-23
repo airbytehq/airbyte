@@ -10,7 +10,6 @@ import io.airbyte.commons.util.AutoCloseableIterator
 import io.airbyte.commons.util.AutoCloseableIterators
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import java.util.*
-import java.util.stream.Collectors
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -102,10 +101,9 @@ object RelationalDbQueryUtils {
     }
 
     fun prettyPrintConfiguredAirbyteStreamList(streamList: List<ConfiguredAirbyteStream>): String {
-        return streamList
-            .stream()
-            .map { s: ConfiguredAirbyteStream -> "${s.stream.namespace}.${s.stream.name}" }
-            .collect(Collectors.joining(", "))
+        return streamList.joinToString(", ") { s: ConfiguredAirbyteStream ->
+            "${s.stream.namespace}.${s.stream.name}"
+        }
     }
 
     class TableSizeInfo(tableSize: Long, avgRowLength: Long) {

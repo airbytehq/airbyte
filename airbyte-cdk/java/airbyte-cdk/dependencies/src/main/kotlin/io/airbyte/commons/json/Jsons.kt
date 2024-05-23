@@ -22,7 +22,6 @@ import java.io.File
 import java.io.IOException
 import java.util.*
 import java.util.function.BiConsumer
-import java.util.stream.Collectors
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -250,7 +249,7 @@ object Jsons {
     }
 
     fun children(jsonNode: JsonNode): List<JsonNode> {
-        return MoreStreams.toStream(jsonNode.elements()).collect(Collectors.toList())
+        return MoreStreams.toStream(jsonNode.elements()).toList()
     }
 
     fun toPrettyString(jsonNode: JsonNode?): String {
@@ -269,28 +268,28 @@ object Jsons {
         return targetNode
     }
 
-    fun replaceNestedValue(json: JsonNode, keys: List<String?>, replacement: JsonNode?) {
-        replaceNested(json, keys) { node: ObjectNode, finalKey: String? ->
+    fun replaceNestedValue(json: JsonNode, keys: List<String>, replacement: JsonNode?) {
+        replaceNested(json, keys) { node: ObjectNode, finalKey: String ->
             node.replace(finalKey, replacement)
         }
     }
 
-    fun replaceNestedString(json: JsonNode, keys: List<String?>, replacement: String?) {
-        replaceNested(json, keys) { node: ObjectNode, finalKey: String? ->
+    fun replaceNestedString(json: JsonNode, keys: List<String>, replacement: String?) {
+        replaceNested(json, keys) { node: ObjectNode, finalKey: String ->
             node.put(finalKey, replacement)
         }
     }
 
-    fun replaceNestedInt(json: JsonNode, keys: List<String?>, replacement: Int) {
-        replaceNested(json, keys) { node: ObjectNode, finalKey: String? ->
+    fun replaceNestedInt(json: JsonNode, keys: List<String>, replacement: Int) {
+        replaceNested(json, keys) { node: ObjectNode, finalKey: String ->
             node.put(finalKey, replacement)
         }
     }
 
     private fun replaceNested(
         json: JsonNode,
-        keys: List<String?>,
-        typedReplacement: BiConsumer<ObjectNode, String?>
+        keys: List<String>,
+        typedReplacement: BiConsumer<ObjectNode, String>
     ) {
         Preconditions.checkArgument(!keys.isEmpty(), "Must pass at least one key")
         val nodeContainingFinalKey = navigateTo(json, keys.subList(0, keys.size - 1))

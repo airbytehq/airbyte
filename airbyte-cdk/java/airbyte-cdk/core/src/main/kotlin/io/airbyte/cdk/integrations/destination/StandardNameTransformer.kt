@@ -8,7 +8,6 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.string.Strings
 import io.airbyte.commons.text.Names
 import io.airbyte.commons.util.MoreIterators
-import java.util.stream.Collectors
 
 open class StandardNameTransformer : NamingConventionTransformer {
     override fun getIdentifier(name: String): String {
@@ -75,9 +74,8 @@ open class StandardNameTransformer : NamingConventionTransformer {
             } else if (root.isArray) {
                 return Jsons.jsonNode(
                     MoreIterators.toList(root.elements())
-                        .stream()
                         .map { r: JsonNode -> formatJsonPath(r) }
-                        .collect(Collectors.toList())
+                        .toList()
                 )
             } else {
                 return root

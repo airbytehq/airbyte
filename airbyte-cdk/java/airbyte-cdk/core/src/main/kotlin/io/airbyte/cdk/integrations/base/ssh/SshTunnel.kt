@@ -519,7 +519,7 @@ constructor(
             portKey: List<String>,
             wrapped: CheckedConsumer<JsonNode?, Exception?>
         ) {
-            sshWrap<Any?>(config, hostKey, portKey) { configInTunnel: JsonNode? ->
+            sshWrap<Any?>(config, hostKey, portKey) { configInTunnel: JsonNode ->
                 wrapped.accept(configInTunnel)
                 null
             }
@@ -532,7 +532,7 @@ constructor(
             endPointKey: String,
             wrapped: CheckedConsumer<JsonNode?, Exception?>
         ) {
-            sshWrap<Any?>(config, endPointKey) { configInTunnel: JsonNode? ->
+            sshWrap<Any?>(config, endPointKey) { configInTunnel: JsonNode ->
                 wrapped.accept(configInTunnel)
                 null
             }

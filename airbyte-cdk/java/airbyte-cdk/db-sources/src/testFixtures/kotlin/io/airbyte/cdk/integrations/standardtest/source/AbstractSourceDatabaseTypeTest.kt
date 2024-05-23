@@ -13,8 +13,6 @@ import io.airbyte.protocol.models.v0.*
 import java.io.IOException
 import java.sql.SQLException
 import java.util.function.Consumer
-import java.util.function.Function
-import java.util.stream.Collectors
 import org.apache.commons.lang3.StringUtils
 import org.jooq.DSLContext
 import org.junit.jupiter.api.Assertions
@@ -71,13 +69,6 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
     }
 
     protected abstract val nameSpace: String
-        /**
-         * Provide a source namespace. It's allocated place for table creation. It also known ask
-         * "Database Schema" or "Dataset"
-         *
-         * @return source name space
-         */
-        get
 
     /**
      * Test the 'discover' command. TODO (liren): Some existing databases may fail testDataTypes(),
@@ -96,15 +87,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
     fun testDataTypes() {
         if (testCatalog()) {
             runDiscover()
-            val streams =
-                lastPersistedCatalog.streams
-                    .stream()
-                    .collect(
-                        Collectors.toMap(
-                            Function { obj: AirbyteStream -> obj.name },
-                            Function { s: AirbyteStream? -> s }
-                        )
-                    )
+            val streams = lastPersistedCatalog.streams.associateBy { it.name }
 
             // testDataHolders should be initialized using the `addDataTypeTestData` function
             testDataHolders.forEach(
@@ -146,8 +129,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
         val allMessages = runRead(catalog)
 
         val recordMessages =
-            allMessages!!
-                .stream()
+            allMessages
                 .filter { m: AirbyteMessage -> m.type == AirbyteMessage.Type.RECORD }
                 .toList()
         val expectedValues: MutableMap<String?, MutableList<String?>?> = HashMap()
@@ -202,7 +184,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
                     "The stream '%s' checking type '%s' initialized at %s got unexpected values: %s".formatted(
                         streamName,
                         test.sourceType,
-                        test!!.declarationLocation,
+                        test.declarationLocation,
                         unexpectedValue
                     )
                 )
@@ -218,7 +200,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
                     "The stream '%s' checking type '%s' initialized at %s is missing values: %s".formatted(
                         streamName,
                         test.sourceType,
-                        test!!.declarationLocation,
+                        test.declarationLocation,
                         missedValue
                     )
                 )
@@ -258,8 +240,8 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
     @Throws(Exception::class)
     protected open fun createTables() {
         for (test in testDataHolders) {
-            database!!.query<Any?> { ctx: DSLContext? ->
-                ctx!!.fetch(test.createSqlQuery)
+            database!!.query<Any?> { ctx: DSLContext ->
+                ctx.fetch(test.createSqlQuery)
                 LOGGER.info("Table {} is created.", test.nameWithTestPrefix)
                 null
             }
@@ -269,8 +251,8 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
     @Throws(Exception::class)
     protected open fun populateTables() {
         for (test in testDataHolders) {
-            database!!.query<Any?> { ctx: DSLContext? ->
-                test.insertSqlQueries.forEach(Consumer { sql: String? -> ctx!!.fetch(sql) })
+            database!!.query<Any?> { ctx: DSLContext ->
+                test.insertSqlQueries.forEach(Consumer { sql: String -> ctx.fetch(sql) })
                 LOGGER.info(
                     "Inserted {} rows in Ttable {}",
                     test.insertSqlQueries.size,
@@ -291,7 +273,6 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
             ConfiguredAirbyteCatalog()
                 .withStreams(
                     testDataHolders
-                        .stream()
                         .map { test: TestDataHolder ->
                             ConfiguredAirbyteStream()
                                 .withSyncMode(SyncMode.INCREMENTAL)
@@ -316,7 +297,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
                                         )
                                 )
                         }
-                        .collect(Collectors.toList())
+                        .toList()
                 )
 
     /**
@@ -329,10 +310,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
     fun addDataTypeTestData(test: TestDataHolder) {
         testDataHolders.add(test)
         test.setTestNumber(
-            testDataHolders
-                .stream()
-                .filter { t: TestDataHolder -> t.sourceType == test.sourceType }
-                .count()
+            testDataHolders.filter { t: TestDataHolder -> t.sourceType == test.sourceType }.count()
         )
         test.nameSpace = nameSpace
         test.setIdColumnName(idColumnName)
@@ -340,8 +318,8 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
         test.setDeclarationLocation(Thread.currentThread().stackTrace)
     }
 
-    private fun formatCollection(collection: Collection<String?>?): String {
-        return collection!!.stream().map { s: String? -> "`$s`" }.collect(Collectors.joining(", "))
+    private fun formatCollection(collection: Collection<String?>): String {
+        return collection.joinToString(", ") { s: String? -> "`$s`" }
     }
 
     val markdownTestTable: String
@@ -382,8 +360,8 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
 
     @Throws(SQLException::class)
     protected fun createDummyTableWithData(database: Database): ConfiguredAirbyteStream {
-        database.query<Any?> { ctx: DSLContext? ->
-            ctx!!.fetch(
+        database.query<Any?> { ctx: DSLContext ->
+            ctx.fetch(
                 "CREATE TABLE " +
                     nameSpace +
                     ".random_dummy_table(id INTEGER PRIMARY KEY, test_column VARCHAR(63));"
@@ -413,10 +391,9 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
 
     protected fun extractStateMessages(messages: List<AirbyteMessage>): List<AirbyteStateMessage> {
         return messages
-            .stream()
             .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.STATE }
             .map { obj: AirbyteMessage -> obj.state }
-            .collect(Collectors.toList())
+            .toList()
     }
 
     companion object {

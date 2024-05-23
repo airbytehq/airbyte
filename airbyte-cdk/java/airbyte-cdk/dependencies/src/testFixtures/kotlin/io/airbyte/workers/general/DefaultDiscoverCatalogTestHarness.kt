@@ -53,16 +53,15 @@ constructor(
                 ConnectorJobOutput()
                     .withOutputType(ConnectorJobOutput.OutputType.DISCOVER_CATALOG_ID)
 
-            LineGobbler.gobble(process.errorStream, { msg: String? -> LOGGER.error(msg) })
+            LineGobbler.gobble(process.errorStream, { msg: String -> LOGGER.error(msg) })
 
             val messagesByType = TestHarnessUtils.getMessagesByType(process, streamFactory, 30)
 
             val catalog =
                 messagesByType
                     .getOrDefault(AirbyteMessage.Type.CATALOG, ArrayList())
-                    .stream()
                     .map { obj: AirbyteMessage -> obj.catalog }
-                    .findFirst()
+                    .firstOrNull()
 
             val optionalConfigMsg =
                 TestHarnessUtils.getMostRecentConfigControlMessage(messagesByType)
@@ -92,14 +91,14 @@ constructor(
                 LOGGER.warn("Discover job subprocess finished with exit codee {}", exitCode)
             }
 
-            if (catalog.isPresent) {
+            if (catalog != null) {
                 val result =
                     AirbyteApiClient.retryWithJitter(
                         {
                             airbyteApiClient.sourceApi.writeDiscoverCatalogResult(
                                 buildSourceDiscoverSchemaWriteRequestBody(
                                     discoverSchemaInput,
-                                    catalog.get()
+                                    catalog
                                 )
                             )
                         },

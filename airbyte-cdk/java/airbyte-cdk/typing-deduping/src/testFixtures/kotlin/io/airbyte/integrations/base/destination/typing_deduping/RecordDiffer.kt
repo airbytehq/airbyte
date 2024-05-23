@@ -91,13 +91,9 @@ constructor(
         val diff =
             diffRecords(
                 expectedRecords
-                    .stream()
                     .map { record: JsonNode -> this.copyWithLiftedData(record) }
-                    .collect(Collectors.toList()),
-                actualRecords
-                    .stream()
-                    .map { record: JsonNode -> this.copyWithLiftedData(record) }
-                    .collect(Collectors.toList()),
+                    .toList(),
+                actualRecords.map { record: JsonNode -> this.copyWithLiftedData(record) }.toList(),
                 rawRecordIdentityComparator,
                 rawRecordSortComparator,
                 rawRecordIdentityExtractor,
@@ -219,8 +215,8 @@ constructor(
         recordIdExtractor: Function<JsonNode, String>,
         columnNames: Map<String, String>
     ): String {
-        val expectedRecords = originalExpectedRecords.stream().sorted(sortComparator).toList()
-        val actualRecords = originalActualRecords.stream().sorted(sortComparator).toList()
+        val expectedRecords = originalExpectedRecords.sortedWith(sortComparator)
+        val actualRecords = originalActualRecords.sortedWith(sortComparator)
 
         // Iterate through both lists in parallel and compare each record.
         // Build up an error message listing any incorrect, missing, or unexpected records.
@@ -367,7 +363,7 @@ constructor(
                 expectedValue.size() == actualValue.size() &&
                     Stream.generate { expectedValue.fieldNames().next() }
                         .limit(expectedValue.size().toLong())
-                        .allMatch { field: String? ->
+                        .allMatch { field: String ->
                             areJsonNodesEquivalent(expectedValue[field], actualValue[field])
                         }
             } else {

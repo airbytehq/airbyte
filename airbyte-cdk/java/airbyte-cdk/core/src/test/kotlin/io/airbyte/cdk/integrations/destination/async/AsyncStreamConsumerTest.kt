@@ -37,7 +37,6 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
-import java.util.stream.Collectors
 import java.util.stream.Stream
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -553,28 +552,25 @@ class AsyncStreamConsumerTest {
             argumentCaptor.allValues
                 .stream() // flatten those results into a single list for the simplicity of
                 // comparison
-                .flatMap { s: Stream<*>? -> s }
+                .flatMap { s: Stream<*> -> s }
                 .toList()
 
         val expRecords =
-            allRecords
-                .stream()
-                .map { m: AirbyteMessage ->
-                    PartialAirbyteMessage()
-                        .withType(AirbyteMessage.Type.RECORD)
-                        .withRecord(
-                            PartialAirbyteRecordMessage()
-                                .withStream(m.record.stream)
-                                .withNamespace(m.record.namespace)
-                                .withData(m.record.data),
-                        )
-                        .withSerialized(
-                            Jsons.serialize(
-                                m.record.data,
-                            ),
-                        )
-                }
-                .collect(Collectors.toList())
+            allRecords.map { m: AirbyteMessage ->
+                PartialAirbyteMessage()
+                    .withType(AirbyteMessage.Type.RECORD)
+                    .withRecord(
+                        PartialAirbyteRecordMessage()
+                            .withStream(m.record.stream)
+                            .withNamespace(m.record.namespace)
+                            .withData(m.record.data),
+                    )
+                    .withSerialized(
+                        Jsons.serialize(
+                            m.record.data,
+                        ),
+                    )
+            }
         assertEquals(expRecords, actualRecords)
     }
 }

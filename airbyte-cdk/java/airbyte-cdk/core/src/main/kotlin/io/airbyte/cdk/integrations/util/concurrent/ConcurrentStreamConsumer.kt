@@ -13,7 +13,6 @@ import java.util.*
 import java.util.concurrent.*
 import java.util.concurrent.ThreadPoolExecutor.AbortPolicy
 import java.util.function.Consumer
-import java.util.stream.Collectors
 import kotlin.math.min
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -78,14 +77,13 @@ class ConcurrentStreamConsumer(
          */
         val futures: Collection<CompletableFuture<Void>> =
             streams
-                .stream()
                 .map { stream: AutoCloseableIterator<AirbyteMessage> ->
                     ConcurrentStreamRunnable(stream, this)
                 }
                 .map { runnable: ConcurrentStreamRunnable ->
                     CompletableFuture.runAsync(runnable, executorService)
                 }
-                .collect(Collectors.toList())
+                .toList()
 
         /*
          * Wait for the submitted streams to complete before returning. This uses the join() method to allow
@@ -181,18 +179,18 @@ class ConcurrentStreamConsumer(
     private fun executeStream(stream: AutoCloseableIterator<AirbyteMessage>) {
         try {
             stream.use {
-                stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+                stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
                     LOGGER.debug("Consuming from stream {}...", s)
                 }
                 StreamStatusUtils.emitStartStreamStatus(stream, streamStatusEmitter)
                 streamConsumer.accept(stream)
                 StreamStatusUtils.emitCompleteStreamStatus(stream, streamStatusEmitter)
-                stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+                stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
                     LOGGER.debug("Consumption from stream {} complete.", s)
                 }
             }
         } catch (e: Exception) {
-            stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+            stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
                 LOGGER.error("Unable to consume from stream {}.", s, e)
             }
             StreamStatusUtils.emitIncompleteStreamStatus(stream, streamStatusEmitter)

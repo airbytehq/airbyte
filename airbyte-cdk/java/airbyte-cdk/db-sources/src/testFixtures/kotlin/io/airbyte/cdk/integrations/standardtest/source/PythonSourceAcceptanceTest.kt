@@ -35,7 +35,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
         get() = runExecutable(Command.GET_SPEC, ConnectorSpecification::class.java)
 
     @get:Throws(IOException::class)
-    override val config: JsonNode?
+    override val config: JsonNode
         get() = runExecutable(Command.GET_CONFIG)
 
     @get:Throws(IOException::class)
@@ -43,7 +43,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
         get() = runExecutable(Command.GET_CONFIGURED_CATALOG, ConfiguredAirbyteCatalog::class.java)
 
     @get:Throws(IOException::class)
-    override val state: JsonNode?
+    override val state: JsonNode
         get() = runExecutable(Command.GET_STATE)
 
     @Throws(IOException::class)
@@ -55,18 +55,13 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
                 .map { obj: JsonNode -> obj.textValue() }
                 .toList()
         val stringMessages =
-            allMessages!!
-                .stream()
-                .map { `object`: AirbyteMessage -> Jsons.serialize(`object`) }
-                .toList()
+            allMessages.map { `object`: AirbyteMessage -> Jsons.serialize(`object`) }.toList()
         LOGGER.info("Running " + regexTests.size + " regex tests...")
         regexTests.forEach(
             Consumer { regex: String ->
                 LOGGER.info("Looking for [$regex]")
                 Assertions.assertTrue(
-                    stringMessages.stream().anyMatch { line: String ->
-                        line.matches(regex.toRegex())
-                    },
+                    stringMessages.any { line: String -> line.matches(regex.toRegex()) },
                     "Failed to find regex: $regex"
                 )
             }
@@ -138,8 +133,8 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
             )
 
         val process = ProcessBuilder(dockerCmd).start()
-        LineGobbler.gobble(process.errorStream, { msg: String? -> LOGGER.error(msg) })
-        LineGobbler.gobble(process.inputStream, { msg: String? -> LOGGER.info(msg) })
+        LineGobbler.gobble(process.errorStream, { msg: String -> LOGGER.error(msg) })
+        LineGobbler.gobble(process.inputStream, { msg: String -> LOGGER.info(msg) })
 
         TestHarnessUtils.gentleClose(process, 1, TimeUnit.MINUTES)
 

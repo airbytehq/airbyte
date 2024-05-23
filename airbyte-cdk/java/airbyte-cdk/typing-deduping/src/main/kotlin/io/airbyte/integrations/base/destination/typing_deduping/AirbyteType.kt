@@ -108,7 +108,6 @@ interface AirbyteType {
             // Recurse into a schema that forces a specific one of each option
             val options =
                 typeOptions
-                    .stream()
                     .map { typeOption: String ->
                         fromJsonSchema(getTrimmedJsonSchema(schema, typeOption))
                     }
