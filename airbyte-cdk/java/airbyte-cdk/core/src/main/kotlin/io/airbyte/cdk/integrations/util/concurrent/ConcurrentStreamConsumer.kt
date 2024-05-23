@@ -13,7 +13,6 @@ import java.util.*
 import java.util.concurrent.*
 import java.util.concurrent.ThreadPoolExecutor.AbortPolicy
 import java.util.function.Consumer
-import java.util.stream.Collectors
 import kotlin.math.min
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -85,7 +84,7 @@ class ConcurrentStreamConsumer(
                 .map { runnable: ConcurrentStreamRunnable ->
                     CompletableFuture.runAsync(runnable, executorService)
                 }
-                .collect(Collectors.toList())
+                .toList()
 
         /*
          * Wait for the submitted streams to complete before returning. This uses the join() method to allow

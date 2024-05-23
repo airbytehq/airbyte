@@ -315,7 +315,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             .stream()
             .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.STATE }
             .map { obj: AirbyteMessage -> obj.state }
-            .collect(Collectors.toList())
+            .toList()
     }
 
     protected fun assertExpectedRecords(
@@ -890,11 +890,11 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             expectedCatalog.streams
                 .stream()
                 .sorted(Comparator.comparing { obj: AirbyteStream -> obj.name })
-                .collect(Collectors.toList()),
+                .toList(),
             actualCatalog.streams
                 .stream()
                 .sorted(Comparator.comparing { obj: AirbyteStream -> obj.name })
-                .collect(Collectors.toList()),
+                .toList()
         )
     }
 

@@ -11,7 +11,6 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.configoss.StandardCheckConnectionOutput
 import io.airbyte.protocol.models.v0.*
 import java.util.*
-import java.util.stream.Collectors
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.slf4j.Logger
@@ -229,7 +228,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
             configuredCatalog.streams
                 .stream()
                 .filter { s: ConfiguredAirbyteStream -> s.syncMode == SyncMode.INCREMENTAL }
-                .collect(Collectors.toList())
+                .toList()
 
         val airbyteMessages = runRead(configuredCatalog, state)
         val recordMessages = filterRecords(airbyteMessages)
@@ -238,7 +237,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
                 .stream()
                 .filter { m: AirbyteMessage -> m.type == AirbyteMessage.Type.STATE }
                 .map { obj: AirbyteMessage -> obj.state }
-                .collect(Collectors.toList())
+                .toList()
         Assertions.assertFalse(
             recordMessages.isEmpty(),
             "Expected the first incremental sync to produce records"
@@ -394,13 +393,13 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
                 .stream()
                 .map { m: AirbyteRecordMessage -> this.pruneEmittedAt(m) }
                 .map { m: AirbyteRecordMessage -> this.pruneCdcMetadata(m) }
-                .collect(Collectors.toList())
+                .toList()
         val prunedActual =
             actual
                 .stream()
                 .map { m: AirbyteRecordMessage -> this.pruneEmittedAt(m) }
                 .map { m: AirbyteRecordMessage -> this.pruneCdcMetadata(m) }
-                .collect(Collectors.toList())
+                .toList()
         Assertions.assertEquals(prunedExpected.size, prunedActual.size, message)
         Assertions.assertTrue(prunedExpected.containsAll(prunedActual), message)
         Assertions.assertTrue(prunedActual.containsAll(prunedExpected), message)
@@ -441,7 +440,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
                 .stream()
                 .filter { m: AirbyteMessage -> m.type == AirbyteMessage.Type.RECORD }
                 .map { obj: AirbyteMessage -> obj.record }
-                .collect(Collectors.toList())
+                .toList()
         }
 
         @JvmStatic

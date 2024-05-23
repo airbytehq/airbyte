@@ -23,9 +23,10 @@ import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.sql.Timestamp
 import java.time.Instant
-import java.util.Locale
-import java.util.Optional
-import java.util.stream.Collectors
+import java.util.*
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.IllegalArgumentException
 import kotlin.Int
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -176,14 +177,14 @@ constructor(
                 .map { metaColumn: Map.Entry<String?, DataType<*>?> ->
                     DSL.field(DSL.quotedName(metaColumn.key), metaColumn.value)
                 }
-                .collect(Collectors.toList())
+                .toList()
         val dataFields =
             columns.entries
                 .stream()
                 .map { column: Map.Entry<ColumnId?, AirbyteType> ->
                     DSL.field(DSL.quotedName(column.key!!.name), toDialectType(column.value))
                 }
-                .collect(Collectors.toList())
+                .toList()
         dataFields.addAll(fields)
         return dataFields
     }
@@ -227,7 +228,7 @@ constructor(
                 .map { metaColumn: Map.Entry<String?, DataType<*>?> ->
                     DSL.field(DSL.quotedName(metaColumn.key), metaColumn.value)
                 }
-                .collect(Collectors.toList())
+                .toList()
         // Use originalName with non-sanitized characters when extracting data from _airbyte_data
         val dataFields = extractRawDataFields(columns, useExpensiveSaferCasting)
         dataFields.addAll(fields)

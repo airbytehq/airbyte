@@ -14,7 +14,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import java.util.*
 import java.util.List
 import java.util.Map
-import java.util.stream.Collectors
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -157,7 +156,7 @@ class LegacyStateManagerTest {
                                             obj.streamName
                                         }
                                     )
-                                    .collect(Collectors.toList())
+                                    .toList()
                             )
                             .withCdc(false)
                     )
@@ -197,7 +196,7 @@ class LegacyStateManagerTest {
                                             obj.streamName
                                         }
                                     )
-                                    .collect(Collectors.toList())
+                                    .toList()
                             )
                             .withCdc(false)
                     )
@@ -255,7 +254,7 @@ class LegacyStateManagerTest {
                                             obj.streamName
                                         }
                                     )
-                                    .collect(Collectors.toList())
+                                    .toList()
                             )
                             .withCdc(false)
                     )
@@ -318,7 +317,7 @@ class LegacyStateManagerTest {
                                             obj.streamName
                                         }
                                     )
-                                    .collect(Collectors.toList())
+                                    .toList()
                             )
                             .withCdc(true)
                     )
@@ -353,7 +352,7 @@ class LegacyStateManagerTest {
                                             obj.streamName
                                         }
                                     )
-                                    .collect(Collectors.toList())
+                                    .toList()
                             )
                             .withCdc(true)
                     )
