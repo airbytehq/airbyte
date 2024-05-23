@@ -873,10 +873,7 @@ class ClientSideIncrementalStream(Stream, CheckpointMixin):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        if value:
-            self._cursor_value = value[self.cursor_field]
-        else:
-            self._cursor_value = ""
+        self._cursor_value = value.get(self.cursor_field, "")
 
     def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> bool:
         """
