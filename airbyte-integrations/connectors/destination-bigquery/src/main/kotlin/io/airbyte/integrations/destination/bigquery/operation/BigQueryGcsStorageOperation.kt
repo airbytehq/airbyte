@@ -119,7 +119,7 @@ class BigQueryGcsStorageOperation(
     private fun stagingFullPath(streamId: StreamId): String {
         return gcsNameTransformer.applyDefaultCase(
             String.format(
-                "%s/%s/%02d/%02d/%02d/%s/",
+                "%s%s/%02d/%02d/%02d/%s/",
                 stagingRootPath(streamId),
                 syncDateTime.year().get(),
                 syncDateTime.monthOfYear().get(),
@@ -133,7 +133,7 @@ class BigQueryGcsStorageOperation(
     private fun stagingRootPath(streamId: StreamId): String {
         return gcsNameTransformer.applyDefaultCase(
             String.format(
-                "%s/%s_%s",
+                "%s/%s_%s/",
                 gcsConfig.bucketPath,
                 gcsNameTransformer.convertStreamName(streamId.rawNamespace),
                 gcsNameTransformer.convertStreamName(streamId.rawName)
