@@ -112,7 +112,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
   @Override
   public Sql createSchema(final String schema) {
     return Sql.of(new StringSubstitutor(Map.of("schema", StringUtils.wrap(schema, QUOTE)))
-        .replace("CREATE SCHEMA IF NOT EXISTS ${schema};"));
+        .replace("CREATE SCHEMA IF NOT EXISTS ${schema} DEFAULT_DDL_COLLATION='utf8';"));
   }
 
   @Override
@@ -129,7 +129,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator {
         "retention_period_days", retentionPeriodDays)).replace(
             """
             CREATE ${force_create_table} TABLE ${final_table_id} (
-              "_AIRBYTE_RAW_ID" TEXT NOT NULL,
+              "_AIRBYTE_RAW_ID" TEXT NOT NULL COLLATE 'utf8',
               "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
               "_AIRBYTE_META" VARIANT NOT NULL
               ${column_declarations}

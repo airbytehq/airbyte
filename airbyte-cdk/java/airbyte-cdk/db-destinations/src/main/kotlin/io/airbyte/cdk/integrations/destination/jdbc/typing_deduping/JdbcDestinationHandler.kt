@@ -496,8 +496,8 @@ abstract class JdbcDestinationHandler<DestinationState>(
         protected const val DESTINATION_STATE_TABLE_NAME = "_airbyte_destination_state"
         protected const val DESTINATION_STATE_TABLE_COLUMN_NAME = "name"
         protected const val DESTINATION_STATE_TABLE_COLUMN_NAMESPACE = "namespace"
-        private const val DESTINATION_STATE_TABLE_COLUMN_STATE = "destination_state"
-        private const val DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT = "updated_at"
+        protected const val DESTINATION_STATE_TABLE_COLUMN_STATE = "destination_state"
+        protected const val DESTINATION_STATE_TABLE_COLUMN_UPDATED_AT = "updated_at"
 
         @Throws(SQLException::class)
         fun findExistingTable(
