@@ -15,7 +15,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: >-
             {% if (next_page_token['next_page_token'] or 0) <
             config['tickers'].split(',')|length %}/v8/finance/chart/{{
@@ -23,13 +23,13 @@ definitions:
             0].strip() }}{% endif %}
           http_method: GET
           request_parameters:
-            range: '{{ config[''range''] }}'
+            range: "{{ config['range'] }}"
             symbol: >-
               {% if (next_page_token['next_page_token'] or 0) <
               config['tickers'].split(',')|length %}{{
               config['tickers'].split(',')[next_page_token['next_page_token'] or
               0].strip() }}{% else %} finish {% endif %}
-            interval: '{{ config[''interval''] }}'
+            interval: "{{ config['interval'] }}"
           request_headers:
             Accept: application/json
             User-Agent: Mozilla/5.0 (X11; Linux x86_64)
@@ -55,13 +55,13 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/price'
+          $ref: "#/schemas/price"
   base_requester:
     type: HttpRequester
     url_base: https://query1.finance.yahoo.com
 
 streams:
-  - $ref: '#/definitions/streams/price'
+  - $ref: "#/definitions/streams/price"
 
 spec:
   type: Spec
@@ -148,7 +148,7 @@ schemas:
                             description: The closing price of the stock.
                             items:
                               type:
-                                - 'null'
+                                - "null"
                                 - number
                               description: >-
                                 Closing price of the stock for a specific time
@@ -160,7 +160,7 @@ schemas:
                               period.
                             items:
                               type:
-                                - 'null'
+                                - "null"
                                 - number
                               description: >-
                                 Highest price the stock reached during a
@@ -172,7 +172,7 @@ schemas:
                               period.
                             items:
                               type:
-                                - 'null'
+                                - "null"
                                 - number
                               description: >-
                                 Lowest price the stock reached during a specific
@@ -182,7 +182,7 @@ schemas:
                             description: The opening price of the stock.
                             items:
                               type:
-                                - 'null'
+                                - "null"
                                 - number
                               description: >-
                                 Opening price of the stock for a specific time
@@ -192,7 +192,7 @@ schemas:
                             description: The total volume of the stock traded.
                             items:
                               type:
-                                - 'null'
+                                - "null"
                                 - number
                               description: >-
                                 Total trading volume of the stock for a specific
@@ -208,7 +208,7 @@ schemas:
                         day.
                     currency:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                       description: Currency in which the prices are denoted.
                     currentTradingPeriod:
@@ -280,7 +280,7 @@ schemas:
                       description: Timezone of the stock exchange.
                     firstTradeDate:
                       type:
-                        - 'null'
+                        - "null"
                         - number
                       description: Date of the stock's first trade on the exchange.
                     gmtoffset:
