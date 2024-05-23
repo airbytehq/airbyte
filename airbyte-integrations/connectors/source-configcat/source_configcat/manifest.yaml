@@ -1,100 +1,266 @@
-version: "0.29.0"
+version: 0.79.1
 
-definitions:
-  selector:
-    extractor:
-      field_path: []
-  requester:
-    url_base: "https://api.configcat.com/v1"
-    http_method: "GET"
-    authenticator:
-      type: BasicHttpAuthenticator
-      username: "{{ config['username'] }}"
-      password: "{{ config['password'] }}"
-  retriever:
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: NoPagination
-    requester:
-      $ref: "#/definitions/requester"
-  base_stream:
-    retriever:
-      $ref: "#/definitions/retriever"
-  organizations_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "organizations"
-      primary_key: "organizationId"
-      path: "/organizations"
-  products_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "products"
-      primary_key: "productId"
-      path: "/products"
-  product_partition_router:
-    type: SubstreamPartitionRouter
-    parent_stream_configs:
-      - stream: "#/definitions/products_stream"
-        parent_key: productId
-        partition_field: productId
-  tags_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "tags"
-      primary_key: "tagId"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/products/{{ stream_slice.productId }}/tags"
-      partition_router:
-        $ref: "#/definitions/product_partition_router"
-      record_selector:
-        $ref: "#/definitions/selector"
-  environments_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "environments"
-      primary_key: "environmentId"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/products/{{ stream_slice.productId }}/environments"
-      partition_router:
-        $ref: "#/definitions/product_partition_router"
-      record_selector:
-        $ref: "#/definitions/selector"
-  organization_partition_router:
-    type: SubstreamPartitionRouter
-    parent_stream_configs:
-      - stream: "#/definitions/organizations_stream"
-        parent_key: organizationId
-        partition_field: organizationId
-  organization_members_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "organization_members"
-      primary_key: "userId"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        path: "/organizations/{{ stream_slice.organizationId }}/members"
-      partition_router:
-        $ref: "#/definitions/organization_partition_router"
-      record_selector:
-        $ref: "#/definitions/selector"
-
-streams:
-  - "#/definitions/organizations_stream"
-  - "#/definitions/organization_members_stream"
-  - "#/definitions/products_stream"
-  - "#/definitions/tags_stream"
-  - "#/definitions/environments_stream"
+type: DeclarativeSource
 
 check:
+  type: CheckStream
   stream_names:
-    - "organizations"
+    - organizations
+
+definitions:
+  streams:
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - organizationId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /organizations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/organizations'
+    organization_members:
+      type: DeclarativeStream
+      name: organization_members
+      primary_key:
+        - userId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /organizations/{{ stream_slice.organizationId }}/members
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: organizationId
+                partition_field: organizationId
+                stream:
+                  $ref: '#/definitions/streams/organizations'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/organization_members'
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - productId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /products
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/products'
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - tagId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /products/{{ stream_slice.productId }}/tags
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: productId
+                partition_field: productId
+                stream:
+                  $ref: '#/definitions/streams/products'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/tags'
+    environments:
+      type: DeclarativeStream
+      name: environments
+      primary_key:
+        - environmentId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /products/{{ stream_slice.productId }}/environments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: productId
+                partition_field: productId
+                stream:
+                  $ref: '#/definitions/streams/products'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/environments'
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.configcat.com/v1
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: '{{ config[''username''] }}'
+      password: '{{ config[''password''] }}'
+
+streams:
+  - $ref: '#/definitions/streams/organizations'
+  - $ref: '#/definitions/streams/organization_members'
+  - $ref: '#/definitions/streams/products'
+  - $ref: '#/definitions/streams/tags'
+  - $ref: '#/definitions/streams/environments'
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+    properties:
+      username:
+        type: string
+        title: Username
+        description: >-
+          Basic auth user name. See <a
+          href="https://api.configcat.com/docs/#section/Authentication">here</a>.
+        order: 0
+      password:
+        type: string
+        title: Password
+        always_show: true
+        airbyte_secret: true
+        description: >-
+          Basic auth password. See <a
+          href="https://api.configcat.com/docs/#section/Authentication">here</a>.
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    organizations: false
+    organization_members: false
+    products: false
+    tags: false
+    environments: false
+
+schemas:
+  organizations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      name:
+        type: string
+      organizationId:
+        type: string
+  organization_members:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      email:
+        type: string
+      fullName:
+        type: string
+      userId:
+        type: string
+  products:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      order:
+        type: integer
+      organizationId:
+        type: object
+      productId:
+        type: string
+      reasonRequired:
+        type: boolean
+  tags:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      color:
+        type: string
+      name:
+        type: string
+      product:
+        type: object
+      tagId:
+        type: integer
+  environments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      color:
+        type:
+          - 'null'
+          - string
+      description:
+        type:
+          - 'null'
+          - string
+      environmentId:
+        type:
+          - 'null'
+          - string
+      name:
+        type:
+          - 'null'
+          - string
+      order:
+        type:
+          - 'null'
+          - integer
+      product:
+        type: object
+      reasonRequired:
+        type:
+          - 'null'
+          - boolean
