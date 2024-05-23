@@ -23,6 +23,7 @@ This project supports the following streams:
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject         |
-| :------ | :--------- | :------------------------------------------------------- | :-------------- |
-| 0.1.0   | 2023-02-28 | [23593](https://github.com/airbytehq/airbyte/pull/23593) | Initial Release |
+| Version | Date       | Pull Request                                             | Subject                                |
+| :------ | :--------- | :------------------------------------------------------- |:---------------------------------------|
+| 0.1.1   | 2024-05-24 | [38633](https://github.com/airbytehq/airbyte/pull/38633) | Make connector compatible with Builder |
+| 0.1.0   | 2023-02-28 | [23593](https://github.com/airbytehq/airbyte/pull/23593) | Initial Release                        |
