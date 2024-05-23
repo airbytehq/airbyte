@@ -9,7 +9,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from source_unity.streams import Campaigns, Apps, Creatives, CreativePacks
+from source_unity.streams import Campaigns, Apps, Creatives, CreativePacks, Bids
 
 
 class SourceUnity(AbstractSource):
@@ -22,4 +22,4 @@ class SourceUnity(AbstractSource):
             "authenticator": auth,
             "config": config
         }
-        return [Campaigns(**args), Apps(**args), Creatives(**args), CreativePacks(**args)]
+        return [Campaigns(**args), Apps(**args), Creatives(**args), CreativePacks(**args), Bids(**args)]

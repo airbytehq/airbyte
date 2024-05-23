@@ -7,6 +7,7 @@ from abc import ABC
 from typing import Any, Iterable, Mapping, MutableMapping, Optional, Dict
 
 import requests
+import re
 import logging
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
@@ -121,3 +122,46 @@ class CreativePacks(AppsSubStream):
     primary_key = "id"
     is_paginated = True
     path_suffix = "creative-packs"
+
+
+class Bids(HttpSubStream, UnityStream):
+    backoff = 120
+    use_cache = False
+    primary_key = ["campaign_id", "country"]
+    is_paginated = False
+    path_suffix = "creative-packs"
+
+    def __init__(self, authenticator: TokenAuthenticator, config, **kwargs):
+        self.config = config
+        super().__init__(
+            authenticator=authenticator,
+            config=config,
+            parent=Campaigns(authenticator=authenticator, config=config),
+        )
+
+    @property
+    def retry_factor(self) -> float:
+        return 10
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Dict[str, Any]]:
+        records = super().parse_response(response, stream_slice, **kwargs)
+        for record in records:
+            record['organisation_id'] = self.config["organisation_id"]
+            record['campaign_id'] = stream_slice["parent"]["id"]
+            record['campaign_name'] = stream_slice["parent"]["name"]
+            yield record
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        campaign_set_id = stream_slice["parent"]["campaign_set_id"]
+        campaign_id = stream_slice["parent"]["id"]
+        mapping = {
+            "installs": "cpi-bids",
+            "roas": "roas-bids",
+            "eventOptimization": "event-optimization-bids",
+            "creativeTesting": "cpi-bids",
+            "retention": "retention-bids",
+        }
+        url_suffix = mapping[stream_slice["parent"]["goal"]]
+        return f"{campaign_set_id}/campaigns/{campaign_id}/{url_suffix}"
