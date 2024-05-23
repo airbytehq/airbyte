@@ -12,6 +12,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.migrators.Minimu
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.mockk.mockk
 import java.time.Instant
 import java.util.*
 import java.util.function.Consumer
@@ -119,7 +120,11 @@ class DefaultTyperDeduperTest {
         initialStates.forEach(
             Consumer { initialState: DestinationInitialStatus<MockState> ->
                 Mockito.`when`(initialState.initialRawTableStatus)
-                    .thenReturn(InitialRawTableStatus(true, true, Optional.empty()))
+                    .thenReturn(InitialRawTableStatus(
+                        rawTableExists = true,
+                        hasUnprocessedRecords = true,
+                        maxProcessedTimestamp = Optional.empty()
+                    ))
             }
         )
 
@@ -316,9 +321,9 @@ class DefaultTyperDeduperTest {
                 Mockito.`when`(initialState.initialRawTableStatus)
                     .thenReturn(
                         InitialRawTableStatus(
-                            true,
-                            true,
-                            Optional.of(Instant.parse("2023-01-01T12:34:56Z"))
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.of(Instant.parse("2023-01-01T12:34:56Z"))
                         )
                     )
             }
@@ -413,7 +418,11 @@ class DefaultTyperDeduperTest {
                 Mockito.`when`(initialState.isFinalTableEmpty).thenReturn(false)
                 Mockito.`when`(initialState.isSchemaMismatch).thenReturn(false)
                 Mockito.`when`(initialState.initialRawTableStatus)
-                    .thenReturn(InitialRawTableStatus(true, true, Optional.of(Instant.now())))
+                    .thenReturn(InitialRawTableStatus(
+                        rawTableExists = true,
+                        hasUnprocessedRecords = true,
+                        maxProcessedTimestamp = Optional.of(Instant.now())
+                    ))
             }
         )
 
@@ -471,7 +480,11 @@ class DefaultTyperDeduperTest {
         initialStates.forEach(
             Consumer { initialState: DestinationInitialStatus<MockState> ->
                 Mockito.`when`(initialState.initialRawTableStatus)
-                    .thenReturn(InitialRawTableStatus(true, false, Optional.empty()))
+                    .thenReturn(InitialRawTableStatus(
+                        rawTableExists = true,
+                        hasUnprocessedRecords = false,
+                        maxProcessedTimestamp = Optional.empty()
+                    ))
             }
         )
 
@@ -521,9 +534,9 @@ class DefaultTyperDeduperTest {
                 Mockito.`when`(initialState.initialRawTableStatus)
                     .thenReturn(
                         InitialRawTableStatus(
-                            true,
-                            true,
-                            Optional.of(Instant.parse("2023-01-23T12:34:56Z"))
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.of(Instant.parse("2023-01-23T12:34:56Z"))
                         )
                     )
             }
@@ -600,7 +613,12 @@ class DefaultTyperDeduperTest {
                     DestinationInitialStatus(
                         OVERWRITE_STREAM_CONFIG,
                         true,
-                        InitialRawTableStatus(true, true, Optional.of(Instant.ofEpochMilli(42))),
+                        InitialRawTableStatus(
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                        ),
+                        initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                         true,
                         false,
                         MockState(false, false, true)
@@ -608,7 +626,12 @@ class DefaultTyperDeduperTest {
                     DestinationInitialStatus(
                         APPEND_STREAM_CONFIG,
                         true,
-                        InitialRawTableStatus(true, true, Optional.of(Instant.ofEpochMilli(42))),
+                        InitialRawTableStatus(
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                        ),
+                        initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                         true,
                         false,
                         MockState(false, false, true)
@@ -616,7 +639,12 @@ class DefaultTyperDeduperTest {
                     DestinationInitialStatus(
                         DEDUPE_STREAM_CONFIG,
                         true,
-                        InitialRawTableStatus(true, true, Optional.of(Instant.ofEpochMilli(42))),
+                        InitialRawTableStatus(
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                        ),
+                        initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                         true,
                         false,
                         MockState(false, false, true)
@@ -712,7 +740,12 @@ class DefaultTyperDeduperTest {
                     DestinationInitialStatus(
                         OVERWRITE_STREAM_CONFIG,
                         true,
-                        InitialRawTableStatus(true, true, Optional.of(Instant.ofEpochMilli(42))),
+                        InitialRawTableStatus(
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                        ),
+                        initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                         false,
                         false,
                         MockState(false, false, false)
@@ -720,7 +753,12 @@ class DefaultTyperDeduperTest {
                     DestinationInitialStatus(
                         APPEND_STREAM_CONFIG,
                         true,
-                        InitialRawTableStatus(true, true, Optional.of(Instant.ofEpochMilli(42))),
+                        InitialRawTableStatus(
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                        ),
+                        initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                         false,
                         false,
                         MockState(false, false, false)
@@ -728,7 +766,12 @@ class DefaultTyperDeduperTest {
                     DestinationInitialStatus(
                         DEDUPE_STREAM_CONFIG,
                         true,
-                        InitialRawTableStatus(true, true, Optional.of(Instant.ofEpochMilli(42))),
+                        InitialRawTableStatus(
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                        ),
+                        initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                         false,
                         false,
                         MockState(false, false, false)
@@ -815,7 +858,12 @@ class DefaultTyperDeduperTest {
                     DestinationInitialStatus(
                         OVERWRITE_STREAM_CONFIG,
                         true,
-                        InitialRawTableStatus(true, true, Optional.of(Instant.ofEpochMilli(42))),
+                        InitialRawTableStatus(
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                        ),
+                        initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                         false,
                         false,
                         MockState(true, false, false)
@@ -823,7 +871,12 @@ class DefaultTyperDeduperTest {
                     DestinationInitialStatus(
                         APPEND_STREAM_CONFIG,
                         true,
-                        InitialRawTableStatus(true, true, Optional.of(Instant.ofEpochMilli(42))),
+                        InitialRawTableStatus(
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                        ),
+                        initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                         false,
                         false,
                         MockState(true, false, false)
@@ -831,7 +884,12 @@ class DefaultTyperDeduperTest {
                     DestinationInitialStatus(
                         DEDUPE_STREAM_CONFIG,
                         true,
-                        InitialRawTableStatus(true, true, Optional.of(Instant.ofEpochMilli(42))),
+                        InitialRawTableStatus(
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                        ),
+                        initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                         false,
                         false,
                         MockState(true, false, false)

@@ -11,7 +11,11 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.lang.Exceptions
 import io.airbyte.commons.resources.MoreResources
 import io.airbyte.configoss.WorkerDestinationConfig
+import io.airbyte.protocol.models.AirbyteStreamStatusTraceMessage
+import io.airbyte.protocol.models.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+import io.airbyte.protocol.models.AirbyteTraceMessage
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.StreamDescriptor
 import io.airbyte.protocol.models.v0.*
 import io.airbyte.workers.internal.AirbyteDestination
 import io.airbyte.workers.internal.DefaultAirbyteDestination
@@ -36,6 +40,8 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.function.Executable
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 
 private val LOGGER = KotlinLogging.logger {}
 /**
@@ -224,10 +230,14 @@ abstract class BaseTypingDedupingTest {
      * Starting with an empty destination, execute a full refresh overwrite sync. Verify that the
      * records are written to the destination table. Then run a second sync, and verify that the
      * records are overwritten.
+     *
+     * Parameterized on destination sync mode. After the refreshes project, APPEND and OVERWRITE
+     * behave identically.
      */
-    @Test
+    @ParameterizedTest
+    @EnumSource(DestinationSyncMode::class, names = ["APPEND", "OVERWRITE"])
     @Throws(Exception::class)
-    fun fullRefreshOverwrite() {
+    fun truncateRefresh() {
         val catalog =
             io.airbyte.protocol.models.v0
                 .ConfiguredAirbyteCatalog()
@@ -236,7 +246,7 @@ abstract class BaseTypingDedupingTest {
                         ConfiguredAirbyteStream()
                             .withSyncId(42)
                             .withGenerationId(43)
-                            .withMinimumGenerationId(0)
+                            .withMinimumGenerationId(43)
                             .withSyncMode(SyncMode.FULL_REFRESH)
                             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
                             .withStream(
@@ -273,10 +283,13 @@ abstract class BaseTypingDedupingTest {
      * Starting with an empty destination, execute a full refresh append sync. Verify that the
      * records are written to the destination table. Then run a second sync, and verify that the old
      * and new records are all present.
+     *
+     * Similar to [truncateRefresh], this is parameterized on sync mode.
      */
-    @Test
+    @ParameterizedTest
+    @EnumSource(DestinationSyncMode::class, names = ["APPEND", "OVERWRITE"])
     @Throws(Exception::class)
-    fun fullRefreshAppend() {
+    fun mergeRefresh() {
         val catalog =
             io.airbyte.protocol.models.v0
                 .ConfiguredAirbyteCatalog()
@@ -616,7 +629,7 @@ abstract class BaseTypingDedupingTest {
                         ConfiguredAirbyteStream()
                             .withSyncId(42)
                             .withGenerationId(43)
-                            .withMinimumGenerationId(0)
+                            .withMinimumGenerationId(43)
                             .withSyncMode(SyncMode.FULL_REFRESH)
                             .withCursorField(listOf("updated_at"))
                             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
@@ -962,7 +975,7 @@ abstract class BaseTypingDedupingTest {
                         ConfiguredAirbyteStream()
                             .withSyncId(42)
                             .withGenerationId(43)
-                            .withMinimumGenerationId(0)
+                            .withMinimumGenerationId(43)
                             .withSyncMode(SyncMode.FULL_REFRESH)
                             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
                             .withStream(
@@ -1026,17 +1039,43 @@ abstract class BaseTypingDedupingTest {
      * !!!!!! WARNING !!!!!! The code below was mostly copypasted from DestinationAcceptanceTest. If you
      * make edits here, you probably want to also edit there.
      */
+    /**
+     * @param streamStatus After pushing all the messages in [messages], push a stream status message
+     * for each stream. If this parameter is `null`, then instead do NOT push any status messages.
+     */
     @JvmOverloads
     @Throws(Exception::class)
     protected fun runSync(
         catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
         messages: List<AirbyteMessage>,
         imageName: String = this.imageName,
-        configTransformer: Function<JsonNode?, JsonNode?> = Function.identity()
+        configTransformer: Function<JsonNode?, JsonNode?> = Function.identity(),
+        streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE
     ) {
         val destination = startSync(catalog, imageName, configTransformer)
         val outputFuture = destinationOutputFuture(destination)
         pushMessages(messages, destination)
+        if (streamStatus != null) {
+            catalog.streams.forEach {
+                destination.accept(
+                    io.airbyte.protocol.models.AirbyteMessage()
+                        .withType(io.airbyte.protocol.models.AirbyteMessage.Type.TRACE)
+                        .withTrace(
+                            AirbyteTraceMessage()
+                                .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                                .withStreamStatus(
+                                    AirbyteStreamStatusTraceMessage()
+                                        .withStreamDescriptor(
+                                            StreamDescriptor()
+                                                .withNamespace(it.stream.namespace)
+                                                .withName(it.stream.name)
+                                        )
+                                        .withStatus(AirbyteStreamStatus.COMPLETE)
+                                )
+                        )
+                )
+            }
+        }
         endSync(destination, outputFuture)
     }
 

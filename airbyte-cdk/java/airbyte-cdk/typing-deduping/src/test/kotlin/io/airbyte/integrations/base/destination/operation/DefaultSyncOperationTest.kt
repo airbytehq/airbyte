@@ -75,9 +75,11 @@ class DefaultSyncOperationTest {
                 initialRawTableStatus =
                     InitialRawTableStatus(
                         rawTableExists = true,
+
                         hasUnprocessedRecords = false,
                         maxProcessedTimestamp = Optional.empty(),
                     ),
+                initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                 isSchemaMismatch = true,
                 isFinalTableEmpty = false,
                 destinationState =
@@ -172,9 +174,11 @@ class DefaultSyncOperationTest {
                 initialRawTableStatus =
                     InitialRawTableStatus(
                         rawTableExists = true,
+
                         hasUnprocessedRecords = false,
                         maxProcessedTimestamp = Optional.empty(),
                     ),
+                initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                 isSchemaMismatch = true,
                 isFinalTableEmpty = false,
                 destinationState =
