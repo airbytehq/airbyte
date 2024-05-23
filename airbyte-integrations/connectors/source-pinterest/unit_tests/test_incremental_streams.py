@@ -63,7 +63,7 @@ def test_stream_checkpoint_interval(patch_incremental_base_class):
     ("http_status", "should_retry"),
     (
         (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, False),
+        (HTTPStatus.BAD_REQUEST, True),
         (HTTPStatus.TOO_MANY_REQUESTS, False),
         (HTTPStatus.INTERNAL_SERVER_ERROR, True),
     ),
@@ -71,6 +71,7 @@ def test_stream_checkpoint_interval(patch_incremental_base_class):
 def test_should_retry(test_config, http_status, should_retry):
     response_mock = MagicMock()
     response_mock.status_code = http_status
+    response_mock.ok = http_status == HTTPStatus.OK
     stream = get_stream_by_name("ad_account_analytics", test_config)
     assert stream.retriever.requester._should_retry(response_mock) == should_retry
 
