@@ -3,50 +3,50 @@
     "type": "object",
     "supported_sync_modes": ["full_refresh"],
     "properties": {
-      "LINKS": {
+      "links": {
         "type": ["null", "string"]
       },
-      "ASOFDATE": {
+      "asofdate": {
         "type": ["string"],
         "format": "date-time"
       },        
-      "ID": {
-        "type": ["number"]
+      "id": {
+        "type": ["string"]
       },      
-      "EXPENSECOGSACCOUNT": {
+      "expensecogsaccount": {
         "type": ["null", "string"]
       },
-      "ITEMDESCRIPTION": {
+      "itemdescription": {
         "type": ["null", "string"]
       },
-      "ITEMNAME": {
+      "itemname": {
         "type": ["null", "string"]
       },
-      "PRODUCTFAMILY": {
+      "productfamily": {
         "type": ["null", "string"]
       },      
-      "PREFERREDSTOCKLEVEL": {
+      "preferredstocklevel": {
         "type": ["null", "number"]
       },      
-      "QUANTITYAVAILABLE": {
+      "quantityavailable": {
         "type": ["null", "number"]
       },
-      "QUANTITYAVAILABLEANDONORDER": {
+      "quantityavailableandonorder": {
         "type": ["null", "number"]
       },
-      "QUANTITYCOMMITTED": {
+      "quantitycommitted": {
         "type": ["null", "number"]
       },   
-      "QUANTITYONHAND": {
+      "quantityonhand": {
         "type": ["null", "number"]
       },   
-      "QUANTITYONORDER": {
+      "quantityonorder": {
         "type": ["null", "number"]
       },   
-      "QUANTITYNEEDED": {
+      "quantityneeded": {
         "type": ["null", "number"]
       },
-      "QUANTITYINTRANSIT": {
+      "quantityintransit": {
         "type": ["null", "number"]
       }     
     }

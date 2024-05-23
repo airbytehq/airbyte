@@ -3,47 +3,52 @@
     "type": "object",
     "supported_sync_modes": ["full_refresh", "incremental"],
     "properties": {
-      "ID": {
-        "type": ["number"]
+      "id": {
+        "type": ["string"]
       },
-      "LINKS": {
+      "links": {
         "type": ["null", "string"]
       },
-      "CLASS": {
+      "class": {
         "type": ["null", "string"]
       },
-      "CUSTOMER": {
+      "customer": {
         "type": ["null", "string"]
       },
-      "TRANDATE": {
+      "trandate": {
         "type": ["null", "string"],
         "format": "date-time"
-      },      
-      "EXPENSECOGSACCOUNT": {
+      }, 
+      "lastmodifieddate": {
+        "type": ["null", "string"],
+        "format": "date-time",
+        "airbyte_type": "timestamp_with_timezone"
+      },    
+      "expensecogsaccount": {
         "type": ["null", "string"]
       },      
-      "ITEMDESCRIPTION": {
+      "itemdescription": {
         "type": ["null", "string"]
       },
-      "ITEMFULLNAME": {
+      "itemfullname": {
         "type": ["null", "string"]
       },
-      "ITEMNAME": {
+      "itemname": {
         "type": ["null", "string"]
       },   
-      "MONTH": {
+      "month": {
         "type": ["null", "string"]
       },  
-      "WEEK": {
+      "week": {
         "type": ["null", "string"]
       },
-      "YEAR": {
+      "year": {
         "type": ["null", "number"]
       },
-      "WEIGHT": {
+      "weight": {
         "type": ["null", "number"]
       },        
-      "QUANTITY": {
+      "quantity": {
         "type": ["null", "number"]
       }     
     }

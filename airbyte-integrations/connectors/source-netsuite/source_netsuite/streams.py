@@ -337,6 +337,10 @@ class CustomInventory(NetsuiteStream):
 
 class CustomSalesOrder(IncrementalNetsuiteStream):
     offset = 0
+
+    @property
+    def cursor_field(self) -> str:
+        return "lastmodifieddate"
     
     @property
     def name(self):
@@ -345,7 +349,7 @@ class CustomSalesOrder(IncrementalNetsuiteStream):
     @property
     def http_method(self) -> str:
         return "POST"
-
+        
     def request_headers(self, stream_state, stream_slice, next_page_token):
         headers = super().request_headers(stream_state, stream_slice, next_page_token)
         headers["Content-Type"] = "application/json"
