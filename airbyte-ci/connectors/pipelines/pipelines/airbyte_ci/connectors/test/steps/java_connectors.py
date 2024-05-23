@@ -17,7 +17,7 @@ from pipelines.airbyte_ci.connectors.build_image.steps.java_connectors import (
 from pipelines.airbyte_ci.connectors.build_image.steps.normalization import BuildOrPullNormalization
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, get_connector_secrets_for_test_suite
+from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests
 from pipelines.airbyte_ci.steps.gradle import GradleTask
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions.system import docker
@@ -127,27 +127,20 @@ def _get_acceptance_test_steps(context: ConnectorContext) -> List[StepToRun]:
     """
     Generate the steps to run the acceptance tests for a Java connector.
     """
-    connector_test_suites_options = context.metadata.get("connectorTestSuitesOptions", [])
-    local_secrets = context.local_secret_store.get_all_secrets() if context.local_secret_store else []
-
-    integration_tests_secrets = get_connector_secrets_for_test_suite(
-        "integrationTests", context, connector_test_suites_options, local_secrets
-    )
-    acceptance_tests_secrets = get_connector_secrets_for_test_suite(
-        "acceptanceTests", context, connector_test_suites_options, local_secrets
-    )
 
     # Run tests in parallel
     return [
         StepToRun(
             id=CONNECTOR_TEST_STEP_ID.INTEGRATION,
-            step=IntegrationTests(context, secrets=integration_tests_secrets),
+            step=IntegrationTests(context, secrets=context.get_secrets_for_step_id(CONNECTOR_TEST_STEP_ID.INTEGRATION)),
             args=_create_integration_step_args_factory(context),
             depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
         ),
         StepToRun(
             id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
-            step=AcceptanceTests(context, secrets=acceptance_tests_secrets, concurrent_test_run=True),
+            step=AcceptanceTests(
+                context, secrets=context.get_secrets_for_step_id(CONNECTOR_TEST_STEP_ID.ACCEPTANCE), concurrent_test_run=True
+            ),
             args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
             depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
         ),
@@ -159,22 +152,12 @@ def get_test_steps(context: ConnectorContext) -> STEP_TREE:
     Get all the tests steps for a Java connector.
     """
 
-    connector_test_suites_options = context.metadata.get("connectorTestSuitesOptions", [])
-    local_secrets = context.local_secret_store.get_all_secrets() if context.local_secret_store else []
-
-    unit_tests_secrets = get_connector_secrets_for_test_suite(
-        "unitTests",
-        context,
-        connector_test_suites_options,
-        local_secrets,
-    )
-
     steps: STEP_TREE = [
         [StepToRun(id=CONNECTOR_TEST_STEP_ID.BUILD_TAR, step=BuildConnectorDistributionTar(context))],
         [
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.UNIT,
-                step=UnitTests(context, secrets=unit_tests_secrets),
+                step=UnitTests(context, secrets=context.get_secrets_for_step_id(CONNECTOR_TEST_STEP_ID.UNIT)),
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD_TAR],
             )
         ],

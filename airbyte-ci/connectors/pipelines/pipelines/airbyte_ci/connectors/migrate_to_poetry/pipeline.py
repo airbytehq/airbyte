@@ -12,7 +12,6 @@ import requests
 import toml
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from jinja2 import Environment, PackageLoader, select_autoescape
-from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, SetConnectorVersion, get_bumped_version
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext

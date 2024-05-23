@@ -305,7 +305,7 @@ flowchart TD
 | `--code-tests-only`                                     | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development. |
 | `--concurrent-cat`                                      | False    | False         | Make CAT tests run concurrently using pytest-xdist. Be careful about source or destination API rate limits.                                                                                              |
 | `--<step-id>.<extra-parameter>=<extra-parameter-value>` | True     |               | You can pass extra parameters for specific test steps. More details in the extra parameters section below                                                                                                |
-| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. 
+| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use.
 
 Note:
 
@@ -748,6 +748,7 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.15.1  | [#38615](https://github.com/airbytehq/airbyte/pull/38615)      | Do not eagerly fetch connector secrets.                                                                                      |
 | 4.15.0  | [#38322](https://github.com/airbytehq/airbyte/pull/38322)  | Introduce a SecretStore abstraction to fetch connector secrets from metadata files.                                          |
 | 4.14.1  | [#38582](https://github.com/airbytehq/airbyte/pull/38582)  | Fixed bugs in `up_to_date` flags, `pull_request` version change logic.                                                       |
 | 4.14.0  | [#38281](https://github.com/airbytehq/airbyte/pull/38281)  | Conditionally run test suites according to `connectorTestSuitesOptions` in metadata files.                                   |

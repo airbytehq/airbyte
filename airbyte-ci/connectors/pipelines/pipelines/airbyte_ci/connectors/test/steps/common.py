@@ -5,14 +5,13 @@
 """This module groups steps made to run tests agnostic to a connector language."""
 
 import datetime
-import logging
 import os
 import time
 from abc import ABC, abstractmethod
 from functools import cached_property
 from pathlib import Path
 from textwrap import dedent
-from typing import ClassVar, Dict, List, Optional
+from typing import ClassVar, List, Optional
 
 import requests  # type: ignore
 import semver
@@ -26,106 +25,8 @@ from pipelines.consts import INTERNAL_TOOL_PATHS, CIContext
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
-from pipelines.models.secrets import Secret, SecretNotFoundError, SecretStore
+from pipelines.models.secrets import Secret
 from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, StepStatus
-from pydash import find  # type: ignore
-
-
-def _handle_missing_secret_store(
-    secret_info: Dict[str, str | Dict[str, str]], raise_on_missing: bool, logger: Optional[logging.Logger] = None
-) -> None:
-    assert isinstance(secret_info["secretStore"], dict), "The secretStore field must be a dict"
-    message = f"Secret {secret_info['name']} can't be retrieved as {secret_info['secretStore']['alias']} is not available"
-    if raise_on_missing:
-        raise SecretNotFoundError(message)
-    if logger is not None:
-        logger.warn(message)
-
-
-def _process_secret(
-    secret_info: Dict[str, str | Dict[str, str]],
-    secret_stores: Dict[str, SecretStore],
-    raise_on_missing: bool,
-    logger: Optional[logging.Logger] = None,
-) -> Optional[Secret]:
-    assert isinstance(secret_info["secretStore"], dict), "The secretStore field must be a dict"
-    secret_store_alias = secret_info["secretStore"]["alias"]
-    if secret_store_alias not in secret_stores:
-        _handle_missing_secret_store(secret_info, raise_on_missing, logger)
-        return None
-    else:
-        # All these asserts and casting are there to make MyPy happy
-        # The dict structure being nested MyPy can't figure if the values are str or dict
-        assert isinstance(secret_info["name"], str), "The secret name field must be a string"
-        if file_name := secret_info.get("fileName"):
-            assert isinstance(secret_info["fileName"], str), "The secret fileName must be a string"
-            file_name = str(secret_info["fileName"])
-        else:
-            file_name = None
-        return Secret(secret_info["name"], secret_stores[secret_store_alias], file_name=file_name)
-
-
-def get_secrets_from_connector_test_suites_option(
-    connector_test_suites_options: List[Dict[str, str | Dict[str, List[Dict[str, str | Dict[str, str]]]]]],
-    suite_name: str,
-    secret_stores: Dict[str, SecretStore],
-    raise_on_missing_secret_store: bool = True,
-    logger: logging.Logger | None = None,
-) -> List[Secret]:
-    """Get secrets declared in metadata connectorTestSuitesOptions for a test suite name.
-    It will use the secret store alias declared in connectorTestSuitesOptions.
-    If the secret store is not available a warning or and error could be raised according to the raise_on_missing_secret_store parameter value.
-    We usually want to raise an error when running in CI context and log a warning when running locally, as locally we can fallback on local secrets.
-
-    Args:
-        connector_test_suites_options (List[Dict[str, str  |  Dict]]): The connector under test test suite options
-        suite_name (str): The test suite name
-        secret_stores (Dict[str, SecretStore]): The available secrets stores
-        raise_on_missing_secret_store (bool, optional): Raise an error if the secret store declared in the connectorTestSuitesOptions is not available. Defaults to True.
-        logger (logging.Logger | None, optional): Logger to log a warning if the secret store declared in the connectorTestSuitesOptions is not available. Defaults to None.
-
-    Raises:
-        SecretNotFoundError: Raised  if the secret store declared in the connectorTestSuitesOptions is not available and raise_on_missing_secret_store is truthy.
-
-    Returns:
-        List[Secret]: List of secrets declared in the connectorTestSuitesOptions for a test suite name.
-    """
-    secrets: List[Secret] = []
-    enabled_test_suite = find(connector_test_suites_options, lambda x: x["suite"] == suite_name)
-
-    if enabled_test_suite and "testSecrets" in enabled_test_suite:
-        for secret_info in enabled_test_suite["testSecrets"]:
-            if secret := _process_secret(secret_info, secret_stores, raise_on_missing_secret_store, logger):
-                secrets.append(secret)
-
-    return secrets
-
-
-def get_connector_secrets_for_test_suite(
-    test_suite_name: str, context: ConnectorContext, connector_test_suites_options: List, local_secrets: List[Secret]
-) -> List[Secret]:
-    """Get secrets to use for a test suite.
-    Always merge secrets declared in metadata's connectorTestSuiteOptions with secrets declared locally.
-
-    Args:
-        test_suite_name (str): Name of the test suite to get secrets for
-        context (ConnectorContext): The current connector context
-        connector_test_suites_options (Dict): The current connector test suite options (from metadata)
-        local_secrets (List[Secret]): The local connector secrets.
-
-    Returns:
-        List[Secret]: Secrets to use to run the passed test suite name.
-    """
-    return (
-        get_secrets_from_connector_test_suites_option(
-            connector_test_suites_options,
-            test_suite_name,
-            context.secret_stores,
-            raise_on_missing_secret_store=context.is_ci,
-            logger=context.logger,
-        )
-        + local_secrets
-    )
 
 
 class VersionCheck(Step, ABC):
