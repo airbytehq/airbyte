@@ -10,7 +10,6 @@ import io.airbyte.commons.text.Names
 import io.airbyte.protocol.models.SyncMode
 import io.airbyte.validation.json.JsonValidationException
 import java.util.*
-import java.util.stream.Collectors
 
 /**
  * Utilities to convert Catalog protocol to Catalog API client. This class was similar to existing
@@ -76,9 +75,8 @@ object CatalogClientConverters {
             // field path.
             val selectedFieldNames =
                 config.selectedFields!!
-                    .stream()
                     .map { field: SelectedFieldInfo -> field.fieldPath!![0] }
-                    .collect(Collectors.toSet())
+                    .toSet()
             // TODO(mfsiega-airbyte): we only check the top level of the cursor/primary key fields
             // because we
             // don't support filtering nested fields yet.

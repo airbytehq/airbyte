@@ -79,13 +79,14 @@ protected constructor(fileUploadFormat: FileUploadFormat) :
             else fieldDefinition["type"]
         val airbyteTypeProperty = fieldDefinition["airbyte_type"]
         val airbyteTypePropertyText = airbyteTypeProperty?.asText()
-        return Arrays.stream(JsonSchemaType.entries.toTypedArray())
+        return JsonSchemaType.entries
+            .toTypedArray()
             .filter { value: JsonSchemaType ->
                 value.jsonSchemaType == typeProperty.asText() &&
                     compareAirbyteTypes(airbyteTypePropertyText, value)
             }
             .map { obj: JsonSchemaType -> obj.avroType }
-            .collect(Collectors.toSet())
+            .toSet()
     }
 
     private fun compareAirbyteTypes(
@@ -138,10 +139,9 @@ protected constructor(fileUploadFormat: FileUploadFormat) :
                             field
                                 .schema()
                                 .types
-                                .stream()
                                 .map { obj: Schema -> obj.type }
                                 .filter { type: Schema.Type -> type != Schema.Type.NULL }
-                                .collect(Collectors.toSet())
+                                .toSet()
                         }
                     )
                 )
@@ -155,12 +155,11 @@ protected constructor(fileUploadFormat: FileUploadFormat) :
                             field
                                 .schema()
                                 .types
-                                .stream()
                                 .filter { type: Schema -> type.type != Schema.Type.NULL }
-                                .flatMap { type: Schema -> type.elementType.types.stream() }
+                                .flatMap { type: Schema -> type.elementType.types }
                                 .map { obj: Schema -> obj.type }
                                 .filter { type: Schema.Type -> type != Schema.Type.NULL }
-                                .collect(Collectors.toSet())
+                                .toSet()
                         }
                     )
                 )

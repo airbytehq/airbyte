@@ -16,7 +16,6 @@ import io.airbyte.commons.util.MoreIterators
 import java.util.*
 import java.util.Spliterators.AbstractSpliterator
 import java.util.function.Consumer
-import java.util.stream.Collectors
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
 import org.bson.BsonDocument
@@ -57,9 +56,8 @@ class MongoDatabase(connectionString: String, databaseName: String) :
         get() {
             val collectionNames = database.listCollectionNames() ?: return Collections.emptySet()
             return MoreIterators.toSet(collectionNames.iterator())
-                .stream()
                 .filter { c: String -> !c.startsWith(MONGO_RESERVED_COLLECTION_PREFIX) }
-                .collect(Collectors.toSet())
+                .toSet()
         }
 
     fun getCollection(collectionName: String): MongoCollection<Document> {

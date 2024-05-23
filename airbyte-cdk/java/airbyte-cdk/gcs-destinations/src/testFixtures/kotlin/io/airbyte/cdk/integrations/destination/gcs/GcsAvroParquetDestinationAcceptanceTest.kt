@@ -148,10 +148,9 @@ abstract class GcsAvroParquetDestinationAcceptanceTest(fileUploadFormat: FileUpl
                             field
                                 .schema()
                                 .types
-                                .stream()
                                 .map { obj: Schema -> obj.type }
                                 .filter { type: Schema.Type -> type != Schema.Type.NULL }
-                                .collect(Collectors.toSet())
+                                .toSet()
                         }
                     )
                 )
@@ -165,12 +164,11 @@ abstract class GcsAvroParquetDestinationAcceptanceTest(fileUploadFormat: FileUpl
                             field
                                 .schema()
                                 .types
-                                .stream()
                                 .filter { type: Schema -> type.type != Schema.Type.NULL }
-                                .flatMap { type: Schema -> type.elementType.types.stream() }
+                                .flatMap { type: Schema -> type.elementType.types }
                                 .map { obj: Schema -> obj.type }
                                 .filter { type: Schema.Type -> type != Schema.Type.NULL }
-                                .collect(Collectors.toSet())
+                                .toSet()
                         }
                     )
                 )
