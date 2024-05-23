@@ -278,7 +278,7 @@ abstract class AbstractJdbcSource<Datatype>(
         database: JdbcDatabase,
         schema: String?
     ): List<TableInfo<CommonField<Datatype>>> {
-        val internalSchemas: Set<String?> = HashSet(excludedInternalNameSpaces)
+        val internalSchemas: Set<String> = HashSet(excludedInternalNameSpaces)
         LOGGER.info("Internal schemas to exclude: {}", internalSchemas)
         val tablesWithSelectGrantPrivilege =
             getPrivilegesTableForCurrentUser<JdbcPrivilegeDto>(database, schema)
@@ -327,12 +327,10 @@ abstract class AbstractJdbcSource<Datatype>(
                                         f.get(INTERNAL_COLUMN_NAME).asText(),
                                         datatype
                                     ) {}
-                            }
-                            .toList(),
+                            },
                     cursorFields = extractCursorFields(fields)
                 )
             }
-            .toList()
     }
 
     private fun extractCursorFields(fields: List<JsonNode>): List<String> {
@@ -341,11 +339,10 @@ abstract class AbstractJdbcSource<Datatype>(
                 isCursorType(sourceOperations.getDatabaseFieldType(field))
             }
             .map { it.get(INTERNAL_COLUMN_NAME).asText() }
-            .toList()
     }
 
     protected fun excludeNotAccessibleTables(
-        internalSchemas: Set<String?>,
+        internalSchemas: Set<String>,
         tablesWithSelectGrantPrivilege: Set<JdbcPrivilegeDto>?
     ): Predicate<JsonNode> {
         return Predicate<JsonNode> { jsonNode: JsonNode ->
@@ -366,7 +363,7 @@ abstract class AbstractJdbcSource<Datatype>(
     // getPrivilegesTableForCurrentUser()
     protected open fun isNotInternalSchema(
         jsonNode: JsonNode,
-        internalSchemas: Set<String?>
+        internalSchemas: Set<String>
     ): Boolean {
         return !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText())
     }
@@ -769,7 +766,6 @@ abstract class AbstractJdbcSource<Datatype>(
                 )
             }
             .map { `object`: ConfiguredAirbyteStream -> Jsons.clone(`object`) }
-            .toList()
     }
 
     companion object {

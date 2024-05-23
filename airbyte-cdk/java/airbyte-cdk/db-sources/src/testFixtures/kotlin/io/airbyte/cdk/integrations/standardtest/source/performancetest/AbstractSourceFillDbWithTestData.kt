@@ -81,7 +81,7 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
      *
      * Stream.of( Arguments.of("your_db_name", "your_schema_name", 100, 2, 240, 1000) );
      */
-    protected abstract fun provideParameters(): Stream<Arguments?>?
+    protected abstract fun provideParameters(): Stream<Arguments>?
 
     protected fun prepareCreateTableQuery(
         dbSchemaName: String?,

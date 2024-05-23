@@ -24,9 +24,7 @@ open class AdvancedTestDataComparator : TestDataComparator {
         }
     }
 
-    protected open fun resolveIdentifier(identifier: String?): List<String?> {
-        return java.util.List.of(identifier)
-    }
+    protected open fun resolveIdentifier(identifier: String?): List<String?> = listOf(identifier)
 
     protected open fun compareObjects(expectedObject: JsonNode, actualObject: JsonNode) {
         if (!areBothEmpty(expectedObject, actualObject)) {

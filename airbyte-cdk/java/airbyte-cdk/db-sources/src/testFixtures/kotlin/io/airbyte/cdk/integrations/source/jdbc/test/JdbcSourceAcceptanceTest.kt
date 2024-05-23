@@ -96,7 +96,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         )
     }
 
-    protected fun primaryKeyClause(columns: List<String?>): String {
+    protected fun primaryKeyClause(columns: List<String>): String {
         if (columns.isEmpty()) {
             return ""
         }
@@ -1195,7 +1195,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             firstSyncActualMessages
                 .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.RECORD }
                 .map { r: AirbyteMessage -> r.record.data[COL_NAME].asText() }
-                .toList()
+
         // some databases don't make insertion order guarantee when equal ordering value
         if (
             testdb.databaseDriver == DatabaseDriver.TERADATA ||
@@ -1244,7 +1244,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             secondSyncActualMessages
                 .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.RECORD }
                 .map { r: AirbyteMessage -> r.record.data[COL_NAME].asText() }
-                .toList()
+
         Assertions.assertEquals(listOf("c"), secondSyncNames)
 
         // 3rd sync has records with duplicated cursors
@@ -1297,7 +1297,6 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             thirdSyncActualMessages
                 .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.RECORD }
                 .map { r: AirbyteMessage -> r.record.data[COL_NAME].asText() }
-                .toList()
 
         // teradata doesn't make insertion order guarantee when equal ordering value
         if (testdb.databaseDriver == DatabaseDriver.TERADATA) {
@@ -1543,47 +1542,41 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         states: List<DbStreamState>,
         numRecords: Long
     ): List<AirbyteMessage> {
-        return states
-            .map { s: DbStreamState ->
-                AirbyteMessage()
-                    .withType(AirbyteMessage.Type.STATE)
-                    .withState(
-                        AirbyteStateMessage()
-                            .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                            .withStream(
-                                AirbyteStreamState()
-                                    .withStreamDescriptor(
-                                        StreamDescriptor()
-                                            .withNamespace(s.streamNamespace)
-                                            .withName(s.streamName),
-                                    )
-                                    .withStreamState(Jsons.jsonNode(s)),
-                            )
-                            .withData(Jsons.jsonNode(DbState().withCdc(false).withStreams(states)))
-                            .withSourceStats(
-                                AirbyteStateStats().withRecordCount(numRecords.toDouble()),
-                            ),
-                    )
-            }
-            .toList()
+        return states.map { s: DbStreamState ->
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.STATE)
+                .withState(
+                    AirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                        .withStream(
+                            AirbyteStreamState()
+                                .withStreamDescriptor(
+                                    StreamDescriptor()
+                                        .withNamespace(s.streamNamespace)
+                                        .withName(s.streamName)
+                                )
+                                .withStreamState(Jsons.jsonNode(s))
+                        )
+                        .withData(Jsons.jsonNode(DbState().withCdc(false).withStreams(states)))
+                        .withSourceStats(AirbyteStateStats().withRecordCount(numRecords.toDouble())),
+                )
+        }
     }
 
     protected open fun createState(states: List<DbStreamState>): List<AirbyteStateMessage> {
-        return states
-            .map { s: DbStreamState ->
-                AirbyteStateMessage()
-                    .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                    .withStream(
-                        AirbyteStreamState()
-                            .withStreamDescriptor(
-                                StreamDescriptor()
-                                    .withNamespace(s.streamNamespace)
-                                    .withName(s.streamName),
-                            )
-                            .withStreamState(Jsons.jsonNode(s)),
-                    )
-            }
-            .toList()
+        return states.map { s: DbStreamState ->
+            AirbyteStateMessage()
+                .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                .withStream(
+                    AirbyteStreamState()
+                        .withStreamDescriptor(
+                            StreamDescriptor()
+                                .withNamespace(s.streamNamespace)
+                                .withName(s.streamName)
+                        )
+                        .withStreamState(Jsons.jsonNode(s)),
+                )
+        }
     }
 
     @Throws(SQLException::class)
@@ -1805,20 +1798,16 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                 if (s.stream.streamState[field] != null) s.stream.streamState[field].asText()
                 else ""
             }
-            .toList()
     }
 
     protected fun filterRecords(messages: List<AirbyteMessage>): List<AirbyteMessage> {
-        return messages
-            .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.RECORD }
-            .toList()
+        return messages.filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.RECORD }
     }
 
     protected fun extractStateMessage(messages: List<AirbyteMessage>): List<AirbyteStateMessage> {
         return messages
             .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.STATE }
             .map { obj: AirbyteMessage -> obj.state }
-            .toList()
     }
 
     protected fun extractStateMessage(
@@ -1831,7 +1820,6 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                     r.state.stream.streamDescriptor.name == streamName
             }
             .map { obj: AirbyteMessage -> obj.state }
-            .toList()
     }
 
     protected fun createRecord(

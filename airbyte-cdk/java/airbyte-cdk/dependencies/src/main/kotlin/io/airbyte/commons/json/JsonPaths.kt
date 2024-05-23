@@ -167,9 +167,9 @@ object JsonPaths {
      * specifically that said, we do expect that there will be no duplicates in the returned list.
      */
     fun getPaths(json: JsonNode?, jsonPath: String): List<String> {
-        return getInternal(GET_PATHS_CONFIGURATION, json, jsonPath)
-            .map { obj: JsonNode -> obj.asText() }
-            .toList()
+        return getInternal(GET_PATHS_CONFIGURATION, json, jsonPath).map { obj: JsonNode ->
+            obj.asText()
+        }
     }
 
     /**

@@ -53,7 +53,7 @@ class GlobalStateManager(
             )
     }
 
-    override val rawStateMessages: List<AirbyteStateMessage?>?
+    override val rawStateMessages: List<AirbyteStateMessage>?
         get() {
             throw UnsupportedOperationException(
                 "Raw state retrieval not supported by global state manager."
@@ -167,7 +167,6 @@ class GlobalStateManager(
                                         .withName(s.streamName)
                                 )
                         }
-                        .toList()
                 } else {
                     return@Supplier listOf<AirbyteStreamState>()
                 }

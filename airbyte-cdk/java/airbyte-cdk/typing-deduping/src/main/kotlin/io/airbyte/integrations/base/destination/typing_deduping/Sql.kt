@@ -4,7 +4,6 @@
 package io.airbyte.integrations.base.destination.typing_deduping
 
 import java.util.function.Consumer
-import java.util.stream.Stream
 
 /**
  * Represents a list of SQL transactions, where each transaction consists of one or more SQL
@@ -25,27 +24,25 @@ data class Sql(val transactions: List<List<String>>) {
      * @return A list of SQL strings, each of which represents a transaction.
      */
     fun asSqlStrings(begin: String?, commit: String?): List<String> {
-        return transactions
-            .map { transaction: List<String> ->
-                // If there's only one statement, we don't need to wrap it in a transaction.
-                if (transaction.size == 1) {
-                    return@map transaction[0]
-                }
-                val builder = StringBuilder()
-                builder.append(begin)
-                builder.append(";\n")
-                transaction.forEach(
-                    Consumer { statement: String ->
-                        builder.append(statement)
-                        // No semicolon - statements already end with a semicolon
-                        builder.append("\n")
-                    }
-                )
-                builder.append(commit)
-                builder.append(";\n")
-                builder.toString()
+        return transactions.map { transaction: List<String> ->
+            // If there's only one statement, we don't need to wrap it in a transaction.
+            if (transaction.size == 1) {
+                return@map transaction[0]
             }
-            .toList()
+            val builder = StringBuilder()
+            builder.append(begin)
+            builder.append(";\n")
+            transaction.forEach(
+                Consumer { statement: String ->
+                    builder.append(statement)
+                    // No semicolon - statements already end with a semicolon
+                    builder.append("\n")
+                }
+            )
+            builder.append(commit)
+            builder.append(";\n")
+            builder.toString()
+        }
     }
 
     init {
@@ -74,12 +71,12 @@ data class Sql(val transactions: List<List<String>>) {
         /** Execute each statement as its own transaction. */
         @JvmStatic
         fun separately(statements: List<String>): Sql {
-            return create(statements.map { listOf(it) }.toList())
+            return create(statements.map { listOf(it) })
         }
 
         @JvmStatic
         fun separately(vararg statements: String): Sql {
-            return separately(Stream.of(*statements).toList())
+            return separately(statements.asList())
         }
 
         /**
@@ -118,10 +115,8 @@ data class Sql(val transactions: List<List<String>>) {
                                 }
                                 statement
                             }
-                            .toList()
                     }
                     .filter { transaction: List<String> -> !transaction.isEmpty() }
-                    .toList()
             )
         }
     }

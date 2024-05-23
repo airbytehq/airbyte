@@ -34,7 +34,7 @@ open class StreamStateManager
 ) :
     AbstractStateManager<AirbyteStateMessage, AirbyteStreamState>(
         catalog,
-        Supplier { rawAirbyteStateMessages.map { it.stream }.toList() },
+        Supplier { rawAirbyteStateMessages.map { it.stream } },
         StateGeneratorUtils.CURSOR_FUNCTION,
         StateGeneratorUtils.CURSOR_FIELD_FUNCTION,
         StateGeneratorUtils.CURSOR_RECORD_COUNT_FUNCTION,
@@ -47,7 +47,7 @@ open class StreamStateManager
             )
         }
 
-    override val rawStateMessages: List<AirbyteStateMessage?>?
+    override val rawStateMessages: List<AirbyteStateMessage>?
         get() = rawAirbyteStateMessages
 
     override fun toState(pair: Optional<AirbyteStreamNameNamespacePair>): AirbyteStateMessage {

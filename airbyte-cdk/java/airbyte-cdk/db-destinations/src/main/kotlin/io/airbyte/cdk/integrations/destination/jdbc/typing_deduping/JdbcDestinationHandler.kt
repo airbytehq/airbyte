@@ -207,11 +207,10 @@ abstract class JdbcDestinationHandler<DestinationState>(
             }
 
         val initialStates =
-            streamConfigs
-                .map { streamConfig: StreamConfig ->
-                    retrieveState(destinationStatesFuture, streamConfig)
-                }
-                .toList()
+            streamConfigs.map { streamConfig: StreamConfig ->
+                retrieveState(destinationStatesFuture, streamConfig)
+            }
+
         val states = CompletableFutures.allOf(initialStates).toCompletableFuture().join()
         return getResultsOrLogAndThrowFirst("Failed to retrieve initial state", states)
     }
@@ -513,7 +512,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                     // TODO: normalize namespace and finalName strings to quoted-lowercase (as
                     // needed. Snowflake
                     // requires uppercase)
-                    val columnDefinitions = LinkedHashMap<String?, ColumnDefinition>()
+                    val columnDefinitions = LinkedHashMap<String, ColumnDefinition>()
                     LOGGER.info(
                         "Retrieving existing columns for {}.{}.{}",
                         catalogName,

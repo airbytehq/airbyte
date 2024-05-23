@@ -52,10 +52,11 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
             Streams.stream(
                     runExecutable(Command.GET_REGEX_TESTS).withArray<JsonNode>("tests").elements()
                 )
-                .map { obj: JsonNode -> obj.textValue() }
                 .toList()
+                .map { obj: JsonNode -> obj.textValue() }
+
         val stringMessages =
-            allMessages.map { `object`: AirbyteMessage -> Jsons.serialize(`object`) }.toList()
+            allMessages.map { `object`: AirbyteMessage -> Jsons.serialize(`object`) }
         LOGGER.info("Running " + regexTests.size + " regex tests...")
         regexTests.forEach(
             Consumer { regex: String ->
@@ -114,7 +115,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
     @Throws(IOException::class)
     private fun runExecutableInternal(cmd: Command): Path {
         LOGGER.info("testRoot = $testRoot")
-        val dockerCmd: List<String?> =
+        val dockerCmd: List<String> =
             Lists.newArrayList(
                 "docker",
                 "run",

@@ -91,12 +91,12 @@ protected constructor(protected val outputFormat: FileUploadFormat) : Destinatio
                 .objectSummaries
                 .filter { o: S3ObjectSummary -> o.key.contains("$streamNameStr/") }
                 .sortedWith(Comparator.comparingLong { o: S3ObjectSummary -> o.lastModified.time })
-                .toList()
+
         LOGGER.info(
             "All objects: {}",
-            objectSummaries
-                .map { o: S3ObjectSummary -> String.format("%s/%s", o.bucketName, o.key) }
-                .toList(),
+            objectSummaries.map { o: S3ObjectSummary ->
+                String.format("%s/%s", o.bucketName, o.key)
+            },
         )
         return objectSummaries
     }

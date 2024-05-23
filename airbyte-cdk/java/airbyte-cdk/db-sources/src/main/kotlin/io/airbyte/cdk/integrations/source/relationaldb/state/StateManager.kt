@@ -37,7 +37,7 @@ interface StateManager {
      * @throws UnsupportedOperationException if the state manager does not support retrieving raw
      * state.
      */
-    val rawStateMessages: List<AirbyteStateMessage?>?
+    val rawStateMessages: List<AirbyteStateMessage>?
 
     /**
      * Retrieves the map of stream name/namespace tuple to the current cursor information for that
@@ -67,7 +67,7 @@ interface StateManager {
      * @return An [Optional] possibly containing the cursor value tracked in the state associated
      * with the provided stream name/namespace tuple.
      */
-    fun getCursor(pair: AirbyteStreamNameNamespacePair?): Optional<String?> {
+    fun getCursor(pair: AirbyteStreamNameNamespacePair?): Optional<String> {
         return getCursorInfo(pair).map { obj: CursorInfo -> obj.cursor }
     }
 
@@ -79,7 +79,7 @@ interface StateManager {
      * @return An [Optional] possibly containing the cursor field name associated with the cursor
      * tracked in the state associated with the provided stream name/namespace tuple.
      */
-    fun getCursorField(pair: AirbyteStreamNameNamespacePair?): Optional<String?>? {
+    fun getCursorField(pair: AirbyteStreamNameNamespacePair?): Optional<String>? {
         return getCursorInfo(pair).map { obj: CursorInfo -> obj.cursorField }
     }
 
@@ -91,7 +91,7 @@ interface StateManager {
      * @return An [Optional] possibly containing the original cursor value tracked in the state
      * associated with the provided stream name/namespace tuple.
      */
-    fun getOriginalCursor(pair: AirbyteStreamNameNamespacePair?): Optional<String?>? {
+    fun getOriginalCursor(pair: AirbyteStreamNameNamespacePair?): Optional<String>? {
         return getCursorInfo(pair).map { obj: CursorInfo -> obj.originalCursor }
     }
 
@@ -103,7 +103,7 @@ interface StateManager {
      * @return An [Optional] possibly containing the original cursor field name associated with the
      * cursor tracked in the state associated with the provided stream name/namespace tuple.
      */
-    fun getOriginalCursorField(pair: AirbyteStreamNameNamespacePair?): Optional<String?>? {
+    fun getOriginalCursorField(pair: AirbyteStreamNameNamespacePair?): Optional<String>? {
         return getCursorInfo(pair).map { obj: CursorInfo -> obj.originalCursorField }
     }
 

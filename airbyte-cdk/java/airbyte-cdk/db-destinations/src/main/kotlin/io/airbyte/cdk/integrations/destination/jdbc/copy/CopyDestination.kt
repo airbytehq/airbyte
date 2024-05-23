@@ -100,7 +100,7 @@ abstract class CopyDestination : BaseConnector, Destination {
 
     @Throws(Exception::class)
     protected fun performCreateInsertTestOnDestination(
-        outputSchema: String?,
+        outputSchema: String,
         database: JdbcDatabase,
         nameTransformer: NamingConventionTransformer
     ) {

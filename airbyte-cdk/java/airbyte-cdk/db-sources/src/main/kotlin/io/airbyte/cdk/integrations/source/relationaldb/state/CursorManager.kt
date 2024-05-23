@@ -188,10 +188,10 @@ class CursorManager<S : Any>(
                     }
                     .orElse(null)
             // if cursor field is set in state.
-            if (stateOptional.map<List<String?>?>(cursorFieldFunction).isPresent) {
+            if (stateOptional.map<List<String>?>(cursorFieldFunction).isPresent) {
                 // if cursor field in catalog and state are the same.
                 if (
-                    stateOptional.map<List<String?>?>(cursorFieldFunction) ==
+                    stateOptional.map<List<String>?>(cursorFieldFunction) ==
                         streamOptional.map<List<String>> { obj: ConfiguredAirbyteStream ->
                             obj.cursorField
                         }
@@ -275,7 +275,7 @@ class CursorManager<S : Any>(
      * @return An [Optional] possibly containing the cursor field name associated with the cursor
      * tracked in the state associated with the provided stream name/namespace tuple.
      */
-    fun getCursorField(pair: AirbyteStreamNameNamespacePair?): Optional<String?> {
+    fun getCursorField(pair: AirbyteStreamNameNamespacePair?): Optional<String> {
         return getCursorInfo(pair).map { obj: CursorInfo -> obj.cursorField }
     }
 
@@ -287,7 +287,7 @@ class CursorManager<S : Any>(
      * @return An [Optional] possibly containing the cursor value tracked in the state associated
      * with the provided stream name/namespace tuple.
      */
-    fun getCursor(pair: AirbyteStreamNameNamespacePair?): Optional<String?> {
+    fun getCursor(pair: AirbyteStreamNameNamespacePair?): Optional<String> {
         return getCursorInfo(pair).map { obj: CursorInfo -> obj.cursor }
     }
 

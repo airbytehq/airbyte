@@ -23,7 +23,7 @@ class StateDecoratingIterator(
     private val initialCursor: String,
     private val cursorType: JsonSchemaPrimitiveUtil.JsonSchemaPrimitive,
     stateEmissionFrequency: Int
-) : AbstractIterator<AirbyteMessage?>(), MutableIterator<AirbyteMessage?> {
+) : AbstractIterator<AirbyteMessage>(), MutableIterator<AirbyteMessage> {
     private var currentMaxCursor: String?
     private var currentMaxCursorRecordCount = 0L
     private var hasEmittedFinalState = false

@@ -60,7 +60,7 @@ internal class TestHarnessUtilsTest {
                     recordedBeats.incrementAndGet()
                     true
                 }
-                .`when`<HeartbeatMonitor?>(heartbeatMonitor)
+                .`when`<HeartbeatMonitor>(heartbeatMonitor)
                 .isBeating
 
             val thread = Thread { this.runShutdown() }

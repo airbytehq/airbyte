@@ -134,13 +134,11 @@ constructor(
                 else -> throw IllegalArgumentException("Top-level schema must be an object")
             }
 
-        require(!stream.primaryKey.any { key: List<String?> -> key.size > 1 }) {
+        require(!stream.primaryKey.any { key: List<String> -> key.size > 1 }) {
             "Only top-level primary keys are supported"
         }
         val primaryKey =
-            stream.primaryKey
-                .map { key: List<String> -> sqlGenerator.buildColumnId(key[0]) }
-                .toList()
+            stream.primaryKey.map { key: List<String> -> sqlGenerator.buildColumnId(key[0]) }
 
         require(stream.cursorField.size <= 1) { "Only top-level cursors are supported" }
         val cursor: Optional<ColumnId> =
