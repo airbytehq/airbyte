@@ -290,6 +290,10 @@ definitions:
 
   organization_memberships_stream:
     $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
     $parameters:
       name: "organization_memberships"
       path: "organization_memberships"
