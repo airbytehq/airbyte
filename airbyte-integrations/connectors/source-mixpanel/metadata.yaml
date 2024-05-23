@@ -33,7 +33,7 @@ data:
     breakingChanges:
       3.0.0:
         message:
-          In this release, CohortMembers stream has changed due to changes in primary key and an improper state format. 
+          In this release, CohortMembers stream has changed due to changes in primary key and an improper state format.
           Please reset CohortMembers stream. For more information, see our migration documentation.
         upgradeDeadline: "2024-06-03"
       2.0.0:
