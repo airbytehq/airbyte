@@ -10,7 +10,7 @@ check:
 definitions:
   custom_oauth_authenticator:
     type: CustomAuthenticator
-    class_name: source_salesloft.custom_authenticators.Oauth2Authenticator
+    class_name: source_salesloft.custom_authenticators.SingleUseOauth2Authenticator
     client_id: "{{ config['credentials']['client_id'] }}"
     client_secret: "{{ config['credentials']['client_secret'] }}"
     refresh_token: "{{ config['credentials']['refresh_token'] }}"

@@ -3,14 +3,22 @@
 #
 
 from dataclasses import dataclass
-from typing import Any, Mapping, Tuple
 
-import requests
-from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
+from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
+from airbyte_cdk.sources.declarative.types import Config
 
 
 @dataclass
-class Oauth2Authenticator(DeclarativeOauth2Authenticator):
+class SingleUseOauth2Authenticator(DeclarativeSingleUseRefreshTokenOauth2Authenticator):
+
+    config: Config
+
+    def __post_init__(self):
+        self._connector_config = self.config
+        self._token_expiry_date_config_path = "credentials/token_expiry_date"
+        self.token_refresh_endpoint = "https://accounts.salesloft.com/oauth/token"
+        self._access_token_config_path = "credentials/access_token"
+
     @property
     def auth_header(self) -> str:
         return "Authorization"
@@ -18,26 +26,3 @@ class Oauth2Authenticator(DeclarativeOauth2Authenticator):
     @property
     def token(self) -> str:
         return f"Bearer {self.get_access_token()}"
-
-    def get_auth_header(self) -> Mapping[str, Any]:
-        return {"Authorization": f"Bearer {self.get_access_token()}"}
-
-    def get_refresh_request_body(self) -> Mapping[str, Any]:
-        return {
-            "grant_type": "refresh_token",
-            "refresh_token": self.refresh_token,
-        }
-
-    def refresh_access_token(self) -> Tuple[str, int]:
-        try:
-            response = requests.request(
-                method="POST",
-                url=self.token_refresh_endpoint,
-                data=self.get_refresh_request_body(),
-                auth=(self.client_id, self.client_secret),
-            )
-            response.raise_for_status()
-            response_json = response.json()
-            return response_json["access_token"], response_json["expires_in"]
-        except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
