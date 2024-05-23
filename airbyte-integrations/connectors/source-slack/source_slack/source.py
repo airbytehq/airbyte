@@ -50,7 +50,7 @@ class SourceSlack(YamlDeclarativeSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         declarative_streams = super().streams(config)
 
-        threads_stream = self.get_threads_stream(config)
-        declarative_streams.append(threads_stream)
+        # threads_stream = self.get_threads_stream(config)
+        # declarative_streams.append(threads_stream)
 
         return declarative_streams

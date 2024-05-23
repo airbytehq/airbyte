@@ -1,4 +1,4 @@
-version: 0.73.0
+version: 0.51.42
 type: DeclarativeSource
 
 definitions:
@@ -81,6 +81,34 @@ definitions:
       $ref: "#/definitions/retriever"
     schema_loader:
       $ref: "#/definitions/schema_loader"
+
+  incremental_stream:
+    $ref: "#/definitions/stream_base"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: float_ts
+      cursor_datetime_formats:
+        - "%s"
+      step: P100D
+      cursor_granularity: PT1S
+      lookback_window: "P{{ config.get('lookback_window', 0) }}D"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        inject_into: request_parameter
+        field_name: oldest
+        type: RequestOption
+      end_time_option:
+        inject_into: request_parameter
+        field_name: latest
+        type: RequestOption
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
   users_stream:
     primary_key: "id"
@@ -180,7 +208,7 @@ definitions:
             value: "{{ stream_partition.get('channel_id') }}"
 
   channel_messages_stream:
-    $ref: "#/definitions/stream_base"
+    $ref: "#/definitions/incremental_stream"
     $parameters:
       name: channel_messages
       path: conversations.history
@@ -213,31 +241,6 @@ definitions:
             request_option:
               field_name: "channel"
               inject_into: "request_parameter"
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: float_ts
-      cursor_datetime_formats:
-        - "%s"
-      step: P100D
-      cursor_granularity: P10D
-      lookback_window: "P{{ config.get('lookback_window', 0) }}D"
-      datetime_format: "%s"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      start_time_option:
-        inject_into: request_parameter
-        field_name: oldest
-        type: RequestOption
-      end_time_option:
-        inject_into: request_parameter
-        field_name: latest
-        type: RequestOption
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     transformations:
       - type: AddFields
         fields:
@@ -248,11 +251,45 @@ definitions:
               - channel_id
             value: "{{ stream_partition.get('channel') }}"
 
+  threads_stream:
+    $ref: "#/definitions/incremental_stream"
+    $parameters:
+      name: threads
+      path: conversations.replies
+      field_path: messages
+    primary_key:
+      - channel_id
+      - ts
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          channel: "{{ stream_slice['parent_slice']['channel'] }}"
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/channel_messages_stream"
+            parent_key: ts
+            partition_field: float_ts
+            incremental_dependency: true
+            request_option:
+              type: RequestOption
+              field_name: "ts"
+              inject_into: "request_parameter"
+
 streams:
   - "#/definitions/users_stream"
   - "#/definitions/channels_stream"
   - "#/definitions/channel_members_stream"
   - "#/definitions/channel_messages_stream"
+  - "#/definitions/threads_stream"
 
 check:
   type: CheckStream
