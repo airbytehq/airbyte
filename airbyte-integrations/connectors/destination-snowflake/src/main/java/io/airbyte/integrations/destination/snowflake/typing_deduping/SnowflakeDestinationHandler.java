@@ -361,4 +361,8 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
     };
   }
 
+  public void createNamespaces(Set<String> schemas) {
+    // do nothing?
+  }
+
 }
