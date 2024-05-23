@@ -16,6 +16,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
+import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -29,6 +30,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta;
 import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -101,7 +103,9 @@ public class PostgresCtidHandler implements InitialLoadHandler<PostgresType> {
     final AutoCloseableIterator<AirbyteMessageWithCtid> recordIterator =
         getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
     final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream);
-    return augmentWithLogs(recordAndMessageIterator, pair, streamName);
+    final AutoCloseableIterator<AirbyteMessage> logIterators = augmentWithLogs(recordAndMessageIterator, pair, streamName);
+    iteratorList.add(new StreamStatusTraceEmitterIterator(
+        new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
   }
 
   public List<AutoCloseableIterator<AirbyteMessage>> getInitialSyncCtidIterator(
@@ -162,6 +166,23 @@ public class PostgresCtidHandler implements InitialLoadHandler<PostgresType> {
 
   private boolean isMetaChangesEmptyOrNull(AirbyteRecordMessageMeta meta) {
     return meta == null || meta.getChanges() == null || meta.getChanges().isEmpty();
+  }
+
+  private AutoCloseableIterator<AirbyteMessage> augmentWithStreamStatus(final AutoCloseableIterator<AirbyteMessage> iterator,
+      final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair,
+      final String streamName) {
+    return AutoCloseableIterators.transform(iterator,
+        AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()),
+        r -> {
+          final long count = recordCount.incrementAndGet();
+          if (count % 1_000_000 == 0) {
+            LOGGER.info("Reading stream {}. Records read: {}", streamName, count);
+          }
+          return r;
+        });
+
+    iteratorList.add(new StreamStatusTraceEmitterIterator(
+        new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
   }
 
   // Augments the given iterator with record count logs.
