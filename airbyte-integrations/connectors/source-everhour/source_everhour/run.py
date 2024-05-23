@@ -9,6 +9,7 @@ from airbyte_cdk.entrypoint import launch
 
 from .source import SourceEverhour
 
+
 def run():
     source = SourceEverhour()
     launch(source, sys.argv[1:])

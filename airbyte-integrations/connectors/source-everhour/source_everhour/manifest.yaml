@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /projects
           http_method: GET
         record_selector:
@@ -28,7 +28,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/projects'
+          $ref: "#/schemas/projects"
     tasks:
       type: DeclarativeStream
       name: tasks
@@ -37,7 +37,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /projects/{{ stream_slice.parent_id }}/tasks
           http_method: GET
         record_selector:
@@ -52,11 +52,11 @@ definitions:
                 parent_key: id
                 partition_field: parent_id
                 stream:
-                  $ref: '#/definitions/streams/projects'
+                  $ref: "#/definitions/streams/projects"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/tasks'
+          $ref: "#/schemas/tasks"
     time_records:
       type: DeclarativeStream
       name: time_records
@@ -65,7 +65,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /projects/{{ stream_slice.parent_id }}/time
           http_method: GET
         record_selector:
@@ -80,11 +80,11 @@ definitions:
                 parent_key: id
                 partition_field: parent_id
                 stream:
-                  $ref: '#/definitions/streams/projects'
+                  $ref: "#/definitions/streams/projects"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/time_records'
+          $ref: "#/schemas/time_records"
     clients:
       type: DeclarativeStream
       name: clients
@@ -93,7 +93,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /clients
           http_method: GET
         record_selector:
@@ -104,7 +104,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/clients'
+          $ref: "#/schemas/clients"
     time:
       type: DeclarativeStream
       name: time
@@ -113,7 +113,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /team/time
           http_method: GET
         record_selector:
@@ -124,7 +124,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/time'
+          $ref: "#/schemas/time"
     users:
       type: DeclarativeStream
       name: users
@@ -133,7 +133,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /team/users
           http_method: GET
         record_selector:
@@ -144,25 +144,25 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/users'
+          $ref: "#/schemas/users"
   base_requester:
     type: HttpRequester
     url_base: https://api.everhour.com
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
       inject_into:
         type: RequestOption
         inject_into: header
         field_name: X-Api-Key
 
 streams:
-  - $ref: '#/definitions/streams/projects'
-  - $ref: '#/definitions/streams/tasks'
-  - $ref: '#/definitions/streams/time_records'
-  - $ref: '#/definitions/streams/clients'
-  - $ref: '#/definitions/streams/time'
-  - $ref: '#/definitions/streams/users'
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/time_records"
+  - $ref: "#/definitions/streams/clients"
+  - $ref: "#/definitions/streams/time"
+  - $ref: "#/definitions/streams/users"
 
 spec:
   type: Spec
@@ -200,73 +200,73 @@ schemas:
     properties:
       canSyncTasks:
         type:
-          - 'null'
+          - "null"
           - boolean
       connectionStatus:
         type:
-          - 'null'
+          - "null"
           - string
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
       estimatesType:
         type:
-          - 'null'
+          - "null"
           - string
       favorite:
         type:
-          - 'null'
+          - "null"
           - boolean
       foreign:
         type:
-          - 'null'
+          - "null"
           - boolean
       hasWebhook:
         type:
-          - 'null'
+          - "null"
           - boolean
       id:
         type:
-          - 'null'
+          - "null"
           - string
       isTemplate:
         type:
-          - 'null'
+          - "null"
           - boolean
       name:
         type:
-          - 'null'
+          - "null"
           - string
       platform:
         type:
-          - 'null'
+          - "null"
           - string
       privacy:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
       unarchiveDisabledBy:
         type:
-          - 'null'
+          - "null"
           - string
       users:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: integer
       workspaceId:
         type:
-          - 'null'
+          - "null"
           - string
       workspaceName:
         type:
-          - 'null'
+          - "null"
           - string
   tasks:
     type: object
@@ -312,7 +312,7 @@ schemas:
             type: integer
           users:
             type:
-              - 'null'
+              - "null"
               - object
       url:
         type: string
@@ -323,101 +323,101 @@ schemas:
     properties:
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
       date:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       task:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           assignees:
             type:
-              - 'null'
+              - "null"
               - array
             items: {}
           completed:
             type:
-              - 'null'
+              - "null"
               - boolean
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           iteration:
             type:
-              - 'null'
+              - "null"
               - string
           labels:
             type:
-              - 'null'
+              - "null"
               - array
             items: {}
           name:
             type:
-              - 'null'
+              - "null"
               - string
           projects:
             type:
-              - 'null'
+              - "null"
               - array
             items: {}
           status:
             type:
-              - 'null'
+              - "null"
               - string
           time:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               timerTime:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               total:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               users:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
-                  '1029023':
+                  "1029023":
                     type:
-                      - 'null'
+                      - "null"
                       - integer
-                  '1163985':
+                  "1163985":
                     type:
-                      - 'null'
+                      - "null"
                       - integer
           url:
             type:
-              - 'null'
+              - "null"
               - string
       time:
         type:
-          - 'null'
+          - "null"
           - integer
       user:
         type:
-          - 'null'
+          - "null"
           - integer
   clients:
     type: object
@@ -426,59 +426,59 @@ schemas:
     properties:
       businessDetails:
         type:
-          - 'null'
+          - "null"
           - string
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
       enableResourcePlanner:
         type:
-          - 'null'
+          - "null"
           - boolean
       excludedLabels:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: string
       favorite:
         type:
-          - 'null'
+          - "null"
           - boolean
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       invoicePublicNotes:
         type:
-          - 'null'
+          - "null"
           - string
       lineItemMask:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       paymentDueDays:
         type:
-          - 'null'
+          - "null"
           - integer
       projects:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: string
       reference:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
   time:
     type: object
@@ -487,127 +487,127 @@ schemas:
     properties:
       cost:
         type:
-          - 'null'
+          - "null"
           - integer
       costRate:
         type:
-          - 'null'
+          - "null"
           - integer
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
       date:
         type:
-          - 'null'
+          - "null"
           - string
       history:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           additionalProperties: true
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       isLocked:
         type:
-          - 'null'
+          - "null"
           - boolean
       lockReasons:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: string
       task:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
           assignees:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           completed:
             type:
-              - 'null'
+              - "null"
               - boolean
           createdAt:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           iteration:
             type:
-              - 'null'
+              - "null"
               - string
           labels:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           projects:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type: string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           time:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               timerTime:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               total:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
               users:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
-                  '1029023':
+                  "1029023":
                     type:
-                      - 'null'
+                      - "null"
                       - integer
           url:
             type:
-              - 'null'
+              - "null"
               - string
       time:
         type:
-          - 'null'
+          - "null"
           - integer
       user:
         type:
-          - 'null'
+          - "null"
           - integer
   users:
     type: object
@@ -616,127 +616,127 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       avatarUrl:
         type:
-          - 'null'
+          - "null"
           - string
       avatarUrlLarge:
         type:
-          - 'null'
+          - "null"
           - string
       budget:
         type:
-          - 'null'
+          - "null"
           - object
       capacity:
         type:
-          - 'null'
+          - "null"
           - integer
       cost:
         type:
-          - 'null'
+          - "null"
           - integer
       costHistory:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: object
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
       email:
         type:
-          - 'null'
+          - "null"
           - string
       enableResourcePlanner:
         type:
-          - 'null'
+          - "null"
           - boolean
       groups:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: string
       headline:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       isEmailVerified:
         type:
-          - 'null'
+          - "null"
           - boolean
       name:
         type:
-          - 'null'
+          - "null"
           - string
       rate:
         type:
-          - 'null'
+          - "null"
           - integer
       resourcePlannerAccess:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           editAll:
             type:
-              - 'null'
+              - "null"
               - boolean
           editMine:
             type:
-              - 'null'
+              - "null"
               - boolean
           viewAll:
             type:
-              - 'null'
+              - "null"
               - boolean
           viewMine:
             type:
-              - 'null'
+              - "null"
               - boolean
       role:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
       timeTrackingPolicy:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           allowExceedEstimate:
             type:
-              - 'null'
+              - "null"
               - boolean
           allowFutureTime:
             type:
-              - 'null'
+              - "null"
               - boolean
           allowManageEstimates:
             type:
-              - 'null'
+              - "null"
               - boolean
           allowManualTimeInput:
             type:
-              - 'null'
+              - "null"
               - boolean
           allowTimeWithoutEstimate:
             type:
-              - 'null'
+              - "null"
               - boolean
           allowTimeWithoutTask:
             type:
-              - 'null'
+              - "null"
               - boolean
