@@ -150,13 +150,11 @@ class LegacyStateManagerTest {
                                             .withStreamName(StateTestConstants.STREAM_NAME3)
                                             .withStreamNamespace(StateTestConstants.NAMESPACE)
                                     )
-                                    .stream()
-                                    .sorted(
+                                    .sortedWith(
                                         Comparator.comparing { obj: DbStreamState ->
                                             obj.streamName
                                         }
                                     )
-                                    .toList()
                             )
                             .withCdc(false)
                     )
@@ -190,13 +188,11 @@ class LegacyStateManagerTest {
                                             .withStreamName(StateTestConstants.STREAM_NAME3)
                                             .withStreamNamespace(StateTestConstants.NAMESPACE)
                                     )
-                                    .stream()
-                                    .sorted(
+                                    .sortedWith(
                                         Comparator.comparing { obj: DbStreamState ->
                                             obj.streamName
                                         }
                                     )
-                                    .toList()
                             )
                             .withCdc(false)
                     )
@@ -248,13 +244,11 @@ class LegacyStateManagerTest {
                                             .withStreamName(StateTestConstants.STREAM_NAME2)
                                             .withStreamNamespace(StateTestConstants.NAMESPACE)
                                     )
-                                    .stream()
-                                    .sorted(
+                                    .sortedWith(
                                         Comparator.comparing { obj: DbStreamState ->
                                             obj.streamName
                                         }
                                     )
-                                    .toList()
                             )
                             .withCdc(false)
                     )
@@ -311,13 +305,11 @@ class LegacyStateManagerTest {
                                             .withStreamNamespace(StateTestConstants.NAMESPACE)
                                             .withCursorField(listOf())
                                     )
-                                    .stream()
-                                    .sorted(
+                                    .sortedWith(
                                         Comparator.comparing { obj: DbStreamState ->
                                             obj.streamName
                                         }
                                     )
-                                    .toList()
                             )
                             .withCdc(true)
                     )
@@ -346,13 +338,11 @@ class LegacyStateManagerTest {
                                             .withCursorField(listOf())
                                             .withCursor(null)
                                     )
-                                    .stream()
-                                    .sorted(
+                                    .sortedWith(
                                         Comparator.comparing { obj: DbStreamState ->
                                             obj.streamName
                                         }
                                     )
-                                    .toList()
                             )
                             .withCdc(true)
                     )

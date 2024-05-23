@@ -34,7 +34,7 @@ open class StreamStateManager
 ) :
     AbstractStateManager<AirbyteStateMessage, AirbyteStreamState>(
         catalog,
-        Supplier { rawAirbyteStateMessages.stream().map { it.stream }.toList() },
+        Supplier { rawAirbyteStateMessages.map { it.stream }.toList() },
         StateGeneratorUtils.CURSOR_FUNCTION,
         StateGeneratorUtils.CURSOR_FIELD_FUNCTION,
         StateGeneratorUtils.CURSOR_RECORD_COUNT_FUNCTION,

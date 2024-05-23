@@ -150,7 +150,7 @@ object JsonSchemas {
         traverseJsonSchema(jsonSchema) { node: JsonNode?, path: List<FieldNameOrList> ->
             mapper.apply(node, path).ifPresent { e: T -> collector.add(e) }
         }
-        return collector.stream().toList() // make list unmodifiable
+        return collector.toList() // make list unmodifiable
     }
 
     /**
@@ -301,7 +301,6 @@ object JsonSchemas {
         if (jsonSchema.has(JSON_SCHEMA_TYPE_KEY)) {
             return if (jsonSchema[JSON_SCHEMA_TYPE_KEY].isArray) {
                 MoreIterators.toList(jsonSchema[JSON_SCHEMA_TYPE_KEY].iterator())
-                    .stream()
                     .map { obj: JsonNode -> obj.asText() }
                     .toList()
             } else {

@@ -60,9 +60,8 @@ constructor(
             val catalog =
                 messagesByType
                     .getOrDefault(AirbyteMessage.Type.CATALOG, ArrayList())
-                    .stream()
                     .map { obj: AirbyteMessage -> obj.catalog }
-                    .findFirst()
+                    .firstOrNull()
 
             val optionalConfigMsg =
                 TestHarnessUtils.getMostRecentConfigControlMessage(messagesByType)
@@ -92,14 +91,14 @@ constructor(
                 LOGGER.warn("Discover job subprocess finished with exit codee {}", exitCode)
             }
 
-            if (catalog.isPresent) {
+            if (catalog != null) {
                 val result =
                     AirbyteApiClient.retryWithJitter(
                         {
                             airbyteApiClient.sourceApi.writeDiscoverCatalogResult(
                                 buildSourceDiscoverSchemaWriteRequestBody(
                                     discoverSchemaInput,
-                                    catalog.get()
+                                    catalog
                                 )
                             )
                         },

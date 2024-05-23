@@ -15,7 +15,6 @@ import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.stream.Collectors
 import kotlin.math.min
 
 private val logger = KotlinLogging.logger {}
@@ -194,12 +193,10 @@ internal constructor(
             )
         val workersWithBatchesSize =
             runningWorkerBatchesSizes
-                .stream()
                 .filter { obj: Optional<Long> -> obj.isPresent }
-                .mapToLong { obj: Optional<Long> -> obj.get() }
-                .sum()
+                .sumOf { obj: Optional<Long> -> obj.get() }
         val workersWithoutBatchesCount =
-            runningWorkerBatchesSizes.stream().filter { obj: Optional<Long> -> obj.isEmpty }.count()
+            runningWorkerBatchesSizes.count { obj: Optional<Long> -> obj.isEmpty }
         val workersWithoutBatchesSizeEstimate =
             (min(
                     flusher.optimalBatchSizeBytes.toDouble(),
@@ -232,36 +229,20 @@ internal constructor(
     fun orderStreamsByPriority(streams: Set<StreamDescriptor>): List<StreamDescriptor> {
         // eagerly pull attributes so that values are consistent throughout comparison
         val sdToQueueSize =
-            streams
-                .stream()
-                .collect(
-                    Collectors.toMap(
-                        { s: StreamDescriptor -> s },
-                        { streamDescriptor: StreamDescriptor ->
-                            bufferDequeue.getQueueSizeBytes(
-                                streamDescriptor,
-                            )
-                        },
-                    ),
+            streams.associateWith { streamDescriptor: StreamDescriptor ->
+                bufferDequeue.getQueueSizeBytes(
+                    streamDescriptor,
                 )
+            }
 
         val sdToTimeOfLastRecord =
-            streams
-                .stream()
-                .collect(
-                    Collectors.toMap(
-                        { s: StreamDescriptor -> s },
-                        { streamDescriptor: StreamDescriptor ->
-                            bufferDequeue.getTimeOfLastRecord(
-                                streamDescriptor,
-                            )
-                        },
-                    ),
+            streams.associateWith { streamDescriptor: StreamDescriptor ->
+                bufferDequeue.getTimeOfLastRecord(
+                    streamDescriptor,
                 )
-
+            }
         return streams
-            .stream()
-            .sorted(
+            .sortedWith(
                 Comparator.comparing(
                         { s: StreamDescriptor -> sdToQueueSize[s]!!.orElseThrow() },
                         Comparator.reverseOrder(),

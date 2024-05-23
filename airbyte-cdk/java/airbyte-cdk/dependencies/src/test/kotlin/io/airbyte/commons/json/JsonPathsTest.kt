@@ -16,27 +16,24 @@ internal class JsonPathsTest {
         Assertions.assertEquals(
             listOf(0, 1, 2),
             JsonPaths.getValues(JSON_NODE, LIST_ALL_QUERY)
-                .stream()
                 .map { obj: JsonNode -> obj.asInt() }
                 .toList()
         )
         Assertions.assertEquals(
             listOf(1),
             JsonPaths.getValues(JSON_NODE, LIST_ONE_QUERY)
-                .stream()
                 .map { obj: JsonNode -> obj.asInt() }
                 .toList()
         )
         Assertions.assertEquals(
             listOf(10),
             JsonPaths.getValues(JSON_NODE, NESTED_FIELD_QUERY)
-                .stream()
                 .map { obj: JsonNode -> obj.asInt() }
                 .toList()
         )
         Assertions.assertEquals(
             JSON_NODE["two"],
-            JsonPaths.getValues(JSON_NODE, JSON_OBJECT_QUERY).stream().findFirst().orElse(null)
+            JsonPaths.getValues(JSON_NODE, JSON_OBJECT_QUERY).firstOrNull()
         )
         Assertions.assertEquals(
             emptyList<Any>(),

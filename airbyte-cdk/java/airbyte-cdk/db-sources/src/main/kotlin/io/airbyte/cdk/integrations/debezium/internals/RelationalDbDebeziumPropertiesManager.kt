@@ -66,14 +66,13 @@ class RelationalDbDebeziumPropertiesManager(
             // } -------> info "schema1.table1, schema2.table2"
 
             return catalog.streams
-                .stream()
                 .filter { s: ConfiguredAirbyteStream -> s.syncMode == SyncMode.INCREMENTAL }
                 .map { obj: ConfiguredAirbyteStream -> obj.stream }
-                .map { stream: AirbyteStream ->
-                    stream.namespace + "." + stream.name
-                } // debezium needs commas escaped to split properly
-                .map { x: String -> StringUtils.escape(Pattern.quote(x), ",".toCharArray(), "\\,") }
-                .collect(Collectors.joining(","))
+                .map { stream: AirbyteStream -> stream.namespace + "." + stream.name }
+                // debezium needs commas escaped to split properly
+                .joinToString(",") { x: String ->
+                    StringUtils.escape(Pattern.quote(x), ",".toCharArray(), "\\,")
+                }
         }
 
         fun getColumnIncludeList(catalog: ConfiguredAirbyteCatalog): String {
@@ -91,7 +90,6 @@ class RelationalDbDebeziumPropertiesManager(
             // } -------> info "schema1.table1.(column1 | column2)"
 
             return catalog.streams
-                .stream()
                 .filter { s: ConfiguredAirbyteStream -> s.syncMode == SyncMode.INCREMENTAL }
                 .map { obj: ConfiguredAirbyteStream -> obj.stream }
                 .map { s: AirbyteStream ->
@@ -99,8 +97,7 @@ class RelationalDbDebeziumPropertiesManager(
                     Pattern.quote(s.namespace + "." + s.name) +
                         (if (StringUtils.isNotBlank(fields)) "\\.$fields" else "")
                 }
-                .map { x: String -> StringUtils.escape(x, ",".toCharArray(), "\\,") }
-                .collect(Collectors.joining(","))
+                .joinToString(",") { x: String -> StringUtils.escape(x, ",".toCharArray(), "\\,") }
         }
 
         private fun parseFields(fieldNames: Iterator<String>?): String {

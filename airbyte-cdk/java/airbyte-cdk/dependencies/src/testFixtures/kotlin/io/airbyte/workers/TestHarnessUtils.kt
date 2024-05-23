@@ -117,30 +117,26 @@ object TestHarnessUtils {
     fun getMostRecentConfigControlMessage(
         messagesByType: Map<AirbyteMessage.Type, List<AirbyteMessage>>
     ): Optional<AirbyteControlConnectorConfigMessage> {
-        return messagesByType
-            .getOrDefault(AirbyteMessage.Type.CONTROL, ArrayList())
-            .stream()
-            .map { obj: AirbyteMessage -> obj.control }
-            .filter { control: AirbyteControlMessage ->
-                control.type == AirbyteControlMessage.Type.CONNECTOR_CONFIG
-            }
-            .map { obj: AirbyteControlMessage -> obj.connectorConfig }
-            .reduce {
-                first: AirbyteControlConnectorConfigMessage?,
-                second: AirbyteControlConnectorConfigMessage ->
-                second
-            }
+        return Optional.ofNullable(
+            messagesByType
+                .getOrDefault(AirbyteMessage.Type.CONTROL, ArrayList())
+                .map { obj: AirbyteMessage -> obj.control }
+                .filter { control: AirbyteControlMessage ->
+                    control.type == AirbyteControlMessage.Type.CONNECTOR_CONFIG
+                }
+                .map { obj: AirbyteControlMessage -> obj.connectorConfig }
+                .lastOrNull()
+        )
     }
 
     private fun getTraceMessageFromMessagesByType(
         messagesByType: Map<AirbyteMessage.Type, List<AirbyteMessage>>
-    ): Optional<AirbyteTraceMessage> {
+    ): AirbyteTraceMessage? {
         return messagesByType
             .getOrDefault(AirbyteMessage.Type.TRACE, ArrayList())
-            .stream()
             .map { obj: AirbyteMessage -> obj.trace }
             .filter { trace: AirbyteTraceMessage -> trace.type == AirbyteTraceMessage.Type.ERROR }
-            .findFirst()
+            .firstOrNull()
     }
 
     fun getDidControlMessageChangeConfig(
@@ -174,15 +170,10 @@ object TestHarnessUtils {
         messagesByType: Map<AirbyteMessage.Type, List<AirbyteMessage>>
     ): Optional<FailureReason> {
         val traceMessage = getTraceMessageFromMessagesByType(messagesByType)
-        if (traceMessage.isPresent) {
+        if (traceMessage != null) {
             val connectorCommand = getConnectorCommandFromOutputType(outputType)
             return Optional.of(
-                FailureHelper.connectorCommandFailure(
-                    traceMessage.get(),
-                    null,
-                    null,
-                    connectorCommand
-                )
+                FailureHelper.connectorCommandFailure(traceMessage, null, null, connectorCommand)
             )
         } else {
             return Optional.empty()

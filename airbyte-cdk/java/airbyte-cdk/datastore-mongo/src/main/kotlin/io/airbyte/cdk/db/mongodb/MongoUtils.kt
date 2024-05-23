@@ -128,7 +128,6 @@ object MongoUtils {
         if (node.hasChildren()) {
             val subFields =
                 node.children!!
-                    .stream()
                     .map { obj: TreeNode<CommonField<BsonType>> -> nodeToCommonField(obj) }
                     .toList()
             return CommonField(field.name, field.type, subFields)
@@ -296,7 +295,6 @@ object MongoUtils {
         val allkeys = HashSet(getFieldsName(collection))
 
         return allkeys
-            .stream()
             .map { key: String ->
                 val types = getTypes(collection, key)
                 val type = getUniqueType(types)

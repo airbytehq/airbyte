@@ -95,8 +95,7 @@ object StateGeneratorUtils {
         pairToCursorInfoMap: Map<AirbyteStreamNameNamespacePair, CursorInfo>
     ): List<AirbyteStreamState> {
         return pairToCursorInfoMap.entries
-            .stream()
-            .sorted(java.util.Map.Entry.comparingByKey())
+            .sortedWith(java.util.Map.Entry.comparingByKey())
             .map { e: Map.Entry<AirbyteStreamNameNamespacePair, CursorInfo> ->
                 generateStreamState(e.key, e.value)
             }
@@ -118,8 +117,7 @@ object StateGeneratorUtils {
             .withCdc(false)
             .withStreams(
                 pairToCursorInfoMap.entries
-                    .stream()
-                    .sorted(
+                    .sortedWith(
                         java.util.Map.Entry.comparingByKey()
                     ) // sort by stream name then namespace for sanity.
                     .map { e: Map.Entry<AirbyteStreamNameNamespacePair, CursorInfo> ->
@@ -206,7 +204,6 @@ object StateGeneratorUtils {
                 .withSharedState(Jsons.jsonNode(dbState.cdcState))
                 .withStreamStates(
                     dbState.streams
-                        .stream()
                         .map { s: DbStreamState ->
                             AirbyteStreamState()
                                 .withStreamDescriptor(
@@ -235,7 +232,6 @@ object StateGeneratorUtils {
     ): List<AirbyteStateMessage> {
         return Jsons.`object`(airbyteStateMessage.data, DbState::class.java)!!
             .streams
-            .stream()
             .map { s: DbStreamState ->
                 AirbyteStateMessage()
                     .withType(AirbyteStateMessage.AirbyteStateType.STREAM)

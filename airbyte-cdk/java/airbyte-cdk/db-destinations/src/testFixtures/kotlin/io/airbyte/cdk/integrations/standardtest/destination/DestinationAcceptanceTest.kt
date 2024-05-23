@@ -468,11 +468,8 @@ abstract class DestinationAcceptanceTest {
 
         val largeNumberRecords =
             Collections.nCopies(400, messages)
-                .stream()
-                .flatMap { obj: List<io.airbyte.protocol.models.v0.AirbyteMessage> ->
-                    obj.stream()
-                } // regroup messages per stream
-                .sorted(
+                .flatten() // regroup messages per stream
+                .sortedWith(
                     Comparator.comparing { obj: io.airbyte.protocol.models.v0.AirbyteMessage ->
                             obj.type
                         }
@@ -546,7 +543,6 @@ abstract class DestinationAcceptanceTest {
         val configuredDummyCatalog = CatalogHelpers.toDefaultConfiguredCatalog(dummyCatalog)
         // update messages to set new dummy stream name
         firstSyncMessages
-            .stream()
             .filter { message: io.airbyte.protocol.models.v0.AirbyteMessage ->
                 message.record != null
             }
@@ -853,7 +849,6 @@ abstract class DestinationAcceptanceTest {
         // We expect all the of messages to be missing the removed column after normalization.
         val expectedMessages =
             messages
-                .stream()
                 .map { message: io.airbyte.protocol.models.v0.AirbyteMessage ->
                     if (message.record != null) {
                         (message.record.data as ObjectNode).remove("HKD")
@@ -1020,7 +1015,6 @@ abstract class DestinationAcceptanceTest {
         // order)
         val expectedMessages =
             expectedMessagesAfterSecondSync
-                .stream()
                 .filter { it.type == Type.RECORD && it.record != null }
                 .filter {
                     val key =
@@ -1600,35 +1594,16 @@ abstract class DestinationAcceptanceTest {
         val destinationOutput = runSync(config, messages, catalog, runNormalization)
 
         val expectedStateMessage =
-            reversed(messages)
-                .stream()
-                .filter { m: io.airbyte.protocol.models.v0.AirbyteMessage ->
-                    m.type == io.airbyte.protocol.models.v0.AirbyteMessage.Type.STATE
-                }
-                .findFirst()
-                .orElseThrow {
-                    IllegalArgumentException(
-                        "All message sets used for testing should include a state record"
-                    )
-                }!!
+            reversed(messages).firstOrNull { m: AirbyteMessage -> m.type == Type.STATE }
+                ?: throw IllegalArgumentException(
+                    "All message sets used for testing should include a state record"
+                )
 
         Collections.reverse(destinationOutput)
-        val actualStateMessage =
-            destinationOutput
-                .stream()
-                .filter { it.type == Type.STATE }
-                .findFirst()
-                .map { msg: AirbyteMessage ->
-                    // Modify state message to remove destination stats.
-                    val clone = msg.state
-                    clone.destinationStats = null
-                    msg.state = clone
-                    msg
-                }
-                .orElseGet {
-                    Assertions.fail<Any>("Destination failed to output state")
-                    null
-                }
+        val actualStateMessage = destinationOutput.filter { it.type == Type.STATE }.first()
+        val clone = actualStateMessage.state
+        clone.destinationStats = null
+        actualStateMessage.state = clone
 
         Assertions.assertEquals(expectedStateMessage, actualStateMessage)
     }
@@ -1721,7 +1696,6 @@ abstract class DestinationAcceptanceTest {
             val schema = if (stream.namespace != null) stream.namespace else defaultSchema!!
             val msgList =
                 retrieveRecords(testEnv, streamName, schema, stream.jsonSchema)
-                    .stream()
                     .map { data: JsonNode ->
                         AirbyteRecordMessage()
                             .withStream(streamName)
@@ -1743,12 +1717,11 @@ abstract class DestinationAcceptanceTest {
     ) {
         val expectedProcessed =
             expected
-                .stream()
                 .filter { message: io.airbyte.protocol.models.v0.AirbyteMessage ->
                     message.type == io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD
                 }
                 .map { obj: io.airbyte.protocol.models.v0.AirbyteMessage -> obj.record }
-                .peek { recordMessage: AirbyteRecordMessage -> recordMessage.emittedAt = null }
+                .onEach { recordMessage: AirbyteRecordMessage -> recordMessage.emittedAt = null }
                 .map { recordMessage: AirbyteRecordMessage ->
                     if (pruneAirbyteInternalFields) safePrune(recordMessage) else recordMessage
                 }
@@ -1757,7 +1730,6 @@ abstract class DestinationAcceptanceTest {
 
         val actualProcessed =
             actual
-                .stream()
                 .map { recordMessage: AirbyteRecordMessage ->
                     if (pruneAirbyteInternalFields) safePrune(recordMessage) else recordMessage
                 }
@@ -1779,7 +1751,6 @@ abstract class DestinationAcceptanceTest {
 
             val msgList =
                 retrieveNormalizedRecords(testEnv, streamName, defaultSchema)
-                    .stream()
                     .map { data: JsonNode ->
                         AirbyteRecordMessage().withStream(streamName).withData(data)
                     }
@@ -2182,7 +2153,6 @@ abstract class DestinationAcceptanceTest {
         override fun provideArguments(context: ExtensionContext): Stream<out Arguments> {
             val testCases = Jsons.deserialize(MoreResources.readResource(NAMESPACE_TEST_CASES_JSON))
             return MoreIterators.toList(testCases.elements())
-                .stream()
                 .filter { testCase: JsonNode -> testCase["enabled"].asBoolean() }
                 .map { testCase: JsonNode ->
                     val namespaceInCatalog =
@@ -2201,6 +2171,7 @@ abstract class DestinationAcceptanceTest {
                         namespaceInDst
                     )
                 }
+                .stream()
         }
 
         companion object {
@@ -2290,7 +2261,7 @@ abstract class DestinationAcceptanceTest {
                         "UNIQUE_KEY"
                     )
                 if (
-                    airbyteInternalFields.stream().anyMatch { internalField: String ->
+                    airbyteInternalFields.any { internalField: String ->
                         key.lowercase(Locale.getDefault())
                             .contains(internalField.lowercase(Locale.getDefault()))
                     } || json[key].isNull

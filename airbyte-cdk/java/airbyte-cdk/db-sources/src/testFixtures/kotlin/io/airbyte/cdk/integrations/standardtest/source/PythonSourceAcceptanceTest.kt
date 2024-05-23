@@ -55,18 +55,13 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
                 .map { obj: JsonNode -> obj.textValue() }
                 .toList()
         val stringMessages =
-            allMessages
-                .stream()
-                .map { `object`: AirbyteMessage -> Jsons.serialize(`object`) }
-                .toList()
+            allMessages.map { `object`: AirbyteMessage -> Jsons.serialize(`object`) }.toList()
         LOGGER.info("Running " + regexTests.size + " regex tests...")
         regexTests.forEach(
             Consumer { regex: String ->
                 LOGGER.info("Looking for [$regex]")
                 Assertions.assertTrue(
-                    stringMessages.stream().anyMatch { line: String ->
-                        line.matches(regex.toRegex())
-                    },
+                    stringMessages.any { line: String -> line.matches(regex.toRegex()) },
                     "Failed to find regex: $regex"
                 )
             }

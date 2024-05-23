@@ -144,13 +144,8 @@ class SshBastionContainer : AutoCloseable {
          */
         fun getInnerContainerAddress(container: Container<*>): ImmutablePair<String, Int> {
             return ImmutablePair.of(
-                container.containerInfo.networkSettings.networks.entries
-                    .stream()
-                    .findFirst()
-                    .get()
-                    .value
-                    .ipAddress,
-                container.exposedPorts.stream().findFirst().get()
+                container.containerInfo.networkSettings.networks.entries.first().value.ipAddress,
+                container.exposedPorts.first()
             )
         }
 

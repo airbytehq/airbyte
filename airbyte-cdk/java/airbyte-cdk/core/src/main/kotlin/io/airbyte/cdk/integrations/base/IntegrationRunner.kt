@@ -301,7 +301,7 @@ internal constructor(
                      * stream consumer.
                      */
                     val partitionSize = streamConsumer.parallelism
-                    val partitions = Lists.partition(streams.stream().toList(), partitionSize)
+                    val partitions = Lists.partition(streams.toList(), partitionSize)
 
                     // Submit each stream partition for concurrent execution
                     partitions.forEach(
@@ -520,7 +520,7 @@ internal constructor(
                 scheduledExecutorService.schedule(
                     {
                         if (
-                            ThreadUtils.getAllThreads().stream().anyMatch { runningThread: Thread ->
+                            ThreadUtils.getAllThreads().any { runningThread: Thread ->
                                 !runningThread.isDaemon && runningThread.name != currentThread.name
                             }
                         ) {

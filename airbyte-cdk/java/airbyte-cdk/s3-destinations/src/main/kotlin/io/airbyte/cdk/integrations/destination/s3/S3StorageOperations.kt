@@ -141,15 +141,13 @@ open class S3StorageOperations(
         // issue reduces risk of misidentifying errors or reporting a transient error.
         val areAllExceptionsAuthExceptions: Boolean =
             exceptionsThrown
-                .stream()
-                .filter { e: Exception -> e is AmazonS3Exception }
+                .filterIsInstance<AmazonS3Exception>()
                 .map { s3e: Exception -> (s3e as AmazonS3Exception).statusCode }
-                .filter { o: Int ->
+                .count { o: Int ->
                     ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES.contains(
                         o,
                     )
-                }
-                .count() == exceptionsThrown.size.toLong()
+                } == exceptionsThrown.size
         if (areAllExceptionsAuthExceptions) {
             throw ConfigErrorException(exceptionsThrown[0].message!!, exceptionsThrown[0])
         } else {
@@ -310,7 +308,6 @@ open class S3StorageOperations(
         while (objects.objectSummaries.size > 0) {
             val keysToDelete: List<DeleteObjectsRequest.KeyVersion> =
                 objects.objectSummaries
-                    .stream()
                     .filter { obj: S3ObjectSummary ->
                         regexFormat
                             .matcher(
@@ -363,7 +360,6 @@ open class S3StorageOperations(
         while (objects.objectSummaries.size > 0) {
             val keysToDelete: List<DeleteObjectsRequest.KeyVersion> =
                 objects.objectSummaries
-                    .stream()
                     .filter { obj: S3ObjectSummary ->
                         stagedFiles.isEmpty() ||
                             stagedFiles.contains(
@@ -394,7 +390,7 @@ open class S3StorageOperations(
     ) {
         if (keysToDelete.isNotEmpty()) {
             logger.info {
-                "Deleting objects ${keysToDelete.stream().map { obj: DeleteObjectsRequest.KeyVersion -> obj.key }
+                "Deleting objects ${keysToDelete.map { obj: DeleteObjectsRequest.KeyVersion -> obj.key }
                 .toList().joinToString(separator = ", ")}"
             }
             s3Client.deleteObjects(DeleteObjectsRequest(bucket).withKeys(keysToDelete))

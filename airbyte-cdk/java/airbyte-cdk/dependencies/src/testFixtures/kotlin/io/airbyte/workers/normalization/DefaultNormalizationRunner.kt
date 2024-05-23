@@ -255,14 +255,10 @@ class DefaultNormalizationRunner(
 
     override val traceMessages: Stream<AirbyteTraceMessage>
         get() {
-            if (
-                airbyteMessagesByType != null &&
-                    airbyteMessagesByType!![AirbyteMessage.Type.TRACE] != null
-            ) {
-                return airbyteMessagesByType!![AirbyteMessage.Type.TRACE]!!.stream().map {
-                    obj: AirbyteMessage ->
-                    obj.trace
-                }
+            if (airbyteMessagesByType[AirbyteMessage.Type.TRACE] != null) {
+                return airbyteMessagesByType[AirbyteMessage.Type.TRACE]!!
+                    .map { obj: AirbyteMessage -> obj.trace }
+                    .stream()
             }
             return Stream.empty()
         }

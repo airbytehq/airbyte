@@ -63,20 +63,16 @@ class ParquetSerializedBuffer(
         val schema: Schema =
             schemaConverter.getAvroSchema(
                 catalog.streams
-                    .stream()
-                    .filter { s: ConfiguredAirbyteStream ->
+                    .firstOrNull { s: ConfiguredAirbyteStream ->
                         (s.stream.name == stream.name) &&
                             StringUtils.equals(
                                 s.stream.namespace,
                                 stream.namespace,
                             )
                     }
-                    .findFirst()
-                    .orElseThrow {
-                        RuntimeException("No such stream ${stream.namespace}.${stream.name}")
-                    }
-                    .stream
-                    .jsonSchema,
+                    ?.stream
+                    ?.jsonSchema
+                    ?: throw RuntimeException("No such stream ${stream.namespace}.${stream.name}"),
                 stream.name,
                 stream.namespace,
             )

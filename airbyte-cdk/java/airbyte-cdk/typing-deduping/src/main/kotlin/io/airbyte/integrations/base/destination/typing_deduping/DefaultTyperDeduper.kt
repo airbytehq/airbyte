@@ -292,7 +292,6 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
         LOGGER.info("Typing and deduping all tables")
         val typeAndDedupeTasks: MutableSet<CompletableFuture<Optional<Exception>>> = HashSet()
         parsedCatalog.streams
-            .stream()
             .filter { streamConfig: StreamConfig ->
                 // Skip if stream setup failed.
                 if (!streamSetupSucceeded(streamConfig)) {

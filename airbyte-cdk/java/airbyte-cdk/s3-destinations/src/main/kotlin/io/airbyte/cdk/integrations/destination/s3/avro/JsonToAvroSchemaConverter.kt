@@ -14,8 +14,6 @@ import java.util.LinkedList
 import java.util.Objects
 import java.util.Optional
 import java.util.function.Predicate
-import java.util.stream.Collectors
-import java.util.stream.Stream
 import org.apache.avro.LogicalTypes
 import org.apache.avro.Schema
 import org.apache.avro.SchemaBuilder
@@ -350,7 +348,6 @@ class JsonToAvroSchemaConverter {
     ): MutableList<Schema> {
         val schemas: List<Schema> =
             MoreIterators.toList(types.elements())
-                .stream()
                 .flatMap { definition: JsonNode ->
                     getSchemas(
                         fieldName = fieldName,
@@ -372,8 +369,8 @@ class JsonToAvroSchemaConverter {
         definition: JsonNode,
         appendExtraProps: Boolean,
         addStringToLogicalTypes: Boolean
-    ): Stream<Schema>? {
-        return getNonNullTypes(fieldName, definition).stream().flatMap { type: JsonSchemaType ->
+    ): List<Schema> {
+        return getNonNullTypes(fieldName, definition).flatMap { type: JsonSchemaType ->
             getSchema(
                 fieldName = fieldName,
                 fieldNamespace = fieldNamespace,
@@ -392,7 +389,7 @@ class JsonToAvroSchemaConverter {
         definition: JsonNode,
         appendExtraProps: Boolean,
         addStringToLogicalTypes: Boolean
-    ): Stream<Schema>? {
+    ): List<Schema> {
         val namespace: String =
             if (fieldNamespace == null) fieldName else "$fieldNamespace.$fieldName"
         val singleFieldSchema: Schema =
@@ -405,9 +402,9 @@ class JsonToAvroSchemaConverter {
                 addStringToLogicalTypes,
             )
         if (singleFieldSchema.isUnion) {
-            return singleFieldSchema.types.stream()
+            return singleFieldSchema.types
         } else {
-            return Stream.of<Schema>(
+            return listOf(
                 singleFieldSchema,
             )
         }
@@ -438,8 +435,9 @@ class JsonToAvroSchemaConverter {
 
         val mergedSchemas: MutableList<Schema> =
             schemas
-                .stream() // gather record schemas to construct a single record schema later on
-                .peek { schema: Schema ->
+
+                // gather record schemas to construct a single record schema later on
+                .onEach { schema: Schema ->
                     if (schema.type == Schema.Type.RECORD) {
                         for (field: Schema.Field in schema.fields) {
                             recordFieldSchemas.putIfAbsent(
@@ -458,8 +456,7 @@ class JsonToAvroSchemaConverter {
                     }
                 } // remove record schemas because they will be merged into one
                 .filter { schema: Schema -> schema.type != Schema.Type.RECORD }
-                .collect(Collectors.toList<Schema>())
-
+                .toMutableList()
         // create one record schema from all the record fields
         if (recordFieldSchemas.isNotEmpty()) {
             val builder: SchemaBuilder.RecordBuilder<Schema> = SchemaBuilder.record(fieldName)
@@ -486,10 +483,9 @@ class JsonToAvroSchemaConverter {
                 }
                 val subfieldSchemas: List<Schema> =
                     entry.value
-                        .stream()
                         .flatMap { schema: Schema ->
                             schema.types
-                                .stream() // filter out null and add it later on as the first
+                                // filter out null and add it later on as the first
                                 // element
                                 .filter { s: Schema -> s != NULL_SCHEMA }
                         }
@@ -572,9 +568,9 @@ class JsonToAvroSchemaConverter {
             // invalid and
             // cannot be properly processed.
             if (
-                ((nonNullFieldTypes.stream().anyMatch { schema: Schema ->
-                    schema.logicalType != null
-                }) && (!nonNullFieldTypes.contains(STRING_SCHEMA)) && addStringToLogicalTypes)
+                ((nonNullFieldTypes.any { schema: Schema -> schema.logicalType != null }) &&
+                    (!nonNullFieldTypes.contains(STRING_SCHEMA)) &&
+                    addStringToLogicalTypes)
             ) {
                 nonNullFieldTypes.add(STRING_SCHEMA)
             }
@@ -606,8 +602,8 @@ class JsonToAvroSchemaConverter {
                 ) && ("timestamp-micros" == type.logicalType.name)
             }
 
-        val hasPlainLong: Boolean = unionTypes.stream().anyMatch(isPlainLong)
-        val hasTimestampMicrosLong: Boolean = unionTypes.stream().anyMatch(isTimestampMicrosLong)
+        val hasPlainLong: Boolean = unionTypes.any { isPlainLong.test(it) }
+        val hasTimestampMicrosLong: Boolean = unionTypes.any { isTimestampMicrosLong.test(it) }
         val removeTimestampType: Predicate<Schema> = Predicate { type: Schema ->
             !(hasPlainLong &&
                 hasTimestampMicrosLong &&
@@ -615,14 +611,7 @@ class JsonToAvroSchemaConverter {
                     type,
                 ))
         }
-        return Schema.createUnion(
-            unionTypes
-                .stream()
-                .filter(removeTimestampType)
-                .collect(
-                    Collectors.toList(),
-                ),
-        )
+        return Schema.createUnion(unionTypes.filter { removeTimestampType.test(it) }.toList())
     }
 
     companion object {
@@ -640,11 +629,8 @@ class JsonToAvroSchemaConverter {
         @Suppress("DEPRECATION")
         fun getNonNullTypes(fieldName: String?, fieldDefinition: JsonNode): List<JsonSchemaType> {
             return getTypes(fieldName, fieldDefinition)
-                .stream()
                 .filter { type: JsonSchemaType -> type != JsonSchemaType.NULL }
-                .collect(
-                    Collectors.toList(),
-                )
+                .toList()
         }
 
         /** When no type or $ref are specified, it will default to string. */
@@ -660,7 +646,6 @@ class JsonToAvroSchemaConverter {
 
             if (typeProperty != null && typeProperty.isArray) {
                 return MoreIterators.toList(typeProperty.elements())
-                    .stream()
                     .map { s: JsonNode ->
                         JsonSchemaType.fromJsonSchemaType(
                             s.asText(),

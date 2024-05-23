@@ -12,9 +12,7 @@ import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.SyncMode
 import java.util.*
-import java.util.function.Consumer
 import java.util.function.Function
-import java.util.stream.Collectors
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -31,7 +29,7 @@ object DbSourceDiscoverUtil {
      */
     @JvmStatic
     fun <DataType> logSourceSchemaChange(
-        fullyQualifiedTableNameToInfo: Map<String?, TableInfo<CommonField<DataType>>>,
+        fullyQualifiedTableNameToInfo: Map<String, TableInfo<CommonField<DataType>>>,
         catalog: ConfiguredAirbyteCatalog,
         airbyteTypeConverter: Function<DataType, JsonSchemaType>
     ) {
@@ -44,7 +42,6 @@ object DbSourceDiscoverUtil {
             val table = fullyQualifiedTableNameToInfo[fullyQualifiedTableName]!!
             val fields =
                 table.fields
-                    .stream()
                     .map { commonField: CommonField<DataType> ->
                         toField(commonField, airbyteTypeConverter)
                     }
@@ -89,7 +86,6 @@ object DbSourceDiscoverUtil {
     ): AirbyteCatalog {
         val tableInfoFieldList =
             tableInfos
-                .stream()
                 .map { t: TableInfo<CommonField<DataType>> ->
                     // some databases return multiple copies of the same record for a column (e.g.
                     // redshift) because
@@ -100,7 +96,6 @@ object DbSourceDiscoverUtil {
                     assertColumnsWithSameNameAreSame(t.nameSpace, t.name, t.fields)
                     val fields =
                         t.fields
-                            .stream()
                             .map { commonField: CommonField<DataType> ->
                                 toField(commonField, airbyteTypeConverter)
                             }
@@ -127,7 +122,6 @@ object DbSourceDiscoverUtil {
                 .map { tableInfo: TableInfo<Field> ->
                     val primaryKeys =
                         tableInfo.primaryKeys
-                            .stream()
                             .filter { obj: String -> Objects.nonNull(obj) }
                             .map { listOf(it) }
                             .toList()
@@ -164,7 +158,6 @@ object DbSourceDiscoverUtil {
         ) {
             val properties =
                 commonField.properties
-                    .stream()
                     .map { commField: CommonField<DataType> ->
                         toField(commField, airbyteTypeConverter)
                     }
@@ -185,28 +178,23 @@ object DbSourceDiscoverUtil {
         columns: List<CommonField<DataType>>
     ) {
         columns
-            .stream()
-            .collect(Collectors.groupingBy(Function { obj: CommonField<DataType> -> obj.name }))
+            .groupBy { obj: CommonField<DataType> -> obj.name }
             .values
-            .forEach(
-                Consumer { columnsWithSameName: List<CommonField<DataType>> ->
-                    val comparisonColumn = columnsWithSameName[0]
-                    columnsWithSameName.forEach(
-                        Consumer { column: CommonField<DataType> ->
-                            if (column != comparisonColumn) {
-                                throw RuntimeException(
-                                    String.format(
-                                        "Found multiple columns with same name: %s in table: %s.%s but the columns are not the same. columns: %s",
-                                        comparisonColumn.name,
-                                        nameSpace,
-                                        tableName,
-                                        columns
-                                    )
-                                )
-                            }
-                        }
-                    )
+            .forEach { columnsWithSameName: List<CommonField<DataType>> ->
+                val comparisonColumn = columnsWithSameName[0]
+                columnsWithSameName.forEach { column: CommonField<DataType> ->
+                    if (column != comparisonColumn) {
+                        throw RuntimeException(
+                            String.format(
+                                "Found multiple columns with same name: %s in table: %s.%s but the columns are not the same. columns: %s",
+                                comparisonColumn.name,
+                                nameSpace,
+                                tableName,
+                                columns
+                            )
+                        )
+                    }
                 }
-            )
+            }
     }
 }

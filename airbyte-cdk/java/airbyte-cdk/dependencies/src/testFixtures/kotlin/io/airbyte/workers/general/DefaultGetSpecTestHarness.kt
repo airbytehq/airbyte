@@ -39,9 +39,8 @@ constructor(
             val spec =
                 messagesByType
                     .getOrDefault(AirbyteMessage.Type.SPEC, ArrayList())!!
-                    .stream()
                     .map { obj: AirbyteMessage -> obj.spec }
-                    .findFirst()
+                    .firstOrNull()
 
             val failureReason =
                 TestHarnessUtils.getJobFailureReasonFromMessages(
@@ -57,8 +56,8 @@ constructor(
                 LOGGER.warn("Spec job subprocess finished with exit code {}", exitCode)
             }
 
-            if (spec.isPresent) {
-                jobOutput.spec = spec.get()
+            if (spec != null) {
+                jobOutput.spec = spec
             } else if (failureReason.isEmpty) {
                 TestHarnessUtils.throwWorkerException(
                     "Integration failed to output a spec struct and did not output a failure reason",

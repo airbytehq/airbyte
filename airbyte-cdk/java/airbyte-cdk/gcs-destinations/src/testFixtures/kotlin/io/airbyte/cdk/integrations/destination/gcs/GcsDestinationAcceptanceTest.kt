@@ -115,16 +115,13 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: FileUplo
             s3Client
                 .listObjects(config.bucketName, parentFolder)
                 .objectSummaries
-                .stream()
                 .filter { o: S3ObjectSummary -> o.key.contains("$streamNameStr/") }
-                .sorted(Comparator.comparingLong { o: S3ObjectSummary -> o.lastModified.time })
-                .toList()
+                .sortedWith(Comparator.comparingLong { o: S3ObjectSummary -> o.lastModified.time })
         LOGGER.info(
             "All objects: {}",
-            objectSummaries
-                .stream()
-                .map { o: S3ObjectSummary -> String.format("%s/%s", o.bucketName, o.key) }
-                .toList()
+            objectSummaries.map { o: S3ObjectSummary ->
+                String.format("%s/%s", o.bucketName, o.key)
+            }
         )
         return objectSummaries
     }

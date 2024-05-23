@@ -74,7 +74,6 @@ open class StandardNameTransformer : NamingConventionTransformer {
             } else if (root.isArray) {
                 return Jsons.jsonNode(
                     MoreIterators.toList(root.elements())
-                        .stream()
                         .map { r: JsonNode -> formatJsonPath(r) }
                         .toList()
                 )

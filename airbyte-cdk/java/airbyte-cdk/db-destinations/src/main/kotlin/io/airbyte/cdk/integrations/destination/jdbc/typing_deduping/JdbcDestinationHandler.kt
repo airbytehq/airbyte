@@ -208,7 +208,6 @@ abstract class JdbcDestinationHandler<DestinationState>(
 
         val initialStates =
             streamConfigs
-                .stream()
                 .map { streamConfig: StreamConfig ->
                     retrieveState(destinationStatesFuture, streamConfig)
                 }
@@ -399,26 +398,12 @@ abstract class JdbcDestinationHandler<DestinationState>(
             )
 
         // Filter out Meta columns since they don't exist in stream config.
-        val actualColumns =
-            existingTable.columns.entries
-                .stream()
-                .filter { column: Map.Entry<String?, ColumnDefinition> ->
-                    JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream().noneMatch {
-                        airbyteColumnName: String ->
-                        airbyteColumnName == column.key
-                    }
-                }
-                .collect(
-                    { LinkedHashMap() },
-                    {
-                        map: LinkedHashMap<String?, String>,
-                        column: Map.Entry<String?, ColumnDefinition> ->
-                        map[column.key] = column.value.type.lowercase()
-                    },
-                    { obj: LinkedHashMap<String?, String>, m: LinkedHashMap<String?, String> ->
-                        obj.putAll(m)
-                    }
-                )
+        val actualColumns = LinkedHashMap<String?, String>()
+        existingTable.columns.entries
+            .filter { column: Map.Entry<String?, ColumnDefinition> ->
+                JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.none { it == column.key }
+            }
+            .forEach { actualColumns[it.key] = it.value.type.lowercase() }
 
         return actualColumns == intendedColumns
     }
@@ -430,7 +415,6 @@ abstract class JdbcDestinationHandler<DestinationState>(
             .deleteFrom(table(quotedName(rawTableNamespace, DESTINATION_STATE_TABLE_NAME)))
             .where(
                 destinationStates.keys
-                    .stream()
                     .map { streamId: StreamId ->
                         field(quotedName(DESTINATION_STATE_TABLE_COLUMN_NAME))
                             .eq(streamId.originalName)
@@ -439,9 +423,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                                     .eq(streamId.originalNamespace)
                             )
                     }
-                    .reduce(DSL.falseCondition()) { obj: Condition, arg2: Condition? ->
-                        obj.or(arg2)
-                    }
+                    .reduce { obj: Condition, arg2: Condition? -> obj.or(arg2) }
             )
             .getSQL(ParamType.INLINED)
     }
