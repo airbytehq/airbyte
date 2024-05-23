@@ -89,6 +89,8 @@ class SourcePinterest(YamlDeclarativeSource):
 
         declarative_streams = super().streams(config)
         ad_accounts = [stream for stream in declarative_streams if stream.name == "ad_accounts"][0]
+
+        # Report streams involve async data fetch, which is currently not supported in low-code
         report_streams = [
             CampaignAnalyticsReport(ad_accounts, config=report_config),
             CampaignTargetingReport(ad_accounts, config=report_config),
