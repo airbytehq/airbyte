@@ -2,24 +2,36 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 18081484-02a5-4662-8dba-b270b582f321
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/destination-firebolt
   githubIssueLabel: destination-firebolt
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   icon: firebolt.svg
   license: MIT
   name: Firebolt
   registries:
     cloud:
-      enabled: true
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/firebolt
   supportsDbt: true
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-FIREBOLT_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

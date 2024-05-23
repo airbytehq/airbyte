@@ -3,7 +3,6 @@
 #
 
 
-import logging
 from typing import Any, List, Mapping
 
 from airbyte_cdk.config_observation import create_connector_config_control_message
@@ -14,8 +13,6 @@ from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageReposi
 from airbyte_cdk.utils import AirbyteTracedException
 
 from .utils import GAQL
-
-logger = logging.getLogger("airbyte_logger")
 
 FULL_REFRESH_CUSTOM_TABLE = [
     "asset",

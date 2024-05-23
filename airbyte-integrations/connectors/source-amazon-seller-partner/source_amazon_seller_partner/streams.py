@@ -6,6 +6,7 @@
 import csv
 import gzip
 import json
+import logging
 import os
 import time
 from abc import ABC, abstractmethod
@@ -282,6 +283,15 @@ class ReportsAmazonSPStream(HttpStream, ABC):
 
         return report_payload
 
+    def _retrieve_report_result(self, report_document_id: str) -> requests.Response:
+        request_headers = self.request_headers()
+        request = self._create_prepared_request(
+            path=self.path(document_id=report_document_id),
+            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            params=self.request_params(),
+        )
+        return self._send_request(request, {})
+
     @default_backoff_handler(factor=5, max_tries=5)
     def download_and_decompress_report_document(self, payload: dict) -> str:
         """
@@ -381,25 +391,31 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         if processing_status == ReportProcessingStatus.DONE:
             # retrieve and decrypt the report document
             document_id = report_payload["reportDocumentId"]
-            request_headers = self.request_headers()
-            request = self._create_prepared_request(
-                path=self.path(document_id=document_id),
-                headers=dict(request_headers, **self.authenticator.get_auth_header()),
-                params=self.request_params(),
-            )
-            response = self._send_request(request, {})
+            response = self._retrieve_report_result(document_id)
+
             for record in self.parse_response(response, stream_state, stream_slice):
                 if report_end_date:
                     record["dataEndTime"] = report_end_date.strftime(DATE_FORMAT)
                 yield record
         elif processing_status == ReportProcessingStatus.FATAL:
-            raise AirbyteTracedException(
-                internal_message=(
-                    f"Failed to retrieve the report '{self.name}' for period "
-                    f"{stream_slice['dataStartTime']}-{stream_slice['dataEndTime']} "
-                    "due to Amazon Seller Partner platform issues. This will be read during the next sync."
+            # retrieve and decrypt the report document
+            try:
+                document_id = report_payload["reportDocumentId"]
+                response = self._retrieve_report_result(document_id)
+
+                document = self.download_and_decompress_report_document(response.json())
+                error_response = json.loads(document)
+            except Exception as e:
+                logging.error(f"Failed to retrieve the report result document for stream '{self.name}'. Exception: {e}")
+                error_response = "Failed to retrieve the report result document."
+
+            exception_message = f"Failed to retrieve the report '{self.name}'"
+            if stream_slice and "dataStartTime" in stream_slice:
+                exception_message += (
+                    f" for period {stream_slice['dataStartTime']}-{stream_slice['dataEndTime']}. "
+                    f"This will be read during the next sync. Error: {error_response}"
                 )
-            )
+            raise AirbyteTracedException(internal_message=exception_message)
         elif processing_status == ReportProcessingStatus.CANCELLED:
             logger.warning(f"The report for stream '{self.name}' was cancelled or there is no data to return.")
         else:
@@ -692,7 +708,7 @@ class AnalyticsStream(ReportsAmazonSPStream):
     ) -> Mapping[str, Any]:
         data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
         options = self.report_options()
-        if options and options.get("reportPeriod") is not None:
+        if options and options.get("reportPeriod"):
             data.update(self._augmented_data(options))
         return data
 
@@ -735,24 +751,6 @@ class IncrementalAnalyticsStream(AnalyticsStream):
     @property
     def cursor_field(self) -> Union[str, List[str]]:
         return "endDate"
-
-    def _report_data(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Mapping[str, Any]:
-        data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
-        if stream_slice:
-            data_times = {}
-            if stream_slice.get("dataStartTime"):
-                data_times["dataStartTime"] = stream_slice["dataStartTime"]
-            if stream_slice.get("dataEndTime"):
-                data_times["dataEndTime"] = stream_slice["dataEndTime"]
-            data.update(data_times)
-
-        return data
 
     def parse_response(
         self,
@@ -856,6 +854,8 @@ class VendorInventoryReports(IncrementalAnalyticsStream):
 class VendorTrafficReport(IncrementalAnalyticsStream):
     name = "GET_VENDOR_TRAFFIC_REPORT"
     result_key = "trafficByAsin"
+    availability_sla_days = 3
+    fixed_period_in_days = 1
 
 
 class SellerAnalyticsSalesAndTrafficReports(IncrementalAnalyticsStream):
@@ -873,6 +873,52 @@ class VendorSalesReports(IncrementalAnalyticsStream):
     name = "GET_VENDOR_SALES_REPORT"
     result_key = "salesByAsin"
     availability_sla_days = 4  # Data is only available after 4 days
+
+
+class VendorForecastingReport(AnalyticsStream, ABC):
+    """
+    Field definitions:
+    https://github.com/amzn/selling-partner-api-models/blob/main/schemas/reports/vendorForecastingReport.json
+    Docs: https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports
+    """
+
+    result_key = "forecastByAsin"
+
+    @property
+    @abstractmethod
+    def selling_program(self) -> str:
+        pass
+
+    @property
+    def name(self) -> str:
+        return f"GET_VENDOR_FORECASTING_{self.selling_program}_REPORT"
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        return [None]
+
+    def _report_data(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        # This report supports the `sellingProgram` parameter only
+        return {
+            "reportType": "GET_VENDOR_FORECASTING_REPORT",
+            "marketplaceIds": [self.marketplace_id],
+            "reportOptions": {"sellingProgram": self.selling_program},
+        }
+
+
+class VendorForecastingFreshReport(VendorForecastingReport):
+    selling_program = "FRESH"
+
+
+class VendorForecastingRetailReport(VendorForecastingReport):
+    selling_program = "RETAIL"
 
 
 class SellerFeedbackReports(IncrementalReportsAmazonSPStream):

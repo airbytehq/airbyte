@@ -37,6 +37,15 @@ public class MongoConstants {
   public static final String INITIAL_RECORD_WAITING_TIME_SEC = "initial_waiting_seconds";
   public static final Integer DEFAULT_INITIAL_RECORD_WAITING_TIME_SEC = 300;
 
+  public static final String INVALID_CDC_CURSOR_POSITION_PROPERTY = "invalid_cdc_cursor_position_behavior";
+  public static final String FAIL_SYNC_OPTION = "Fail sync";
+  public static final String RESYNC_DATA_OPTION = "Re-sync data";
+
+  public static final String UPDATE_CAPTURE_MODE = "update_capture_mode";
+
+  public static final String CAPTURE_MODE_LOOKUP_OPTION = "Lookup";
+  public static final String CAPTURE_MODE_POST_IMAGE_OPTION = "Post Image";
+
   private MongoConstants() {}
 
 }

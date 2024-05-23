@@ -6,15 +6,17 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from datetime import datetime
+from pathlib import Path
 from types import TracebackType
 from typing import TYPE_CHECKING
 
 import yaml  # type: ignore
-from anyio import Path
 from asyncer import asyncify
 from dagger import Directory, Platform, Secret
 from github import PullRequest
+from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.consts import BUILD_PLATFORMS
 from pipelines.dagger.actions import secrets
@@ -29,6 +31,13 @@ if TYPE_CHECKING:
     from pathlib import Path as NativePath
     from typing import Dict, FrozenSet, List, Optional, Sequence
 
+# These test suite names are declared in metadata.yaml files
+TEST_SUITE_NAME_TO_STEP_ID = {
+    "unitTests": CONNECTOR_TEST_STEP_ID.UNIT,
+    "integrationTests": CONNECTOR_TEST_STEP_ID.INTEGRATION,
+    "acceptanceTests": CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
+}
+
 
 class ConnectorContext(PipelineContext):
     """The connector context is used to store configuration for a specific connector pipeline run."""
@@ -42,6 +51,8 @@ class ConnectorContext(PipelineContext):
         is_local: bool,
         git_branch: str,
         git_revision: str,
+        diffed_branch: str,
+        git_repo_url: str,
         report_output_prefix: str,
         use_remote_secrets: bool = True,
         ci_report_bucket: Optional[str] = None,
@@ -76,6 +87,8 @@ class ConnectorContext(PipelineContext):
             is_local (bool): Whether the context is for a local run or a CI run.
             git_branch (str): The current git branch name.
             git_revision (str): The current git revision, commit hash.
+            diffed_branch: str: The branch to compare the current branch against.
+            git_repo_url: str: The URL of the git repository.
             report_output_prefix (str): The S3 key to upload the test report to.
             use_remote_secrets (bool, optional): Whether to download secrets for GSM or use the local secrets. Defaults to True.
             connector_acceptance_test_image (Optional[str], optional): The image to use to run connector acceptance tests. Defaults to DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE.
@@ -122,6 +135,8 @@ class ConnectorContext(PipelineContext):
             is_local=is_local,
             git_branch=git_branch,
             git_revision=git_revision,
+            diffed_branch=diffed_branch,
+            git_repo_url=git_repo_url,
             report_output_prefix=report_output_prefix,
             gha_workflow_run_url=gha_workflow_run_url,
             dagger_logs_url=dagger_logs_url,
@@ -134,7 +149,7 @@ class ConnectorContext(PipelineContext):
             ci_gcs_credentials=ci_gcs_credentials,
             ci_git_user=ci_git_user,
             ci_github_access_token=ci_github_access_token,
-            run_step_options=run_step_options,
+            run_step_options=self._skip_metadata_disabled_test_suites(run_step_options),
             enable_report_auto_open=enable_report_auto_open,
         )
 
@@ -173,6 +188,10 @@ class ConnectorContext(PipelineContext):
     @property
     def connector_acceptance_test_source_dir(self) -> Directory:
         return self.get_repo_dir("airbyte-integrations/bases/connector-acceptance-test")
+
+    @property
+    def live_tests_dir(self) -> Directory:
+        return self.get_repo_dir("airbyte-ci/connectors/live-tests")
 
     @property
     def should_save_updated_secrets(self) -> bool:
@@ -276,3 +295,30 @@ class ConnectorContext(PipelineContext):
 
     def create_slack_message(self) -> str:
         raise NotImplementedError
+
+    def _get_step_id_to_skip_according_to_metadata(self) -> List[CONNECTOR_TEST_STEP_ID]:
+        """The connector metadata have a connectorTestSuitesOptions field.
+        It allows connector developers to declare the test suites that are enabled for a connector.
+        This function retrieved enabled test suites according to this field value and returns the test suites steps that are skipped (because they're not declared in this field.)
+        The skippable test suites steps are declared in TEST_SUITE_NAME_TO_STEP_ID.
+
+        Returns:
+            List[CONNECTOR_TEST_STEP_ID]: List of step ids that should be skipped according to connector metadata.
+        """
+        enabled_test_suites = [option["suite"] for option in self.metadata.get("connectorTestSuitesOptions", [])]
+        return [step_id for test_suite_name, step_id in TEST_SUITE_NAME_TO_STEP_ID.items() if test_suite_name not in enabled_test_suites]
+
+    def _skip_metadata_disabled_test_suites(self, run_step_options: RunStepOptions) -> RunStepOptions:
+        """Updated the original run_step_options to skip the disabled test suites according to connector metadata.
+
+        Args:
+            run_step_options (RunStepOptions): Original run step options.
+
+        Returns:
+            RunStepOptions: Updated run step options.
+        """
+        run_step_options = deepcopy(run_step_options)
+        # If any `skip_steps` are present, we will run everything except the skipped steps, instead of just `keep_steps`.
+        if not run_step_options.keep_steps:
+            run_step_options.skip_steps += self._get_step_id_to_skip_according_to_metadata()
+        return run_step_options

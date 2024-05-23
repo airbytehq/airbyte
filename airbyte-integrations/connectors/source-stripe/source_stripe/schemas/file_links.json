@@ -4,30 +4,39 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the file link.",
       "type": ["null", "string"]
     },
     "expires_at": {
+      "description": "Timestamp indicating the date and time when the file link will expire.",
       "type": ["null", "integer"]
     },
     "file": {
+      "description": "Information about the file linked.",
       "type": ["null", "string"]
     },
     "metadata": {
+      "description": "Key-value pairs associated with the file link for storing additional information.",
       "type": ["null", "object"]
     },
     "url": {
+      "description": "The URL that can be used to access/download the file linked.",
       "type": ["null", "string"]
     },
     "object": {
+      "description": "Indicates the object type, which should be 'file_link'.",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "Timestamp representing the date and time when the file link was created.",
       "type": ["null", "integer"]
     },
     "expired": {
+      "description": "Boolean indicating whether the file link is expired or not.",
       "type": ["null", "boolean"]
     },
     "livemode": {
+      "description": "Boolean indicating whether the file link is in live mode or test mode.",
       "type": ["null", "boolean"]
     }
   }

@@ -7,8 +7,9 @@ from typing import Any, List, Mapping, Optional
 
 import dpath.exceptions
 import dpath.util
+from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.declarative.types import Config, FieldPointer, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, FieldPointer, StreamSlice, StreamState
 
 
 @dataclass
@@ -40,6 +41,10 @@ class RemoveFields(RecordTransformation):
 
     field_pointers: List[FieldPointer]
     parameters: InitVar[Mapping[str, Any]]
+    condition: str = ""
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._filter_interpolator = InterpolatedBoolean(condition=self.condition, parameters=parameters)
 
     def transform(
         self,
@@ -55,7 +60,11 @@ class RemoveFields(RecordTransformation):
         for pointer in self.field_pointers:
             # the dpath library by default doesn't delete fields from arrays
             try:
-                dpath.util.delete(record, pointer)
+                dpath.util.delete(
+                    record,
+                    pointer,
+                    afilter=(lambda x: self._filter_interpolator.eval(config or {}, property=x)) if self.condition else None,
+                )
             except dpath.exceptions.PathNotFound:
                 # if the (potentially nested) property does not exist, silently skip
                 pass

@@ -1,35 +1,40 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-recurly:dev
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "source_recurly/spec.json"
+    tests:
+      - spec_path: "source_recurly/spec.json"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
+    tests:
+      - config_path: "secrets/config.json"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams:
-        [
-          "account_coupon_redemptions",
-          "account_notes",
-          "add_ons",
-          "billing_infos",
-          "credit_payments",
-          "line_items",
-          "shipping_methods",
-          "unique_coupons",
-          "export_dates",
-        ]
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: "add_ons"
+            bypass_reason: "Cannot seed this stream with free sandbox account"
+          - name: "billing_infos"
+            bypass_reason: "Cannot seed this stream with free sandbox account"
+          - name: "credit_payments"
+            bypass_reason: "Cannot seed this stream with free sandbox account"
+          - name: "shipping_methods"
+            bypass_reason: "Cannot seed this stream with free sandbox account"
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
   incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state_path: "integration_tests/future_state.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/future_state.json"
+        skip_comprehensive_incremental_tests: true

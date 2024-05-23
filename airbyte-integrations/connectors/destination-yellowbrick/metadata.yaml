@@ -1,0 +1,34 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 1f7bac7e-53ff-4e0b-b6df-b74aa85cf703
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/destination-yellowbrick
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/yellowbrick
+  githubIssueLabel: destination-yellowbrick
+  icon: yellowbrick.svg
+  license: ELv2
+  name: Yellowbrick
+  registries:
+    cloud:
+      dockerRepository: airbyte/destination-yellowbrick
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  supportsDbt: false
+  tags:
+    - language:java
+  connectorTestSuitesOptions:
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-YELLOWBRICK_CREDENTIALS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

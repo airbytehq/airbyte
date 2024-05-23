@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDate
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.types import Record, StreamSlice
 
 datetime_format = "%Y-%m-%dT%H:%M:%S.%f%z"
 cursor_granularity = "PT0.000001S"
@@ -338,46 +338,100 @@ def test_stream_slices(
 
 
 @pytest.mark.parametrize(
-    "test_name, previous_cursor, stream_slice, latest_record_data, expected_state",
+    "test_name, previous_cursor, stream_slice, observed_records, expected_state",
     [
         (
             "test_close_slice_previous_cursor_is_highest",
             "2023-01-01",
-            {"end_time": "2022-01-01"},
-            {cursor_field: "2021-01-01"},
+            StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-01", "end_time": "2022-01-01"}),
+            [{cursor_field: "2021-01-01"}],
             {cursor_field: "2023-01-01"},
         ),
         (
             "test_close_slice_stream_slice_partition_end_is_highest",
-            "2021-01-01",
-            {"end_time": "2023-01-01"},
+            "2020-01-01",
+            StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-01", "end_time": "2023-01-01"}),
+            [{cursor_field: "2021-01-01"}],
             {cursor_field: "2021-01-01"},
-            {cursor_field: "2023-01-01"},
         ),
         (
-            "test_close_slice_latest_record_cursor_value_is_highest",
+            "test_close_slice_latest_record_cursor_value_is_higher_than_slice_end",
             "2021-01-01",
-            {"end_time": "2022-01-01"},
-            {cursor_field: "2023-01-01"},
-            {cursor_field: "2023-01-01"},
+            StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-01", "end_time": "2022-01-01"}),
+            [{cursor_field: "2023-01-01"}],
+            {cursor_field: "2021-01-01"},
         ),
         (
-            "test_close_slice_without_latest_record",
+            "test_close_slice_with_no_records_observed",
             "2021-01-01",
-            {"end_time": "2022-01-01"},
+            StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-01", "end_time": "2022-01-01"}),
+            [],
+            {cursor_field: "2021-01-01"},
+        ),
+        (
+            "test_close_slice_with_no_records_observed_and_no_previous_state",
             None,
+            StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-01", "end_time": "2022-01-01"}),
+            [],
+            {},
+        ),
+        (
+            "test_close_slice_without_previous_cursor",
+            None,
+            StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-01", "end_time": "2023-01-01"}),
+            [{cursor_field: "2022-01-01"}],
             {cursor_field: "2022-01-01"},
         ),
         (
-            "test_close_slice_without_cursor",
+            "test_close_slice_with_out_of_order_records",
+            "2021-01-01",
+            StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-01", "end_time": "2022-01-01"}),
+            [{cursor_field: "2021-04-01"}, {cursor_field: "2021-02-01"}, {cursor_field: "2021-03-01"}],
+            {cursor_field: "2021-04-01"},
+        ),
+        (
+            "test_close_slice_with_some_records_out_of_slice_boundaries",
+            "2021-01-01",
+            StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-01", "end_time": "2022-01-01"}),
+            [{cursor_field: "2021-02-01"}, {cursor_field: "2021-03-01"}, {cursor_field: "2023-01-01"}],
+            {cursor_field: "2021-03-01"},
+        ),
+        (
+            "test_close_slice_with_all_records_out_of_slice_boundaries",
+            "2021-01-01",
+            StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-01", "end_time": "2022-01-01"}),
+            [{cursor_field: "2023-01-01"}],
+            {cursor_field: "2021-01-01"},
+        ),
+        (
+            "test_close_slice_with_all_records_out_of_slice_and_no_previous_cursor",
             None,
-            {"end_time": "2022-01-01"},
-            {cursor_field: "2023-01-01"},
-            {cursor_field: "2023-01-01"},
+            StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-01", "end_time": "2022-01-01"}),
+            [{cursor_field: "2023-01-01"}],
+            {},
         ),
     ],
 )
-def test_close_slice(test_name, previous_cursor, stream_slice, latest_record_data, expected_state):
+def test_close_slice(test_name, previous_cursor, stream_slice, observed_records, expected_state):
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
+        cursor_field=InterpolatedString(string=cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+        partition_field_start="start_time",
+        partition_field_end="end_time",
+    )
+    cursor.set_initial_state({cursor_field: previous_cursor})
+    for record_data in observed_records:
+        record = Record(record_data, stream_slice)
+        cursor.observe(stream_slice, record)
+    cursor.close_slice(stream_slice)
+    updated_state = cursor.get_stream_state()
+    assert updated_state == expected_state
+
+
+def test_close_slice_fails_if_slice_has_a_partition():
     cursor = DatetimeBasedCursor(
         start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
         cursor_field=InterpolatedString(string=cursor_field, parameters={}),
@@ -385,13 +439,31 @@ def test_close_slice(test_name, previous_cursor, stream_slice, latest_record_dat
         config=config,
         parameters={},
     )
-    cursor._cursor = previous_cursor
-    cursor.close_slice(stream_slice, Record(latest_record_data, stream_slice) if latest_record_data else None)
-    updated_state = cursor.get_stream_state()
-    assert updated_state == expected_state
+    stream_slice = StreamSlice(partition={"key": "value"}, cursor_slice={"end_time": "2022-01-01"})
+    with pytest.raises(ValueError):
+        cursor.close_slice(stream_slice)
 
 
-def test_given_different_format_and_slice_is_highest_when_close_slice_then_slice_datetime_format():
+def test_compares_cursor_values_by_chronological_order():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
+        cursor_field=cursor_field,
+        datetime_format="%d-%m-%Y",
+        config=config,
+        parameters={},
+    )
+
+    _slice = StreamSlice(partition={}, cursor_slice={"start_time": "01-01-2023", "end_time": "01-04-2023"})
+    first_record = Record({cursor_field: "21-02-2023"}, _slice)
+    cursor.observe(_slice, first_record)
+    second_record = Record({cursor_field: "01-03-2023"}, _slice)
+    cursor.observe(_slice, second_record)
+    cursor.close_slice(_slice)
+
+    assert cursor.get_stream_state()[cursor_field] == "01-03-2023"
+
+
+def test_given_different_format_and_slice_is_highest_when_close_slice_then_state_uses_record_format():
     cursor = DatetimeBasedCursor(
         start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
         cursor_field=cursor_field,
@@ -401,27 +473,13 @@ def test_given_different_format_and_slice_is_highest_when_close_slice_then_slice
         parameters={},
     )
 
-    _slice = {"end_time": "2023-01-04T17:30:19.000Z"}
+    _slice = StreamSlice(partition={}, cursor_slice={"start_time": "2023-01-01T17:30:19.000Z", "end_time": "2023-01-04T17:30:19.000Z"})
     record_cursor_value = "2023-01-03"
-    cursor.close_slice(_slice, Record({cursor_field: record_cursor_value}, _slice))
+    record = Record({cursor_field: record_cursor_value}, _slice)
+    cursor.observe(_slice, record)
+    cursor.close_slice(_slice)
 
-    assert cursor.get_stream_state()[cursor_field] == "2023-01-04T17:30:19.000Z"
-
-
-def test_given_partition_end_is_specified_and_greater_than_record_when_close_slice_then_use_partition_end():
-    partition_field_end = "partition_field_end"
-    cursor = DatetimeBasedCursor(
-        start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
-        cursor_field=InterpolatedString(string=cursor_field, parameters={}),
-        datetime_format="%Y-%m-%d",
-        partition_field_end=partition_field_end,
-        config=config,
-        parameters={},
-    )
-    stream_slice = {partition_field_end: "2025-01-01"}
-    cursor.close_slice(stream_slice, Record({cursor_field: "2020-01-01"}, stream_slice))
-    updated_state = cursor.get_stream_state()
-    assert {cursor_field: "2025-01-01"} == updated_state
+    assert cursor.get_stream_state()[cursor_field] == "2023-01-03"
 
 
 @pytest.mark.parametrize(
@@ -483,10 +541,35 @@ def test_request_option(test_name, inject_into, field_name, expected_req_params,
         parameters={},
     )
     stream_slice = {"start_time": "2021-01-01T00:00:00.000000+0000", "end_time": "2021-01-04T00:00:00.000000+0000"}
-    assert expected_req_params == slicer.get_request_params(stream_slice=stream_slice)
-    assert expected_headers == slicer.get_request_headers(stream_slice=stream_slice)
-    assert expected_body_json == slicer.get_request_body_json(stream_slice=stream_slice)
-    assert expected_body_data == slicer.get_request_body_data(stream_slice=stream_slice)
+    assert slicer.get_request_params(stream_slice=stream_slice) == expected_req_params
+    assert slicer.get_request_headers(stream_slice=stream_slice) == expected_headers
+    assert slicer.get_request_body_json(stream_slice=stream_slice) == expected_body_json
+    assert slicer.get_request_body_data(stream_slice=stream_slice) == expected_body_data
+
+
+@pytest.mark.parametrize(
+    "stream_slice", [
+        pytest.param(None, id="test_none_stream_slice"),
+        pytest.param({}, id="test_none_stream_slice"),
+    ]
+)
+def test_request_option_with_empty_stream_slice(stream_slice):
+    start_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, parameters={}, field_name="starttime")
+    end_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, parameters={}, field_name="endtime")
+    slicer = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
+        end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
+        step="P1D",
+        cursor_field=InterpolatedString(string=cursor_field, parameters={}),
+        datetime_format=datetime_format,
+        cursor_granularity=cursor_granularity,
+        lookback_window=InterpolatedString(string="P0D", parameters={}),
+        start_time_option=start_request_option,
+        end_time_option=end_request_option,
+        config=config,
+        parameters={},
+    )
+    assert {} == slicer.get_request_params(stream_slice=stream_slice)
 
 
 @pytest.mark.parametrize(
@@ -524,7 +607,7 @@ def test_parse_date_legacy_merge_datetime_format_in_cursor_datetime_format(
         parameters={},
     )
     output_date = slicer.parse_date(input_date)
-    assert expected_output_date == output_date
+    assert output_date == expected_output_date
 
 
 @pytest.mark.parametrize(
@@ -591,7 +674,7 @@ def test_format_datetime(test_name, input_dt, datetimeformat, datetimeformat_gra
     )
 
     output_date = slicer._format_datetime(input_dt)
-    assert expected_output == output_date
+    assert output_date == expected_output
 
 
 def test_step_but_no_cursor_granularity():

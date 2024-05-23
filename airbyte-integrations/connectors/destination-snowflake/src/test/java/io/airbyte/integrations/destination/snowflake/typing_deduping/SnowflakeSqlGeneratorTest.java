@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 
 public class SnowflakeSqlGeneratorTest {
 
-  private final SnowflakeSqlGenerator generator = new SnowflakeSqlGenerator();
+  private final SnowflakeSqlGenerator generator = new SnowflakeSqlGenerator(0);
 
   @Test
   void columnNameSpecialCharacterHandling() {
@@ -77,7 +77,6 @@ public class SnowflakeSqlGeneratorTest {
     assertEquals(
         new StreamConfig(
             new StreamId("BAR", "FOO", "airbyte_internal", "bar_raw__stream_foo", "bar", "foo"),
-            SyncMode.INCREMENTAL,
             DestinationSyncMode.APPEND,
             emptyList(),
             Optional.empty(),
@@ -88,7 +87,10 @@ public class SnowflakeSqlGeneratorTest {
                 put(new ColumnId("_CURRENT_DATE_1", "current_date", "_CURRENT_DATE_1"), AirbyteProtocolType.INTEGER);
               }
 
-            }),
+            },
+            0,
+            0,
+            0),
         parser.toStreamConfig(new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)

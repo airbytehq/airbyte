@@ -3,12 +3,12 @@
 #
 
 import ast
-from typing import Any, Optional, Tuple, Type
+from typing import Any, Mapping, Optional, Tuple, Type
 
 from airbyte_cdk.sources.declarative.interpolation.filters import filters
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
 from airbyte_cdk.sources.declarative.interpolation.macros import macros
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.types import Config
 from jinja2 import meta
 from jinja2.exceptions import UndefinedError
 from jinja2.sandbox import Environment
@@ -48,7 +48,7 @@ class JinjaInterpolation(Interpolation):
     # Please add a unit test to test_jinja.py when adding a restriction.
     RESTRICTED_BUILTIN_FUNCTIONS = ["range"]  # The range function can cause very expensive computations
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._environment = Environment()
         self._environment.filters.update(**filters)
         self._environment.globals.update(**macros)
@@ -64,8 +64,8 @@ class JinjaInterpolation(Interpolation):
         config: Config,
         default: Optional[str] = None,
         valid_types: Optional[Tuple[Type[Any]]] = None,
-        **additional_parameters,
-    ):
+        **additional_parameters: Any,
+    ) -> Any:
         context = {"config": config, **additional_parameters}
 
         for alias, equivalent in self.ALIASES.items():
@@ -90,23 +90,23 @@ class JinjaInterpolation(Interpolation):
         # If result is empty or resulted in an undefined error, evaluate and return the default string
         return self._literal_eval(self._eval(default, context), valid_types)
 
-    def _literal_eval(self, result, valid_types: Optional[Tuple[Type[Any]]]):
+    def _literal_eval(self, result: Optional[str], valid_types: Optional[Tuple[Type[Any]]]) -> Any:
         try:
-            evaluated = ast.literal_eval(result)
+            evaluated = ast.literal_eval(result)  # type: ignore # literal_eval is able to handle None
         except (ValueError, SyntaxError):
             return result
         if not valid_types or (valid_types and isinstance(evaluated, valid_types)):
             return evaluated
         return result
 
-    def _eval(self, s: str, context):
+    def _eval(self, s: Optional[str], context: Mapping[str, Any]) -> Optional[str]:
         try:
-            ast = self._environment.parse(s)
+            ast = self._environment.parse(s)  # type: ignore # parse is able to handle None
             undeclared = meta.find_undeclared_variables(ast)
             undeclared_not_in_context = {var for var in undeclared if var not in context}
             if undeclared_not_in_context:
                 raise ValueError(f"Jinja macro has undeclared variables: {undeclared_not_in_context}. Context: {context}")
-            return self._environment.from_string(s).render(context)
+            return self._environment.from_string(s).render(context)  # type: ignore # from_string is able to handle None
         except TypeError:
             # The string is a static value, not a jinja template
             # It can be returned as is

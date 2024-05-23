@@ -7,17 +7,17 @@
 from __future__ import annotations
 
 import json
+import time
 import typing
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import List
 
-import anyio
-from anyio import Path
 from connector_ops.utils import console  # type: ignore
-from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT
-from pipelines.dagger.actions import remote_storage
-from pipelines.helpers.utils import format_duration
+from pipelines.consts import LOCAL_REPORTS_PATH_ROOT
+from pipelines.helpers.utils import format_duration, slugify
+from pipelines.models.artifacts import Artifact
 from pipelines.models.steps import StepResult, StepStatus
 from rich.console import Group
 from rich.panel import Panel
@@ -43,6 +43,10 @@ class Report:
     @property
     def report_output_prefix(self) -> str:
         return self.pipeline_context.report_output_prefix
+
+    @property
+    def report_dir_path(self) -> Path:
+        return Path(f"{LOCAL_REPORTS_PATH_ROOT}/{self.report_output_prefix}")
 
     @property
     def json_report_file_name(self) -> str:
@@ -80,46 +84,54 @@ class Report:
         assert self.pipeline_context.stopped_at is not None, "The pipeline stopped_at timestamp must be set to save reports."
         return self.pipeline_context.stopped_at - self.pipeline_context.created_at
 
-    @property
-    def remote_storage_enabled(self) -> bool:
-        return self.pipeline_context.is_ci
-
-    async def save_local(self, filename: str, content: str) -> Path:
-        """Save the report files locally."""
-        local_path = anyio.Path(f"{LOCAL_REPORTS_PATH_ROOT}/{self.report_output_prefix}/{filename}")
-        await local_path.parents[0].mkdir(parents=True, exist_ok=True)
-        await local_path.write_text(content)
-        return local_path
-
-    async def save_remote(self, local_path: Path, remote_key: str, content_type: str) -> int:
-        assert self.pipeline_context.ci_report_bucket is not None, "The ci_report_bucket must be set to save reports."
-
-        gcs_cp_flags = None if content_type is None else [f"--content-type={content_type}"]
-        local_file = self.pipeline_context.dagger_client.host().directory(".", include=[str(local_path)]).file(str(local_path))
-        report_upload_exit_code, _, _ = await remote_storage.upload_to_gcs(
-            dagger_client=self.pipeline_context.dagger_client,
-            file_to_upload=local_file,
-            key=remote_key,
-            bucket=self.pipeline_context.ci_report_bucket,
-            gcs_credentials=self.pipeline_context.ci_gcs_credentials_secret,
-            flags=gcs_cp_flags,
-        )
-        gcs_uri = "gs://" + self.pipeline_context.ci_report_bucket + "/" + remote_key
-        public_url = f"{GCS_PUBLIC_DOMAIN}/{self.pipeline_context.ci_report_bucket}/{remote_key}"
-        if report_upload_exit_code != 0:
-            self.pipeline_context.logger.error(f"Uploading {local_path} to {gcs_uri} failed.")
-        else:
-            self.pipeline_context.logger.info(f"Uploading {local_path} to {gcs_uri} succeeded. Public URL: {public_url}")
-        return report_upload_exit_code
-
     async def save(self) -> None:
-        """Save the report files."""
+        self.report_dir_path.mkdir(parents=True, exist_ok=True)
+        await self.save_json_report()
+        await self.save_step_result_artifacts()
 
-        local_json_path = await self.save_local(self.json_report_file_name, self.to_json())
-        absolute_path = await local_json_path.absolute()
+    async def save_json_report(self) -> None:
+        """Save the report as JSON, upload it to GCS if the pipeline is running in CI"""
+
+        json_report_path = self.report_dir_path / self.json_report_file_name
+        report_dir = self.pipeline_context.dagger_client.host().directory(str(self.report_dir_path))
+        local_json_report_file = report_dir.with_new_file(self.json_report_file_name, self.to_json()).file(self.json_report_file_name)
+        json_report_artifact = Artifact(name="JSON Report", content_type="application/json", content=local_json_report_file)
+        await json_report_artifact.save_to_local_path(json_report_path)
+        absolute_path = json_report_path.absolute()
         self.pipeline_context.logger.info(f"Report saved locally at {absolute_path}")
-        if self.remote_storage_enabled:
-            await self.save_remote(local_json_path, self.json_report_remote_storage_key, "application/json")
+        if self.pipeline_context.remote_storage_enabled:
+            gcs_url = await json_report_artifact.upload_to_gcs(
+                dagger_client=self.pipeline_context.dagger_client,
+                bucket=self.pipeline_context.ci_report_bucket,  # type: ignore
+                key=self.json_report_remote_storage_key,
+                gcs_credentials=self.pipeline_context.ci_gcs_credentials_secret,  # type: ignore
+            )
+            self.pipeline_context.logger.info(f"JSON Report uploaded to {gcs_url}")
+        else:
+            self.pipeline_context.logger.info("JSON Report not uploaded to GCS because remote storage is disabled.")
+
+    async def save_step_result_artifacts(self) -> None:
+        local_artifacts_dir = self.report_dir_path / "artifacts"
+        local_artifacts_dir.mkdir(parents=True, exist_ok=True)
+        # TODO: concurrent save and upload
+        for step_result in self.steps_results:
+            for artifact in step_result.artifacts:
+                step_artifacts_dir = local_artifacts_dir / slugify(step_result.step.title)
+                step_artifacts_dir.mkdir(parents=True, exist_ok=True)
+                await artifact.save_to_local_path(step_artifacts_dir / artifact.name)
+                if self.pipeline_context.remote_storage_enabled:
+                    upload_time = int(time.time())
+                    gcs_url = await artifact.upload_to_gcs(
+                        dagger_client=self.pipeline_context.dagger_client,
+                        bucket=self.pipeline_context.ci_report_bucket,  # type: ignore
+                        key=f"{self.report_output_prefix}/artifacts/{slugify(step_result.step.title)}/{upload_time}_{artifact.name}",
+                        gcs_credentials=self.pipeline_context.ci_gcs_credentials_secret,  # type: ignore
+                    )
+                    self.pipeline_context.logger.info(f"Artifact {artifact.name} for {step_result.step.title} uploaded to {gcs_url}")
+                else:
+                    self.pipeline_context.logger.info(
+                        f"Artifact {artifact.name} for {step_result.step.title} not uploaded to GCS because remote storage is disabled."
+                    )
 
     def to_json(self) -> str:
         """Create a JSON representation of the report.
@@ -136,9 +148,9 @@ class Report:
                 "run_timestamp": self.pipeline_context.started_at.isoformat(),
                 "run_duration": self.run_duration.total_seconds(),
                 "success": self.success,
-                "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],  # type: ignore
-                "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],  # type: ignore
-                "skipped_steps": [s.step.__class__.__name__ for s in self.skipped_steps],  # type: ignore
+                "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],
+                "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],
+                "skipped_steps": [s.step.__class__.__name__ for s in self.skipped_steps],
                 "gha_workflow_run_url": self.pipeline_context.gha_workflow_run_url,
                 "pipeline_start_timestamp": self.pipeline_context.pipeline_start_timestamp,
                 "pipeline_end_timestamp": round(self.pipeline_context.stopped_at.timestamp()),

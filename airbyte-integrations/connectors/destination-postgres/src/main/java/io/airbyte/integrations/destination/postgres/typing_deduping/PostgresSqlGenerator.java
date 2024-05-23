@@ -9,7 +9,6 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_META;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_RAW_ID;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
-import static java.util.Collections.emptyList;
 import static org.jooq.impl.DSL.array;
 import static org.jooq.impl.DSL.case_;
 import static org.jooq.impl.DSL.cast;
@@ -20,10 +19,7 @@ import static org.jooq.impl.DSL.quotedName;
 import static org.jooq.impl.DSL.rowNumber;
 import static org.jooq.impl.DSL.val;
 
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
-import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
@@ -33,11 +29,12 @@ import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
+import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.Change;
+import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.Reason;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -52,17 +49,17 @@ import org.jooq.impl.SQLDataType;
 
 public class PostgresSqlGenerator extends JdbcSqlGenerator {
 
-  public static final DataType<?> JSONB_TYPE = new DefaultDataType<>(null, Object.class, "jsonb");
+  public static final DataType<Object> JSONB_TYPE = new DefaultDataType<>(SQLDialect.POSTGRES, Object.class, "jsonb");
 
-  private static final Map<String, String> POSTGRES_TYPE_NAME_TO_JDBC_TYPE = ImmutableMap.of(
-      "numeric", "decimal",
-      "int8", "bigint",
-      "bool", "boolean",
-      "timestamptz", "timestamp with time zone",
-      "timetz", "time with time zone");
+  public static final String CASE_STATEMENT_SQL_TEMPLATE = "CASE WHEN {0} THEN {1} ELSE {2} END ";
 
-  public PostgresSqlGenerator(final NamingConventionTransformer namingTransformer) {
-    super(namingTransformer);
+  private static final String AB_META_COLUMN_CHANGES_KEY = "changes";
+  private static final String AB_META_CHANGES_FIELD_KEY = "field";
+  private static final String AB_META_CHANGES_CHANGE_KEY = "change";
+  private static final String AB_META_CHANGES_REASON_KEY = "reason";
+
+  public PostgresSqlGenerator(final NamingConventionTransformer namingTransformer, final boolean cascadeDrop) {
+    super(namingTransformer, cascadeDrop);
   }
 
   @Override
@@ -73,11 +70,12 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
     // To keep it consistent when querying raw table in T+D query, convert it to lowercase.
     // TODO: This logic should be unified across Raw and final table operations in a single class
     // operating on a StreamId.
+    final String streamName = getNamingTransformer().getIdentifier(StreamId.concatenateRawTableName(namespace, name)).toLowerCase();
     return new StreamId(
-        namingTransformer.getNamespace(namespace),
-        namingTransformer.convertStreamName(name),
-        namingTransformer.getNamespace(rawNamespaceOverride).toLowerCase(),
-        namingTransformer.convertStreamName(StreamId.concatenateRawTableName(namespace, name)).toLowerCase(),
+        getNamingTransformer().getNamespace(namespace),
+        getNamingTransformer().convertStreamName(name),
+        getNamingTransformer().getNamespace(rawNamespaceOverride).toLowerCase(),
+        streamName,
         namespace,
         name);
   }
@@ -118,14 +116,14 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   @Override
   public Sql createTable(final StreamConfig stream, final String suffix, final boolean force) {
     final List<Sql> statements = new ArrayList<>();
-    final Name finalTableName = name(stream.id().finalNamespace(), stream.id().finalName() + suffix);
+    final Name finalTableName = name(stream.getId().getFinalNamespace(), stream.getId().getFinalName() + suffix);
 
     statements.add(super.createTable(stream, suffix, force));
 
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+    if (stream.getDestinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       // An index for our ROW_NUMBER() PARTITION BY pk ORDER BY cursor, extracted_at function
-      final List<Name> pkNames = stream.primaryKey().stream()
-          .map(pk -> quotedName(pk.name()))
+      final List<Name> pkNames = stream.getPrimaryKey().stream()
+          .map(pk -> quotedName(pk.getName()))
           .toList();
       statements.add(Sql.of(getDslContext().createIndex().on(
           finalTableName,
@@ -133,7 +131,7 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
               pkNames.stream(),
               // if cursor is present, then a stream containing its name
               // but if no cursor, then empty stream
-              stream.cursor().stream().map(cursor -> quotedName(cursor.name())),
+              stream.getCursor().stream().map(cursor -> quotedName(cursor.getName())),
               Stream.of(name(COLUMN_NAME_AB_EXTRACTED_AT))).flatMap(Function.identity()).toList())
           .getSQL()));
     }
@@ -151,21 +149,6 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
   }
 
   @Override
-  protected List<String> createIndexSql(final StreamConfig stream, final String suffix) {
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP && !stream.primaryKey().isEmpty()) {
-      return List.of(
-          getDslContext().createIndex().on(
-              name(stream.id().finalNamespace(), stream.id().finalName() + suffix),
-              stream.primaryKey().stream()
-                  .map(pk -> quotedName(pk.name()))
-                  .toList())
-              .getSQL());
-    } else {
-      return emptyList();
-    }
-  }
-
-  @Override
   protected List<Field<?>> extractRawDataFields(final LinkedHashMap<ColumnId, AirbyteType> columns, final boolean useExpensiveSaferCasting) {
     return columns
         .entrySet()
@@ -173,18 +156,8 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
         .map(column -> castedField(
             extractColumnAsJson(column.getKey()),
             column.getValue(),
-            column.getKey().name(),
-            useExpensiveSaferCasting))
+            useExpensiveSaferCasting).as(column.getKey().getName()))
         .collect(Collectors.toList());
-  }
-
-  @Override
-  protected Field<?> castedField(
-                                 final Field<?> field,
-                                 final AirbyteType type,
-                                 final String alias,
-                                 final boolean useExpensiveSaferCasting) {
-    return castedField(field, type, useExpensiveSaferCasting).as(quotedName(alias));
   }
 
   protected Field<?> castedField(
@@ -229,66 +202,71 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
     }
   }
 
-  // TODO this isn't actually used right now... can we refactor this out?
-  // (redshift is doing something interesting with this method, so leaving it for now)
   @Override
   protected Field<?> castedField(final Field<?> field, final AirbyteProtocolType type, final boolean useExpensiveSaferCasting) {
     return cast(field, toDialectType(type));
   }
 
+  private Field<?> jsonBuildObject(Field<?>... arguments) {
+    return function("JSONB_BUILD_OBJECT", JSONB_TYPE, arguments);
+  }
+
   @Override
   protected Field<?> buildAirbyteMetaColumn(final LinkedHashMap<ColumnId, AirbyteType> columns) {
-    final Field<?>[] dataFieldErrors = columns
+    final List<Field<Object>> dataFieldErrors = columns
         .entrySet()
         .stream()
         .map(column -> toCastingErrorCaseStmt(column.getKey(), column.getValue()))
-        .toArray(Field<?>[]::new);
-    return function(
-        "JSONB_BUILD_OBJECT",
-        JSONB_TYPE,
-        val("errors"),
-        function("ARRAY_REMOVE", JSONB_TYPE, array(dataFieldErrors), val((String) null))).as(COLUMN_NAME_AB_META);
+        .toList();
+    final Field<?> rawTableChangesArray =
+        field("ARRAY(SELECT jsonb_array_elements_text({0}#>'{changes}'))::jsonb[]", field(name(COLUMN_NAME_AB_META)));
+
+    // Jooq is inferring and casting as int[] for empty fields array call. So explicitly casting it to
+    // jsonb[] on empty array
+    final Field<?> finalTableChangesArray = dataFieldErrors.isEmpty() ? field("ARRAY[]::jsonb[]")
+        : function("ARRAY_REMOVE", JSONB_TYPE, array(dataFieldErrors).cast(JSONB_TYPE.getArrayDataType()), val((String) null));
+    return jsonBuildObject(val(AB_META_COLUMN_CHANGES_KEY),
+        field("ARRAY_CAT({0}, {1})", finalTableChangesArray, rawTableChangesArray)).as(COLUMN_NAME_AB_META);
   }
 
-  private Field<String> toCastingErrorCaseStmt(final ColumnId column, final AirbyteType type) {
+  private Field<?> nulledChangeObject(String fieldName) {
+    return jsonBuildObject(val(AB_META_CHANGES_FIELD_KEY), val(fieldName),
+        val(AB_META_CHANGES_CHANGE_KEY), val(Change.NULLED),
+        val(AB_META_CHANGES_REASON_KEY), val(Reason.DESTINATION_TYPECAST_ERROR));
+  }
+
+  private Field<Object> toCastingErrorCaseStmt(final ColumnId column, final AirbyteType type) {
     final Field<Object> extract = extractColumnAsJson(column);
-    if (type instanceof Struct) {
-      // If this field is a struct, verify that the raw data is an object or null.
-      return case_()
-          .when(
-              extract.isNotNull()
-                  .and(jsonTypeof(extract).notIn("object", "null")),
-              val("Problem with `" + column.originalName() + "`"))
-          .else_(val((String) null));
-    } else if (type instanceof Array) {
-      // Do the same for arrays.
-      return case_()
-          .when(
-              extract.isNotNull()
-                  .and(jsonTypeof(extract).notIn("array", "null")),
-              val("Problem with `" + column.originalName() + "`"))
-          .else_(val((String) null));
-    } else if (type == AirbyteProtocolType.UNKNOWN || type == AirbyteProtocolType.STRING) {
+
+    // If this field is a struct, verify that the raw data is an object or null.
+    // Do the same for arrays.
+    return switch (type) {
+      case Struct ignored -> field(CASE_STATEMENT_SQL_TEMPLATE,
+                                        extract.isNotNull().and(jsonTypeof(extract).notIn("object", "null")),
+                                        nulledChangeObject(column.getOriginalName()),
+                                   cast(val((Object) null), JSONB_TYPE));
+      case Array ignored -> field(CASE_STATEMENT_SQL_TEMPLATE,
+                                       extract.isNotNull().and(jsonTypeof(extract).notIn("array", "null")),
+                                       nulledChangeObject(column.getOriginalName()),
+                                       cast(val((Object) null), JSONB_TYPE));
       // Unknown types require no casting, so there's never an error.
       // Similarly, everything can cast to string without error.
-      return val((String) null);
-    } else {
-      // For other type: If the raw data is not NULL or 'null', but the casted data is NULL,
-      // then we have a typing error.
-      return case_()
-          .when(
-              extract.isNotNull()
-                  .and(jsonTypeof(extract).ne("null"))
-                  .and(castedField(extract, type, true).isNull()),
-              val("Problem with `" + column.originalName() + "`"))
-          .else_(val((String) null));
-    }
+      case AirbyteProtocolType airbyteProtocolType
+          when (airbyteProtocolType == AirbyteProtocolType.UNKNOWN || airbyteProtocolType == AirbyteProtocolType.STRING) ->
+          cast(val((Object) null), JSONB_TYPE);
+      default -> field(CASE_STATEMENT_SQL_TEMPLATE,
+                            extract.isNotNull()
+                                .and(jsonTypeof(extract).ne("null"))
+                                .and(castedField(extract, type, true).isNull()),
+                            nulledChangeObject(column.getOriginalName()),
+                            cast(val((Object) null), JSONB_TYPE));
+    };
   }
 
   @Override
   protected Condition cdcDeletedAtNotNullCondition() {
     return field(name(COLUMN_NAME_AB_LOADED_AT)).isNotNull()
-        .and(jsonTypeof(extractColumnAsJson(cdcDeletedAtColumn)).ne("null"));
+        .and(jsonTypeof(extractColumnAsJson(getCdcDeletedAtColumn())).ne("null"));
   }
 
   @Override
@@ -296,12 +274,12 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
     // literally identical to redshift's getRowNumber implementation, changes here probably should
     // be reflected there
     final List<Field<?>> primaryKeyFields =
-        primaryKeys != null ? primaryKeys.stream().map(columnId -> field(quotedName(columnId.name()))).collect(Collectors.toList())
+        primaryKeys != null ? primaryKeys.stream().map(columnId -> field(quotedName(columnId.getName()))).collect(Collectors.toList())
             : new ArrayList<>();
     final List<Field<?>> orderedFields = new ArrayList<>();
     // We can still use Jooq's field to get the quoted name with raw sql templating.
     // jooq's .desc returns SortField<?> instead of Field<?> and NULLS LAST doesn't work with it
-    cursor.ifPresent(columnId -> orderedFields.add(field("{0} desc NULLS LAST", field(quotedName(columnId.name())))));
+    cursor.ifPresent(columnId -> orderedFields.add(field("{0} desc NULLS LAST", field(quotedName(columnId.getName())))));
     orderedFields.add(field("{0} desc", quotedName(COLUMN_NAME_AB_EXTRACTED_AT)));
     return rowNumber()
         .over()
@@ -309,42 +287,15 @@ public class PostgresSqlGenerator extends JdbcSqlGenerator {
         .orderBy(orderedFields).as(ROW_NUMBER_COLUMN_NAME);
   }
 
-  @Override
-  public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final TableDefinition existingTable) {
-    // Check that the columns match, with special handling for the metadata columns.
-    // This is mostly identical to the redshift implementation, but swaps super to jsonb
-    final LinkedHashMap<String, String> intendedColumns = stream.columns().entrySet().stream()
-        .collect(LinkedHashMap::new,
-            (map, column) -> map.put(column.getKey().name(), toDialectType(column.getValue()).getTypeName()),
-            LinkedHashMap::putAll);
-    final LinkedHashMap<String, String> actualColumns = existingTable.columns().entrySet().stream()
-        .filter(column -> JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream()
-            .noneMatch(airbyteColumnName -> airbyteColumnName.equals(column.getKey())))
-        .collect(LinkedHashMap::new,
-            (map, column) -> map.put(column.getKey(), jdbcTypeNameFromPostgresTypeName(column.getValue().type())),
-            LinkedHashMap::putAll);
-
-    final boolean sameColumns = actualColumns.equals(intendedColumns)
-        && "varchar".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID).type())
-        && "timestamptz".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT).type())
-        && "jsonb".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_META).type());
-
-    return sameColumns;
-  }
-
   /**
    * Extract a raw field, leaving it as jsonb
    */
   private Field<Object> extractColumnAsJson(final ColumnId column) {
-    return field("{0} -> {1}", name(COLUMN_NAME_DATA), val(column.originalName()));
+    return field("{0} -> {1}", name(COLUMN_NAME_DATA), val(column.getOriginalName()));
   }
 
   private Field<String> jsonTypeof(final Field<?> field) {
     return function("JSONB_TYPEOF", SQLDataType.VARCHAR, field);
-  }
-
-  private static String jdbcTypeNameFromPostgresTypeName(final String redshiftType) {
-    return POSTGRES_TYPE_NAME_TO_JDBC_TYPE.getOrDefault(redshiftType, redshiftType);
   }
 
 }

@@ -2,72 +2,46 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import re
-from http import HTTPStatus
-from typing import Any, List, Mapping, Tuple
 
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import AbstractSource
+from typing import Any, List, Mapping
+
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
-from requests.exceptions import HTTPError
-from source_klaviyo.streams import Campaigns, CampaignMessages, EmailTemplates, Events, Flows, FlowActions, FlowMessages, GlobalExclusions, Lists, Metrics, Profiles
+from source_klaviyo.streams import Campaigns, CampaignsDetailed, CampaignMessages, Flows, FlowActions, FlowMessages
 
 
-class SourceKlaviyo(AbstractSource):
-    def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        """Connection check to validate that the user-provided config can be used to connect to the underlying API
-        :param config:  the user-input config object conforming to the connector's spec.json
-        :param logger:  logger object
-        :return Tuple[bool, Any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
-        """
-        try:
-            # we use metrics endpoint because it never returns an error
-            _ = list(Metrics(api_key=config["api_key"]).read_records(sync_mode=SyncMode.full_refresh))
-        except HTTPError as e:
-            if e.response.status_code in (HTTPStatus.FORBIDDEN, HTTPStatus.UNAUTHORIZED):
-                message = "Please provide a valid API key and make sure it has permissions to read specified streams."
-            else:
-                message = "Unable to connect to Klaviyo API with provided credentials."
-            return False, message
-        except Exception as e:
-            original_error_message = repr(e)
-
-            # Regular expression pattern to match the API key
-            pattern = r"api_key=\b\w+\b"
-
-            # Remove the API key from the error message
-            error_message = re.sub(pattern, "api_key=***", original_error_message)
-
-            return False, error_message
-        return True, None
+class SourceKlaviyo(YamlDeclarativeSource):
+    def __init__(self) -> None:
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         Discovery method, returns available streams
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
+
         api_key = config["api_key"]
         start_date = config.get("start_date")
 
         campaigns = Campaigns(api_key=api_key, start_date=start_date)
+        campaigns_detailed = CampaignsDetailed(api_key=api_key, start_date=start_date)
         campaign_messages = CampaignMessages(parent=campaigns, api_key=api_key, start_date=start_date)
         flows = Flows(api_key=api_key, start_date=start_date)
         flow_actions = FlowActions(parent=flows, api_key=api_key, start_date=start_date)
         flow_messages = FlowMessages(parent=flow_actions, api_key=api_key, start_date=start_date)
 
-        return [
-            Events(api_key=api_key, start_date=start_date),
-            GlobalExclusions(api_key=api_key, start_date=start_date),
-            Lists(api_key=api_key, start_date=start_date),
-            Metrics(api_key=api_key, start_date=start_date),
-            EmailTemplates(api_key=api_key, start_date=start_date),
-            Profiles(api_key=api_key, start_date=start_date),
-            campaigns,
-            campaign_messages,
-            flows,
-            flow_actions,
-            flow_messages,
-        ]
+        streams = super().streams(config)
+        streams.extend(
+            [
+                campaigns,
+                campaigns_detailed,
+                campaign_messages,
+                flows,
+                flow_actions,
+                flow_messages,
+            ]
+        )
+        return streams
 
     def continue_sync_on_stream_failure(self) -> bool:
         return True

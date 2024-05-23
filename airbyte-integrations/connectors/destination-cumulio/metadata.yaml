@@ -1,7 +1,7 @@
 data:
   connectorType: destination
   definitionId: e088acb6-9780-4568-880c-54c2dd7f431b
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/destination-cumulio
   githubIssueLabel: destination-cumulio
   connectorSubtype: api
@@ -10,15 +10,25 @@ data:
   name: Cumul.io
   registries:
     cloud:
-      enabled: true
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/cumulio
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-CUMULIO_CREDENTIALS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

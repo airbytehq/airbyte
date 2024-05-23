@@ -3,35 +3,34 @@
   "type": "object",
   "properties": {
     "webinar_id": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "email": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "join_url": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "virtual_background_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name_tag_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name_tag_name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name_tag_pronouns": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name_tag_description": {
-      "type": "string"
+      "type": ["null", "string"]
     }
-  },
-  "required": []
+  }
 }

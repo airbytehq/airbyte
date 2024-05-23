@@ -1,0 +1,31 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "4.2.4"
+name = "source-amazon-seller-partner"
+description = "Source implementation for Amazon Seller Partner."
+authors = ["Airbyte <contact@airbyte.io>"]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/amazon-seller-partner"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_amazon_seller_partner"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "0.80.0"
+xmltodict = "~=0.12"
+dateparser = "==1.2.0"
+
+[tool.poetry.scripts]
+source-amazon-seller-partner = "source_amazon_seller_partner.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest-mock = "^3.6"
+freezegun = "==1.2.2"
+pytest = "~=6.1"
+requests-mock = "~=1.9.3"

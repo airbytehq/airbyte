@@ -10,8 +10,9 @@ import re
 from typing import Any, Callable, List, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
 
 from airbyte_cdk.models import Level
-from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
+from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
+from airbyte_cdk.sources.declarative.auth.jwt import JwtAlgorithm
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.selective_authenticator import SelectiveAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import (
@@ -27,9 +28,17 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
 from airbyte_cdk.sources.declarative.extractors.record_selector import SCHEMA_TRANSFORMER_TYPE_MAPPING
-from airbyte_cdk.sources.declarative.incremental import Cursor, CursorFactory, DatetimeBasedCursor, PerPartitionCursor
+from airbyte_cdk.sources.declarative.incremental import (
+    CursorFactory,
+    DatetimeBasedCursor,
+    DeclarativeCursor,
+    PerPartitionCursor,
+    ResumableFullRefreshCursor,
+)
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
+from airbyte_cdk.sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
+from airbyte_cdk.sources.declarative.models import CustomStateMigration
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddFields as AddFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator as ApiKeyAuthenticatorModel
@@ -46,8 +55,10 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPaginationStrategy as CustomPaginationStrategyModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPartitionRouter as CustomPartitionRouterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRecordExtractor as CustomRecordExtractorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRecordFilter as CustomRecordFilterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRequester as CustomRequesterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRetriever as CustomRetrieverModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomSchemaLoader as CustomSchemaLoader
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomTransformation as CustomTransformationModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DatetimeBasedCursor as DatetimeBasedCursorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
@@ -62,8 +73,14 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import InlineSchemaLoader as InlineSchemaLoaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonDecoder as JsonDecoderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonFileSchemaLoader as JsonFileSchemaLoaderModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtAuthenticator as JwtAuthenticatorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtHeaders as JwtHeadersModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtPayload as JwtPayloadModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
     LegacySessionTokenAuthenticator as LegacySessionTokenAuthenticatorModel,
+)
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
+    LegacyToPerPartitionStateMigration as LegacyToPerPartitionStateMigrationModel,
 )
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ListPartitionRouter as ListPartitionRouterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import MinMaxDatetime as MinMaxDatetimeModel
@@ -115,8 +132,8 @@ from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer, StreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTransformation, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
-from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
+from airbyte_cdk.sources.types import Config
 from airbyte_cdk.sources.utils.transform import TypeTransformer
 from isodate import parse_duration
 from pydantic import BaseModel
@@ -161,8 +178,11 @@ class ModelToComponentFactory:
             CustomErrorHandlerModel: self.create_custom_component,
             CustomIncrementalSyncModel: self.create_custom_component,
             CustomRecordExtractorModel: self.create_custom_component,
+            CustomRecordFilterModel: self.create_custom_component,
             CustomRequesterModel: self.create_custom_component,
             CustomRetrieverModel: self.create_custom_component,
+            CustomSchemaLoader: self.create_custom_component,
+            CustomStateMigration: self.create_custom_component,
             CustomPaginationStrategyModel: self.create_custom_component,
             CustomPartitionRouterModel: self.create_custom_component,
             CustomTransformationModel: self.create_custom_component,
@@ -178,6 +198,8 @@ class ModelToComponentFactory:
             InlineSchemaLoaderModel: self.create_inline_schema_loader,
             JsonDecoderModel: self.create_json_decoder,
             JsonFileSchemaLoaderModel: self.create_json_file_schema_loader,
+            JwtAuthenticatorModel: self.create_jwt_authenticator,
+            LegacyToPerPartitionStateMigrationModel: self.create_legacy_to_per_partition_state_migration,
             ListPartitionRouterModel: self.create_list_partition_router,
             MinMaxDatetimeModel: self.create_min_max_datetime,
             NoAuthModel: self.create_no_auth,
@@ -304,6 +326,28 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
         )
 
+    def create_legacy_to_per_partition_state_migration(
+        self,
+        model: LegacyToPerPartitionStateMigrationModel,
+        config: Mapping[str, Any],
+        declarative_stream: DeclarativeStreamModel,
+    ) -> LegacyToPerPartitionStateMigration:
+        retriever = declarative_stream.retriever
+        partition_router = retriever.partition_router
+
+        if not isinstance(retriever, SimpleRetrieverModel):
+            raise ValueError(
+                f"LegacyToPerPartitionStateMigrations can only be applied on a DeclarativeStream with a SimpleRetriever. Got {type(retriever)}"
+            )
+        if not isinstance(partition_router, (SubstreamPartitionRouterModel, CustomPartitionRouterModel)):
+            raise ValueError(
+                f"LegacyToPerPartitionStateMigrations can only be applied on a SimpleRetriever with a Substream partition router. Got {type(partition_router)}"
+            )
+        if not hasattr(partition_router, "parent_stream_configs"):
+            raise ValueError("LegacyToPerPartitionStateMigrations can only be applied with a parent stream configuration.")
+
+        return LegacyToPerPartitionStateMigration(declarative_stream.retriever.partition_router, declarative_stream.incremental_sync, config, declarative_stream.parameters)  # type: ignore # The retriever type was already checked
+
     def create_session_token_authenticator(
         self, model: SessionTokenAuthenticatorModel, config: Config, name: str, **kwargs: Any
     ) -> Union[ApiKeyAuthenticator, BearerAuthenticator]:
@@ -317,7 +361,7 @@ class ModelToComponentFactory:
         )
         if model.request_authentication.type == "Bearer":
             return ModelToComponentFactory.create_bearer_authenticator(
-                BearerAuthenticatorModel(type="BearerAuthenticator", api_token=""),
+                BearerAuthenticatorModel(type="BearerAuthenticator", api_token=""),  # type: ignore # $parameters has a default value
                 config,
                 token_provider=token_provider,  # type: ignore # $parameters defaults to None
             )
@@ -429,11 +473,14 @@ class ModelToComponentFactory:
         return custom_component_class(**kwargs)
 
     @staticmethod
-    def _get_class_from_fully_qualified_class_name(class_name: str) -> Any:
-        split = class_name.split(".")
+    def _get_class_from_fully_qualified_class_name(full_qualified_class_name: str) -> Any:
+        split = full_qualified_class_name.split(".")
         module = ".".join(split[:-1])
         class_name = split[-1]
-        return getattr(importlib.import_module(module), class_name)
+        try:
+            return getattr(importlib.import_module(module), class_name)
+        except AttributeError:
+            raise ValueError(f"Could not load class {full_qualified_class_name}.")
 
     @staticmethod
     def _derive_component_type_from_type_hints(field_type: Any) -> Optional[str]:
@@ -579,6 +626,14 @@ class ModelToComponentFactory:
         )
         cursor_field = model.incremental_sync.cursor_field if model.incremental_sync else None
 
+        if model.state_migrations:
+            state_transformations = [
+                self._create_component_from_model(state_migration, config, declarative_stream=model)
+                for state_migration in model.state_migrations
+            ]
+        else:
+            state_transformations = []
+
         if model.schema_loader:
             schema_loader = self._create_component_from_model(model=model.schema_loader, config=config)
         else:
@@ -593,6 +648,7 @@ class ModelToComponentFactory:
             retriever=retriever,
             schema_loader=schema_loader,
             stream_cursor_field=cursor_field or "",
+            state_migrations=state_transformations,
             config=config,
             parameters=model.parameters or {},
         )
@@ -618,6 +674,10 @@ class ModelToComponentFactory:
             )
         elif model.incremental_sync:
             return self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
+        elif hasattr(model.retriever, "paginator") and model.retriever.paginator and not stream_slicer:
+            # To incrementally deliver RFR for low-code we're first implementing this for streams that do not use
+            # nested state like substreams or those using list partition routers
+            return ResumableFullRefreshCursor(parameters={})
         elif stream_slicer:
             return stream_slicer
         else:
@@ -655,7 +715,12 @@ class ModelToComponentFactory:
         )
 
     def create_default_paginator(
-        self, model: DefaultPaginatorModel, config: Config, *, url_base: str, cursor_used_for_stop_condition: Optional[Cursor] = None
+        self,
+        model: DefaultPaginatorModel,
+        config: Config,
+        *,
+        url_base: str,
+        cursor_used_for_stop_condition: Optional[DeclarativeCursor] = None,
     ) -> Union[DefaultPaginator, PaginatorTestReadDecorator]:
         decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
         page_size_option = (
@@ -763,6 +828,28 @@ class ModelToComponentFactory:
         return JsonFileSchemaLoader(file_path=model.file_path or "", config=config, parameters=model.parameters or {})
 
     @staticmethod
+    def create_jwt_authenticator(model: JwtAuthenticatorModel, config: Config, **kwargs: Any) -> JwtAuthenticator:
+        jwt_headers = model.jwt_headers or JwtHeadersModel(kid=None, typ="JWT", cty=None)
+        jwt_payload = model.jwt_payload or JwtPayloadModel(iss=None, sub=None, aud=None)
+        return JwtAuthenticator(
+            config=config,
+            parameters=model.parameters or {},
+            algorithm=JwtAlgorithm(model.algorithm.value),
+            secret_key=model.secret_key,
+            base64_encode_secret_key=model.base64_encode_secret_key,
+            token_duration=model.token_duration,
+            header_prefix=model.header_prefix,
+            kid=jwt_headers.kid,
+            typ=jwt_headers.typ,
+            cty=jwt_headers.cty,
+            iss=jwt_payload.iss,
+            sub=jwt_payload.sub,
+            aud=jwt_payload.aud,
+            additional_jwt_headers=model.additional_jwt_headers,
+            additional_jwt_payload=model.additional_jwt_payload,
+        )
+
+    @staticmethod
     def create_list_partition_router(model: ListPartitionRouterModel, config: Config, **kwargs: Any) -> ListPartitionRouter:
         request_option = (
             RequestOption(
@@ -801,7 +888,7 @@ class ModelToComponentFactory:
 
     def create_oauth_authenticator(self, model: OAuthAuthenticatorModel, config: Config, **kwargs: Any) -> DeclarativeOauth2Authenticator:
         if model.refresh_token_updater:
-            # ignore type error beause fixing it would have a lot of dependencies, revisit later
+            # ignore type error because fixing it would have a lot of dependencies, revisit later
             return DeclarativeSingleUseRefreshTokenOauth2Authenticator(  # type: ignore
                 config,
                 InterpolatedString.create(model.token_refresh_endpoint, parameters=model.parameters or {}).eval(config),
@@ -822,6 +909,9 @@ class ModelToComponentFactory:
                 scopes=model.scopes,
                 token_expiry_date_format=model.token_expiry_date_format,
                 message_repository=self._message_repository,
+                refresh_token_error_status_codes=model.refresh_token_updater.refresh_token_error_status_codes,
+                refresh_token_error_key=model.refresh_token_updater.refresh_token_error_key,
+                refresh_token_error_values=model.refresh_token_updater.refresh_token_error_values,
             )
         # ignore type error because fixing it would have a lot of dependencies, revisit later
         return DeclarativeOauth2Authenticator(  # type: ignore
@@ -855,6 +945,7 @@ class ModelToComponentFactory:
     def create_page_increment(model: PageIncrementModel, config: Config, **kwargs: Any) -> PageIncrement:
         return PageIncrement(
             page_size=model.page_size,
+            config=config,
             start_from_page=model.start_from_page or 0,
             inject_on_first_request=model.inject_on_first_request or False,
             parameters=model.parameters or {},
@@ -909,7 +1000,7 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_remove_fields(model: RemoveFieldsModel, config: Config, **kwargs: Any) -> RemoveFields:
-        return RemoveFields(field_pointers=model.field_pointers, parameters={})
+        return RemoveFields(field_pointers=model.field_pointers, condition=model.condition or "", parameters={})
 
     def create_selective_authenticator(self, model: SelectiveAuthenticatorModel, config: Config, **kwargs: Any) -> DeclarativeAuthenticator:
         authenticators = {name: self._create_component_from_model(model=auth, config=config) for name, auth in model.authenticators.items()}
@@ -953,16 +1044,21 @@ class ModelToComponentFactory:
         record_selector = self._create_component_from_model(model=model.record_selector, config=config, transformations=transformations)
         url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
         stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
-        cursor = stream_slicer if isinstance(stream_slicer, Cursor) else None
+        cursor = stream_slicer if isinstance(stream_slicer, DeclarativeCursor) else None
 
         cursor_used_for_stop_condition = cursor if stop_condition_on_cursor else None
         paginator = (
             self._create_component_from_model(
-                model=model.paginator, config=config, url_base=url_base, cursor_used_for_stop_condition=cursor_used_for_stop_condition
+                model=model.paginator,
+                config=config,
+                url_base=url_base,
+                cursor_used_for_stop_condition=cursor_used_for_stop_condition,
             )
             if model.paginator
             else NoPagination(parameters={})
         )
+
+        ignore_stream_slicer_parameters_on_paginated_requests = model.ignore_stream_slicer_parameters_on_paginated_requests or False
 
         if self._limit_slices_fetched or self._emit_connector_builder_messages:
             return SimpleRetrieverTestReadDecorator(
@@ -975,6 +1071,7 @@ class ModelToComponentFactory:
                 cursor=cursor,
                 config=config,
                 maximum_number_of_slices=self._limit_slices_fetched or 5,
+                ignore_stream_slicer_parameters_on_paginated_requests=ignore_stream_slicer_parameters_on_paginated_requests,
                 parameters=model.parameters or {},
             )
         return SimpleRetriever(
@@ -986,6 +1083,7 @@ class ModelToComponentFactory:
             stream_slicer=stream_slicer,
             cursor=cursor,
             config=config,
+            ignore_stream_slicer_parameters_on_paginated_requests=ignore_stream_slicer_parameters_on_paginated_requests,
             parameters=model.parameters or {},
         )
 
