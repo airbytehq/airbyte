@@ -5,6 +5,7 @@
 
 import calendar
 import copy
+import logging
 import re
 from datetime import datetime
 from unittest.mock import Mock, patch
@@ -15,7 +16,6 @@ import pendulum
 import pytest
 import pytz
 import requests
-import logging
 from airbyte_protocol.models import SyncMode
 from source_zendesk_support.source import BasicApiTokenAuthenticator, SourceZendeskSupport
 from source_zendesk_support.streams import (
