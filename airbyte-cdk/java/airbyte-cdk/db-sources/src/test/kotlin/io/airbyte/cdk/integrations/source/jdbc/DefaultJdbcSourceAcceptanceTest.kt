@@ -244,29 +244,6 @@ internal class DefaultJdbcSourceAcceptanceTest :
             createExpectedTestMessages(expectedStreams, expectedRecordMessages.size.toLong()),
         )
 
-/*        expectedMessages.addFirst(
-            AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
-                AirbyteStreamStatusHolder(
-                    AirbyteStreamNameNamespacePair(
-                        airbyteStream.stream.name,
-                        airbyteStream.stream.namespace
-                    ),
-                    AirbyteStreamStatus.STARTED
-                )
-            )
-        )
-
-        expectedMessages.addLast(
-            AirbyteTraceMessageUtility.makeStreamStatusTraceAirbyteMessage(
-                AirbyteStreamStatusHolder(
-                    AirbyteStreamNameNamespacePair(
-                        airbyteStream.stream.name,
-                        airbyteStream.stream.namespace
-                    ),
-                    AirbyteStreamStatus.COMPLETE
-                )
-            )
-        )*/
         setTraceEmittedAtToNull(actualMessages)
         setTraceEmittedAtToNull(expectedMessages)
         Assertions.assertEquals(expectedMessages.size, actualMessages.size)
