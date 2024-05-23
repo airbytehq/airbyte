@@ -19,7 +19,7 @@ _STREAM_NAME = "shop"
 @freezegun.freeze_time(NOW.isoformat())
 class TestFullRefresh(TestCase):
     @HttpMocker()
-    def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
+    def test_when_read_return_single_record(self, http_mocker: HttpMocker) -> None:
         template = find_template("shop", __file__)
         http_mocker.get(get_stream_request(_STREAM_NAME, "2021-01", False).build(), HttpResponse(json.dumps(template), 200))
         output = read_full_refresh(config(), _STREAM_NAME)
