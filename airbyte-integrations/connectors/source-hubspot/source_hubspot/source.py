@@ -8,8 +8,11 @@ from itertools import chain
 from typing import Any, Generator, List, Mapping, Optional, Tuple
 
 import requests
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http import HttpClient
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from requests import HTTPError
 from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
@@ -63,6 +66,8 @@ from source_hubspot.streams import (
     Workflows,
 )
 
+from .error_handlers import ErrorResolution, HttpStatusErrorHandler, ResponseAction
+
 """
 https://github.com/airbytehq/oncall/issues/3800
 we use start date 2006-01-01  as date of creation of Hubspot to retrieve all data if start date was not provided
@@ -97,7 +102,14 @@ class SourceHubspot(AbstractSource):
         try:
             access_token = authenticator.get_access_token()
             url = f"https://api.hubapi.com/oauth/v1/access-tokens/{access_token}"
-            response = requests.get(url=url)
+            error_resolution = ErrorResolution(ResponseAction.RETRY, FailureType.system_error, "Internal error attempting to get scopes.")
+            http_client = HttpClient(
+                logger=self.logger,
+                error_handler=HttpStatusErrorHandler(logger=self.logger, error_mapping={500: error_resolution, 502: error_resolution}),
+                backoff_strategy=BackoffStrategy(),
+            )
+            prepared_request = http_client._create_prepared_request(http_method="get", url=url)
+            response = http_client._send_with_retry(prepared_request, request_kwargs={})
             response.raise_for_status()
             response_json = response.json()
             granted_scopes = response_json["scopes"]
