@@ -114,6 +114,8 @@ class MetafieldDraftOrders(IncrementalShopifyGraphQlBulkStream):
 
 class Products(IncrementalShopifyGraphQlBulkStream):
     bulk_query: Product = Product
+    # pin the api version
+    api_version = "2024-04"
 
 
 class ProductsGraphQl(IncrementalShopifyStream):
