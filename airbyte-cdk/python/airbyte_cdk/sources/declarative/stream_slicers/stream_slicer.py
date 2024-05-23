@@ -4,10 +4,10 @@
 
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Iterable, Optional
 
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
-from airbyte_cdk.sources.types import StreamSlice
+from airbyte_cdk.sources.types import StreamSlice, StreamState
 
 
 @dataclass
@@ -28,3 +28,21 @@ class StreamSlicer(RequestOptionsProvider):
 
         :return: List of stream slices
         """
+
+    def set_parent_state(self, stream_state: StreamState) -> None:
+        """
+        Set the state of the parent streams.
+
+        Args:
+            stream_state: The state of the streams to be set. This method can be overridden by subclasses.
+        """
+        pass
+
+    def get_parent_state(self) -> Optional[StreamState]:
+        """
+        Get the state of the parent streams.
+
+        Returns:
+            The current state of the parent streams. This method can be overridden by subclasses.
+        """
+        return None

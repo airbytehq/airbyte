@@ -6,13 +6,13 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
+from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
 
 @dataclass
-class ListPartitionRouter(PartitionRouter):
+class ListPartitionRouter(StreamSlicer):
     """
     Partition router that iterates over the values of a list
     If values is a string, then evaluate it as literal and assert the resulting literal is a list

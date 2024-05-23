@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, 
 import dpath
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
+from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 
 if TYPE_CHECKING:
@@ -42,7 +42,7 @@ class ParentStreamConfig:
 
 
 @dataclass
-class SubstreamPartitionRouter(PartitionRouter):
+class SubstreamPartitionRouter(StreamSlicer):
     """
     Partition router that iterates over the parent's stream records and emits slices
     Will populate the state with `partition_field` and `parent_slice` so they can be accessed by other components

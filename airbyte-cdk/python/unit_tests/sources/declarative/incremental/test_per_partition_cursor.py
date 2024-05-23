@@ -8,7 +8,7 @@ from unittest.mock import Mock
 import pytest
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionCursor, PerPartitionKeySerializer, StreamSlice
-from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
+from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.types import Record
 
 PARTITION = {
@@ -105,7 +105,7 @@ class MockedCursorBuilder:
 
 @pytest.fixture()
 def mocked_partition_router():
-    return Mock(spec=PartitionRouter)
+    return Mock(spec=StreamSlicer)
 
 
 @pytest.fixture()
