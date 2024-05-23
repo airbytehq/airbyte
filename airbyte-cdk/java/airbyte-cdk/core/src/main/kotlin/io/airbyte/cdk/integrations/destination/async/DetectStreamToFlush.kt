@@ -241,20 +241,18 @@ internal constructor(
                     streamDescriptor,
                 )
             }
-        return streams
-            .sortedWith(
-                Comparator.comparing(
-                        { s: StreamDescriptor -> sdToQueueSize[s]!!.orElseThrow() },
-                        Comparator.reverseOrder(),
-                    ) // if no time is present, it suggests the queue has no records. set MAX time
-                    // as a sentinel value to
-                    // represent no records.
-                    .thenComparing { s: StreamDescriptor ->
-                        sdToTimeOfLastRecord[s]!!.orElse(Instant.MAX)
-                    }
-                    .thenComparing { s: StreamDescriptor -> s.namespace + s.name },
-            )
-            .toList()
+        return streams.sortedWith(
+            Comparator.comparing(
+                    { s: StreamDescriptor -> sdToQueueSize[s]!!.orElseThrow() },
+                    Comparator.reverseOrder(),
+                ) // if no time is present, it suggests the queue has no records. set MAX time
+                // as a sentinel value to
+                // represent no records.
+                .thenComparing { s: StreamDescriptor ->
+                    sdToTimeOfLastRecord[s]!!.orElse(Instant.MAX)
+                }
+                .thenComparing { s: StreamDescriptor -> s.namespace + s.name },
+        )
     }
 
     companion object {

@@ -36,7 +36,7 @@ object FutureUtils {
                 .map { obj: CompletableFuture<Optional<Exception>> -> obj.join() }
                 .filter { obj: Optional<Exception> -> obj.isPresent }
                 .map { obj: Optional<Exception> -> obj.get() }
-                .toList()
+
         logAllAndThrowFirst(initialMessage, exceptions)
     }
 }

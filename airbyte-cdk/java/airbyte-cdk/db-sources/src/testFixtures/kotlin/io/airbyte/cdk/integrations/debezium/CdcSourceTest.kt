@@ -311,7 +311,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         return messages
             .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.STATE }
             .map { obj: AirbyteMessage -> obj.state }
-            .toList()
     }
 
     protected fun assertExpectedRecords(

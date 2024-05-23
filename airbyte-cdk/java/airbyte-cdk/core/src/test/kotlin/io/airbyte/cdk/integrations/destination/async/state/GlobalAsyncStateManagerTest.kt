@@ -225,7 +225,7 @@ class GlobalAsyncStateManagerTest {
         val stateWithStats2 =
             emittedStatesFromDestination.associateWith { it.state?.destinationStats }
         assertEquals(
-            listOf(
+            setOf(
                 attachDestinationStateStats(
                     Jsons.deserialize(
                         STREAM1_STATE_MESSAGE1.serialized,
@@ -234,7 +234,7 @@ class GlobalAsyncStateManagerTest {
                     expectedDestinationStats,
                 ),
             ),
-            stateWithStats2.keys.toList(),
+            stateWithStats2.keys,
         )
         assertEquals(listOf(expectedDestinationStats), stateWithStats2.values.toList())
     }
@@ -267,7 +267,7 @@ class GlobalAsyncStateManagerTest {
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             //
             assertEquals(
-                listOf(
+                setOf(
                     attachDestinationStateStats(
                         Jsons.deserialize(
                             GLOBAL_STATE_MESSAGE1.serialized,
@@ -276,7 +276,7 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats.keys.toList(),
+                stateWithStats.keys,
             )
             assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
 
@@ -329,7 +329,7 @@ class GlobalAsyncStateManagerTest {
             val stateWithStats =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
-                listOf(
+                setOf(
                     attachDestinationStateStats(
                         Jsons.deserialize(
                             GLOBAL_STATE_MESSAGE1.serialized,
@@ -338,7 +338,7 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats.keys.toList(),
+                stateWithStats.keys,
             )
             assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
         }
@@ -361,7 +361,7 @@ class GlobalAsyncStateManagerTest {
             val stateWithStats =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
-                listOf(
+                setOf(
                     attachDestinationStateStats(
                         Jsons.deserialize(
                             GLOBAL_STATE_MESSAGE1.serialized,
@@ -370,7 +370,7 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats.keys.toList(),
+                stateWithStats.keys,
             )
             assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
 
@@ -387,7 +387,7 @@ class GlobalAsyncStateManagerTest {
             val stateWithStats2 =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
-                listOf(
+                setOf(
                     attachDestinationStateStats(
                         Jsons.deserialize(
                             GLOBAL_STATE_MESSAGE2.serialized,
@@ -396,7 +396,7 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats2.keys.toList(),
+                stateWithStats2.keys,
             )
             assertEquals(listOf(expectedDestinationStats), stateWithStats2.values.toList())
         }
@@ -419,7 +419,7 @@ class GlobalAsyncStateManagerTest {
             val stateWithStats =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
-                listOf(
+                setOf(
                     attachDestinationStateStats(
                         Jsons.deserialize(
                             GLOBAL_STATE_MESSAGE1.serialized,
@@ -428,7 +428,7 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats.keys.toList(),
+                stateWithStats.keys,
             )
             assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
             emittedStatesFromDestination.clear()
@@ -443,7 +443,7 @@ class GlobalAsyncStateManagerTest {
             val stateWithStats2 =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
-                listOf(
+                setOf(
                     attachDestinationStateStats(
                         Jsons.deserialize(
                             GLOBAL_STATE_MESSAGE2.serialized,
@@ -452,7 +452,7 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats2,
                     ),
                 ),
-                stateWithStats2.keys.toList(),
+                stateWithStats2.keys,
             )
             assertEquals(
                 listOf(expectedDestinationStats2),
@@ -471,7 +471,7 @@ class GlobalAsyncStateManagerTest {
             val stateWithStats3 =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
-                listOf(
+                setOf(
                     attachDestinationStateStats(
                         Jsons.deserialize(
                             GLOBAL_STATE_MESSAGE3.serialized,
@@ -480,7 +480,7 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats3.keys.toList(),
+                stateWithStats3.keys,
             )
             assertEquals(listOf(expectedDestinationStats), stateWithStats3.values.toList())
         }
@@ -506,7 +506,7 @@ class GlobalAsyncStateManagerTest {
             val stateWithStats =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
-                listOf(
+                setOf(
                     attachDestinationStateStats(
                         Jsons.deserialize(
                             GLOBAL_STATE_MESSAGE1.serialized,
@@ -515,7 +515,7 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats.keys.toList(),
+                stateWithStats.keys,
             )
             assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
             emittedStatesFromDestination.clear()
@@ -533,7 +533,7 @@ class GlobalAsyncStateManagerTest {
             val stateWithStats2 =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
-                listOf(
+                setOf(
                     attachDestinationStateStats(
                         Jsons.deserialize(
                             GLOBAL_STATE_MESSAGE2.serialized,
@@ -542,7 +542,7 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats2.keys.toList(),
+                stateWithStats2.keys,
             )
             assertEquals(listOf(expectedDestinationStats), stateWithStats2.values.toList())
         }
@@ -567,7 +567,7 @@ class GlobalAsyncStateManagerTest {
             val stateWithStats =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
-                listOf(
+                setOf(
                     attachDestinationStateStats(
                         Jsons.deserialize(
                             STREAM1_STATE_MESSAGE1.serialized,
@@ -576,7 +576,7 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats.keys.toList(),
+                stateWithStats.keys,
             )
             assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
 
@@ -609,7 +609,7 @@ class GlobalAsyncStateManagerTest {
             val stateWithStats =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
-                listOf(
+                setOf(
                     attachDestinationStateStats(
                         Jsons.deserialize(
                             STREAM1_STATE_MESSAGE1.serialized,
@@ -618,7 +618,7 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats.keys.toList(),
+                stateWithStats.keys,
             )
             assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
 
@@ -636,7 +636,7 @@ class GlobalAsyncStateManagerTest {
             val stateWithStats2 =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
-                listOf(
+                setOf(
                     attachDestinationStateStats(
                         Jsons.deserialize(
                             STREAM1_STATE_MESSAGE2.serialized,
@@ -645,7 +645,7 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats2,
                     ),
                 ),
-                stateWithStats2.keys.toList(),
+                stateWithStats2.keys,
             )
             assertEquals(
                 listOf(expectedDestinationStats2),
@@ -671,7 +671,7 @@ class GlobalAsyncStateManagerTest {
             val stateWithStats =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
-                listOf(
+                setOf(
                     attachDestinationStateStats(
                         Jsons.deserialize(
                             STREAM1_STATE_MESSAGE1.serialized,
@@ -680,7 +680,7 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats.keys.toList(),
+                stateWithStats.keys,
             )
             assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
             emittedStatesFromDestination.clear()
@@ -695,7 +695,7 @@ class GlobalAsyncStateManagerTest {
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             val expectedDestinationStats2 = AirbyteStateStats().withRecordCount(0.0)
             assertEquals(
-                listOf(
+                setOf(
                     attachDestinationStateStats(
                         Jsons.deserialize(
                             STREAM1_STATE_MESSAGE2.serialized,
@@ -704,7 +704,7 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats2,
                     ),
                 ),
-                stateWithStats2.keys.toList(),
+                stateWithStats2.keys,
             )
             assertEquals(
                 listOf(expectedDestinationStats2),
@@ -724,7 +724,7 @@ class GlobalAsyncStateManagerTest {
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             val expectedDestinationStats3 = AirbyteStateStats().withRecordCount(10.0)
             assertEquals(
-                listOf(
+                setOf(
                     attachDestinationStateStats(
                         Jsons.deserialize(
                             STREAM1_STATE_MESSAGE3.serialized,
@@ -733,7 +733,7 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats3,
                     ),
                 ),
-                stateWithStats3.keys.toList(),
+                stateWithStats3.keys,
             )
             assertEquals(
                 listOf(expectedDestinationStats3),
@@ -761,7 +761,7 @@ class GlobalAsyncStateManagerTest {
             val stateWithStats =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
-                listOf(
+                setOf(
                     attachDestinationStateStats(
                         Jsons.deserialize(
                             STREAM1_STATE_MESSAGE1.serialized,
@@ -770,7 +770,7 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats,
                     ),
                 ),
-                stateWithStats.keys.toList(),
+                stateWithStats.keys,
             )
             assertEquals(listOf(expectedDestinationStats), stateWithStats.values.toList())
             emittedStatesFromDestination.clear()
@@ -794,7 +794,7 @@ class GlobalAsyncStateManagerTest {
             val stateWithStats2 =
                 emittedStatesFromDestination.associateWith { it.state?.destinationStats }
             assertEquals(
-                listOf(
+                setOf(
                     attachDestinationStateStats(
                         Jsons.deserialize(
                             STREAM2_STATE_MESSAGE.serialized,
@@ -803,7 +803,7 @@ class GlobalAsyncStateManagerTest {
                         expectedDestinationStats2,
                     ),
                 ),
-                stateWithStats2.keys.toList(),
+                stateWithStats2.keys,
             )
             assertEquals(
                 listOf(expectedDestinationStats2),

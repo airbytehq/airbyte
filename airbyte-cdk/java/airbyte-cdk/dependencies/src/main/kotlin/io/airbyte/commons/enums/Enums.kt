@@ -62,7 +62,7 @@ class Enums {
             ies: List<T1>,
             oe: Class<T2>
         ): List<T2?> {
-            return ies.map { convertTo(it, oe) }.toList()
+            return ies.map { convertTo(it, oe) }
         }
     }
 }

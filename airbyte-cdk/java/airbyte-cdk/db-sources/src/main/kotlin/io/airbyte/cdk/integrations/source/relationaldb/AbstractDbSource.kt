@@ -302,11 +302,9 @@ protected constructor(driverClassName: String) :
         val discoveredTables = discoverInternal(database)
         return (if (systemNameSpaces.isEmpty()) discoveredTables
         else
-            discoveredTables
-                .filter { table: TableInfo<CommonField<DataType>> ->
-                    !systemNameSpaces.contains(table.nameSpace) && !systemViews.contains(table.name)
-                }
-                .toList())
+            discoveredTables.filter { table: TableInfo<CommonField<DataType>> ->
+                !systemNameSpaces.contains(table.nameSpace) && !systemViews.contains(table.name)
+            })
     }
 
     protected fun getFullRefreshIterators(
@@ -421,7 +419,6 @@ protected constructor(driverClassName: String) :
             table.fields
                 .map { obj: CommonField<DataType> -> obj.name }
                 .filter { o: String -> selectedFieldsInCatalog.contains(o) }
-                .toList()
 
         val iterator: AutoCloseableIterator<AirbyteMessage>
         // checks for which sync mode we're using based on the configured airbytestream

@@ -124,9 +124,9 @@ abstract class GcsAvroParquetDestinationAcceptanceTest(fileUploadFormat: FileUpl
 
     protected fun getTypes(record: GenericData.Record): Map<String, Set<Schema.Type>> {
         val fieldList =
-            record.schema.fields
-                .filter { field: Schema.Field -> !field.name().startsWith("_airbyte") }
-                .toList()
+            record.schema.fields.filter { field: Schema.Field ->
+                !field.name().startsWith("_airbyte")
+            }
 
         return if (fieldList.size == 1) {
             fieldList.associate {

@@ -358,7 +358,6 @@ class JsonToAvroSchemaConverter {
                     )
                 }
                 .distinct()
-                .toList()
 
         return mergeRecordSchemas(fieldName, fieldNamespace, schemas, appendExtraProps)
     }
@@ -490,7 +489,7 @@ class JsonToAvroSchemaConverter {
                                 .filter { s: Schema -> s != NULL_SCHEMA }
                         }
                         .distinct()
-                        .toList()
+
                 val subfieldNamespace: String =
                     if (fieldNamespace == null) fieldName else ("$fieldNamespace.$fieldName")
                 // recursively merge schemas of a subfield because they may include multiple record
@@ -611,7 +610,7 @@ class JsonToAvroSchemaConverter {
                     type,
                 ))
         }
-        return Schema.createUnion(unionTypes.filter { removeTimestampType.test(it) }.toList())
+        return Schema.createUnion(unionTypes.filter { removeTimestampType.test(it) })
     }
 
     companion object {
@@ -628,9 +627,9 @@ class JsonToAvroSchemaConverter {
 
         @Suppress("DEPRECATION")
         fun getNonNullTypes(fieldName: String?, fieldDefinition: JsonNode): List<JsonSchemaType> {
-            return getTypes(fieldName, fieldDefinition)
-                .filter { type: JsonSchemaType -> type != JsonSchemaType.NULL }
-                .toList()
+            return getTypes(fieldName, fieldDefinition).filter { type: JsonSchemaType ->
+                type != JsonSchemaType.NULL
+            }
         }
 
         /** When no type or $ref are specified, it will default to string. */
@@ -645,13 +644,11 @@ class JsonToAvroSchemaConverter {
             val airbyteType: String? = fieldDefinition.get(AIRBYTE_TYPE)?.asText()
 
             if (typeProperty != null && typeProperty.isArray) {
-                return MoreIterators.toList(typeProperty.elements())
-                    .map { s: JsonNode ->
-                        JsonSchemaType.fromJsonSchemaType(
-                            s.asText(),
-                        )
-                    }
-                    .toList()
+                return MoreIterators.toList(typeProperty.elements()).map { s: JsonNode ->
+                    JsonSchemaType.fromJsonSchemaType(
+                        s.asText(),
+                    )
+                }
             }
 
             if (hasTextValue(typeProperty)) {

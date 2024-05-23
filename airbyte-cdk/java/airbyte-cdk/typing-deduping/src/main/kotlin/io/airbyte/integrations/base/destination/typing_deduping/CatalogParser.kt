@@ -138,9 +138,7 @@ constructor(
             "Only top-level primary keys are supported"
         }
         val primaryKey =
-            stream.primaryKey
-                .map { key: List<String> -> sqlGenerator.buildColumnId(key[0]) }
-                .toList()
+            stream.primaryKey.map { key: List<String> -> sqlGenerator.buildColumnId(key[0]) }
 
         require(stream.cursorField.size <= 1) { "Only top-level cursors are supported" }
         val cursor: Optional<ColumnId> =

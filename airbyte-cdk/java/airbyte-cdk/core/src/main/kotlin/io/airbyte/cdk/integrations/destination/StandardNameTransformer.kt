@@ -73,9 +73,7 @@ open class StandardNameTransformer : NamingConventionTransformer {
                 return Jsons.jsonNode<Map<String, JsonNode>>(properties)
             } else if (root.isArray) {
                 return Jsons.jsonNode(
-                    MoreIterators.toList(root.elements())
-                        .map { r: JsonNode -> formatJsonPath(r) }
-                        .toList()
+                    MoreIterators.toList(root.elements()).map { r: JsonNode -> formatJsonPath(r) }
                 )
             } else {
                 return root

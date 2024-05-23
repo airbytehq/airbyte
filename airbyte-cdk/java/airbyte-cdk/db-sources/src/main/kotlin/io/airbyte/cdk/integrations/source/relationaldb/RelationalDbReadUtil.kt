@@ -26,7 +26,6 @@ object RelationalDbReadUtil {
                 )
             }
             .map { `object`: ConfiguredAirbyteStream -> Jsons.clone(`object`) }
-            .toList()
     }
 
     @JvmStatic
@@ -48,7 +47,6 @@ object RelationalDbReadUtil {
                 )
             }
             .map { `object`: ConfiguredAirbyteStream -> Jsons.clone(`object`) }
-            .toList()
     }
 
     @JvmStatic

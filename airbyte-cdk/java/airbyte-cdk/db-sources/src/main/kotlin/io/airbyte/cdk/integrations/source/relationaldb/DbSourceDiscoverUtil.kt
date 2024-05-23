@@ -46,7 +46,7 @@ object DbSourceDiscoverUtil {
                         toField(commonField, airbyteTypeConverter)
                     }
                     .distinct()
-                    .toList()
+
             val currentJsonSchema = CatalogHelpers.fieldsToJsonSchema(fields)
             val catalogSchema = stream.jsonSchema
             val currentSchemaProperties = currentJsonSchema["properties"]
@@ -85,37 +85,35 @@ object DbSourceDiscoverUtil {
         airbyteTypeConverter: Function<DataType, JsonSchemaType>
     ): AirbyteCatalog {
         val tableInfoFieldList =
-            tableInfos
-                .map { t: TableInfo<CommonField<DataType>> ->
-                    // some databases return multiple copies of the same record for a column (e.g.
-                    // redshift) because
-                    // they have at least once delivery guarantees. we want to dedupe these, but
-                    // first we check that the
-                    // records are actually the same and provide a good error message if they are
-                    // not.
-                    assertColumnsWithSameNameAreSame(t.nameSpace, t.name, t.fields)
-                    val fields =
-                        t.fields
-                            .map { commonField: CommonField<DataType> ->
-                                toField(commonField, airbyteTypeConverter)
-                            }
-                            .distinct()
-                            .toList()
-                    val fullyQualifiedTableName = getFullyQualifiedTableName(t.nameSpace, t.name)
-                    val primaryKeys =
-                        fullyQualifiedTableNameToPrimaryKeys.getOrDefault(
-                            fullyQualifiedTableName,
-                            emptyList()
-                        )
-                    TableInfo(
-                        nameSpace = t.nameSpace,
-                        name = t.name,
-                        fields = fields,
-                        primaryKeys = primaryKeys,
-                        cursorFields = t.cursorFields
+            tableInfos.map { t: TableInfo<CommonField<DataType>> ->
+                // some databases return multiple copies of the same record for a column (e.g.
+                // redshift) because
+                // they have at least once delivery guarantees. we want to dedupe these, but
+                // first we check that the
+                // records are actually the same and provide a good error message if they are
+                // not.
+                assertColumnsWithSameNameAreSame(t.nameSpace, t.name, t.fields)
+                val fields =
+                    t.fields
+                        .map { commonField: CommonField<DataType> ->
+                            toField(commonField, airbyteTypeConverter)
+                        }
+                        .distinct()
+
+                val fullyQualifiedTableName = getFullyQualifiedTableName(t.nameSpace, t.name)
+                val primaryKeys =
+                    fullyQualifiedTableNameToPrimaryKeys.getOrDefault(
+                        fullyQualifiedTableName,
+                        emptyList()
                     )
-                }
-                .toList()
+                TableInfo(
+                    nameSpace = t.nameSpace,
+                    name = t.name,
+                    fields = fields,
+                    primaryKeys = primaryKeys,
+                    cursorFields = t.cursorFields
+                )
+            }
 
         val streams =
             tableInfoFieldList
@@ -124,7 +122,7 @@ object DbSourceDiscoverUtil {
                         tableInfo.primaryKeys
                             .filter { obj: String -> Objects.nonNull(obj) }
                             .map { listOf(it) }
-                            .toList()
+
                     CatalogHelpers.createAirbyteStream(
                             tableInfo.name,
                             tableInfo.nameSpace,
@@ -157,11 +155,10 @@ object DbSourceDiscoverUtil {
                 !commonField.properties.isEmpty()
         ) {
             val properties =
-                commonField.properties
-                    .map { commField: CommonField<DataType> ->
-                        toField(commField, airbyteTypeConverter)
-                    }
-                    .toList()
+                commonField.properties.map { commField: CommonField<DataType> ->
+                    toField(commField, airbyteTypeConverter)
+                }
+
             return Field.of(
                 commonField.name,
                 airbyteTypeConverter.apply(commonField.type),

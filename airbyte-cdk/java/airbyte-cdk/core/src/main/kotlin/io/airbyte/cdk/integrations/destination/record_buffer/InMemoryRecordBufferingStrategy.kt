@@ -71,7 +71,7 @@ class InMemoryRecordBufferingStrategy(
             stream.name,
             streamBuffer[stream]!!.size
         )
-        recordWriter.accept(stream, streamBuffer[stream]!!.toList())
+        recordWriter.accept(stream, streamBuffer[stream]!!)
         LOGGER.info("Flushing completed for {}", stream.name)
     }
 

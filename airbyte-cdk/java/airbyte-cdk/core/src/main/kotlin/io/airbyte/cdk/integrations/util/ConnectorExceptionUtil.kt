@@ -123,12 +123,12 @@ object ConnectorExceptionUtil {
         initialMessage: String,
         eithers: List<Either<out T, Result>>
     ): List<Result> {
-        val throwables: List<T> = eithers.filter { it.isLeft() }.map { it.left!! }.toList()
+        val throwables: List<T> = eithers.filter { it.isLeft() }.map { it.left!! }
         if (throwables.isNotEmpty()) {
             logAllAndThrowFirst(initialMessage, throwables)
         }
         // No need to filter on isRight since isLeft will throw before reaching this line.
-        return eithers.map { obj: Either<out T, Result> -> obj.right!! }.toList()
+        return eithers.map { obj: Either<out T, Result> -> obj.right!! }
     }
 
     private fun isTransientErrorException(e: Throwable?): Boolean {

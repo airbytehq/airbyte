@@ -428,13 +428,9 @@ abstract class DestinationAcceptanceTest {
             )
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
         val messages: List<io.airbyte.protocol.models.v0.AirbyteMessage> =
-            MoreResources.readResource(messagesFilename)
-                .trim()
-                .lines()
-                .map {
-                    Jsons.deserialize(it, io.airbyte.protocol.models.v0.AirbyteMessage::class.java)
-                }
-                .toList()
+            MoreResources.readResource(messagesFilename).trim().lines().map {
+                Jsons.deserialize(it, io.airbyte.protocol.models.v0.AirbyteMessage::class.java)
+            }
 
         val config = getConfig()
         val defaultSchema = getDefaultSchema(config)
@@ -458,13 +454,9 @@ abstract class DestinationAcceptanceTest {
             )
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
         val messages: List<io.airbyte.protocol.models.v0.AirbyteMessage> =
-            MoreResources.readResource(messagesFilename)
-                .trim()
-                .lines()
-                .map {
-                    Jsons.deserialize(it, io.airbyte.protocol.models.v0.AirbyteMessage::class.java)
-                }
-                .toList()
+            MoreResources.readResource(messagesFilename).trim().lines().map {
+                Jsons.deserialize(it, io.airbyte.protocol.models.v0.AirbyteMessage::class.java)
+            }
 
         val largeNumberRecords =
             Collections.nCopies(400, messages)
@@ -482,7 +474,6 @@ abstract class DestinationAcceptanceTest {
                             else message.toString()
                         }
                 )
-                .toList()
 
         val config = getConfig()
         runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false)
@@ -522,7 +513,7 @@ abstract class DestinationAcceptanceTest {
                         io.airbyte.protocol.models.v0.AirbyteMessage::class.java
                     )
                 }
-                .toList()
+
         val config = getConfig()
         runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false)
 
@@ -714,7 +705,7 @@ abstract class DestinationAcceptanceTest {
                 .trim()
                 .lines()
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
-                .toList()
+
         val config = getConfig()
         runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false)
         val secondSyncMessages: List<io.airbyte.protocol.models.v0.AirbyteMessage> =
@@ -848,14 +839,13 @@ abstract class DestinationAcceptanceTest {
 
         // We expect all the of messages to be missing the removed column after normalization.
         val expectedMessages =
-            messages
-                .map { message: io.airbyte.protocol.models.v0.AirbyteMessage ->
-                    if (message.record != null) {
-                        (message.record.data as ObjectNode).remove("HKD")
-                    }
-                    message
+            messages.map { message: io.airbyte.protocol.models.v0.AirbyteMessage ->
+                if (message.record != null) {
+                    (message.record.data as ObjectNode).remove("HKD")
                 }
-                .toList()
+                message
+            }
+
         assertSameMessages(expectedMessages, actualMessages, true)
     }
 
@@ -1024,7 +1014,6 @@ abstract class DestinationAcceptanceTest {
                             it.record.data["NZD"].asText()
                     (it.record.emittedAt == latestMessagesOnly[key]!!.record.emittedAt)
                 }
-                .toList()
 
         val defaultSchema = getDefaultSchema(config)
         retrieveRawRecordsAndAssertSameMessages(
@@ -1695,14 +1684,14 @@ abstract class DestinationAcceptanceTest {
             val streamName = stream.name
             val schema = if (stream.namespace != null) stream.namespace else defaultSchema!!
             val msgList =
-                retrieveRecords(testEnv, streamName, schema, stream.jsonSchema)
-                    .map { data: JsonNode ->
-                        AirbyteRecordMessage()
-                            .withStream(streamName)
-                            .withNamespace(schema)
-                            .withData(data)
-                    }
-                    .toList()
+                retrieveRecords(testEnv, streamName, schema, stream.jsonSchema).map { data: JsonNode
+                    ->
+                    AirbyteRecordMessage()
+                        .withStream(streamName)
+                        .withNamespace(schema)
+                        .withData(data)
+                }
+
             actualMessages.addAll(msgList)
         }
 
@@ -1726,7 +1715,6 @@ abstract class DestinationAcceptanceTest {
                     if (pruneAirbyteInternalFields) safePrune(recordMessage) else recordMessage
                 }
                 .map { obj: AirbyteRecordMessage -> obj.data }
-                .toList()
 
         val actualProcessed =
             actual
@@ -1734,7 +1722,6 @@ abstract class DestinationAcceptanceTest {
                     if (pruneAirbyteInternalFields) safePrune(recordMessage) else recordMessage
                 }
                 .map { obj: AirbyteRecordMessage -> obj.data }
-                .toList()
 
         _testDataComparator.assertSameData(expectedProcessed, actualProcessed)
     }
@@ -1750,11 +1737,11 @@ abstract class DestinationAcceptanceTest {
             val streamName = stream.name
 
             val msgList =
-                retrieveNormalizedRecords(testEnv, streamName, defaultSchema)
-                    .map { data: JsonNode ->
-                        AirbyteRecordMessage().withStream(streamName).withData(data)
-                    }
-                    .toList()
+                retrieveNormalizedRecords(testEnv, streamName, defaultSchema).map { data: JsonNode
+                    ->
+                    AirbyteRecordMessage().withStream(streamName).withData(data)
+                }
+
             actualMessages.addAll(msgList)
         }
         return actualMessages

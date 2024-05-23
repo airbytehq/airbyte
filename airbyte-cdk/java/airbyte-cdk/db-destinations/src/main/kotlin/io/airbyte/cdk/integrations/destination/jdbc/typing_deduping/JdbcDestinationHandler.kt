@@ -207,11 +207,10 @@ abstract class JdbcDestinationHandler<DestinationState>(
             }
 
         val initialStates =
-            streamConfigs
-                .map { streamConfig: StreamConfig ->
-                    retrieveState(destinationStatesFuture, streamConfig)
-                }
-                .toList()
+            streamConfigs.map { streamConfig: StreamConfig ->
+                retrieveState(destinationStatesFuture, streamConfig)
+            }
+
         val states = CompletableFutures.allOf(initialStates).toCompletableFuture().join()
         return getResultsOrLogAndThrowFirst("Failed to retrieve initial state", states)
     }

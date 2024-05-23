@@ -481,7 +481,7 @@ internal constructor(
         ) {
             val currentThread = Thread.currentThread()
 
-            val runningThreads = ThreadUtils.getAllThreads().filter(::filterOrphanedThread).toList()
+            val runningThreads = ThreadUtils.getAllThreads().filter(::filterOrphanedThread)
             if (runningThreads.isNotEmpty()) {
                 LOGGER.warn(
                     """

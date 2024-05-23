@@ -122,11 +122,7 @@ object SentryExceptionHelper {
                             errorMessageAndType[ErrorMapKeys.ERROR_MAP_MESSAGE_KEY] =
                                 String.format(
                                     "%s",
-                                    stacktraceLines[
-                                            Arrays.stream(stacktraceLines)
-                                                .toList()
-                                                .indexOf(followingLine) + 1
-                                        ]
+                                    stacktraceLines[stacktraceLines.indexOf(followingLine) + 1]
                                         .trim { it <= ' ' }
                                 )
                             errorMessageAndType[ErrorMapKeys.ERROR_MAP_TYPE_KEY] =

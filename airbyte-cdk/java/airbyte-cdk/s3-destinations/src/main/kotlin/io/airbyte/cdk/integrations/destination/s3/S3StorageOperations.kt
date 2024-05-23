@@ -320,7 +320,7 @@ open class S3StorageOperations(
                             obj.key,
                         )
                     }
-                    .toList()
+
             cleanUpObjects(bucket, keysToDelete)
             logger.info {
                 "Storage bucket $objectPath has been cleaned-up (${keysToDelete.size} objects matching $regexFormat were deleted)..."
@@ -371,7 +371,7 @@ open class S3StorageOperations(
                             obj.key,
                         )
                     }
-                    .toList()
+
             cleanUpObjects(bucket, keysToDelete)
             logger.info {
                 "Storage bucket $objectPath has been cleaned-up (${keysToDelete.size} objects were deleted)..."
@@ -391,7 +391,7 @@ open class S3StorageOperations(
         if (keysToDelete.isNotEmpty()) {
             logger.info {
                 "Deleting objects ${keysToDelete.map { obj: DeleteObjectsRequest.KeyVersion -> obj.key }
-                .toList().joinToString(separator = ", ")}"
+                .joinToString(separator = ", ")}"
             }
             s3Client.deleteObjects(DeleteObjectsRequest(bucket).withKeys(keysToDelete))
         }
