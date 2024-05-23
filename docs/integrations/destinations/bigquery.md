@@ -220,6 +220,7 @@ tutorials:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.21  | 2024-05-22 | [38588](https://github.com/airbytehq/airbyte/pull/38588)   | Revert #38132                                                                                                                                                   |
 | 2.4.20  | 2024-05-13 | [38131](https://github.com/airbytehq/airbyte/pull/38131)   | Cleanup `BigQueryWriteConfig` and reuse `StreamConfig`; Adapt to `StreamConfig` signature changes                                                               |
 | 2.4.19  | 2024-05-10 | [38125](https://github.com/airbytehq/airbyte/pull/38125)   | adopt latest CDK code                                                                                                                                           |
 | 2.4.18  | 2024-05-10 | [38111](https://github.com/airbytehq/airbyte/pull/38111)   | No functional changes, deleting unused code                                                                                                                     |
