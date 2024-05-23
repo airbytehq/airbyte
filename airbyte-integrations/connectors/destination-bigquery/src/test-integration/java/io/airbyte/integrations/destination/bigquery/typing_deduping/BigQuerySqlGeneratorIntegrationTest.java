@@ -33,11 +33,10 @@ import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
-import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState;
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
+import io.airbyte.integrations.destination.bigquery.migrators.BigQueryDestinationState;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import io.airbyte.protocol.models.v0.SyncMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -58,7 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Execution(ExecutionMode.CONCURRENT)
-public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest<MinimumDestinationState.Impl> {
+public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest<BigQueryDestinationState> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGeneratorIntegrationTest.class);
 
@@ -407,7 +406,6 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   public void testFailureOnReservedColumnNamePrefix(final String prefix) {
     final StreamConfig stream = new StreamConfig(
         getStreamId(),
-        SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND,
         Collections.emptyList(),
         Optional.empty(),
@@ -417,7 +415,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
             put(getGenerator().buildColumnId(prefix + "the_column_name"), AirbyteProtocolType.STRING);
           }
 
-        });
+        }, 0, 0, 0);
 
     final Sql createTable = getGenerator().createTable(stream, "", false);
     assertThrows(
