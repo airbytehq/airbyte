@@ -87,7 +87,7 @@ abstract class DestinationAcceptanceTest {
     open protected var _testDataComparator: TestDataComparator = getTestDataComparator()
 
     protected open fun getTestDataComparator(): TestDataComparator {
-        return BasicTestDataComparator { this.resolveIdentifier(it) }
+        return BasicTestDataComparator { @Suppress("deprecated") this.resolveIdentifier(it) }
     }
 
     protected abstract val imageName: String
@@ -342,7 +342,7 @@ abstract class DestinationAcceptanceTest {
                 implementation of the method to your comparator implementation."""
     )
     protected open fun resolveIdentifier(identifier: String?): List<String?> {
-        return java.util.List.of(identifier)
+        return listOf(identifier)
     }
 
     @BeforeEach

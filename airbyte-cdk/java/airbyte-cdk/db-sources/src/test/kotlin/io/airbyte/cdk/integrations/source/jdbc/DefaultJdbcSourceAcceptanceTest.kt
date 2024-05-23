@@ -61,7 +61,7 @@ internal class DefaultJdbcSourceAcceptanceTest :
         additionalParameters: String
     ): JsonNode {
         return Jsons.jsonNode(
-            ImmutableMap.builder<Any, Any?>()
+            ImmutableMap.builder<Any, Any>()
                 .put(JdbcUtils.HOST_KEY, resolveHost(psqlDb))
                 .put(JdbcUtils.PORT_KEY, resolvePort(psqlDb))
                 .put(JdbcUtils.DATABASE_KEY, dbName)

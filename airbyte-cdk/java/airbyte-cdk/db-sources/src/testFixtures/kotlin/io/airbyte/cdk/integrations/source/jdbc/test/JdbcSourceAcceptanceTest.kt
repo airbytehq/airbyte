@@ -91,7 +91,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         )
     }
 
-    protected fun primaryKeyClause(columns: List<String?>): String {
+    protected fun primaryKeyClause(columns: List<String>): String {
         if (columns.isEmpty()) {
             return ""
         }

@@ -47,13 +47,13 @@ class Enums {
         private val NORMALIZED_ENUMS: ConcurrentMap<Class<*>, Map<String, *>> =
             Maps.newConcurrentMap()
 
-        fun <T1 : Enum<T1>?, T2 : Enum<T2>?> isCompatible(c1: Class<T1>, c2: Class<T2>): Boolean {
+        fun <T1 : Enum<T1>, T2 : Enum<T2>> isCompatible(c1: Class<T1>, c2: Class<T2>): Boolean {
             Preconditions.checkArgument(c1.isEnum)
             Preconditions.checkArgument(c2.isEnum)
             return (c1.enumConstants.size == c2.enumConstants.size &&
                 Sets.difference(
-                        c1.enumConstants.map { obj: T1 -> obj!!.name }.toSet(),
-                        c2.enumConstants.map { obj: T2 -> obj!!.name }.toSet(),
+                        c1.enumConstants.map { obj: T1 -> obj.name }.toSet(),
+                        c2.enumConstants.map { obj: T2 -> obj.name }.toSet(),
                     )
                     .isEmpty())
         }

@@ -29,7 +29,7 @@ interface SqlOperations {
      * @throws Exception exception
      */
     @Throws(Exception::class)
-    fun createSchemaIfNotExists(database: JdbcDatabase?, schemaName: String?)
+    fun createSchemaIfNotExists(database: JdbcDatabase?, schemaName: String)
 
     /**
      * Denotes whether the schema exists in destination database

@@ -87,7 +87,7 @@ class AirbyteDebeziumHandler<T>(
             )
         val schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage> =
             if (trackSchemaHistory)
-                Optional.of<AirbyteSchemaHistoryStorage?>(
+                Optional.of<AirbyteSchemaHistoryStorage>(
                     AirbyteSchemaHistoryStorage.Companion.initializeDBHistory(
                         cdcSavedInfoFetcher.savedSchemaHistory,
                         cdcStateHandler.compressSchemaHistoryForState()

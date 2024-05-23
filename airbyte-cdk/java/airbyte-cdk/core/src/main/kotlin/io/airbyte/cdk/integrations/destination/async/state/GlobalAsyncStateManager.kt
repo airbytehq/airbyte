@@ -154,7 +154,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
         var bytesFlushed: Long = 0L
         logger.info { "Flushing states" }
         synchronized(lock) {
-            for (entry: Map.Entry<StreamDescriptor, LinkedBlockingDeque<Long>?> in
+            for (entry: Map.Entry<StreamDescriptor, LinkedBlockingDeque<Long>> in
                 descToStateIdQ.entries) {
                 // Remove all states with 0 counters.
                 // Per-stream synchronized is required to make sure the state (at the head of the
@@ -196,7 +196,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
                         bytesFlushed += oldestState.second
 
                         // cleanup
-                        entry.value!!.poll()
+                        entry.value.poll()
                         stateIdToState.remove(oldestStateId)
                         stateIdToCounter.remove(oldestStateId)
                         stateIdToCounterForPopulatingDestinationStats.remove(oldestStateId)

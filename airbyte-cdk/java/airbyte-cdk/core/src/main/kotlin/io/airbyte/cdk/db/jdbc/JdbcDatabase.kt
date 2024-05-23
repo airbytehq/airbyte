@@ -31,7 +31,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
      * @throws SQLException SQL related exceptions.
      */
     @Throws(SQLException::class)
-    abstract fun execute(query: CheckedConsumer<Connection, SQLException?>)
+    abstract fun execute(query: CheckedConsumer<Connection, SQLException>)
 
     @Throws(SQLException::class)
     override fun execute(sql: String?) {
@@ -39,7 +39,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     }
 
     @Throws(SQLException::class)
-    fun executeWithinTransaction(queries: List<String?>) {
+    fun executeWithinTransaction(queries: List<String>) {
         execute { connection: Connection ->
             connection.autoCommit = false
             for (s in queries) {
@@ -67,8 +67,8 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
      */
     @Throws(SQLException::class)
     abstract fun <T> bufferedResultSetQuery(
-        query: CheckedFunction<Connection, ResultSet, SQLException?>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+        query: CheckedFunction<Connection, ResultSet, SQLException>,
+        recordTransform: CheckedFunction<ResultSet, T, SQLException>
     ): List<T>
 
     /**
@@ -89,8 +89,8 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     @MustBeClosed
     @Throws(SQLException::class)
     abstract fun <T> unsafeResultSetQuery(
-        query: CheckedFunction<Connection, ResultSet, SQLException?>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+        query: CheckedFunction<Connection, ResultSet, SQLException>,
+        recordTransform: CheckedFunction<ResultSet, T, SQLException>
     ): Stream<T>
 
     /**
@@ -99,8 +99,8 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
      */
     @Throws(SQLException::class)
     fun queryStrings(
-        query: CheckedFunction<Connection, ResultSet, SQLException?>,
-        recordTransform: CheckedFunction<ResultSet, String, SQLException?>
+        query: CheckedFunction<Connection, ResultSet, SQLException>,
+        recordTransform: CheckedFunction<ResultSet, String, SQLException>
     ): List<String> {
         unsafeResultSetQuery(query, recordTransform).use { stream ->
             return stream.toList()
@@ -126,8 +126,8 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     @MustBeClosed
     @Throws(SQLException::class)
     abstract fun <T> unsafeQuery(
-        statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException?>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+        statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException>,
+        recordTransform: CheckedFunction<ResultSet, T, SQLException>
     ): Stream<T>
 
     /**
@@ -136,8 +136,8 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
      */
     @Throws(SQLException::class)
     fun queryJsons(
-        statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException?>,
-        recordTransform: CheckedFunction<ResultSet, JsonNode, SQLException?>
+        statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException>,
+        recordTransform: CheckedFunction<ResultSet, JsonNode, SQLException>
     ): List<JsonNode> {
         unsafeQuery(statementCreator, recordTransform).use { stream ->
             return stream.toList()
@@ -229,7 +229,7 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
         @MustBeClosed
         fun <T> toUnsafeStream(
             resultSet: ResultSet,
-            mapper: CheckedFunction<ResultSet, T, SQLException?>
+            mapper: CheckedFunction<ResultSet, T, SQLException>
         ): Stream<T> {
             return StreamSupport.stream(
                 object : AbstractSpliterator<T>(Long.MAX_VALUE, ORDERED) {

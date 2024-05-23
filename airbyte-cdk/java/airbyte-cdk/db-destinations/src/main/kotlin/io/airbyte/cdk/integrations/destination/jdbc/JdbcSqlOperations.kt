@@ -21,12 +21,12 @@ import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 
 abstract class JdbcSqlOperations : SqlOperations {
-    protected val schemaSet: MutableSet<String?> = HashSet()
+    protected val schemaSet: MutableSet<String> = HashSet()
 
     protected constructor()
 
     @Throws(Exception::class)
-    override fun createSchemaIfNotExists(database: JdbcDatabase?, schemaName: String?) {
+    override fun createSchemaIfNotExists(database: JdbcDatabase?, schemaName: String) {
         try {
             if (!schemaSet.contains(schemaName) && !isSchemaExists(database, schemaName)) {
                 database!!.execute(String.format("CREATE SCHEMA IF NOT EXISTS %s;", schemaName))

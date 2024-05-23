@@ -512,7 +512,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                     // TODO: normalize namespace and finalName strings to quoted-lowercase (as
                     // needed. Snowflake
                     // requires uppercase)
-                    val columnDefinitions = LinkedHashMap<String?, ColumnDefinition>()
+                    val columnDefinitions = LinkedHashMap<String, ColumnDefinition>()
                     LOGGER.info(
                         "Retrieving existing columns for {}.{}.{}",
                         catalogName,

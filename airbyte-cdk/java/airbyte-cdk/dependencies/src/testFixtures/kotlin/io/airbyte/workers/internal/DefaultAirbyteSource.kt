@@ -41,7 +41,7 @@ internal constructor(
     featureFlags: FeatureFlags
 ) : AirbyteSource {
     private var sourceProcess: Process? = null
-    private var messageIterator: Iterator<AirbyteMessage?>? = null
+    private var messageIterator: Iterator<AirbyteMessage>? = null
 
     private var exitValueIsSet = false
     @get:Throws(IllegalStateException::class)

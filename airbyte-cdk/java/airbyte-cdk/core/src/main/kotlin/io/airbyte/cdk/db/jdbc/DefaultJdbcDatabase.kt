@@ -26,14 +26,14 @@ constructor(
     sourceOperations: JdbcCompatibleSourceOperations<*>? = JdbcUtils.defaultSourceOperations
 ) : JdbcDatabase(sourceOperations) {
     @Throws(SQLException::class)
-    override fun execute(query: CheckedConsumer<Connection, SQLException?>) {
+    override fun execute(query: CheckedConsumer<Connection, SQLException>) {
         dataSource.connection.use { connection -> query.accept(connection) }
     }
 
     @Throws(SQLException::class)
     override fun <T> bufferedResultSetQuery(
-        query: CheckedFunction<Connection, ResultSet, SQLException?>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+        query: CheckedFunction<Connection, ResultSet, SQLException>,
+        recordTransform: CheckedFunction<ResultSet, T, SQLException>
     ): List<T> {
         dataSource.connection.use { connection ->
             toUnsafeStream<T>(query.apply(connection), recordTransform).use { results ->
@@ -45,8 +45,8 @@ constructor(
     @MustBeClosed
     @Throws(SQLException::class)
     override fun <T> unsafeResultSetQuery(
-        query: CheckedFunction<Connection, ResultSet, SQLException?>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+        query: CheckedFunction<Connection, ResultSet, SQLException>,
+        recordTransform: CheckedFunction<ResultSet, T, SQLException>
     ): Stream<T> {
         val connection = dataSource.connection
         return JdbcDatabase.Companion.toUnsafeStream<T>(query.apply(connection), recordTransform)
@@ -114,8 +114,8 @@ constructor(
     @MustBeClosed
     @Throws(SQLException::class)
     override fun <T> unsafeQuery(
-        statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException?>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+        statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException>,
+        recordTransform: CheckedFunction<ResultSet, T, SQLException>
     ): Stream<T> {
         val connection = dataSource.connection
         return JdbcDatabase.Companion.toUnsafeStream<T>(

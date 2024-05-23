@@ -24,7 +24,7 @@ class EnvVariableFeatureFlags : FeatureFlags {
         return getEnvOrDefault(APPLY_FIELD_SELECTION, false) { s: String -> s.toBoolean() }
     }
 
-    override fun fieldSelectionWorkspaces(): String? {
+    override fun fieldSelectionWorkspaces(): String {
         return getEnvOrDefault(FIELD_SELECTION_WORKSPACES, "") { arg: String -> arg }
     }
 

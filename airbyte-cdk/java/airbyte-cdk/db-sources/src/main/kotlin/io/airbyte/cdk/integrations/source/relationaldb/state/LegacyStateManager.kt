@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory
               state management."""
 )
 class LegacyStateManager(dbState: DbState, catalog: ConfiguredAirbyteCatalog) :
-    AbstractStateManager<DbState?, DbStreamState>(
+    AbstractStateManager<DbState, DbStreamState>(
         catalog,
         Supplier { dbState.streams },
         CURSOR_FUNCTION,
@@ -57,7 +57,7 @@ class LegacyStateManager(dbState: DbState, catalog: ConfiguredAirbyteCatalog) :
         this.isCdc = dbState.cdc ?: false
     }
 
-    override val rawStateMessages: List<AirbyteStateMessage?>?
+    override val rawStateMessages: List<AirbyteStateMessage>?
         get() {
             throw UnsupportedOperationException(
                 "Raw state retrieval not supported by global state manager."

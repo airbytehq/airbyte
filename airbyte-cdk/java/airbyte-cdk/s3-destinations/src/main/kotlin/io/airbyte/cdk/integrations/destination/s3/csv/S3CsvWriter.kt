@@ -83,7 +83,7 @@ private constructor(
             localCsvSettings =
                 @Suppress("deprecation")
                 localCsvSettings.withHeader(
-                    *csvSheetGenerator.getHeaderRow().toTypedArray<String?>()
+                    *csvSheetGenerator.getHeaderRow().toTypedArray<String>()
                 )
         }
         this.csvPrinter =

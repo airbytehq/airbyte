@@ -435,7 +435,7 @@ class StreamStateManagerTest {
     private fun createStreamState(
         name: String?,
         namespace: String?,
-        cursorFields: List<String?>?,
+        cursorFields: List<String>?,
         cursorValue: String?,
         cursorRecordCount: Long
     ): AirbyteStateMessage {

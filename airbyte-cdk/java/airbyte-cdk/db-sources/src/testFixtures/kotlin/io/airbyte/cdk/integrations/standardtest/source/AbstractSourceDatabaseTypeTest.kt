@@ -93,6 +93,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
             testDataHolders.forEach(
                 Consumer { testDataHolder: TestDataHolder ->
                     val airbyteStream = streams[testDataHolder.nameWithTestPrefix]
+                    @Suppress("unchecked_cast")
                     val jsonSchemaTypeMap =
                         Jsons.deserialize(
                             airbyteStream!!.jsonSchema["properties"][testColumnName].toString(),
@@ -120,7 +121,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
         class MissedRecords( // Stream that is missing any value
             var streamName:
                 String?, // Which are the values that has not being gathered from the source
-            var missedValues: List<String?>?
+            var missedValues: List<String?>
         )
 
         class UnexpectedRecord(val streamName: String, val unexpectedValue: String?)
@@ -131,10 +132,10 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
         val recordMessages =
             allMessages.filter { m: AirbyteMessage -> m.type == AirbyteMessage.Type.RECORD }
 
-        val expectedValues: MutableMap<String?, MutableList<String?>?> = HashMap()
-        val missedValuesByStream: MutableMap<String?, ArrayList<MissedRecords>> = HashMap()
+        val expectedValues: MutableMap<String, MutableList<String?>> = HashMap()
+        val missedValuesByStream: MutableMap<String, ArrayList<MissedRecords>> = HashMap()
         val unexpectedValuesByStream: MutableMap<String, MutableList<UnexpectedRecord>> = HashMap()
-        val testByName: MutableMap<String?, TestDataHolder> = HashMap()
+        val testByName: MutableMap<String, TestDataHolder> = HashMap()
 
         // If there is no expected value in the test set we don't include it in the list to be
         // asserted
@@ -152,7 +153,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
         )
 
         for (message in recordMessages) {
-            val streamName = message!!.record.stream
+            val streamName = message.record.stream
             val expectedValuesForStream = expectedValues[streamName]
             if (expectedValuesForStream != null) {
                 val value = getValueFromJsonNode(message.record.data[testColumnName])
@@ -166,26 +167,22 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
         }
 
         // Gather all the missing values, so we don't stop the test in the first missed one
-        expectedValues.forEach { (streamName: String?, values: List<String?>?) ->
-            if (!values!!.isEmpty()) {
+        expectedValues.forEach { (streamName: String, values: List<String?>) ->
+            if (values.isNotEmpty()) {
                 missedValuesByStream.putIfAbsent(streamName, ArrayList())
                 missedValuesByStream[streamName]!!.add(MissedRecords(streamName, values))
             }
         }
 
-        val errorsByStream: MutableMap<String?, MutableList<String?>> = HashMap()
+        val errorsByStream: MutableMap<String?, MutableList<String>> = HashMap()
         for (streamName in unexpectedValuesByStream.keys) {
             errorsByStream.putIfAbsent(streamName, ArrayList())
             val test = testByName.getValue(streamName)
             val unexpectedValues: List<UnexpectedRecord> = unexpectedValuesByStream[streamName]!!
             for (unexpectedValue in unexpectedValues) {
                 errorsByStream[streamName]!!.add(
-                    "The stream '%s' checking type '%s' initialized at %s got unexpected values: %s".formatted(
-                        streamName,
-                        test.sourceType,
-                        test.declarationLocation,
-                        unexpectedValue
-                    )
+                    "The stream '${streamName}' checking type '${test.sourceType}' initialized " +
+                        "at ${test.declarationLocation} got unexpected values: $unexpectedValue"
                 )
             }
         }
@@ -196,17 +193,13 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
             val missedValues: List<MissedRecords> = missedValuesByStream[streamName]!!
             for (missedValue in missedValues) {
                 errorsByStream[streamName]!!.add(
-                    "The stream '%s' checking type '%s' initialized at %s is missing values: %s".formatted(
-                        streamName,
-                        test.sourceType,
-                        test.declarationLocation,
-                        missedValue
-                    )
+                    "The stream '$streamName' checking type '${test.sourceType}' initialized at " +
+                        "${test.declarationLocation} is missing values: $missedValue"
                 )
             }
         }
 
-        val errorStrings: MutableList<String?> = ArrayList()
+        val errorStrings: MutableList<String> = ArrayList()
         for (errors in errorsByStream.values) {
             errorStrings.add(StringUtils.join(errors, "\n"))
         }

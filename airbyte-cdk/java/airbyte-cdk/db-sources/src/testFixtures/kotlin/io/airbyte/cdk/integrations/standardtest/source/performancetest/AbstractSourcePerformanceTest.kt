@@ -55,7 +55,7 @@ abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest
      * Arguments.of("newregular25tables50000records", "dbo", 50052, 8, 25),
      * Arguments.of("newsmall1000tableswith10000rows", "dbo", 10011, 8, 1000) );
      */
-    protected abstract fun provideParameters(): Stream<Arguments?>?
+    protected abstract fun provideParameters(): Stream<Arguments>?
 
     @ParameterizedTest
     @MethodSource("provideParameters")

@@ -36,7 +36,7 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
     private val protocolValidator: AirbyteProtocolPredicate
     protected val logger: Logger
     private val maxMemory: Long
-    private val exceptionClass: Optional<Class<out RuntimeException?>>
+    private val exceptionClass: Optional<Class<out RuntimeException>>
 
     @JvmOverloads
     constructor(
@@ -45,7 +45,7 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
         AirbyteProtocolPredicate(),
         LOGGER,
         containerLogMdcBuilder,
-        Optional.empty<Class<out RuntimeException?>>()
+        Optional.empty<Class<out RuntimeException>>()
     )
 
     /**
@@ -58,7 +58,7 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
         protocolPredicate: AirbyteProtocolPredicate,
         logger: Logger,
         containerLogMdcBuilder: MdcScope.Builder,
-        messageSizeExceptionClass: Optional<Class<out RuntimeException?>>
+        messageSizeExceptionClass: Optional<Class<out RuntimeException>>
     ) {
         protocolValidator = protocolPredicate
         this.logger = logger
@@ -72,7 +72,7 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
         protocolPredicate: AirbyteProtocolPredicate,
         logger: Logger,
         containerLogMdcBuilder: MdcScope.Builder,
-        messageSizeExceptionClass: Optional<Class<out RuntimeException?>>,
+        messageSizeExceptionClass: Optional<Class<out RuntimeException>>,
         maxMemory: Long
     ) {
         protocolValidator = protocolPredicate
@@ -114,12 +114,12 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
                 }
             }
             .flatMap { line: String -> this.parseJson(line) }
-            .filter { json: JsonNode? -> this.validate(json) }
-            .flatMap { json: JsonNode? -> this.toAirbyteMessage(json) }
+            .filter { json: JsonNode -> this.validate(json) }
+            .flatMap { json: JsonNode -> this.toAirbyteMessage(json) }
             .filter { message: AirbyteMessage -> this.filterLog(message) }
     }
 
-    protected fun parseJson(line: String?): Stream<JsonNode?> {
+    protected fun parseJson(line: String?): Stream<JsonNode> {
         val jsonLine = Jsons.tryDeserializeWithoutWarn(line)
         if (jsonLine.isEmpty) {
             // we log as info all the lines that are not valid json
@@ -130,7 +130,7 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
         return jsonLine.stream()
     }
 
-    protected fun validate(json: JsonNode?): Boolean {
+    protected fun validate(json: JsonNode): Boolean {
         val res = protocolValidator.test(json)
         if (!res) {
             logger.error("Validation failed: {}", Jsons.serialize(json))

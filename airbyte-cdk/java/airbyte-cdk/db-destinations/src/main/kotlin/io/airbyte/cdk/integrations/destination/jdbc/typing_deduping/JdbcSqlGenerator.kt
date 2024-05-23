@@ -178,8 +178,8 @@ constructor(
 
         val dataFields =
             columns.entries
-                .map { column: Map.Entry<ColumnId?, AirbyteType> ->
-                    DSL.field(DSL.quotedName(column.key!!.name), toDialectType(column.value))
+                .map { column: Map.Entry<ColumnId, AirbyteType> ->
+                    DSL.field(DSL.quotedName(column.key.name), toDialectType(column.value))
                 }
                 .toList() + fields
         return dataFields

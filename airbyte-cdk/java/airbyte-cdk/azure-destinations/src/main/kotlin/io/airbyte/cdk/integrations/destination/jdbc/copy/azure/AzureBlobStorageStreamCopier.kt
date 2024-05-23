@@ -50,9 +50,9 @@ abstract class AzureBlobStorageStreamCopier(
     @Suppress("DEPRECATION")
     @get:VisibleForTesting
     val tmpTableName: String = nameTransformer.getTmpTableName(streamName)
-    protected val activeStagingWriterFileNames: MutableSet<String?> = HashSet()
-    private val csvPrinters = HashMap<String?, CSVPrinter>()
-    private val blobClients = HashMap<String?, AppendBlobClient>()
+    protected val activeStagingWriterFileNames: MutableSet<String> = HashSet()
+    private val csvPrinters = HashMap<String, CSVPrinter>()
+    private val blobClients = HashMap<String, AppendBlobClient>()
     override var currentFile: String? = null
 
     @Throws(Exception::class)
@@ -210,7 +210,7 @@ abstract class AzureBlobStorageStreamCopier(
     @Throws(Exception::class)
     override fun closeNonCurrentStagingFileWriters() {
         LOGGER.info("Begin closing non current file writers")
-        val removedKeys: MutableSet<String?> = HashSet()
+        val removedKeys: MutableSet<String> = HashSet()
         for (key in activeStagingWriterFileNames) {
             if (key != currentFile) {
                 csvPrinters[key]!!.close()

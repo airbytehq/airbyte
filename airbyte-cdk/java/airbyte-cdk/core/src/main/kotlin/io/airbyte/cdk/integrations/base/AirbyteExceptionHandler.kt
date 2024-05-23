@@ -111,7 +111,7 @@ class AirbyteExceptionHandler : Thread.UncaughtExceptionHandler {
          * 1. Contain the original exception message as the external message, and a mangled message
          * as the internal message.
          */
-        @VisibleForTesting val STRINGS_TO_DEINTERPOLATE: MutableSet<String?> = HashSet()
+        @VisibleForTesting val STRINGS_TO_DEINTERPOLATE: MutableSet<String> = HashSet()
 
         init {
             addCommonStringsToDeinterpolate()

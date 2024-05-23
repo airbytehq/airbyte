@@ -178,12 +178,12 @@ object CopyConsumerFactory {
     ) {
         var failed = hasFailed
         var firstException: Exception? = null
-        val streamCopiers: List<StreamCopier?> = ArrayList(pairToCopier.values)
+        val streamCopiers: List<StreamCopier> = ArrayList(pairToCopier.values)
         try {
             val queries: MutableList<String> = ArrayList()
             for (copier in streamCopiers) {
                 try {
-                    copier!!.closeStagingUploader(failed)
+                    copier.closeStagingUploader(failed)
                     if (!failed) {
                         copier.createDestinationSchema()
                         copier.createTemporaryTable()
@@ -207,7 +207,7 @@ object CopyConsumerFactory {
             }
         } finally {
             for (copier in streamCopiers) {
-                copier!!.removeFileAndDropTmpTable()
+                copier.removeFileAndDropTmpTable()
             }
 
             close(dataSource)

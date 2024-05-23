@@ -125,8 +125,8 @@ internal constructor(
          * @param expectedValue value which should be provided by a streamer
          * @return builder
          */
-        fun addExpectedValues(vararg expectedValue: String?): TestDataHolderBuilder {
-            expectedValues.addAll(Arrays.asList(*expectedValue))
+        fun addExpectedValues(vararg expectedValue: String): TestDataHolderBuilder {
+            expectedValues.addAll(expectedValue)
             return this
         }
 
