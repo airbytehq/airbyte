@@ -15,7 +15,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: onecall
           http_method: GET
           request_parameters:
@@ -25,9 +25,9 @@ definitions:
             lon: >-
               {% if -180.00 <= config['lon']|float <= 180.00 %}{{ config['lon']
               }}{% else %}WRONG LONGITUDE{% endif %}
-            appid: '{{ config[''appid''] }}'
-            lang: '{{ config.get(''lang'')}}'
-            units: '{{ config.get(''units'')}}'
+            appid: "{{ config['appid'] }}"
+            lang: "{{ config.get('lang')}}"
+            units: "{{ config.get('units')}}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -45,13 +45,13 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/onecall'
+          $ref: "#/schemas/onecall"
   base_requester:
     type: HttpRequester
     url_base: https://api.openweathermap.org/data/3.0/
 
 streams:
-  - $ref: '#/definitions/streams/onecall'
+  - $ref: "#/definitions/streams/onecall"
 
 spec:
   type: Spec
@@ -103,7 +103,7 @@ spec:
           - la
           - lt
           - mk
-          - 'no'
+          - "no"
           - nl
           - pl
           - pt
@@ -141,8 +141,8 @@ spec:
           convert city names and zip-codes to geo coordinates and the other way
           around, please use our Geocoding API
         examples:
-          - '45.7603'
-          - '-21.249107858038816'
+          - "45.7603"
+          - "-21.249107858038816"
         order: 2
       lon:
         type: string
@@ -152,14 +152,14 @@ spec:
           convert city names and zip-codes to geo coordinates and the other way
           around, please use our Geocoding API
         examples:
-          - '4.835659'
-          - '-70.39482074115321'
+          - "4.835659"
+          - "-70.39482074115321"
         order: 3
       only_current:
         type: boolean
         description: True for particular day
         example:
-          - 'true'
+          - "true"
         order: 4
       units:
         type: string
