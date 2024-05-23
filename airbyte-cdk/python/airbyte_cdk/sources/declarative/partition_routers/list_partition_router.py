@@ -6,8 +6,8 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
 

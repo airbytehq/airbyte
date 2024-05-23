@@ -134,9 +134,10 @@ class SubstreamPartitionRouter(PartitionRouter):
                 for parent_stream_slice in parent_stream.stream_slices(
                     sync_mode=SyncMode.full_refresh, cursor_field=None, stream_state=None
                 ):
-                    empty_parent_slice = True
                     parent_partition = parent_stream_slice.partition if parent_stream_slice else {}
 
+                    # we need to read all records for slice to update the parent stream cursor
+                    stream_slices_for_parent = []
                     for parent_record in parent_stream.read_records(
                         sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
                     ):
@@ -153,16 +154,15 @@ class SubstreamPartitionRouter(PartitionRouter):
                         except KeyError:
                             pass
                         else:
-                            empty_parent_slice = False
-                            yield StreamSlice(
-                                partition={partition_field: partition_value, "parent_slice": parent_partition}, cursor_slice={}
+                            stream_slices_for_parent.append(
+                                StreamSlice(partition={partition_field: partition_value, "parent_slice": parent_partition}, cursor_slice={})
                             )
+
+                    # update the parent state, as parent stream read all record for current slice and state is already updated
                     if incremental_dependency:
                         self._parent_state[parent_stream.name] = parent_stream.state
 
-                    # If the parent slice contains no records,
-                    if empty_parent_slice:
-                        yield from []
+                    yield from stream_slices_for_parent
 
     def set_parent_state(self, stream_state: Optional[StreamState]) -> None:
         """
@@ -190,4 +190,5 @@ class SubstreamPartitionRouter(PartitionRouter):
         Returns:
             StreamState: The current state of the parent streams.
         """
+        parent_stream_name = self.parent_stream_configs[0].stream.name if self.parent_stream_configs else None
         return self._parent_state
