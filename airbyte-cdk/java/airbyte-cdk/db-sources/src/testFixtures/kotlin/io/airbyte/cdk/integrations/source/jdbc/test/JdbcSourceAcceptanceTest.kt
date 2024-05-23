@@ -23,7 +23,6 @@ import java.math.BigDecimal
 import java.sql.SQLException
 import java.util.*
 import java.util.function.Consumer
-import java.util.stream.Collectors
 import junit.framework.TestCase.assertEquals
 import org.hamcrest.MatcherAssert
 import org.hamcrest.Matchers
@@ -40,7 +39,7 @@ import org.mockito.Mockito
         "The static variables are updated in subclasses for convenience, and cannot be final."
 )
 abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
-    @JvmField protected var testdb: T? = null
+    @JvmField protected var testdb: T = createTestDatabase()
 
     protected fun streamName(): String {
         return TABLE_NAME
@@ -92,7 +91,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         )
     }
 
-    protected fun primaryKeyClause(columns: List<String?>): String {
+    protected fun primaryKeyClause(columns: List<String>): String {
         if (columns.isEmpty()) {
             return ""
         }
@@ -116,8 +115,8 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         if (supportsSchemas()) {
             createSchemas()
         }
-        if (testdb!!.databaseDriver == DatabaseDriver.ORACLE) {
-            testdb!!.with("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'")
+        if (testdb.databaseDriver == DatabaseDriver.ORACLE) {
+            testdb.with("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'")
         }
         testdb
             ?.with(
@@ -186,13 +185,13 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     @AfterEach
     fun tearDown() {
-        testdb!!.close()
+        testdb.close()
     }
 
     @Test
     @Throws(Exception::class)
     open fun testSpec() {
-        val actual = source()!!.spec()
+        val actual = source().spec()
         val resourceString = MoreResources.readResource("spec.json")
         val expected = Jsons.deserialize(resourceString, ConnectorSpecification::class.java)
 
@@ -202,7 +201,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
     @Test
     @Throws(Exception::class)
     fun testCheckSuccess() {
-        val actual = source()!!.check(config())
+        val actual = source().check(config())
         val expected =
             AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
         Assertions.assertEquals(expected, actual)
@@ -214,31 +213,28 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         val config = config()
         maybeSetShorterConnectionTimeout(config)
         (config as ObjectNode).put(JdbcUtils.PASSWORD_KEY, "fake")
-        val actual = source()!!.check(config)
+        val actual = source().check(config)
         Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual!!.status)
     }
 
     @Test
     @Throws(Exception::class)
     fun testDiscover() {
-        val actual = filterOutOtherSchemas(source()!!.discover(config()))
+        val actual = filterOutOtherSchemas(source().discover(config()))
         val expected = getCatalog(defaultNamespace)
-        Assertions.assertEquals(expected.streams.size, actual!!.streams.size)
+        Assertions.assertEquals(expected.streams.size, actual.streams.size)
         actual.streams.forEach(
             Consumer { actualStream: AirbyteStream ->
                 val expectedStream =
-                    expected.streams
-                        .stream()
-                        .filter { stream: AirbyteStream ->
-                            stream.namespace == actualStream.namespace &&
-                                stream.name == actualStream.name
-                        }
-                        .findAny()
+                    expected.streams.firstOrNull { stream: AirbyteStream ->
+                        stream.namespace == actualStream.namespace &&
+                            stream.name == actualStream.name
+                    }
                 Assertions.assertTrue(
-                    expectedStream.isPresent,
+                    expectedStream != null,
                     String.format("Unexpected stream %s", actualStream.name)
                 )
-                Assertions.assertEquals(expectedStream.get(), actualStream)
+                Assertions.assertEquals(expectedStream, actualStream)
             }
         )
     }
@@ -246,7 +242,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
     @Test
     @Throws(Exception::class)
     protected fun testDiscoverWithNonCursorFields() {
-        testdb!!
+        testdb
             .with(
                 CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY,
                 getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE),
@@ -256,17 +252,11 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                 INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY,
                 getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE)
             )
-        val actual = filterOutOtherSchemas(source()!!.discover(config()))
+        val actual = filterOutOtherSchemas(source().discover(config()))
         val stream =
-            actual!!
-                .streams
-                .stream()
-                .filter { s: AirbyteStream ->
-                    s.name.equals(TABLE_NAME_WITHOUT_CURSOR_TYPE, ignoreCase = true)
-                }
-                .findFirst()
-                .orElse(null)
-        Assertions.assertNotNull(stream)
+            actual.streams.first { s: AirbyteStream ->
+                s.name.equals(TABLE_NAME_WITHOUT_CURSOR_TYPE, ignoreCase = true)
+            }
         Assertions.assertEquals(
             TABLE_NAME_WITHOUT_CURSOR_TYPE.lowercase(Locale.getDefault()),
             stream.name.lowercase(Locale.getDefault())
@@ -278,7 +268,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
     @Test
     @Throws(Exception::class)
     protected fun testDiscoverWithNullableCursorFields() {
-        testdb!!
+        testdb
             .with(
                 CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY,
                 getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE),
@@ -288,17 +278,13 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                 INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY,
                 getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE)
             )
-        val actual = filterOutOtherSchemas(source()!!.discover(config()))
+        val actual = filterOutOtherSchemas(source().discover(config()))
         val stream =
-            actual!!
-                .streams
-                .stream()
+            actual.streams
                 .filter { s: AirbyteStream ->
                     s.name.equals(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE, ignoreCase = true)
                 }
-                .findFirst()
-                .orElse(null)
-        Assertions.assertNotNull(stream)
+                .first()
         Assertions.assertEquals(
             TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE.lowercase(Locale.getDefault()),
             stream.name.lowercase(Locale.getDefault())
@@ -311,15 +297,12 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
     protected fun filterOutOtherSchemas(catalog: AirbyteCatalog): AirbyteCatalog {
         if (supportsSchemas()) {
             val filteredCatalog = Jsons.clone(catalog)
-            filteredCatalog!!.streams =
-                filteredCatalog.streams
-                    .stream()
-                    .filter { stream: AirbyteStream ->
-                        TEST_SCHEMAS.stream().anyMatch { schemaName: String ->
-                            stream.namespace.startsWith(schemaName)
-                        }
+            filteredCatalog.streams =
+                filteredCatalog.streams.filter { stream: AirbyteStream ->
+                    TEST_SCHEMAS.any { schemaName: String ->
+                        stream.namespace.startsWith(schemaName)
                     }
-                    .collect(Collectors.toList())
+                }
             return filteredCatalog
         } else {
             return catalog
@@ -331,14 +314,14 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
     protected fun testDiscoverWithMultipleSchemas() {
         // clickhouse and mysql do not have a concept of schemas, so this test does not make sense
         // for them.
-        when (testdb!!.databaseDriver) {
+        when (testdb.databaseDriver) {
             DatabaseDriver.MYSQL,
             DatabaseDriver.CLICKHOUSE,
             DatabaseDriver.TERADATA -> return
             else -> {}
         }
         // add table and data to a separate schema.
-        testdb!!
+        testdb
             .with(
                 "CREATE TABLE %s(id VARCHAR(200) NOT NULL, name VARCHAR(200) NOT NULL)",
                 RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)
@@ -356,7 +339,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                 RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)
             )
 
-        val actual = source()!!.discover(config())
+        val actual = source().discover(config())
 
         val expected = getCatalog(defaultNamespace)
         val catalogStreams: MutableList<AirbyteStream> = ArrayList()
@@ -377,7 +360,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         val schemaTableCompare =
             Comparator.comparing { stream: AirbyteStream -> stream.namespace + "." + stream.name }
         expected.streams.sortWith(schemaTableCompare)
-        actual!!.streams.sortWith(schemaTableCompare)
+        actual.streams.sortWith(schemaTableCompare)
         Assertions.assertEquals(expected, filterOutOtherSchemas(actual))
     }
 
@@ -385,7 +368,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
     @Throws(Exception::class)
     fun testReadSuccess() {
         val catalog = getConfiguredCatalogWithOneStream(defaultNamespace)
-        val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
+        val actualMessages = MoreIterators.toList(source().read(config(), catalog, null))
 
         setEmittedAtToNull(actualMessages)
         val expectedMessagesResult: MutableList<AirbyteMessage> = ArrayList(testMessages)
@@ -415,7 +398,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                 defaultNamespace,
                 Field.of(COL_ID, JsonSchemaType.NUMBER)
             )
-        val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
+        val actualMessages = MoreIterators.toList(source().read(config(), catalog, null))
 
         setEmittedAtToNull(actualMessages)
 
@@ -430,9 +413,8 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         get() {
             val expectedMessages =
                 testMessages
-                    .stream()
                     .map { `object`: AirbyteMessage -> Jsons.clone(`object`) }
-                    .peek { m: AirbyteMessage ->
+                    .onEach { m: AirbyteMessage ->
                         (m.record.data as ObjectNode).remove(COL_NAME)
                         (m.record.data as ObjectNode).remove(COL_UPDATED_AT)
                         (m.record.data as ObjectNode).replace(
@@ -440,7 +422,6 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                             convertIdBasedOnDatabase(m.record.data[COL_ID].asInt())
                         )
                     }
-                    .collect(Collectors.toList())
             return expectedMessages
         }
 
@@ -453,7 +434,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         for (i in 2..9) {
             val streamName2 = streamName() + i
             val tableName = getFullyQualifiedTableName(TABLE_NAME + i)
-            testdb!!
+            testdb
                 .with(createTableQuery(tableName, "id INTEGER, name VARCHAR(200)", ""))
                 .with("INSERT INTO %s(id, name) VALUES (1,'picard')", tableName)
                 .with("INSERT INTO %s(id, name) VALUES (2, 'crusher')", tableName)
@@ -470,7 +451,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             expectedMessages.addAll(getAirbyteMessagesSecondSync(streamName2))
         }
 
-        val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
+        val actualMessages = MoreIterators.toList(source().read(config(), catalog, null))
         val actualRecordMessages = filterRecords(actualMessages)
 
         setEmittedAtToNull(actualMessages)
@@ -520,9 +501,8 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected open fun getAirbyteMessagesSecondSync(streamName: String?): List<AirbyteMessage> {
         return testMessages
-            .stream()
             .map { `object`: AirbyteMessage -> Jsons.clone(`object`) }
-            .peek { m: AirbyteMessage ->
+            .onEach { m: AirbyteMessage ->
                 m.record.stream = streamName
                 m.record.namespace = defaultNamespace
                 (m.record.data as ObjectNode).remove(COL_UPDATED_AT)
@@ -531,7 +511,6 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                     convertIdBasedOnDatabase(m.record.data[COL_ID].asInt())
                 )
             }
-            .collect(Collectors.toList())
     }
 
     @Test
@@ -547,7 +526,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                         streamForTableWithSpaces
                     )
                 )
-        val actualMessages = MoreIterators.toList(source()!!.read(config(), catalog, null))
+        val actualMessages = MoreIterators.toList(source().read(config(), catalog, null))
         val actualRecordMessages = filterRecords(actualMessages)
 
         setEmittedAtToNull(actualMessages)
@@ -590,9 +569,8 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         streamForTableWithSpaces: ConfiguredAirbyteStream
     ): List<AirbyteMessage> {
         return testMessages
-            .stream()
             .map { `object`: AirbyteMessage -> Jsons.clone(`object`) }
-            .peek { m: AirbyteMessage ->
+            .onEach { m: AirbyteMessage ->
                 m.record.stream = streamForTableWithSpaces.stream.name
                 (m.record.data as ObjectNode).set<JsonNode>(
                     COL_LAST_NAME_WITH_SPACE,
@@ -604,7 +582,6 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                     convertIdBasedOnDatabase(m.record.data[COL_ID].asInt())
                 )
             }
-            .collect(Collectors.toList())
     }
 
     @Test
@@ -615,7 +592,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         Mockito.doCallRealMethod().doThrow(RuntimeException()).`when`(spiedAbStream).stream
 
         Assertions.assertThrows(RuntimeException::class.java) {
-            source()!!.read(config(), catalog, null)
+            source().read(config(), catalog, null)
         }
     }
 
@@ -729,35 +706,24 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         val actualMessagesFirstSync =
             MoreIterators.toList(
-                source()!!.read(
-                    config,
-                    configuredCatalog,
-                    createEmptyState(streamName(), namespace)
-                )
+                source().read(config, configuredCatalog, createEmptyState(streamName(), namespace))
             )
 
         val stateAfterFirstSyncOptional =
             actualMessagesFirstSync
-                .stream()
                 .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.STATE }
-                .findFirst()
-        Assertions.assertTrue(stateAfterFirstSyncOptional.isPresent)
+                .first()
 
         executeStatementReadIncrementallyTwice()
 
         val actualMessagesSecondSync =
             MoreIterators.toList(
-                source()!!.read(
-                    config,
-                    configuredCatalog,
-                    extractState(stateAfterFirstSyncOptional.get())
-                )
+                source().read(config, configuredCatalog, extractState(stateAfterFirstSyncOptional))
             )
 
         Assertions.assertEquals(
             2,
             actualMessagesSecondSync
-                .stream()
                 .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.RECORD }
                 .count()
                 .toInt()
@@ -846,7 +812,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         val tableName2 = TABLE_NAME + 2
         val streamName2 = streamName() + 2
         val fqTableName2 = getFullyQualifiedTableName(tableName2)
-        testdb!!
+        testdb
             .with(createTableQuery(fqTableName2, "id INTEGER, name VARCHAR(200)", ""))
             .with("INSERT INTO %s(id, name) VALUES (1,'picard')", fqTableName2)
             .with("INSERT INTO %s(id, name) VALUES (2, 'crusher')", fqTableName2)
@@ -872,20 +838,15 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         val actualMessagesFirstSync =
             MoreIterators.toList(
-                source()!!.read(
-                    config(),
-                    configuredCatalog,
-                    createEmptyState(streamName(), namespace)
-                )
+                source()
+                    .read(config(), configuredCatalog, createEmptyState(streamName(), namespace))
             )
 
         // get last state message.
         val stateAfterFirstSyncOptional =
-            actualMessagesFirstSync
-                .stream()
-                .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.STATE }
-                .reduce { first: AirbyteMessage?, second: AirbyteMessage -> second }
-        Assertions.assertTrue(stateAfterFirstSyncOptional.isPresent)
+            actualMessagesFirstSync.last { r: AirbyteMessage ->
+                r.type == AirbyteMessage.Type.STATE
+            }
 
         // we know the second streams messages are the same as the first minus the updated at
         // column. so we
@@ -944,9 +905,8 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         streamName2: String?
     ): List<AirbyteMessage> {
         return testMessages
-            .stream()
             .map { `object`: AirbyteMessage -> Jsons.clone(`object`) }
-            .peek { m: AirbyteMessage ->
+            .onEach { m: AirbyteMessage ->
                 m.record.stream = streamName2
                 (m.record.data as ObjectNode).remove(COL_UPDATED_AT)
                 (m.record.data as ObjectNode).replace(
@@ -954,7 +914,6 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                     convertIdBasedOnDatabase(m.record.data[COL_ID].asInt())
                 )
             }
-            .collect(Collectors.toList())
     }
 
     // when initial and final cursor fields are the same.
@@ -988,7 +947,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             )
 
         // 1st sync
-        testdb!!
+        testdb
             .with(createTableQuery(fullyQualifiedTableName, columnDefinition, ""))
             .with(
                 INSERT_TABLE_NAME_AND_TIMESTAMP_QUERY,
@@ -1031,21 +990,20 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         val firstSyncActualMessages =
             MoreIterators.toList(
-                source()!!.read(
-                    config(),
-                    configuredCatalog,
-                    createEmptyState(TABLE_NAME_AND_TIMESTAMP, namespace)
-                )
+                source()
+                    .read(
+                        config(),
+                        configuredCatalog,
+                        createEmptyState(TABLE_NAME_AND_TIMESTAMP, namespace)
+                    )
             )
 
         // cursor after 1st sync: 2021-01-01 00:00:00, count 2
         val firstSyncStateOptional =
             firstSyncActualMessages
-                .stream()
                 .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.STATE }
-                .findFirst()
-        Assertions.assertTrue(firstSyncStateOptional.isPresent)
-        val firstSyncState = getStateData(firstSyncStateOptional.get(), TABLE_NAME_AND_TIMESTAMP)
+                .first()
+        val firstSyncState = getStateData(firstSyncStateOptional, TABLE_NAME_AND_TIMESTAMP)
         Assertions.assertEquals(
             firstSyncState["cursor_field"].elements().next().asText(),
             COL_TIMESTAMP
@@ -1056,14 +1014,13 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         val firstSyncNames =
             firstSyncActualMessages
-                .stream()
                 .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.RECORD }
                 .map { r: AirbyteMessage -> r.record.data[COL_NAME].asText() }
-                .toList()
+
         // some databases don't make insertion order guarantee when equal ordering value
         if (
-            testdb!!.databaseDriver == DatabaseDriver.TERADATA ||
-                testdb!!.databaseDriver == DatabaseDriver.ORACLE
+            testdb.databaseDriver == DatabaseDriver.TERADATA ||
+                testdb.databaseDriver == DatabaseDriver.ORACLE
         ) {
             MatcherAssert.assertThat(
                 listOf("a", "b"),
@@ -1074,7 +1031,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         }
 
         // 2nd sync
-        testdb!!.with(
+        testdb.with(
             INSERT_TABLE_NAME_AND_TIMESTAMP_QUERY,
             fullyQualifiedTableName,
             "c",
@@ -1083,21 +1040,20 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         val secondSyncActualMessages =
             MoreIterators.toList(
-                source()!!.read(
-                    config(),
-                    configuredCatalog,
-                    createState(TABLE_NAME_AND_TIMESTAMP, namespace, firstSyncState)
-                )
+                source()
+                    .read(
+                        config(),
+                        configuredCatalog,
+                        createState(TABLE_NAME_AND_TIMESTAMP, namespace, firstSyncState)
+                    )
             )
 
         // cursor after 2nd sync: 2021-01-02 00:00:00, count 1
         val secondSyncStateOptional =
             secondSyncActualMessages
-                .stream()
                 .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.STATE }
-                .findFirst()
-        Assertions.assertTrue(secondSyncStateOptional.isPresent)
-        val secondSyncState = getStateData(secondSyncStateOptional.get(), TABLE_NAME_AND_TIMESTAMP)
+                .first()
+        val secondSyncState = getStateData(secondSyncStateOptional, TABLE_NAME_AND_TIMESTAMP)
         Assertions.assertEquals(
             secondSyncState["cursor_field"].elements().next().asText(),
             COL_TIMESTAMP
@@ -1108,14 +1064,13 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         val secondSyncNames =
             secondSyncActualMessages
-                .stream()
                 .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.RECORD }
                 .map { r: AirbyteMessage -> r.record.data[COL_NAME].asText() }
-                .toList()
+
         Assertions.assertEquals(listOf("c"), secondSyncNames)
 
         // 3rd sync has records with duplicated cursors
-        testdb!!
+        testdb
             .with(
                 INSERT_TABLE_NAME_AND_TIMESTAMP_QUERY,
                 fullyQualifiedTableName,
@@ -1137,21 +1092,20 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         val thirdSyncActualMessages =
             MoreIterators.toList(
-                source()!!.read(
-                    config(),
-                    configuredCatalog,
-                    createState(TABLE_NAME_AND_TIMESTAMP, namespace, secondSyncState)
-                )
+                source()
+                    .read(
+                        config(),
+                        configuredCatalog,
+                        createState(TABLE_NAME_AND_TIMESTAMP, namespace, secondSyncState)
+                    )
             )
 
         // Cursor after 3rd sync is: 2021-01-03 00:00:00, count 1.
         val thirdSyncStateOptional =
             thirdSyncActualMessages
-                .stream()
                 .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.STATE }
-                .findFirst()
-        Assertions.assertTrue(thirdSyncStateOptional.isPresent)
-        val thirdSyncState = getStateData(thirdSyncStateOptional.get(), TABLE_NAME_AND_TIMESTAMP)
+                .first()
+        val thirdSyncState = getStateData(thirdSyncStateOptional, TABLE_NAME_AND_TIMESTAMP)
         Assertions.assertEquals(
             thirdSyncState["cursor_field"].elements().next().asText(),
             COL_TIMESTAMP
@@ -1164,13 +1118,11 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         // record count in the database is different from that in the state.
         val thirdSyncExpectedNames =
             thirdSyncActualMessages
-                .stream()
                 .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.RECORD }
                 .map { r: AirbyteMessage -> r.record.data[COL_NAME].asText() }
-                .toList()
 
         // teradata doesn't make insertion order guarantee when equal ordering value
-        if (testdb!!.databaseDriver == DatabaseDriver.TERADATA) {
+        if (testdb.databaseDriver == DatabaseDriver.TERADATA) {
             MatcherAssert.assertThat(
                 listOf("c", "d", "e", "f"),
                 Matchers.containsInAnyOrder<Any>(*thirdSyncExpectedNames.toTypedArray())
@@ -1227,11 +1179,12 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         val actualMessages =
             MoreIterators.toList(
-                source()!!.read(
-                    config(),
-                    configuredCatalog,
-                    Jsons.jsonNode(createState(java.util.List.of(dbStreamState)))
-                )
+                source()
+                    .read(
+                        config(),
+                        configuredCatalog,
+                        Jsons.jsonNode(createState(java.util.List.of(dbStreamState)))
+                    )
             )
 
         setEmittedAtToNull(actualMessages)
@@ -1270,9 +1223,8 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         // Filter to only keep the main stream name as configured stream
         catalog.withStreams(
             catalog.streams
-                .stream()
                 .filter { s: ConfiguredAirbyteStream -> s.stream.name == streamName() }
-                .collect(Collectors.toList())
+                .toMutableList()
         )
         return catalog
     }
@@ -1280,7 +1232,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
     protected open fun getCatalog(defaultNamespace: String?): AirbyteCatalog {
         return AirbyteCatalog()
             .withStreams(
-                java.util.List.of(
+                mutableListOf(
                     CatalogHelpers.createAirbyteStream(
                             TABLE_NAME,
                             defaultNamespace,
@@ -1389,49 +1341,41 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         states: List<DbStreamState>,
         numRecords: Long
     ): List<AirbyteMessage> {
-        return states
-            .stream()
-            .map { s: DbStreamState ->
-                AirbyteMessage()
-                    .withType(AirbyteMessage.Type.STATE)
-                    .withState(
-                        AirbyteStateMessage()
-                            .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                            .withStream(
-                                AirbyteStreamState()
-                                    .withStreamDescriptor(
-                                        StreamDescriptor()
-                                            .withNamespace(s.streamNamespace)
-                                            .withName(s.streamName)
-                                    )
-                                    .withStreamState(Jsons.jsonNode(s))
-                            )
-                            .withData(Jsons.jsonNode(DbState().withCdc(false).withStreams(states)))
-                            .withSourceStats(
-                                AirbyteStateStats().withRecordCount(numRecords.toDouble())
-                            )
-                    )
-            }
-            .collect(Collectors.toList())
+        return states.map { s: DbStreamState ->
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.STATE)
+                .withState(
+                    AirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                        .withStream(
+                            AirbyteStreamState()
+                                .withStreamDescriptor(
+                                    StreamDescriptor()
+                                        .withNamespace(s.streamNamespace)
+                                        .withName(s.streamName)
+                                )
+                                .withStreamState(Jsons.jsonNode(s))
+                        )
+                        .withData(Jsons.jsonNode(DbState().withCdc(false).withStreams(states)))
+                        .withSourceStats(AirbyteStateStats().withRecordCount(numRecords.toDouble()))
+                )
+        }
     }
 
     protected open fun createState(states: List<DbStreamState>): List<AirbyteStateMessage> {
-        return states
-            .stream()
-            .map { s: DbStreamState ->
-                AirbyteStateMessage()
-                    .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                    .withStream(
-                        AirbyteStreamState()
-                            .withStreamDescriptor(
-                                StreamDescriptor()
-                                    .withNamespace(s.streamNamespace)
-                                    .withName(s.streamName)
-                            )
-                            .withStreamState(Jsons.jsonNode(s))
-                    )
-            }
-            .collect(Collectors.toList())
+        return states.map { s: DbStreamState ->
+            AirbyteStateMessage()
+                .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                .withStream(
+                    AirbyteStreamState()
+                        .withStreamDescriptor(
+                            StreamDescriptor()
+                                .withNamespace(s.streamNamespace)
+                                .withName(s.streamName)
+                        )
+                        .withStreamState(Jsons.jsonNode(s))
+                )
+        }
     }
 
     @Throws(SQLException::class)
@@ -1439,7 +1383,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         val tableNameWithSpaces = TABLE_NAME_WITH_SPACES + "2"
         val streamName2 = tableNameWithSpaces
 
-        testdb!!.getDataSource()!!.connection.use { connection ->
+        testdb.getDataSource()!!.connection.use { connection ->
             val identifierQuoteString = connection.metaData.identifierQuoteString
             connection
                 .createStatement()
@@ -1527,13 +1471,13 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
     protected fun createSchemas() {
         if (supportsSchemas()) {
             for (schemaName in TEST_SCHEMAS) {
-                testdb!!.with("CREATE SCHEMA %s;", schemaName)
+                testdb.with("CREATE SCHEMA %s;", schemaName)
             }
         }
     }
 
     private fun convertIdBasedOnDatabase(idValue: Int): JsonNode {
-        return when (testdb!!.databaseDriver) {
+        return when (testdb.databaseDriver) {
             DatabaseDriver.ORACLE,
             DatabaseDriver.SNOWFLAKE -> Jsons.jsonNode(BigDecimal.valueOf(idValue.toLong()))
             else -> Jsons.jsonNode(idValue)
@@ -1545,10 +1489,10 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     protected val defaultNamespace: String
         get() =
-            when (testdb!!.databaseDriver) {
+            when (testdb.databaseDriver) {
                 DatabaseDriver.MYSQL,
                 DatabaseDriver.CLICKHOUSE,
-                DatabaseDriver.TERADATA -> testdb!!.databaseName!!
+                DatabaseDriver.TERADATA -> testdb.databaseName
                 else -> SCHEMA_NAME
             }
 
@@ -1648,28 +1592,21 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         field: String?
     ): List<String> {
         return extractStateMessage(messages)
-            .stream()
             .filter { s: AirbyteStateMessage -> s.stream.streamDescriptor.name == streamName }
             .map { s: AirbyteStateMessage ->
                 if (s.stream.streamState[field] != null) s.stream.streamState[field].asText()
                 else ""
             }
-            .toList()
     }
 
     protected fun filterRecords(messages: List<AirbyteMessage>): List<AirbyteMessage> {
-        return messages
-            .stream()
-            .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.RECORD }
-            .collect(Collectors.toList())
+        return messages.filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.RECORD }
     }
 
     protected fun extractStateMessage(messages: List<AirbyteMessage>): List<AirbyteStateMessage> {
         return messages
-            .stream()
             .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.STATE }
             .map { obj: AirbyteMessage -> obj.state }
-            .collect(Collectors.toList())
     }
 
     protected fun extractStateMessage(
@@ -1677,13 +1614,11 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         streamName: String
     ): List<AirbyteStateMessage> {
         return messages
-            .stream()
             .filter { r: AirbyteMessage ->
                 r.type == AirbyteMessage.Type.STATE &&
                     r.state.stream.streamDescriptor.name == streamName
             }
             .map { obj: AirbyteMessage -> obj.state }
-            .collect(Collectors.toList())
     }
 
     protected fun createRecord(
