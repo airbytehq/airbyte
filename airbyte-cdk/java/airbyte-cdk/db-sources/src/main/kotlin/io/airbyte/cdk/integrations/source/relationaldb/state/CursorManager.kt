@@ -92,7 +92,6 @@ class CursorManager<S : Any>(
     ): Map<AirbyteStreamNameNamespacePair, CursorInfo> {
         val allStreamNames =
             catalog.streams
-                .stream()
                 .filter { c: ConfiguredAirbyteStream ->
                     if (onlyIncludeIncrementalStreams) {
                         return@filter c.syncMode == SyncMode.INCREMENTAL
@@ -100,10 +99,10 @@ class CursorManager<S : Any>(
                     true
                 }
                 .map { obj: ConfiguredAirbyteStream -> obj.stream }
-                .map { stream: AirbyteStream? ->
+                .map { stream: AirbyteStream ->
                     AirbyteStreamNameNamespacePair.fromAirbyteStream(stream)
                 }
-                .collect(Collectors.toSet())
+                .toMutableSet()
         allStreamNames.addAll(
             streamSupplier
                 .get()
@@ -124,7 +123,7 @@ class CursorManager<S : Any>(
                 .stream()
                 .collect(
                     Collectors.toMap(
-                        Function { stream: ConfiguredAirbyteStream? ->
+                        Function { stream: ConfiguredAirbyteStream ->
                             AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream)
                         },
                         Function.identity()

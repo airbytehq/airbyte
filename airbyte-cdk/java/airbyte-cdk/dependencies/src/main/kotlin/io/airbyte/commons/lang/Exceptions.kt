@@ -39,7 +39,7 @@ object Exceptions {
      */
     @JvmStatic
     fun toRuntime(voidCallable: Procedure) {
-        castCheckedToRuntime(voidCallable) { cause: Exception? -> RuntimeException(cause) }
+        castCheckedToRuntime(voidCallable) { cause: Exception -> RuntimeException(cause) }
     }
 
     private fun castCheckedToRuntime(

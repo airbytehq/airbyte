@@ -113,7 +113,7 @@ object ConnectorExceptionUtil {
             val stacktraces =
                 throwables
                     .stream()
-                    .map { throwable: Throwable? -> ExceptionUtils.getStackTrace(throwable) }
+                    .map { throwable: Throwable -> ExceptionUtils.getStackTrace(throwable) }
                     .collect(Collectors.joining("\n"))
             LOGGER.error("$initialMessage$stacktraces\nRethrowing first exception.")
             throw throwables.iterator().next()

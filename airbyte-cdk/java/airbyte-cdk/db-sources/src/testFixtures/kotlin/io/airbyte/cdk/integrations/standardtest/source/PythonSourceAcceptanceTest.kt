@@ -35,7 +35,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
         get() = runExecutable(Command.GET_SPEC, ConnectorSpecification::class.java)
 
     @get:Throws(IOException::class)
-    override val config: JsonNode?
+    override val config: JsonNode
         get() = runExecutable(Command.GET_CONFIG)
 
     @get:Throws(IOException::class)
@@ -43,7 +43,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
         get() = runExecutable(Command.GET_CONFIGURED_CATALOG, ConfiguredAirbyteCatalog::class.java)
 
     @get:Throws(IOException::class)
-    override val state: JsonNode?
+    override val state: JsonNode
         get() = runExecutable(Command.GET_STATE)
 
     @Throws(IOException::class)
@@ -55,7 +55,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
                 .map { obj: JsonNode -> obj.textValue() }
                 .toList()
         val stringMessages =
-            allMessages!!
+            allMessages
                 .stream()
                 .map { `object`: AirbyteMessage -> Jsons.serialize(`object`) }
                 .toList()
@@ -138,8 +138,8 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
             )
 
         val process = ProcessBuilder(dockerCmd).start()
-        LineGobbler.gobble(process.errorStream, { msg: String? -> LOGGER.error(msg) })
-        LineGobbler.gobble(process.inputStream, { msg: String? -> LOGGER.info(msg) })
+        LineGobbler.gobble(process.errorStream, { msg: String -> LOGGER.error(msg) })
+        LineGobbler.gobble(process.inputStream, { msg: String -> LOGGER.info(msg) })
 
         TestHarnessUtils.gentleClose(process, 1, TimeUnit.MINUTES)
 

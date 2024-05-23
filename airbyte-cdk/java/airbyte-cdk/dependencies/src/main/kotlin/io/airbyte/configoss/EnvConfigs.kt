@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
 
 class EnvConfigs @JvmOverloads constructor(envMap: Map<String?, String?> = System.getenv()) :
     Configs {
-    private val getEnv = Function { key: String? -> envMap[key] }
+    private val getEnv = Function { key: String -> envMap[key] }
 
     /**
      * Constructs [EnvConfigs] from a provided map. This can be used for testing or getting

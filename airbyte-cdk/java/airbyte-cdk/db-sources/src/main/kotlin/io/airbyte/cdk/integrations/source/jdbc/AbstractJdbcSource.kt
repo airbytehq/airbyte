@@ -246,8 +246,8 @@ abstract class AbstractJdbcSource<Datatype>(
                 )
                 database.bufferedResultSetQuery(
                     CheckedFunction { connection: Connection -> connection.metaData.catalogs },
-                    CheckedFunction { queryResult: ResultSet? ->
-                        sourceOperations.rowToJson(queryResult!!)
+                    CheckedFunction { queryResult: ResultSet ->
+                        sourceOperations.rowToJson(queryResult)
                     }
                 )
             }
@@ -423,10 +423,7 @@ abstract class AbstractJdbcSource<Datatype>(
     ): Map<String, MutableList<String>> {
         LOGGER.info(
             "Discover primary keys for tables: " +
-                tableInfos
-                    .stream()
-                    .map { obj: TableInfo<CommonField<Datatype>> -> obj.name }
-                    .collect(Collectors.toSet())
+                tableInfos.map { obj: TableInfo<CommonField<Datatype>> -> obj.name }.toSet()
         )
         try {
             // Get all primary keys without specifying a table name
@@ -734,7 +731,7 @@ abstract class AbstractJdbcSource<Datatype>(
 
     override fun close() {
         dataSources.forEach(
-            Consumer { d: DataSource? ->
+            Consumer { d: DataSource ->
                 try {
                     close(d)
                 } catch (e: Exception) {
@@ -771,7 +768,7 @@ abstract class AbstractJdbcSource<Datatype>(
                 )
             }
             .map { `object`: ConfiguredAirbyteStream -> Jsons.clone(`object`) }
-            .collect(Collectors.toList())
+            .toList()
     }
 
     companion object {
