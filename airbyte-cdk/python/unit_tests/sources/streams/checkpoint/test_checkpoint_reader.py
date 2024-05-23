@@ -57,7 +57,7 @@ def test_resumable_full_refresh_checkpoint_reader_next():
     checkpoint_reader.observe({"synthetic_page_number": 57})
     assert checkpoint_reader.next() == {"synthetic_page_number": 57}
 
-    checkpoint_reader.observe({})
+    checkpoint_reader.observe({"__ab_full_refresh_sync_complete": True})
     assert checkpoint_reader.next() is None
 
 
@@ -70,7 +70,7 @@ def test_resumable_full_refresh_checkpoint_reader_no_incoming_state():
     checkpoint_reader.observe({"synthetic_page_number": 2})
     assert checkpoint_reader.next() == {"synthetic_page_number": 2}
 
-    checkpoint_reader.observe({})
+    checkpoint_reader.observe({"__ab_full_refresh_sync_complete": True})
     assert checkpoint_reader.next() is None
 
 

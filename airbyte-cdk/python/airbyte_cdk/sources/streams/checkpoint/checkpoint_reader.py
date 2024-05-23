@@ -169,7 +169,7 @@ class ResumableFullRefreshCheckpointReader(CheckpointReader):
         if self._first_page:
             self._first_page = False
             return self._state
-        elif self._state == {}:
+        elif self._state == {"__ab_full_refresh_sync_complete": True}:
             return None
         else:
             return self._state
