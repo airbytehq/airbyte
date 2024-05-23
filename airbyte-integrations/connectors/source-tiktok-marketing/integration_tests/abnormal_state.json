@@ -9,7 +9,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
@@ -30,7 +30,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
@@ -51,7 +51,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
@@ -72,7 +72,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7001035076276387841,
+              "advertiser_id": "7001035076276387841",
               "parent_slice": {}
             },
             "cursor": {
@@ -81,7 +81,7 @@
           },
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
@@ -102,7 +102,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
@@ -123,7 +123,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
@@ -144,7 +144,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7001035076276387841,
+              "advertiser_id": "7001035076276387841",
               "parent_slice": {}
             },
             "cursor": {
@@ -153,7 +153,7 @@
           },
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
@@ -174,7 +174,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
@@ -195,7 +195,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
@@ -216,7 +216,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
@@ -237,7 +237,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
@@ -258,7 +258,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7001035076276387841,
+              "advertiser_id": "7001035076276387841",
               "parent_slice": {}
             },
             "cursor": {
@@ -267,7 +267,7 @@
           },
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
@@ -288,7 +288,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7001035076276387841,
+              "advertiser_id": "7001035076276387841",
               "parent_slice": {}
             },
             "cursor": {
@@ -297,7 +297,7 @@
           },
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
@@ -318,7 +318,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7001035076276387841,
+              "advertiser_id": "7001035076276387841",
               "parent_slice": {}
             },
             "cursor": {
@@ -327,7 +327,7 @@
           },
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
@@ -348,7 +348,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
@@ -369,7 +369,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
@@ -390,7 +390,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
@@ -411,7 +411,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
@@ -432,7 +432,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
@@ -453,7 +453,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
@@ -474,7 +474,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
@@ -495,7 +495,7 @@
         "states": [
           {
             "partition": {
-              "advertiser_id": 7002238017842757633,
+              "advertiser_id": "7002238017842757633",
               "parent_slice": {}
             },
             "cursor": {
