@@ -193,13 +193,13 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         expectedStreamStatus: AirbyteStreamStatusTraceMessage
     ) {
         var actualMessage = allMessages[idx]
-        Assertions.assertEquals(actualMessage.type, AirbyteMessage.Type.TRACE)
+        Assertions.assertEquals(AirbyteMessage.Type.TRACE, actualMessage.type)
         var traceMessage = actualMessage.trace
         Assertions.assertNotNull(traceMessage.streamStatus)
         Assertions.assertEquals(expectedStreamStatus, traceMessage.streamStatus)
     }
 
-    private fun createAirbteStreanStatusTraceMessage(
+    fun createAirbteStreanStatusTraceMessage(
         namespace: String,
         streamName: String,
         status: AirbyteStreamStatus
@@ -417,7 +417,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     @Test
     @Throws(Exception::class)
-    protected fun testReadOneColumn() {
+    protected open fun testReadOneColumn() {
         val catalog =
             CatalogHelpers.createConfiguredAirbyteCatalog(
                 streamName(),
@@ -796,7 +796,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
 
     @Test
     @Throws(Exception::class)
-    protected fun testReadOneTableIncrementallyTwice() {
+    protected open fun testReadOneTableIncrementallyTwice() {
         val config = config()
         val namespace = defaultNamespace
         val configuredCatalog = getConfiguredCatalogWithOneStream(namespace)
@@ -1336,7 +1336,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
     }
 
     @Throws(Exception::class)
-    protected fun incrementalCursorCheck(
+    protected open fun incrementalCursorCheck(
         initialCursorField: String?,
         cursorField: String,
         initialCursorValue: String?,
@@ -1902,6 +1902,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
             }
         }
 
+        @JvmStatic
         protected fun setTraceEmittedAtToNull(traceMessages: Iterable<AirbyteMessage>) {
             for (traceMessage in traceMessages) {
                 if (traceMessage.trace != null) {
