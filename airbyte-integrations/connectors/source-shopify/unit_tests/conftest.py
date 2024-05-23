@@ -511,6 +511,12 @@ def filfillment_order_jsonl_content_example():
 
 
 @pytest.fixture
+def order_risks_jsonl_content_example():
+    return """{"__typename":"Order","updatedAt":"2023-09-09T09:57:43Z","order_id":"gid:\/\/shopify\/Order\/3944273805501","risk":{"recommendation":"NONE","assessments":[{"risk_level":"NONE","facts":[{"description":"Card Verification Value (CVV) isn't available","sentiment":"NEUTRAL"},{"description":"Billing address or credit card's address wasn't available","sentiment":"NEUTRAL"},{"description":"Billing address ZIP or postal code isn't available to match with credit card's registered address","sentiment":"NEUTRAL"},{"description":"The payment method used isn't available","sentiment":"NEUTRAL"},{"description":"Location of IP address used to place the order isn't available","sentiment":"NEUTRAL"},{"description":"Distance between shipping address and location of IP address isn't available","sentiment":"NEUTRAL"},{"description":"The billing country or the country of the IP used to place the order isn't available","sentiment":"NEUTRAL"},{"description":"Can't determine if a high risk internet connection was used because the IP address isn't available","sentiment":"NEUTRAL"},{"description":"There was 1 payment attempt","sentiment":"POSITIVE"}],"provider":null}]}}
+{"__typename":"Order","updatedAt":"2023-09-19T14:29:22Z","order_id":"gid:\/\/shopify\/Order\/3945528492221","risk":{"recommendation":"CANCEL","assessments":[{"risk_level":"NONE","facts":[{"description":"Card Verification Value (CVV) isn't available","sentiment":"NEUTRAL"},{"description":"Billing address or credit card's address wasn't available","sentiment":"NEUTRAL"},{"description":"Billing address ZIP or postal code isn't available to match with credit card's registered address","sentiment":"NEUTRAL"},{"description":"The payment method used isn't available","sentiment":"NEUTRAL"},{"description":"Location of IP address used to place the order isn't available","sentiment":"NEUTRAL"},{"description":"Distance between shipping address and location of IP address isn't available","sentiment":"NEUTRAL"},{"description":"The billing country or the country of the IP used to place the order isn't available","sentiment":"NEUTRAL"},{"description":"Can't determine if a high risk internet connection was used because the IP address isn't available","sentiment":"NEUTRAL"},{"description":"There was 1 payment attempt","sentiment":"POSITIVE"}],"provider":null},{"risk_level":"HIGH","facts":[{"description":"This order came from an anonymous proxy","sentiment":"NEGATIVE"}],"provider":{"features":[],"description":null,"handle":null,"embedded":false,"title":"Airbyte Test","published":false,"developer_name":"app developer","developer_type":"MERCHANT","app_store_app_url":null,"install_url":null,"app_store_developer_url":null,"is_post_purchase_app_in_use":false,"previously_installed":false,"pricing_details_summary":"Free","pricing_details":null,"privacy_policy_url":null,"public_category":"CUSTOM","uninstall_message":"You won't be able to view or access features for this app anymore. Discounts that use this app will also be deleted.","webhook_api_version":"2023-04","shopify_developed":false,"provider_id":"gid:\/\/shopify\/App\/5505221","failed_requirements":[],"feedback":null}}]}}\n"""
+
+
+@pytest.fixture
 def products_jsonl_content_example():
     return """{"__typename":"Product","id":"gid:\/\/shopify\/Product\/123","publishedAt":"2021-06-23T01:09:29Z","createdAt":"2021-06-23T01:09:29Z","status":"ACTIVE","vendor":"Blanda, O'Kon and Bartell","updatedAt":"2023-04-20T11:12:26Z","bodyHtml":"Gold and silver glitter iPhone 7 cases with geometric line patterns, stacked","productType":"Music","tags":["developer-tools-generator"],"handle":"gold-silver-iphone-7-case","templateSuffix":null,"title":"Gold Silver iPhone 7 Case","options":[{"id":"gid:\/\/shopify\/ProductOption\/444","name":"Title","values":["Plastic","indigo"],"position":1}]}
 {"__typename":"Image","id":"gid:\/\/shopify\/ProductImage\/111","__parentId":"gid:\/\/shopify\/Product\/123"}
@@ -685,6 +691,99 @@ def fulfillment_orders_response_expected_result():
         "admin_graphql_api_id": "gid://shopify/FulfillmentOrder/2",
         "shop_url": "test_shop",
     }
+
+
+@pytest.fixture
+def order_risks_response_expected_result():
+    return [
+        {
+            "updated_at": "2023-09-19T14:29:22+00:00",
+            "id": 3945528492221,
+            "order_id": 3945528492221,
+            "admin_graphql_api_id": "gid://shopify/Order/3945528492221",
+            "recommendation": "CANCEL",
+            "assessments": [
+                {
+                    "risk_level": "NONE",
+                    "facts": [
+                        {
+                            "description": "Card Verification Value (CVV) isn't available",
+                            "sentiment": "NEUTRAL"
+                        },
+                        {
+                            "description": "Billing address or credit card's address wasn't available",
+                            "sentiment": "NEUTRAL"
+                        },
+                        {
+                            "description": "Billing address ZIP or postal code isn't available to match with credit card's registered address",
+                            "sentiment": "NEUTRAL"
+                        },
+                        {
+                            "description": "The payment method used isn't available",
+                            "sentiment": "NEUTRAL"
+                        },
+                        {
+                            "description": "Location of IP address used to place the order isn't available",
+                            "sentiment": "NEUTRAL"
+                        },
+                        {
+                            "description": "Distance between shipping address and location of IP address isn't available",
+                            "sentiment": "NEUTRAL"
+                        },
+                        {
+                            "description": "The billing country or the country of the IP used to place the order isn't available",
+                            "sentiment": "NEUTRAL"
+                        },
+                        {
+                            "description": "Can't determine if a high risk internet connection was used because the IP address isn't available",
+                            "sentiment": "NEUTRAL"
+                        },
+                        {
+                            "description": "There was 1 payment attempt",
+                            "sentiment": "POSITIVE"
+                        }
+                    ],
+                    "provider": None
+                },
+                {
+                    "risk_level": "HIGH",
+                    "facts": [
+                        {
+                            "description": "This order came from an anonymous proxy",
+                            "sentiment": "NEGATIVE"
+                        }
+                    ],
+                    "provider": {
+                        "features": [],
+                        "description": None,
+                        "handle": None,
+                        "embedded": False,
+                        "title": "Airbyte Test",
+                        "published": False,
+                        "developer_name": "app developer",
+                        "developer_type": "MERCHANT",
+                        "app_store_app_url": None,
+                        "install_url": None,
+                        "app_store_developer_url": None,
+                        "is_post_purchase_app_in_use": False,
+                        "previously_installed": False,
+                        "pricing_details_summary": "Free",
+                        "pricing_details": None,
+                        "privacy_policy_url": None,
+                        "public_category": "CUSTOM",
+                        "uninstall_message": "You won't be able to view or access features for this app anymore. Discounts that use this app will also be deleted.",
+                        "webhook_api_version": "2023-04",
+                        "shopify_developed": False,
+                        "provider_id": 5505221,
+                        "failed_requirements": [],
+                        "feedback": None,
+                        "admin_graphql_api_id": "gid://shopify/App/5505221"
+                    }
+                }
+            ],
+            "shop_url": "test_shop"
+        }
+    ]
 
 
 @pytest.fixture

@@ -1491,7 +1491,7 @@ class Transaction(ShopifyBulkQuery):
         record = self.tools.fields_names_to_snake_case(record)
         return record
 
-    def record_process_components(self, record: MutableMapping[str, Any]) -> Optional[MutableMapping[str, Any]]:
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Optional[Iterable[MutableMapping[str, Any]]]:
         """
         Defines how to process collected components.
         """
@@ -1984,3 +1984,176 @@ class ProductVariant(ShopifyBulkQuery):
         record.pop("inventoryItem", None)
 
         yield record
+
+
+class OrderRisk(ShopifyBulkQuery):
+    """
+    {
+        orders(query: "updated_at:>='2021-04-13T00:00:00+00:00' AND updated_at:<='2024-05-20T13:50:06.882235+00:00'" sortKey: UPDATED_AT) {
+            edges {
+                node {
+                    __typename
+                    updatedAt
+                    order_id: id
+                    risk {
+                        recommendation
+                        assessments {
+                            risk_level: riskLevel
+                            facts {
+                                description
+                                sentiment
+                            }
+                            provider {
+                                features
+                                description
+                                handle
+                                embedded
+                                title
+                                published
+                                developer_name: developerName
+                                developer_type: developerType
+                                app_store_app_url: appStoreAppUrl
+                                install_url: installUrl
+                                app_store_developer_url: appStoreDeveloperUrl
+                                is_post_purchase_app_in_use: isPostPurchaseAppInUse
+                                previously_installed: previouslyInstalled
+                                pricing_details_summary: pricingDetailsSummary
+                                pricing_details: pricingDetails
+                                privacy_policy_url: privacyPolicyUrl
+                                public_category: publicCategory
+                                uninstall_message: uninstallMessage
+                                webhook_api_version: webhookApiVersion
+                                shopify_developed: shopifyDeveloped
+                                provider_id: id
+                                failed_requirements: failedRequirements {
+                                    message
+                                    action {
+                                        title
+                                        url
+                                        action_id: id
+                                    }
+                                }
+                                feedback {
+                                    link {
+                                        label
+                                        url
+                                    }
+                                    messages {
+                                        field
+                                        message
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    query_name = "orders"
+    sort_key = "UPDATED_AT"
+
+    action_fields: List[Field] = [
+        "title",
+        "url",
+        Field(name="id", alias="action_id"),
+    ]
+
+    failed_reqirements_fields: List[Field] = ["message", Field(name="action", fields=action_fields)]
+
+    feedback_fields: List[Field] = [
+        Field(name="link", fields=["label", "url"]),
+        Field(name="messages", fields=["field", "message"]),
+    ]
+
+    provider_fields: List[Field] = [
+        "features",
+        "description",
+        "handle",
+        "embedded",
+        "title",
+        "published",
+        Field(name="developerName", alias="developer_name"),
+        Field(name="developerType", alias="developer_type"),
+        Field(name="appStoreAppUrl", alias="app_store_app_url"),
+        Field(name="installUrl", alias="install_url"),
+        Field(name="appStoreDeveloperUrl", alias="app_store_developer_url"),
+        Field(name="isPostPurchaseAppInUse", alias="is_post_purchase_app_in_use"),
+        Field(name="previouslyInstalled", alias="previously_installed"),
+        Field(name="pricingDetailsSummary", alias="pricing_details_summary"),
+        Field(name="pricingDetails", alias="pricing_details"),
+        Field(name="privacyPolicyUrl", alias="privacy_policy_url"),
+        Field(name="publicCategory", alias="public_category"),
+        Field(name="uninstallMessage", alias="uninstall_message"),
+        Field(name="webhookApiVersion", alias="webhook_api_version"),
+        Field(name="shopifyDeveloped", alias="shopify_developed"),
+        Field(name="id", alias="provider_id"),
+        Field(name="failedRequirements", alias="failed_requirements", fields=failed_reqirements_fields),
+        Field(name="feedback", fields=feedback_fields),
+    ]
+
+    assessments_fields: List[Field] = [
+        Field(name="riskLevel", alias="risk_level"),
+        Field(name="facts", fields=["description", "sentiment"]),
+        Field(name="provider", fields=provider_fields),
+    ]
+
+    risk_fields: List[Field] = [
+        "recommendation",
+        Field(name="assessments", fields=assessments_fields),
+    ]
+
+    # main query
+    query_nodes: List[Field] = [
+        "__typename",
+        "updatedAt",
+        Field(name="id", alias="order_id"),
+        Field(name="risk", fields=risk_fields),
+    ]
+
+    record_composition = {
+        "new_record": "Order",
+        # there are no record components provided for this stream.
+    }
+
+    def _process_assessments(self, assessments: Iterable[MutableMapping[str, Any]]) -> Iterable[MutableMapping[str, Any]]:
+        for assessment in assessments:
+            provider = assessment.get("provider", {})
+            if provider:
+                # save and resolve provider id
+                provider["admin_graphql_api_id"] = provider.get("provider_id")
+                provider["provider_id"] = self.tools.resolve_str_id(provider.get("provider_id"))
+        return assessments
+
+    def _has_risk_recommendation(self, recommendation: Optional[str]) -> bool:
+        # if there are no risk recommendation, the value is literally "NONE",
+        # we should skip such record, because there is no risk info for it.
+        no_risk_pattern = "NONE"
+        return recommendation != no_risk_pattern if recommendation else False
+
+    def record_process_components(self, record: MutableMapping[str, Any]) -> Optional[Iterable[MutableMapping[str, Any]]]:
+        """
+        Defines how to process collected components.
+        """
+        # unnest mandatory fields from their placeholders
+        risk = record.get("risk", {})
+        recommendation = risk.get("recommendation") if risk else None
+        # process records which has some risk recommendation
+        if self._has_risk_recommendation(recommendation):
+            # save and resolve id
+            record["admin_graphql_api_id"] = record.get("order_id")
+            record["order_id"] = self.tools.resolve_str_id(record.get("order_id"))
+            # add old pk
+            record["id"] = record.get("order_id")
+            # add the `recommendation` field to the root lvl
+            record["recommendation"] = recommendation
+            assessments = risk.get("assessments", []) if risk else None
+            record["assessments"] = self._process_assessments(assessments) if assessments else None
+            # convert date-time cursors
+            record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+            # clean up the leftovers
+            record.pop("risk", None)
+
+            yield record
