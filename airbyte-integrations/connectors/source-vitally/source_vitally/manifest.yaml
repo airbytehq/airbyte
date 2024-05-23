@@ -17,11 +17,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /accounts
           http_method: GET
           request_parameters:
-            status: '{{ config[''status''] }}'
+            status: "{{ config['status'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -41,11 +41,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.next }}'
+            cursor_value: "{{ response.next }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/accounts'
+          $ref: "#/schemas/accounts"
     admins:
       type: DeclarativeStream
       name: admins
@@ -54,7 +54,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /admins
           http_method: GET
         record_selector:
@@ -76,11 +76,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.next }}'
+            cursor_value: "{{ response.next }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/admins'
+          $ref: "#/schemas/admins"
     conversations:
       type: DeclarativeStream
       name: conversations
@@ -89,7 +89,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /conversations
           http_method: GET
         record_selector:
@@ -111,11 +111,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.next }}'
+            cursor_value: "{{ response.next }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/conversations'
+          $ref: "#/schemas/conversations"
     notes:
       type: DeclarativeStream
       name: notes
@@ -124,7 +124,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /notes
           http_method: GET
         record_selector:
@@ -146,11 +146,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.next }}'
+            cursor_value: "{{ response.next }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/notes'
+          $ref: "#/schemas/notes"
     nps_responses:
       type: DeclarativeStream
       name: nps_responses
@@ -159,7 +159,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /npsResponses
           http_method: GET
         record_selector:
@@ -181,11 +181,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.next }}'
+            cursor_value: "{{ response.next }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/nps_responses'
+          $ref: "#/schemas/nps_responses"
     organizations:
       type: DeclarativeStream
       name: organizations
@@ -194,7 +194,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /organizations
           http_method: GET
         record_selector:
@@ -216,11 +216,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.next }}'
+            cursor_value: "{{ response.next }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/organizations'
+          $ref: "#/schemas/organizations"
     tasks:
       type: DeclarativeStream
       name: tasks
@@ -229,7 +229,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /tasks
           http_method: GET
         record_selector:
@@ -251,11 +251,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.next }}'
+            cursor_value: "{{ response.next }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/tasks'
+          $ref: "#/schemas/tasks"
     users:
       type: DeclarativeStream
       name: users
@@ -264,7 +264,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /users
           http_method: GET
         record_selector:
@@ -286,28 +286,28 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.next }}'
+            cursor_value: "{{ response.next }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/users'
+          $ref: "#/schemas/users"
   base_requester:
     type: HttpRequester
     url_base: https://rest.vitally.io/resources/
     authenticator:
       type: BasicHttpAuthenticator
-      username: '{{ config[''api_key''] }}'
-      password: '{{ config[''nothing''] }}'
+      username: "{{ config['api_key'] }}"
+      password: "{{ config['nothing'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/accounts'
-  - $ref: '#/definitions/streams/admins'
-  - $ref: '#/definitions/streams/conversations'
-  - $ref: '#/definitions/streams/notes'
-  - $ref: '#/definitions/streams/nps_responses'
-  - $ref: '#/definitions/streams/organizations'
-  - $ref: '#/definitions/streams/tasks'
-  - $ref: '#/definitions/streams/users'
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/admins"
+  - $ref: "#/definitions/streams/conversations"
+  - $ref: "#/definitions/streams/notes"
+  - $ref: "#/definitions/streams/nps_responses"
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/users"
 
 spec:
   type: Spec
@@ -356,112 +356,112 @@ schemas:
     properties:
       accountExecutiveId:
         type:
-          - 'null'
+          - "null"
           - string
       accountOwnerId:
         type:
-          - 'null'
+          - "null"
           - string
       churnedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       csmId:
         type:
-          - 'null'
+          - "null"
           - string
       externalId:
         type:
-          - 'null'
+          - "null"
           - string
       firstSeenTimestamp:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       healthScore:
         type:
-          - 'null'
+          - "null"
           - number
       id:
         type:
-          - 'null'
+          - "null"
           - string
       lastInboundMessageTimestamp:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       lastOutboundMessageTimestamp:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       lastSeenTimestamp:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       mrr:
         type:
-          - 'null'
+          - "null"
           - number
       name:
         type:
-          - 'null'
+          - "null"
           - string
       nextRenewalDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       npsDetractorCount:
         type:
-          - 'null'
+          - "null"
           - integer
       npsPassiveCount:
         type:
-          - 'null'
+          - "null"
           - integer
       npsPromoterCount:
         type:
-          - 'null'
+          - "null"
           - integer
       npsScore:
         type:
-          - 'null'
+          - "null"
           - number
       organizationId:
         type:
-          - 'null'
+          - "null"
           - string
       segments:
         type:
-          - 'null'
+          - "null"
           - array
       traits:
         type:
-          - 'null'
+          - "null"
           - object
       trialEndDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       updatedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       usersCount:
         type:
-          - 'null'
+          - "null"
           - integer
   admins:
     type: object
@@ -470,19 +470,19 @@ schemas:
     properties:
       email:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       licenseStatus:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
   conversations:
     type: object
@@ -491,24 +491,24 @@ schemas:
     properties:
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       externalId:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       subject:
         type:
-          - 'null'
+          - "null"
           - string
       updatedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
   notes:
@@ -518,69 +518,69 @@ schemas:
     properties:
       account:
         type:
-          - 'null'
+          - "null"
           - object
       accountId:
         type:
-          - 'null'
+          - "null"
           - string
       author:
         type:
-          - 'null'
+          - "null"
           - string
       authorId:
         type:
-          - 'null'
+          - "null"
           - string
       category:
         type:
-          - 'null'
+          - "null"
           - string
       categoryId:
         type:
-          - 'null'
+          - "null"
           - string
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       externalId:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       note:
         type:
-          - 'null'
+          - "null"
           - string
       noteDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       organization:
         type:
-          - 'null'
+          - "null"
           - string
       organizationId:
         type:
-          - 'null'
+          - "null"
           - string
       tag:
         type:
-          - 'null'
+          - "null"
           - array
       traits:
         type:
-          - 'null'
+          - "null"
           - object
       updatedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
   nps_responses:
@@ -590,47 +590,47 @@ schemas:
     properties:
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       dismissedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       externalId:
         type:
-          - 'null'
+          - "null"
           - string
       feedback:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       respondedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       score:
         type:
-          - 'null'
+          - "null"
           - number
       updatedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       user:
         type:
-          - 'null'
+          - "null"
           - object
       userId:
         type:
-          - 'null'
+          - "null"
           - string
   organizations:
     type: object
@@ -639,68 +639,68 @@ schemas:
     properties:
       accountExecutiveId:
         type:
-          - 'null'
+          - "null"
           - string
       accountOwnerId:
         type:
-          - 'null'
+          - "null"
           - string
       churnedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       csmId:
         type:
-          - 'null'
+          - "null"
           - string
       externalId:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       keyRoles:
         type:
-          - 'null'
+          - "null"
           - array
       mrr:
         type:
-          - 'null'
+          - "null"
           - number
       name:
         type:
-          - 'null'
+          - "null"
           - string
       nextRenewalDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       traits:
         type:
-          - 'null'
+          - "null"
           - object
       trialEndDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       updatedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       usersCount:
         type:
-          - 'null'
+          - "null"
           - integer
   tasks:
     type: object
@@ -709,90 +709,90 @@ schemas:
     properties:
       account:
         type:
-          - 'null'
+          - "null"
           - object
       accountId:
         type:
-          - 'null'
+          - "null"
           - string
       assignedTo:
         type:
-          - 'null'
+          - "null"
           - object
       assignedToId:
         type:
-          - 'null'
+          - "null"
           - string
       category:
         type:
-          - 'null'
+          - "null"
           - string
       categoryId:
         type:
-          - 'null'
+          - "null"
           - string
       completedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       completedBy:
         type:
-          - 'null'
+          - "null"
           - string
       completedById:
         type:
-          - 'null'
+          - "null"
           - string
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       description:
         type:
-          - 'null'
+          - "null"
           - string
       dueDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date
       externalId:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       organization:
         type:
-          - 'null'
+          - "null"
           - string
       organizationId:
         type:
-          - 'null'
+          - "null"
           - string
       projects:
         type:
-          - 'null'
+          - "null"
           - array
       tag:
         type:
-          - 'null'
+          - "null"
           - array
       traits:
         type:
-          - 'null'
+          - "null"
           - object
       updatedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
   users:
@@ -802,94 +802,94 @@ schemas:
     properties:
       accounts:
         type:
-          - 'null'
+          - "null"
           - array
       avatar:
         type:
-          - 'null'
+          - "null"
           - string
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       deactivatedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       email:
         type:
-          - 'null'
+          - "null"
           - string
       externalId:
         type:
-          - 'null'
+          - "null"
           - string
       firstKnown:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       id:
         type:
-          - 'null'
+          - "null"
           - string
       joinDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       lastInboundMessageTimestamp:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       lastOutboundMessageTimestamp:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       lastSeenTimestamp:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       name:
         type:
-          - 'null'
+          - "null"
           - string
       npsLastFeedback:
         type:
-          - 'null'
+          - "null"
           - string
       npsLastRespondedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       npsLastScore:
         type:
-          - 'null'
+          - "null"
           - number
       organizations:
         type:
-          - 'null'
+          - "null"
           - array
       segments:
         type:
-          - 'null'
+          - "null"
           - array
       traits:
         type:
-          - 'null'
+          - "null"
           - object
       unsubscribedFromConversations:
         type:
-          - 'null'
+          - "null"
           - boolean
       updatedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
