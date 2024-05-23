@@ -52,10 +52,11 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
             Streams.stream(
                     runExecutable(Command.GET_REGEX_TESTS).withArray<JsonNode>("tests").elements()
                 )
-                .map { obj: JsonNode -> obj.textValue() }
                 .toList()
+                .map { obj: JsonNode -> obj.textValue() }
+
         val stringMessages =
-            allMessages.map { `object`: AirbyteMessage -> Jsons.serialize(`object`) }.toList()
+            allMessages.map { `object`: AirbyteMessage -> Jsons.serialize(`object`) }
         LOGGER.info("Running " + regexTests.size + " regex tests...")
         regexTests.forEach(
             Consumer { regex: String ->

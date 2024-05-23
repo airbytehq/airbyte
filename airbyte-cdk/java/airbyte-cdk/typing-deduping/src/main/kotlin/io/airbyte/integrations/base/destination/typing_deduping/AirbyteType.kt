@@ -107,11 +107,10 @@ interface AirbyteType {
 
             // Recurse into a schema that forces a specific one of each option
             val options =
-                typeOptions
-                    .map { typeOption: String ->
-                        fromJsonSchema(getTrimmedJsonSchema(schema, typeOption))
-                    }
-                    .toList()
+                typeOptions.map { typeOption: String ->
+                    fromJsonSchema(getTrimmedJsonSchema(schema, typeOption))
+                }
+
             return Union(options)
         }
 

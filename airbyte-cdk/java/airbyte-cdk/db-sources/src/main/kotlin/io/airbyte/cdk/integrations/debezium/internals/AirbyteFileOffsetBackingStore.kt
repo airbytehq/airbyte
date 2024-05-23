@@ -61,6 +61,7 @@ class AirbyteFileOffsetBackingStore(
     private fun updateStateForDebezium2_1(mapAsString: Map<String, String?>): Map<String, String?> {
         val updatedMap: MutableMap<String, String?> = LinkedHashMap()
         if (mapAsString.size > 0) {
+            // We're getting the 1st of a map. Something fishy going on here
             val key = mapAsString.keys.toList()[0]
             val i = key.indexOf('[')
             val i1 = key.lastIndexOf(']')

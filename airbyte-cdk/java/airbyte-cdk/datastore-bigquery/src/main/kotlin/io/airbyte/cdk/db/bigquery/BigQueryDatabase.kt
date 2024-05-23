@@ -98,14 +98,12 @@ constructor(
     @Throws(Exception::class)
     override fun unsafeQuery(sql: String?, vararg params: String): Stream<JsonNode> {
         val parameterValueList =
-            Arrays.stream(params)
-                .map { param: String ->
-                    QueryParameterValue.newBuilder()
-                        .setValue(param)
-                        .setType(StandardSQLTypeName.STRING)
-                        .build()
-                }
-                .toList()
+            params.map { param: String ->
+                QueryParameterValue.newBuilder()
+                    .setValue(param)
+                    .setType(StandardSQLTypeName.STRING)
+                    .build()
+            }
 
         return query(sql, parameterValueList)
     }

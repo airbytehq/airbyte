@@ -314,12 +314,10 @@ abstract class AbstractJdbcSource<Datatype>(
                                         f.get(INTERNAL_COLUMN_NAME).asText(),
                                         datatype
                                     ) {}
-                            }
-                            .toList(),
+                            },
                     cursorFields = extractCursorFields(fields)
                 )
             }
-            .toList()
     }
 
     private fun extractCursorFields(fields: List<JsonNode>): List<String> {
@@ -328,7 +326,6 @@ abstract class AbstractJdbcSource<Datatype>(
                 isCursorType(sourceOperations.getDatabaseFieldType(field))
             }
             .map { it.get(INTERNAL_COLUMN_NAME).asText() }
-            .toList()
     }
 
     protected fun excludeNotAccessibleTables(
@@ -756,7 +753,6 @@ abstract class AbstractJdbcSource<Datatype>(
                 )
             }
             .map { `object`: ConfiguredAirbyteStream -> Jsons.clone(`object`) }
-            .toList()
     }
 
     companion object {

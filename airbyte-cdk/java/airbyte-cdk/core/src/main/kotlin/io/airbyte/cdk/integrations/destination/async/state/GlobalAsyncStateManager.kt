@@ -281,9 +281,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
             // into the non-STREAM world for correctness.
             synchronized(lock) {
                 aliasIds.addAll(
-                    descToStateIdQ.values
-                        .flatMap { obj: LinkedBlockingDeque<Long> -> obj }
-                        .toList(),
+                    descToStateIdQ.values.flatMap { obj: LinkedBlockingDeque<Long> -> obj },
                 )
                 descToStateIdQ.clear()
                 retroactiveGlobalStateId = StateIdProvider.nextId

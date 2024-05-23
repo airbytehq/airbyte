@@ -19,7 +19,6 @@ class RootLevelFlatteningSheetGenerator(jsonSchema: JsonNode) :
                 jsonSchema["properties"].fieldNames(),
             )
             .sorted()
-            .toList()
 
     override fun getHeaderRow(): List<String> {
         val headers: MutableList<String> =

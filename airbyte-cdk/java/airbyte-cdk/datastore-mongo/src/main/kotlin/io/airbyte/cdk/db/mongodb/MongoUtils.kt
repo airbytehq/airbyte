@@ -127,9 +127,10 @@ object MongoUtils {
         val field = node.data
         if (node.hasChildren()) {
             val subFields =
-                node.children!!
-                    .map { obj: TreeNode<CommonField<BsonType>> -> nodeToCommonField(obj) }
-                    .toList()
+                node.children!!.map { obj: TreeNode<CommonField<BsonType>> ->
+                    nodeToCommonField(obj)
+                }
+
             return CommonField(field.name, field.type, subFields)
         } else {
             return CommonField(field.name, field.type)
@@ -294,17 +295,15 @@ object MongoUtils {
     ): List<TreeNode<CommonField<BsonType>>> {
         val allkeys = HashSet(getFieldsName(collection))
 
-        return allkeys
-            .map { key: String ->
-                val types = getTypes(collection, key)
-                val type = getUniqueType(types)
-                val fieldNode = TreeNode(CommonField(transformName(types, key), type))
-                if (type == BsonType.DOCUMENT) {
-                    setSubFields(collection, fieldNode, key)
-                }
-                fieldNode
+        return allkeys.map { key: String ->
+            val types = getTypes(collection, key)
+            val type = getUniqueType(types)
+            val fieldNode = TreeNode(CommonField(transformName(types, key), type))
+            if (type == BsonType.DOCUMENT) {
+                setSubFields(collection, fieldNode, key)
             }
-            .toList()
+            fieldNode
+        }
     }
 
     /**
