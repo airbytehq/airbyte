@@ -175,7 +175,7 @@ internal constructor(
                     val catalog =
                         parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog::class.java)!!
                     val stateOptional =
-                        parsed.getStatePath().map { path: Path? -> parseConfig(path) }
+                        parsed.getStatePath().map { path: Path -> parseConfig(path) }
                     try {
                         if (featureFlags.concurrentSourceStreamRead()) {
                             LOGGER.info("Concurrent source stream read enabled.")
@@ -271,11 +271,11 @@ internal constructor(
         messageIterator: AutoCloseableIterator<AirbyteMessage>,
         recordCollector: Consumer<AirbyteMessage>
     ) {
-        messageIterator.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+        messageIterator.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
             LOGGER.debug("Producing messages for stream {}...", s)
         }
         messageIterator.forEachRemaining(recordCollector)
-        messageIterator.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+        messageIterator.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
             LOGGER.debug("Finished producing messages for stream {}...", s)
         }
     }
@@ -352,7 +352,7 @@ internal constructor(
                 )
             produceMessages(stream, streamStatusTrackingRecordConsumer)
         } catch (e: Exception) {
-            stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+            stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
                 LOGGER.error("Failed to consume from stream {}.", s, e)
             }
             throw RuntimeException(e)

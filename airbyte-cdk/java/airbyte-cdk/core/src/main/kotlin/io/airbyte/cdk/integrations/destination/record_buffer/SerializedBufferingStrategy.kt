@@ -89,7 +89,7 @@ class SerializedBufferingStrategy
      * computed buffer
      */
     private fun getOrCreateBuffer(stream: AirbyteStreamNameNamespacePair): SerializableBuffer {
-        return allBuffers.computeIfAbsent(stream) { _: AirbyteStreamNameNamespacePair? ->
+        return allBuffers.computeIfAbsent(stream) { _: AirbyteStreamNameNamespacePair ->
             LOGGER.info(
                 "Starting a new buffer for stream {} (current state: {} in {} buffers)",
                 stream.name,

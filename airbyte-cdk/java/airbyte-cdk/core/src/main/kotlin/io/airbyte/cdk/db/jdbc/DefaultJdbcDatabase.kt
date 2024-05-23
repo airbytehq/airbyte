@@ -80,7 +80,7 @@ constructor(
             }
         }
 
-    override fun <T> executeMetadataQuery(query: Function<DatabaseMetaData?, T>): T {
+    override fun <T> executeMetadataQuery(query: Function<DatabaseMetaData, T>): T {
         try {
             dataSource.connection.use { connection ->
                 val metaData = connection.metaData

@@ -52,7 +52,7 @@ class InMemoryRecordBufferingStrategy(
         }
 
         val bufferedRecords =
-            streamBuffer.computeIfAbsent(stream) { _: AirbyteStreamNameNamespacePair? ->
+            streamBuffer.computeIfAbsent(stream) { _: AirbyteStreamNameNamespacePair ->
                 ArrayList()
             }
         bufferedRecords.add(message.record)

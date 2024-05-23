@@ -106,7 +106,7 @@ internal class TestJdbcUtils {
     @Test
     @Throws(SQLException::class)
     fun testRowToJson() {
-        dataSource!!.connection.use { connection ->
+        dataSource.connection.use { connection ->
             val rs = connection.createStatement().executeQuery("SELECT * FROM id_and_name;")
             rs.next()
             Assertions.assertEquals(RECORDS_AS_JSON[0], sourceOperations.rowToJson(rs))
@@ -116,7 +116,7 @@ internal class TestJdbcUtils {
     @Test
     @Throws(SQLException::class)
     fun testToStream() {
-        dataSource!!.connection.use { connection ->
+        dataSource.connection.use { connection ->
             val rs = connection.createStatement().executeQuery("SELECT * FROM id_and_name;")
             val actual =
                 JdbcDatabase.toUnsafeStream(rs) { queryContext: ResultSet ->
@@ -131,7 +131,7 @@ internal class TestJdbcUtils {
     @Test
     @Throws(SQLException::class)
     fun testSetJsonField() {
-        dataSource!!.connection.use { connection ->
+        dataSource.connection.use { connection ->
             createTableWithAllTypes(connection)
             insertRecordOfEachType(connection)
             assertExpectedOutputValues(connection, jsonFieldExpectedValues())
@@ -143,7 +143,7 @@ internal class TestJdbcUtils {
     @Test
     @Throws(SQLException::class)
     fun testSetStatementField() {
-        dataSource!!.connection.use { connection ->
+        dataSource.connection.use { connection ->
             createTableWithAllTypes(connection)
             val ps =
                 connection.prepareStatement(
@@ -307,7 +307,7 @@ internal class TestJdbcUtils {
     )
     @Throws(SQLException::class)
     fun testSetStatementSpecialValues(colValue: String, value: Long) {
-        dataSource!!.connection.use { connection ->
+        dataSource.connection.use { connection ->
             createTableWithAllTypes(connection)
             val ps = connection.prepareStatement("INSERT INTO data(bigint) VALUES(?);")
 

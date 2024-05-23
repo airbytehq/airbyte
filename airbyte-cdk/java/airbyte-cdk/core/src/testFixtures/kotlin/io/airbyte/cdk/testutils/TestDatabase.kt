@@ -55,9 +55,9 @@ protected constructor(val container: C) : AutoCloseable {
     @JvmField protected val databaseId: Int = nextDatabaseId.getAndIncrement()
     @JvmField
     protected val containerId: Int =
-        containerUidToId.computeIfAbsent(container.containerId) { _: String? ->
+        containerUidToId.computeIfAbsent(container.containerId) { _: String ->
             nextContainerId.getAndIncrement()
-        }!!
+        }
     private val dateFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")
 
     init {
@@ -170,10 +170,10 @@ protected constructor(val container: C) : AutoCloseable {
 
     protected fun execSQL(sql: Stream<String>) {
         try {
-            database.query<Any?> { ctx: DSLContext? ->
-                sql.forEach { statement: String? ->
+            database.query<Any?> { ctx: DSLContext ->
+                sql.forEach { statement: String ->
                     LOGGER!!.info("executing SQL statement {}", statement)
-                    ctx!!.execute(statement)
+                    ctx.execute(statement)
                 }
                 null
             }
@@ -315,6 +315,6 @@ protected constructor(val container: C) : AutoCloseable {
         private val nextDatabaseId: AtomicInteger = AtomicInteger(0)
 
         private val nextContainerId: AtomicInteger = AtomicInteger(0)
-        private val containerUidToId: MutableMap<String?, Int?> = ConcurrentHashMap()
+        private val containerUidToId: MutableMap<String, Int> = ConcurrentHashMap()
     }
 }

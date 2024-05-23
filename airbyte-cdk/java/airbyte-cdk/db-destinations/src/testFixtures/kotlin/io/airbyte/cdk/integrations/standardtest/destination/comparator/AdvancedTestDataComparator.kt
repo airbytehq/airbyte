@@ -122,7 +122,7 @@ open class AdvancedTestDataComparator : TestDataComparator {
                 val sameActualNode =
                     actualList
                         .stream()
-                        .filter { actualNode: JsonNode? ->
+                        .filter { actualNode: JsonNode ->
                             compareJsonNodes(expectedNode, actualNode)
                         }
                         .findFirst()

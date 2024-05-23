@@ -56,7 +56,7 @@ internal class TestHarnessUtilsTest {
         fun testStartsWait() {
             Mockito.`when`(process.isAlive).thenReturn(true)
             val recordedBeats = AtomicInteger(0)
-            Mockito.doAnswer { ignored: InvocationOnMock? ->
+            Mockito.doAnswer { ignored: InvocationOnMock ->
                     recordedBeats.incrementAndGet()
                     true
                 }

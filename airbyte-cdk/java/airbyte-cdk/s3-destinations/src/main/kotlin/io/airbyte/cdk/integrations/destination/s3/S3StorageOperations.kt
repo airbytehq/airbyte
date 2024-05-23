@@ -144,7 +144,7 @@ open class S3StorageOperations(
                 .stream()
                 .filter { e: Exception -> e is AmazonS3Exception }
                 .map { s3e: Exception -> (s3e as AmazonS3Exception).statusCode }
-                .filter { o: Int? ->
+                .filter { o: Int ->
                     ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES.contains(
                         o,
                     )

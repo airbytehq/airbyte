@@ -419,8 +419,8 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                 // Get metadata from the database to see whether connection is possible
                 database.bufferedResultSetQuery(
                     { conn: Connection -> conn.metaData.catalogs },
-                    { queryContext: ResultSet? ->
-                        JdbcUtils.defaultSourceOperations.rowToJson(queryContext!!)
+                    { queryContext: ResultSet ->
+                        JdbcUtils.defaultSourceOperations.rowToJson(queryContext)
                     },
                 )
 

@@ -65,7 +65,7 @@ abstract class GcsStreamCopier(
         )
     }
 
-    override fun prepareStagingFile(): String? {
+    override fun prepareStagingFile(): String {
         val name = prepareGcsStagingFile()
         if (!gcsStagingFiles.contains(name)) {
             gcsStagingFiles.add(name)

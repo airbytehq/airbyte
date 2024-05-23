@@ -45,7 +45,7 @@ constructor(
             val jobOutput =
                 ConnectorJobOutput().withOutputType(ConnectorJobOutput.OutputType.CHECK_CONNECTION)
 
-            LineGobbler.gobble(process.errorStream, { msg: String? -> LOGGER.error(msg) })
+            LineGobbler.gobble(process.errorStream, { msg: String -> LOGGER.error(msg) })
 
             val messagesByType = TestHarnessUtils.getMessagesByType(process, streamFactory, 30)
             val connectionStatus =
@@ -86,7 +86,7 @@ constructor(
                     ConnectorJobOutput.OutputType.CHECK_CONNECTION,
                     messagesByType
                 )
-            failureReason.ifPresent { failureReason: FailureReason? ->
+            failureReason.ifPresent { failureReason: FailureReason ->
                 jobOutput.failureReason = failureReason
             }
 

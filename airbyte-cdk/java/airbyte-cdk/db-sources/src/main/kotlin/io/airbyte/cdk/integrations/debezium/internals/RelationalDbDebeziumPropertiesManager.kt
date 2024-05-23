@@ -99,7 +99,7 @@ class RelationalDbDebeziumPropertiesManager(
                     Pattern.quote(s.namespace + "." + s.name) +
                         (if (StringUtils.isNotBlank(fields)) "\\.$fields" else "")
                 }
-                .map { x: String? -> StringUtils.escape(x, ",".toCharArray(), "\\,") }
+                .map { x: String -> StringUtils.escape(x, ",".toCharArray(), "\\,") }
                 .collect(Collectors.joining(","))
         }
 

@@ -42,7 +42,7 @@ internal class SwitchingDestinationTest {
         val switchingDestination =
             SwitchingDestination(
                 SwitchingEnum::class.java,
-                { c: JsonNode? -> SwitchingEnum.INSERT },
+                { c: JsonNode -> SwitchingEnum.INSERT },
                 destinationMap
             )
 
@@ -67,7 +67,7 @@ internal class SwitchingDestinationTest {
         val switchingDestination =
             SwitchingDestination(
                 SwitchingEnum::class.java,
-                { c: JsonNode? -> SwitchingEnum.COPY },
+                { c: JsonNode -> SwitchingEnum.COPY },
                 destinationMap
             )
 

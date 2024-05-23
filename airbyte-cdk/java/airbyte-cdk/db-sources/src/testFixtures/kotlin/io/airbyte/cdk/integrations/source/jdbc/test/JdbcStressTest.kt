@@ -161,7 +161,7 @@ abstract class JdbcStressTest {
     private fun runTest(configuredCatalog: ConfiguredAirbyteCatalog, testName: String) {
         LOGGER.info("running stress test for: $testName")
         val read: Iterator<AirbyteMessage> =
-            source!!.read(config!!, configuredCatalog, Jsons.jsonNode(emptyMap<Any, Any>()))
+            source!!.read(config, configuredCatalog, Jsons.jsonNode(emptyMap<Any, Any>()))
         val actualCount =
             MoreStreams.toStream(read)
                 .filter { m: AirbyteMessage -> m.type == AirbyteMessage.Type.RECORD }

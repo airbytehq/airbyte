@@ -84,7 +84,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
     @Throws(Exception::class)
     private fun getInitialRawTableState(id: StreamId): InitialRawTableStatus {
         val tableExists =
-            jdbcDatabase.executeMetadataQuery { dbmetadata: DatabaseMetaData? ->
+            jdbcDatabase.executeMetadataQuery { dbmetadata: DatabaseMetaData ->
                 LOGGER.info(
                     "Retrieving table from Db metadata: {} {} {}",
                     catalogName,
@@ -92,7 +92,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                     id.rawName
                 )
                 try {
-                    getTableFromMetadata(dbmetadata!!, id).use { table ->
+                    getTableFromMetadata(dbmetadata, id).use { table ->
                         return@executeMetadataQuery table.next()
                     }
                 } catch (e: SQLException) {
@@ -124,7 +124,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                 // records).
                 val minUnloadedTimestamp: Optional<Timestamp> =
                     timestampStream
-                        .filter(Predicate<Timestamp> { obj: Timestamp? -> Objects.nonNull(obj) })
+                        .filter(Predicate<Timestamp> { obj: Timestamp -> Objects.nonNull(obj) })
                         .findFirst()
                 if (minUnloadedTimestamp.isPresent) {
                     // Decrement by 1 second since timestamp precision varies between databases.
@@ -152,7 +152,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                 // all).
                 val minUnloadedTimestamp: Optional<Timestamp> =
                     timestampStream
-                        .filter(Predicate<Timestamp> { obj: Timestamp? -> Objects.nonNull(obj) })
+                        .filter(Predicate<Timestamp> { obj: Timestamp -> Objects.nonNull(obj) })
                         .findFirst()
                 return InitialRawTableStatus(
                     true,
@@ -415,8 +415,8 @@ abstract class JdbcDestinationHandler<DestinationState>(
                         column: Map.Entry<String?, ColumnDefinition> ->
                         map[column.key] = column.value.type.lowercase()
                     },
-                    { obj: LinkedHashMap<String?, String>, m: LinkedHashMap<String?, String>? ->
-                        obj.putAll(m!!)
+                    { obj: LinkedHashMap<String?, String>, m: LinkedHashMap<String?, String> ->
+                        obj.putAll(m)
                     }
                 )
 
@@ -526,7 +526,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
             tableName: String?
         ): Optional<TableDefinition> {
             val retrievedColumnDefns =
-                jdbcDatabase.executeMetadataQuery { dbMetadata: DatabaseMetaData? ->
+                jdbcDatabase.executeMetadataQuery { dbMetadata: DatabaseMetaData ->
 
                     // TODO: normalize namespace and finalName strings to quoted-lowercase (as
                     // needed. Snowflake
@@ -539,7 +539,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                         tableName
                     )
                     try {
-                        dbMetadata!!.getColumns(catalogName, schemaName, tableName, null).use {
+                        dbMetadata.getColumns(catalogName, schemaName, tableName, null).use {
                             columns ->
                             while (columns.next()) {
                                 val columnName = columns.getString("COLUMN_NAME")

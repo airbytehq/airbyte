@@ -53,7 +53,7 @@ constructor(
                 ConnectorJobOutput()
                     .withOutputType(ConnectorJobOutput.OutputType.DISCOVER_CATALOG_ID)
 
-            LineGobbler.gobble(process.errorStream, { msg: String? -> LOGGER.error(msg) })
+            LineGobbler.gobble(process.errorStream, { msg: String -> LOGGER.error(msg) })
 
             val messagesByType = TestHarnessUtils.getMessagesByType(process, streamFactory, 30)
 

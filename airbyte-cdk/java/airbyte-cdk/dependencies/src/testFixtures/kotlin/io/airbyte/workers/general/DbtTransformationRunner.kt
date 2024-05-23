@@ -122,12 +122,12 @@ class DbtTransformationRunner(
             this.process = process
             LineGobbler.gobble(
                 process.inputStream,
-                { msg: String? -> LOGGER.info(msg) },
+                { msg: String -> LOGGER.info(msg) },
                 CONTAINER_LOG_MDC_BUILDER
             )
             LineGobbler.gobble(
                 process.errorStream,
-                { msg: String? -> LOGGER.error(msg) },
+                { msg: String -> LOGGER.error(msg) },
                 CONTAINER_LOG_MDC_BUILDER
             )
 

@@ -46,11 +46,11 @@ abstract class AbstractSourceFillDbWithTestData : AbstractSourceBasePerformanceT
     ) {
         val database = setupDatabase(dbName)
 
-        database.query<Any?> { ctx: DSLContext? ->
+        database.query<Any?> { ctx: DSLContext ->
             for (currentSteamNumber in 0 until numberOfStreams) {
                 val currentTableName = String.format(testStreamNameTemplate, currentSteamNumber)
 
-                ctx!!.fetch(prepareCreateTableQuery(schemaName, numberOfColumns, currentTableName))
+                ctx.fetch(prepareCreateTableQuery(schemaName, numberOfColumns, currentTableName))
                 for (i in 0 until numberOfBatches) {
                     val insertQueryTemplate =
                         prepareInsertQueryTemplate(

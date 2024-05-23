@@ -113,7 +113,7 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
                     }
                 }
             }
-            .flatMap { line: String? -> this.parseJson(line) }
+            .flatMap { line: String -> this.parseJson(line) }
             .filter { json: JsonNode? -> this.validate(json) }
             .flatMap { json: JsonNode? -> this.toAirbyteMessage(json) }
             .filter { message: AirbyteMessage -> this.filterLog(message) }

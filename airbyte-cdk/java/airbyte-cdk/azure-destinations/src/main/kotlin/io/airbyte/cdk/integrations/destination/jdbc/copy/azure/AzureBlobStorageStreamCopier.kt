@@ -66,7 +66,7 @@ abstract class AzureBlobStorageStreamCopier(
         }
     }
 
-    override fun prepareStagingFile(): String? {
+    override fun prepareStagingFile(): String {
         currentFile = prepareAzureStagingFile()
         val currentFile = this.currentFile!!
         if (!azureStagingFiles.contains(currentFile)) {

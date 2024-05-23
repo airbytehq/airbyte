@@ -130,7 +130,7 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
         val value = getEnv(name)
         checkNotNull(value != null) { "$name environment variable cannot be null" }
 
-        return value!!
+        return value
     }
 
     companion object {

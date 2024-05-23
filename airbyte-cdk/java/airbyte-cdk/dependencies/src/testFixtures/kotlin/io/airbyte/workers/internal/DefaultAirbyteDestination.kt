@@ -86,7 +86,7 @@ constructor(
         // stdout logs are logged elsewhere since stdout also contains data
         LineGobbler.gobble(
             destinationProcess!!.errorStream,
-            { msg: String? -> LOGGER.error(msg) },
+            { msg: String -> LOGGER.error(msg) },
             "airbyte-destination",
             createContainerLogMdcBuilder()
         )

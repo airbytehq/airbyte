@@ -232,7 +232,7 @@ class AirbyteExceptionHandlerTest {
                         .dropLastWhile { it.isEmpty() }
                         .toTypedArray()
                 )
-                .map { line: String? ->
+                .map { line: String ->
                     // these tests sometimes emit non-json stdout (e.g. log4j warnings)
                     // so we try-catch to handle those malformed lines.
                     try {

@@ -24,7 +24,7 @@ object CloseableShutdownHook {
      *
      * @param objects An array of objects to be closed on application shutdown.
      */
-    fun registerRuntimeShutdownHook(vararg objects: Any?) {
+    fun registerRuntimeShutdownHook(vararg objects: Any) {
         Runtime.getRuntime().addShutdownHook(buildShutdownHookThread(*objects))
     }
 
@@ -35,11 +35,11 @@ object CloseableShutdownHook {
      * @return The application shutdown hook [Thread].
      */
     @VisibleForTesting
-    fun buildShutdownHookThread(vararg objects: Any?): Thread {
+    fun buildShutdownHookThread(vararg objects: Any): Thread {
         val autoCloseables: Collection<AutoCloseable> =
             Stream.of(*objects)
-                .filter { o: Any? -> o is AutoCloseable }
-                .map { obj: Any? -> AutoCloseable::class.java.cast(obj) }
+                .filter { o: Any -> o is AutoCloseable }
+                .map { obj: Any -> AutoCloseable::class.java.cast(obj) }
                 .toList()
 
         return Thread { autoCloseables.forEach { it.close() } }

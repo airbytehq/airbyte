@@ -31,7 +31,7 @@ object TestHarnessUtils {
         }
 
         if (process.info() != null) {
-            process.info().commandLine().ifPresent { commandLine: String? ->
+            process.info().commandLine().ifPresent { commandLine: String ->
                 LOGGER.debug("Gently closing process {}", commandLine)
             }
         }

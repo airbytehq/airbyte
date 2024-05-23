@@ -21,7 +21,7 @@ import org.testcontainers.utility.DockerImageName
 
 class SshBastionContainer : AutoCloseable {
     class SshBastionContainerFactory : ContainerFactory<GenericContainer<*>>() {
-        override fun createNewContainer(imageName: DockerImageName?): GenericContainer<*>? {
+        override fun createNewContainer(imageName: DockerImageName): GenericContainer<*> {
             val container: GenericContainer<*> =
                 GenericContainer<Nothing>(
                         ImageFromDockerfile("bastion-test")
@@ -31,8 +31,8 @@ class SshBastionContainer : AutoCloseable {
             return container
         }
 
-        fun exclusive(network: Network): GenericContainer<*>? {
-            val imageModifier = Consumer { c: GenericContainer<*> -> c!!.withNetwork(network) }
+        fun exclusive(network: Network): GenericContainer<*> {
+            val imageModifier = Consumer { c: GenericContainer<*> -> c.withNetwork(network) }
             val container =
                 super.exclusive(
                     "bastion-test",

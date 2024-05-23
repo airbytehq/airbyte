@@ -196,7 +196,7 @@ class GlobalAsyncStateManagerTest {
 
     @Test
     internal fun testBasic() {
-        val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
+        val emittedStatesFromDestination: MutableList<AirbyteMessage> = mutableListOf()
         val stateManager =
             GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
 
@@ -205,7 +205,7 @@ class GlobalAsyncStateManagerTest {
         assertEquals(firstStateId, secondStateId)
 
         stateManager.decrement(firstStateId, 2)
-        stateManager.flushStates { e: AirbyteMessage? ->
+        stateManager.flushStates { e: AirbyteMessage ->
             emittedStatesFromDestination.add(
                 e,
             )
@@ -216,14 +216,14 @@ class GlobalAsyncStateManagerTest {
                 .stream()
                 .collect(
                     Collectors.toMap(
-                        { c: AirbyteMessage? -> c },
-                        { c: AirbyteMessage? -> c?.state?.destinationStats },
+                        { c: AirbyteMessage -> c },
+                        { c: AirbyteMessage -> c.state?.destinationStats },
                     ),
                 )
         assertEquals(0, stateWithStats.size)
 
         stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
-        stateManager.flushStates { e: AirbyteMessage? ->
+        stateManager.flushStates { e: AirbyteMessage ->
             emittedStatesFromDestination.add(
                 e,
             )
@@ -235,8 +235,8 @@ class GlobalAsyncStateManagerTest {
                 .stream()
                 .collect(
                     Collectors.toMap(
-                        { c: AirbyteMessage? -> c },
-                        { c: AirbyteMessage? -> c?.state?.destinationStats },
+                        { c: AirbyteMessage -> c },
+                        { c: AirbyteMessage -> c.state?.destinationStats },
                     ),
                 )
         assertEquals(
@@ -266,13 +266,13 @@ class GlobalAsyncStateManagerTest {
     internal inner class GlobalState {
         @Test
         fun testEmptyQueuesGlobalState() {
-            val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
+            val emittedStatesFromDestination: MutableList<AirbyteMessage> = mutableListOf()
             val stateManager =
                 GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
 
             // GLOBAL
             stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
-            stateManager.flushStates { e: AirbyteMessage? ->
+            stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
                 )
@@ -283,8 +283,8 @@ class GlobalAsyncStateManagerTest {
                     .stream()
                     .collect(
                         Collectors.toMap(
-                            { c: AirbyteMessage? -> c },
-                            { c: AirbyteMessage? -> c?.state?.destinationStats },
+                            { c: AirbyteMessage -> c },
+                            { c: AirbyteMessage -> c.state?.destinationStats },
                         ),
                     )
             //
@@ -315,7 +315,7 @@ class GlobalAsyncStateManagerTest {
 
         @Test
         internal fun testConversion() {
-            val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
+            val emittedStatesFromDestination: MutableList<AirbyteMessage> = mutableListOf()
             val stateManager =
                 GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
 
@@ -328,21 +328,21 @@ class GlobalAsyncStateManagerTest {
 
             // Since this is actually a global state, we can only flush after all streams are done.
             stateManager.decrement(preConvertId0, 10)
-            stateManager.flushStates { e: AirbyteMessage? ->
+            stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
                 )
             }
             assertEquals(0, emittedStatesFromDestination.size)
             stateManager.decrement(preConvertId1, 10)
-            stateManager.flushStates { e: AirbyteMessage? ->
+            stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
                 )
             }
             assertEquals(0, emittedStatesFromDestination.size)
             stateManager.decrement(preConvertId2, 10)
-            stateManager.flushStates { e: AirbyteMessage? ->
+            stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
                 )
@@ -353,8 +353,8 @@ class GlobalAsyncStateManagerTest {
                     .stream()
                     .collect(
                         Collectors.toMap(
-                            { c: AirbyteMessage? -> c },
-                            { c: AirbyteMessage? -> c?.state?.destinationStats },
+                            { c: AirbyteMessage -> c },
+                            { c: AirbyteMessage -> c.state?.destinationStats },
                         ),
                     )
             assertEquals(
@@ -374,14 +374,14 @@ class GlobalAsyncStateManagerTest {
 
         @Test
         internal fun testCorrectFlushingOneStream() {
-            val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
+            val emittedStatesFromDestination: MutableList<AirbyteMessage> = mutableListOf()
             val stateManager =
                 GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
 
             val preConvertId0: Long = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
             stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
             stateManager.decrement(preConvertId0, 10)
-            stateManager.flushStates { e: AirbyteMessage? ->
+            stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
                 )
@@ -392,8 +392,8 @@ class GlobalAsyncStateManagerTest {
                     .stream()
                     .collect(
                         Collectors.toMap(
-                            { c: AirbyteMessage? -> c },
-                            { c: AirbyteMessage? -> c?.state?.destinationStats },
+                            { c: AirbyteMessage -> c },
+                            { c: AirbyteMessage -> c.state?.destinationStats },
                         ),
                     )
             assertEquals(
@@ -415,7 +415,7 @@ class GlobalAsyncStateManagerTest {
             val afterConvertId1: Long = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
             stateManager.trackState(GLOBAL_STATE_MESSAGE2, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
             stateManager.decrement(afterConvertId1, 10)
-            stateManager.flushStates { e: AirbyteMessage? ->
+            stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
                 )
@@ -425,8 +425,8 @@ class GlobalAsyncStateManagerTest {
                     .stream()
                     .collect(
                         Collectors.toMap(
-                            { c: AirbyteMessage? -> c },
-                            { c: AirbyteMessage? -> c?.state?.destinationStats },
+                            { c: AirbyteMessage -> c },
+                            { c: AirbyteMessage -> c.state?.destinationStats },
                         ),
                     )
             assertEquals(
@@ -446,14 +446,14 @@ class GlobalAsyncStateManagerTest {
 
         @Test
         internal fun testZeroRecordFlushing() {
-            val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
+            val emittedStatesFromDestination: MutableList<AirbyteMessage> = mutableListOf()
             val stateManager =
                 GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
 
             val preConvertId0: Long = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
             stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
             stateManager.decrement(preConvertId0, 10)
-            stateManager.flushStates { e: AirbyteMessage? ->
+            stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
                 )
@@ -464,8 +464,8 @@ class GlobalAsyncStateManagerTest {
                     .stream()
                     .collect(
                         Collectors.toMap(
-                            { c: AirbyteMessage? -> c },
-                            { c: AirbyteMessage? -> c?.state?.destinationStats },
+                            { c: AirbyteMessage -> c },
+                            { c: AirbyteMessage -> c.state?.destinationStats },
                         ),
                     )
             assertEquals(
@@ -484,7 +484,7 @@ class GlobalAsyncStateManagerTest {
             emittedStatesFromDestination.clear()
 
             stateManager.trackState(GLOBAL_STATE_MESSAGE2, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
-            stateManager.flushStates { e: AirbyteMessage? ->
+            stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
                 )
@@ -495,8 +495,8 @@ class GlobalAsyncStateManagerTest {
                     .stream()
                     .collect(
                         Collectors.toMap(
-                            { c: AirbyteMessage? -> c },
-                            { c: AirbyteMessage? -> c?.state?.destinationStats },
+                            { c: AirbyteMessage -> c },
+                            { c: AirbyteMessage -> c.state?.destinationStats },
                         ),
                     )
             assertEquals(
@@ -520,7 +520,7 @@ class GlobalAsyncStateManagerTest {
             val afterConvertId2: Long = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
             stateManager.trackState(GLOBAL_STATE_MESSAGE3, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
             stateManager.decrement(afterConvertId2, 10)
-            stateManager.flushStates { e: AirbyteMessage? ->
+            stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
                 )
@@ -530,8 +530,8 @@ class GlobalAsyncStateManagerTest {
                     .stream()
                     .collect(
                         Collectors.toMap(
-                            { c: AirbyteMessage? -> c },
-                            { c: AirbyteMessage? -> c?.state?.destinationStats },
+                            { c: AirbyteMessage -> c },
+                            { c: AirbyteMessage -> c.state?.destinationStats },
                         ),
                     )
             assertEquals(
@@ -551,7 +551,7 @@ class GlobalAsyncStateManagerTest {
 
         @Test
         internal fun testCorrectFlushingManyStreams() {
-            val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
+            val emittedStatesFromDestination: MutableList<AirbyteMessage> = mutableListOf()
             val stateManager =
                 GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
 
@@ -561,7 +561,7 @@ class GlobalAsyncStateManagerTest {
             stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
             stateManager.decrement(preConvertId0, 10)
             stateManager.decrement(preConvertId1, 10)
-            stateManager.flushStates { e: AirbyteMessage? ->
+            stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
                 )
@@ -572,8 +572,8 @@ class GlobalAsyncStateManagerTest {
                     .stream()
                     .collect(
                         Collectors.toMap(
-                            { c: AirbyteMessage? -> c },
-                            { c: AirbyteMessage? -> c?.state?.destinationStats },
+                            { c: AirbyteMessage -> c },
+                            { c: AirbyteMessage -> c.state?.destinationStats },
                         ),
                     )
             assertEquals(
@@ -596,7 +596,7 @@ class GlobalAsyncStateManagerTest {
             assertEquals(afterConvertId0, afterConvertId1)
             stateManager.trackState(GLOBAL_STATE_MESSAGE2, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
             stateManager.decrement(afterConvertId0, 20)
-            stateManager.flushStates { e: AirbyteMessage? ->
+            stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
                 )
@@ -606,8 +606,8 @@ class GlobalAsyncStateManagerTest {
                     .stream()
                     .collect(
                         Collectors.toMap(
-                            { c: AirbyteMessage? -> c },
-                            { c: AirbyteMessage? -> c?.state?.destinationStats },
+                            { c: AirbyteMessage -> c },
+                            { c: AirbyteMessage -> c.state?.destinationStats },
                         ),
                     )
             assertEquals(
@@ -630,13 +630,13 @@ class GlobalAsyncStateManagerTest {
     internal inner class PerStreamState {
         @Test
         internal fun testEmptyQueues() {
-            val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
+            val emittedStatesFromDestination: MutableList<AirbyteMessage> = mutableListOf()
             val stateManager =
                 GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
 
             // GLOBAL
             stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
-            stateManager.flushStates { e: AirbyteMessage? ->
+            stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
                 )
@@ -647,8 +647,8 @@ class GlobalAsyncStateManagerTest {
                     .stream()
                     .collect(
                         Collectors.toMap(
-                            { c: AirbyteMessage? -> c },
-                            { c: AirbyteMessage? -> c?.state?.destinationStats },
+                            { c: AirbyteMessage -> c },
+                            { c: AirbyteMessage -> c.state?.destinationStats },
                         ),
                     )
             assertEquals(
@@ -678,14 +678,14 @@ class GlobalAsyncStateManagerTest {
 
         @Test
         internal fun testCorrectFlushingOneStream() {
-            val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
+            val emittedStatesFromDestination: MutableList<AirbyteMessage> = mutableListOf()
             val stateManager =
                 GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
 
             var stateId: Long = simulateIncomingRecords(STREAM1_DESC, 3, stateManager)
             stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
             stateManager.decrement(stateId, 3)
-            stateManager.flushStates { e: AirbyteMessage? ->
+            stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
                 )
@@ -696,8 +696,8 @@ class GlobalAsyncStateManagerTest {
                     .stream()
                     .collect(
                         Collectors.toMap(
-                            { c: AirbyteMessage? -> c },
-                            { c: AirbyteMessage? -> c?.state?.destinationStats },
+                            { c: AirbyteMessage -> c },
+                            { c: AirbyteMessage -> c.state?.destinationStats },
                         ),
                     )
             assertEquals(
@@ -719,7 +719,7 @@ class GlobalAsyncStateManagerTest {
             stateId = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
             stateManager.trackState(STREAM1_STATE_MESSAGE2, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
             stateManager.decrement(stateId, 10)
-            stateManager.flushStates { e: AirbyteMessage? ->
+            stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
                 )
@@ -730,8 +730,8 @@ class GlobalAsyncStateManagerTest {
                     .stream()
                     .collect(
                         Collectors.toMap(
-                            { c: AirbyteMessage? -> c },
-                            { c: AirbyteMessage? -> c?.state?.destinationStats },
+                            { c: AirbyteMessage -> c },
+                            { c: AirbyteMessage -> c.state?.destinationStats },
                         ),
                     )
             assertEquals(
@@ -754,14 +754,14 @@ class GlobalAsyncStateManagerTest {
 
         @Test
         internal fun testZeroRecordFlushing() {
-            val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
+            val emittedStatesFromDestination: MutableList<AirbyteMessage> = mutableListOf()
             val stateManager =
                 GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
 
             var stateId: Long = simulateIncomingRecords(STREAM1_DESC, 3, stateManager)
             stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
             stateManager.decrement(stateId, 3)
-            stateManager.flushStates { e: AirbyteMessage? ->
+            stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
                 )
@@ -772,8 +772,8 @@ class GlobalAsyncStateManagerTest {
                     .stream()
                     .collect(
                         Collectors.toMap(
-                            { c: AirbyteMessage? -> c },
-                            { c: AirbyteMessage? -> c?.state?.destinationStats },
+                            { c: AirbyteMessage -> c },
+                            { c: AirbyteMessage -> c.state?.destinationStats },
                         ),
                     )
             assertEquals(
@@ -792,7 +792,7 @@ class GlobalAsyncStateManagerTest {
             emittedStatesFromDestination.clear()
 
             stateManager.trackState(STREAM1_STATE_MESSAGE2, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
-            stateManager.flushStates { e: AirbyteMessage? ->
+            stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
                 )
@@ -802,8 +802,8 @@ class GlobalAsyncStateManagerTest {
                     .stream()
                     .collect(
                         Collectors.toMap(
-                            { c: AirbyteMessage? -> c },
-                            { c: AirbyteMessage? -> c?.state?.destinationStats },
+                            { c: AirbyteMessage -> c },
+                            { c: AirbyteMessage -> c.state?.destinationStats },
                         ),
                     )
             val expectedDestinationStats2 = AirbyteStateStats().withRecordCount(0.0)
@@ -828,7 +828,7 @@ class GlobalAsyncStateManagerTest {
             stateId = simulateIncomingRecords(STREAM1_DESC, 10, stateManager)
             stateManager.trackState(STREAM1_STATE_MESSAGE3, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
             stateManager.decrement(stateId, 10)
-            stateManager.flushStates { e: AirbyteMessage? ->
+            stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
                 )
@@ -838,8 +838,8 @@ class GlobalAsyncStateManagerTest {
                     .stream()
                     .collect(
                         Collectors.toMap(
-                            { c: AirbyteMessage? -> c },
-                            { c: AirbyteMessage? -> c?.state?.destinationStats },
+                            { c: AirbyteMessage -> c },
+                            { c: AirbyteMessage -> c.state?.destinationStats },
                         ),
                     )
             val expectedDestinationStats3 = AirbyteStateStats().withRecordCount(10.0)
@@ -863,7 +863,7 @@ class GlobalAsyncStateManagerTest {
 
         @Test
         internal fun testCorrectFlushingManyStream() {
-            val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
+            val emittedStatesFromDestination: MutableList<AirbyteMessage> = mutableListOf()
             val stateManager =
                 GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
 
@@ -872,7 +872,7 @@ class GlobalAsyncStateManagerTest {
 
             stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
             stateManager.decrement(stream1StateId, 3)
-            stateManager.flushStates { e: AirbyteMessage? ->
+            stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
                 )
@@ -883,8 +883,8 @@ class GlobalAsyncStateManagerTest {
                     .stream()
                     .collect(
                         Collectors.toMap(
-                            { c: AirbyteMessage? -> c },
-                            { c: AirbyteMessage? -> c?.state?.destinationStats },
+                            { c: AirbyteMessage -> c },
+                            { c: AirbyteMessage -> c.state?.destinationStats },
                         ),
                     )
             assertEquals(
@@ -903,7 +903,7 @@ class GlobalAsyncStateManagerTest {
             emittedStatesFromDestination.clear()
 
             stateManager.decrement(stream2StateId, 4)
-            stateManager.flushStates { e: AirbyteMessage? ->
+            stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
                 )
@@ -912,7 +912,7 @@ class GlobalAsyncStateManagerTest {
             stateManager.trackState(STREAM2_STATE_MESSAGE, STATE_MSG_SIZE, DEFAULT_NAMESPACE)
             stateManager.decrement(stream2StateId, 3)
             // only flush state if counter is 0.
-            stateManager.flushStates { e: AirbyteMessage? ->
+            stateManager.flushStates { e: AirbyteMessage ->
                 emittedStatesFromDestination.add(
                     e,
                 )
@@ -923,8 +923,8 @@ class GlobalAsyncStateManagerTest {
                     .stream()
                     .collect(
                         Collectors.toMap(
-                            { c: AirbyteMessage? -> c },
-                            { c: AirbyteMessage? -> c?.state?.destinationStats },
+                            { c: AirbyteMessage -> c },
+                            { c: AirbyteMessage -> c.state?.destinationStats },
                         ),
                     )
             assertEquals(
@@ -960,20 +960,20 @@ class GlobalAsyncStateManagerTest {
 
     @Test
     internal fun flushingRecordsShouldNotReduceStatsCounterForGlobalState() {
-        val emittedStatesFromDestination: MutableList<AirbyteMessage?> = mutableListOf()
+        val emittedStatesFromDestination: MutableList<AirbyteMessage> = mutableListOf()
         val stateManager =
             GlobalAsyncStateManager(GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES))
         val stateId = simulateIncomingRecords(STREAM1_DESC, 6, stateManager)
         stateManager.decrement(stateId, 4)
         stateManager.trackState(GLOBAL_STATE_MESSAGE1, 1, STREAM1_DESC.namespace)
-        stateManager.flushStates { e: AirbyteMessage? ->
+        stateManager.flushStates { e: AirbyteMessage ->
             emittedStatesFromDestination.add(
                 e,
             )
         }
         assertEquals(0, emittedStatesFromDestination.size)
         stateManager.decrement(stateId, 2)
-        stateManager.flushStates { e: AirbyteMessage? ->
+        stateManager.flushStates { e: AirbyteMessage ->
             emittedStatesFromDestination.add(
                 e,
             )
@@ -981,7 +981,7 @@ class GlobalAsyncStateManagerTest {
         assertEquals(1, emittedStatesFromDestination.size)
         assertEquals(
             6.0,
-            emittedStatesFromDestination.first()?.state?.destinationStats?.recordCount,
+            emittedStatesFromDestination.first().state?.destinationStats?.recordCount,
         )
     }
 }

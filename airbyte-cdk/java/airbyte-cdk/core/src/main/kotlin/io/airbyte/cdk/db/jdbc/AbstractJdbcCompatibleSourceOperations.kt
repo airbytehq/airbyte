@@ -175,7 +175,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
             columnName,
             DataTypeUtils.returnNullIfInvalid(
                 { resultSet.getDouble(index) },
-                { d: Double? -> java.lang.Double.isFinite(d!!) },
+                { d: Double -> java.lang.Double.isFinite(d) },
             ),
         )
     }
@@ -191,7 +191,7 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
             columnName,
             DataTypeUtils.returnNullIfInvalid(
                 { resultSet.getFloat(index) },
-                { f: Float? -> java.lang.Float.isFinite(f!!) },
+                { f: Float -> java.lang.Float.isFinite(f) },
             ),
         )
     }

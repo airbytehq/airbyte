@@ -26,7 +26,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
-    @JvmField protected var testdb: T? = null
+    @JvmField protected var testdb: T = createTestDatabase()
 
     protected open fun createTableSqlFmt(): String {
         return "CREATE TABLE %s.%s(%s);"
@@ -163,9 +163,9 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 "VARCHAR(200)",
             )
         if (randomSchema() != modelsSchema()) {
-            testdb!!.with(createSchemaSqlFmt(), randomSchema())
+            testdb.with(createSchemaSqlFmt(), randomSchema())
         }
-        testdb!!.with(
+        testdb.with(
             createTableSqlFmt(),
             randomSchema(),
             RANDOM_TABLE_NAME,
@@ -193,7 +193,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     @AfterEach
     protected open fun tearDown() {
         try {
-            testdb!!.close()
+            testdb.close()
         } catch (e: Throwable) {
             LOGGER.error("exception during teardown", e)
         }
@@ -215,7 +215,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             }
             i++
         }
-        primaryKey.ifPresent { s: String? ->
+        primaryKey.ifPresent { s: String ->
             columnClause.append(", PRIMARY KEY (").append(s).append(")")
         }
 
@@ -234,7 +234,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         makeIdCol: String?,
         modelCol: String?
     ) {
-        testdb!!.with(
+        testdb.with(
             "INSERT INTO %s.%s (%s, %s, %s) VALUES (%s, %s, '%s');",
             dbName,
             streamName,
@@ -248,11 +248,11 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     }
 
     protected open fun deleteMessageOnIdCol(streamName: String?, idCol: String?, idValue: Int) {
-        testdb!!.with("DELETE FROM %s.%s WHERE %s = %s", modelsSchema(), streamName, idCol, idValue)
+        testdb.with("DELETE FROM %s.%s WHERE %s = %s", modelsSchema(), streamName, idCol, idValue)
     }
 
     protected open fun deleteCommand(streamName: String?) {
-        testdb!!.with("DELETE FROM %s.%s", modelsSchema(), streamName)
+        testdb.with("DELETE FROM %s.%s", modelsSchema(), streamName)
     }
 
     protected open fun updateCommand(
@@ -262,7 +262,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         idCol: String?,
         idValue: Int
     ) {
-        testdb!!.with(
+        testdb.with(
             "UPDATE %s.%s SET %s = '%s' WHERE %s = %s",
             modelsSchema(),
             streamName,
@@ -277,7 +277,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         val recordsPerStream = extractRecordMessagesStreamWise(messages)
         val consolidatedRecords: MutableSet<AirbyteRecordMessage> = HashSet()
         recordsPerStream.values.forEach(
-            Consumer { c: Set<AirbyteRecordMessage>? -> consolidatedRecords.addAll(c!!) },
+            Consumer { c: Set<AirbyteRecordMessage> -> consolidatedRecords.addAll(c) }
         )
         return consolidatedRecords
     }
@@ -290,7 +290,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             if (message.type == AirbyteMessage.Type.RECORD) {
                 val recordMessage = message.record
                 recordsPerStream
-                    .computeIfAbsent(recordMessage.stream) { c: String? -> ArrayList() }
+                    .computeIfAbsent(recordMessage.stream) { c: String -> ArrayList() }
                     .add(recordMessage)
             }
         }
@@ -383,7 +383,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     @Throws(Exception::class)
     fun testExistingData() {
         val targetPosition = cdcLatestTargetPosition()
-        val read = source()!!.read(config()!!, configuredCatalog, null)
+        val read = source().read(config()!!, configuredCatalog, null)
         val actualRecords = AutoCloseableIterators.toListAndClose(read)
 
         val recordMessages = extractRecordMessages(actualRecords)
@@ -581,7 +581,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         val columns =
             ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)")
-        testdb!!.with(
+        testdb.with(
             createTableSqlFmt(),
             modelsSchema(),
             MODELS_STREAM_NAME_2,
@@ -836,7 +836,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     fun testNoData() {
         deleteCommand(MODELS_STREAM_NAME)
         waitForCdcRecords(modelsSchema(), MODELS_STREAM_NAME, MODEL_RECORDS.size)
-        val read = source()!!.read(config()!!, configuredCatalog, null)
+        val read = source().read(config()!!, configuredCatalog, null)
         val actualRecords = AutoCloseableIterators.toListAndClose(read)
 
         val recordMessages = extractRecordMessages(actualRecords)
@@ -876,7 +876,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     @Test
     @Throws(Exception::class)
     fun testCheck() {
-        val status = source()!!.check(config()!!)
+        val status = source().check(config()!!)
         Assertions.assertEquals(status!!.status, AirbyteConnectionStatus.Status.SUCCEEDED)
     }
 
@@ -884,15 +884,14 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     @Throws(Exception::class)
     fun testDiscover() {
         val expectedCatalog = expectedCatalogForDiscover()
-        val actualCatalog = source()!!.discover(config()!!)
+        val actualCatalog = source().discover(config()!!)
 
         Assertions.assertEquals(
             expectedCatalog.streams
                 .stream()
                 .sorted(Comparator.comparing { obj: AirbyteStream -> obj.name })
                 .collect(Collectors.toList()),
-            actualCatalog!!
-                .streams
+            actualCatalog.streams
                 .stream()
                 .sorted(Comparator.comparing { obj: AirbyteStream -> obj.name })
                 .collect(Collectors.toList()),
@@ -1306,7 +1305,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         val columns =
             ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)")
-        testdb!!.with(
+        testdb.with(
             createTableSqlFmt(),
             modelsSchema(),
             MODELS_STREAM_NAME_2,

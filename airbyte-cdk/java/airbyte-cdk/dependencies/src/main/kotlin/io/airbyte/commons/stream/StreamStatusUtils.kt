@@ -88,7 +88,7 @@ object StreamStatusUtils {
         airbyteStream: Optional<AirbyteStreamNameNamespacePair>,
         statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
     ) {
-        airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+        airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
             LOGGER.debug("RUNNING -> {}", s)
             emitStreamStatus(
                 s,
@@ -134,7 +134,7 @@ object StreamStatusUtils {
         airbyteStream: Optional<AirbyteStreamNameNamespacePair>,
         statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
     ) {
-        airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+        airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
             LOGGER.debug("STARTING -> {}", s)
             emitStreamStatus(
                 s,
@@ -180,7 +180,7 @@ object StreamStatusUtils {
         airbyteStream: Optional<AirbyteStreamNameNamespacePair>,
         statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
     ) {
-        airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+        airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
             LOGGER.debug("COMPLETE -> {}", s)
             emitStreamStatus(
                 s,
@@ -226,7 +226,7 @@ object StreamStatusUtils {
         airbyteStream: Optional<AirbyteStreamNameNamespacePair>,
         statusEmitter: Optional<Consumer<AirbyteStreamStatusHolder>>
     ) {
-        airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+        airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
             LOGGER.debug("INCOMPLETE -> {}", s)
             emitStreamStatus(
                 s,

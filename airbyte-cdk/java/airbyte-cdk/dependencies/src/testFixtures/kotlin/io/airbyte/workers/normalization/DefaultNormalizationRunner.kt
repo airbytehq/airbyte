@@ -212,7 +212,7 @@ class DefaultNormalizationRunner(
             }
             LineGobbler.gobble(
                 process.errorStream,
-                { msg: String? -> LOGGER.error(msg) },
+                { msg: String -> LOGGER.error(msg) },
                 CONTAINER_LOG_MDC_BUILDER
             )
 

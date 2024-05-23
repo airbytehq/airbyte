@@ -57,10 +57,10 @@ class BufferedStreamConsumerTest {
     fun test1StreamWith1State() {
         val expectedRecords = generateRecords(1000)
 
-        consumer!!.start()
+        consumer.start()
         consumeRecords(consumer, expectedRecords)
-        consumer!!.accept(STATE_MESSAGE1)
-        consumer!!.close()
+        consumer.accept(STATE_MESSAGE1)
+        consumer.close()
 
         verifyStartAndClose()
 
@@ -74,11 +74,11 @@ class BufferedStreamConsumerTest {
     fun test1StreamWith2State() {
         val expectedRecords = generateRecords(1000)
 
-        consumer!!.start()
+        consumer.start()
         consumeRecords(consumer, expectedRecords)
-        consumer!!.accept(STATE_MESSAGE1)
-        consumer!!.accept(STATE_MESSAGE2)
-        consumer!!.close()
+        consumer.accept(STATE_MESSAGE1)
+        consumer.accept(STATE_MESSAGE2)
+        consumer.close()
 
         verifyStartAndClose()
 
@@ -92,9 +92,9 @@ class BufferedStreamConsumerTest {
     fun test1StreamWith0State() {
         val expectedRecords = generateRecords(1000)
 
-        consumer!!.start()
+        consumer.start()
         consumeRecords(consumer, expectedRecords)
-        consumer!!.close()
+        consumer.close()
 
         verifyStartAndClose()
 
@@ -107,11 +107,11 @@ class BufferedStreamConsumerTest {
         val expectedRecordsBatch1 = generateRecords(1000)
         val expectedRecordsBatch2 = generateRecords(1000)
 
-        consumer!!.start()
+        consumer.start()
         consumeRecords(consumer, expectedRecordsBatch1)
-        consumer!!.accept(STATE_MESSAGE1)
+        consumer.accept(STATE_MESSAGE1)
         consumeRecords(consumer, expectedRecordsBatch2)
-        consumer!!.close()
+        consumer.close()
 
         verifyStartAndClose()
 
@@ -163,16 +163,16 @@ class BufferedStreamConsumerTest {
         val expectedRecordsBatch2 = generateRecords(1000)
         val expectedRecordsBatch3 = generateRecords(1000)
 
-        consumer!!.start()
+        consumer.start()
         consumeRecords(consumer, expectedRecordsBatch1)
-        consumer!!.accept(STATE_MESSAGE1)
+        consumer.accept(STATE_MESSAGE1)
         consumeRecords(consumer, expectedRecordsBatch2)
-        Mockito.`when`(isValidRecord!!.apply(ArgumentMatchers.any()))
+        Mockito.`when`(isValidRecord.apply(ArgumentMatchers.any()))
             .thenThrow(IllegalStateException("induced exception"))
         Assertions.assertThrows(IllegalStateException::class.java) {
-            consumer!!.accept(expectedRecordsBatch3[0])
+            consumer.accept(expectedRecordsBatch3[0])
         }
-        consumer!!.close()
+        consumer.close()
 
         verifyStartAndCloseFailure()
 
@@ -188,15 +188,15 @@ class BufferedStreamConsumerTest {
         val expectedRecordsBatch2 = generateRecords(1000)
         val expectedRecordsBatch3 = generateRecords(1000)
 
-        consumer!!.start()
+        consumer.start()
         consumeRecords(consumer, expectedRecordsBatch1)
         consumeRecords(consumer, expectedRecordsBatch2)
-        Mockito.`when`(isValidRecord!!.apply(ArgumentMatchers.any()))
+        Mockito.`when`(isValidRecord.apply(ArgumentMatchers.any()))
             .thenThrow(IllegalStateException("induced exception"))
         Assertions.assertThrows(IllegalStateException::class.java) {
-            consumer!!.accept(expectedRecordsBatch3[0])
+            consumer.accept(expectedRecordsBatch3[0])
         }
-        consumer!!.close()
+        consumer.close()
 
         verifyStartAndCloseFailure()
 
@@ -215,13 +215,13 @@ class BufferedStreamConsumerTest {
         val expectedRecordsBatch1 = generateRecords(1000)
         val expectedRecordsBatch2 = generateRecords(1000)
 
-        consumer!!.start()
+        consumer.start()
         consumeRecords(consumer, expectedRecordsBatch1)
-        consumer!!.accept(STATE_MESSAGE1)
+        consumer.accept(STATE_MESSAGE1)
         consumeRecords(consumer, expectedRecordsBatch2)
         Assertions.assertThrows(
             IllegalStateException::class.java,
-            { consumer!!.close() },
+            { consumer.close() },
             "Expected an error to be thrown on close"
         )
 
@@ -243,11 +243,11 @@ class BufferedStreamConsumerTest {
                 .peek { m: AirbyteMessage -> m.record.withStream(STREAM_NAME2) }
                 .collect(Collectors.toList())
 
-        consumer!!.start()
+        consumer.start()
         consumeRecords(consumer, expectedRecordsStream1)
-        consumer!!.accept(STATE_MESSAGE1)
+        consumer.accept(STATE_MESSAGE1)
         consumeRecords(consumer, expectedRecordsStream2)
-        consumer!!.close()
+        consumer.close()
 
         verifyStartAndClose()
 
@@ -268,12 +268,12 @@ class BufferedStreamConsumerTest {
                 .peek { m: AirbyteMessage -> m.record.withStream(STREAM_NAME2) }
                 .collect(Collectors.toList())
 
-        consumer!!.start()
+        consumer.start()
         consumeRecords(consumer, expectedRecordsStream1)
-        consumer!!.accept(STATE_MESSAGE1)
+        consumer.accept(STATE_MESSAGE1)
         consumeRecords(consumer, expectedRecordsStream2)
-        consumer!!.accept(STATE_MESSAGE2)
-        consumer!!.close()
+        consumer.accept(STATE_MESSAGE2)
+        consumer.close()
 
         verifyStartAndClose()
 
@@ -439,19 +439,19 @@ class BufferedStreamConsumerTest {
                         )
                 )
 
-        consumer!!.start()
+        consumer.start()
         consumeRecords(consumer, expectedRecordsStream1)
-        consumer!!.accept(state1)
+        consumer.accept(state1)
         // At this point, we have not yet flushed anything
         consumeRecords(consumer, expectedRecordsStream2)
-        consumer!!.accept(state2)
+        consumer.accept(state2)
         consumeRecords(consumer, expectedRecordsStream2)
         // Now we have flushed stream 2, but not stream 1
         // Verify that we have only acked stream 2's state.
         Mockito.verify(outputRecordCollector).accept(state2)
         Mockito.verify(outputRecordCollector, Mockito.never()).accept(state1)
 
-        consumer!!.close()
+        consumer.close()
         // Now we've closed the consumer, which flushes everything.
         // Verify that we ack stream 1's pending state.
         Mockito.verify(outputRecordCollector).accept(state1)
@@ -531,18 +531,18 @@ class BufferedStreamConsumerTest {
                         )
                 )
 
-        consumer!!.start()
+        consumer.start()
         consumeRecords(consumer, expectedRecordsStream1)
-        consumer!!.accept(state1)
+        consumer.accept(state1)
         // At this point, we have not yet flushed anything
         consumeRecords(consumer, expectedRecordsStream2)
-        consumer!!.accept(state2)
+        consumer.accept(state2)
         consumeRecords(consumer, expectedRecordsStream2)
         // Now we have flushed stream 2, but not stream 1
         // We should not have acked any state yet, because we haven't written stream1's records yet.
         Mockito.verify(outputRecordCollector, Mockito.never()).accept(ArgumentMatchers.any())
 
-        consumer!!.close()
+        consumer.close()
         // Now we've closed the consumer, which flushes everything.
         // Verify that we ack the final state.
         // Note that we discard state1 entirely - this is OK. As long as we ack the last state
