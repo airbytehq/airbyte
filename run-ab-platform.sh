@@ -56,6 +56,7 @@ readonly eventStateSuccess="succeeded"
 readonly eventTypeDownload="download"
 readonly eventTypeInstall="install"
 readonly eventTypeRefresh="refresh"
+readonly eventTypeUninstall="uninstall"
 
 telemetrySuccess=false
 telemetrySessionULID=""
@@ -136,7 +137,29 @@ readonly telemetryURL="https://api.segment.io/v1/track"
 TelemetrySend()
 {
   if $telemetrySuccess; then
-    # due to how traps work, we don't want to send a failure for exiting docker after we sent a success
+    # due to how traps work, we don't want to send a failure for exiting docker after we sent a success,
+    # we want to track this as an uninstall event
+    if $telemetryEnabled; then
+        local now=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
+        local body=$(cat << EOL
+{
+  "anonymousId":"$telemetryUserULID",
+  "event":"$eventTypeUninstall",
+  "properties": {
+    "deployment_method":"run_ab",
+    "session_id":"$telemetrySessionULID",
+    "state":"$eventStateSuccess",
+    "os":"$OSTYPE",
+    "script_version":"$VERSION",
+    "error":""
+  },
+  "timestamp":"$now",
+  "writeKey":"$telemetryKey"
+}
+EOL
+)
+        curl -s -o /dev/null -H "Content-Type: application/json" -X POST -d "$body" $telemetryURL
+      fi
     return
   fi
 
