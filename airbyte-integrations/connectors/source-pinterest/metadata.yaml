@@ -27,7 +27,7 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: "This release introduces updated format of state for incremental streams. Users will need to reset affected streams after upgrading."
+        message: "This release introduces updated format of state for incremental streams. Users will need to reset affected streams after upgrading. Please see migration guide for more details."
         upgradeDeadline: "2024-06-03"
         scopedImpact:
           - scopeType: stream
