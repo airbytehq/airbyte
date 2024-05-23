@@ -11,6 +11,8 @@ from source_tiktok_marketing import SourceTiktokMarketing
 
 SANDBOX_CONFIG_FILE = "secrets/sandbox_config.json"
 PROD_CONFIG_FILE = "secrets/prod_config.json"
+PROD_LIFETIME_CONFIG_FILE = "secrets/prod_config_with_lifetime_granularity.json"
+PROD_DAILY_CONFIG_FILE = "secrets/prod_config_with_day_granularity.json"
 
 
 @pytest.mark.parametrize(
@@ -18,6 +20,8 @@ PROD_CONFIG_FILE = "secrets/prod_config.json"
     [
         (PROD_CONFIG_FILE, 36),
         (SANDBOX_CONFIG_FILE, 28),
+        (PROD_LIFETIME_CONFIG_FILE, 15),
+        (PROD_DAILY_CONFIG_FILE, 27),
     ],
 )
 def test_source_streams(config, stream_len):

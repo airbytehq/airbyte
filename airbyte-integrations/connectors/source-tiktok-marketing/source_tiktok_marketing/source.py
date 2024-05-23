@@ -39,6 +39,7 @@ SANDBOX_STREAM_NAMES = [
     "creative_assets_portfolios",
     "creative_assets_videos",
 ]
+REPORT_GRANULARITY = {"DAY": "daily", "HOUR": "hourly", "LIFETIME": "lifetime"}
 
 
 class SourceTiktokMarketing(YamlDeclarativeSource):
@@ -57,11 +58,19 @@ class SourceTiktokMarketing(YamlDeclarativeSource):
         return is_sandbox
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        is_production = not self._is_sandbox(config)
+        granularity = config.get("report_granularity")
         streams = super().streams(config)
 
-        if is_production:
-            return streams
+        if self._is_sandbox(config):
+            streams = [stream for stream in streams if stream.name in SANDBOX_STREAM_NAMES]
 
-        sandbox_streams = [stream for stream in streams if stream.name in SANDBOX_STREAM_NAMES]
-        return sandbox_streams
+        if granularity:
+            granularity_streams = []
+            for stream in streams:
+                if "report" not in stream.name or REPORT_GRANULARITY[granularity] in stream.name:
+                    # old configs with provided report granularity don't have granularity in stream name
+                    stream.name = stream.name.replace(f"_{REPORT_GRANULARITY[granularity]}", "")
+                    granularity_streams.append(stream)
+            return granularity_streams
+
+        return streams
