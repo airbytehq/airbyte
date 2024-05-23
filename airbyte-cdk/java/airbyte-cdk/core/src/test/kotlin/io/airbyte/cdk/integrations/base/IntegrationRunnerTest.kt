@@ -24,7 +24,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
-import java.util.stream.Collectors
 import org.apache.commons.lang3.ThreadUtils
 import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.Assertions
@@ -474,7 +473,7 @@ ${Jsons.serialize(message2)}""".toByteArray(
             ThreadUtils.getAllThreads()
                 .stream()
                 .filter(IntegrationRunner::filterOrphanedThread)
-                .collect(Collectors.toList())
+                .toList()
         // all threads should be interrupted
         Assertions.assertEquals(listOf<Any>(), runningThreads)
         Assertions.assertEquals(1, caughtExceptions.size)
@@ -502,7 +501,7 @@ ${Jsons.serialize(message2)}""".toByteArray(
             ThreadUtils.getAllThreads()
                 .stream()
                 .filter(IntegrationRunner::filterOrphanedThread)
-                .collect(Collectors.toList())
+                .toList()
         // a thread that refuses to be interrupted should remain
         Assertions.assertEquals(1, runningThreads.size)
         Assertions.assertEquals(1, caughtExceptions.size)

@@ -93,11 +93,11 @@ constructor(
                 expectedRecords
                     .stream()
                     .map { record: JsonNode -> this.copyWithLiftedData(record) }
-                    .collect(Collectors.toList()),
+                    .toList(),
                 actualRecords
                     .stream()
                     .map { record: JsonNode -> this.copyWithLiftedData(record) }
-                    .collect(Collectors.toList()),
+                    .toList(),
                 rawRecordIdentityComparator,
                 rawRecordSortComparator,
                 rawRecordIdentityExtractor,

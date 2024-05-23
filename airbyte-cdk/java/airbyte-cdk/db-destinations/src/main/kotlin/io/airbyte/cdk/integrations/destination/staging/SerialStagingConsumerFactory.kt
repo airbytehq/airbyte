@@ -22,7 +22,6 @@ import java.time.Instant
 import java.util.UUID
 import java.util.function.Consumer
 import java.util.function.Function
-import java.util.stream.Collectors
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -125,7 +124,7 @@ open class SerialStagingConsumerFactory {
             return catalog.streams
                 .stream()
                 .map(toWriteConfig(namingResolver, config, parsedCatalog, useDestinationsV2Columns))
-                .collect(Collectors.toList())
+                .toList()
         }
 
         private fun toWriteConfig(

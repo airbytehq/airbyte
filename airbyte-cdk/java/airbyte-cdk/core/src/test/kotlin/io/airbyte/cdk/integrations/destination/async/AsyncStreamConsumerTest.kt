@@ -37,7 +37,6 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
-import java.util.stream.Collectors
 import java.util.stream.Stream
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -574,7 +573,7 @@ class AsyncStreamConsumerTest {
                             ),
                         )
                 }
-                .collect(Collectors.toList())
+                .toList()
         assertEquals(expRecords, actualRecords)
     }
 }

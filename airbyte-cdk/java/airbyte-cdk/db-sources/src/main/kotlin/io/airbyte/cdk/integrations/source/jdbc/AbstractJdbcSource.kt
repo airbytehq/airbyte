@@ -771,7 +771,7 @@ abstract class AbstractJdbcSource<Datatype>(
                 )
             }
             .map { `object`: ConfiguredAirbyteStream -> Jsons.clone(`object`) }
-            .collect(Collectors.toList())
+            .toList()
     }
 
     companion object {

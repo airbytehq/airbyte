@@ -19,7 +19,6 @@ import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
 import java.nio.file.Path
 import java.util.*
-import java.util.stream.Collectors
 import org.apache.commons.lang3.RandomStringUtils
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -93,13 +92,13 @@ protected constructor(protected val outputFormat: FileUploadFormat) : Destinatio
                 .stream()
                 .filter { o: S3ObjectSummary -> o.key.contains("$streamNameStr/") }
                 .sorted(Comparator.comparingLong { o: S3ObjectSummary -> o.lastModified.time })
-                .collect(Collectors.toList())
+                .toList()
         LOGGER.info(
             "All objects: {}",
             objectSummaries
                 .stream()
                 .map { o: S3ObjectSummary -> String.format("%s/%s", o.bucketName, o.key) }
-                .collect(Collectors.toList()),
+                .toList(),
         )
         return objectSummaries
     }

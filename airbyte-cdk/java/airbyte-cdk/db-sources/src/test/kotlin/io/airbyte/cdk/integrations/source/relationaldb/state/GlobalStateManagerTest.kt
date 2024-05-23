@@ -9,7 +9,6 @@ import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.*
 import java.util.*
-import java.util.stream.Collectors
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -101,7 +100,7 @@ class GlobalStateManagerTest {
                         )
                         .stream()
                         .sorted(Comparator.comparing { obj: DbStreamState -> obj.streamName })
-                        .collect(Collectors.toList())
+                        .toList()
                 )
         val stateManager: StateManager =
             GlobalStateManager(AirbyteStateMessage().withData(Jsons.jsonNode(dbState)), catalog)
@@ -129,7 +128,7 @@ class GlobalStateManagerTest {
                         )
                         .stream()
                         .sorted(Comparator.comparing { obj: DbStreamState -> obj.streamName })
-                        .collect(Collectors.toList())
+                        .toList()
                 )
 
         val expectedGlobalState =
@@ -191,7 +190,7 @@ class GlobalStateManagerTest {
                                 o.streamDescriptor.name
                             }
                         )
-                        .collect(Collectors.toList())
+                        .toList()
                 )
         val expected =
             AirbyteStateMessage()
@@ -282,7 +281,7 @@ class GlobalStateManagerTest {
                         )
                         .stream()
                         .sorted(Comparator.comparing { obj: DbStreamState -> obj.streamName })
-                        .collect(Collectors.toList())
+                        .toList()
                 )
 
         val expectedGlobalState =
@@ -344,7 +343,7 @@ class GlobalStateManagerTest {
                                 o.streamDescriptor.name
                             }
                         )
-                        .collect(Collectors.toList())
+                        .toList()
                 )
         val expected =
             AirbyteStateMessage()

@@ -36,7 +36,7 @@ object CatalogClientConverters {
                         return@map null
                     }
                 }
-                .collect(Collectors.toList())
+                .toList()
 
         protoCatalog.withStreams(airbyteStream)
         return protoCatalog
@@ -144,7 +144,7 @@ object CatalogClientConverters {
                             .stream(s)
                             .config(generateDefaultConfiguration(s))
                     }
-                    .collect(Collectors.toList())
+                    .toList()
             )
     }
 

@@ -309,7 +309,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
                                         )
                                 )
                         }
-                        .collect(Collectors.toList())
+                        .toList()
                 )
 
     /**
@@ -409,7 +409,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
             .stream()
             .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.STATE }
             .map { obj: AirbyteMessage -> obj.state }
-            .collect(Collectors.toList())
+            .toList()
     }
 
     companion object {

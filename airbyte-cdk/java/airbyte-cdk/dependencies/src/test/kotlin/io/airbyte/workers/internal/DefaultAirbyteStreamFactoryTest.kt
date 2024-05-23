@@ -14,7 +14,6 @@ import java.io.InputStream
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 import java.util.*
-import java.util.stream.Collectors
 import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -42,10 +41,7 @@ internal class DefaultAirbyteStreamFactoryTest {
         val messageStream = stringToMessageStream(Jsons.serialize(record1))
         val expectedStream = Stream.of(record1)
 
-        Assertions.assertEquals(
-            expectedStream.collect(Collectors.toList()),
-            messageStream.collect(Collectors.toList())
-        )
+        Assertions.assertEquals(expectedStream.toList(), messageStream.toList())
         Mockito.verifyNoInteractions(logger)
     }
 
@@ -55,7 +51,7 @@ internal class DefaultAirbyteStreamFactoryTest {
 
         val messageStream = stringToMessageStream(invalidRecord)
 
-        Assertions.assertEquals(emptyList<Any>(), messageStream.collect(Collectors.toList()))
+        Assertions.assertEquals(emptyList<Any>(), messageStream.toList())
         Mockito.verify(logger).info(ArgumentMatchers.anyString())
         Mockito.verifyNoMoreInteractions(logger)
     }
@@ -67,7 +63,7 @@ internal class DefaultAirbyteStreamFactoryTest {
 
         val messageStream = stringToMessageStream(Jsons.serialize(logMessage))
 
-        Assertions.assertEquals(emptyList<Any>(), messageStream.collect(Collectors.toList()))
+        Assertions.assertEquals(emptyList<Any>(), messageStream.toList())
         Mockito.verify(logger).warn("warning")
         Mockito.verifyNoMoreInteractions(logger)
     }
@@ -80,7 +76,7 @@ internal class DefaultAirbyteStreamFactoryTest {
 
         val messageStream = stringToMessageStream(invalidRecord)
 
-        Assertions.assertEquals(emptyList<Any>(), messageStream.collect(Collectors.toList()))
+        Assertions.assertEquals(emptyList<Any>(), messageStream.toList())
         Mockito.verify(logger).error(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())
         Mockito.verifyNoMoreInteractions(logger)
     }
@@ -93,7 +89,7 @@ internal class DefaultAirbyteStreamFactoryTest {
 
         val messageStream = stringToMessageStream(invalidRecord)
 
-        Assertions.assertEquals(emptyList<Any>(), messageStream.collect(Collectors.toList()))
+        Assertions.assertEquals(emptyList<Any>(), messageStream.toList())
         Mockito.verify(logger).error(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())
         Mockito.verifyNoMoreInteractions(logger)
     }
@@ -129,7 +125,7 @@ internal class DefaultAirbyteStreamFactoryTest {
 
         val messageStream = stringToMessageStream(inputString)
 
-        Assertions.assertEquals(emptyList<Any>(), messageStream.collect(Collectors.toList()))
+        Assertions.assertEquals(emptyList<Any>(), messageStream.toList())
         Mockito.verify(logger).error(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())
         Mockito.verifyNoMoreInteractions(logger)
     }

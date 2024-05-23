@@ -164,11 +164,7 @@ class S3ConsumerFactory {
             config: S3DestinationConfig,
             catalog: ConfiguredAirbyteCatalog?
         ): List<WriteConfig> {
-            return catalog!!
-                .streams
-                .stream()
-                .map(toWriteConfig(storageOperations, config))
-                .collect(Collectors.toList())
+            return catalog!!.streams.stream().map(toWriteConfig(storageOperations, config)).toList()
         }
 
         private fun toWriteConfig(

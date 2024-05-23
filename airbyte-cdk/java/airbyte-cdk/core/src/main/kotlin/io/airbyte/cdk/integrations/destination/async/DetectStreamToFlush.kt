@@ -273,7 +273,7 @@ internal constructor(
                     }
                     .thenComparing { s: StreamDescriptor -> s.namespace + s.name },
             )
-            .collect(Collectors.toList())
+            .toList()
     }
 
     companion object {

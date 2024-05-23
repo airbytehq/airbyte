@@ -17,7 +17,6 @@ import java.time.Instant
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
-import java.util.stream.Collectors
 import java.util.stream.Stream
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.Assertions
@@ -150,7 +149,7 @@ class BufferedStreamConsumerTest {
             Lists.newArrayList(expectedRecordsBatch1, expectedRecordsBatch2)
                 .stream()
                 .flatMap { obj: List<AirbyteMessage> -> obj.stream() }
-                .collect(Collectors.toList())
+                .toList()
         verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecords)
 
         Mockito.verify(outputRecordCollector).accept(STATE_MESSAGE1)
@@ -241,7 +240,7 @@ class BufferedStreamConsumerTest {
                 .stream()
                 .map { `object`: AirbyteMessage -> Jsons.clone(`object`) }
                 .peek { m: AirbyteMessage -> m.record.withStream(STREAM_NAME2) }
-                .collect(Collectors.toList())
+                .toList()
 
         consumer.start()
         consumeRecords(consumer, expectedRecordsStream1)
@@ -266,7 +265,7 @@ class BufferedStreamConsumerTest {
                 .stream()
                 .map { `object`: AirbyteMessage -> Jsons.clone(`object`) }
                 .peek { m: AirbyteMessage -> m.record.withStream(STREAM_NAME2) }
-                .collect(Collectors.toList())
+                .toList()
 
         consumer.start()
         consumeRecords(consumer, expectedRecordsStream1)
@@ -310,7 +309,7 @@ class BufferedStreamConsumerTest {
             STREAM_NAME,
             SCHEMA_NAME,
             Stream.concat(expectedRecordsStream1.stream(), expectedRecordsStream1Batch2.stream())
-                .collect(Collectors.toList())
+                .toList()
         )
         Mockito.verify(outputRecordCollector).accept(STATE_MESSAGE1)
     }
@@ -345,7 +344,7 @@ class BufferedStreamConsumerTest {
             STREAM_NAME,
             SCHEMA_NAME,
             Stream.concat(expectedRecordsStream1.stream(), expectedRecordsStream1Batch2.stream())
-                .collect(Collectors.toList())
+                .toList()
         )
         verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsStream1Batch3)
         // expects two STATE messages returned since one will be flushed after periodic flushing
@@ -589,10 +588,7 @@ class BufferedStreamConsumerTest {
         Mockito.verify(recordWriter)
             .accept(
                 AirbyteStreamNameNamespacePair(streamName, namespace),
-                expectedRecords
-                    .stream()
-                    .map { obj: AirbyteMessage -> obj.record }
-                    .collect(Collectors.toList())
+                expectedRecords.stream().map { obj: AirbyteMessage -> obj.record }.toList()
             )
     }
 

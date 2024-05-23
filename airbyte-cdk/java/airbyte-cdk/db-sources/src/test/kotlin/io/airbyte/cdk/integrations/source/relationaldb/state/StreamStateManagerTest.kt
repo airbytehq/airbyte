@@ -9,7 +9,6 @@ import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.*
 import java.util.*
-import java.util.stream.Collectors
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -188,7 +187,7 @@ class StreamStateManagerTest {
                         )
                         .stream()
                         .sorted(Comparator.comparing { obj: DbStreamState -> obj.streamName })
-                        .collect(Collectors.toList())
+                        .toList()
                 )
         val expectedFirstEmission =
             createStreamState(
@@ -231,7 +230,7 @@ class StreamStateManagerTest {
                         )
                         .stream()
                         .sorted(Comparator.comparing { obj: DbStreamState -> obj.streamName })
-                        .collect(Collectors.toList())
+                        .toList()
                 )
         val expectedSecondEmission =
             createStreamState(
@@ -397,7 +396,7 @@ class StreamStateManagerTest {
                         )
                         .stream()
                         .sorted(Comparator.comparing { obj: DbStreamState -> obj.streamName })
-                        .collect(Collectors.toList())
+                        .toList()
                 )
 
         val expectedFirstEmission =

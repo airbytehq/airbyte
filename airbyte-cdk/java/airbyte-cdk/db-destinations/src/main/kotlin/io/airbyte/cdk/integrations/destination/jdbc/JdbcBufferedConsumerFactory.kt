@@ -33,7 +33,6 @@ import java.util.*
 import java.util.concurrent.Executors
 import java.util.function.Consumer
 import java.util.function.Function
-import java.util.stream.Collectors
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -111,15 +110,13 @@ object JdbcBufferedConsumerFactory {
         return if (parsedCatalog == null) {
             catalog!!
                 .streams
-                .stream()
-                .map(toWriteConfig(namingResolver, config, schemaRequired))
-                .collect(Collectors.toList())
+                .map { toWriteConfig(namingResolver, config, schemaRequired).apply(it) }
+                .toList()
         } else {
             // we should switch this to kotlin-style list processing, but meh for now
             parsedCatalog.streams
-                .stream()
-                .map(parsedStreamToWriteConfig(namingResolver))
-                .collect(Collectors.toList())
+                .map { parsedStreamToWriteConfig(namingResolver).apply(it) }
+                .toList()
         }
     }
 
