@@ -1,4 +1,4 @@
-# Google-Sheets source connector
+# Google-Sheets destination connector
 
 
 This is the repository for the Google-Sheets source connector, written in Python.
