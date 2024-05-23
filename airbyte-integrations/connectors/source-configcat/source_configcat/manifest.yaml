@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /organizations
           http_method: GET
         record_selector:
@@ -28,7 +28,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/organizations'
+          $ref: "#/schemas/organizations"
     organization_members:
       type: DeclarativeStream
       name: organization_members
@@ -37,7 +37,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /organizations/{{ stream_slice.organizationId }}/members
           http_method: GET
         record_selector:
@@ -52,11 +52,11 @@ definitions:
                 parent_key: organizationId
                 partition_field: organizationId
                 stream:
-                  $ref: '#/definitions/streams/organizations'
+                  $ref: "#/definitions/streams/organizations"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/organization_members'
+          $ref: "#/schemas/organization_members"
     products:
       type: DeclarativeStream
       name: products
@@ -65,7 +65,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /products
           http_method: GET
         record_selector:
@@ -76,7 +76,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/products'
+          $ref: "#/schemas/products"
     tags:
       type: DeclarativeStream
       name: tags
@@ -85,7 +85,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /products/{{ stream_slice.productId }}/tags
           http_method: GET
         record_selector:
@@ -100,11 +100,11 @@ definitions:
                 parent_key: productId
                 partition_field: productId
                 stream:
-                  $ref: '#/definitions/streams/products'
+                  $ref: "#/definitions/streams/products"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/tags'
+          $ref: "#/schemas/tags"
     environments:
       type: DeclarativeStream
       name: environments
@@ -113,7 +113,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /products/{{ stream_slice.productId }}/environments
           http_method: GET
         record_selector:
@@ -128,25 +128,25 @@ definitions:
                 parent_key: productId
                 partition_field: productId
                 stream:
-                  $ref: '#/definitions/streams/products'
+                  $ref: "#/definitions/streams/products"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/environments'
+          $ref: "#/schemas/environments"
   base_requester:
     type: HttpRequester
     url_base: https://api.configcat.com/v1
     authenticator:
       type: BasicHttpAuthenticator
-      username: '{{ config[''username''] }}'
-      password: '{{ config[''password''] }}'
+      username: "{{ config['username'] }}"
+      password: "{{ config['password'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/organizations'
-  - $ref: '#/definitions/streams/organization_members'
-  - $ref: '#/definitions/streams/products'
-  - $ref: '#/definitions/streams/tags'
-  - $ref: '#/definitions/streams/environments'
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/organization_members"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/environments"
 
 spec:
   type: Spec
@@ -240,27 +240,27 @@ schemas:
     properties:
       color:
         type:
-          - 'null'
+          - "null"
           - string
       description:
         type:
-          - 'null'
+          - "null"
           - string
       environmentId:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       order:
         type:
-          - 'null'
+          - "null"
           - integer
       product:
         type: object
       reasonRequired:
         type:
-          - 'null'
+          - "null"
           - boolean
