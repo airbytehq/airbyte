@@ -22,6 +22,7 @@ from orchestrator.jobs.connector_test_report import generate_connector_test_summ
 from orchestrator.jobs.metadata import generate_stale_gcs_latest_metadata_file
 from orchestrator.jobs.registry import (
     add_new_metadata_partitions,
+    remove_stale_metadata_partitions,
     generate_cloud_registry,
     generate_oss_registry,
     generate_registry_entry,
@@ -168,7 +169,7 @@ SENSORS = [
 ]
 
 SCHEDULES = [
-    ScheduleDefinition(job=add_new_metadata_partitions, cron_schedule="*/5 * * * *", tags={"dagster/priority": HIGH_QUEUE_PRIORITY}),
+    ScheduleDefinition(job=add_new_metadata_partitions, cron_schedule="*/2 * * * *", tags={"dagster/priority": HIGH_QUEUE_PRIORITY}),
     ScheduleDefinition(job=generate_connector_test_summary_reports, cron_schedule="@hourly"),
     ScheduleDefinition(
         cron_schedule="0 8 * * *",  # Daily at 8am US/Pacific
@@ -184,6 +185,7 @@ JOBS = [
     generate_registry_entry,
     generate_nightly_reports,
     add_new_metadata_partitions,
+    remove_stale_metadata_partitions,
     generate_stale_gcs_latest_metadata_file,
 ]
 

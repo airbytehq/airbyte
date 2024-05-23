@@ -155,7 +155,6 @@ def _job_start_request(
             "video_time_watched_actions",
             "website_ctr",
             "website_purchase_roas",
-            "wish_bid",
         ],
         "time_increment": 1,
         "action_attribution_windows": ["1d_click", "7d_click", "28d_click", "1d_view", "7d_view", "28d_view"],

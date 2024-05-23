@@ -14,7 +14,7 @@
 
 ### Version Requirements
 
-- For Airbyte Open Source users, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer
+- For Airbyte Open Source users, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.58.0` or newer
 - Use Postgres v9.3.x or above for non-CDC workflows and Postgres v10 or above for CDC workflows
 - For Airbyte Cloud (and optionally for Airbyte Open Source), ensure SSL is enabled in your environment
 
@@ -48,6 +48,31 @@
 - `NUMERIC/DECIMAL`
 - `CHAR/NCHAR/NVARCHAR/VARCHAR/LONGVARCHAR`
 - `BINARY/BLOB`
+
+### Vendor-Specific Connector Limitations
+
+:::warning
+
+Not all implementations or deployments of a database will be the same. This section lists specific limitations and known issues with the connector based on _how_ or
+_where_ it is deployed.
+
+:::
+
+#### AWS Aurora
+
+AWS Aurora implements a [CDC caching layer](https://aws.amazon.com/blogs/database/achieve-up-to-17x-lower-replication-lag-with-the-new-write-through-cache-for-aurora-postgresql/) that is incompatible with Airbyte's CDC implementation. To use Airbyte with AWS Aurora, disable the CDC caching layer. Disable CDC caching by setting the [`rds.logical_wal_cache`](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Replication.Logical.html) parameter to `0` in the AWS Aurora parameter group.
+
+In addition, if you are seeing timeout errors, set [`apg_write_forward.idle_session_timeout`](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database-write-forwarding-apg.html#aurora-global-database-write-forwarding-params-apg) to 1200000 (20 minutes) in the AWS Aurora parameter group.
+
+#### TimescaleDB
+
+While postgres compatible, TimescaleDB does not support CDC replication.
+
+In some cases with a highly-compressed database, you may receive an error like `transparent decompression only supports tableoid system column`. This error indicates that the cursor column chosen for the sync is compressed and cannot be used. To resolve this issue, you can change the cursor column to a non-compressed column.
+
+#### Azure PG Flex
+
+When using CDC with Azure PG Flex, if a failover to a new leader happens, your CDC replication slot will not be re-created automatically. You will need to manually re-create the replication slot on the new leader, and initiate a reset of the connection in Airbyte.
 
 ## Troubleshooting
 
