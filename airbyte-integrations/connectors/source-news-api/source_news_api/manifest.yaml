@@ -18,19 +18,19 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /everything
           http_method: GET
           request_parameters:
-            q: '{{ config[''search_query''] }}'
-            searchIn: '{{ '',''.join(config.get(''search_in'', [])) }}'
-            sources: '{{ '',''.join(config.get(''sources'', [])) }}'
-            domains: '{{ '',''.join(config.get(''domains'', [])) }}'
-            excludeDomains: '{{ '',''.join(config.get(''exclude_domains'', [])) }}'
-            from: '{{ config[''start_date''] }}'
-            to: '{{ config[''end_date''] }}'
-            language: '{{ config[''language''] }}'
-            sortBy: '{{ config[''sort_by''] }}'
+            q: "{{ config['search_query'] }}"
+            searchIn: "{{ ','.join(config.get('search_in', [])) }}"
+            sources: "{{ ','.join(config.get('sources', [])) }}"
+            domains: "{{ ','.join(config.get('domains', [])) }}"
+            excludeDomains: "{{ ','.join(config.get('exclude_domains', [])) }}"
+            from: "{{ config['start_date'] }}"
+            to: "{{ config['end_date'] }}"
+            language: "{{ config['language'] }}"
+            sortBy: "{{ config['sort_by'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -53,7 +53,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/everything'
+          $ref: "#/schemas/everything"
     top_headlines:
       type: DeclarativeStream
       name: top_headlines
@@ -62,21 +62,21 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /top-headlines
           http_method: GET
           request_parameters:
-            q: '{{ config[''search_query''] }}'
-            searchIn: '{{ '',''.join(config.get(''search_in'', [])) }}'
-            sources: '{{ '',''.join(config.get(''sources'', [])) }}'
-            domains: '{{ '',''.join(config.get(''domains'', [])) }}'
-            excludeDomains: '{{ '',''.join(config.get(''exclude_domains'', [])) }}'
-            from: '{{ config[''start_date''] }}'
-            to: '{{ config[''end_date''] }}'
-            language: '{{ config[''language''] }}'
-            sortBy: '{{ config[''sort_by''] }}'
-            country: '{{ config[''country''] if not config.get(''sources'') else None }}'
-            category: '{{ config[''category''] if not config.get(''sources'') else None }}'
+            q: "{{ config['search_query'] }}"
+            searchIn: "{{ ','.join(config.get('search_in', [])) }}"
+            sources: "{{ ','.join(config.get('sources', [])) }}"
+            domains: "{{ ','.join(config.get('domains', [])) }}"
+            excludeDomains: "{{ ','.join(config.get('exclude_domains', [])) }}"
+            from: "{{ config['start_date'] }}"
+            to: "{{ config['end_date'] }}"
+            language: "{{ config['language'] }}"
+            sortBy: "{{ config['sort_by'] }}"
+            country: "{{ config['country'] if not config.get('sources') else None }}"
+            category: "{{ config['category'] if not config.get('sources') else None }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -99,21 +99,21 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/top_headlines'
+          $ref: "#/schemas/top_headlines"
   base_requester:
     type: HttpRequester
     url_base: https://newsapi.org/v2
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
       inject_into:
         type: RequestOption
         field_name: X-Api-Key
         inject_into: header
 
 streams:
-  - $ref: '#/definitions/streams/everything'
-  - $ref: '#/definitions/streams/top_headlines'
+  - $ref: "#/definitions/streams/everything"
+  - $ref: "#/definitions/streams/top_headlines"
 
 spec:
   type: Spec
@@ -185,8 +185,8 @@ spec:
           A date and optional time for the oldest article allowed. This should
           be in ISO 8601 format.
         examples:
-          - '2021-01-01'
-          - '2021-01-01T12:00:00'
+          - "2021-01-01"
+          - "2021-01-01T12:00:00"
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$
         order: 6
       end_date:
@@ -195,8 +195,8 @@ spec:
           A date and optional time for the newest article allowed. This should
           be in ISO 8601 format.
         examples:
-          - '2021-01-01'
-          - '2021-01-01T12:00:00'
+          - "2021-01-01"
+          - "2021-01-01T12:00:00"
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$
         order: 7
       language:
@@ -213,7 +213,7 @@ spec:
           - he
           - it
           - nl
-          - 'no'
+          - "no"
           - pt
           - ru
           - se
@@ -260,7 +260,7 @@ spec:
           - my
           - ng
           - nl
-          - 'no'
+          - "no"
           - nz
           - ph
           - pl
@@ -321,11 +321,11 @@ schemas:
     properties:
       author:
         type:
-          - 'null'
+          - "null"
           - string
       publishedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       source:
@@ -333,19 +333,19 @@ schemas:
         properties:
           Id:
             type:
-              - 'null'
+              - "null"
               - string
           Name:
             type:
-              - 'null'
+              - "null"
               - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
       url:
         type:
-          - 'null'
+          - "null"
           - string
   top_headlines:
     type: object
@@ -354,11 +354,11 @@ schemas:
     properties:
       author:
         type:
-          - 'null'
+          - "null"
           - string
       publishedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       source:
@@ -366,17 +366,17 @@ schemas:
         properties:
           Id:
             type:
-              - 'null'
+              - "null"
               - string
           Name:
             type:
-              - 'null'
+              - "null"
               - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
       url:
         type:
-          - 'null'
+          - "null"
           - string
