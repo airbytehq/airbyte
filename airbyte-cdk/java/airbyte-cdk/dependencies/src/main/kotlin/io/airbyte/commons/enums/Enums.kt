@@ -7,11 +7,9 @@ package io.airbyte.commons.enums
 import com.google.common.base.Preconditions
 import com.google.common.collect.Maps
 import com.google.common.collect.Sets
-import java.util.Arrays
 import java.util.Locale
 import java.util.Optional
 import java.util.concurrent.ConcurrentMap
-import java.util.stream.Collectors
 
 class Enums {
     companion object {
@@ -54,12 +52,8 @@ class Enums {
             Preconditions.checkArgument(c2.isEnum)
             return (c1.enumConstants.size == c2.enumConstants.size &&
                 Sets.difference(
-                        Arrays.stream(c1.enumConstants)
-                            .map { obj: T1 -> obj!!.name }
-                            .collect(Collectors.toSet()),
-                        Arrays.stream(c2.enumConstants)
-                            .map { obj: T2 -> obj!!.name }
-                            .collect(Collectors.toSet()),
+                        c1.enumConstants.map { obj: T1 -> obj!!.name }.toSet(),
+                        c2.enumConstants.map { obj: T2 -> obj!!.name }.toSet(),
                     )
                     .isEmpty())
         }

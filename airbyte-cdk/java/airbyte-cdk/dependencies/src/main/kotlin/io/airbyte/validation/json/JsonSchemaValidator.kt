@@ -11,7 +11,6 @@ import java.io.File
 import java.io.IOException
 import java.net.URI
 import java.net.URISyntaxException
-import java.util.stream.Collectors
 import me.andrz.jackson.JsonContext
 import me.andrz.jackson.JsonReferenceException
 import me.andrz.jackson.JsonReferenceProcessor
@@ -89,9 +88,8 @@ class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: UR
 
     fun validate(schemaJson: JsonNode, objectJson: JsonNode): Set<String> {
         return validateInternal(schemaJson, objectJson)
-            .stream()
             .map { obj: ValidationMessage -> obj.message }
-            .collect(Collectors.toSet())
+            .toSet()
     }
 
     fun getValidationMessageArgs(schemaJson: JsonNode, objectJson: JsonNode): List<Array<String>> {

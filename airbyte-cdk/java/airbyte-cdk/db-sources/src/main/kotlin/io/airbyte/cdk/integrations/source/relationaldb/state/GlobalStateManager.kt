@@ -105,7 +105,6 @@ class GlobalStateManager(
     ): Set<AirbyteStreamNameNamespacePair> {
         if (airbyteStateMessage!!.type == AirbyteStateMessage.AirbyteStateType.GLOBAL) {
             return airbyteStateMessage.global.streamStates
-                .stream()
                 .map { streamState: AirbyteStreamState ->
                     val cloned = Jsons.clone(streamState)
                     AirbyteStreamNameNamespacePair(
@@ -113,7 +112,7 @@ class GlobalStateManager(
                         cloned.streamDescriptor.namespace
                     )
                 }
-                .collect(Collectors.toSet())
+                .toSet()
         } else {
             val legacyState: DbState? =
                 Jsons.`object`(airbyteStateMessage.data, DbState::class.java)
@@ -127,12 +126,11 @@ class GlobalStateManager(
         streams: List<DbStreamState>
     ): Set<AirbyteStreamNameNamespacePair> {
         return streams
-            .stream()
             .map { stream: DbStreamState ->
                 val cloned = Jsons.clone(stream)
                 AirbyteStreamNameNamespacePair(cloned.streamName, cloned.streamNamespace)
             }
-            .collect(Collectors.toSet())
+            .toSet()
     }
 
     companion object {

@@ -143,9 +143,8 @@ object DbSourceDiscoverUtil {
                         )
                         .withSourceDefinedPrimaryKey(primaryKeys)
                 }
-                // This is ugly. Some of our tests change the streams on the AirbyteCatalog
-                // object...
-                .toMutableList()
+                .toMutableList() // This is ugly, but we modify this list in
+        // JdbcSourceAcceptanceTest.testDiscoverWithMultipleSchemas
         return AirbyteCatalog().withStreams(streams)
     }
 

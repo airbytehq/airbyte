@@ -423,10 +423,7 @@ abstract class AbstractJdbcSource<Datatype>(
     ): Map<String, MutableList<String>> {
         LOGGER.info(
             "Discover primary keys for tables: " +
-                tableInfos
-                    .stream()
-                    .map { obj: TableInfo<CommonField<Datatype>> -> obj.name }
-                    .collect(Collectors.toSet())
+                tableInfos.map { obj: TableInfo<CommonField<Datatype>> -> obj.name }.toSet()
         )
         try {
             // Get all primary keys without specifying a table name
