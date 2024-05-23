@@ -3,6 +3,7 @@
  */
 package io.airbyte.cdk.extensions
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.lang.reflect.*
 import java.time.Duration
 import java.time.Instant
@@ -20,9 +21,8 @@ import org.junit.jupiter.api.extension.DynamicTestInvocationContext
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.extension.InvocationInterceptor
 import org.junit.jupiter.api.extension.ReflectiveInvocationContext
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * By default, junit only output logs to the console, and nothing makes it into log4j logs. This
  * class fixes that by using the interceptor facility to print progress and timing information. This
@@ -345,8 +345,6 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
     }
 
     companion object {
-        private val LOGGER: Logger =
-            LoggerFactory.getLogger(LoggingInvocationInterceptor::class.java)
         private val JUNIT_METHOD_EXECUTION_TIMEOUT_PROPERTY_NAME: String =
             "JunitMethodExecutionTimeout"
     }

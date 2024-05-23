@@ -33,15 +33,15 @@ import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.CommonField
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.SQLException
 import java.time.Duration
 import java.time.Instant
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import java.util.stream.Stream
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * This class contains helper functions and boilerplate for implementing a source connector for a DB
  * source of both non-relational and relational type
@@ -71,7 +71,7 @@ protected constructor(driverClassName: String) :
                 .withMessage(message)
         } catch (e: Exception) {
             addExceptionToTrace(e)
-            LOGGER.info("Exception while checking connection: ", e)
+            LOGGER.info { "Exception while checking connection: $e" }
             return AirbyteConnectionStatus()
                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
                 .withMessage(
@@ -175,9 +175,9 @@ protected constructor(driverClassName: String) :
                 AirbyteTraceMessageUtility::emitStreamStatusTrace
             )
         ) {
-            LOGGER.info("Closing database connection pool.")
+            LOGGER.info { "Closing database connection pool." }
             Exceptions.toRuntime { this.close() }
-            LOGGER.info("Closed database connection pool.")
+            LOGGER.info { "Closed database connection pool." }
         }
     }
 
@@ -368,10 +368,9 @@ protected constructor(driverClassName: String) :
                 val fullyQualifiedTableName =
                     DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.namespace, stream.name)
                 if (!tableNameToTable.containsKey(fullyQualifiedTableName)) {
-                    LOGGER.info(
-                        "Skipping stream {} because it is not in the source",
-                        fullyQualifiedTableName
-                    )
+                    LOGGER.info {
+                        "Skipping stream $fullyQualifiedTableName because it is not in the source"
+                    }
                     continue
                 }
 
@@ -511,7 +510,7 @@ protected constructor(driverClassName: String) :
         ) { r: AirbyteMessage ->
             val count = recordCount.incrementAndGet()
             if (count % 10000 == 0L) {
-                LOGGER.info("Reading stream {}. Records read: {}", streamName, count)
+                LOGGER.info { "Reading stream $streamName. Records read: $count" }
             }
             r
         }
@@ -797,8 +796,6 @@ protected constructor(driverClassName: String) :
         const val READ_TRACE_OPERATION_NAME: String = "read-operation"
 
         @JvmStatic
-        protected val LOGGER: Logger = LoggerFactory.getLogger(AbstractDbSource::class.java)
-
         private fun getMessageIterator(
             recordIterator: AutoCloseableIterator<AirbyteRecordData>,
             streamName: String,

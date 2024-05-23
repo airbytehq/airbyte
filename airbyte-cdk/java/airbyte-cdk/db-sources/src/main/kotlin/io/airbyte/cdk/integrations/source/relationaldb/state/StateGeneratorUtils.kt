@@ -14,14 +14,13 @@ import io.airbyte.configoss.StateType
 import io.airbyte.configoss.StateWrapper
 import io.airbyte.configoss.helpers.StateMessageHelper
 import io.airbyte.protocol.models.v0.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.function.Function
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /** Collection of utilities that facilitate the generation of state objects. */
 object StateGeneratorUtils {
-    private val LOGGER: Logger = LoggerFactory.getLogger(StateGeneratorUtils::class.java)
 
     /** [Function] that extracts the cursor from the stream state. */
     val CURSOR_FUNCTION: Function<AirbyteStreamState, String> =
@@ -162,7 +161,7 @@ object StateGeneratorUtils {
         try {
             return Optional.ofNullable(Jsons.`object`(state.streamState, DbStreamState::class.java))
         } catch (e: IllegalArgumentException) {
-            LOGGER.error("Unable to extract state.", e)
+            LOGGER.error(e) { "Unable to extract state." }
             return Optional.empty()
         }
     }

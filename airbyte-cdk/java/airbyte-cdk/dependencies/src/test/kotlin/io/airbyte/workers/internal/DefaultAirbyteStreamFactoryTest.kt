@@ -8,6 +8,8 @@ import io.airbyte.commons.logging.MdcScope
 import io.airbyte.protocol.models.AirbyteLogMessage
 import io.airbyte.protocol.models.AirbyteMessage
 import io.airbyte.workers.test_utils.AirbyteMessageUtils
+import io.github.oshai.kotlinlogging.KLogger
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedReader
 import java.io.ByteArrayInputStream
 import java.io.InputStream
@@ -20,17 +22,19 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
-import org.slf4j.Logger
+import org.mockito.kotlin.mock
+
+private val logger = KotlinLogging.logger {}
 
 internal class DefaultAirbyteStreamFactoryTest {
     private lateinit var protocolPredicate: AirbyteProtocolPredicate
-    private lateinit var logger: Logger
+    private lateinit var logger: KLogger
 
     @BeforeEach
     fun setup() {
         protocolPredicate = Mockito.mock(AirbyteProtocolPredicate::class.java)
         Mockito.`when`(protocolPredicate.test(ArgumentMatchers.any())).thenReturn(true)
-        logger = Mockito.mock(Logger::class.java)
+        logger = mock()
     }
 
     @Test
