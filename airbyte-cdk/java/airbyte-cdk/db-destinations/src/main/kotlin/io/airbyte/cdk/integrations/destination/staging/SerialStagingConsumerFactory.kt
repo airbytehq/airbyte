@@ -121,10 +121,10 @@ open class SerialStagingConsumerFactory {
             parsedCatalog: ParsedCatalog,
             useDestinationsV2Columns: Boolean
         ): List<WriteConfig> {
-            return catalog.streams
-                .stream()
-                .map(toWriteConfig(namingResolver, config, parsedCatalog, useDestinationsV2Columns))
-                .toList()
+            return catalog.streams.map {
+                toWriteConfig(namingResolver, config, parsedCatalog, useDestinationsV2Columns)
+                    .apply(it)
+            }
         }
 
         private fun toWriteConfig(

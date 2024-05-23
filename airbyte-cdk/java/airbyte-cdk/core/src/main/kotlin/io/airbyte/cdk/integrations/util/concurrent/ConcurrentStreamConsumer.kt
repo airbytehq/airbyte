@@ -77,7 +77,6 @@ class ConcurrentStreamConsumer(
          */
         val futures: Collection<CompletableFuture<Void>> =
             streams
-                .stream()
                 .map { stream: AutoCloseableIterator<AirbyteMessage> ->
                     ConcurrentStreamRunnable(stream, this)
                 }

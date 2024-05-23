@@ -282,8 +282,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
             synchronized(lock) {
                 aliasIds.addAll(
                     descToStateIdQ.values
-                        .stream()
-                        .flatMap { obj: LinkedBlockingDeque<Long> -> obj.stream() }
+                        .flatMap { obj: LinkedBlockingDeque<Long> -> obj }
                         .toList(),
                 )
                 descToStateIdQ.clear()
@@ -292,19 +291,12 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
                 descToStateIdQ[SENTINEL_GLOBAL_DESC] = LinkedBlockingDeque()
                 descToStateIdQ[SENTINEL_GLOBAL_DESC]!!.add(retroactiveGlobalStateId)
 
-                val combinedCounter: Long =
-                    stateIdToCounter.values
-                        .stream()
-                        .mapToLong { obj: AtomicLong -> obj.get() }
-                        .sum()
+                val combinedCounter: Long = stateIdToCounter.values.sumOf { it.get() }
                 stateIdToCounter.clear()
                 stateIdToCounter[retroactiveGlobalStateId] = AtomicLong(combinedCounter)
 
                 val statsCounter: Long =
-                    stateIdToCounterForPopulatingDestinationStats.values
-                        .stream()
-                        .mapToLong { obj: AtomicLong -> obj.get() }
-                        .sum()
+                    stateIdToCounterForPopulatingDestinationStats.values.sumOf { it.get() }
                 stateIdToCounterForPopulatingDestinationStats.clear()
                 stateIdToCounterForPopulatingDestinationStats.put(
                     retroactiveGlobalStateId,

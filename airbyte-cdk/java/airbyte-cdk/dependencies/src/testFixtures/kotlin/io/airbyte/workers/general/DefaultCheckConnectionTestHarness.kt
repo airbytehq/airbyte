@@ -51,9 +51,8 @@ constructor(
             val connectionStatus =
                 messagesByType
                     .getOrDefault(AirbyteMessage.Type.CONNECTION_STATUS, ArrayList())
-                    .stream()
                     .map { obj: AirbyteMessage -> obj.connectionStatus }
-                    .findFirst()
+                    .firstOrNull()
 
             if (input.actorId != null && input.actorType != null) {
                 val optionalConfigMsg =
@@ -95,16 +94,16 @@ constructor(
                 LOGGER.warn("Check connection job subprocess finished with exit code {}", exitCode)
             }
 
-            if (connectionStatus.isPresent) {
+            if (connectionStatus != null) {
                 val output =
                     StandardCheckConnectionOutput()
                         .withStatus(
                             Enums.convertTo(
-                                connectionStatus.get().status,
+                                connectionStatus.status,
                                 StandardCheckConnectionOutput.Status::class.java
                             )
                         )
-                        .withMessage(connectionStatus.get().message)
+                        .withMessage(connectionStatus.message)
                 LOGGER.info("Check connection job received output: {}", output)
                 jobOutput.checkConnection = output
             } else if (failureReason.isEmpty) {

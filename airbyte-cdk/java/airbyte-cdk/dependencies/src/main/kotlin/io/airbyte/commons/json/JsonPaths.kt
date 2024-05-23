@@ -168,7 +168,6 @@ object JsonPaths {
      */
     fun getPaths(json: JsonNode?, jsonPath: String): List<String> {
         return getInternal(GET_PATHS_CONFIGURATION, json, jsonPath)
-            .stream()
             .map { obj: JsonNode -> obj.asText() }
             .toList()
     }

@@ -89,14 +89,12 @@ protected constructor(protected val outputFormat: FileUploadFormat) : Destinatio
             s3Client!!
                 .listObjects(s3DestinationConfig.bucketName, parentFolder)
                 .objectSummaries
-                .stream()
                 .filter { o: S3ObjectSummary -> o.key.contains("$streamNameStr/") }
-                .sorted(Comparator.comparingLong { o: S3ObjectSummary -> o.lastModified.time })
+                .sortedWith(Comparator.comparingLong { o: S3ObjectSummary -> o.lastModified.time })
                 .toList()
         LOGGER.info(
             "All objects: {}",
             objectSummaries
-                .stream()
                 .map { o: S3ObjectSummary -> String.format("%s/%s", o.bucketName, o.key) }
                 .toList(),
         )

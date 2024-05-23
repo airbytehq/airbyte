@@ -65,7 +65,6 @@ internal class IntegrationRunnerTest {
 
         val testName = Thread.currentThread().name
         ThreadUtils.getAllThreads()
-            .stream()
             .filter { runningThread: Thread -> !runningThread.isDaemon }
             .forEach { runningThread: Thread -> runningThread.name = testName }
     }
@@ -470,10 +469,8 @@ ${Jsons.serialize(message2)}""".toByteArray(
             throw RuntimeException(e)
         }
         val runningThreads =
-            ThreadUtils.getAllThreads()
-                .stream()
-                .filter(IntegrationRunner::filterOrphanedThread)
-                .toList()
+            ThreadUtils.getAllThreads().filter(IntegrationRunner::filterOrphanedThread)
+
         // all threads should be interrupted
         Assertions.assertEquals(listOf<Any>(), runningThreads)
         Assertions.assertEquals(1, caughtExceptions.size)
@@ -498,10 +495,8 @@ ${Jsons.serialize(message2)}""".toByteArray(
         }
 
         val runningThreads =
-            ThreadUtils.getAllThreads()
-                .stream()
-                .filter(IntegrationRunner::filterOrphanedThread)
-                .toList()
+            ThreadUtils.getAllThreads().filter(IntegrationRunner::filterOrphanedThread)
+
         // a thread that refuses to be interrupted should remain
         Assertions.assertEquals(1, runningThreads.size)
         Assertions.assertEquals(1, caughtExceptions.size)

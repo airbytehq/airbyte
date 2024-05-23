@@ -94,14 +94,12 @@ class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: UR
 
     fun getValidationMessageArgs(schemaJson: JsonNode, objectJson: JsonNode): List<Array<String>> {
         return validateInternal(schemaJson, objectJson)
-            .stream()
             .map { obj: ValidationMessage -> obj.arguments }
             .toList()
     }
 
     fun getValidationMessagePaths(schemaJson: JsonNode, objectJson: JsonNode): List<String> {
         return validateInternal(schemaJson, objectJson)
-            .stream()
             .map { obj: ValidationMessage -> obj.path }
             .toList()
     }

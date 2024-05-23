@@ -4,7 +4,6 @@
 package io.airbyte.integrations.base.destination.typing_deduping
 
 import java.util.function.Consumer
-import java.util.function.Function
 import java.util.stream.Stream
 
 /**
@@ -27,7 +26,6 @@ data class Sql(val transactions: List<List<String>>) {
      */
     fun asSqlStrings(begin: String?, commit: String?): List<String> {
         return transactions
-            .stream()
             .map { transaction: List<String> ->
                 // If there's only one statement, we don't need to wrap it in a transaction.
                 if (transaction.size == 1) {
@@ -54,7 +52,7 @@ data class Sql(val transactions: List<List<String>>) {
         transactions.forEach(
             Consumer { transaction: List<String> ->
                 require(!transaction.isEmpty()) { "Transaction must not be empty" }
-                require(!transaction.stream().anyMatch { s: String -> s.isNullOrEmpty() }) {
+                require(!transaction.any { it.isNullOrEmpty() }) {
                     "Transaction must not contain empty statements"
                 }
             }
@@ -76,12 +74,7 @@ data class Sql(val transactions: List<List<String>>) {
         /** Execute each statement as its own transaction. */
         @JvmStatic
         fun separately(statements: List<String>): Sql {
-            return create(
-                statements
-                    .stream()
-                    .map(Function<String, List<String>> { o: String -> listOf(o) })
-                    .toList()
-            )
+            return create(statements.map { listOf(it) }.toList())
         }
 
         @JvmStatic
@@ -100,14 +93,12 @@ data class Sql(val transactions: List<List<String>>) {
 
         @JvmStatic
         fun concat(vararg sqls: Sql): Sql {
-            return create(
-                Stream.of(*sqls).flatMap { sql: Sql -> sql.transactions.stream() }.toList()
-            )
+            return create(sqls.flatMap { sql: Sql -> sql.transactions })
         }
 
         @JvmStatic
         fun concat(sqls: List<Sql>): Sql {
-            return create(sqls.stream().flatMap { sql: Sql -> sql.transactions.stream() }.toList())
+            return create(sqls.flatMap { sql: Sql -> sql.transactions })
         }
 
         /**
@@ -118,10 +109,8 @@ data class Sql(val transactions: List<List<String>>) {
         fun create(transactions: List<List<String>>): Sql {
             return Sql(
                 transactions
-                    .stream()
                     .map { transaction: List<String> ->
                         transaction
-                            .stream()
                             .filter { statement: String -> !statement.isNullOrEmpty() }
                             .map internalMap@{ statement: String ->
                                 if (!statement.trim { it <= ' ' }.endsWith(";")) {

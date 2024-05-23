@@ -251,11 +251,9 @@ private constructor(
             parsedCatalog: ParsedCatalog?,
             destinationColumns: JavaBaseConstants.DestinationColumns
         ): List<WriteConfig> {
-            return catalog!!
-                .streams
-                .stream()
-                .map(toWriteConfig(namingResolver, config, parsedCatalog, destinationColumns))
-                .toList()
+            return catalog!!.streams.map {
+                toWriteConfig(namingResolver, config, parsedCatalog, destinationColumns).apply(it)
+            }
         }
 
         private fun toWriteConfig(
