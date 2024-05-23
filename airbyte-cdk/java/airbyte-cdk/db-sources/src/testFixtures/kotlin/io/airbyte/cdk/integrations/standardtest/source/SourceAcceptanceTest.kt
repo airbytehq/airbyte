@@ -56,37 +56,25 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     private val IMAGES_TO_SKIP_IDENTICAL_FULL_REFRESHES: Set<String> =
         Sets.newHashSet("airbyte/source-google-workspace-admin-reports", "airbyte/source-kafka")
 
-    @get:Throws(Exception::class)
-    protected abstract val spec: ConnectorSpecification
-        /**
-         * Specification for integration. Will be passed to integration where appropriate in each
-         * test. Should be valid.
-         *
-         * @return integration-specific configuration
-         */
-        get
+    /**
+     * Specification for integration. Will be passed to integration where appropriate in each test.
+     * Should be valid.
+     */
+    @get:Throws(Exception::class) protected abstract val spec: ConnectorSpecification
 
-    @get:Throws(Exception::class)
-    protected abstract val configuredCatalog: ConfiguredAirbyteCatalog
-        /**
-         * The catalog to use to validate the output of read operations. This will be used as
-         * follows:
-         *
-         * Full Refresh syncs will be tested on all the input streams which support it Incremental
-         * syncs: - if the stream declares a source-defined cursor, it will be tested with an
-         * incremental sync using the default cursor. - if the stream requires a user-defined
-         * cursor, it will be tested with the input cursor in both cases, the input [.getState] will
-         * be used as the input state.
-         *
-         * @return
-         * @throws Exception
-         */
-        get
+    /**
+     * The catalog to use to validate the output of read operations. This will be used as follows:
+     *
+     * Full Refresh syncs will be tested on all the input streams which support it Incremental
+     * syncs: - if the stream declares a source-defined cursor, it will be tested with an
+     * incremental sync using the default cursor. - if the stream requires a user-defined cursor, it
+     * will be tested with the input cursor in both cases, the input [.getState] will be used as the
+     * input state.
+     */
+    @get:Throws(Exception::class) protected abstract val configuredCatalog: ConfiguredAirbyteCatalog
 
-    @get:Throws(Exception::class)
-    protected abstract val state: JsonNode?
-        /** @return a JSON file representing the state file to use when testing incremental syncs */
-        get
+    /** a JSON file representing the state file to use when testing incremental syncs */
+    @get:Throws(Exception::class) protected abstract val state: JsonNode?
 
     /** Verify that a spec operation issued to the connector returns a valid spec. */
     @Test
@@ -457,7 +445,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         }
 
         @JvmStatic
-        public fun extractLatestState(stateMessages: List<AirbyteStateMessage>): JsonNode? {
+        fun extractLatestState(stateMessages: List<AirbyteStateMessage>): JsonNode? {
             var latestState: JsonNode? = null
             for (stateMessage in stateMessages) {
                 if (stateMessage.type == AirbyteStateMessage.AirbyteStateType.STREAM) {

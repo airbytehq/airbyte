@@ -78,8 +78,8 @@ object CopyConsumerFactory {
         defaultSchema: String,
         database: JdbcDatabase,
         sqlOperations: SqlOperations
-    ): Map<AirbyteStreamNameNamespacePair?, StreamCopier?> {
-        val pairToCopier: MutableMap<AirbyteStreamNameNamespacePair?, StreamCopier?> = HashMap()
+    ): Map<AirbyteStreamNameNamespacePair, StreamCopier> {
+        val pairToCopier: MutableMap<AirbyteStreamNameNamespacePair, StreamCopier> = HashMap()
         val stagingFolder = UUID.randomUUID().toString()
         for (configuredStream in catalog.streams) {
             val stream = configuredStream.stream
@@ -108,7 +108,7 @@ object CopyConsumerFactory {
     }
 
     private fun recordWriterFunction(
-        pairToCopier: Map<AirbyteStreamNameNamespacePair?, StreamCopier?>,
+        pairToCopier: Map<AirbyteStreamNameNamespacePair, StreamCopier>,
         sqlOperations: SqlOperations,
         pairToIgnoredRecordCount: MutableMap<AirbyteStreamNameNamespacePair, Long>
     ): RecordWriter<AirbyteRecordMessage> {
@@ -131,10 +131,10 @@ object CopyConsumerFactory {
     }
 
     private fun removeStagingFilePrinter(
-        pairToCopier: Map<AirbyteStreamNameNamespacePair?, StreamCopier?>
+        pairToCopier: Map<AirbyteStreamNameNamespacePair, StreamCopier>
     ): CheckAndRemoveRecordWriter {
         return CheckAndRemoveRecordWriter {
-            pair: AirbyteStreamNameNamespacePair?,
+            pair: AirbyteStreamNameNamespacePair,
             stagingFileName: String? ->
             val currentFileName = pairToCopier[pair]!!.currentFile
             if (
@@ -149,13 +149,13 @@ object CopyConsumerFactory {
     }
 
     private fun onCloseFunction(
-        pairToCopier: Map<AirbyteStreamNameNamespacePair?, StreamCopier?>,
+        pairToCopier: Map<AirbyteStreamNameNamespacePair, StreamCopier>,
         database: JdbcDatabase,
         sqlOperations: SqlOperations,
         pairToIgnoredRecordCount: Map<AirbyteStreamNameNamespacePair, Long>,
         dataSource: DataSource
     ): OnCloseFunction {
-        return OnCloseFunction { hasFailed: Boolean, _: Map<StreamDescriptor, StreamSyncSummary>? ->
+        return OnCloseFunction { hasFailed: Boolean, _: Map<StreamDescriptor, StreamSyncSummary> ->
             pairToIgnoredRecordCount.forEach { (pair: AirbyteStreamNameNamespacePair?, count: Long?)
                 ->
                 LOGGER.warn(
@@ -170,7 +170,7 @@ object CopyConsumerFactory {
 
     @Throws(Exception::class)
     private fun closeAsOneTransaction(
-        pairToCopier: Map<AirbyteStreamNameNamespacePair?, StreamCopier?>,
+        pairToCopier: Map<AirbyteStreamNameNamespacePair, StreamCopier>,
         hasFailed: Boolean,
         db: JdbcDatabase,
         sqlOperations: SqlOperations,

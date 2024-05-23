@@ -184,9 +184,9 @@ internal constructor(
         this.declarationLocation = Arrays.asList(*declarationLocation).subList(2, 3).toString()
     }
 
-    val insertSqlQueries: List<String?>
+    val insertSqlQueries: List<String>
         get() {
-            val insertSqls: MutableList<String?> = ArrayList()
+            val insertSqls: MutableList<String> = ArrayList()
             var rowId = 1
             for (value in values) {
                 insertSqls.add(

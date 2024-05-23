@@ -124,7 +124,7 @@ object JsonSchemas {
         // returns true.
         return traverseJsonSchemaWithFilteredCollector(jsonSchema) {
             node: JsonNode?,
-            path: List<FieldNameOrList>? ->
+            path: List<FieldNameOrList> ->
             Optional.ofNullable(mapper.apply(node, path))
         }
     }
@@ -145,10 +145,10 @@ object JsonSchemas {
      */
     fun <T> traverseJsonSchemaWithFilteredCollector(
         jsonSchema: JsonNode,
-        mapper: BiFunction<JsonNode?, List<FieldNameOrList>?, Optional<T>>
+        mapper: BiFunction<JsonNode?, List<FieldNameOrList>, Optional<T>>
     ): List<T> {
         val collector: MutableList<T> = ArrayList()
-        traverseJsonSchema(jsonSchema) { node: JsonNode?, path: List<FieldNameOrList>? ->
+        traverseJsonSchema(jsonSchema) { node: JsonNode?, path: List<FieldNameOrList> ->
             mapper.apply(node, path).ifPresent { e: T -> collector.add(e) }
         }
         return collector.stream().toList() // make list unmodifiable
@@ -172,10 +172,10 @@ object JsonSchemas {
     ): List<List<FieldNameOrList>> {
         return traverseJsonSchemaWithFilteredCollector(obj) {
             node: JsonNode?,
-            path: List<FieldNameOrList>? ->
+            path: List<FieldNameOrList> ->
             if (predicate.test(node)) {
                 return@traverseJsonSchemaWithFilteredCollector Optional.of<List<FieldNameOrList>?>(
-                    path!!
+                    path
                 )
             } else {
                 return@traverseJsonSchemaWithFilteredCollector Optional.empty<

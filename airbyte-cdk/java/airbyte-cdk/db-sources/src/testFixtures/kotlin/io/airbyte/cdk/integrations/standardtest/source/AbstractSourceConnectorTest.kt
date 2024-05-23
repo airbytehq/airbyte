@@ -54,15 +54,7 @@ abstract class AbstractSourceConnectorTest {
     /** Name of the docker image that the tests will run against. */
     protected abstract val imageName: String
 
-    @get:Throws(Exception::class)
-    protected abstract val config: JsonNode?
-        /**
-         * Configuration specific to the integration. Will be passed to integration where
-         * appropriate in each test. Should be valid.
-         *
-         * @return integration-specific configuration
-         */
-        get
+    @get:Throws(Exception::class) protected abstract val config: JsonNode?
 
     /**
      * Function that performs any setup of external resources required for the test. e.g.

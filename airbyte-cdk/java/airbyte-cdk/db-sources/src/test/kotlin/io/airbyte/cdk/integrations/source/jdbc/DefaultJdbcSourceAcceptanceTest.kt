@@ -154,7 +154,7 @@ internal class DefaultJdbcSourceAcceptanceTest :
                         "ON_ERROR_STOP=1",
                         "-a"
                     ),
-                    sql.flatMap { stmt: String? -> Stream.of("-c", stmt) }
+                    sql.flatMap { stmt: String -> Stream.of("-c", stmt) }
                 )
             )
         }

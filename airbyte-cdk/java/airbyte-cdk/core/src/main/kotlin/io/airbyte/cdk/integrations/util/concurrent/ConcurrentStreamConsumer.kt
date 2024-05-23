@@ -181,18 +181,18 @@ class ConcurrentStreamConsumer(
     private fun executeStream(stream: AutoCloseableIterator<AirbyteMessage>) {
         try {
             stream.use {
-                stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+                stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
                     LOGGER.debug("Consuming from stream {}...", s)
                 }
                 StreamStatusUtils.emitStartStreamStatus(stream, streamStatusEmitter)
                 streamConsumer.accept(stream)
                 StreamStatusUtils.emitCompleteStreamStatus(stream, streamStatusEmitter)
-                stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+                stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
                     LOGGER.debug("Consumption from stream {} complete.", s)
                 }
             }
         } catch (e: Exception) {
-            stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
+            stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
                 LOGGER.error("Unable to consume from stream {}.", s, e)
             }
             StreamStatusUtils.emitIncompleteStreamStatus(stream, streamStatusEmitter)

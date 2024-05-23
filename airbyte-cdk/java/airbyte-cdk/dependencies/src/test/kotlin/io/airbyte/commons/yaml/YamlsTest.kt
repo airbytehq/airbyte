@@ -111,7 +111,7 @@ internal class YamlsTest {
                 Assertions.assertEquals(
                     classes,
                     MoreStreams.toStream(iterator)
-                        .map { e: JsonNode? -> Jsons.`object`(e, ToClass::class.java) }
+                        .map { e: JsonNode -> Jsons.`object`(e, ToClass::class.java) }
                         .collect(Collectors.toList())
                 )
             }
