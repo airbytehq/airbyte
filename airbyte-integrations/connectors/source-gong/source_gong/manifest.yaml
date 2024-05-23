@@ -258,7 +258,6 @@ definitions:
       name: "extensive_calls"
       primary_key: [["metaData", "id"]]
       path: "/calls/extensive"
-    # NOTE(krishan711): changes are line above and retriever below
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       record_selector:
