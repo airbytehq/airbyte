@@ -27,7 +27,6 @@ import java.math.BigDecimal
 import java.sql.SQLException
 import java.util.*
 import java.util.function.Consumer
-import java.util.stream.Collectors
 import junit.framework.TestCase.assertEquals
 import org.hamcrest.MatcherAssert
 import org.hamcrest.Matchers
@@ -1558,7 +1557,9 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
                                 .withStreamState(Jsons.jsonNode(s))
                         )
                         .withData(Jsons.jsonNode(DbState().withCdc(false).withStreams(states)))
-                        .withSourceStats(AirbyteStateStats().withRecordCount(numRecords.toDouble())),
+                        .withSourceStats(
+                            AirbyteStateStats().withRecordCount(numRecords.toDouble())
+                        ),
                 )
         }
     }

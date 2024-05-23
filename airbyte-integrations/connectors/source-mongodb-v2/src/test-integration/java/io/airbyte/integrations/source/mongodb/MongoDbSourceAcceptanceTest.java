@@ -100,8 +100,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   protected void setupEnvironment(final TestDestinationEnv testEnv) throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
-              "Must provide path to a MongoDB credentials file. By default {module-root}/" + CREDENTIALS_PATH
-                      + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
+          "Must provide path to a MongoDB credentials file. By default {module-root}/" + CREDENTIALS_PATH
+              + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
     // Randomly generate the names to avoid collisions with other tests
@@ -136,21 +136,21 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   private void insertTestData(final MongoClient mongoClient) {
     final MongoCollection<Document> collection = mongoClient.getDatabase(databaseName).getCollection(collectionName);
     final var objectDocument =
-            new Document("testObject", new Document(NAME_FIELD, "subName").append("testField1", "testField1").append(INT_TEST_FIELD, 10)
-                    .append("thirdLevelDocument", new Document("data", "someData").append("intData", 1)));
+        new Document("testObject", new Document(NAME_FIELD, "subName").append("testField1", "testField1").append(INT_TEST_FIELD, 10)
+            .append("thirdLevelDocument", new Document("data", "someData").append("intData", 1)));
 
     final var doc1 = new Document(DOCUMENT_ID_FIELD, OBJECT_ID1)
-            .append(ID_FIELD, "0001").append(NAME_FIELD, "Test")
-            .append(TEST_FIELD, 10).append(TEST_ARRAY_FIELD, new BsonArray(List.of(new BsonString("test"), new BsonString("mongo"))))
-            .append(DOUBLE_TEST_FIELD, 100.12).append(INT_TEST_FIELD, 100).append(OBJECT_TEST_FIELD, objectDocument);
+        .append(ID_FIELD, "0001").append(NAME_FIELD, "Test")
+        .append(TEST_FIELD, 10).append(TEST_ARRAY_FIELD, new BsonArray(List.of(new BsonString("test"), new BsonString("mongo"))))
+        .append(DOUBLE_TEST_FIELD, 100.12).append(INT_TEST_FIELD, 100).append(OBJECT_TEST_FIELD, objectDocument);
 
     final var doc2 = new Document(DOCUMENT_ID_FIELD, OBJECT_ID2)
-            .append(ID_FIELD, "0002").append(NAME_FIELD, "Mongo").append(TEST_FIELD, "test_value").append(INT_TEST_FIELD, 201)
-            .append(OBJECT_TEST_FIELD, objectDocument);
+        .append(ID_FIELD, "0002").append(NAME_FIELD, "Mongo").append(TEST_FIELD, "test_value").append(INT_TEST_FIELD, 201)
+        .append(OBJECT_TEST_FIELD, objectDocument);
 
     final var doc3 = new Document(DOCUMENT_ID_FIELD, OBJECT_ID3)
-            .append(ID_FIELD, "0003").append(NAME_FIELD, "Source").append(TEST_FIELD, null)
-            .append(DOUBLE_TEST_FIELD, 212.11).append(INT_TEST_FIELD, 302).append(OBJECT_TEST_FIELD, objectDocument);
+        .append(ID_FIELD, "0003").append(NAME_FIELD, "Source").append(TEST_FIELD, null)
+        .append(DOUBLE_TEST_FIELD, 212.11).append(INT_TEST_FIELD, 302).append(OBJECT_TEST_FIELD, objectDocument);
 
     final List<Document> newDocuments = List.of(doc1, doc2, doc3);
     recordCount += newDocuments.size();
@@ -185,15 +185,15 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     final List<Field> fields = List.of(
-            Field.of(DOCUMENT_ID_FIELD, JsonSchemaType.STRING),
-            Field.of(ID_FIELD, JsonSchemaType.STRING),
-            Field.of(NAME_FIELD, JsonSchemaType.STRING),
-            Field.of(TEST_FIELD, JsonSchemaType.STRING),
-            Field.of(TEST_ARRAY_FIELD, JsonSchemaType.ARRAY),
-            Field.of(EMPTY_TEST_FIELD, JsonSchemaType.STRING),
-            Field.of(DOUBLE_TEST_FIELD, JsonSchemaType.NUMBER),
-            Field.of(INT_TEST_FIELD, JsonSchemaType.NUMBER),
-            Field.of(OBJECT_TEST_FIELD, JsonSchemaType.OBJECT));
+        Field.of(DOCUMENT_ID_FIELD, JsonSchemaType.STRING),
+        Field.of(ID_FIELD, JsonSchemaType.STRING),
+        Field.of(NAME_FIELD, JsonSchemaType.STRING),
+        Field.of(TEST_FIELD, JsonSchemaType.STRING),
+        Field.of(TEST_ARRAY_FIELD, JsonSchemaType.ARRAY),
+        Field.of(EMPTY_TEST_FIELD, JsonSchemaType.STRING),
+        Field.of(DOUBLE_TEST_FIELD, JsonSchemaType.NUMBER),
+        Field.of(INT_TEST_FIELD, JsonSchemaType.NUMBER),
+        Field.of(OBJECT_TEST_FIELD, JsonSchemaType.OBJECT));
 
     return getConfiguredCatalog(fields);
   }
@@ -232,7 +232,7 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   void testSyncEmptyCollection() throws Exception {
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
     final AirbyteStream otherAirbyteStream = MongoCatalogHelper.buildAirbyteStream(otherCollection1Name, databaseName,
-            List.of(Field.of(NAME_FIELD, JsonSchemaType.STRING), Field.of(INT_TEST_FIELD, JsonSchemaType.NUMBER)));
+        List.of(Field.of(NAME_FIELD, JsonSchemaType.STRING), Field.of(INT_TEST_FIELD, JsonSchemaType.NUMBER)));
     configuredCatalog.withStreams(List.of(convertToConfiguredAirbyteStream(otherAirbyteStream, SyncMode.INCREMENTAL)));
 
     final List<AirbyteMessage> messages = runRead(configuredCatalog);
@@ -276,13 +276,13 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final AirbyteStateMessage lastStateMessage = Iterables.getLast(stateMessages);
     validateStateMessages(stateMessages);
     validateAllStreamsComplete(stateMessages, List.of(
-            new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
+        new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
     assertFalse(lastStateMessage.getGlobal().getStreamStates().stream().anyMatch(
-            createStateStreamFilter(new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName))));
+        createStateStreamFilter(new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName))));
 
     final List<Field> fields = List.of(
-            Field.of(NAME_FIELD, JsonSchemaType.STRING),
-            Field.of(INT_TEST_FIELD, JsonSchemaType.NUMBER));
+        Field.of(NAME_FIELD, JsonSchemaType.STRING),
+        Field.of(INT_TEST_FIELD, JsonSchemaType.NUMBER));
     addStreamToConfiguredCatalog(configuredCatalog, databaseName, otherCollection1Name, fields);
 
     // Start another sync with a newly added stream
@@ -295,8 +295,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     validateStateMessages(stateMessages2);
     validateAllStreamsComplete(stateMessages2, List.of(
-            new StreamDescriptor().withName(collectionName).withNamespace(databaseName),
-            new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName)));
+        new StreamDescriptor().withName(collectionName).withNamespace(databaseName),
+        new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName)));
   }
 
   @Test
@@ -314,7 +314,7 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final AirbyteStateMessage lastStateMessage = Iterables.getLast(stateMessages);
     validateStateMessages(stateMessages);
     validateAllStreamsComplete(stateMessages, List.of(
-            new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
+        new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
 
     // Start another sync with no changes
     final List<AirbyteMessage> messages2 = runRead(configuredCatalog, Jsons.jsonNode(List.of(lastStateMessage)));
@@ -326,7 +326,7 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     validateStateMessages(stateMessages2);
     validateAllStreamsComplete(stateMessages2, List.of(
-            new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
+        new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
   }
 
   @Test
@@ -348,7 +348,7 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final AirbyteStateMessage lastStateMessage = Iterables.getLast(stateMessages);
     validateStateMessages(stateMessages);
     validateAllStreamsComplete(stateMessages, List.of(
-            new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
+        new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
 
     final var result = mongoClient.getDatabase(databaseName).getCollection(collectionName).insertOne(createDocument(1));
     final var insertedId = result.getInsertedId();
@@ -366,7 +366,7 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final AirbyteStateMessage lastStateMessage2 = Iterables.getLast(stateMessages2);
     validateStateMessages(stateMessages2);
     validateAllStreamsComplete(stateMessages2, List.of(
-            new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
+        new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
 
     final var idFilter = new Document(DOCUMENT_ID_FIELD, insertedId);
     mongoClient.getDatabase(databaseName).getCollection(collectionName).updateOne(idFilter, Updates.combine(Updates.set("newField", "new")));
@@ -384,7 +384,7 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final AirbyteStateMessage lastStateMessage3 = Iterables.getLast(stateMessages3);
     validateStateMessages(stateMessages3);
     validateAllStreamsComplete(stateMessages3, List.of(
-            new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
+        new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
 
     mongoClient.getDatabase(databaseName).getCollection(collectionName).deleteOne(idFilter);
 
@@ -400,7 +400,7 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     validateStateMessages(stateMessages4);
     validateAllStreamsComplete(stateMessages3, List.of(
-            new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
+        new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
 
   }
 
@@ -414,9 +414,9 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
     final List<ConfiguredAirbyteStream> streams = configuredCatalog.getStreams();
     final AirbyteStream otherAirbyteStream1 = MongoCatalogHelper.buildAirbyteStream(otherCollection1Name, databaseName,
-            List.of(Field.of(NAME_FIELD, JsonSchemaType.STRING), Field.of(INT_TEST_FIELD, JsonSchemaType.NUMBER)));
+        List.of(Field.of(NAME_FIELD, JsonSchemaType.STRING), Field.of(INT_TEST_FIELD, JsonSchemaType.NUMBER)));
     final AirbyteStream otherAirbyteStream2 = MongoCatalogHelper.buildAirbyteStream(otherCollection2Name, databaseName,
-            List.of(Field.of(NAME_FIELD, JsonSchemaType.STRING), Field.of(INT_TEST_FIELD, JsonSchemaType.NUMBER)));
+        List.of(Field.of(NAME_FIELD, JsonSchemaType.STRING), Field.of(INT_TEST_FIELD, JsonSchemaType.NUMBER)));
     streams.add(convertToConfiguredAirbyteStream(otherAirbyteStream1, SyncMode.INCREMENTAL));
     streams.add(convertToConfiguredAirbyteStream(otherAirbyteStream2, SyncMode.INCREMENTAL));
     configuredCatalog.withStreams(streams);
@@ -431,9 +431,9 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     validateStateMessages(stateMessages);
     validateAllStreamsComplete(stateMessages, List.of(
-            new StreamDescriptor().withName(collectionName).withNamespace(databaseName),
-            new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName),
-            new StreamDescriptor().withName(otherCollection2Name).withNamespace(databaseName)));
+        new StreamDescriptor().withName(collectionName).withNamespace(databaseName),
+        new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName),
+        new StreamDescriptor().withName(otherCollection2Name).withNamespace(databaseName)));
 
     // Start a second sync from somewhere in the middle of stream 2
     final List<AirbyteMessage> messages2 = runRead(configuredCatalog, Jsons.jsonNode(List.of(stateMessages.get(recordCount + 50))));
@@ -448,24 +448,24 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final AirbyteStateMessage airbyteStateMessage = stateMessages2.get(0);
 
     final Optional<AirbyteStreamState> collectionStreamState = getStreamState(airbyteStateMessage,
-            new StreamDescriptor().withName(collectionName).withNamespace(databaseName));
+        new StreamDescriptor().withName(collectionName).withNamespace(databaseName));
     assertEquals(InitialSnapshotStatus.COMPLETE, Jsons.object(collectionStreamState.get().getStreamState(), MongoDbStreamState.class).status());
 
     final Optional<AirbyteStreamState> otherCollection1StreamState = getStreamState(airbyteStateMessage,
-            new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName));
+        new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName));
     assertTrue(otherCollection1StreamState.isPresent());
     assertEquals(InitialSnapshotStatus.IN_PROGRESS,
-            Jsons.object(otherCollection1StreamState.get().getStreamState(), MongoDbStreamState.class).status());
+        Jsons.object(otherCollection1StreamState.get().getStreamState(), MongoDbStreamState.class).status());
 
     final Optional<AirbyteStreamState> otherCollection2StreamState = getStreamState(airbyteStateMessage,
-            new StreamDescriptor().withName(otherCollection2Name).withNamespace(databaseName));
+        new StreamDescriptor().withName(otherCollection2Name).withNamespace(databaseName));
     assertTrue(otherCollection2StreamState.isEmpty());
 
     validateStateMessages(stateMessages2);
     validateAllStreamsComplete(stateMessages, List.of(
-            new StreamDescriptor().withName(collectionName).withNamespace(databaseName),
-            new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName),
-            new StreamDescriptor().withName(otherCollection2Name).withNamespace(databaseName)));
+        new StreamDescriptor().withName(collectionName).withNamespace(databaseName),
+        new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName),
+        new StreamDescriptor().withName(otherCollection2Name).withNamespace(databaseName)));
 
     // Insert more data for one stream
     insertData(databaseName, otherCollection1Name, otherCollection1Count);
@@ -477,18 +477,18 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     assertEquals(otherCollection1Count, recordMessages3.size());
     assertEquals(0, recordMessages3.stream().map(r -> new StreamDescriptor().withName(r.getStream()).withNamespace(r.getNamespace()))
-            .filter(createRecordStreamFilter(collectionName, databaseName)).count());
+        .filter(createRecordStreamFilter(collectionName, databaseName)).count());
     assertEquals(0, recordMessages3.stream().map(r -> new StreamDescriptor().withName(r.getStream()).withNamespace(r.getNamespace()))
-            .filter(createRecordStreamFilter(otherCollection2Name, databaseName)).count());
+        .filter(createRecordStreamFilter(otherCollection2Name, databaseName)).count());
     assertEquals(otherCollection1Count,
-            recordMessages3.stream().map(r -> new StreamDescriptor().withName(r.getStream()).withNamespace(r.getNamespace()))
-                    .filter(createRecordStreamFilter(otherCollection1Name, databaseName)).count());
+        recordMessages3.stream().map(r -> new StreamDescriptor().withName(r.getStream()).withNamespace(r.getNamespace()))
+            .filter(createRecordStreamFilter(otherCollection1Name, databaseName)).count());
     assertEquals(1, stateMessages3.size());
     validateStateMessages(stateMessages3);
     validateAllStreamsComplete(stateMessages, List.of(
-            new StreamDescriptor().withName(collectionName).withNamespace(databaseName),
-            new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName),
-            new StreamDescriptor().withName(otherCollection2Name).withNamespace(databaseName)));
+        new StreamDescriptor().withName(collectionName).withNamespace(databaseName),
+        new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName),
+        new StreamDescriptor().withName(otherCollection2Name).withNamespace(databaseName)));
   }
 
   @Test
@@ -507,7 +507,7 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final AirbyteStateMessage stateMessage = Iterables.getLast(stateMessages);
     final String replicaSetName = MongoDbDebeziumStateUtil.getReplicaSetName(mongoClient);
     final MongoDbCdcState cdcState = new MongoDbCdcState(
-            MongoDbDebeziumStateUtil.formatState(databaseName, replicaSetName, INVALID_RESUME_TOKEN));
+        MongoDbDebeziumStateUtil.formatState(databaseName, replicaSetName, INVALID_RESUME_TOKEN));
     stateMessage.getGlobal().setSharedState(Jsons.jsonNode(cdcState));
     final JsonNode state = Jsons.jsonNode(List.of(stateMessage));
 
@@ -526,7 +526,7 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final long eventTimestamp = Long.MAX_VALUE;
     final Integer order = 0;
     final MongoDbCdcTargetPosition targetPosition =
-            new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog()));
+        new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog()));
     final ChangeEventWithMetadata changeEventWithMetadata = mock(ChangeEventWithMetadata.class);
 
     when(changeEventWithMetadata.isSnapshotEvent()).thenReturn(true);
@@ -540,9 +540,9 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     when(changeEventWithMetadata.snapshotMetadata()).thenReturn(SnapshotMetadata.FIRST);
     when(changeEventWithMetadata.eventValueAsJson()).thenReturn(Jsons.jsonNode(
-            Map.of(MongoDbDebeziumConstants.ChangeEvent.SOURCE,
-                    Map.of(MongoDbDebeziumConstants.ChangeEvent.SOURCE_TIMESTAMP_MS, eventTimestamp,
-                            MongoDbDebeziumConstants.ChangeEvent.SOURCE_ORDER, order))));
+        Map.of(MongoDbDebeziumConstants.ChangeEvent.SOURCE,
+            Map.of(MongoDbDebeziumConstants.ChangeEvent.SOURCE_TIMESTAMP_MS, eventTimestamp,
+                MongoDbDebeziumConstants.ChangeEvent.SOURCE_ORDER, order))));
 
     assertTrue(targetPosition.reachedTargetPosition(changeEventWithMetadata));
 
@@ -554,18 +554,18 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   @Test
   void testIsSameOffset() {
     final MongoDbCdcTargetPosition targetPosition =
-            new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog()));
+        new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog()));
     final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog());
     final String resumeTokenString = resumeToken.get("_data").asString().getValue();
     final String replicaSet = MongoDbDebeziumStateUtil.getReplicaSetName(mongoClient);
     final Map<String, String> emptyOffsetA = Map.of();
     final Map<String, String> emptyOffsetB = Map.of();
     final Map<String, String> offsetA = Jsons.object(MongoDbDebeziumStateUtil.formatState(databaseName,
-            replicaSet, resumeTokenString), new TypeReference<>() {});
+        replicaSet, resumeTokenString), new TypeReference<>() {});
     final Map<String, String> offsetB = Jsons.object(MongoDbDebeziumStateUtil.formatState(databaseName,
-            replicaSet, resumeTokenString), new TypeReference<>() {});
+        replicaSet, resumeTokenString), new TypeReference<>() {});
     final Map<String, String> offsetBDifferent = Jsons.object(MongoDbDebeziumStateUtil.formatState(databaseName,
-            replicaSet, INVALID_RESUME_TOKEN), new TypeReference<>() {});
+        replicaSet, INVALID_RESUME_TOKEN), new TypeReference<>() {});
 
     assertFalse(targetPosition.isSameOffset(null, offsetB));
     assertFalse(targetPosition.isSameOffset(emptyOffsetA, offsetB));
@@ -577,22 +577,22 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private ConfiguredAirbyteStream convertToConfiguredAirbyteStream(final AirbyteStream airbyteStream, final SyncMode syncMode) {
     return new ConfiguredAirbyteStream()
-            .withSyncMode(syncMode)
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withCursorField(List.of(MongoCatalogHelper.DEFAULT_CURSOR_FIELD))
-            .withStream(airbyteStream);
+        .withSyncMode(syncMode)
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withCursorField(List.of(MongoCatalogHelper.DEFAULT_CURSOR_FIELD))
+        .withStream(airbyteStream);
   }
 
   private void verifyFieldNotExist(final List<AirbyteRecordMessage> records, final String stream, final String field) {
     assertTrue(records.stream()
-            .filter(r -> r.getStream().equals(stream) && r.getData().get(field) != null)
-            .collect(Collectors.toList())
-            .isEmpty(), "Records contain unselected columns [%s:%s]".formatted(stream, field));
+        .filter(r -> r.getStream().equals(stream) && r.getData().get(field) != null)
+        .collect(Collectors.toList())
+        .isEmpty(), "Records contain unselected columns [%s:%s]".formatted(stream, field));
   }
 
   private List<AirbyteStateMessage> filterStateMessages(final List<AirbyteMessage> messages) {
     return messages.stream().filter(r -> r.getType() == AirbyteMessage.Type.STATE).map(AirbyteMessage::getState)
-            .collect(Collectors.toList());
+        .collect(Collectors.toList());
   }
 
   private void insertData(final String databaseName, final String collectionName, final int numberOfDocuments) {
@@ -600,7 +600,7 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     mongoClient.getDatabase(databaseName).createCollection(collectionName);
     final MongoCollection<Document> collection = mongoClient.getDatabase(databaseName).getCollection(collectionName);
     collection
-            .insertMany(IntStream.range(0, numberOfDocuments).boxed().map(this::createDocument).toList());
+        .insertMany(IntStream.range(0, numberOfDocuments).boxed().map(this::createDocument).toList());
   }
 
   private Document createDocument(final Integer i) {
@@ -623,7 +623,7 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     completedStreams.forEach(s -> {
       assertTrue(lastStateMessage.getGlobal().getStreamStates().stream().anyMatch(createStateStreamFilter(s)));
       Assertions.assertEquals(InitialSnapshotStatus.COMPLETE,
-              Jsons.object(getStreamState(lastStateMessage, s).get().getStreamState(), MongoDbStreamState.class).status());
+          Jsons.object(getStreamState(lastStateMessage, s).get().getStreamState(), MongoDbStreamState.class).status());
     });
   }
 
@@ -663,9 +663,9 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private void assertOplogErrorTracePresent(List<AirbyteMessage> traceMessages) {
     final boolean oplogTracePresent = traceMessages
-            .stream()
-            .anyMatch(trace -> trace.getTrace().getType().equals(AirbyteTraceMessage.Type.ERROR)
-                    && trace.getTrace().getError().getMessage().contains("Saved offset is not valid"));
+        .stream()
+        .anyMatch(trace -> trace.getTrace().getType().equals(AirbyteTraceMessage.Type.ERROR)
+            && trace.getTrace().getError().getMessage().contains("Saved offset is not valid"));
     assertTrue(oplogTracePresent);
   }
 
