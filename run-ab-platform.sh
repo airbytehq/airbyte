@@ -5,6 +5,8 @@ VERSION=0.60.1
 set -o nounset # -u exit if a variable is not set
 set -o errexit # -f exit for any command failure"
 
+readonly scriptVersion="$VERSION"
+
 # text color escape codes (please note \033 == \e but OSX doesn't respect the \e)
 blue_text='\033[94m'
 red_text='\033[31m'
@@ -121,10 +123,10 @@ TelemetryDockerUp()
   # for up to 1200 seconds (20 minutes), check to see if the server services is in a running state
   end=$((SECONDS+1200))
   while [ $SECONDS -lt $end ]; do
-    webappState=$(docker compose ps --all --format "{{.Service}}:{{.State}}" 2>/dev/null | grep server | cut -d ":" -f2 | xargs)
+    webappState=$(docker compose ps --all --format "{{.Service}}:{{.State}}" 2>/dev/null | grep ^server | cut -d ":" -f2 | xargs)
     if [ "$webappState" = "running" ]; then
       TelemetrySend $eventStateSuccess $eventTypeInstall
-      break
+      return
     fi
     sleep 1
   done
@@ -150,7 +152,7 @@ TelemetrySend()
     "session_id":"$telemetrySessionULID",
     "state":"$eventStateSuccess",
     "os":"$OSTYPE",
-    "script_version":"$VERSION",
+    "script_version":"$scriptVersion",
     "error":""
   },
   "timestamp":"$now",
@@ -181,7 +183,7 @@ EOL
     "session_id":"$telemetrySessionULID",
     "state":"$state",
     "os":"$OSTYPE",
-    "script_version":"$VERSION",
+    "script_version":"$scriptVersion",
     "error":"$err"
   },
   "timestamp":"$now",
