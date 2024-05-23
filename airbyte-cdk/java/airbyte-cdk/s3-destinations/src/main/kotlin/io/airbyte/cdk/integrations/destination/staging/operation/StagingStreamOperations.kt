@@ -33,7 +33,7 @@ class StagingStreamOperations<DestinationState : MinimumDestinationState>(
     ) {
 
     private val log = KotlinLogging.logger {}
-    override fun writeRecords(streamConfig: StreamConfig, stream: Stream<PartialAirbyteMessage>) {
+    override fun writeRecordsImpl(streamConfig: StreamConfig, stream: Stream<PartialAirbyteMessage>) {
         val writeBuffer =
             StagingSerializedBufferFactory.initializeBuffer(fileUploadFormat, destinationColumns)
 

@@ -24,6 +24,7 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
     private val log = KotlinLogging.logger {}
 
     // State maintained to make decision between async calls
+    private val rawTableSuffix: String
     private val finalTmpTableSuffix: String
     private val initialRawTableStatus: InitialRawTableStatus =
         destinationInitialStatus.initialRawTableStatus
@@ -36,7 +37,8 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
 
     init {
         val stream = destinationInitialStatus.streamConfig
-        storageOperation.prepareStage(stream.id, stream.destinationSyncMode)
+        rawTableSuffix = NO_SUFFIX
+        storageOperation.prepareStage(stream.id, NO_SUFFIX)
         if (!disableTypeDedupe) {
             // Prepare final tables based on sync mode.
             finalTmpTableSuffix = prepareFinalTable(destinationInitialStatus)
@@ -114,8 +116,16 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
         return NO_SUFFIX
     }
 
+    override fun writeRecords(streamConfig: StreamConfig, stream: Stream<PartialAirbyteMessage>) {
+        // redirect to the appropriate raw table (potentially the temp raw table).
+        writeRecordsImpl(
+            streamConfig.copy(id = streamConfig.id.copy(rawName = streamConfig.id.rawName + rawTableSuffix)),
+            stream,
+        )
+    }
+
     /** Write records will be destination type specific, Insert vs staging based on format */
-    abstract override fun writeRecords(
+    abstract fun writeRecordsImpl(
         streamConfig: StreamConfig,
         stream: Stream<PartialAirbyteMessage>
     )
