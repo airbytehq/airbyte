@@ -9,23 +9,23 @@ from typing import Any, Dict, List, Mapping, Optional, Union
 
 from airbyte_cdk.test.mock_http.request import HttpRequest
 
-from .config import ACCOUNT_ID, SERVICE_ACCOUNT_INFO
+from .config import ACCOUNT_ID, ACCESS_TOKEN
 
 
 def get_account_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilder:
-    return RequestBuilder.get_account_endpoint(access_token=SERVICE_ACCOUNT_INFO, account_id=account_id)
+    return RequestBuilder.get_account_endpoint(access_token=ACCESS_TOKEN, account_id=account_id)
 
 
 def get_ads_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilder:
-    return RequestBuilder.get_ad_endpoint(access_token=SERVICE_ACCOUNT_INFO, account_id=account_id)
+    return RequestBuilder.get_ad_endpoint(access_token=ACCESS_TOKEN, account_id=account_id)
 
 
 def get_campaigns_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilder:
-    return RequestBuilder.get_campaign_endpoint(access_token=SERVICE_ACCOUNT_INFO, account_id=account_id)
+    return RequestBuilder.get_campaign_endpoint(access_token=ACCESS_TOKEN, account_id=account_id)
 
 
 def get_ad_sets_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilder:
-    return RequestBuilder.get_ad_sets_endpoint(access_token=SERVICE_ACCOUNT_INFO, account_id=account_id)
+    return RequestBuilder.get_ad_sets_endpoint(access_token=ACCESS_TOKEN, account_id=account_id)
 
 
 class RequestBuilder:

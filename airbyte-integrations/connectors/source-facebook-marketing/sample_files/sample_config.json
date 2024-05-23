@@ -4,6 +4,6 @@
   "account_id": "<YOUR_ACCOUNT_ID_HERE>",
   "credentials": {
     "auth_type": "Service",
-    "service_account_info": "<YOUR_SERVICE_ACCOUNT_INFO_HERE>"
+    "access_token": "<YOUR_ACCESS_TOKEN_HERE>"
   }
 }

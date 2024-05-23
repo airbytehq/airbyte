@@ -128,7 +128,7 @@ class MigrateSecretsPathInConnector:
     This class stands for migrating the config at runtime.
     This migration is intended for backwards compatibility with the previous version, so existing secrets configurations gets migrated to new path.
 
-    Starting from `3.0.0`, the `client_id`, `client_secret` and `access_token` will be placed at `credentials` path.
+    Starting from `2.2.0`, the `client_id`, `client_secret` and `access_token` will be placed at `credentials` path.
     """
 
     message_repository: MessageRepository = InMemoryMessageRepository()
@@ -144,7 +144,7 @@ class MigrateSecretsPathInConnector:
         """
         credentials = config.get("credentials", None)
         return credentials is None or (
-            "access_token" not in credentials and not ("client_id" in credentials and "client_id" in credentials)
+            "access_token" not in credentials and ("client_id" not in credentials or "client_secret" not in credentials)
         )
 
     @classmethod
@@ -168,13 +168,17 @@ class MigrateSecretsPathInConnector:
     @classmethod
     def transform(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
         # transform the config
-        config["credentials"] = {}
+        if "credentials" not in config:
+            config["credentials"] = {}
+        if "access_token" in config:
+            config["credentials"]["auth_type"] = "Service"
+            config["credentials"]["access_token"] = config.pop("access_token")
         if "client_id" in config:
+            config["credentials"]["auth_type"] = "Client"
             config["credentials"]["client_id"] = config.pop("client_id")
         if "client_secret" in config:
+            config["credentials"]["auth_type"] = "Client"
             config["credentials"]["client_secret"] = config.pop("client_secret")
-        if "access_token" in config:
-            config["credentials"]["access_token"] = config.pop("access_token")
         # return transformed config
         return config
 

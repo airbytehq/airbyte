@@ -30,7 +30,7 @@ def config_fixture(requests_mock):
         "account_ids": ["123"],
         "credentials": {
             "auth_type": "Service",
-            "service_account_info": "SERVICE_ACCOUNT_INFO",
+            "access_token": "ACCESS_TOKEN",
         },
         "start_date": "2019-10-10T00:00:00Z",
         "end_date": "2020-10-10T00:00:00Z",

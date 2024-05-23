@@ -52,8 +52,8 @@ class ServiceAccountCredentials(BaseModel):
         discriminator = "auth_type"
 
     auth_type: Literal["Service"] = Field("Service", const=True)
-    service_account_info: str = Field(
-        title="Service Account Information",
+    access_token: str = Field(
+        title="Access Token",
         description="The value of the generated access token. "
         'From your App’s Dashboard, click on "Marketing API" then "Tools". '
         'Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on "Get token". '

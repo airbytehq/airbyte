@@ -25,7 +25,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
 from airbyte_protocol.models import AirbyteStateMessage, StreamDescriptor, SyncMode
 from source_facebook_marketing.streams.async_job import Status
 
-from .config import ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, SERVICE_ACCOUNT_INFO, START_DATE, ConfigBuilder
+from .config import ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, ACCESS_TOKEN, START_DATE, ConfigBuilder
 from .pagination import NEXT_PAGE_TOKEN, FacebookMarketingPaginationStrategy
 from .request_builder import RequestBuilder, get_account_request
 from .response_builder import build_response, error_reduce_amount_of_data_response, get_account_response
@@ -38,7 +38,7 @@ _JOB_ID = "1049937379601625"
 
 
 def _update_api_throttle_limit_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilder:
-    return RequestBuilder.get_insights_endpoint(access_token=SERVICE_ACCOUNT_INFO, account_id=account_id)
+    return RequestBuilder.get_insights_endpoint(access_token=ACCESS_TOKEN, account_id=account_id)
 
 
 def _job_start_request(
@@ -160,18 +160,18 @@ def _job_start_request(
         "action_attribution_windows": ["1d_click", "7d_click", "28d_click", "1d_view", "7d_view", "28d_view"],
         "time_range": {"since": since, "until": until},
     }
-    return RequestBuilder.get_insights_endpoint(access_token=SERVICE_ACCOUNT_INFO, account_id=account_id).with_body(encode_request_body(body))
+    return RequestBuilder.get_insights_endpoint(access_token=ACCESS_TOKEN, account_id=account_id).with_body(encode_request_body(body))
 
 
 def _job_status_request(report_run_ids: Union[str, List[str]]) -> RequestBuilder:
     if isinstance(report_run_ids, str):
         report_run_ids = [report_run_ids]
     body = {"batch": [{"method": "GET", "relative_url": f"{report_run_id}/"} for report_run_id in report_run_ids]}
-    return RequestBuilder.get_execute_batch_endpoint(access_token=SERVICE_ACCOUNT_INFO).with_body(encode_request_body(body))
+    return RequestBuilder.get_execute_batch_endpoint(access_token=ACCESS_TOKEN).with_body(encode_request_body(body))
 
 
 def _get_insights_request(job_id: str) -> RequestBuilder:
-    return RequestBuilder.get_insights_download_endpoint(access_token=SERVICE_ACCOUNT_INFO, job_id=job_id).with_limit(100)
+    return RequestBuilder.get_insights_download_endpoint(access_token=ACCESS_TOKEN, job_id=job_id).with_limit(100)
 
 
 def _update_api_throttle_limit_response(api_throttle: Optional[int] = 0) -> HttpResponse:

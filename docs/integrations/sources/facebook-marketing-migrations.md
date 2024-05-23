@@ -1,9 +1,5 @@
 # Facebook Marketing Migration Guide
 
-## Upgrading to 3.0.0
-
-Support both old and new way of authentication to cover the existing Customers by applying the config migration, see the example in the /config_migrations.py
-
 ## Upgrading to 2.0.0
 
 Streams Ads-Insights-\* streams now have updated schemas.

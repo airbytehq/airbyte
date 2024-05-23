@@ -95,10 +95,7 @@ class SourceFacebookMarketing(AbstractSource):
             if config.start_date and config.end_date < config.start_date:
                 return False, "End date must be equal or after start date."
 
-            if config.credentials.auth_type == "Client":
-                api = API(access_token=config.credentials.access_token, page_size=config.page_size)
-            if config.credentials.auth_type == "Service":
-                api = API(access_token=config.credentials.service_account_info, page_size=config.page_size)
+            api = API(access_token=config.credentials.access_token, page_size=config.page_size)
 
             for account_id in config.account_ids:
                 # Get Ad Account to check creds
@@ -135,7 +132,7 @@ class SourceFacebookMarketing(AbstractSource):
         if config.credentials.auth_type == "Client":
             api = API(access_token=config.credentials.access_token, page_size=config.page_size)
         if config.credentials.auth_type == "Service":
-            api = API(access_token=config.credentials.service_account_info, page_size=config.page_size)
+            api = API(access_token=config.credentials.access_token, page_size=config.page_size)
 
         # if start_date not specified then set default start_date for report streams to 2 years ago
         report_start_date = config.start_date or pendulum.now().add(years=-2)
