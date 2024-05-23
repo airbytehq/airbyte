@@ -1,7 +1,7 @@
 # Google-Sheets destination connector
 
 
-This is the repository for the Google-Sheets source connector, written in Python.
+This is the repository for the Google-Sheets destination connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/destinations/google-sheets).
 
 ## Local development
