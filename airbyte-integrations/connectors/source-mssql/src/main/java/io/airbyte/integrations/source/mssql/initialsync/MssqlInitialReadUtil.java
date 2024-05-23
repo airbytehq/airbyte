@@ -202,10 +202,13 @@ public class MssqlInitialReadUtil {
       final MssqlInitialLoadHandler initialLoadHandler =
           getMssqlInitialLoadHandler(database, emittedAt, quoteString, initialLoadStreams, initialLoadStateManager,
               Optional.of(new CdcMetadataInjector(emittedAt.toString(), stateAttributes, metadataInjector)));
+      // Because initial load streams will be followed by cdc read of those stream, we only decorate with
+      // complete status trace
+      // after CDC read is done.
       initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
           tableNameToTable,
-          emittedAt));
+          emittedAt, true, false));
     }
 
     // Build the incremental CDC iterators.
