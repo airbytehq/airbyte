@@ -383,7 +383,7 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
     }
 
     protected open fun supportResumeableFullRefreshWithoutPk(): Boolean? {
-        return true
+        return false
     }
 
     @Test

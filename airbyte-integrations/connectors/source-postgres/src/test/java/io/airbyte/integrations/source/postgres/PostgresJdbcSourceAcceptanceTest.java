@@ -715,7 +715,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Postgres
 
   @Override
   protected Boolean supportResumeableFullRefreshWithoutPk() {
-    return false;
+    return true;
   }
 
 }
