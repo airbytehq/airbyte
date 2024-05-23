@@ -52,7 +52,7 @@ class AbstractStreamOperationTest {
             storageOperation,
             destinationInitialStatus,
         ) {
-        override fun writeRecords(
+        override fun writeRecordsImpl(
             streamConfig: StreamConfig,
             stream: Stream<PartialAirbyteMessage>
         ) {
@@ -97,7 +97,7 @@ class AbstractStreamOperationTest {
             val streamOperations = TestStreamOperation(storageOperation, initialState)
 
             verifySequence {
-                storageOperation.prepareStage(streamId, streamConfig.destinationSyncMode)
+                storageOperation.prepareStage(streamId, "")
                 storageOperation.createFinalTable(streamConfig, "", false)
             }
             confirmVerified(storageOperation)
@@ -144,7 +144,7 @@ class AbstractStreamOperationTest {
             val streamOperations = TestStreamOperation(storageOperation, initialState)
 
             verifySequence {
-                storageOperation.prepareStage(streamId, streamConfig.destinationSyncMode)
+                storageOperation.prepareStage(streamId, "")
                 storageOperation.createFinalTable(streamConfig, EXPECTED_OVERWRITE_SUFFIX, true)
             }
             confirmVerified(storageOperation)
@@ -189,7 +189,7 @@ class AbstractStreamOperationTest {
             val streamOperations = TestStreamOperation(storageOperation, initialState)
 
             verifySequence {
-                storageOperation.prepareStage(streamId, streamConfig.destinationSyncMode)
+                storageOperation.prepareStage(streamId, "")
                 // No table creation - we can just reuse the existing table.
             }
             confirmVerified(storageOperation)
@@ -232,7 +232,7 @@ class AbstractStreamOperationTest {
             val streamOperations = TestStreamOperation(storageOperation, initialState)
 
             verifySequence {
-                storageOperation.prepareStage(streamId, streamConfig.destinationSyncMode)
+                storageOperation.prepareStage(streamId, "")
                 storageOperation.createFinalTable(streamConfig, EXPECTED_OVERWRITE_SUFFIX, true)
             }
             confirmVerified(storageOperation)
@@ -309,7 +309,7 @@ class AbstractStreamOperationTest {
             val streamOperations = TestStreamOperation(storageOperation, initialState)
 
             verifySequence {
-                storageOperation.prepareStage(streamId, streamConfig.destinationSyncMode)
+                storageOperation.prepareStage(streamId, "")
                 storageOperation.createFinalTable(streamConfig, EXPECTED_OVERWRITE_SUFFIX, true)
             }
             confirmVerified(storageOperation)
@@ -353,7 +353,7 @@ class AbstractStreamOperationTest {
             val streamOperations = TestStreamOperation(storageOperation, initialState)
 
             verifySequence {
-                storageOperation.prepareStage(streamId, streamConfig.destinationSyncMode)
+                storageOperation.prepareStage(streamId, "")
                 storageOperation.createFinalTable(streamConfig, "", false)
             }
             confirmVerified(storageOperation)
@@ -399,7 +399,7 @@ class AbstractStreamOperationTest {
             val streamOperations = TestStreamOperation(storageOperation, initialState)
 
             verifySequence {
-                storageOperation.prepareStage(streamId, streamConfig.destinationSyncMode)
+                storageOperation.prepareStage(streamId, "")
                 storageOperation.softResetFinalTable(streamConfig)
             }
             confirmVerified(storageOperation)
@@ -443,7 +443,7 @@ class AbstractStreamOperationTest {
             val streamOperations = TestStreamOperation(storageOperation, initialState)
 
             verifySequence {
-                storageOperation.prepareStage(streamId, streamConfig.destinationSyncMode)
+                storageOperation.prepareStage(streamId, "")
                 // No soft reset - we can just reuse the existing table.
             }
             confirmVerified(storageOperation)
@@ -483,7 +483,7 @@ class AbstractStreamOperationTest {
             val streamOperations = TestStreamOperation(storageOperation, initialState)
 
             verifySequence {
-                storageOperation.prepareStage(streamId, streamConfig.destinationSyncMode)
+                storageOperation.prepareStage(streamId, "")
                 storageOperation.softResetFinalTable(streamConfig)
             }
             confirmVerified(storageOperation)
@@ -538,7 +538,7 @@ class AbstractStreamOperationTest {
             val streamOperations = TestStreamOperation(storageOperation, initialState)
 
             verifySequence {
-                storageOperation.prepareStage(streamId, streamConfig.destinationSyncMode)
+                storageOperation.prepareStage(streamId, "")
             }
             confirmVerified(storageOperation)
 

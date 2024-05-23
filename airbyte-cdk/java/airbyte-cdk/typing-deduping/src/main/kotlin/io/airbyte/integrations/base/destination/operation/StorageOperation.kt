@@ -6,7 +6,6 @@ package io.airbyte.integrations.base.destination.operation
 
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.time.Instant
 import java.util.Optional
 
@@ -16,9 +15,33 @@ interface StorageOperation<Data> {
      */
 
     /**
-     * Prepare staging area which cloud be creating any object storage, temp tables or file storage
+     * Prepare staging area which cloud be creating any object storage, temp tables or file storage.
+     * Similar to [createFinalTable], accepts a [suffix] parameter, which should be used in conjunction
+     * with [overwriteStage].
      */
-    fun prepareStage(streamId: StreamId, destinationSyncMode: DestinationSyncMode)
+    fun prepareStage(streamId: StreamId, suffix: String, replace: Boolean = false)
+
+    /**
+     * Swap the "temporary" stage into the "real" stage. For example,
+     * `DROP TABLE airbyte_internal.foo; ALTER TABLE airbyte_internal.foo_tmp RENAME TO foo`.
+     */
+    fun overwriteStage(streamId: StreamId, suffix: String)
+
+    /**
+     * Copy all records from the temporary stage into the real stage, then drop the temporary stage.
+     * For example `INSERT INTO airbyte_internal.foo SELECT * FROM airbyte_internal.foo_tmp; DROP
+     * TABLE airbyte_internal.foo_tmp`.
+     */
+    fun transferFromTempStage(streamId: StreamId, suffix: String)
+
+    /**
+     * Get the generation of a single record in the stage. Not necessarily the min or max generation,
+     * just _any_ record.
+     *
+     * [AbstractStreamOperation] is responsible for orchestrating the stages so that the temp stage
+     * always contains exactly one generation.
+     */
+    fun getStageGeneration(streamId: StreamId, suffix: String): Long
 
     /** Delete previously staged data, using deterministic information from streamId. */
     fun cleanupStage(streamId: StreamId)
