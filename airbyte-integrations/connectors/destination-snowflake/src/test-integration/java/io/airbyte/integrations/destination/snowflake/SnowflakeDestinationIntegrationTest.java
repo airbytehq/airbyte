@@ -48,9 +48,9 @@ class SnowflakeDestinationIntegrationTest {
   public void testInvalidSchemaName() throws Exception {
     final JsonNode config = getConfig();
     final String schema = config.get("schema").asText();
-    final DataSource dataSource = SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS);
+    final DataSource dataSource = SnowflakeDatabaseUtils.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS);
     try {
-      final JdbcDatabase database = SnowflakeDatabase.getDatabase(dataSource);
+      final JdbcDatabase database = SnowflakeDatabaseUtils.getDatabase(dataSource);
       assertDoesNotThrow(() -> syncWithNamingResolver(database, schema));
       assertThrows(SQLException.class, () -> syncWithoutNamingResolver(database, schema));
     } finally {

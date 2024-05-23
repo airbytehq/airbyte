@@ -9,6 +9,7 @@ import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.commons.json.Jsons.deserialize
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
 import java.io.IOException
 import java.io.PrintWriter
 import java.net.URI
@@ -27,8 +28,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /** SnowflakeDatabase contains helpers to create connections to and run queries on Snowflake. */
-object SnowflakeDatabase {
-    private val LOGGER: Logger = LoggerFactory.getLogger(SnowflakeDatabase::class.java)
+object SnowflakeDatabaseUtils {
+    private val LOGGER: Logger = LoggerFactory.getLogger(SnowflakeDatabaseUtils::class.java)
     private const val PAUSE_BETWEEN_TOKEN_REFRESH_MIN =
         7 // snowflake access token TTL is 10min and can't be modified
 
@@ -54,7 +55,7 @@ object SnowflakeDatabase {
 
         val jdbcUrl =
             StringBuilder(
-                String.format("jdbc:snowflake://%s/?", config[JdbcUtils.HOST_KEY].asText())
+                String.format("jdbc:snowflake://%s/?", config[JdbcUtils.HOST_KEY].asText()),
             )
         val username = config[JdbcUtils.USERNAME_KEY].asText()
 
@@ -78,7 +79,7 @@ object SnowflakeDatabase {
                         config[JdbcUtils.HOST_KEY].asText(),
                         credentials["client_id"].asText(),
                         credentials["client_secret"].asText(),
-                        credentials["refresh_token"].asText()
+                        credentials["refresh_token"].asText(),
                     )
             } catch (e: IOException) {
                 throw RuntimeException(e)
@@ -98,7 +99,7 @@ object SnowflakeDatabase {
                 getRefreshTokenTask(dataSource),
                 PAUSE_BETWEEN_TOKEN_REFRESH_MIN.toLong(),
                 PAUSE_BETWEEN_TOKEN_REFRESH_MIN.toLong(),
-                TimeUnit.MINUTES
+                TimeUnit.MINUTES,
             )
         } else if (credentials != null && credentials.has(JdbcUtils.PASSWORD_KEY)) {
             LOGGER.debug("User/password login mode is used")
@@ -109,14 +110,14 @@ object SnowflakeDatabase {
             LOGGER.debug("Login mode with key pair is used")
             dataSource.username = username
             val privateKeyValue = credentials[PRIVATE_KEY_FIELD_NAME].asText()
-            createPrivateKeyFile(PRIVATE_KEY_FILE_NAME, privateKeyValue)
+            createPrivateKeyFile(privateKeyValue)
             properties["private_key_file"] = PRIVATE_KEY_FILE_NAME
             if (credentials.has(PRIVATE_KEY_PASSWORD)) {
                 properties["private_key_file_pwd"] = credentials[PRIVATE_KEY_PASSWORD].asText()
             }
         } else {
             LOGGER.warn(
-                "Obsolete User/password login mode is used. Please re-create a connection to use the latest connector's version"
+                "Obsolete User/password login mode is used. Please re-create a connection to use the latest connector's version",
             )
             // case to keep the backward compatibility
             dataSource.username = username
@@ -155,9 +156,11 @@ object SnowflakeDatabase {
         return dataSource
     }
 
-    private fun createPrivateKeyFile(fileName: String, fileValue: String) {
+    private fun createPrivateKeyFile(fileValue: String) {
         try {
-            PrintWriter(fileName, StandardCharsets.UTF_8).use { out -> out.print(fileValue) }
+            PrintWriter(PRIVATE_KEY_FILE_NAME, StandardCharsets.UTF_8).use { out ->
+                out.print(fileValue)
+            }
         } catch (e: IOException) {
             throw RuntimeException("Failed to create file for private key")
         }
@@ -183,7 +186,7 @@ object SnowflakeDatabase {
                         .map { key: String ->
                             key + "=" + URLEncoder.encode(requestBody[key], StandardCharsets.UTF_8)
                         }
-                        .collect(Collectors.joining("&"))
+                        .collect(Collectors.joining("&")),
                 )
 
             val authorization =
@@ -198,7 +201,7 @@ object SnowflakeDatabase {
                     .header("Accept", "application/json")
                     .header(
                         "Authorization",
-                        "Basic " + String(authorization, StandardCharsets.UTF_8)
+                        "Basic " + String(authorization, StandardCharsets.UTF_8),
                     )
                     .build()
 
@@ -209,7 +212,7 @@ object SnowflakeDatabase {
                 return jsonResponse["access_token"].asText()
             } else {
                 throw RuntimeException(
-                    "Failed to obtain accessToken using refresh token. $jsonResponse"
+                    "Failed to obtain accessToken using refresh token. $jsonResponse",
                 )
             }
         } catch (e: InterruptedException) {
@@ -232,7 +235,7 @@ object SnowflakeDatabase {
                         props.getProperty(JdbcUtils.HOST_KEY),
                         props.getProperty("client_id"),
                         props.getProperty("client_secret"),
-                        props.getProperty("refresh_token")
+                        props.getProperty("refresh_token"),
                     )
                 props.setProperty("token", token)
                 dataSource.dataSourceProperties = props
@@ -241,6 +244,22 @@ object SnowflakeDatabase {
             } catch (e: IOException) {
                 LOGGER.error("Failed to obtain a fresh accessToken:$e")
             }
+        }
+    }
+
+    @JvmStatic
+    fun toSqlTypeName(airbyteProtocolType: AirbyteProtocolType): String {
+        return when (airbyteProtocolType) {
+            AirbyteProtocolType.STRING -> "TEXT"
+            AirbyteProtocolType.NUMBER -> "FLOAT"
+            AirbyteProtocolType.INTEGER -> "NUMBER"
+            AirbyteProtocolType.BOOLEAN -> "BOOLEAN"
+            AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE -> "TIMESTAMP_TZ"
+            AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE -> "TIMESTAMP_NTZ"
+            AirbyteProtocolType.TIME_WITH_TIMEZONE -> "TEXT"
+            AirbyteProtocolType.TIME_WITHOUT_TIMEZONE -> "TIME"
+            AirbyteProtocolType.DATE -> "DATE"
+            AirbyteProtocolType.UNKNOWN -> "VARIANT"
         }
     }
 }

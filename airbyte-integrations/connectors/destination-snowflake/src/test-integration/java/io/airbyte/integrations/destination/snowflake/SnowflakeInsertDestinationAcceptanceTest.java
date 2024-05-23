@@ -183,8 +183,8 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     this.config = Jsons.clone(getStaticConfig());
     ((ObjectNode) config).put("schema", schemaName);
 
-    dataSource = SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS);
-    database = SnowflakeDatabase.getDatabase(dataSource);
+    dataSource = SnowflakeDatabaseUtils.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS);
+    database = SnowflakeDatabaseUtils.getDatabase(dataSource);
     database.execute(createSchemaQuery);
   }
 

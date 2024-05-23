@@ -19,7 +19,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupi
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
-import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase;
+import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils;
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -72,8 +72,8 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
     final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of(getConfigPath())));
     ((ObjectNode) config).put("schema", "typing_deduping_default_schema" + getUniqueSuffix());
     databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
-    dataSource = SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS);
-    database = SnowflakeDatabase.getDatabase(dataSource);
+    dataSource = SnowflakeDatabaseUtils.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS);
+    database = SnowflakeDatabaseUtils.getDatabase(dataSource);
     cleanAirbyteInternalTable(database);
     return config;
   }

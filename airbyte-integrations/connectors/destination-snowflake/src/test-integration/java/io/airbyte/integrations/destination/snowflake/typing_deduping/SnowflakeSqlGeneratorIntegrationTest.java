@@ -27,7 +27,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.DestinationIniti
 import io.airbyte.integrations.base.destination.typing_deduping.Sql;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
-import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase;
+import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils;
 import io.airbyte.integrations.destination.snowflake.SnowflakeSourceOperations;
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils;
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState;
@@ -63,8 +63,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   public static void setupSnowflake() {
     final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of("secrets/1s1t_internal_staging_config.json")));
     databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
-    dataSource = SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS);
-    database = SnowflakeDatabase.getDatabase(dataSource);
+    dataSource = SnowflakeDatabaseUtils.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS);
+    database = SnowflakeDatabaseUtils.getDatabase(dataSource);
   }
 
   @AfterAll
