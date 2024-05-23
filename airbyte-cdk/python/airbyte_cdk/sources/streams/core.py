@@ -15,6 +15,8 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.checkpoint import (
     CheckpointMode,
     CheckpointReader,
+    Cursor,
+    CursorBasedCheckpointReader,
     FullRefreshCheckpointReader,
     IncrementalCheckpointReader,
     ResumableFullRefreshCheckpointReader,
@@ -235,8 +237,7 @@ class Stream(ABC):
             name=self.name,
             json_schema=dict(self.get_json_schema()),
             supported_sync_modes=[SyncMode.full_refresh],
-            # todo: This field doesn't exist yet, but it will in https://github.com/airbytehq/airbyte-protocol/pull/73
-            # is_resumable=self.is_resumable,
+            is_resumable=self.is_resumable,
         )
 
         if self.namespace:
@@ -384,6 +385,14 @@ class Stream(ABC):
         """
         return {}
 
+    def get_cursor(self) -> Optional[Cursor]:
+        """
+        A Cursor is an interface that a stream can implement to manage how its internal state is read and updated while
+        reading records. Historically, Python connectors had no concept of a cursor to manage state. Python streams need
+        need to define a cursor implementation and override this method to manage state through a Cursor.
+        """
+        return None
+
     def _get_checkpoint_reader(
         self,
         logger: logging.Logger,
@@ -392,7 +401,19 @@ class Stream(ABC):
         stream_state: MutableMapping[str, Any],
     ) -> CheckpointReader:
         checkpoint_mode = self._checkpoint_mode
+        cursor = self.get_cursor()
+        if cursor:
+            slices = self.stream_slices(
+                cursor_field=cursor_field,
+                sync_mode=sync_mode,  # todo: change this interface to no longer rely on sync_mode for behavior
+                stream_state=stream_state,
+            )
+            return CursorBasedCheckpointReader(
+                stream_slices=slices, cursor=cursor, read_state_from_cursor=checkpoint_mode == CheckpointMode.RESUMABLE_FULL_REFRESH
+            )
         if checkpoint_mode == CheckpointMode.RESUMABLE_FULL_REFRESH:
+            # Resumable full refresh readers rely on the stream state dynamically being updated during pagination and does
+            # not iterate over a static set of slices.
             return ResumableFullRefreshCheckpointReader(stream_state=stream_state)
         else:
             slices = self.stream_slices(
