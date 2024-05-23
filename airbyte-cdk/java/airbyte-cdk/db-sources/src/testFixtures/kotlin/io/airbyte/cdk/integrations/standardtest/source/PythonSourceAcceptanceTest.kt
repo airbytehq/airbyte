@@ -13,6 +13,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConnectorSpecification
 import io.airbyte.workers.TestHarnessUtils
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -20,8 +21,8 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import org.junit.jupiter.api.Assertions
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 /**
  * Extends TestSource such that it can be called using resources pulled from the file system. Will
@@ -148,7 +149,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(PythonSourceAcceptanceTest::class.java)
+
         private const val OUTPUT_FILENAME = "output.json"
 
         var IMAGE_NAME: String = "dummy_image_name"

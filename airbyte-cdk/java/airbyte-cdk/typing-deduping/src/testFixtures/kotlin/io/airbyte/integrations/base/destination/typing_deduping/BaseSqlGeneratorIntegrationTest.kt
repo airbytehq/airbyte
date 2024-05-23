@@ -14,6 +14,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.SyncMode
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 import java.util.*
 import java.util.function.Consumer
@@ -32,9 +33,8 @@ import org.junit.jupiter.api.parallel.ExecutionMode
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.kotlin.mock
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * This class exercises [SqlGenerator] implementations. All destinations should extend this class
  * for their respective implementation. Subclasses are encouraged to add additional tests with
@@ -261,7 +261,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 0,
             )
 
-        LOGGER.info("Running with namespace {}", namespace)
+        LOGGER.info { "Running with namespace $namespace" }
         createNamespace(namespace)
     }
 
@@ -1833,8 +1833,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
             val rawRecords = dumpRawTableRecords(streamId)
             val finalRecords = dumpFinalTableRecords(streamId, "")
-            LOGGER.info("Dumped raw records: {}", rawRecords)
-            LOGGER.info("Dumped final records: {}", finalRecords)
+            LOGGER.info { "Dumped raw records: $rawRecords" }
+            LOGGER.info { "Dumped final records: $finalRecords" }
             assertAll(
                 { Assertions.assertEquals(1, rawRecords.size) },
                 { Assertions.assertEquals(1, finalRecords.size) },
@@ -1920,9 +1920,6 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     }
 
     companion object {
-        private val LOGGER: Logger =
-            LoggerFactory.getLogger(BaseSqlGeneratorIntegrationTest::class.java)
-
         /**
          * This, along with [.FINAL_TABLE_COLUMN_NAMES_CDC], is the list of columns that should be
          * in the final table. They're useful for generating SQL queries to insert records into the

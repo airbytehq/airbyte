@@ -5,11 +5,11 @@ package io.airbyte.cdk.integrations.debezium.internals
 
 import io.airbyte.commons.concurrency.VoidCallable
 import io.airbyte.commons.lang.MoreBooleans
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.*
 import java.util.function.Supplier
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * This class has the logic for shutting down Debezium Engine in graceful manner. We made it Generic
  * to allow us to write tests easily.
@@ -62,9 +62,9 @@ class DebeziumShutdownProcedure<T>(
     val recordsRemainingAfterShutdown: LinkedBlockingQueue<T>
         get() {
             if (!hasTransferThreadShutdown) {
-                LOGGER.warn(
+                LOGGER.warn {
                     "Queue transfer thread has not shut down, some records might be missing."
-                )
+                }
             }
             return targetQueue
         }
@@ -80,7 +80,7 @@ class DebeziumShutdownProcedure<T>(
      */
     fun initiateShutdownProcedure() {
         if (hasEngineShutDown()) {
-            LOGGER.info("Debezium Engine has already shut down.")
+            LOGGER.info { "Debezium Engine has already shut down." }
             return
         }
         var exceptionDuringEngineClose: Exception? = null
@@ -119,7 +119,5 @@ class DebeziumShutdownProcedure<T>(
         }
     }
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(DebeziumShutdownProcedure::class.java)
-    }
+    companion object {}
 }

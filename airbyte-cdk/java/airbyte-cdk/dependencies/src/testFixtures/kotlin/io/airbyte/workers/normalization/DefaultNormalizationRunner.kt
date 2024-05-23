@@ -22,14 +22,15 @@ import io.airbyte.workers.WorkerConstants
 import io.airbyte.workers.exception.TestHarnessException
 import io.airbyte.workers.process.Metadata
 import io.airbyte.workers.process.ProcessFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.function.Function
 import java.util.stream.Collectors
 import java.util.stream.Stream
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class DefaultNormalizationRunner(
     private val processFactory: ProcessFactory,
@@ -264,7 +265,7 @@ class DefaultNormalizationRunner(
         }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(DefaultNormalizationRunner::class.java)
+
         private val CONTAINER_LOG_MDC_BUILDER: MdcScope.Builder =
             MdcScope.Builder()
                 .setLogPrefix("normalization")

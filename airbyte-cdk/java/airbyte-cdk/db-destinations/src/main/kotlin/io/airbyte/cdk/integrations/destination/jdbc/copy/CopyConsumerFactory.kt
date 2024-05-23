@@ -14,15 +14,15 @@ import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations
 import io.airbyte.cdk.integrations.destination.jdbc.constants.GlobalDataSizeConstants
 import io.airbyte.cdk.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy
 import io.airbyte.protocol.models.v0.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.function.Consumer
 import javax.sql.DataSource
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 // TODO: Delete this class, this is only used in StarburstGalaxyDestination
 object CopyConsumerFactory {
-    private val LOGGER: Logger = LoggerFactory.getLogger(CopyConsumerFactory::class.java)
 
     fun <T> create(
         outputRecordCollector: Consumer<AirbyteMessage>,
@@ -158,11 +158,9 @@ object CopyConsumerFactory {
         return OnCloseFunction { hasFailed: Boolean, _: Map<StreamDescriptor, StreamSyncSummary> ->
             pairToIgnoredRecordCount.forEach { (pair: AirbyteStreamNameNamespacePair?, count: Long?)
                 ->
-                LOGGER.warn(
-                    "A total of {} record(s) of data from stream {} were invalid and were ignored.",
-                    count,
-                    pair
-                )
+                LOGGER.warn {
+                    "A total of $count record(s) of data from stream $pair were invalid and were ignored."
+                }
             }
             closeAsOneTransaction(pairToCopier, hasFailed, database, sqlOperations, dataSource)
         }
@@ -193,9 +191,8 @@ object CopyConsumerFactory {
                         queries.add(mergeQuery)
                     }
                 } catch (e: Exception) {
-                    val message =
-                        String.format("Failed to finalize copy to temp table due to: %s", e)
-                    LOGGER.error(message)
+                    val message = "Failed to finalize copy to temp table due to: $e"
+                    LOGGER.error { message }
                     failed = true
                     if (firstException == null) {
                         firstException = e

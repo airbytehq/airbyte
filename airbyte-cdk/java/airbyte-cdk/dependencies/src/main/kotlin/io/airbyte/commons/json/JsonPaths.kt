@@ -15,11 +15,11 @@ import com.jayway.jsonpath.spi.json.JsonProvider
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider
 import com.jayway.jsonpath.spi.mapper.MappingProvider
 import io.airbyte.commons.util.MoreIterators
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.function.BiFunction
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * JSONPath is specification for querying JSON objects. More information about the specification can
  * be found here: https://goessner.net/articles/JsonPath/. For those familiar with jq, JSONPath will
@@ -38,7 +38,6 @@ import org.slf4j.LoggerFactory
  * possible for a query to return more than one value.
  */
 object JsonPaths {
-    private val LOGGER: Logger = LoggerFactory.getLogger(JsonPaths::class.java)
 
     const val JSON_PATH_START_CHARACTER: String = "$"
     const val JSON_PATH_LIST_SPLAT: String = "[*]"
@@ -292,7 +291,7 @@ object JsonPaths {
         try {
             return replaceAtJsonNodeLoud(json, jsonPath, replacement)
         } catch (e: PathNotFoundException) {
-            LOGGER.debug("Path not found", e)
+            LOGGER.debug(e) { "Path not found" }
             return Jsons.clone(json) // defensive copy in failure case.
         }
     }

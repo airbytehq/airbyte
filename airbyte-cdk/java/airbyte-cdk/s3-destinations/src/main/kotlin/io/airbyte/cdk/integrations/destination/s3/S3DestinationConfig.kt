@@ -12,11 +12,11 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.destination.s3.constant.S3Constants
 import io.airbyte.cdk.integrations.destination.s3.credential.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import javax.annotation.Nonnull
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * An S3 configuration. Typical usage sets at most one of `bucketPath` (necessary for more delicate
  * data syncing to S3)
@@ -109,7 +109,7 @@ open class S3DestinationConfig {
     }
 
     protected open fun createS3Client(): AmazonS3 {
-        LOGGER.info("Creating S3 client...")
+        LOGGER.info { "Creating S3 client..." }
 
         val credentialsProvider = s3CredentialConfig!!.s3CredentialsProvider
         val credentialType = s3CredentialConfig.credentialType
@@ -277,7 +277,7 @@ open class S3DestinationConfig {
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(S3DestinationConfig::class.java)
+
         private const val R2_INSTANCE_URL = "https://%s.r2.cloudflarestorage.com"
 
         @JvmStatic

@@ -6,11 +6,12 @@ package io.airbyte.cdk.integrations.standardtest.source
 import io.airbyte.commons.lang.Exceptions
 import io.airbyte.commons.map.MoreMaps
 import io.airbyte.commons.version.AirbyteVersion
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.function.Function
 import java.util.function.Supplier
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 /**
  * This class passes environment variable to the DockerProcessFactory that runs the source in the
@@ -116,7 +117,6 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(TestEnvConfigs::class.java)
 
         // env variable names
         const val AIRBYTE_ROLE: String = "AIRBYTE_ROLE"

@@ -11,14 +11,14 @@ import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.SyncMode
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.function.Function
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /** Contains utilities and helper classes for discovering schemas in database sources. */
 object DbSourceDiscoverUtil {
-    private val LOGGER: Logger = LoggerFactory.getLogger(DbSourceDiscoverUtil::class.java)
+
     private val AIRBYTE_METADATA: List<String> =
         mutableListOf("_ab_cdc_lsn", "_ab_cdc_updated_at", "_ab_cdc_deleted_at")
 
@@ -68,13 +68,10 @@ object DbSourceDiscoverUtil {
             }
 
             if (!mismatchedFields.isEmpty()) {
-                LOGGER.warn(
-                    "Source schema changed for table {}! Potential mismatches: {}. Actual schema: {}. Catalog schema: {}",
-                    fullyQualifiedTableName,
-                    java.lang.String.join(", ", mismatchedFields.toString()),
-                    currentJsonSchema,
-                    catalogSchema
-                )
+                LOGGER.warn {
+                    "Source schema changed for table $fullyQualifiedTableName! Potential mismatches: " +
+                        "${mismatchedFields.joinToString(", ")}. Actual schema: $currentJsonSchema. Catalog schema: $catalogSchema"
+                }
             }
         }
     }

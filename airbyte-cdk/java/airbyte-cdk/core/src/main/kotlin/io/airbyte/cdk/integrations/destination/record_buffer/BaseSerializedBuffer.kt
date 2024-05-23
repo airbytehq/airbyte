@@ -5,12 +5,12 @@ package io.airbyte.cdk.integrations.destination.record_buffer
 
 import com.google.common.io.CountingOutputStream
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.*
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream
 import org.apache.commons.io.FileUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * Base implementation of a [SerializableBuffer]. It is composed of a [BufferStorage] where the
  * actual data is being stored in a serialized format.
@@ -132,7 +132,7 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
         get() {
             if (useCompression && !bufferStorage.filename.endsWith(GZ_SUFFIX)) {
                 if (bufferStorage.file.renameTo(File(bufferStorage.filename + GZ_SUFFIX))) {
-                    LOGGER.info("Renaming compressed file to include .gz file extension")
+                    LOGGER.info { "Renaming compressed file to include .gz file extension" }
                 }
             }
             return bufferStorage.file
@@ -147,17 +147,15 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
     override fun flush() {
         if (inputStream == null && !isClosed) {
             flushWriter()
-            LOGGER.debug("Wrapping up compression and write GZIP trailer data.")
+            LOGGER.debug { "Wrapping up compression and write GZIP trailer data." }
             compressedBuffer?.flush()
             compressedBuffer?.close()
             closeWriter()
             bufferStorage.close()
             inputStream = convertToInputStream()
-            LOGGER.info(
-                "Finished writing data to {} ({})",
-                filename,
-                FileUtils.byteCountToDisplaySize(byteCounter.count)
-            )
+            LOGGER.info {
+                "Finished writing data to $filename (${FileUtils.byteCountToDisplaySize(byteCounter.count)})"
+            }
         }
     }
 
@@ -182,7 +180,7 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
     override val maxConcurrentStreamsInBuffer: Int = bufferStorage.maxConcurrentStreamsInBuffer
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(BaseSerializedBuffer::class.java)
+
         private const val GZ_SUFFIX = ".gz"
     }
 }

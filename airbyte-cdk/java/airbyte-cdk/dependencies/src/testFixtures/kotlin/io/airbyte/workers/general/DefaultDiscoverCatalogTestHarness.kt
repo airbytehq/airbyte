@@ -19,11 +19,12 @@ import io.airbyte.workers.helper.ConnectorConfigUpdater
 import io.airbyte.workers.internal.AirbyteStreamFactory
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory
 import io.airbyte.workers.process.IntegrationLauncher
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.util.*
 import kotlin.concurrent.Volatile
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class DefaultDiscoverCatalogTestHarness
 @JvmOverloads
@@ -140,8 +141,6 @@ constructor(
     }
 
     companion object {
-        private val LOGGER: Logger =
-            LoggerFactory.getLogger(DefaultDiscoverCatalogTestHarness::class.java)
         private const val WRITE_DISCOVER_CATALOG_LOGS_TAG = "call to write discover schema result"
     }
 }

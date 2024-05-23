@@ -18,6 +18,7 @@ import io.airbyte.workers.internal.DefaultAirbyteDestination
 import io.airbyte.workers.process.AirbyteIntegrationLauncher
 import io.airbyte.workers.process.DockerProcessFactory
 import io.airbyte.workers.process.ProcessFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -35,9 +36,8 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.function.Executable
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * This is loosely based on standard-destination-tests's DestinationAcceptanceTest class. The
  * sync-running code is copy-pasted from there.
@@ -1114,7 +1114,6 @@ abstract class BaseTypingDedupingTest {
     protected val schema: JsonNode = SCHEMA
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(BaseTypingDedupingTest::class.java)
         @JvmField protected val SCHEMA: JsonNode
 
         init {

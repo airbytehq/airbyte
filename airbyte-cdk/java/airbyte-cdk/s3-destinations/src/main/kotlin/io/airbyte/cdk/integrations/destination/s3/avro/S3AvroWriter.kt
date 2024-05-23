@@ -15,6 +15,7 @@ import io.airbyte.cdk.integrations.destination.s3.writer.BaseS3Writer
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.sql.Timestamp
 import java.util.*
@@ -22,9 +23,9 @@ import org.apache.avro.Schema
 import org.apache.avro.file.DataFileWriter
 import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericDatumWriter
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter
+
+private val LOGGER = KotlinLogging.logger {}
 
 class S3AvroWriter(
     config: S3DestinationConfig,
@@ -54,12 +55,9 @@ class S3AvroWriter(
 
         outputPath = java.lang.String.join("/", outputPrefix, outputFilename)
 
-        LOGGER.info(
-            "Full S3 path for stream '{}': s3://{}/{}",
-            stream.name,
-            config.bucketName,
-            outputPath
-        )
+        LOGGER.info {
+            "Full S3 path for stream '${stream.name}': s3://${config.bucketName}/$outputPath"
+        }
         fileLocation = String.format("gs://%s/%s", config.bucketName, outputPath)
 
         this.avroRecordFactory = AvroRecordFactory(schema, converter)
@@ -105,7 +103,5 @@ class S3AvroWriter(
         dataFileWriter.append(record)
     }
 
-    companion object {
-        protected val LOGGER: Logger = LoggerFactory.getLogger(S3AvroWriter::class.java)
-    }
+    companion object {}
 }

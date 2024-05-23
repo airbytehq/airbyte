@@ -8,11 +8,12 @@ import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler.Companion.addStr
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.Optional
 import java.util.function.Consumer
 import org.apache.commons.codec.digest.DigestUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class CatalogParser
 @JvmOverloads
@@ -40,11 +41,7 @@ constructor(
                 val originalNamespace = stream.stream.namespace
                 val originalName = stream.stream.name
 
-                LOGGER.info(
-                    "Detected table name collision for {}.{}",
-                    originalNamespace,
-                    originalName
-                )
+                LOGGER.info { "Detected table name collision for $originalNamespace.$originalName" }
 
                 // ... this logic is ported from legacy normalization, and maybe should change?
                 // We're taking a hash of the quoted namespace and the unquoted stream name
@@ -106,7 +103,7 @@ constructor(
                 }
             )
         }
-        LOGGER.info("Running sync with stream configs: $streamConfigs")
+        LOGGER.info { "Running sync with stream configs: $streamConfigs" }
         return ParsedCatalog(streamConfigs)
     }
 
@@ -184,12 +181,9 @@ constructor(
                 // as-is.
                 columnId = originalColumnId
             } else {
-                LOGGER.info(
-                    "Detected column name collision for {}.{}.{}",
-                    stream.stream.namespace,
-                    stream.stream.name,
-                    key,
-                )
+                LOGGER.info {
+                    "Detected column name collision for ${stream.stream.namespace}.${stream.stream.name}.$key"
+                }
                 // One of the existing columns has the same name. We need to handle this collision.
                 // Append _1, _2, _3, ... to the column name until we find one that doesn't collide.
                 var i = 1
@@ -279,7 +273,5 @@ constructor(
         return newColumnId
     }
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(CatalogParser::class.java)
-    }
+    companion object {}
 }

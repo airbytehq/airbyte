@@ -19,6 +19,7 @@ import io.airbyte.cdk.integrations.util.HostPortResolver.resolvePort
 import io.airbyte.cdk.testutils.TestDatabase
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.JDBCType
 import java.util.function.Supplier
 import java.util.stream.Stream
@@ -27,9 +28,9 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.testcontainers.containers.PostgreSQLContainer
+
+private val LOGGER = KotlinLogging.logger {}
 
 /**
  * Runs the acceptance tests in the source-jdbc test module. We want this module to run these tests
@@ -40,7 +41,7 @@ internal class DefaultJdbcSourceAcceptanceTest :
     JdbcSourceAcceptanceTest<
         DefaultJdbcSourceAcceptanceTest.PostgresTestSource, BareBonesTestDatabase>() {
     override fun config(): JsonNode {
-        return testdb?.testConfigBuilder()?.build()!!
+        return testdb.testConfigBuilder().build()
     }
 
     override fun source(): PostgresTestSource {
@@ -48,7 +49,7 @@ internal class DefaultJdbcSourceAcceptanceTest :
     }
 
     override fun createTestDatabase(): BareBonesTestDatabase {
-        return BareBonesTestDatabase(PSQL_CONTAINER).initialized()!!
+        return BareBonesTestDatabase(PSQL_CONTAINER).initialized()
     }
 
     public override fun supportsSchemas(): Boolean {
@@ -111,7 +112,6 @@ internal class DefaultJdbcSourceAcceptanceTest :
         }
 
         companion object {
-            private val LOGGER: Logger = LoggerFactory.getLogger(PostgresTestSource::class.java)
 
             val DRIVER_CLASS: String = DatabaseDriver.POSTGRESQL.driverClassName
 
@@ -119,9 +119,9 @@ internal class DefaultJdbcSourceAcceptanceTest :
             @JvmStatic
             fun main(args: Array<String>) {
                 val source: Source = PostgresTestSource()
-                LOGGER.info("starting source: {}", PostgresTestSource::class.java)
+                LOGGER.info { "starting source: ${PostgresTestSource::class.java}" }
                 IntegrationRunner(source).run(args)
-                LOGGER.info("completed source: {}", PostgresTestSource::class.java)
+                LOGGER.info { "completed source: ${PostgresTestSource::class.java}" }
             }
         }
     }
@@ -181,15 +181,12 @@ internal class DefaultJdbcSourceAcceptanceTest :
     fun testCustomParametersOverwriteDefaultParametersExpectException() {
         val connectionPropertiesUrl = "ssl=false"
         val config =
-            testdb?.let {
-                getConfigWithConnectionProperties(
-                    PSQL_CONTAINER,
-                    it.databaseName,
-                    connectionPropertiesUrl
-                )
-            }
-        val customParameters =
-            parseJdbcParameters(config!!, JdbcUtils.CONNECTION_PROPERTIES_KEY, "&")
+            getConfigWithConnectionProperties(
+                PSQL_CONTAINER,
+                testdb.databaseName,
+                connectionPropertiesUrl
+            )
+        val customParameters = parseJdbcParameters(config, JdbcUtils.CONNECTION_PROPERTIES_KEY, "&")
         val defaultParameters = mapOf("ssl" to "true", "sslmode" to "require")
         Assertions.assertThrows(IllegalArgumentException::class.java) {
             JdbcDataSourceUtils.assertCustomParametersDontOverwriteDefaultParameters(

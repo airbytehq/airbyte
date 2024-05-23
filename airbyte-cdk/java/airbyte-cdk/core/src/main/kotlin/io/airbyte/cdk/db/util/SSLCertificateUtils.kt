@@ -3,6 +3,7 @@
  */
 package io.airbyte.cdk.db.util
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.*
 import java.net.URI
 import java.nio.charset.StandardCharsets
@@ -19,15 +20,14 @@ import java.util.*
 import java.util.concurrent.*
 import javax.net.ssl.SSLContext
 import org.apache.http.ssl.SSLContexts
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * General SSL utilities used for certificate and keystore operations related to secured db
  * connections.
  */
 object SSLCertificateUtils {
-    private val LOGGER: Logger = LoggerFactory.getLogger(SSLCertificateUtils::class.java)
+
     private const val PKCS_12 = "PKCS12"
     private const val X509 = "X.509"
     private val RANDOM: Random = SecureRandom()
@@ -61,7 +61,7 @@ object SSLCertificateUtils {
 
     @Throws(IOException::class, InterruptedException::class)
     private fun runProcess(cmd: String, run: Runtime) {
-        LOGGER.debug("running [{}]", cmd)
+        LOGGER.debug { "running [$cmd]" }
         @Suppress("deprecation") val p = run.exec(cmd)
         if (!p.waitFor(30, TimeUnit.SECONDS)) {
             p.destroy()

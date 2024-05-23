@@ -4,13 +4,14 @@
 package io.airbyte.cdk.integrations.standardtest.destination.comparator
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import org.junit.jupiter.api.Assertions
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 open class AdvancedTestDataComparator : TestDataComparator {
     override fun assertSameData(expected: List<JsonNode>, actual: List<JsonNode>) {
@@ -241,7 +242,6 @@ open class AdvancedTestDataComparator : TestDataComparator {
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(AdvancedTestDataComparator::class.java)
 
         const val AIRBYTE_DATE_FORMAT: String = "yyyy-MM-dd"
         const val AIRBYTE_DATETIME_FORMAT: String = "yyyy-MM-dd'T'HH:mm:ss"

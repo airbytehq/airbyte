@@ -9,14 +9,15 @@ import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 /** This abstract class contains common methods for Performance tests. */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -84,7 +85,7 @@ abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest
         if (failedStreamsMap.isNotEmpty()) {
             Assertions.fail<Any>("Non all messages were delivered. $failedStreamsMap")
         }
-        c.info("Finished all checks, no issues found for {} of streams", checkStatusMap.size)
+        LOGGER.info("Finished all checks, no issues found for {} of streams", checkStatusMap.size)
     }
 
     protected fun prepareMapWithExpectedRecords(
@@ -151,7 +152,5 @@ abstract class AbstractSourcePerformanceTest : AbstractSourceBasePerformanceTest
         return ConfiguredAirbyteCatalog().withStreams(streams)
     }
 
-    companion object {
-        protected val c: Logger = LoggerFactory.getLogger(AbstractSourcePerformanceTest::class.java)
-    }
+    companion object {}
 }

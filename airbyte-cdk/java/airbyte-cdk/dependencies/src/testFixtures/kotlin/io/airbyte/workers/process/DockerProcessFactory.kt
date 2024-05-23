@@ -15,6 +15,7 @@ import io.airbyte.configoss.AllowedHosts
 import io.airbyte.configoss.ResourceRequirements
 import io.airbyte.workers.TestHarnessUtils
 import io.airbyte.workers.exception.TestHarnessException
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -22,8 +23,8 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.function.Function
 import org.apache.commons.lang3.StringUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class DockerProcessFactory(
     private val workspaceRoot: Path,
@@ -185,7 +186,7 @@ class DockerProcessFactory(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(DockerProcessFactory::class.java)
+
         private const val DOCKER_NAME_LEN_LIMIT = 128
 
         private val DATA_MOUNT_DESTINATION: Path = Path.of("/data")
