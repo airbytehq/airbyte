@@ -54,10 +54,11 @@ class GSMSecretStore(SecretStore):
         request = secretmanager_v1.ListSecretVersionsRequest(
             parent=f"projects/{self.project_id}/secrets/{name}",
         )
-        page_result = self.gsm_client.list_secret_versions(request=request)
-        if not page_result:
+        secret_versions = self.gsm_client.list_secret_versions(request=request)
+        if not secret_versions:
             raise SecretNotFoundError(f"No secret found in GSM for secret {name}")
-        for version in page_result:
+
+        for version in secret_versions:
             # 1 means enabled version
             if version.state == 1:
                 request = secretmanager_v1.AccessSecretVersionRequest(
@@ -65,6 +66,7 @@ class GSMSecretStore(SecretStore):
                 )
                 response = self.gsm_client.access_secret_version(request=request)
                 return response.payload.data.decode()
+
         raise SecretNotFoundError(f"No enabled secret version in GSM found for secret {name}")
 
 

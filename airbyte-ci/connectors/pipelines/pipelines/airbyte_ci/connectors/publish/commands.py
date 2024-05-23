@@ -8,10 +8,10 @@ from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
 from pipelines.airbyte_ci.connectors.publish.pipeline import reorder_contexts, run_connector_publish_pipeline
-from pipelines.cli.airbyte_ci import wrap_gcp_credentials_in_secret, wrap_in_secret
 from pipelines.cli.click_decorators import click_ci_requirements_option
 from pipelines.cli.confirm_prompt import confirm
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
+from pipelines.cli.secrets import wrap_gcp_credentials_in_secret, wrap_in_secret
 from pipelines.consts import DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL, DEFAULT_PYTHON_PACKAGE_REGISTRY_URL, ContextState
 from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 from pipelines.models.secrets import Secret

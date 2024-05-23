@@ -28,6 +28,41 @@ from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
 from pipelines.models.secrets import Secret, SecretNotFoundError, SecretStore
 from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, StepStatus
+from pydash import find  # type: ignore
+
+
+def _handle_missing_secret_store(
+    secret_info: Dict[str, str | Dict[str, str]], raise_on_missing: bool, logger: Optional[logging.Logger] = None
+) -> None:
+    assert isinstance(secret_info["secretStore"], dict), "The secretStore field must be a dict"
+    message = f"Secret {secret_info['name']} can't be retrieved as {secret_info['secretStore']['alias']} is not available"
+    if raise_on_missing:
+        raise SecretNotFoundError(message)
+    if logger is not None:
+        logger.warn(message)
+
+
+def _process_secret(
+    secret_info: Dict[str, str | Dict[str, str]],
+    secret_stores: Dict[str, SecretStore],
+    raise_on_missing: bool,
+    logger: Optional[logging.Logger] = None,
+) -> Optional[Secret]:
+    assert isinstance(secret_info["secretStore"], dict), "The secretStore field must be a dict"
+    secret_store_alias = secret_info["secretStore"]["alias"]
+    if secret_store_alias not in secret_stores:
+        _handle_missing_secret_store(secret_info, raise_on_missing, logger)
+        return None
+    else:
+        # All these asserts and casting are there to make MyPy happy
+        # The dict structure being nested MyPy can't figure if the values are str or dict
+        assert isinstance(secret_info["name"], str), "The secret name field must be a string"
+        if file_name := secret_info.get("fileName"):
+            assert isinstance(secret_info["fileName"], str), "The secret fileName must be a string"
+            file_name = str(secret_info["fileName"])
+        else:
+            file_name = None
+        return Secret(secret_info["name"], secret_stores[secret_store_alias], file_name=file_name)
 
 
 def get_secrets_from_connector_test_suites_option(
@@ -56,23 +91,12 @@ def get_secrets_from_connector_test_suites_option(
         List[Secret]: List of secrets declared in the connectorTestSuitesOptions for a test suite name.
     """
     secrets: List[Secret] = []
+    enabled_test_suite = find(connector_test_suites_options, lambda x: x["suite"] == suite_name)
 
-    for enabled_test_suite in connector_test_suites_options:
-        if enabled_test_suite["suite"] == suite_name:
-            if enabled_test_suite.get("testSecrets"):
-                assert isinstance(enabled_test_suite["testSecrets"], list)
-                suite_secrets: List[Dict[str, str | Dict[str, str]]] = enabled_test_suite["testSecrets"]
-                for s in suite_secrets:
-                    if s["secretStore"]["alias"] not in secret_stores:
-                        message = f"Secret {s['name']} can't be retrieved as {s['secretStore']['alias']} is not available"
-                        if raise_on_missing_secret_store:
-                            raise SecretNotFoundError(message)
-                        if logger is not None:
-                            logger.warn(message)
-                        continue
-                    secret_store = secret_stores[s["secretStore"]["alias"]]
-                    secret = Secret(s["name"], secret_store, file_name=s.get("fileName"))
-                    secrets.append(secret)
+    if enabled_test_suite and "testSecrets" in enabled_test_suite:
+        for secret_info in enabled_test_suite["testSecrets"]:
+            if secret := _process_secret(secret_info, secret_stores, raise_on_missing_secret_store, logger):
+                secrets.append(secret)
 
     return secrets
 

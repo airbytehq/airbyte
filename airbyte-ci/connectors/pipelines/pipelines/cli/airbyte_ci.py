@@ -17,7 +17,7 @@ import logging
 import multiprocessing
 import os
 import sys
-from typing import Any, Optional
+from typing import Optional
 
 import asyncclick as click
 import docker  # type: ignore
@@ -33,14 +33,14 @@ from pipelines.cli.click_decorators import (
 )
 from pipelines.cli.confirm_prompt import pre_confirm_all_flag
 from pipelines.cli.lazy_group import LazyGroup
+from pipelines.cli.secrets import wrap_gcp_credentials_in_secret, wrap_in_secret
 from pipelines.cli.telemetry import click_track_command
 from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, LOCAL_BUILD_PLATFORM, CIContext
 from pipelines.dagger.actions.connector.hooks import get_dagger_sdk_version
 from pipelines.helpers import github
-from pipelines.helpers.gcs import sanitize_gcp_credentials
 from pipelines.helpers.git import get_current_git_branch, get_current_git_revision
 from pipelines.helpers.utils import AIRBYTE_REPO_URL, get_current_epoch_time
-from pipelines.models.secrets import InMemorySecretStore, Secret
+from pipelines.models.secrets import InMemorySecretStore
 
 
 def log_context_info(ctx: click.Context) -> None:
@@ -124,31 +124,6 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
     called_with_dagger_run = check_dagger_wrap()
     main_logger.info(f"Called with dagger run: {called_with_dagger_run}")
     return called_with_dagger_run
-
-
-def wrap_in_secret(ctx: click.Context, param: click.Option, value: Any) -> Optional[Secret]:  # noqa
-    if value is None:
-        return None
-    assert param.name is not None
-    if not isinstance(value, str):
-        raise click.BadParameter(f"{param.name} value is not a string, only strings can be wrapped in a secret.")
-    ctx.ensure_object(dict)
-    if "secret_stores" not in ctx.obj:
-        ctx.obj["secret_stores"] = {}
-    if "in_memory" not in ctx.obj["secret_stores"]:
-        ctx.obj["secret_stores"]["in_memory"] = InMemorySecretStore()
-
-    ctx.obj["secret_stores"]["in_memory"].add_secret(param.name, value)
-    return Secret(param.name, ctx.obj["secret_stores"]["in_memory"])
-
-
-def wrap_gcp_credentials_in_secret(ctx: click.Context, param: click.Option, value: Any) -> Optional[Secret]:  # noqa
-    if value is None:
-        return None
-    if not isinstance(value, str):
-        raise click.BadParameter(f"{param.name} value is not a string, only strings can be wrapped in a secret.")
-    value = sanitize_gcp_credentials(value)
-    return wrap_in_secret(ctx, param, value)
 
 
 # COMMANDS
