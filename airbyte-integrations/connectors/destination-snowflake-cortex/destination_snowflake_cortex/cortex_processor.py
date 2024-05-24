@@ -11,11 +11,6 @@ import sqlalchemy
 from airbyte._processors.file.jsonl import JsonlWriter
 from airbyte.secrets import SecretString
 from airbyte.types import SQLTypeConverter
-from airbyte_protocol.models import (
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    Type,
-)
 from overrides import overrides
 from pydantic import Field
 from snowflake import connector
@@ -24,11 +19,8 @@ from sqlalchemy.engine import Connection
 
 from destination_snowflake_cortex.common.sql.sql_processor import SqlConfig, SqlProcessorBase
 from destination_snowflake_cortex.globals import (
-    CHUNK_ID_COLUMN,
     DOCUMENT_CONTENT_COLUMN,
     DOCUMENT_ID_COLUMN,
-    EMBEDDING_COLUMN,
-    METADATA_COLUMN,
 )
 
 if TYPE_CHECKING:
