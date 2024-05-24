@@ -1,9 +1,10 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 import json
 
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 from airbyte_cdk.test.mock_http.response_builder import find_template
-
 
 _ALL_SCOPES = [
     "read_all_cart_transforms",

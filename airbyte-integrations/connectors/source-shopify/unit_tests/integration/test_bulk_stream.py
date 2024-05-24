@@ -1,16 +1,24 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from datetime import datetime, timedelta
+from typing import Any, Dict
 from unittest import TestCase
 
-from source_shopify import SourceShopify
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
-from freezegun import freeze_time
-from airbyte_protocol.models import SyncMode, FailureType
-from typing import Any, Dict
-from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.mock_http.request import HttpRequest
+from airbyte_protocol.models import FailureType, SyncMode
+from freezegun import freeze_time
+from source_shopify import SourceShopify
 from unit_tests.integration.api.authentication import grant_all_scopes, set_up_shop
-from unit_tests.integration.api.bulk import JobCreationResponseBuilder, JobStatusResponseBuilder, MetafieldOrdersJobResponseBuilder, create_job_creation_request, create_job_status_request
+from unit_tests.integration.api.bulk import (
+    JobCreationResponseBuilder,
+    JobStatusResponseBuilder,
+    MetafieldOrdersJobResponseBuilder,
+    create_job_creation_request,
+    create_job_status_request,
+)
 
 _BULK_OPERATION_ID = "gid://shopify/BulkOperation/4472588009661"
 _BULK_STREAM = "metafield_orders"
