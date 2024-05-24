@@ -135,7 +135,12 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
         stream_name: str,
         batch_id: str,
     ) -> str:
-        """Write files to a new table."""
+        """Write files to a new table.
+
+        This is the same as PyAirbyte's SnowflakeSqlProcessor implementation, migrated here for
+        stability. The main differences lie within `_get_sql_column_definitions()`, whose logic is
+        abstracted out of this method.
+        """
         temp_table_name = self._create_table_for_loading(
             stream_name=stream_name,
             batch_id=batch_id,
@@ -155,9 +160,7 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
         ]
         files_list = ", ".join([f"'{f.name}'" for f in files])
         columns_list_str: str = indent("\n, ".join(columns_list), " " * 12)
-        variant_cols_str: str = ("\n" + " " * 21 + ", ").join([
-            f"$1:{self.normalizer.normalize(col)}" for col in columns_list
-        ])
+        variant_cols_str: str = ("\n" + " " * 21 + ", ").join([f"$1:{col}" for col in columns_list])
         copy_statement = dedent(
             f"""
             COPY INTO {temp_table_name}
@@ -169,7 +172,7 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
                 FROM {internal_sf_stage_name}
             )
             FILES = ( {files_list} )
-            FILE_FORMAT = ( TYPE = JSON )
+            FILE_FORMAT = ( TYPE = JSON, COMPRESSION = GZIP )
             ;
             """
         )
