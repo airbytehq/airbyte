@@ -168,7 +168,7 @@ class ConnectorRunner:
             http_dump=await self.http_proxy.retrieve_http_dump() if self.http_proxy else None,
             executed_container=executed_container,
         )
-        await execution_result.save_artifacts(self.output_dir, self.duckdb_path)
+        await execution_result.save_artifacts(self.output_dir, self.duckdb_path if airbyte_command == "read" else None)
         return execution_result
 
     async def _log_progress(self) -> None:
