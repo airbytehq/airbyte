@@ -742,7 +742,7 @@ class Collection(ShopifyBulkQuery):
         Field(name="publications", fields=publications_fields),
         Field(name="sortOrder"),
         Field(name="templateSuffix"),
-        Field(name="productsCount"),
+        Field(name="productsCount", fields=[Field(name="count", alias="products_count")]),
     ]
 
     record_composition = {
@@ -764,6 +764,8 @@ class Collection(ShopifyBulkQuery):
         # convert dates from ISO-8601 to RFC-3339
         record["published_at"] = self.tools.from_iso8601_to_rfc3339(record, "published_at")
         record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+        # unnest `product_count` to the root lvl
+        record["products_count"] = record.get("productsCount", {}).get("products_count")
         # remove leftovers
         record.pop(BULK_PARENT_KEY, None)
         yield record
@@ -988,17 +990,60 @@ class InventoryLevel(ShopifyBulkQuery):
         "new_record": "InventoryLevel",
     }
 
+    # quantity related fields and filtering options
+    quantities_names_filter: List[str] = [
+        '"available"',
+        '"incoming"',
+        '"committed"',
+        '"damaged"',
+        '"on_hand"',
+        '"quality_control"',
+        '"reserved"',
+        '"safety_stock"',
+    ]
+    # quantities fields
+    quantities_fields: List[str] = [
+        "id",
+        "name",
+        "quantity",
+        "updatedAt",
+    ]
+
     inventory_levels_fields: List[Field] = [
         "__typename",
         "id",
-        Field(name="available"),
         Field(name="item", fields=[Field(name="id", alias="inventory_item_id")]),
         Field(name="updatedAt"),
     ]
 
+    def _quantities_query(self) -> Query:
+        """
+        Defines the `quantities` nested query.
+        """
+
+        return Query(
+            name="quantities",
+            arguments=[Argument(name="names", value=self.quantities_names_filter)],
+            fields=self.quantities_fields,
+        )
+
+    def _process_quantities(self, quantities: Iterable[MutableMapping[str, Any]] = None) -> Iterable[Mapping[str, Any]]:
+        if quantities:
+            for quantity in quantities:
+                # save the original string id
+                quantity["admin_graphql_api_id"] = quantity.get("id")
+                # resolve the int id from str id
+                quantity["id"] = self.tools.resolve_str_id(quantity.get("id"))
+                # convert dates from ISO-8601 to RFC-3339
+                quantity["updatedAt"] = self.tools.from_iso8601_to_rfc3339(quantity, "updatedAt")
+            return quantities
+        return []
+
     def query(self, filter_query: Optional[str] = None) -> Query:
+        # construct the `quantities` query piece
+        quantities: List[Query] = [self._quantities_query()]
         # build the nested query first with `filter_query` to have the incremental syncs
-        inventory_levels: List[Query] = [self.build("inventoryLevels", self.inventory_levels_fields, filter_query)]
+        inventory_levels: List[Query] = [self.build("inventoryLevels", self.inventory_levels_fields + quantities, filter_query)]
         # build the main query around previous
         # return the constructed query operation
         return self.build(
@@ -1012,7 +1057,9 @@ class InventoryLevel(ShopifyBulkQuery):
         """
         Defines how to process collected components.
         """
-
+        # process quantities
+        quantities = record.get("quantities", [])
+        record["quantities"] = self._process_quantities(quantities)
         # resolve `inventory_item_id` to root lvl +  resolve to int
         record["inventory_item_id"] = self.tools.resolve_str_id(record.get("item", {}).get("inventory_item_id"))
         # add `location_id` from `__parentId`
