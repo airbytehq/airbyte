@@ -35,8 +35,15 @@ class AppsflyerStream(HttpStream, ABC):
     primary_key = None
     main_fields = ()
     additional_fields = ()
+    custom_fields = ()
     maximum_rows = 1_000_000
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
+
+    suffix_map = {
+        " (Unique users)": "_unique_users",
+        " (Sales in USD)": "_event_counter",
+        " (Event counter)": "_sales"
+    }
 
     def __init__(
         self, app_id: str, api_token: str, timezone: str, start_date: Union[date, str] = None, end_date: Union[date, str] = None, **kwargs
@@ -72,14 +79,32 @@ class AppsflyerStream(HttpStream, ABC):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        fields = add(self.main_fields, self.additional_fields) if self.additional_fields else self.main_fields
+        predefined_fields = add(self.main_fields,
+                                self.additional_fields) if self.additional_fields else self.main_fields
+
+        # get first line from response
+        header = response.text.split("\n")[0]
+        self.custom_fields = tuple([self.rename_fields(i) for i in header.split(",")[len(predefined_fields):]])
+
         csv_data = map(lambda x: x.decode("utf-8"), response.iter_lines())
-        reader = csv.DictReader(csv_data, fields)
+        reader = csv.DictReader(csv_data, predefined_fields + self.custom_fields)
 
         # Skip CSV Header
         next(reader, {})
 
         yield from reader
+
+    def get_json_schema(self):
+        schema = super().get_json_schema()
+        for field in self.custom_fields:
+            schema["properties"][field] = {"type": ["null", "number"]}
+        return schema
+
+    def rename_fields(self, field_name: str) -> str:
+        for key, value in self.suffix_map.items():
+            field_name = field_name.replace(key, value)
+        field_name = field_name.replace(" ", "_").lower()
+        return field_name
 
     def is_aggregate_reports_reached_limit(self, response: requests.Response) -> bool:
         template = "Limit reached for "
