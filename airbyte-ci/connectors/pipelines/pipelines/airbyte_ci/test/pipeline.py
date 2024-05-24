@@ -221,7 +221,7 @@ def prepare_container_for_poe_tasks(
                     "config",
                     "http-basic.airbyte-platform-internal-source",
                     "octavia-squidington-iii",
-                    pipeline_context_params["ci_github_access_token"],
+                    pipeline_context_params["ci_github_access_token"].value,
                 ]
             )
             .with_exec(["poetry", "lock", "--no-update"])

@@ -8,17 +8,18 @@ from typing import Dict, List
 import asyncclick as click
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
-from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
+from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
 from pipelines.airbyte_ci.connectors.test.pipeline import run_connector_test_pipeline
 from pipelines.airbyte_ci.connectors.test.steps.common import RegressionTests
 from pipelines.cli.click_decorators import click_ci_requirements_option
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-from pipelines.consts import LOCAL_BUILD_PLATFORM, ContextState
+from pipelines.consts import LOCAL_BUILD_PLATFORM, MAIN_CONNECTOR_TESTING_SECRET_STORE_ALIAS, ContextState
 from pipelines.helpers.execution import argument_parsing
 from pipelines.helpers.execution.run_steps import RunStepOptions
 from pipelines.helpers.github import update_global_commit_status_check_for_tests
 from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
+from pipelines.models.secrets import GSMSecretStore
 from pipelines.models.steps import STEP_PARAMS
 
 GITHUB_GLOBAL_CONTEXT_FOR_TESTS = "Connectors CI tests"
@@ -105,6 +106,11 @@ async def test(
     ctx.obj["global_status_check_context"] = global_status_check_context
     ctx.obj["global_status_check_description"] = global_status_check_description
 
+    if ctx.obj["ci_gcp_credentials"]:
+        ctx.obj["secret_stores"][MAIN_CONNECTOR_TESTING_SECRET_STORE_ALIAS] = GSMSecretStore(ctx.obj["ci_gcp_credentials"])
+    else:
+        main_logger.warn(f"The credentials to connect to {MAIN_CONNECTOR_TESTING_SECRET_STORE_ALIAS} were are not defined.")
+
     if only_steps and skip_steps:
         raise click.UsageError("Cannot use both --only-step and --skip-step at the same time.")
     if not only_steps:
@@ -128,7 +134,7 @@ async def test(
     )
 
     connectors_tests_contexts = [
-        ConnectorContext(
+        ConnectorTestContext(
             pipeline_name=f"{global_status_check_context} on {connector.technical_name}",
             connector=connector,
             is_local=ctx.obj["is_local"],
@@ -140,13 +146,12 @@ async def test(
             ci_github_access_token=ctx.obj["ci_github_access_token"],
             ci_report_bucket=ctx.obj["ci_report_bucket_name"],
             report_output_prefix=ctx.obj["report_output_prefix"],
-            use_remote_secrets=ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             dagger_logs_url=ctx.obj.get("dagger_logs_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
             pull_request=ctx.obj.get("pull_request"),
-            ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
+            ci_gcp_credentials=ctx.obj["ci_gcp_credentials"],
             code_tests_only=code_tests_only,
             use_local_cdk=ctx.obj.get("use_local_cdk"),
             s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
@@ -156,6 +161,7 @@ async def test(
             concurrent_cat=concurrent_cat,
             run_step_options=run_step_options,
             targeted_platforms=[LOCAL_BUILD_PLATFORM],
+            secret_stores=ctx.obj["secret_stores"],
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
