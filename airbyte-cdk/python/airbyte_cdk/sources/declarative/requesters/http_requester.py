@@ -54,21 +54,12 @@ class HttpRequester(Requester):
     """
 
     name: str
-    url_base: Union[InterpolatedString, str]
-    path: Union[InterpolatedString, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-    authenticator: Optional[DeclarativeAuthenticator] = None
-    http_method: Union[str, HttpMethod] = HttpMethod.GET
     request_options_provider: Optional[InterpolatedRequestOptionsProvider] = None
-    error_handler: Optional[ErrorHandler] = None
-    disable_retries: bool = False
+    error_handler: Optional[PatrickErrorHandler] = None
     message_repository: MessageRepository = NoopMessageRepository()
-    use_cache: bool = False
-
-    _DEFAULT_MAX_RETRY = 5
-    _DEFAULT_RETRY_FACTOR = 5
-    _DEFAULT_MAX_TIME = 60 * 10
+    client: PatrickClient
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._url_base = InterpolatedString.create(self.url_base, parameters=parameters)
@@ -531,8 +522,11 @@ class HttpRequester(Requester):
         self.logger.debug(
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
-        response: requests.Response = self._session.send(request, stream=True)
-        #self.logger.debug("Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text})
+        response: requests.Response = self._session.send(request, stream=self.stream_response)
+        if self.stream_response:
+            self.logger.debug("Receiving response, but not logging it as it is a stream response", extra={"headers": response.headers, "status": response.status_code})
+        else:
+            self.logger.debug("Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text})
         if log_formatter:
             formatter = log_formatter
             self.message_repository.log_message(

@@ -60,10 +60,13 @@ class RecordSelector(HttpSelector):
         :param next_page_token: The paginator token
         :return: List of Records selected from the response
         """
+        print(f"RecordSelector: select_records: {self.extractor.decoder}")
+        print(f"recordextractor: {self.extractor.__class__}")
         all_data: Iterable[Mapping[str, Any]] = self.extractor.extract_records(response)
         filtered_data = self._filter(all_data, stream_state, stream_slice, next_page_token)
         transformed_data = self._transform(filtered_data, stream_state, stream_slice)
         normalized_data = self._normalize_by_schema(transformed_data, schema=records_schema)
+        print("normalized")
         for data in normalized_data:
             yield Record(data, stream_slice)
 

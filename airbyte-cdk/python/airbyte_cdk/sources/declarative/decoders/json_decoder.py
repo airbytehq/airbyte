@@ -5,6 +5,7 @@
 from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Union
 
+import json
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 
@@ -22,3 +23,20 @@ class JsonDecoder(Decoder):
             return response.json()
         except requests.exceptions.JSONDecodeError:
             return {}
+
+
+@dataclass
+class JsonlDecoder(Decoder):
+    """
+    """
+
+    parameters: InitVar[Mapping[str, Any]]
+
+    def decode(self, response: requests.Response) -> Union[Mapping[str, Any], List[Any], Any]:
+        print(f"jsonldecoder")
+        # j = response.json()
+        # print(f"j: {j}")
+        for record in response.iter_lines():
+            print(f"record: {record}")
+            #yield record
+        yield from [{}]

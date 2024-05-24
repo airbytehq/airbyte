@@ -262,6 +262,8 @@ streams:
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
+      decoder:
+        type: JsonlDecoder
       paginator:
         type: NoPagination
       requester:
@@ -284,13 +286,13 @@ streams:
       record_selector:
         type: RecordSelector
         extractor:
-          class_name: source_iterable.components.XJsonRecordExtractor
+          type: DpathExtractor
           field_path:
             - users
       partition_router: []
     primary_key: []
     incremental_sync:
-      step: P30D
+      step: P300D
       type: DatetimeBasedCursor
       cursor_field: profileUpdatedAt
       end_datetime:

@@ -497,7 +497,11 @@ class HttpResponseFilter(BaseModel):
         title='Error Message Substring',
     )
     http_codes: Optional[List[int]] = Field(
-        None, description='Match the response if its HTTP code is included in this list.', examples=[[420, 429], [500]], title='HTTP Codes'
+        None,
+        description='Match the response if its HTTP code is included in this list.',
+        examples=[[420, 429], [500]],
+        title='HTTP Codes',
+        unique_items=True,
     )
     predicate: Optional[str] = Field(
         None,
@@ -534,6 +538,11 @@ class JsonFileSchemaLoader(BaseModel):
 
 class JsonDecoder(BaseModel):
     type: Literal['JsonDecoder']
+
+
+class JsonlDecoder(BaseModel):
+    type: Literal['JsonlDecoder']
+    field: Optional[str] = None
 
 
 class MinMaxDatetime(BaseModel):
@@ -801,6 +810,10 @@ class WaitUntilTimeFromHeader(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class Decoder(BaseModel):
+    __root__: Any
+
+
 class AddedFieldDefinition(BaseModel):
     type: Literal['AddedFieldDefinition']
     path: List[str] = Field(
@@ -874,11 +887,7 @@ class CursorPagination(BaseModel):
     cursor_value: str = Field(
         ...,
         description='Value of the cursor defining the next page to fetch.',
-        examples=[
-            '{{ headers.link.next.cursor }}',
-            "{{ last_record['key'] }}",
-            "{{ response['nextPage'] }}",
-        ],
+        examples=['{{ headers.link.next.cursor }}', "{{ last_record['key'] }}", "{{ response['nextPage'] }}"],
         title='Cursor Value',
     )
     page_size: Optional[int] = Field(None, description='The number of records to include in each pages.', examples=[100], title='Page Size')
@@ -888,9 +897,7 @@ class CursorPagination(BaseModel):
         examples=['{{ response.data.has_more is false }}', "{{ 'next' not in headers['link'] }}"],
         title='Stop Condition',
     )
-    decoder: Optional[JsonDecoder] = Field(
-        None, description='Component decoding the response so records can be extracted.', title='Decoder'
-    )
+    decoder: Optional[Decoder] = Field(None, description='Component decoding the response so records can be extracted.', title='Decoder')
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
@@ -995,7 +1002,7 @@ class DefaultPaginator(BaseModel):
     pagination_strategy: Union[CursorPagination, CustomPaginationStrategy, OffsetIncrement, PageIncrement] = Field(
         ..., description='Strategy defining how records are paginated.', title='Pagination Strategy'
     )
-    decoder: Optional[JsonDecoder] = Field(
+    decoder: Optional[Union[JsonDecoder, JsonlDecoder]] = Field(
         None, description='Component decoding the response so records can be extracted.', title='Decoder'
     )
     page_size_option: Optional[RequestOption] = None
@@ -1011,7 +1018,7 @@ class DpathExtractor(BaseModel):
         examples=[['data'], ['data', 'records'], ['data', '{{ parameters.name }}'], ['data', '*', 'record']],
         title='Field Path',
     )
-    decoder: Optional[JsonDecoder] = Field(
+    decoder: Optional[Union[JsonDecoder, JsonlDecoder]] = Field(
         None, description='Component decoding the response so records can be extracted.', title='Decoder'
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
@@ -1316,6 +1323,9 @@ class SimpleRetriever(BaseModel):
     )
     paginator: Optional[Union[DefaultPaginator, NoPagination]] = Field(
         None, description="Paginator component that describes how to navigate through the API's pages."
+    )
+    decoder: Optional[Union[JsonDecoder, JsonlDecoder]] = Field(
+        None, description='Component decoding the response so records can be extracted.', title='Decoder'
     )
     ignore_stream_slicer_parameters_on_paginated_requests: Optional[bool] = Field(
         False,

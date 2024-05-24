@@ -25,7 +25,7 @@ from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStri
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.decoders import JsonDecoder
+from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder, JsonlDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
 from airbyte_cdk.sources.declarative.extractors.record_selector import SCHEMA_TRANSFORMER_TYPE_MAPPING
 from airbyte_cdk.sources.declarative.incremental import (
@@ -72,6 +72,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import HttpResponseFilter as HttpResponseFilterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import InlineSchemaLoader as InlineSchemaLoaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonDecoder as JsonDecoderModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonlDecoder as JsonlDecoderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonFileSchemaLoader as JsonFileSchemaLoaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtAuthenticator as JwtAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtHeaders as JwtHeadersModel
@@ -197,6 +198,7 @@ class ModelToComponentFactory:
             HttpResponseFilterModel: self.create_http_response_filter,
             InlineSchemaLoaderModel: self.create_inline_schema_loader,
             JsonDecoderModel: self.create_json_decoder,
+            JsonlDecoderModel: self.create_jsonl_decoder,
             JsonFileSchemaLoaderModel: self.create_json_file_schema_loader,
             JwtAuthenticatorModel: self.create_jwt_authenticator,
             LegacyToPerPartitionStateMigrationModel: self.create_legacy_to_per_partition_state_migration,
@@ -239,7 +241,6 @@ class ModelToComponentFactory:
         :return: The declarative component to be used at runtime
         """
 
-        component_type = component_definition.get("type")
         if component_definition.get("type") != model_type.__name__:
             raise ValueError(f"Expected manifest component of type {model_type.__name__}, but received {component_type} instead")
 
@@ -722,6 +723,7 @@ class ModelToComponentFactory:
         url_base: str,
         cursor_used_for_stop_condition: Optional[DeclarativeCursor] = None,
     ) -> Union[DefaultPaginator, PaginatorTestReadDecorator]:
+        # Fixme need to get the parent decoder
         decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
         page_size_option = (
             self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
@@ -748,16 +750,21 @@ class ModelToComponentFactory:
             return PaginatorTestReadDecorator(paginator, self._limit_pages_fetched_per_slice)
         return paginator
 
-    def create_dpath_extractor(self, model: DpathExtractorModel, config: Config, **kwargs: Any) -> DpathExtractor:
-        decoder = self._create_component_from_model(model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
+    def create_dpath_extractor(self, model: DpathExtractorModel, decoder: Optional[Decoder], config: Config, **kwargs: Any) -> DpathExtractor:
+        if model.decoder:
+            decoder_to_use = self._create_component_from_model(model=model.decoder, config=config)
+        elif decoder:
+            decoder_to_use = decoder
+        else:
+            decoder_to_use = JsonDecoder(parameters={})
         model_field_path: List[Union[InterpolatedString, str]] = [x for x in model.field_path]
-        return DpathExtractor(decoder=decoder, field_path=model_field_path, config=config, parameters=model.parameters or {})
+        return DpathExtractor(decoder=decoder_to_use, field_path=model_field_path, config=config, parameters=model.parameters or {})
 
     @staticmethod
     def create_exponential_backoff_strategy(model: ExponentialBackoffStrategyModel, config: Config) -> ExponentialBackoffStrategy:
         return ExponentialBackoffStrategy(factor=model.factor or 5, parameters=model.parameters or {}, config=config)
 
-    def create_http_requester(self, model: HttpRequesterModel, config: Config, *, name: str) -> HttpRequester:
+    def create_http_requester(self, model: HttpRequesterModel, decoder: Optional[Decoder], config: Config, *, name: str) -> HttpRequester:
         authenticator = (
             self._create_component_from_model(model=model.authenticator, config=config, url_base=model.url_base, name=name)
             if model.authenticator
@@ -783,6 +790,11 @@ class ModelToComponentFactory:
 
         assert model.use_cache is not None  # for mypy
 
+        if isinstance(decoder, JsonlDecoder):
+            stream_response_line_by_line = True
+        else:
+            stream_response_line_by_line = False
+
         return HttpRequester(
             name=name,
             url_base=model.url_base,
@@ -796,6 +808,7 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
             message_repository=self._message_repository,
             use_cache=model.use_cache,
+            stream_response=stream_response_line_by_line,
         )
 
     @staticmethod
@@ -822,6 +835,10 @@ class ModelToComponentFactory:
     @staticmethod
     def create_json_decoder(model: JsonDecoderModel, config: Config, **kwargs: Any) -> JsonDecoder:
         return JsonDecoder(parameters={})
+
+    @staticmethod
+    def create_jsonl_decoder(model: JsonlDecoderModel, config: Config, **kwargs: Any) -> JsonlDecoder:
+        return JsonlDecoder(parameters={})
 
     @staticmethod
     def create_json_file_schema_loader(model: JsonFileSchemaLoaderModel, config: Config, **kwargs: Any) -> JsonFileSchemaLoader:
@@ -980,12 +997,13 @@ class ModelToComponentFactory:
         self,
         model: RecordSelectorModel,
         config: Config,
+        decoder: Optional[Decoder],
         *,
         transformations: List[RecordTransformation],
         **kwargs: Any,
     ) -> RecordSelector:
         assert model.schema_normalization is not None  # for mypy
-        extractor = self._create_component_from_model(model=model.extractor, config=config)
+        extractor = self._create_component_from_model(model=model.extractor, decoder=decoder, config=config)
         record_filter = self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
         schema_normalization = TypeTransformer(SCHEMA_TRANSFORMER_TYPE_MAPPING[model.schema_normalization])
 
@@ -1040,8 +1058,9 @@ class ModelToComponentFactory:
         stop_condition_on_cursor: bool = False,
         transformations: List[RecordTransformation],
     ) -> SimpleRetriever:
-        requester = self._create_component_from_model(model=model.requester, config=config, name=name)
-        record_selector = self._create_component_from_model(model=model.record_selector, config=config, transformations=transformations)
+        decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else None
+        requester = self._create_component_from_model(model=model.requester, decoder=decoder, config=config, name=name)
+        record_selector = self._create_component_from_model(model=model.record_selector, config=config, decoder=decoder, transformations=transformations)
         url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
         stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
         cursor = stream_slicer if isinstance(stream_slicer, DeclarativeCursor) else None
