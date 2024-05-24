@@ -125,32 +125,14 @@ class ElasticSearchV2Stream(HttpStream, ABC):
         # If this is a new sync
         if next_page_token is None:
             self.pit = self.client.open_point_in_time(index=self.index, keep_alive="1m")
-            # Every document do not have an updated_at field. In this case, default to date field
             payload = {
                 "query": {
                     "bool": {
-                        "minimum_should_match": 1,
-                        "should": [
+                        "must": [
                             {
                                 "range": {
                                     "updated_at": {
                                         "gte": date_filter_start
-                                    }
-                                }
-                            },
-                            {
-                                "bool": {
-                                    "must_not": {
-                                        "exists": {
-                                            "field": self.cursor_field
-                                        }
-                                    },
-                                    "filter": {
-                                        "range": {
-                                            "date": {
-                                                "gt": date_filter_start
-                                            }
-                                        }
                                     }
                                 }
                             }
@@ -163,9 +145,7 @@ class ElasticSearchV2Stream(HttpStream, ABC):
                 },
                 "size": 10000,
                 "sort": [
-                    "updated_at",
-                    "ad_creative",
-                    "image"
+                    {"updated_at": {"order": "asc", "format": "strict_date_optional_time_nanos", "numeric_type": "date_nanos"}}
                 ]
             }
 
@@ -176,8 +156,16 @@ class ElasticSearchV2Stream(HttpStream, ABC):
 
             payload = {
                 "query": {
-                    "query_string": {
-                        "query": "*"
+                    "bool": {
+                        "must": [
+                            {
+                                "range": {
+                                    "updated_at": {
+                                        "gte": date_filter_start
+                                    }
+                                }
+                            }
+                        ]
                     }
                 },
                 "pit": {
@@ -185,10 +173,13 @@ class ElasticSearchV2Stream(HttpStream, ABC):
                     "keep_alive": "5m"
                 },
                 "size": 10000,
-                "search_after": search_after
+                "search_after": search_after,
+                "sort": [
+                    {"updated_at": {"order": "asc", "format": "strict_date_optional_time_nanos", "numeric_type": "date_nanos"}}
+                ]
             }
 
-        return payload
+        return json.dumps(payload)
 
 
 # Basic incremental stream
@@ -231,7 +222,7 @@ class IncrementalElasticSearchV2Stream(ElasticSearchV2Stream, IncrementalMixin, 
         try:
             self.cursor_value = value[self.cursor_field]
         except KeyError:
-            self.cursor_value = value["date"]
+            self.cursor_value = value["updated_at"]
         except TypeError:
             pass
 
@@ -486,43 +477,39 @@ class Creatives(IncrementalElasticSearchV2Stream):
     primary_key = "_id"
     index = "statistics_ad_creative*"
 
-    def request_body_data(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: int = 0,
-    ) -> Optional[Union[Mapping, str]]:
-        payload = super().request_body_data(stream_state, stream_slice, next_page_token)
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        """State getter, should return state in form that can serialized to a string and send to the output
+        as a STATE AirbyteMessage.
 
-        payload["sort"] = [
-            "date",
-            "updated_at",
-            "ad_creative",
-            "image"
-        ]
+        A good example of a state is a _cursor_value:
+            {
+                self.cursor_field: "_cursor_value"
+            }
 
-        return json.dumps(payload)
+         State should try to be as small as possible but at the same time descriptive enough to restore
+         syncing process from the point where it stopped.
+        """
+
+        return {self.cursor_field: self.cursor_value}
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        """State setter, accept state serialized by state getter."""
+        try:
+            timestamp_dt = datetime.fromisoformat(value[self.cursor_field])
+            new_timestamp_dt = timestamp_dt - timedelta(hours=2)
+            new_timestamp_str = new_timestamp_dt.isoformat()
+            self.cursor_value = new_timestamp_str
+        except KeyError:
+            self.cursor_value = value["updated_at"]
+        except TypeError:
+            pass
 
 
 class Campaigns(IncrementalElasticSearchV2Stream):
     primary_key = "_id"
     index = "statistics_campaign*"
-
-    def request_body_data(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: int = 0,
-    ) -> Optional[Union[Mapping, str]]:
-        payload = super().request_body_data(stream_state, stream_slice, next_page_token)
-
-        payload["sort"] = [
-            "date",
-            "updated_at",
-            "campaign"
-        ]
-
-        return json.dumps(payload)
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -545,11 +532,11 @@ class Campaigns(IncrementalElasticSearchV2Stream):
         """State setter, accept state serialized by state getter."""
         try:
             timestamp_dt = datetime.fromisoformat(value[self.cursor_field])
-            new_timestamp_dt = timestamp_dt - timedelta(hours=1)
+            new_timestamp_dt = timestamp_dt - timedelta(days=1)
             new_timestamp_str = new_timestamp_dt.isoformat()
             self.cursor_value = new_timestamp_str
         except KeyError:
-            self.cursor_value = value["date"]
+            self.cursor_value = value["updated_at"]
         except TypeError:
             pass
 
@@ -558,21 +545,6 @@ class Accounts(IncrementalElasticSearchV2Stream):
     primary_key = "_id"
     index = "statistics_account*"
 
-    def request_body_data(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: int = 0,
-    ) -> Optional[Union[Mapping, str]]:
-        payload = super().request_body_data(stream_state, stream_slice, next_page_token)
-
-        payload["sort"] = [
-            "date",
-            "updated_at"
-        ]
-
-        return json.dumps(payload)
-
     @property
     def state(self) -> MutableMapping[str, Any]:
         """State getter, should return state in form that can serialized to a string and send to the output
@@ -594,10 +566,10 @@ class Accounts(IncrementalElasticSearchV2Stream):
         """State setter, accept state serialized by state getter."""
         try:
             timestamp_dt = datetime.fromisoformat(value[self.cursor_field])
-            new_timestamp_dt = timestamp_dt - timedelta(hours=1)
+            new_timestamp_dt = timestamp_dt - timedelta(days=1)
             new_timestamp_str = new_timestamp_dt.isoformat()
             self.cursor_value = new_timestamp_str
         except KeyError:
-            self.cursor_value = value["date"]
+            self.cursor_value = value["updated_at"]
         except TypeError:
             pass

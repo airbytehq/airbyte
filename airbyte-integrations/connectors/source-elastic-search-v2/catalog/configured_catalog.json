@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "accounts",
+        "name": "creatives",
         "json_schema": {},
         "supported_sync_modes": [
           "full_refresh",
