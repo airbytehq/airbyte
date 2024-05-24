@@ -295,29 +295,30 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
             conn.execute(delete_statement)
             conn.execute(append_statement)
 
-    def process_record_message(
-        self,
-        record_msg: AirbyteRecordMessage,
-        stream_schema: dict,
-    ) -> None:
-        """Write a record to the cache.
+    # TODO: Fix this:
+    # def process_record_message(
+    #     self,
+    #     record_msg: AirbyteRecordMessage,
+    #     stream_schema: dict,
+    # ) -> None:
+    #     """Write a record to the cache.
 
-        We override the SQLProcessor implementation in order to handle chunking, embedding, etc.
+    #     We override the SQLProcessor implementation in order to handle chunking, embedding, etc.
 
-        This method is called for each record message, before the record is written to local file.
-        """
-        airbyte_messages = []
-        for i, chunk in enumerate(document_chunks):
-            chunk = document_chunks[i]
-            message = AirbyteMessage(type=Type.RECORD, record=chunk.record)
-            new_data = {}
-            new_data[DOCUMENT_ID_COLUMN] = self._create_document_id(message)
-            new_data[CHUNK_ID_COLUMN] = str(uuid.uuid4().int)
-            new_data[METADATA_COLUMN] = chunk.metadata
-            new_data[DOCUMENT_CONTENT_COLUMN] = chunk.page_content
-            new_data[EMBEDDING_COLUMN] = chunk.embedding
+    #     This method is called for each record message, before the record is written to local file.
+    #     """
+    #     airbyte_messages = []
+    #     for i, chunk in enumerate(document_chunks):
+    #         chunk = document_chunks[i]
+    #         message = AirbyteMessage(type=Type.RECORD, record=chunk.record)
+    #         new_data = {}
+    #         new_data[DOCUMENT_ID_COLUMN] = self._create_document_id(message)
+    #         new_data[CHUNK_ID_COLUMN] = str(uuid.uuid4().int)
+    #         new_data[METADATA_COLUMN] = chunk.metadata
+    #         new_data[DOCUMENT_CONTENT_COLUMN] = chunk.page_content
+    #         new_data[EMBEDDING_COLUMN] = chunk.embedding
 
-        self.file_writer.process_record_message(
-            record_msg,
-            stream_schema=stream_schema,
-        )
+    #     self.file_writer.process_record_message(
+    #         record_msg,
+    #         stream_schema=stream_schema,
+    #     )
