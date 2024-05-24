@@ -242,7 +242,6 @@ embedder_map = {
     "openai_compatible": OpenAICompatibleEmbedder,
 }
 
-
 def create_from_config(
     embedding_config: Union[
         AzureOpenAIEmbeddingConfigModel,
