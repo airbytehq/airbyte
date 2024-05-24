@@ -27,7 +27,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
-import io.airbyte.integrations.destination.snowflake.typing_deduping.migrations.SnowflakeState;
+import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.sql.ResultSet;
@@ -43,6 +43,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import net.snowflake.client.jdbc.SnowflakeSQLException;
 import org.apache.commons.text.StringSubstitutor;
+import org.jetbrains.annotations.NotNull;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -168,7 +169,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
                 ) SELECT TO_VARCHAR(MIN_TIMESTAMP,'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MIN_TIMESTAMP_UTC from MIN_TS;
                 """)),
         // The query will always return exactly one record, so use .get(0)
-        record -> record.getString("MIN_TIMESTAMP_UTC")).get(0));
+        record -> record.getString("MIN_TIMESTAMP_UTC")).getFirst());
     if (minUnloadedTimestamp.isPresent()) {
       return new InitialRawTableStatus(true, true, minUnloadedTimestamp.map(Instant::parse));
     }
@@ -199,7 +200,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
                     )
                 ),'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MAX_TIMESTAMP_UTC from MAX_TS;
                 """)),
-        record -> record.getString("MAX_TIMESTAMP_UTC")).get(0));
+        record -> record.getString("MAX_TIMESTAMP_UTC")).getFirst());
     return new InitialRawTableStatus(true, false, maxTimestamp.map(Instant::parse));
   }
 
@@ -255,7 +256,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
         "VARIANT".equals(existingTable.columns().get(abMetaColumnName).getType());
   }
 
-  protected boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final TableDefinition existingTable) {
+  protected boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final @NotNull TableDefinition existingTable) {
     final Set<String> pks = getPks(stream);
     // This is same as JdbcDestinationHandler#existingSchemaMatchesStreamConfig with upper case
     // conversion.
@@ -279,7 +280,6 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
             (map, column) -> map.put(column.getKey(), column.getValue().getType()),
             LinkedHashMap::putAll);
     // soft-resetting https://github.com/airbytehq/airbyte/pull/31082
-    @SuppressWarnings("deprecation")
     final boolean hasPksWithNonNullConstraint = existingTable.columns().entrySet().stream()
         .anyMatch(c -> pks.contains(c.getKey()) && !c.getValue().isNullable());
 
@@ -289,7 +289,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
   }
 
   @Override
-  public List<DestinationInitialStatus<SnowflakeState>> gatherInitialState(List<StreamConfig> streamConfigs) throws Exception {
+  public @NotNull List<DestinationInitialStatus<SnowflakeState>> gatherInitialState(List<StreamConfig> streamConfigs) throws Exception {
     final Map<AirbyteStreamNameNamespacePair, SnowflakeState> destinationStates = super.getAllDestinationStates();
 
     List<StreamId> streamIds = streamConfigs.stream().map(StreamConfig::getId).toList();
@@ -325,7 +325,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
   }
 
   @Override
-  protected String toJdbcTypeName(AirbyteType airbyteType) {
+  protected @NotNull String toJdbcTypeName(@NotNull AirbyteType airbyteType) {
     if (airbyteType instanceof final AirbyteProtocolType p) {
       return toJdbcTypeName(p);
     }
@@ -361,7 +361,7 @@ public class SnowflakeDestinationHandler extends JdbcDestinationHandler<Snowflak
     };
   }
 
-  public void createNamespaces(Set<String> schemas) {
+  public void createNamespaces(@NotNull Set<String> schemas) {
     // do nothing?
   }
 
