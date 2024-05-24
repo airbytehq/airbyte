@@ -113,7 +113,11 @@ class CursorBasedCheckpointReader(CheckpointReader):
         try:
             if self._current_slice is None:
                 self._current_slice = self._get_next_slice()
-                return self._current_slice
+                state_for_slice = self._cursor.select_state(self._current_slice)
+                if state_for_slice == {"__ab_full_refresh_sync_complete": True}:
+                    return None
+                else:
+                    return self._current_slice
             if self._read_state_from_cursor:
                 state_for_slice = self._cursor.select_state(self._current_slice)
                 if state_for_slice == {"__ab_full_refresh_sync_complete": True}:
@@ -169,7 +173,7 @@ class ResumableFullRefreshCheckpointReader(CheckpointReader):
         if self._first_page:
             self._first_page = False
             return self._state
-        elif self._state == {}:
+        elif self._state == {"__ab_full_refresh_sync_complete": True}:
             return None
         else:
             return self._state
