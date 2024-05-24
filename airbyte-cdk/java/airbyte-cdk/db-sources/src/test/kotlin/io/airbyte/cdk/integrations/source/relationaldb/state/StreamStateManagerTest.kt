@@ -185,9 +185,7 @@ class StreamStateManagerTest {
                                 .withStreamName(StateTestConstants.STREAM_NAME3)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
                         )
-                        .stream()
-                        .sorted(Comparator.comparing { obj: DbStreamState -> obj.streamName })
-                        .toList()
+                        .sortedWith(Comparator.comparing { obj: DbStreamState -> obj.streamName })
                 )
         val expectedFirstEmission =
             createStreamState(
@@ -228,9 +226,7 @@ class StreamStateManagerTest {
                                 .withStreamName(StateTestConstants.STREAM_NAME3)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
                         )
-                        .stream()
-                        .sorted(Comparator.comparing { obj: DbStreamState -> obj.streamName })
-                        .toList()
+                        .sortedWith(Comparator.comparing { obj: DbStreamState -> obj.streamName })
                 )
         val expectedSecondEmission =
             createStreamState(
@@ -394,9 +390,7 @@ class StreamStateManagerTest {
                                 .withStreamName(StateTestConstants.STREAM_NAME2)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
                         )
-                        .stream()
-                        .sorted(Comparator.comparing { obj: DbStreamState -> obj.streamName })
-                        .toList()
+                        .sortedWith(Comparator.comparing { obj: DbStreamState -> obj.streamName })
                 )
 
         val expectedFirstEmission =
@@ -441,7 +435,7 @@ class StreamStateManagerTest {
     private fun createStreamState(
         name: String?,
         namespace: String?,
-        cursorFields: List<String?>?,
+        cursorFields: List<String>?,
         cursorValue: String?,
         cursorRecordCount: Long
     ): AirbyteStateMessage {

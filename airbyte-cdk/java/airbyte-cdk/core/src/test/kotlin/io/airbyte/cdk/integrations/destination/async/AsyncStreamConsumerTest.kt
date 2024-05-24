@@ -548,32 +548,24 @@ class AsyncStreamConsumerTest {
             )
 
         // captures the output of all the workers, since our records could come out in any of them.
-        val actualRecords =
-            argumentCaptor.allValues
-                .stream() // flatten those results into a single list for the simplicity of
-                // comparison
-                .flatMap { s: Stream<*> -> s }
-                .toList()
+        val actualRecords = argumentCaptor.allValues.flatMap { it.toList() }
 
         val expRecords =
-            allRecords
-                .stream()
-                .map { m: AirbyteMessage ->
-                    PartialAirbyteMessage()
-                        .withType(AirbyteMessage.Type.RECORD)
-                        .withRecord(
-                            PartialAirbyteRecordMessage()
-                                .withStream(m.record.stream)
-                                .withNamespace(m.record.namespace)
-                                .withData(m.record.data),
-                        )
-                        .withSerialized(
-                            Jsons.serialize(
-                                m.record.data,
-                            ),
-                        )
-                }
-                .toList()
+            allRecords.map { m: AirbyteMessage ->
+                PartialAirbyteMessage()
+                    .withType(AirbyteMessage.Type.RECORD)
+                    .withRecord(
+                        PartialAirbyteRecordMessage()
+                            .withStream(m.record.stream)
+                            .withNamespace(m.record.namespace)
+                            .withData(m.record.data),
+                    )
+                    .withSerialized(
+                        Jsons.serialize(
+                            m.record.data,
+                        ),
+                    )
+            }
         assertEquals(expRecords, actualRecords)
     }
 }

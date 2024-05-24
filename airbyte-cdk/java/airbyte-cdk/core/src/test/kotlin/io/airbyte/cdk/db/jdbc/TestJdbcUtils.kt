@@ -74,7 +74,7 @@ internal class TestJdbcUtils {
 
     private fun getConfig(psqlDb: PostgreSQLContainer<*>?, dbName: String?): JsonNode {
         return Jsons.jsonNode(
-            ImmutableMap.builder<Any, Any?>()
+            ImmutableMap.builder<Any, Any>()
                 .put(JdbcUtils.HOST_KEY, psqlDb!!.host)
                 .put(JdbcUtils.PORT_KEY, psqlDb.firstMappedPort)
                 .put(JdbcUtils.DATABASE_KEY, dbName)
@@ -91,7 +91,7 @@ internal class TestJdbcUtils {
         sslValue: T
     ): JsonNode {
         return Jsons.jsonNode(
-            ImmutableMap.builder<Any, Any?>()
+            ImmutableMap.builder<Any, Any>()
                 .put("host", psqlDb!!.host)
                 .put("port", psqlDb.firstMappedPort)
                 .put("database", dbName)
@@ -119,10 +119,10 @@ internal class TestJdbcUtils {
             val rs = connection.createStatement().executeQuery("SELECT * FROM id_and_name;")
             val actual =
                 JdbcDatabase.toUnsafeStream(rs) { queryContext: ResultSet ->
-                        sourceOperations.rowToJson(queryContext)
-                    }
-                    .toList()
-            Assertions.assertEquals(RECORDS_AS_JSON, actual)
+                    sourceOperations.rowToJson(queryContext)
+                }
+
+            Assertions.assertEquals(RECORDS_AS_JSON, actual.toList())
         }
     }
 
@@ -214,7 +214,7 @@ internal class TestJdbcUtils {
     fun testUseSslWithEmptySslKeyAndSslModeVerifyFull() {
         val config =
             Jsons.jsonNode(
-                ImmutableMap.builder<Any, Any?>()
+                ImmutableMap.builder<Any, Any>()
                     .put("host", PSQL_DB.host)
                     .put("port", PSQL_DB.firstMappedPort)
                     .put("database", dbName)
@@ -240,7 +240,7 @@ internal class TestJdbcUtils {
     fun testUseSslWithEmptySslKeyAndSslModeDisable() {
         val config =
             Jsons.jsonNode(
-                ImmutableMap.builder<Any, Any?>()
+                ImmutableMap.builder<Any, Any>()
                     .put("host", PSQL_DB.host)
                     .put("port", PSQL_DB.firstMappedPort)
                     .put("database", dbName)
@@ -430,7 +430,7 @@ internal class TestJdbcUtils {
             val actual = sourceOperations.rowToJson(resultSet)
 
             // field-wise comparison to make debugging easier.
-            MoreStreams.toStream(expected.fields()).forEach { e: Map.Entry<String, JsonNode?> ->
+            MoreStreams.toStream(expected.fields()).forEach { e: Map.Entry<String, JsonNode> ->
                 Assertions.assertEquals(e.value, actual[e.key], "key: " + e.key)
             }
             Assertions.assertEquals(expected, actual)

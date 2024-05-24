@@ -14,6 +14,7 @@ import io.airbyte.commons.util.AutoCloseableIterators
 import io.airbyte.commons.util.MoreIterators
 import io.airbyte.protocol.models.v0.*
 import io.airbyte.validation.json.JsonSchemaValidator
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.*
 import java.net.URI
 import java.nio.charset.StandardCharsets
@@ -32,8 +33,8 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 internal class IntegrationRunnerTest {
     private lateinit var cliParser: IntegrationCliParser
@@ -65,7 +66,6 @@ internal class IntegrationRunnerTest {
 
         val testName = Thread.currentThread().name
         ThreadUtils.getAllThreads()
-            .stream()
             .filter { runningThread: Thread -> !runningThread.isDaemon }
             .forEach { runningThread: Thread -> runningThread.name = testName }
     }
@@ -470,10 +470,8 @@ ${Jsons.serialize(message2)}""".toByteArray(
             throw RuntimeException(e)
         }
         val runningThreads =
-            ThreadUtils.getAllThreads()
-                .stream()
-                .filter(IntegrationRunner::filterOrphanedThread)
-                .toList()
+            ThreadUtils.getAllThreads().filter(IntegrationRunner::filterOrphanedThread)
+
         // all threads should be interrupted
         Assertions.assertEquals(listOf<Any>(), runningThreads)
         Assertions.assertEquals(1, caughtExceptions.size)
@@ -498,10 +496,8 @@ ${Jsons.serialize(message2)}""".toByteArray(
         }
 
         val runningThreads =
-            ThreadUtils.getAllThreads()
-                .stream()
-                .filter(IntegrationRunner::filterOrphanedThread)
-                .toList()
+            ThreadUtils.getAllThreads().filter(IntegrationRunner::filterOrphanedThread)
+
         // a thread that refuses to be interrupted should remain
         Assertions.assertEquals(1, runningThreads.size)
         Assertions.assertEquals(1, caughtExceptions.size)
@@ -615,7 +611,6 @@ ${Jsons.serialize(message2)}""".toByteArray(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(IntegrationRunnerTest::class.java)
 
         private const val CONFIG_FILE_NAME = "config.json"
         private const val CONFIGURED_CATALOG_FILE_NAME = "configured_catalog.json"

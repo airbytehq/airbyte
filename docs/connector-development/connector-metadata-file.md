@@ -172,3 +172,27 @@ remoteRegistries:
 The `packageName` property of the `pypi` section is the name of the installable package in the PyPi registry.
 
 If not specified, all remote registry configurations are disabled by default.
+
+## The `connectorTestSuitesOptions` section
+
+The `connectorTestSuitesOptions` contains a list of test suite options for a connector.
+The list of declared test suites affects which suite will run in CI.
+We currently accept three value for the `suite` field:
+* `unitTests`
+* `integrationTests`
+* `acceptanceTests`
+
+Each list entry can also declare a `testSecrets` object which will enable our CI to fetch connector specific secret credentials which are required to run the `suite`. 
+
+### The `testSecrets` object
+The `testSecrets` object has three properties:
+*  `name` (required `string`): The name of the secret in the secret store.
+* `secretStore` (required `secretStore` object): Where the secret is stored (more details on the object structure below). 
+* `fileName` (optional `string`): The name of the file in which our CI will persist the secret (inside the connector's `secrets` directory).
+
+**If you are a community contributor please note that addition of a new secret to our secret store requires manual intervention from an Airbyter. Please reach out to your PR reviewers if you want to add a test secret to our CI.**
+
+#### The `secretStore` object
+This object has three properties:
+* `type`: Defines the secret store type, only `GSM` (Google Secret Manager) is currently supported
+* `alias`: The alias of this secret store in our system, which is resolved into an actual secret store address by our CI. We currently have a single alias to store our connector test secrets: `airbyte-connector-testing-secret-store` .
