@@ -1,4 +1,4 @@
-version: 0.77.2
+version: 0.51.42
 
 type: DeclarativeSource
 
@@ -597,18 +597,7 @@ definitions:
         request_parameters:
           sort_by: "updated_at"
       paginator:
-        type: DefaultPaginator
-        page_size_option:
-          type: RequestOption
-          field_name: "page[size]"
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 4
-          cursor_value: "{{ response['links']['next'] }}"
-          stop_condition: "{{ config.get('ignore_pagination') or not response['meta']['has_more'] }}"
-        page_token_option:
-          type: RequestPath
+        $ref: "#/definitions/links_next_paginator"
     $parameters:
       name: "posts"
       path: "community/posts"
@@ -618,33 +607,34 @@ definitions:
 
   # Incremental substreams
   article_comments_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/semi_incremental_stream"
     retriever:
-      $ref: "#/definitions/base_stream/retriever"
+      $ref: "#/definitions/semi_incremental_stream/retriever"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/articles_stream"
             parent_key: id
             partition_field: id
+            incremental_dependency: true
     $parameters:
       name: "article_comments"
       path: "help_center/articles/{{ stream_slice.id }}/comments"
       data_path: "comments"
       cursor_field: "updated_at"
-      cursor_filter: "start_time"
       primary_key: "id"
 
   article_comment_votes_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/semi_incremental_stream"
     retriever:
-      $ref: "#/definitions/base_stream/retriever"
+      $ref: "#/definitions/semi_incremental_stream/retriever"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/article_comments_stream"
             parent_key: id
             partition_field: id
+            incremental_dependency: true
     $parameters:
       name: "article_comment_votes"
       path: "help_center/articles/{{ stream_slice.parent_slice.id }}/comments/{{ stream_slice.id }}/votes"
@@ -656,34 +646,35 @@ definitions:
       primary_key: "id"
 
   article_votes_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/semi_incremental_stream"
     retriever:
-      $ref: "#/definitions/base_stream/retriever"
+      $ref: "#/definitions/semi_incremental_stream/retriever"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/articles_stream"
             parent_key: id
             partition_field: id
+            incremental_dependency: true
     $parameters:
       name: "article_votes"
       path: "help_center/articles/{{ stream_slice.id }}/votes"
       data_path: "votes"
       schema_name: "votes"
       cursor_field: "updated_at"
-      cursor_filter: "start_time"
       primary_key: "id"
 
   post_comments_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/semi_incremental_stream"
     retriever:
-      $ref: "#/definitions/base_stream/retriever"
+      $ref: "#/definitions/semi_incremental_stream/retriever"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/posts_stream"
             parent_key: id
             partition_field: id
+            incremental_dependency: true
     $parameters:
       name: "post_comments"
       path: "community/posts/{{ stream_slice.id }}/comments"
@@ -693,15 +684,16 @@ definitions:
       primary_key: "id"
 
   post_comment_votes_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/semi_incremental_stream"
     retriever:
-      $ref: "#/definitions/base_stream/retriever"
+      $ref: "#/definitions/semi_incremental_stream/retriever"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/post_comments_stream"
             parent_key: id
             partition_field: id
+            incremental_dependency: true
     $parameters:
       name: "post_comment_votes"
       path: "community/posts/{{ stream_slice.parent_slice.id }}/comments/{{ stream_slice.id }}/votes"
@@ -712,15 +704,16 @@ definitions:
       primary_key: "id"
 
   post_votes_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/semi_incremental_stream"
     retriever:
-      $ref: "#/definitions/base_stream/retriever"
+      $ref: "#/definitions/semi_incremental_stream/retriever"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/posts_stream"
             parent_key: id
             partition_field: id
+            incremental_dependency: true
     $parameters:
       name: "post_votes"
       path: "community/posts/{{ stream_slice.id }}/votes"
@@ -736,18 +729,7 @@ definitions:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
       paginator:
-        type: DefaultPaginator
-        pagination_strategy:
-          type: CursorPagination
-          cursor_value: '{{ response.get("after_url") }}'
-          stop_condition: '{{ response.get("end_of_stream") }}'
-          page_size: 100
-        page_size_option:
-          type: RequestOption
-          field_name: "per_page"
-          inject_into: request_parameter
-        page_token_option:
-          type: RequestPath
+        $ref: "#/definitions/after_url_paginator"
     $parameters:
       name: "tickets"
       path: "incremental/tickets/cursor.json"
@@ -765,19 +747,9 @@ definitions:
           - stream: "#/definitions/tickets_stream"
             parent_key: id
             partition_field: id
+            incremental_dependency: true
       paginator:
-        type: DefaultPaginator
-        page_size_option:
-          type: RequestOption
-          field_name: "page[size]"
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response['links']['next'] }}"
-          stop_condition: "{{ not response['meta']['has_more'] }}"
-        page_token_option:
-          type: RequestPath
+        $ref: "#/definitions/links_next_paginator"
     $parameters:
       name: "ticket_metrics"
       path: "tickets/{{ stream_slice.id }}/metrics"
@@ -811,7 +783,6 @@ streams:
   - $ref: "#/definitions/ticket_metric_events_stream"
   - $ref: "#/definitions/ticket_skips_stream"
   - $ref: "#/definitions/users_stream"
-
   # Incremental substreams
   - $ref: "#/definitions/articles_stream"
   - $ref: "#/definitions/article_comments_stream"

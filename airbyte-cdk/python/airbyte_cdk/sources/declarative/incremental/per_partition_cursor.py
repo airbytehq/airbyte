@@ -6,7 +6,7 @@ import json
 from typing import Any, Callable, Iterable, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
-from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
+from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
 
@@ -62,7 +62,7 @@ class PerPartitionCursor(DeclarativeCursor):
     _KEY = 0
     _VALUE = 1
 
-    def __init__(self, cursor_factory: CursorFactory, partition_router: PartitionRouter):
+    def __init__(self, cursor_factory: CursorFactory, partition_router: StreamSlicer):
         self._cursor_factory = cursor_factory
         self._partition_router = partition_router
         self._cursor_per_partition: MutableMapping[str, DeclarativeCursor] = {}
