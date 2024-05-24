@@ -8,6 +8,7 @@ import com.google.common.annotations.VisibleForTesting
 import io.airbyte.commons.json.Jsons
 import io.debezium.document.DocumentReader
 import io.debezium.document.DocumentWriter
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.*
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
@@ -19,9 +20,8 @@ import java.util.*
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import org.apache.commons.io.FileUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * The purpose of this class is : to , 1. Read the contents of the file [.path] which contains the
  * schema history at the end of the sync so that it can be saved in state for future syncs. Check
@@ -40,33 +40,27 @@ class AirbyteSchemaHistoryStorage(
     fun read(): SchemaHistory<String> {
         val fileSizeMB = path.toFile().length().toDouble() / (ONE_MB)
         if ((fileSizeMB > SIZE_LIMIT_TO_COMPRESS_MB) && compressSchemaHistoryForState) {
-            LOGGER.info(
-                "File Size {} MB is greater than the size limit of {} MB, compressing the content of the file.",
-                fileSizeMB,
-                SIZE_LIMIT_TO_COMPRESS_MB
-            )
+            LOGGER.info {
+                "File Size $fileSizeMB MB is greater than the size limit of $SIZE_LIMIT_TO_COMPRESS_MB MB, compressing the content of the file."
+            }
             val schemaHistory = readCompressed()
             val compressedSizeMB = calculateSizeOfStringInMB(schemaHistory)
             if (fileSizeMB > compressedSizeMB) {
-                LOGGER.info("Content Size post compression is {} MB ", compressedSizeMB)
+                LOGGER.info { "Content Size post compression is $compressedSizeMB MB " }
             } else {
                 throw RuntimeException(
-                    "Compressing increased the size of the content. Size before compression " +
-                        fileSizeMB +
-                        ", after compression " +
-                        compressedSizeMB
+                    "Compressing increased the size of the content. Size before compression ${fileSizeMB}MB " +
+                        ", after compression ${compressedSizeMB}MB"
                 )
             }
             return SchemaHistory(schemaHistory, true)
         }
         if (compressSchemaHistoryForState) {
-            LOGGER.info(
-                "File Size {} MB is less than the size limit of {} MB, reading the content of the file without compression.",
-                fileSizeMB,
-                SIZE_LIMIT_TO_COMPRESS_MB
-            )
+            LOGGER.info {
+                "File Size $fileSizeMB MB is less than the size limit of $SIZE_LIMIT_TO_COMPRESS_MB MB, reading the content of the file without compression."
+            }
         } else {
-            LOGGER.info("File Size {} MB.", fileSizeMB)
+            LOGGER.info { "File Size $fileSizeMB MB." }
         }
         val schemaHistory = readUncompressed()
         return SchemaHistory(schemaHistory, false)
@@ -221,8 +215,6 @@ class AirbyteSchemaHistoryStorage(
     }
 
     companion object {
-        private val LOGGER: Logger =
-            LoggerFactory.getLogger(AirbyteSchemaHistoryStorage::class.java)
         private const val SIZE_LIMIT_TO_COMPRESS_MB: Long = 1
         const val ONE_MB: Int = 1024 * 1024
         private val UTF8: Charset = StandardCharsets.UTF_8
