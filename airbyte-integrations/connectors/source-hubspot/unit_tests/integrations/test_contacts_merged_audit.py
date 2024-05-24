@@ -15,7 +15,7 @@ _START_TIME_BEFORE_ANY_RECORD = "1970-01-01T00:00:00Z"
 _VID_OFFSET = 5331889818
 
 
-class TestContactsFormSubmissionsStream(TestCase, HubspotTestCase):
+class TestContactsMergedAuditStream(TestCase, HubspotTestCase):
     SCOPES = ["crm.objects.contacts.read"]
     STREAM_NAME = "contacts_merged_audit"
 
@@ -31,9 +31,11 @@ class TestContactsFormSubmissionsStream(TestCase, HubspotTestCase):
         self._http_mocker.__exit__(None, None, None)
 
     def test_read_multiple_contact_pages(self) -> None:
+        first_page_request = ContactsStreamRequestBuilder().build()
+        second_page_request = ContactsStreamRequestBuilder().with_vid_offset(str(_VID_OFFSET)).build()
         self.mock_response(
             self._http_mocker,
-            ContactsStreamRequestBuilder().build(),
+            first_page_request,
             AllContactsResponseBuilder().with_pagination(vid_offset=_VID_OFFSET).with_contacts([
                 ContactBuilder().with_merge_audits([
                     ContactsMergeAuditsBuilder(),
@@ -50,7 +52,7 @@ class TestContactsFormSubmissionsStream(TestCase, HubspotTestCase):
         )
         self.mock_response(
             self._http_mocker,
-            ContactsStreamRequestBuilder().with_vid_offset(str(_VID_OFFSET)).build(),
+            second_page_request,
             AllContactsResponseBuilder().with_contacts([
                 ContactBuilder().with_merge_audits([
                     ContactsMergeAuditsBuilder(),
@@ -63,6 +65,9 @@ class TestContactsFormSubmissionsStream(TestCase, HubspotTestCase):
         )
 
         output = self.read_from_stream(self.oauth_config(start_date=_START_TIME_BEFORE_ANY_RECORD), self.STREAM_NAME, SyncMode.full_refresh)
+
+        self._http_mocker.assert_number_of_calls(first_page_request, 2)
+        self._http_mocker.assert_number_of_calls(second_page_request, 1)
 
         assert len(output.records) == 10
         assert output.state_messages[0].state.stream.stream_state.dict() == {"vidOffset": 5331889818}
@@ -84,9 +89,11 @@ class TestContactsFormSubmissionsStream(TestCase, HubspotTestCase):
         ]
 
         # Even though we only care about the request with a vidOffset parameter, we mock this in order to pass the availability check
+        first_page_request = ContactsStreamRequestBuilder().build()
+        second_page_request = ContactsStreamRequestBuilder().with_vid_offset(str(_VID_OFFSET)).build()
         self.mock_response(
             self._http_mocker,
-            ContactsStreamRequestBuilder().build(),
+            first_page_request,
             AllContactsResponseBuilder().with_pagination(vid_offset=_VID_OFFSET).with_contacts([
                 ContactBuilder().with_merge_audits([
                     ContactsMergeAuditsBuilder(),
@@ -103,7 +110,7 @@ class TestContactsFormSubmissionsStream(TestCase, HubspotTestCase):
         )
         self.mock_response(
             self._http_mocker,
-            ContactsStreamRequestBuilder().with_vid_offset(str(_VID_OFFSET)).build(),
+            second_page_request,
             AllContactsResponseBuilder().with_contacts([
                 ContactBuilder().with_merge_audits([
                     ContactsMergeAuditsBuilder(),
@@ -121,6 +128,10 @@ class TestContactsFormSubmissionsStream(TestCase, HubspotTestCase):
             sync_mode=SyncMode.full_refresh,
             state=state
         )
+
+        # We call the first page during check availability. And the sync actually starts with a request to the second page
+        self._http_mocker.assert_number_of_calls(first_page_request, 1)
+        self._http_mocker.assert_number_of_calls(second_page_request, 1)
 
         assert len(output.records) == 3
         assert output.state_messages[0].state.stream.stream_state.dict() == {"__ab_full_refresh_sync_complete": True}
