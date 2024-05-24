@@ -366,7 +366,7 @@ class SearchByKeyword(SearchAnalytics):
     ) -> Optional[Union[Dict[str, Any], str]]:
         data = super().request_body_json(stream_state, stream_slice, next_page_token)
 
-        stream = SearchAppearance(self.authenticator, self._site_urls, self._start_date, self._end_date)
+        stream = SearchAppearance(self._session.auth, self._site_urls, self._start_date, self._end_date)
         keywords_records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state, stream_slice=stream_slice)
         keywords = {record["searchAppearance"] for record in keywords_records}
         filters = []
