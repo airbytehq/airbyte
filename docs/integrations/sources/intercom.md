@@ -75,6 +75,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.6   | 2024-05-24 | [38626](https://github.com/airbytehq/airbyte/pull/38626) | Add step granularity for activity logs stream                                                                                    |
 | 0.6.5   | 2024-04-19 | [36644](https://github.com/airbytehq/airbyte/pull/36644) | Updating to 0.80.0 CDK                                                                                                           |
 | 0.6.4   | 2024-04-12 | [36644](https://github.com/airbytehq/airbyte/pull/36644) | Schema descriptions                                                                                                              |
 | 0.6.3   | 2024-03-23 | [36414](https://github.com/airbytehq/airbyte/pull/36414) | Fixed `pagination` regression bug for `conversations` stream                                                                     |
