@@ -10,7 +10,7 @@ from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
-from pendulum import parse, today
+from pendulum import duration, parse, today
 
 from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
@@ -151,6 +151,13 @@ class SourceGoogleAds(AbstractSource):
         time_segment_in_select, time_segment_in_where = ["segments.date" in clause for clause in [query.fields, query.where]]
         return time_segment_in_select and not time_segment_in_where
 
+    @staticmethod
+    def set_retention_period_and_slice_duration(stream: IncrementalCustomQuery, query: GAQL) -> IncrementalCustomQuery:
+        if query.resource_name == "click_view":
+            stream.days_of_data_storage = 90
+            stream.slice_duration = duration(days=0)
+        return stream
+
     def create_custom_query_stream(
         self,
         google_api: GoogleAds,
@@ -173,7 +180,8 @@ class SourceGoogleAds(AbstractSource):
             incremental_config = non_manager_incremental_config
 
         if is_incremental:
-            return IncrementalCustomQuery(config=single_query_config, **incremental_config)
+            incremental_query_stream = IncrementalCustomQuery(config=single_query_config, **incremental_config)
+            return self.set_retention_period_and_slice_duration(incremental_query_stream, query)
         else:
             return CustomQuery(config=single_query_config, api=google_api, customers=customers)
 
