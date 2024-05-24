@@ -583,33 +583,40 @@ class TestBaseInsightsStream:
         assert stream._get_start_date().get("unknown_account").to_date_string() == expected_start_date
 
     @pytest.mark.parametrize(
-        "record, expected_record",
+        "breakdowns, record, expected_record",
         (
                 (
+                        ["body_asset", ],
                         {"body_asset": {"id": "871246182", "text": "Some text"}},
                         {"body_asset": {"id": "871246182", "text": "Some text"}, "body_asset_id": "871246182"}
                 ),
                 (
+                        ["call_to_action_asset",],
                         {"call_to_action_asset": {"id": "871246182", "name": "Some name"}},
                         {"call_to_action_asset": {"id": "871246182", "name": "Some name"}, "call_to_action_asset_id": "871246182"}
                 ),
                 (
+                        ["description_asset", ],
                         {"description_asset": {"id": "871246182", "text": "Some text"}},
                         {"description_asset": {"id": "871246182", "text": "Some text"}, "description_asset_id": "871246182"}
                 ),
                 (
+                        ["image_asset", ],
                         {"image_asset": {"id": "871246182", "hash": "hash", "url": "url"}},
                         {"image_asset": {"id": "871246182", "hash": "hash", "url": "url"}, "image_asset_id": "871246182"}
                 ),
                 (
+                        ["link_url_asset", ],
                         {"link_url_asset": {"id": "871246182", "website_url": "website_url"}},
                         {"link_url_asset": {"id": "871246182", "website_url": "website_url"}, "link_url_asset_id": "871246182"}
                 ),
                 (
+                        ["title_asset", ],
                         {"title_asset": {"id": "871246182", "text": "Some text"}},
                         {"title_asset": {"id": "871246182", "text": "Some text"}, "title_asset_id": "871246182"}
                 ),
                 (
+                        ["video_asset", ],
                         {
                             "video_asset": {
                                 "id": "871246182", "video_id": "video_id", "url": "url",
@@ -625,6 +632,7 @@ class TestBaseInsightsStream:
                         }
                 ),
                 (
+                        ["body_asset", "country"],
                         {"body_asset": {"id": "871246182", "text": "Some text"}, "country": "country", "dma": "dma"},
                         {
                             "body_asset": {"id": "871246182", "text": "Some text"},
@@ -633,7 +641,7 @@ class TestBaseInsightsStream:
                 ),
         )
     )
-    def test_transform_breakdowns(self, api, some_config, record, expected_record):
+    def test_transform_breakdowns(self, api, some_config, breakdowns, record, expected_record):
         start_date = pendulum.parse("2024-01-01")
         end_date = start_date + duration(days=10)
         stream = AdsInsights(
@@ -642,6 +650,7 @@ class TestBaseInsightsStream:
             start_date=start_date,
             end_date=end_date,
             insights_lookback_window=1,
+            breakdowns=breakdowns,
         )
         assert stream._transform_breakdown(record) == expected_record
 

@@ -133,8 +133,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         return pendulum.duration(minutes=self._insights_job_timeout)
 
     def _transform_breakdown(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        for breakdown in self.object_breakdowns:
-            if breakdown in record:
+        for breakdown in self.breakdowns:
+            if breakdown in self.object_breakdowns.keys():
                 record[self.object_breakdowns[breakdown]] = record[breakdown]["id"]
         return record
 
