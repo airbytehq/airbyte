@@ -50,6 +50,7 @@ object MongoUtils {
     const val LOGIN_AND_PASSWORD: String = "login/password"
     const val AIRBYTE_DATA_HASH: String = "_airbyte_data_hash"
 
+    
     // MongodbSource specific constants
     const val AUTH_SOURCE: String = "auth_source"
     const val PRIMARY_KEY: String = "_id"
