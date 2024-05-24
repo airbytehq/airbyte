@@ -9,7 +9,7 @@ from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams.core import Stream
-from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pydantic.error_wrappers import ValidationError
 from requests.exceptions import InvalidURL
