@@ -27,10 +27,7 @@ data:
         message: Update spec to use token and ingest all 3 streams correctly
         upgradeDeadline: 2023-08-30
       2.0.0:
-        message:
-          This version introduces a new Item Collection (WCC) stream as a substitute
-          of the now-removed Item Collection stream in order to retain data for Web-Content-Crawler
-          datasets.
+        message: This version introduces a new Item Collection (WCC) stream as a substitute of the now-removed Item Collection stream in order to retain data for Web-Content-Crawler datasets.
         upgradeDeadline: 2023-09-18
   remoteRegistries:
     pypi:
@@ -40,4 +37,12 @@ data:
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-APIFY-DATASET__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
