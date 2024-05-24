@@ -68,7 +68,7 @@ class TestContactsFormSubmissionsStream(TestCase, HubspotTestCase):
         assert output.state_messages[0].state.stream.stream_state.dict() == {"vidOffset": 5331889818}
         assert output.state_messages[0].state.stream.stream_descriptor.name == self.STREAM_NAME
         assert output.state_messages[0].state.sourceStats.recordCount == 7
-        assert output.state_messages[1].state.stream.stream_state.dict() == {}
+        assert output.state_messages[1].state.stream.stream_state.dict() == {"__ab_full_refresh_sync_complete": True}
         assert output.state_messages[1].state.stream.stream_descriptor.name == self.STREAM_NAME
         assert output.state_messages[1].state.sourceStats.recordCount == 3
 
@@ -123,6 +123,6 @@ class TestContactsFormSubmissionsStream(TestCase, HubspotTestCase):
         )
 
         assert len(output.records) == 3
-        assert output.state_messages[0].state.stream.stream_state.dict() == {}
+        assert output.state_messages[0].state.stream.stream_state.dict() == {"__ab_full_refresh_sync_complete": True}
         assert output.state_messages[0].state.stream.stream_descriptor.name == self.STREAM_NAME
         assert output.state_messages[0].state.sourceStats.recordCount == 3

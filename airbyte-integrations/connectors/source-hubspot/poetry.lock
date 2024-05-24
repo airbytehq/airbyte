@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "0.87.0"
+version = "1.1.1"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "airbyte_cdk-0.87.0-py3-none-any.whl", hash = "sha256:e11aeae3d758b04086c584ccd00f3f11b1808a36a28f6b3f6da8c51e58ed0ab9"},
-    {file = "airbyte_cdk-0.87.0.tar.gz", hash = "sha256:eaa354a3e8fa41340fde492e09553cc87a8228d96e6a684d41b493f1ac379889"},
+    {file = "airbyte_cdk-1.1.1-py3-none-any.whl", hash = "sha256:edb8654193499ff3e4741c6bf354953d269c48c147e2f4a6184968e6aaac6302"},
+    {file = "airbyte_cdk-1.1.1.tar.gz", hash = "sha256:96787fb5d3f1ca695d13cbbc0873397b479c7d6a3d3b10634b5a54ab5d6b55ef"},
 ]
 
 [package.dependencies]
@@ -29,6 +29,7 @@ pydantic = ">=1.10.8,<2.0.0"
 pyjwt = ">=2.8.0,<3.0.0"
 pyrate-limiter = ">=3.1.0,<3.2.0"
 python-dateutil = "*"
+pytz = "2024.1"
 PyYAML = ">=6.0.1,<7.0.0"
 requests = "*"
 requests_cache = "*"
@@ -41,13 +42,13 @@ vector-db-based = ["cohere (==4.21)", "langchain (==0.1.16)", "openai[embeddings
 
 [[package]]
 name = "airbyte-protocol-models"
-version = "0.9.0"
+version = "0.11.0"
 description = "Declares the Airbyte Protocol."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "airbyte_protocol_models-0.9.0-py3-none-any.whl", hash = "sha256:e972e140b5efd1edad5a338bcae8fdee9fc12545caf2c321e0f61b151c163a9b"},
-    {file = "airbyte_protocol_models-0.9.0.tar.gz", hash = "sha256:40b69c33df23fe82d7078e84beb123bd604480e4d73cb277a890fcc92aedc8d2"},
+    {file = "airbyte_protocol_models-0.11.0-py3-none-any.whl", hash = "sha256:2157757c1af8c13e471ab6a0304fd2f9a2a6af8cc9173937be1348a9553f7c32"},
+    {file = "airbyte_protocol_models-0.11.0.tar.gz", hash = "sha256:1c7e46251b0d5a292b4aa382df24f415ac2a2a2b4719361b3c0f76368a043c23"},
 ]
 
 [package.dependencies]
@@ -580,13 +581,13 @@ extended-testing = ["jinja2 (>=3,<4)"]
 
 [[package]]
 name = "langsmith"
-version = "0.1.54"
+version = "0.1.63"
 description = "Client library to connect to the LangSmith LLM Tracing and Evaluation Platform."
 optional = false
 python-versions = "<4.0,>=3.8.1"
 files = [
-    {file = "langsmith-0.1.54-py3-none-any.whl", hash = "sha256:e8ba2758dbdff0fccb35337c28a5ab641dd980b22e178d390b72a15c9ae9caff"},
-    {file = "langsmith-0.1.54.tar.gz", hash = "sha256:86f5a90e48303de897f37a893f8bb635eabdaf23e674099e8bc0f2e9ca2f8faf"},
+    {file = "langsmith-0.1.63-py3-none-any.whl", hash = "sha256:7810afdf5e3f3b472fc581a29371fb96cd843dde2149e048d1b9610325159d1e"},
+    {file = "langsmith-0.1.63.tar.gz", hash = "sha256:a609405b52f6f54df442a142cbf19ab38662d54e532f96028b4c546434d4afdf"},
 ]
 
 [package.dependencies]
@@ -781,13 +782,13 @@ pytzdata = ">=2020.1"
 
 [[package]]
 name = "platformdirs"
-version = "4.2.1"
+version = "4.2.2"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a `user data dir`."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "platformdirs-4.2.1-py3-none-any.whl", hash = "sha256:17d5a1161b3fd67b390023cb2d3b026bbd40abde6fdb052dfbd3a29c3ba22ee1"},
-    {file = "platformdirs-4.2.1.tar.gz", hash = "sha256:031cd18d4ec63ec53e82dceaac0417d218a6863f7745dfcc9efe7793b7039bdf"},
+    {file = "platformdirs-4.2.2-py3-none-any.whl", hash = "sha256:2d7a1657e36a80ea911db832a8a6ece5ee53d8de21edd5cc5879af6530b1bfee"},
+    {file = "platformdirs-4.2.2.tar.gz", hash = "sha256:38b7b51f512eed9e84a22788b4bce1de17c0adb134d6becb09836e37d8654cd3"},
 ]
 
 [package.extras]
@@ -1096,13 +1097,13 @@ files = [
 
 [[package]]
 name = "requests"
-version = "2.31.0"
+version = "2.32.2"
 description = "Python HTTP for Humans."
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "requests-2.31.0-py3-none-any.whl", hash = "sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f"},
-    {file = "requests-2.31.0.tar.gz", hash = "sha256:942c5a758f98d790eaed1a29cb6eefc7ffb0d1cf7af05c3d2791656dbd6ad1e1"},
+    {file = "requests-2.32.2-py3-none-any.whl", hash = "sha256:fc06670dd0ed212426dfeb94fc1b983d917c4f9847c863f313c9dfaaffb7c23c"},
+    {file = "requests-2.32.2.tar.gz", hash = "sha256:dd951ff5ecf3e3b3aa26b40703ba77495dab41da839ae72ef3c8e5d8e2433289"},
 ]
 
 [package.dependencies]
@@ -1164,19 +1165,18 @@ fixture = ["fixtures"]
 
 [[package]]
 name = "setuptools"
-version = "69.5.1"
+version = "70.0.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "setuptools-69.5.1-py3-none-any.whl", hash = "sha256:c636ac361bc47580504644275c9ad802c50415c7522212252c033bd15f301f32"},
-    {file = "setuptools-69.5.1.tar.gz", hash = "sha256:6c1fccdac05a97e598fb0ae3bbed5904ccb317337a51139dcd51453611bbb987"},
+    {file = "setuptools-70.0.0-py3-none-any.whl", hash = "sha256:54faa7f2e8d2d11bcd2c07bed282eef1046b5c080d1c32add737d7b5817b1ad4"},
+    {file = "setuptools-70.0.0.tar.gz", hash = "sha256:f211a66637b8fa059bb28183da127d4e86396c991a942b028c6650d4319c3fd0"},
 ]
 
 [package.extras]
-docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-favicon", "sphinx-inline-tabs", "sphinx-lint", "sphinx-notfound-page (>=1,<2)", "sphinx-reredirects", "sphinxcontrib-towncrier"]
-testing = ["build[virtualenv]", "filelock (>=3.4.0)", "importlib-metadata", "ini2toml[lite] (>=0.9)", "jaraco.develop (>=7.21)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "mypy (==1.9)", "packaging (>=23.2)", "pip (>=19.1)", "pytest (>=6,!=8.1.1)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-home (>=0.5)", "pytest-mypy", "pytest-perf", "pytest-ruff (>=0.2.1)", "pytest-timeout", "pytest-xdist (>=3)", "tomli", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel"]
-testing-integration = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "packaging (>=23.2)", "pytest", "pytest-enabler", "pytest-xdist", "tomli", "virtualenv (>=13.0.0)", "wheel"]
+docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "pyproject-hooks (!=1.1)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-favicon", "sphinx-inline-tabs", "sphinx-lint", "sphinx-notfound-page (>=1,<2)", "sphinx-reredirects", "sphinxcontrib-towncrier"]
+testing = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "importlib-metadata", "ini2toml[lite] (>=0.14)", "jaraco.develop (>=7.21)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "mypy (==1.9)", "packaging (>=23.2)", "pip (>=19.1)", "pyproject-hooks (!=1.1)", "pytest (>=6,!=8.1.1)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-home (>=0.5)", "pytest-mypy", "pytest-perf", "pytest-ruff (>=0.2.1)", "pytest-subprocess", "pytest-timeout", "pytest-xdist (>=3)", "tomli", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel"]
 
 [[package]]
 name = "six"
@@ -1217,13 +1217,13 @@ files = [
 
 [[package]]
 name = "typing-extensions"
-version = "4.11.0"
+version = "4.12.0"
 description = "Backported and Experimental Type Hints for Python 3.8+"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "typing_extensions-4.11.0-py3-none-any.whl", hash = "sha256:c1f94d72897edaf4ce775bb7558d5b79d8126906a14ea5ed1635921406c0387a"},
-    {file = "typing_extensions-4.11.0.tar.gz", hash = "sha256:83f085bd5ca59c80295fc2a82ab5dac679cbe02b9f33f7d83af68e241bea51b0"},
+    {file = "typing_extensions-4.12.0-py3-none-any.whl", hash = "sha256:b349c66bea9016ac22978d800cfff206d5f9816951f12a7d0ec5578b0a819594"},
+    {file = "typing_extensions-4.12.0.tar.gz", hash = "sha256:8cbcdc8606ebcb0d95453ad7dc5065e6237b6aa230a31e81d0f440c30fed5fd8"},
 ]
 
 [[package]]
@@ -1353,4 +1353,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,<3.12"
-content-hash = "e39f4f8e565e1e1df86e7377c1281dfb3a763bb3411f9998deeb0b76dd7c7910"
+content-hash = "2bf900674a375847c67af980d9d567cf0ef59fe570a7883124507f8fd502c514"

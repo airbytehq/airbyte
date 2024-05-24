@@ -454,7 +454,7 @@ class Stream(HttpStream, ABC):
 
         request = self._create_prepared_request(
             path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, properties=properties),
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            headers=dict(request_headers, **self._authenticator.get_auth_header()),
             params=request_params,
             json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
@@ -543,7 +543,7 @@ class Stream(HttpStream, ABC):
 
                 next_page_token = self.next_page_token(response)
                 if self.checkpoint_by_page and isinstance(self, CheckpointMixin):
-                    self.state = next_page_token or {}
+                    self.state = next_page_token or {"__ab_full_refresh_sync_complete": True}
                     pagination_complete = True  # For RFR streams that checkpoint by page, a single page is read per invocation
                 elif not next_page_token:
                     pagination_complete = True
