@@ -15,6 +15,7 @@ import io.airbyte.cdk.integrations.JdbcConnector
 import io.airbyte.cdk.integrations.util.HostPortResolver
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.string.Strings
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.io.UncheckedIOException
 import java.sql.SQLException
@@ -28,10 +29,9 @@ import javax.sql.DataSource
 import kotlin.concurrent.Volatile
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.testcontainers.containers.JdbcDatabaseContainer
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * TestDatabase provides a convenient pattern for interacting with databases when testing SQL
  * database sources. The basic idea is to share the same database testcontainer instance for all
@@ -184,19 +184,16 @@ protected constructor(val container: C) : AutoCloseable {
 
     protected fun execInContainer(cmds: Stream<String>) {
         val cmd = cmds.toList()
-        if (cmd!!.isEmpty()) {
+        if (cmd.isEmpty()) {
             return
         }
         try {
             LOGGER!!.info(
                 formatLogLine(
-                    String.format(
-                        "executing command %s",
-                        Strings.join(cmd.toList().asIterable(), " ")
-                    )
+                    String.format("executing command %s", Strings.join(cmd.asIterable(), " "))
                 )
             )
-            val exec = container.execInContainer(*cmd.toTypedArray<String?>())
+            val exec = container.execInContainer(*cmd.toTypedArray<String>())
             if (exec!!.exitCode == 0) {
                 LOGGER.info(
                     formatLogLine(
@@ -310,7 +307,6 @@ protected constructor(val container: C) : AutoCloseable {
     }
 
     companion object {
-        private val LOGGER: Logger? = LoggerFactory.getLogger(TestDatabase::class.java)
 
         private val nextDatabaseId: AtomicInteger = AtomicInteger(0)
 

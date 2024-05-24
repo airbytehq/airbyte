@@ -11,7 +11,6 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.*
 import java.util.*
 import java.util.function.Supplier
-import java.util.stream.Collectors
 
 /**
  * Global implementation of the [StateManager] interface.
@@ -54,7 +53,7 @@ class GlobalStateManager(
             )
     }
 
-    override val rawStateMessages: List<AirbyteStateMessage?>?
+    override val rawStateMessages: List<AirbyteStateMessage>?
         get() {
             throw UnsupportedOperationException(
                 "Raw state retrieval not supported by global state manager."
@@ -159,8 +158,7 @@ class GlobalStateManager(
                             DbState::class.java
                         )!!
                         .streams
-                        .stream()
-                        .map<AirbyteStreamState?> { s: DbStreamState ->
+                        .map { s: DbStreamState ->
                             AirbyteStreamState()
                                 .withStreamState(Jsons.jsonNode<DbStreamState>(s))
                                 .withStreamDescriptor(
@@ -169,7 +167,6 @@ class GlobalStateManager(
                                         .withName(s.streamName)
                                 )
                         }
-                        .collect(Collectors.toList<AirbyteStreamState?>())
                 } else {
                     return@Supplier listOf<AirbyteStreamState>()
                 }

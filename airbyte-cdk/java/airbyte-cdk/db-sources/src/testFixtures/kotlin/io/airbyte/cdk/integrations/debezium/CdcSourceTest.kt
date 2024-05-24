@@ -14,14 +14,15 @@ import io.airbyte.commons.util.AutoCloseableIterators
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.function.Consumer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     @JvmField protected var testdb: T = createTestDatabase()
@@ -103,6 +104,29 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     protected abstract fun addCdcDefaultCursorField(stream: AirbyteStream?)
 
     protected abstract fun assertExpectedStateMessages(stateMessages: List<AirbyteStateMessage>)
+
+    protected open fun assertStreamStatusTraceMessageIndex(
+        idx: Int,
+        allMessages: List<AirbyteMessage>,
+        expectedStreamStatus: AirbyteStreamStatusTraceMessage
+    ) {
+        var actualMessage = allMessages[idx]
+        Assertions.assertEquals(AirbyteMessage.Type.TRACE, actualMessage.type)
+        var traceMessage = actualMessage.trace
+        Assertions.assertNotNull(traceMessage.streamStatus)
+        Assertions.assertEquals(expectedStreamStatus, traceMessage.streamStatus)
+    }
+
+    private fun createAirbteStreanStatusTraceMessage(
+        namespace: String,
+        streamName: String,
+        status: AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+    ): AirbyteStreamStatusTraceMessage {
+
+        return AirbyteStreamStatusTraceMessage()
+            .withStreamDescriptor(StreamDescriptor().withNamespace(namespace).withName(streamName))
+            .withStatus(status)
+    }
 
     protected open fun assertExpectedStateMessagesForFullRefresh(
         stateMessages: List<AirbyteStateMessage>
@@ -308,11 +332,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     }
 
     protected fun extractStateMessages(messages: List<AirbyteMessage>): List<AirbyteStateMessage> {
-        return messages
-            .stream()
-            .filter { r: AirbyteMessage -> r.type == AirbyteMessage.Type.STATE }
-            .map { obj: AirbyteMessage -> obj.state }
-            .toList()
+        return messages.filter { it.type == AirbyteMessage.Type.STATE }.map { it.state }.toList()
     }
 
     protected fun assertExpectedRecords(
@@ -345,7 +365,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         expectedRecords: Set<JsonNode>?,
         actualRecords: Set<AirbyteRecordMessage>,
         cdcStreams: Set<String>,
-        streamNames: Set<String?>,
+        streamNames: Set<String>,
         namespace: String?
     ) {
         val actualData =
@@ -381,6 +401,25 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         val recordMessages = extractRecordMessages(actualRecords)
         val stateMessages = extractStateMessages(actualRecords)
+
+        assertStreamStatusTraceMessageIndex(
+            0,
+            actualRecords,
+            createAirbteStreanStatusTraceMessage(
+                modelsSchema(),
+                MODELS_STREAM_NAME,
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED
+            )
+        )
+        assertStreamStatusTraceMessageIndex(
+            actualRecords.size - 1,
+            actualRecords,
+            createAirbteStreanStatusTraceMessage(
+                modelsSchema(),
+                MODELS_STREAM_NAME,
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+            )
+        )
 
         Assertions.assertNotNull(targetPosition)
         recordMessages.forEach(
@@ -442,6 +481,25 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         val actualRecords1 = AutoCloseableIterators.toListAndClose(read1)
         val stateMessages1 = extractStateMessages(actualRecords1)
         assertExpectedStateMessages(stateMessages1)
+
+        assertStreamStatusTraceMessageIndex(
+            0,
+            actualRecords1,
+            createAirbteStreanStatusTraceMessage(
+                modelsSchema(),
+                MODELS_STREAM_NAME,
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED
+            )
+        )
+        assertStreamStatusTraceMessageIndex(
+            actualRecords1.size - 1,
+            actualRecords1,
+            createAirbteStreanStatusTraceMessage(
+                modelsSchema(),
+                MODELS_STREAM_NAME,
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+            )
+        )
 
         updateCommand(MODELS_STREAM_NAME, COL_MODEL, updatedModel, COL_ID, 11)
         waitForCdcRecords(modelsSchema(), MODELS_STREAM_NAME, 1)
@@ -614,10 +672,33 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         configuredCatalog.withStreams(streams)
 
         val read1 = source().read(config()!!, configuredCatalog, null)
-        val actualRecords1 = AutoCloseableIterators.toListAndClose(read1)
+        val actualMessages1 = AutoCloseableIterators.toListAndClose(read1)
 
-        val recordMessages1 = extractRecordMessages(actualRecords1)
-        val stateMessages1 = extractStateMessages(actualRecords1)
+        // The first message will be start of the incremental stream.
+        // The last message will be the end of the full refresh stream.
+        // Index start of the incremental stream will be depending on if connector supports
+        // resumeable full refresh.
+        assertStreamStatusTraceMessageIndex(
+            0,
+            actualMessages1,
+            createAirbteStreanStatusTraceMessage(
+                modelsSchema(),
+                MODELS_STREAM_NAME,
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED
+            )
+        )
+        assertStreamStatusTraceMessageIndex(
+            actualMessages1.size - 1,
+            actualMessages1,
+            createAirbteStreanStatusTraceMessage(
+                modelsSchema(),
+                MODELS_STREAM_NAME_2,
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+            )
+        )
+
+        val recordMessages1 = extractRecordMessages(actualMessages1)
+        val stateMessages1 = extractStateMessages(actualMessages1)
         stateMessages1.map { state -> assertStateDoNotHaveDuplicateStreams(state) }
         val names = HashSet(STREAM_NAMES)
         names.add(MODELS_STREAM_NAME_2)
@@ -639,6 +720,25 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 modelsSchema(),
             )
 
+            assertStreamStatusTraceMessageIndex(
+                MODEL_RECORDS_2.size,
+                actualMessages1,
+                createAirbteStreanStatusTraceMessage(
+                    modelsSchema(),
+                    MODELS_STREAM_NAME_2,
+                    AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+                )
+            )
+            assertStreamStatusTraceMessageIndex(
+                MODEL_RECORDS_2.size + 1,
+                actualMessages1,
+                createAirbteStreanStatusTraceMessage(
+                    modelsSchema(),
+                    MODELS_STREAM_NAME,
+                    AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED
+                )
+            )
+
             val state = Jsons.jsonNode(listOf(stateMessages1[stateMessages1.size - 1]))
             val read2 = source().read(config()!!, configuredCatalog, state)
             val actualRecords2 = AutoCloseableIterators.toListAndClose(read2)
@@ -656,6 +756,28 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 modelsSchema(),
             )
         } else {
+            assertExpectedStateMessageCountMatches(stateMessages1, MODEL_RECORDS.size.toLong())
+
+            // Expect state and record message from MODEL_RECORDS_2.
+            assertStreamStatusTraceMessageIndex(
+                2 * MODEL_RECORDS_2.size + 2,
+                actualMessages1,
+                createAirbteStreanStatusTraceMessage(
+                    modelsSchema(),
+                    MODELS_STREAM_NAME,
+                    AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+                )
+            )
+            assertStreamStatusTraceMessageIndex(
+                2 * MODEL_RECORDS_2.size + 3,
+                actualMessages1,
+                createAirbteStreanStatusTraceMessage(
+                    modelsSchema(),
+                    MODELS_STREAM_NAME_2,
+                    AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED
+                )
+            )
+
             assertExpectedRecords(
                 (MODEL_RECORDS_2 + MODEL_RECORDS).toSet(),
                 recordMessages1,
@@ -677,7 +799,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             val stateMessages2 = extractStateMessages(actualRecords2)
 
             assertExpectedRecords(
-                (MODEL_RECORDS_2 + puntoRecord).toSet(),
+                (MODEL_RECORDS_2 + listOf(puntoRecord)).toSet(),
                 recordMessages2,
                 setOf(MODELS_STREAM_NAME),
                 names,
@@ -796,7 +918,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         assertExpectedStateMessagesFromIncrementalSync(stateMessages2)
         assertExpectedStateMessageCountMatches(stateMessages2, 1)
         assertExpectedRecords(
-            (MODEL_RECORDS_2 + puntoRecord).toSet(),
+            (MODEL_RECORDS_2 + listOf(puntoRecord)).toSet(),
             recordMessages2,
             setOf(MODELS_STREAM_NAME),
             names,
@@ -831,6 +953,25 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         assertExpectedRecords(emptySet(), recordMessages)
         assertExpectedStateMessagesForNoData(stateMessages)
         assertExpectedStateMessageCountMatches(stateMessages, 0)
+
+        assertStreamStatusTraceMessageIndex(
+            0,
+            actualRecords,
+            createAirbteStreanStatusTraceMessage(
+                modelsSchema(),
+                MODELS_STREAM_NAME,
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED
+            )
+        )
+        assertStreamStatusTraceMessageIndex(
+            actualRecords.size - 1,
+            actualRecords,
+            createAirbteStreanStatusTraceMessage(
+                modelsSchema(),
+                MODELS_STREAM_NAME,
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+            )
+        )
     }
 
     protected open fun assertExpectedStateMessagesForNoData(
@@ -874,14 +1015,12 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         val actualCatalog = source().discover(config()!!)
 
         Assertions.assertEquals(
-            expectedCatalog.streams
-                .stream()
-                .sorted(Comparator.comparing { obj: AirbyteStream -> obj.name })
-                .toList(),
-            actualCatalog.streams
-                .stream()
-                .sorted(Comparator.comparing { obj: AirbyteStream -> obj.name })
-                .toList()
+            expectedCatalog.streams.sortedWith(
+                Comparator.comparing { obj: AirbyteStream -> obj.name }
+            ),
+            actualCatalog.streams.sortedWith(
+                Comparator.comparing { obj: AirbyteStream -> obj.name }
+            )
         )
     }
 
@@ -1344,11 +1483,10 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
     ) {}
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(CdcSourceTest::class.java)
 
         const val MODELS_STREAM_NAME: String = "models"
         const val MODELS_STREAM_NAME_2: String = "models_2"
-        @JvmField val STREAM_NAMES: Set<String?> = java.util.Set.of(MODELS_STREAM_NAME)
+        @JvmField val STREAM_NAMES: Set<String> = java.util.Set.of(MODELS_STREAM_NAME)
         protected const val COL_ID: String = "id"
         protected const val COL_MAKE_ID: String = "make_id"
         protected const val COL_MODEL: String = "model"
@@ -1368,8 +1506,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         @JvmField
         val MODEL_RECORDS_RANDOM: List<JsonNode> =
-            MODEL_RECORDS.stream()
-                .map { r: JsonNode ->
+            MODEL_RECORDS.map { r: JsonNode ->
                     Jsons.jsonNode(
                         ImmutableMap.of(
                             COL_ID + "_random",

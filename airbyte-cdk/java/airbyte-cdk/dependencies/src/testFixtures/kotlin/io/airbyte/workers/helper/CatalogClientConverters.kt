@@ -26,16 +26,13 @@ object CatalogClientConverters {
     fun toAirbyteProtocol(catalog: AirbyteCatalog): io.airbyte.protocol.models.AirbyteCatalog {
         val protoCatalog = io.airbyte.protocol.models.AirbyteCatalog()
         val airbyteStream =
-            catalog.streams
-                .stream()
-                .map { stream: AirbyteStreamAndConfiguration ->
-                    try {
-                        return@map toConfiguredProtocol(stream.stream, stream.config)
-                    } catch (e: JsonValidationException) {
-                        return@map null
-                    }
+            catalog.streams.map { stream: AirbyteStreamAndConfiguration ->
+                try {
+                    return@map toConfiguredProtocol(stream.stream, stream.config)
+                } catch (e: JsonValidationException) {
+                    return@map null
                 }
-                .toList()
+            }
 
         protoCatalog.withStreams(airbyteStream)
         return protoCatalog
@@ -133,7 +130,6 @@ object CatalogClientConverters {
         return AirbyteCatalog()
             .streams(
                 catalog.streams
-                    .stream()
                     .map { stream: io.airbyte.protocol.models.AirbyteStream ->
                         toAirbyteStreamClientApi(stream)
                     }
@@ -142,7 +138,6 @@ object CatalogClientConverters {
                             .stream(s)
                             .config(generateDefaultConfiguration(s))
                     }
-                    .toList()
             )
     }
 

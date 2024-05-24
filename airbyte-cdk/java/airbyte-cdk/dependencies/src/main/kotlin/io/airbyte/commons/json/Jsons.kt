@@ -18,15 +18,15 @@ import com.google.common.base.Charsets
 import com.google.common.base.Preconditions
 import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.stream.MoreStreams
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.IOException
 import java.util.*
 import java.util.function.BiConsumer
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 object Jsons {
-    private val LOGGER: Logger = LoggerFactory.getLogger(Jsons::class.java)
 
     // Object Mapper is thread-safe
     private val OBJECT_MAPPER: ObjectMapper = MoreMappers.initMapper()
@@ -260,7 +260,7 @@ object Jsons {
         }
     }
 
-    fun navigateTo(node: JsonNode, keys: List<String?>): JsonNode {
+    fun navigateTo(node: JsonNode, keys: List<String>): JsonNode {
         var targetNode = node
         for (key in keys) {
             targetNode = targetNode[key]
@@ -346,7 +346,7 @@ object Jsons {
     @JvmStatic
     fun flatten(node: JsonNode, applyFlattenToArray: Boolean = false): Map<String?, Any> {
         if (node.isObject) {
-            val output: MutableMap<String?, Any> = HashMap()
+            val output: MutableMap<String, Any> = HashMap()
             val it = node.fields()
             while (it.hasNext()) {
                 val entry = it.next()
@@ -354,16 +354,16 @@ object Jsons {
                 val value = entry.value
                 mergeMaps(output, field, flatten(value, applyFlattenToArray))
             }
-            return output
+            return output.toMap()
         } else if (node.isArray && applyFlattenToArray) {
-            val output: MutableMap<String?, Any> = HashMap()
+            val output: MutableMap<String, Any> = HashMap()
             val arrayLen = node.size()
             for (i in 0 until arrayLen) {
                 val field = String.format("[%d]", i)
                 val value = node[i]
                 mergeMaps(output, field, flatten(value, applyFlattenToArray))
             }
-            return output
+            return output.toMap()
         } else {
             val value: Any =
                 if (node.isBoolean) {
@@ -390,11 +390,7 @@ object Jsons {
      * If subMap contains a null key, then instead it is replaced with prefix. I.e. {null: value} is
      * treated as {prefix: value} when merging into originalMap.
      */
-    fun mergeMaps(
-        originalMap: MutableMap<String?, Any>,
-        prefix: String,
-        subMap: Map<String?, Any>
-    ) {
+    fun mergeMaps(originalMap: MutableMap<String, Any>, prefix: String, subMap: Map<String?, Any>) {
         originalMap.putAll(
             subMap.mapKeys toMap@{
                 val key = it.key
@@ -438,7 +434,7 @@ object Jsons {
                 sb.append(traceElement.toString())
             }
         }
-        LOGGER.warn("Failed to deserialize json due to {}", sb)
+        LOGGER.warn { "Failed to deserialize json due to $sb" }
         return Optional.empty()
     }
 
