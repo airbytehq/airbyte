@@ -10,7 +10,6 @@ from typing import Any, Final, Iterable, List, Mapping, Optional
 
 import pendulum as pdm
 import requests
-from airbyte_cdk import AirbyteLogger
 from requests.exceptions import JSONDecodeError
 from source_shopify.utils import ApiTypeEnum
 from source_shopify.utils import ShopifyRateLimiter as limiter
@@ -29,7 +28,7 @@ class ShopifyBulkManager:
     stream_name: str
 
     # default logger
-    logger: Final[AirbyteLogger] = logging.getLogger("airbyte")
+    logger: Final[logging.Logger] = logging.getLogger("airbyte")
 
     # 10Mb chunk size to save the file
     _retrieve_chunk_size: Final[int] = 1024 * 1024 * 10

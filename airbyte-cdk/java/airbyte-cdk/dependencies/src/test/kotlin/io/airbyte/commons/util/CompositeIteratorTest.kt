@@ -42,9 +42,9 @@ internal class CompositeIteratorTest {
 
     @Test
     fun testEmptyInput() {
-        val iterator: AutoCloseableIterator<String?> =
+        val iterator: AutoCloseableIterator<String> =
             CompositeIterator(
-                emptyList<AutoCloseableIterator<String?>>(),
+                emptyList<AutoCloseableIterator<String>>(),
                 airbyteStreamStatusConsumer
             )
         Assertions.assertFalse(iterator.hasNext())
@@ -54,8 +54,8 @@ internal class CompositeIteratorTest {
     @Test
     @Throws(Exception::class)
     fun testMultipleIterators() {
-        val iterator: AutoCloseableIterator<String?> =
-            CompositeIterator<String?>(
+        val iterator: AutoCloseableIterator<String> =
+            CompositeIterator<String>(
                 ImmutableList.of(
                     AutoCloseableIterators.fromIterator(
                         MoreIterators.of("a", "b", "c"),
@@ -104,8 +104,8 @@ internal class CompositeIteratorTest {
     @Test
     @Throws(Exception::class)
     fun testWithEmptyIterators() {
-        val iterator: AutoCloseableIterator<String?> =
-            CompositeIterator<String?>(
+        val iterator: AutoCloseableIterator<String> =
+            CompositeIterator<String>(
                 ImmutableList.of(
                     AutoCloseableIterators.fromIterator(
                         MoreIterators.of("a", "b", "c"),
@@ -143,8 +143,8 @@ internal class CompositeIteratorTest {
     @Test
     @Throws(Exception::class)
     fun testCloseBeforeUsingItUp() {
-        val iterator: AutoCloseableIterator<String?> =
-            CompositeIterator<String?>(
+        val iterator: AutoCloseableIterator<String> =
+            CompositeIterator<String>(
                 ImmutableList.of(
                     AutoCloseableIterators.fromIterator(
                         MoreIterators.of("a", "b", "c"),
@@ -168,8 +168,8 @@ internal class CompositeIteratorTest {
     @Test
     @Throws(Exception::class)
     fun testCannotOperateAfterClosing() {
-        val iterator: AutoCloseableIterator<String?> =
-            CompositeIterator<String?>(
+        val iterator: AutoCloseableIterator<String> =
+            CompositeIterator<String>(
                 ImmutableList.of(
                     AutoCloseableIterators.fromIterator(
                         MoreIterators.of("a", "b", "c"),
@@ -191,7 +191,7 @@ internal class CompositeIteratorTest {
         Mockito.verify(airbyteStreamStatusConsumer, Mockito.times(2)).accept(any())
     }
 
-    private fun assertNext(iterator: Iterator<String?>, value: String) {
+    private fun assertNext(iterator: Iterator<String>, value: String) {
         Assertions.assertTrue(iterator.hasNext())
         Assertions.assertEquals(value, iterator.next())
     }
