@@ -16,6 +16,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
+import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -31,6 +32,7 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -38,10 +40,13 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,8 +109,7 @@ public class PostgresCtidHandler implements InitialLoadHandler<PostgresType> {
         getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
     final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream);
     final AutoCloseableIterator<AirbyteMessage> logIterators = augmentWithLogs(recordAndMessageIterator, pair, streamName);
-    iteratorList.add(new StreamStatusTraceEmitterIterator(
-        new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
+    return augmentWithStreamStatus(airbyteStream, logIterators);
   }
 
   public List<AutoCloseableIterator<AirbyteMessage>> getInitialSyncCtidIterator(
@@ -168,21 +172,15 @@ public class PostgresCtidHandler implements InitialLoadHandler<PostgresType> {
     return meta == null || meta.getChanges() == null || meta.getChanges().isEmpty();
   }
 
-  private AutoCloseableIterator<AirbyteMessage> augmentWithStreamStatus(final AutoCloseableIterator<AirbyteMessage> iterator,
-      final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair,
-      final String streamName) {
-    return AutoCloseableIterators.transform(iterator,
-        AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()),
-        r -> {
-          final long count = recordCount.incrementAndGet();
-          if (count % 1_000_000 == 0) {
-            LOGGER.info("Reading stream {}. Records read: {}", streamName, count);
-          }
-          return r;
-        });
-
-    iteratorList.add(new StreamStatusTraceEmitterIterator(
-        new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
+  public static AutoCloseableIterator<AirbyteMessage> augmentWithStreamStatus(final ConfiguredAirbyteStream airbyteStream,
+      final AutoCloseableIterator<AirbyteMessage> streamIterator) {
+    final var pair =
+        new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
+    final var starterStatus =
+        new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED));
+    final var completeStatus =
+        new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE));
+    return AutoCloseableIterators.concatWithEagerClose(starterStatus, streamIterator, completeStatus);
   }
 
   // Augments the given iterator with record count logs.

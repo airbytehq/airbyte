@@ -278,9 +278,9 @@ class PostgresSourceTest {
     final Set<AirbyteMessage> actualMessages =
         MoreIterators.toSet(source().read(anotherUserConfig, CONFIGURED_CATALOG, null));
     setEmittedAtToNull(actualMessages);
-    // expect 6 records and 3 state messages (view does not have its own state message because it goes
+    // expect 6 records, 3 state messages and 4 stream status messages. (view does not have its own state message because it goes
     // to non resumable full refresh path).
-    assertEquals(9, actualMessages.size());
+    assertEquals(13, actualMessages.size());
     final var actualRecordMessages = filterRecords(actualMessages);
     assertEquals(PRIVILEGE_TEST_CASE_EXPECTED_MESSAGES, actualRecordMessages);
   }
@@ -485,7 +485,7 @@ class PostgresSourceTest {
         createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1)));
 
     // Assert that the correct number of messages are emitted.
-    assertEquals(actualMessages.size(), expectedOutput.size() + 3);
+    assertEquals(actualMessages.size(), expectedOutput.size() + 3 + 2);
     assertThat(actualMessages.contains(expectedOutput));
     // Assert that the Postgres source is emitting records & state messages in the correct order.
     assertCorrectRecordOrderForIncrementalSync(actualMessages, "id", JsonSchemaPrimitive.NUMBER, configuredCatalog,
@@ -571,8 +571,8 @@ class PostgresSourceTest {
         createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
         createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1)));
 
-    // Assert that the correct number of messages are emitted.
-    assertEquals(expectedOutput.size() + 3, actualMessages.size());
+    // Assert that the correct number of messages are emitted. 3 state messages and 4 trace messages.
+    assertEquals(expectedOutput.size() + 3 + 4, actualMessages.size());
     assertThat(actualMessages.contains(expectedOutput));
     // Assert that the Postgres source is emitting records & state messages in the correct order.
     assertCorrectRecordOrderForIncrementalSync(actualMessages, "id", JsonSchemaPrimitive.NUMBER, configuredCatalog,
@@ -625,7 +625,7 @@ class PostgresSourceTest {
         createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1)));
 
     // Assert that the correct number of messages are emitted.
-    assertEquals(expectedOutput.size() + 3, actualMessages.size());
+    assertEquals(expectedOutput.size() + 3 + 2, actualMessages.size());
     assertThat(actualMessages.contains(expectedOutput));
     // Assert that the Postgres source is emitting records & state messages in the correct order.
     assertCorrectRecordOrderForIncrementalSync(actualMessages, "id", JsonSchemaPrimitive.NUMBER, configuredCatalog,
@@ -679,8 +679,8 @@ class PostgresSourceTest {
         createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1)));
 
     // Assert that the correct number of messages are emitted. 6 for incremental streams, 6 for full
-    // refresh streams.
-    assertEquals(actualMessages.size(), 12);
+    // refresh streams, and 6 stream status trace messages.
+    assertEquals(actualMessages.size(), 18);
     assertThat(actualMessages.contains(expectedOutput));
 
     // For per stream, platform will collect states for all streams and compose a new state. Thus, in
