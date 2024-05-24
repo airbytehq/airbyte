@@ -3,12 +3,12 @@
 #
 
 import json
+import logging
 from datetime import timedelta
 from unittest.mock import MagicMock
 
 import pendulum
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.utils import AirbyteTracedException
@@ -18,7 +18,7 @@ from source_mixpanel.utils import read_full_refresh
 
 from .utils import get_url_to_mock, read_incremental, setup_response
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 MIXPANEL_BASE_URL = "https://mixpanel.com/api/2.0/"
 
@@ -128,8 +128,8 @@ def engage_response():
                 {
                     "$distinct_id": "9d35cd7f-3f06-4549-91bf-198ee58bb58a",
                     "$properties": {
-                        "$created": "2022-01-01T11:20:47",
-                        "$last_seen": "2022-01-01T11:20:47",
+                        "$created": "2024-02-01T11:20:47",
+                        "$last_seen": "2024-02-01T11:20:47",
                         "$browser": "Chrome",
                         "$browser_version": "83.0.4103.116",
                         "$email": "clark@asw.com",
@@ -141,8 +141,8 @@ def engage_response():
                 {
                     "$distinct_id": "cd9d357f-3f06-4549-91bf-158bb598ee8a",
                     "$properties": {
-                        "$created": "2023-01-01T11:20:47",
-                        "$last_seen": "2023-01-01T11:20:47",
+                        "$created": "2024-03-01T11:20:47",
+                        "$last_seen": "2024-03-01T11:20:47",
                         "$browser": "Firefox",
                         "$browser_version": "83.0.4103.116",
                         "$email": "bruce@asw.com",
@@ -171,17 +171,295 @@ def test_engage_stream_incremental(requests_mock, engage_response, config_raw):
         }
     }
     config_raw['start_date'] = '2022-02-01T00:00:00Z'
+    config_raw['end_date'] = '2024-05-01T00:00:00Z'
 
     requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "engage/properties", json=engage_properties)
     requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "engage?", engage_response)
 
     stream = init_stream('engage', config=config_raw)
 
-    stream_state = {"last_seen": "2022-02-01T11:20:47"}
+    stream_state = {"last_seen": "2024-02-11T11:20:47"}
     records = list(read_incremental(stream, stream_state=stream_state, cursor_field=["last_seen"]))
 
     assert len(records) == 1
-    assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"last_seen": "2023-01-01T11:20:47"}
+    assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"last_seen": "2024-03-01T11:20:47"}
+
+
+@pytest.mark.parametrize(
+    "test_name, state, record_count, updated_state",
+    (
+        (
+            "empty_state",
+            {},
+            2,
+            {
+                'states': [
+                    {
+                        'cursor': {'last_seen': '2024-03-01T11:20:47'},
+                        'partition': {'id': 1111, 'parent_slice': {}},
+                    }
+                ]
+            }
+        ),
+        (
+            "abnormal_state",
+            {
+                'states': [
+                    {
+                        'cursor': {'last_seen': '2030-01-01T00:00:00'},
+                        'partition': {'id': 1111, 'parent_slice': {}},
+                    }
+                ]
+            },
+            0,
+            {
+                'states': [
+                    {
+                        'cursor': {'last_seen': '2030-01-01T00:00:00'},
+                        'partition': {'id': 1111, 'parent_slice': {}},
+                    }
+                ]
+            }
+        ),
+        (
+            "medium_state",
+            {
+                'states': [
+                    {
+                        'cursor': {'last_seen': '2024-03-01T11:20:00'},
+                        'partition': {'id': 1111, 'parent_slice': {}},
+                    }
+                ]
+            },
+            1,
+            {
+                'states': [
+                    {
+                        'cursor': {'last_seen': '2024-03-01T11:20:47'},
+                        'partition': {'id': 1111, 'parent_slice': {}},
+                    }
+                ]
+            }
+        ),
+        (
+            "early_state",
+            {
+                'states': [
+                    {
+                        'cursor': {'last_seen': '2024-02-01T00:00:00'},
+                        'partition': {'id': 1111, 'parent_slice': {}},
+                    }
+                ]
+            },
+            2,
+            {
+                'states': [
+                    {
+                        'cursor': {'last_seen': '2024-03-01T11:20:47'},
+                        'partition': {'id': 1111, 'parent_slice': {}},
+                    }
+                ]
+            }
+        ),
+        (
+            "state_for_different_partition",
+            {
+                'states': [
+                    {
+                        'cursor': {'last_seen': '2024-02-01T00:00:00'},
+                        'partition': {'id': 2222, 'parent_slice': {}},
+                    }
+                ]
+            },
+            2,
+            {
+                'states': [
+                    {
+                        'cursor': {'last_seen': '2024-02-01T00:00:00'},
+                        'partition': {'id': 2222, 'parent_slice': {}},
+                    },
+                    {
+                        'cursor': {'last_seen': '2024-03-01T11:20:47'},
+                        'partition': {'id': 1111, 'parent_slice': {}},
+                    }
+                ]
+            }
+        ),
+    ),
+)
+def test_cohort_members_stream_incremental(requests_mock, engage_response, config_raw, test_name, state, record_count, updated_state):
+    """Cohort_members stream has legacy state but actually it should always return all records
+    because members in cohorts can be updated at any time
+    """
+    engage_properties = {
+        "results": {
+            "$browser": {
+                "count": 124,
+                "type": "string"
+            },
+            "$browser_version": {
+                "count": 124,
+                "type": "string"
+            }
+        }
+    }
+    config_raw['start_date'] = '2024-02-01T00:00:00Z'
+    config_raw['end_date'] = '2024-03-01T00:00:00Z'
+
+    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "cohorts/list", json=[{'id': 1111, "name":'bla', 'created': '2024-02-02T00:00:00Z'}])
+    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "engage/properties", json=engage_properties)
+    requests_mock.register_uri("POST", MIXPANEL_BASE_URL + "engage?", engage_response)
+
+    stream = init_stream('cohort_members', config=config_raw)
+
+    records = list(read_incremental(stream, stream_state=state, cursor_field=["last_seen"]))
+
+    assert len(records) == record_count
+    new_updated_state = stream.get_updated_state(current_stream_state=state, latest_record=records[-1] if records else None)
+    assert new_updated_state == updated_state
+
+
+def test_cohort_members_stream_pagination(requests_mock, engage_response, config_raw):
+    """Cohort_members pagination"""
+    engage_properties = {
+        "results": {
+            "$browser": {
+                "count": 124,
+                "type": "string"
+            },
+            "$browser_version": {
+                "count": 124,
+                "type": "string"
+            }
+        }
+    }
+    config_raw['start_date'] = '2024-02-01T00:00:00Z'
+    config_raw['end_date'] = '2024-03-01T00:00:00Z'
+
+    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "cohorts/list", json=[
+        {'id': 71000, "name":'bla', 'created': '2024-02-01T00:00:00Z'},
+        {'id': 71111, "name":'bla', 'created': '2024-02-02T00:00:00Z'}, 
+        {'id': 72222, "name":'bla', 'created': '2024-02-01T00:00:00Z'},
+        {'id': 73333, "name":'bla', 'created': '2024-02-03T00:00:00Z'},
+    ])
+    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "engage/properties", json=engage_properties)
+    requests_mock.register_uri("POST", MIXPANEL_BASE_URL + "engage", [
+        {  # initial request for 71000 cohort
+            'status_code': 200,
+            'json': {
+                "page": 0,
+                "page_size": 1000,
+                "session_id": "1234567890",
+                "status": "ok",
+                "total": 0,
+                "results": []
+            }
+        },
+        {  # initial request for 71111 cohort and further pagination
+            'status_code': 200,
+            'json': {
+                "page": 0,
+                "page_size": 1000,
+                "session_id": "1234567890",
+                "status": "ok",
+                "total": 2002,
+                "results": [
+                    {
+                        "$distinct_id": "71111_1",
+                        "$properties": {
+                            "$created": "2024-03-01T11:20:47",
+                            "$last_seen": "2024-03-01T11:20:47",
+
+                        },
+                    },
+                    {
+                        "$distinct_id": "71111_2",
+                        "$properties": {
+                            "$created": "2024-02-01T11:20:47",
+                            "$last_seen": "2024-02-01T11:20:47",
+                        }
+                    }
+                ]
+            }
+        }, {  # initial request for 72222 cohort without further pagination
+            'status_code': 200,
+            'json': {
+                "page": 0,
+                "page_size": 1000,
+                "session_id": "1234567890",
+                "status": "ok",
+                "total": 1,
+                "results": [
+                    {
+                        "$distinct_id": "72222_1",
+                        "$properties": {
+                            "$created": "2024-02-01T11:20:47",
+                            "$last_seen": "2024-02-01T11:20:47",
+                        }
+                    }
+                ]
+            }
+        },{  # initial request for 73333 cohort
+            'status_code': 200,
+            'json': {
+                "page": 0,
+                "page_size": 1000,
+                "session_id": "1234567890",
+                "status": "ok",
+                "total": 0,
+                "results": []
+            }
+        }
+    ]
+    )
+    # request for 1 page for 71111 cohort
+    requests_mock.register_uri("POST", MIXPANEL_BASE_URL + "engage?page_size=1000&session_id=1234567890&page=1", json={
+            "page": 1,
+            "session_id": "1234567890",
+            "status": "ok",
+            "results": [
+                {
+                    "$distinct_id": "71111_3",
+                    "$properties": {
+                        "$created": "2024-02-01T11:20:47",
+                        "$last_seen": "2024-02-01T11:20:47",
+                    }
+                }
+            ]
+        }
+    )
+    # request for 2 page for 71111 cohort
+    requests_mock.register_uri("POST", MIXPANEL_BASE_URL + "engage?page_size=1000&session_id=1234567890&page=2", json={
+            "page": 2,
+            "session_id": "1234567890",
+            "status": "ok",
+            "results": [
+                {
+                    "$distinct_id": "71111_4",
+                    "$properties": {
+                        "$created": "2024-02-01T11:20:47",
+                        "$last_seen": "2024-02-01T11:20:47",
+                    }
+                }
+            ]
+        }
+    )
+
+    stream = init_stream('cohort_members', config=config_raw)
+    
+    records = list(read_incremental(stream, stream_state={}, cursor_field=["last_seen"]))
+    assert len(records) == 5
+    new_updated_state = stream.get_updated_state(current_stream_state={}, latest_record=records[-1] if records else None)
+    assert new_updated_state == {'states': [
+        {
+            'cursor': {'last_seen': '2024-03-01T11:20:47'},
+            'partition': {'id': 71111, 'parent_slice': {}}
+        },
+        {
+            'cursor': {'last_seen': '2024-02-01T11:20:47'},
+            'partition': {'id': 72222, 'parent_slice': {}}
+        }
+    ]}
 
 
 @pytest.fixture
