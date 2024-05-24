@@ -2308,7 +2308,7 @@ definitions:
         - "%s"
       datetime_format: "%s"
       cursor_granularity: "PT1S"
-      step: "P30D"
+      step: "P{{ config.get('activity_logs_time_step', 30) }}D"
       start_datetime:
         datetime: "{{ config['start_date'] }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
