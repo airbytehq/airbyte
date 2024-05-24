@@ -174,6 +174,7 @@ corresponds to that version.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.35.8  | 2024-05-22 | [\#38572](https://github.com/airbytehq/airbyte/pull/38572) | Add a temporary static method to decouple SnowflakeDestination from AbstractJdbcDestination                                                                    |
 | 0.35.7  | 2024-05-20 | [\#38357](https://github.com/airbytehq/airbyte/pull/38357) | Decouple create namespace from per stream operation interface.                                                                                                 |
 | 0.35.6  | 2024-05-17 | [\#38107](https://github.com/airbytehq/airbyte/pull/38107) | New interfaces for Destination connectors to plug into AsyncStreamConsumer                                                                                     |
 | 0.35.5  | 2024-05-17 | [\#38204](https://github.com/airbytehq/airbyte/pull/38204) | add assume-role authentication to s3                                                                                                                           |
