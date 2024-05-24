@@ -481,8 +481,8 @@ class Action(Enum):
 
 class HttpResponseFilter(BaseModel):
     type: Literal['HttpResponseFilter']
-    action: Action = Field(
-        ...,
+    action: Optional[Action] = Field(
+        None,
         description='Action to execute if a response matches the filter.',
         examples=['SUCCESS', 'FAIL', 'RETRY', 'IGNORE'],
         title='Action',
@@ -874,11 +874,7 @@ class CursorPagination(BaseModel):
     cursor_value: str = Field(
         ...,
         description='Value of the cursor defining the next page to fetch.',
-        examples=[
-            '{{ headers.link.next.cursor }}',
-            "{{ last_record['key'] }}",
-            "{{ response['nextPage'] }}",
-        ],
+        examples=['{{ headers.link.next.cursor }}', "{{ last_record['key'] }}", "{{ response['nextPage'] }}"],
         title='Cursor Value',
     )
     page_size: Optional[int] = Field(None, description='The number of records to include in each pages.', examples=[100], title='Page Size')

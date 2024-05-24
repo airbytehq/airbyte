@@ -2,24 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from abc import abstractmethod
-from dataclasses import dataclass
-from typing import Optional
+from abc import ABC
 
-import requests
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy as HttpBackoffStrategy
 
 
-@dataclass
-class BackoffStrategy:
+class BackoffStrategy(HttpBackoffStrategy, ABC):
     """
     Backoff strategy defining how long to wait before retrying a request that resulted in an error.
+    References Python CDK BackoffStrategy
     """
-
-    @abstractmethod
-    def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
-        """
-        Return time to wait before retrying the request.
-        :param response: response received for the request to retry
-        :param attempt_count: number of attempts to submit the request
-        :return: time to wait in seconds
-        """

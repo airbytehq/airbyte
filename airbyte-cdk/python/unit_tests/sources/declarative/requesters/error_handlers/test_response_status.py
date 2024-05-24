@@ -3,8 +3,8 @@
 #
 
 import pytest
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 
 
 @pytest.mark.parametrize(

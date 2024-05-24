@@ -19,20 +19,20 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
-from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler, user_defined_backoff_handler
+from airbyte_cdk.sources.streams.http.rate_limiting import http_client_default_backoff_handler, user_defined_backoff_handler
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.mapping_helpers import combine_mappings
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.auth import AuthBase
 
 
@@ -141,7 +141,7 @@ class HttpRequester(Requester):
     def get_method(self) -> HttpMethod:
         return self._http_method
 
-    def interpret_response_status(self, response: requests.Response) -> ResponseStatus:
+    def interpret_response_status(self, response: requests.Response) -> ErrorResolution:
         if self.error_handler is None:
             raise ValueError("Cannot interpret response status without an error handler")
 
@@ -257,10 +257,11 @@ class HttpRequester(Requester):
         """
         if self.error_handler is None:
             return None
-        should_retry = self.interpret_response_status(response)
-        if should_retry.action != ResponseAction.RETRY:
-            raise ValueError(f"backoff_time can only be applied on retriable response action. Got {should_retry.action}")
-        assert should_retry.action == ResponseAction.RETRY
+        error_resolution = self.interpret_response_status(response)
+        should_retry = error_resolution.response_action == ResponseAction.RETRY
+        if not should_retry:
+            raise ValueError(f"backoff_time can only be applied on retriable response action. Got {error_resolution.response_action}")
+        assert error_resolution.repsonse_action == ResponseAction.RETRY
         return should_retry.retry_in
 
     def _error_message(self, response: requests.Response) -> str:
@@ -458,7 +459,7 @@ class HttpRequester(Requester):
         )
 
         response = self._send_with_retry(request, log_formatter=log_formatter)
-        return self._validate_response(response)
+        return response
 
     def _send_with_retry(
         self,
@@ -501,7 +502,7 @@ class HttpRequester(Requester):
             max_tries = max(0, max_tries) + 1
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)  # type: ignore # we don't pass in kwargs to the backoff handler
-        backoff_handler = default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self._DEFAULT_RETRY_FACTOR)
+        backoff_handler = http_client_default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self._DEFAULT_RETRY_FACTOR)
         # backoff handlers wrap _send, so it will always return a response
         return backoff_handler(user_backoff_handler)(request, log_formatter=log_formatter)  # type: ignore
 
@@ -531,43 +532,56 @@ class HttpRequester(Requester):
         self.logger.debug(
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
+
         response: requests.Response = self._session.send(request)
+
+        error_resolution: ErrorResolution = self.interpret_response_status(response)
+
         self.logger.debug("Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text})
+
         if log_formatter:
             formatter = log_formatter
             self.message_repository.log_message(
                 Level.DEBUG,
                 lambda: formatter(response),
             )
-        if self._should_retry(response):
-            custom_backoff_time = self._backoff_time(response)
-            if custom_backoff_time:
-                raise UserDefinedBackoffException(backoff=custom_backoff_time, request=request, response=response)
-            else:
-                raise DefaultBackoffException(request=request, response=response)
-        return response
 
-    def _validate_response(
-        self,
-        response: requests.Response,
-    ) -> Optional[requests.Response]:
-        # if fail -> raise exception
-        # if ignore -> ignore response and return None
-        # else -> delegate to caller
-        if self.error_handler is None:
-            return response
+        if error_resolution.response_action == ResponseAction.FAIL:
+            error_message = f"'{request.method}' request to '{request.url}' failed with status code '{response.status_code}' and error message '{self.parse_response_error_message(response)}'"
 
-        response_status = self.interpret_response_status(response)
-        if response_status.action == ResponseAction.FAIL:
+            raise AirbyteTracedException(
+                internal_message=error_message,
+                message=error_resolution.error_message or error_message,
+                failure_type=error_resolution.failure_type,
+            )
+
+        elif error_resolution.response_action == ResponseAction.IGNORE:
+            log_message = f"Ignoring response for '{request.method}' request to '{request.url}' with response code '{response.status_code}'"
+
+            self.logger.info(error_resolution.error_message or log_message)
+
+        elif error_resolution.response_action == ResponseAction.RETRY:
+            custom_backoff_time = self.error_handler.backoff_time(response)
             error_message = (
-                response_status.error_message
-                or f"Request to {response.request.url} failed with status code {response.status_code} and error message {HttpRequester.parse_response_error_message(response)}"
+                error_resolution.error_message
+                or f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action}."
             )
-            raise ReadException(error_message)
-        elif response_status.action == ResponseAction.IGNORE:
-            self.logger.info(
-                f"Ignoring response for failed request with error message {HttpRequester.parse_response_error_message(response)}"
-            )
+            if custom_backoff_time:
+                raise UserDefinedBackoffException(
+                    backoff=custom_backoff_time,
+                    request=request,
+                    response=(response),
+                    error_message=error_message,
+                )
+            else:
+                raise DefaultBackoffException(request=request, response=(response), error_message=error_message)
+
+        elif response:
+            try:
+                response.raise_for_status()
+            except requests.HTTPError as e:
+                self.logger.error(response.text)
+                raise e
 
         return response
 

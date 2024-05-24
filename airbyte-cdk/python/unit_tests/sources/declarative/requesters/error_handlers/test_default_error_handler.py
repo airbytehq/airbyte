@@ -8,11 +8,7 @@ from unittest.mock import MagicMock
 import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import pytest
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.constant_backoff_strategy import ConstantBackoffStrategy
-from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import (
-    DefaultErrorHandler,
-    HttpResponseFilter,
-    ResponseStatus,
-)
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler, HttpResponseFilter
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 
 SOME_BACKOFF_TIME = 60

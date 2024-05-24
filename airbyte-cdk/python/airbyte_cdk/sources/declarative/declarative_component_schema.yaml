@@ -1545,7 +1545,6 @@ definitions:
     type: object
     required:
       - type
-      - action
     properties:
       type:
         type: string

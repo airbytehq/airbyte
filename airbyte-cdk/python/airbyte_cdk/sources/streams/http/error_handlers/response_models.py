@@ -19,3 +19,12 @@ class ErrorResolution:
     response_action: Optional[ResponseAction] = None
     failure_type: Optional[FailureType] = None
     error_message: Optional[str] = None
+
+
+DEFAULT_ERROR_RESOLUTION = ErrorResolution(
+    response_action=ResponseAction.RETRY,
+    failure_type=FailureType.system_error,
+    error_message="The request failed due to an unknown error.",
+)
+
+SUCCESS_RESOLUTION = ErrorResolution(response_action=ResponseAction.SUCCESS, failure_type=None, error_message=None)

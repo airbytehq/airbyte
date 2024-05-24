@@ -6,11 +6,12 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Optional, Set, Union
 
 import requests
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
-from airbyte_cdk.sources.streams.http.http import HttpStream
+from airbyte_cdk.sources.streams.http.error_handlers import JsonErrorMessageParser
+from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.types import Config
 
 
@@ -27,53 +28,67 @@ class HttpResponseFilter:
         error_message (Union[InterpolatedString, str): error message to display if the response matches the filter
     """
 
-    TOO_MANY_REQUESTS_ERRORS = {429}
-    DEFAULT_RETRIABLE_ERRORS = set([x for x in range(500, 600)]).union(TOO_MANY_REQUESTS_ERRORS)
+    _DEFAULT_ERROR_MAPPING = HttpStatusErrorHandler.DEFAULT_ERROR_MAPPING
 
-    action: Union[ResponseAction, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
+    action: Optional[Union[ResponseAction, str]] = None
     http_codes: Optional[Set[int]] = None
     error_message_contains: Optional[str] = None
     predicate: Union[InterpolatedBoolean, str] = ""
     error_message: Union[InterpolatedString, str] = ""
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        if isinstance(self.action, str):
+
+        if self.http_codes is not None and self.action is None:
+            raise ValueError("HttpResponseFilter requires a prescribed action if http_codes are specified")
+
+        if self.action is not None and isinstance(self.action, str):
             self.action = ResponseAction[self.action]
         self.http_codes = self.http_codes or set()
         if isinstance(self.predicate, str):
             self.predicate = InterpolatedBoolean(condition=self.predicate, parameters=parameters)
         self.error_message = InterpolatedString.create(string_or_interpolated=self.error_message, parameters=parameters)
 
-    def matches(self, response: requests.Response, backoff_time: Optional[float] = None) -> Optional[ResponseStatus]:
-        filter_action = self._matches_filter(response)
+    def matches(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> Optional[ErrorResolution]:
+        filter_action = self._matches_filter(response_or_exception)
+        mapped_key = (
+            response_or_exception.status_code if isinstance(response_or_exception, requests.Response) else response_or_exception.__class__
+        )
+
         if filter_action is not None:
-            error_message = self._create_error_message(response)
-            if filter_action == ResponseAction.RETRY:
-                return ResponseStatus(
-                    response_action=ResponseAction.RETRY,
-                    retry_in=backoff_time,
-                    error_message=error_message,
-                )
-            else:
-                return ResponseStatus(filter_action, error_message=error_message)
+            error_message = self._create_error_message(response_or_exception)
+            default_mapped_error_resolution = self._match_default_error_mapping(mapped_key)
+            failure_type = default_mapped_error_resolution.failure_type if default_mapped_error_resolution else FailureType.system_error
+            return ErrorResolution(
+                response_action=filter_action,
+                failure_type=failure_type,
+                error_message=error_message,
+            )
+        else:
+            mapped_error_resolution = self._match_default_error_mapping(mapped_key)
+            if mapped_error_resolution:
+                return mapped_error_resolution
+
         return None
 
-    def _matches_filter(self, response: requests.Response) -> Optional[ResponseAction]:
+    def _match_default_error_mapping(self, mapped_key: Union[int, type[Exception]]) -> Optional[ErrorResolution]:
+        return self._DEFAULT_ERROR_MAPPING.get(mapped_key)
+
+    def _matches_filter(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> Optional[ResponseAction]:
         """
-        Apply the filter on the response and return the action to execute if it matches
+        Apply the HTTP filter on the response and return the action to execute if it matches
         :param response: The HTTP response to evaluate
         :return: The action to execute. None if the response does not match the filter
         """
-        if (
-            response.status_code in self.http_codes  # type: ignore # http_codes set is always initialized to a value in __post_init__
-            or (self._response_matches_predicate(response))
-            or (self._response_contains_error_message(response))
-        ):
-            return self.action  # type: ignore # action is always cast to a ResponseAction not a str
-        else:
-            return None
+        if isinstance(response_or_exception, requests.Response):
+            if (
+                response_or_exception.status_code in self.http_codes  # type: ignore # http_codes set is always initialized to a value in __post_init__
+                or (self._response_matches_predicate(response_or_exception))
+                or (self._response_contains_error_message(response_or_exception))
+            ):
+                return self.action  # type: ignore # action is always cast to a ResponseAction not a str
+        return None
 
     @staticmethod
     def _safe_response_json(response: requests.Response) -> dict[str, Any]:
@@ -97,5 +112,5 @@ class HttpResponseFilter:
         if not self.error_message_contains:
             return False
         else:
-            error_message = HttpStream.parse_response_error_message(response)
+            error_message = JsonErrorMessageParser.parse_response_error_message(response)
             return bool(error_message and self.error_message_contains in error_message)

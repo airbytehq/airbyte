@@ -13,7 +13,7 @@ from .response_models import ErrorResolution, ResponseAction
 
 class HttpStatusErrorHandler(ErrorHandler):
 
-    _DEFAULT_ERROR_MAPPING: Mapping[Union[int, str, Type[Exception]], ErrorResolution] = {
+    DEFAULT_ERROR_MAPPING: Mapping[Union[int, str, Type[Exception]], ErrorResolution] = {
         RequestException: ErrorResolution(
             response_action=ResponseAction.RETRY,
             failure_type=FailureType.transient_error,
@@ -87,7 +87,7 @@ class HttpStatusErrorHandler(ErrorHandler):
         :param error_mapping: Custom error mappings to extend or override the default mappings.
         """
         self._logger = logger
-        self._error_mapping = error_mapping or self._DEFAULT_ERROR_MAPPING
+        self._error_mapping = error_mapping or self.DEFAULT_ERROR_MAPPING
 
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         """
