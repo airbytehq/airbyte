@@ -30,7 +30,6 @@ from sqlalchemy import (
 from sqlalchemy.sql.elements import TextClause
 
 from airbyte import exceptions as exc
-from airbyte._future_cdk.state_writers import StdOutStateWriter
 from airbyte._util.name_normalizers import LowerCaseNormalizer
 from airbyte.constants import (
     AB_EXTRACTED_AT_COLUMN,
@@ -42,7 +41,8 @@ from airbyte.progress import progress
 from airbyte.strategies import WriteStrategy
 from airbyte.types import SQLTypeConverter
 
-from destination_snowflake_cortex.common.destinatins.record_processor import RecordProcessorBase
+from destination_snowflake_cortex.common.destinations.record_processor import RecordProcessorBase
+from destination_snowflake_cortex.common.state.state_writers import StdOutStateWriter
 
 
 if TYPE_CHECKING:
@@ -60,10 +60,11 @@ if TYPE_CHECKING:
     )
 
     from airbyte._batch_handles import BatchHandle
-    from airbyte._future_cdk.catalog_providers import CatalogProvider
-    from airbyte._future_cdk.state_writers import StateWriterBase
     from airbyte._processors.file.base import FileWriterBase
     from airbyte.secrets.base import SecretString
+
+    from destination_snowflake_cortex.common.catalog.catalog_providers import CatalogProvider
+    from destination_snowflake_cortex.common.state.state_writers import StateWriterBase
 
 
 class RecordDedupeMode(enum.Enum):
@@ -770,10 +771,10 @@ class SqlProcessorBase(RecordProcessorBase):
         self._execute_sql(
             f"""
             INSERT INTO {self._fully_qualified(final_table_name)} (
-            {f',{nl}  '.join(columns)}
+            {f",{nl}  ".join(columns)}
             )
             SELECT
-            {f',{nl}  '.join(columns)}
+            {f",{nl}  ".join(columns)}
             FROM {self._fully_qualified(temp_table_name)}
             """,
         )
@@ -818,15 +819,12 @@ class SqlProcessorBase(RecordProcessorBase):
 
         _ = stream_name
         deletion_name = f"{final_table_name}_deleteme"
-        commands = "\n".join(
-            [
-                f"ALTER TABLE {self._fully_qualified(final_table_name)} RENAME "
-                f"TO {deletion_name};",
-                f"ALTER TABLE {self._fully_qualified(temp_table_name)} RENAME "
-                f"TO {final_table_name};",
-                f"DROP TABLE {self._fully_qualified(deletion_name)};",
-            ]
-        )
+        commands = "\n".join([
+            f"ALTER TABLE {self._fully_qualified(final_table_name)} RENAME " f"TO {deletion_name};",
+            f"ALTER TABLE {self._fully_qualified(temp_table_name)} RENAME "
+            f"TO {final_table_name};",
+            f"DROP TABLE {self._fully_qualified(deletion_name)};",
+        ])
         self._execute_sql(commands)
 
     def _merge_temp_table_to_final_table(
@@ -859,10 +857,10 @@ class SqlProcessorBase(RecordProcessorBase):
                 {set_clause}
             WHEN NOT MATCHED THEN INSERT
             (
-                {f',{nl}    '.join(columns)}
+                {f",{nl}    ".join(columns)}
             )
             VALUES (
-                tmp.{f',{nl}    tmp.'.join(columns)}
+                tmp.{f",{nl}    tmp.".join(columns)}
             );
             """,
         )

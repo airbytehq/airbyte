@@ -22,16 +22,17 @@ from airbyte_protocol.models import (
 )
 
 from airbyte import exceptions as exc
-from airbyte._future_cdk.state_writers import StdOutStateWriter
 from airbyte.strategies import WriteStrategy
+
+from destination_snowflake_cortex.common.state.state_writers import StdOutStateWriter
 
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator
 
     from airbyte._batch_handles import BatchHandle
-    from airbyte._future_cdk.catalog_providers import CatalogProvider
-    from airbyte._future_cdk.state_writers import StateWriterBase
+    from destination_snowflake_cortex.common.catalog.catalog_providers import CatalogProvider
+    from destination_snowflake_cortex.common.state.state_writers import StateWriterBase
 
 
 class AirbyteMessageParsingError(Exception):

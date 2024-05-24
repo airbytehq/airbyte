@@ -6,14 +6,11 @@ from __future__ import annotations
 import json
 import logging
 
-from destination_snowflake_cortex.destination import DestinationSnowflakeCortex
-from destination_snowflake_cortex.indexer import SnowflakeCortexIndexer
-from langchain.embeddings import OpenAIEmbeddings
-from snowflake import connector
-
-from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
 from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
 from airbyte_cdk.models import DestinationSyncMode, Status
+from snowflake import connector
+
+from destination_snowflake_cortex.destination import DestinationSnowflakeCortex
 
 
 class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
@@ -36,7 +33,11 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         outcome = DestinationSnowflakeCortex().check(
             logging.getLogger("airbyte"),
             {
-                "processing": {"text_fields": ["str_col"], "chunk_size": 1000, "metadata_fields": ["int_col"]},
+                "processing": {
+                    "text_fields": ["str_col"],
+                    "chunk_size": 1000,
+                    "metadata_fields": ["int_col"],
+                },
                 "embedding": {"mode": "openai", "openai_key": "mykey"},
                 "indexing": {
                     "host": "MYACCOUNT",
@@ -106,17 +107,32 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         # initial sync with replace
         destination = DestinationSnowflakeCortex()
         list(destination.write(self.config, catalog, [*first_record_chunk, first_state_message]))
-        assert(self._get_record_count("mystream") == 5)
+        assert self._get_record_count("mystream") == 5
 
         # subsequent sync with append
         append_catalog = self._get_configured_catalog(DestinationSyncMode.append)
-        list(destination.write(self.config, append_catalog, [self._record("mystream", "Cats are nice", 6), first_state_message]))
-        assert(self._get_record_count("mystream") == 6)
+        list(
+            destination.write(
+                config=self.config,
+                configured_catalog=append_catalog,
+                input_messages=[self._record("mystream", "Cats are nice", 6), first_state_message],
+            )
+        )
+        assert self._get_record_count("mystream") == 6
 
         # subsequent sync with append_dedup
         append_dedup_catalog = self._get_configured_catalog(DestinationSyncMode.append_dedup)
-        list(destination.write(self.config, append_dedup_catalog, [self._record("mystream", "Cats are nice too", 4), first_state_message]))
-        assert(self._get_record_count("mystream") == 6)
+        list(
+            destination.write(
+                config=self.config,
+                configured_catalog=append_dedup_catalog,
+                input_messages=[
+                    self._record("mystream", "Cats are nice too", 4),
+                    first_state_message,
+                ],
+            )
+        )
+        assert self._get_record_count("mystream") == 6
 
         # comment the following so we can use fake for testing
         # embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
@@ -133,12 +149,18 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         # initial sync with replace
         destination = DestinationSnowflakeCortex()
         list(destination.write(self.config, catalog, [*first_record_chunk, first_state_message]))
-        assert(self._get_record_count("mystream") == 4)
+        assert self._get_record_count("mystream") == 4
 
         # following should replace existing records
         append_catalog = self._get_configured_catalog(DestinationSyncMode.overwrite)
-        list(destination.write(self.config, append_catalog, [self._record("mystream", "Cats are nice", 6), first_state_message]))
-        assert(self._get_record_count("mystream") == 1)
+        list(
+            destination.write(
+                config=self.config,
+                configured_catalog=append_catalog,
+                input_messages=[self._record("mystream", "Cats are nice", 6), first_state_message],
+            )
+        )
+        assert self._get_record_count("mystream") == 1
 
     """
     Following tests are not code specific, but are useful to confirm that the Cortex functions are available and behaving as expcected
@@ -169,7 +191,10 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
             document_content STRING
         )
         """)
-        cur.executemany("INSERT INTO temp_document_content (document_content) VALUES (%s)", document_content_list)
+        cur.executemany(
+            "INSERT INTO temp_document_content (document_content) VALUES (%s)",
+            document_content_list,
+        )
 
         cur.execute("""
         SELECT snowflake.cortex.embed_text('e5-base-v2', document_content) AS embedding

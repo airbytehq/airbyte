@@ -8,10 +8,8 @@ import uuid
 from typing import TYPE_CHECKING, Any, Optional
 
 import dpath.util
-
 from airbyte._processors.sql.snowflake import SnowflakeSqlProcessor
 from airbyte.strategies import WriteStrategy
-from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.models import (
     AirbyteMessage,
@@ -23,6 +21,7 @@ from airbyte_cdk.models import (
     StreamDescriptor,
     Type,
 )
+
 from destination_snowflake_cortex.config import SnowflakeCortexIndexingModel
 from destination_snowflake_cortex.cortex_processor import (
     SnowflakeCortexConfig,
@@ -36,7 +35,6 @@ from destination_snowflake_cortex.globals import (
     METADATA_COLUMN,
 )
 
-
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
@@ -44,11 +42,16 @@ if TYPE_CHECKING:
 class SnowflakeCortexIndexer(Indexer):
     config: SnowflakeCortexIndexingModel
 
-    def __init__(self, config: SnowflakeCortexIndexingModel, embedding_dimensions: int, configured_catalog: ConfiguredAirbyteCatalog):
+    def __init__(
+        self,
+        config: SnowflakeCortexIndexingModel,
+        embedding_dimensions: int,
+        configured_catalog: ConfiguredAirbyteCatalog,
+    ):
         super().__init__(config)
         self.sql_config = SnowflakeCortexConfig(
             # Note: Host maps to account in the cache
-            account=config.host,
+            host=config.host,
             role=config.role,
             warehouse=config.warehouse,
             database=config.database,
@@ -143,9 +146,16 @@ class SnowflakeCortexIndexer(Indexer):
             return f"Stream_{stream_name}_Key_{primary_key}"
         return str(uuid.uuid4().int)
 
-    def _create_state_message(self, stream: str, namespace: str, data: dict[str, Any]) -> AirbyteMessage:
+    def _create_state_message(
+        self,
+        stream: str,
+        namespace: str,
+        data: dict[str, Any],
+    ) -> AirbyteMessage:
         """Create a state message for the stream"""
-        stream = AirbyteStreamState(stream_descriptor=StreamDescriptor(name=stream, namespace=namespace))
+        stream = AirbyteStreamState(
+            stream_descriptor=StreamDescriptor(name=stream, namespace=namespace)
+        )
         return AirbyteMessage(
             type=Type.STATE,
             state=AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=stream, data=data),
@@ -175,10 +185,15 @@ class SnowflakeCortexIndexer(Indexer):
             updated_catalog = self._get_updated_catalog()
             cortex_processor = SnowflakeCortexSqlProcessor(
                 sql_config=self.sql_config,
-                catalog=updated_catalog,
+                catalog_provider=updated_catalog,
                 stream_names=[stream],
             )
-            cortex_processor.process_airbyte_messages(airbyte_messages, self.get_write_strategy(stream))
+            cortex_processor.process_airbyte_messages(
+                messages=airbyte_messages,
+                write_strategy=self.get_write_strategy(
+                    stream,
+                ),
+            )
 
     def delete(self, delete_ids: list[str], namespace: str, stream: str):
         # this delete is specific to vector stores, hence not implemented here
@@ -200,3 +215,4 @@ class SnowflakeCortexIndexer(Indexer):
     def check(self) -> Optional[str]:
         self.default_processor._get_tables_list()
         # TODO: check to see if vector type is available in snowflake instance
+        return None

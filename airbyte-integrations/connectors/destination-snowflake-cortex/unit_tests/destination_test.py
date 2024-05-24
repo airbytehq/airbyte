@@ -17,15 +17,13 @@ class TestDestinationSnowflakeCortex(unittest.TestCase):
             "processing": {"text_fields": ["str_col"], "metadata_fields": [], "chunk_size": 1000},
             "embedding": {"mode": "openai", "openai_key": "mykey"},
             "indexing": {
-                    "host": "MYACCOUNT",
-                    "role": "MYUSERNAME",
-                    "warehouse": "MYWAREHOUSE", 
-                    "database": "MYDATABASE",
-                    "default_schema": "MYSCHEMA",
-                    "username": "MYUSERNAME",
-                    "credentials": {
-                        "password": "xxxxxxx"
-                    }
+                "host": "MYACCOUNT",
+                "role": "MYUSERNAME",
+                "warehouse": "MYWAREHOUSE",
+                "database": "MYDATABASE",
+                "default_schema": "MYSCHEMA",
+                "username": "MYUSERNAME",
+                "credentials": {"password": "xxxxxxx"},
             },
         }
         self.config_model = ConfigModel.parse_obj(self.config)
@@ -81,5 +79,11 @@ class TestDestinationSnowflakeCortex(unittest.TestCase):
         destination = DestinationSnowflakeCortex()
         list(destination.write(self.config, configured_catalog, input_messages))
 
-        MockedWriter.assert_called_once_with(self.config_model.processing, mock_indexer, mock_embedder, batch_size=150, omit_raw_text=False)
+        MockedWriter.assert_called_once_with(
+            self.config_model.processing,
+            mock_indexer,
+            mock_embedder,
+            batch_size=150,
+            omit_raw_text=False,
+        )
         mock_writer.write.assert_called_once_with(configured_catalog, input_messages)
