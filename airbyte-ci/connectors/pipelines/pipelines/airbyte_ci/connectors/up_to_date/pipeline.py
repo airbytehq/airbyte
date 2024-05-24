@@ -167,10 +167,12 @@ class MakePullRequest(Step):
         self,
         context: PipelineContext,
         pull: bool,
+        no_bump: bool,
         semaphore: "Semaphore",
     ) -> None:
         super().__init__(context)
         self.pull = pull
+        self.no_bump = no_bump
         self.semaphore = semaphore
 
     async def _run(self) -> StepResult:
@@ -178,8 +180,11 @@ class MakePullRequest(Step):
         branch_id = "up_to_date"
         title = "Up to date"
         body = "Updating python dependencies"  # TODO: update this based on what it actually did
-        changelog = True
-        bump = "patch"
+        changelog = not self.no_bump
+        if self.no_bump:
+            bump = None
+        else:
+            bump = "patch"
         dry_run = not self.pull
         report = await run_connector_pull_request_pipeline(
             context=self.context,
@@ -239,6 +244,9 @@ def pick_airbyte_cdk_version(current_version: Version, context: ConnectorContext
 
     # TODO: could add more logic here for semantic and other known things
 
+    # 0.80.0 is better beause it specifies the protocol version
+    if context.connector.language == ConnectorLanguage.PYTHON and current_version < Version("0.80.0"):
+        return Version("0.80.0")
     # 0.84: where from airbyte_cdk.sources.deprecated is removed
     if context.connector.language == ConnectorLanguage.PYTHON and current_version < Version("0.84.0"):
         return Version("0.83.0")
@@ -295,6 +303,7 @@ async def run_connector_up_to_date_pipeline(
     semaphore: "Semaphore",
     dev: bool = False,
     pull: bool = False,
+    no_bump: bool = False,
     specific_dependencies: List[str] = [],
 ) -> Report:
     restore_original_state = RestoreUpToDateState(context)
@@ -346,14 +355,15 @@ async def run_connector_up_to_date_pipeline(
             ]
         )
 
-    steps_to_run.append(
-        [
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.UPDATE_PULL_REQUEST,
-                step=MakePullRequest(context, pull, semaphore),
-                depends_on=steps_before_pull,
-            )
-        ]
-    )
+    if pull:
+        steps_to_run.append(
+            [
+                StepToRun(
+                    id=CONNECTOR_TEST_STEP_ID.UPDATE_PULL_REQUEST,
+                    step=MakePullRequest(context, pull, no_bump, semaphore),
+                    depends_on=steps_before_pull,
+                )
+            ]
+        )
 
     return await run_connector_steps(context, semaphore, steps_to_run, restore_original_state=restore_original_state)
