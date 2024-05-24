@@ -150,12 +150,12 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
         final TableInfo<CommonField<JDBCType>> table = tableNameToTable.get(fullyQualifiedTableName);
         if (decorateWithStartedStatus) {
           iteratorList.add(
-                  new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)));
+              new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)));
         }
         iteratorList.add(getIteratorForStream(airbyteStream, table, emittedAt));
         if (decorateWithCompletedStatus) {
           iteratorList.add(new StreamStatusTraceEmitterIterator(
-                  new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
+              new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
         }
       }
     }

@@ -213,12 +213,12 @@ public class MssqlInitialReadUtil {
     }
 
     final List<AutoCloseableIterator<AirbyteMessage>> cdcStreamsStartStatusEmitters = catalog.getStreams().stream()
-            .filter(stream -> !initialLoadStreams.streamsForInitialLoad.contains(stream))
-            .map(stream -> (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(
-                    new AirbyteStreamStatusHolder(
-                            new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
-                            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)))
-            .toList();
+        .filter(stream -> !initialLoadStreams.streamsForInitialLoad.contains(stream))
+        .map(stream -> (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(
+            new AirbyteStreamStatusHolder(
+                new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)))
+        .toList();
 
     // Build the incremental CDC iterators.
     final var targetPosition = MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText());
@@ -236,12 +236,12 @@ public class MssqlInitialReadUtil {
         propertiesManager, eventConverter, new MssqlCdcSavedInfoFetcher(stateToBeUsed), new MssqlCdcStateHandler(stateManager));
 
     final List<AutoCloseableIterator<AirbyteMessage>> allStreamsCompleteStatusEmitters = catalog.getStreams().stream()
-            .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
-            .map(stream -> (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(
-                    new AirbyteStreamStatusHolder(
-                            new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
-                            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)))
-            .toList();
+        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
+        .map(stream -> (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(
+            new AirbyteStreamStatusHolder(
+                new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)))
+        .toList();
     // This starts processing the transaction logs as soon as initial sync is complete,
     // this is a bit different from the current cdc syncs.
     // We finish the current CDC once the initial snapshot is complete and the next sync starts
@@ -249,10 +249,10 @@ public class MssqlInitialReadUtil {
     return Collections.singletonList(
         AutoCloseableIterators.concatWithEagerClose(
             Stream
-                  .of(initialLoadIterator,
-                          cdcStreamsStartStatusEmitters,
-                          Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorsSupplier, null)),
-                          allStreamsCompleteStatusEmitters)
+                .of(initialLoadIterator,
+                    cdcStreamsStartStatusEmitters,
+                    Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorsSupplier, null)),
+                    allStreamsCompleteStatusEmitters)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList()),
             AirbyteTraceMessageUtility::emitStreamStatusTrace));
