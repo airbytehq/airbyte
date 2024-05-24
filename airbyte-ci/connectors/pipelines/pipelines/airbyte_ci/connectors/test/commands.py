@@ -8,8 +8,8 @@ from typing import Dict, List
 import asyncclick as click
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
-from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
+from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
 from pipelines.airbyte_ci.connectors.test.pipeline import run_connector_test_pipeline
 from pipelines.airbyte_ci.connectors.test.steps.common import RegressionTests
 from pipelines.cli.click_decorators import click_ci_requirements_option
@@ -134,7 +134,7 @@ async def test(
     )
 
     connectors_tests_contexts = [
-        ConnectorContext(
+        ConnectorTestContext(
             pipeline_name=f"{global_status_check_context} on {connector.technical_name}",
             connector=connector,
             is_local=ctx.obj["is_local"],
