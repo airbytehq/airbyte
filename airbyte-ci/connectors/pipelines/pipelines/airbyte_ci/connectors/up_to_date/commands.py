@@ -42,11 +42,15 @@ from pipelines.helpers.connectors.command import run_connector_pipeline
     default=False,
     help="Create a pull request.",
 )
-
+@click.option(
+    "--no-bump",
+    is_flag=True,
+    type=bool,
+    default=False,
+    help="Don't bump or changelog",
+)
 
 # TODO: flag to skip regression tests
-# TODO: flag to make PR
-# TODO: also update the manifest.yaml with the cdk version?
 @click.pass_context
 async def up_to_date(
     ctx: click.Context,
@@ -54,6 +58,7 @@ async def up_to_date(
     pull: bool,
     dep: List[str],
     report: bool,
+    no_bump: bool,
 ) -> bool:
 
     if not ctx.obj["ci_github_access_token"]:
@@ -68,5 +73,6 @@ async def up_to_date(
         run_connector_up_to_date_pipeline,
         dev,
         pull,
+        no_bump,
         dep,
     )
