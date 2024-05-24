@@ -9,24 +9,17 @@ import pytest
 from airbyte_cdk.models import ConnectorSpecification
 from source_tiktok_marketing import SourceTiktokMarketing
 
-SANDBOX_CONFIG_FILE = "secrets/sandbox_config.json"
-PROD_CONFIG_FILE = "secrets/prod_config.json"
-PROD_LIFETIME_CONFIG_FILE = "secrets/prod_config_with_lifetime_granularity.json"
-PROD_DAILY_CONFIG_FILE = "secrets/prod_config_with_day_granularity.json"
-
 
 @pytest.mark.parametrize(
     "config, stream_len",
     [
-        (PROD_CONFIG_FILE, 36),
-        (SANDBOX_CONFIG_FILE, 28),
-        (PROD_LIFETIME_CONFIG_FILE, 15),
-        (PROD_DAILY_CONFIG_FILE, 27),
+        ({"access_token": "token", "environment": {"app_id": "1111", "secret": "secret"}, "start_date": "2021-04-01"}, 36),
+        ({"access_token": "token", "start_date": "2021-01-01", "environment": {"advertiser_id": "1111"}}, 28),
+        ({"access_token": "token", "environment": {"app_id": "1111", "secret": "secret"}, "start_date": "2021-04-01", "report_granularity": "LIFETIME"}, 15),
+        ({"access_token": "token", "environment": {"app_id": "1111", "secret": "secret"}, "start_date": "2021-04-01", "report_granularity": "DAY"}, 27),
     ],
 )
 def test_source_streams(config, stream_len):
-    with open(config) as f:
-        config = json.load(f)
     streams = SourceTiktokMarketing().streams(config=config)
     assert len(streams) == stream_len
 
