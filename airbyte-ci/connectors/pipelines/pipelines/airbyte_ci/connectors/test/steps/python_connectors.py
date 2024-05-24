@@ -266,7 +266,7 @@ def get_test_steps(context: ConnectorTestContext) -> STEP_TREE:
         [
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.INTEGRATION,
-                step=IntegrationTests(context, secrets=context.get_secrets_for_step_id(CONNECTOR_TEST_STEP_ID.UNIT)),
+                step=IntegrationTests(context, secrets=context.get_secrets_for_step_id(CONNECTOR_TEST_STEP_ID.INTEGRATION)),
                 args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),
