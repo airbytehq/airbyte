@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "1.1.0"
+version = "1.1.1"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "airbyte_cdk-1.1.0-py3-none-any.whl", hash = "sha256:c6ba2800a5a4ea6556e7cd3c771b1f513b8097a4525682694b416dddc5e45862"},
-    {file = "airbyte_cdk-1.1.0.tar.gz", hash = "sha256:09ea58d14cb8ac4a3f283348c220fda70db2137652481e626a7bd729fff0eedc"},
+    {file = "airbyte_cdk-1.1.1-py3-none-any.whl", hash = "sha256:edb8654193499ff3e4741c6bf354953d269c48c147e2f4a6184968e6aaac6302"},
+    {file = "airbyte_cdk-1.1.1.tar.gz", hash = "sha256:96787fb5d3f1ca695d13cbbc0873397b479c7d6a3d3b10634b5a54ab5d6b55ef"},
 ]
 
 [package.dependencies]
@@ -556,13 +556,13 @@ extended-testing = ["jinja2 (>=3,<4)"]
 
 [[package]]
 name = "langsmith"
-version = "0.1.61"
+version = "0.1.63"
 description = "Client library to connect to the LangSmith LLM Tracing and Evaluation Platform."
 optional = false
 python-versions = "<4.0,>=3.8.1"
 files = [
-    {file = "langsmith-0.1.61-py3-none-any.whl", hash = "sha256:96f634342e4eb88b172a5a7449456b1e6d4b4cd088e9f21ef9b1ccb5eee6b5d7"},
-    {file = "langsmith-0.1.61.tar.gz", hash = "sha256:71049879cfa0f9fafe624123da7ecf25e992bc2879be9a7a7e288894e444f599"},
+    {file = "langsmith-0.1.63-py3-none-any.whl", hash = "sha256:7810afdf5e3f3b472fc581a29371fb96cd843dde2149e048d1b9610325159d1e"},
+    {file = "langsmith-0.1.63.tar.gz", hash = "sha256:a609405b52f6f54df442a142cbf19ab38662d54e532f96028b4c546434d4afdf"},
 ]
 
 [package.dependencies]
@@ -1163,13 +1163,13 @@ files = [
 
 [[package]]
 name = "typing-extensions"
-version = "4.11.0"
+version = "4.12.0"
 description = "Backported and Experimental Type Hints for Python 3.8+"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "typing_extensions-4.11.0-py3-none-any.whl", hash = "sha256:c1f94d72897edaf4ce775bb7558d5b79d8126906a14ea5ed1635921406c0387a"},
-    {file = "typing_extensions-4.11.0.tar.gz", hash = "sha256:83f085bd5ca59c80295fc2a82ab5dac679cbe02b9f33f7d83af68e241bea51b0"},
+    {file = "typing_extensions-4.12.0-py3-none-any.whl", hash = "sha256:b349c66bea9016ac22978d800cfff206d5f9816951f12a7d0ec5578b0a819594"},
+    {file = "typing_extensions-4.12.0.tar.gz", hash = "sha256:8cbcdc8606ebcb0d95453ad7dc5065e6237b6aa230a31e81d0f440c30fed5fd8"},
 ]
 
 [[package]]
