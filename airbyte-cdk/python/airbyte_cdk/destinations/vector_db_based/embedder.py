@@ -232,7 +232,6 @@ class FromFieldEmbedder(Embedder):
     def embedding_dimensions(self) -> int:
         return self.config.dimensions
 
-
 embedder_map = {
     "openai": OpenAIEmbedder,
     "cohere": CohereEmbedder,
