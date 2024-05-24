@@ -144,7 +144,7 @@ internal class TestStreamingJdbcDatabase {
         // This check assumes that FetchSizeConstants.TARGET_BUFFER_BYTE_SIZE = 200 MB.
         // Update this check if the buffer size constant is changed.
         Assertions.assertEquals(2, fetchSizes.size)
-        val sortedSizes = fetchSizes.stream().sorted().toList()
+        val sortedSizes = fetchSizes.sorted()
         Assertions.assertTrue(sortedSizes[0] < FetchSizeConstants.INITIAL_SAMPLE_SIZE)
         Assertions.assertEquals(FetchSizeConstants.INITIAL_SAMPLE_SIZE, sortedSizes[1])
     }

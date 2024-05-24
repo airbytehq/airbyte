@@ -1,18 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
-java {
-    // TODO: rewrite code to avoid javac wornings in the first place
-    compileJava {
-        options.compilerArgs += "-Xlint:-deprecation,-try,-rawtypes,-overloads,-this-escape"
-    }
-    compileTestJava {
-        options.compilerArgs += "-Xlint:-try,-divzero,-cast"
-    }
-    compileTestFixturesJava {
-        options.compilerArgs += "-Xlint:-cast,-deprecation"
-    }
-}
+
 
 compileTestFixturesKotlin {
     compilerOptions {
@@ -37,18 +26,6 @@ compileTestKotlin {
         tasks.matching { it.name == 'generate' }
     }
 }
-
-compileKotlin {
-    compilerOptions {
-        jvmTarget = JvmTarget.JVM_21
-        languageVersion = KotlinVersion.KOTLIN_1_9
-        freeCompilerArgs = ["-Xjvm-default=all"]
-    }
-    dependsOn {
-        tasks.matching { it.name == 'generate' }
-    }
-}
-
 
 dependencies {
 
