@@ -14,7 +14,7 @@ After building and testing your connector, you’ll need to publish it. This mak
 
 If you want to contribute what you’ve built to the catalog of publicly available connectors, follow the steps provided in the [contribution guide for submitting new connectors](../contributing-to-airbyte/submit-new-connector.md). 
 
-### Connector Development Options
+### Connector development options
 | Tool                   | Description                                                                                                                                                                                                      |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [Connector Builder](./connector-builder-ui/overview.md)           | We recommend Connector Builder for developing a connector for an API source. If you’re using Airbyte Cloud, no local developer environment is required to create a new connection with the Connector Builder because you configure it directly in the Airbyte web UI. This tool guides you through creating and testing a connection. Refer to our [tutorial](./connector-builder-ui/tutorial.mdx) on the Connector Builder to guide you through the basics.  |
