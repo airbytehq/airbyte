@@ -52,6 +52,6 @@
     },
     "average_ecpi": {
       "type": ["null", "number"]
-    },
+    }
   }
 }
