@@ -1,0 +1,26 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.2"
+name = "destination-sqlite"
+description = "Destination implementation for Sqlite."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/destinations/sqlite"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "destination_sqlite"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "==0.1.72"
+
+[tool.poetry.scripts]
+destination-sqlite = "destination_sqlite.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^6.1"
