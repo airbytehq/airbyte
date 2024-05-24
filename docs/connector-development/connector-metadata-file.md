@@ -186,8 +186,8 @@ Each list entry can also declare a `testSecrets` object which will enable our CI
 
 ### The `testSecrets` object
 The `testSecrets` object has three properties:
-*  `name` (required `string`): it's the name of the secret in the secret store.
-* `secretStore` (required `secretStore` object): It's where the secret is stored (more details on the object structure below). 
+*  `name` (required `string`): The name of the secret in the secret store.
+* `secretStore` (required `secretStore` object): Where the secret is stored (more details on the object structure below). 
 * `fileName` (optional `string`): The name of the file in which our CI will persist the secret (inside the connector's `secrets` directory).
 
 **If you are a community contributor please note that addition of a new secret to our secret store requires manual intervention from an Airbyter. Please reach out to your PR reviewers if you want to add a test secret to our CI.**
