@@ -837,7 +837,7 @@ def _create_page(response_body):
             )
             * 10,
             [{"ABC": 0}, {"AED": 1}],
-            [call({}, {}, None)],
+            [call({}, {})],
         ),
         (
             "test_read_manifest_with_added_fields",
@@ -906,7 +906,7 @@ def _create_page(response_body):
             )
             * 10,
             [{"ABC": 0, "added_field_key": "added_field_value"}, {"AED": 1, "added_field_key": "added_field_value"}],
-            [call({}, {}, None)],
+            [call({}, {})],
         ),
         (
             "test_read_with_pagination_no_partitions",
@@ -980,7 +980,7 @@ def _create_page(response_body):
             )
             * 10,
             [{"ABC": 0}, {"AED": 1}, {"USD": 2}],
-            [call({}, {}, None), call({}, {}, {"next_page_token": "next"})],
+            [call({}, {}), call({"next_page_token": "next"}, {"next_page_token": "next"})],
         ),
         (
             "test_no_pagination_with_partition_router",
