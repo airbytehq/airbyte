@@ -250,7 +250,7 @@ The command produces the private key in PEM format and the public key remains in
 
 ## Limitations & Troubleshooting
 
-To see connector limitations, or troubleshoot your Postgres connector, see more [in our Postgres troubleshooting guide](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting).
+To see connector limitations, or troubleshoot your Postgres connector, see more [in our Postgres troubleshooting guide](/integrations/sources/postgres/postgres-troubleshooting).
 
 ## Data type mapping
 
