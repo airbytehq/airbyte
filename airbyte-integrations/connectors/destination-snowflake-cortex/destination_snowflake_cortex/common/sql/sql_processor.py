@@ -30,7 +30,6 @@ from sqlalchemy import (
 from sqlalchemy.sql.elements import TextClause
 
 from airbyte import exceptions as exc
-from airbyte._future_cdk.record_processor import RecordProcessorBase
 from airbyte._future_cdk.state_writers import StdOutStateWriter
 from airbyte._util.name_normalizers import LowerCaseNormalizer
 from airbyte.constants import (
@@ -42,6 +41,8 @@ from airbyte.constants import (
 from airbyte.progress import progress
 from airbyte.strategies import WriteStrategy
 from airbyte.types import SQLTypeConverter
+
+from destination_snowflake_cortex.common.destinatins.record_processor import RecordProcessorBase
 
 
 if TYPE_CHECKING:
