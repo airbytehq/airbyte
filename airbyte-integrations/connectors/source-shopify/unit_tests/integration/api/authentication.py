@@ -71,7 +71,7 @@ _ALL_SCOPES = [
 
 def set_up_shop(http_mocker: HttpMocker, shop_name: str) -> None:
     http_mocker.get(
-        HttpRequest(f"https://{shop_name}.myshopify.com/admin/api/2023-07/shop.json", query_params=ANY_QUERY_PARAMS),
+        HttpRequest(f"https://{shop_name}.myshopify.com/admin/api/2024-04/shop.json", query_params=ANY_QUERY_PARAMS),
         HttpResponse(json.dumps(find_template("shop", __file__)), status_code=200),
     )
 
