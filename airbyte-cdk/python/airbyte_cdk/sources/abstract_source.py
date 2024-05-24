@@ -216,19 +216,14 @@ class AbstractSource(Source, ABC):
             stream_instance.state = stream_state  # type: ignore # we check that state in the dir(stream_instance)
             logger.info(f"Setting state of {self.name} stream to {stream_state}")
 
-        # Successful resumable full refresh streams emit a sentinel value to indicate that it should be skipped on subsequent
-        # attempts. Full refresh stream state is cleared in between jobs so this is never present on the first attempt
-        if stream_state == {"__ab_full_refresh_sync_complete": True}:
-            record_iterator = iter([])
-        else:
-            record_iterator = stream_instance.read(
-                configured_stream,
-                logger,
-                self._slice_logger,
-                stream_state,
-                state_manager,
-                internal_config,
-            )
+        record_iterator = stream_instance.read(
+            configured_stream,
+            logger,
+            self._slice_logger,
+            stream_state,
+            state_manager,
+            internal_config,
+        )
 
         record_counter = 0
         logger.info(f"Syncing stream: {stream_name} ")

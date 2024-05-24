@@ -126,6 +126,7 @@ def test_cursor_based_checkpoint_reader_incremental():
 def test_cursor_based_checkpoint_reader_resumable_full_refresh():
     expected_slices = [
         StreamSlice(cursor_slice={}, partition={}),
+        StreamSlice(cursor_slice={"next_page_token": 2}, partition={}),  # The reader calls select_state() on first stream slice retrieved
         StreamSlice(cursor_slice={"next_page_token": 2}, partition={}),
         StreamSlice(cursor_slice={"next_page_token": 3}, partition={}),
         StreamSlice(cursor_slice={"next_page_token": 4}, partition={}),
@@ -146,9 +147,9 @@ def test_cursor_based_checkpoint_reader_resumable_full_refresh():
     assert checkpoint_reader.next() == expected_slices[0]
     actual_state = checkpoint_reader.get_checkpoint()
     assert actual_state == expected_stream_state
-    assert checkpoint_reader.next() == expected_slices[1]
     assert checkpoint_reader.next() == expected_slices[2]
     assert checkpoint_reader.next() == expected_slices[3]
+    assert checkpoint_reader.next() == expected_slices[4]
     finished = checkpoint_reader.next()
     assert finished is None
 
@@ -174,6 +175,7 @@ def test_cursor_based_checkpoint_reader_resumable_full_refresh_parents():
         StreamSlice(cursor_slice={"start_date": "2024-02-01", "end_date": "2024-03-01"}, partition={}),
     ]
     rfr_cursor.select_state.side_effect = [
+        StreamSlice(cursor_slice={"next_page_token": 2}, partition={}),  # Accounts for the first invocation when getting the first element
         StreamSlice(cursor_slice={"next_page_token": 2}, partition={}),
         StreamSlice(cursor_slice={"next_page_token": 3}, partition={}),
         StreamSlice(cursor_slice={"__ab_full_refresh_sync_complete": True}, partition={}),

@@ -1522,6 +1522,7 @@ class TestResumableFullRefreshRead:
         expected = _fix_emitted_at(
             [
                 _as_stream_status("s1", AirbyteStreamStatus.STARTED),
+                _as_state("s1", {"__ab_full_refresh_sync_complete": True}),
                 _as_stream_status("s1", AirbyteStreamStatus.COMPLETE),
                 _as_stream_status("s2", AirbyteStreamStatus.STARTED),
                 _as_stream_status("s2", AirbyteStreamStatus.RUNNING),
