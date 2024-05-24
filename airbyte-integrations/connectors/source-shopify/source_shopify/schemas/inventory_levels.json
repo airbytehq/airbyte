@@ -30,6 +30,31 @@
     "shop_url": {
       "description": "The URL of the shop where the inventory belongs.",
       "type": ["null", "string"]
+    },
+    "quantities": {
+      "description": "The quantities of items available for sale in the inventory.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "quantity": {
+            "type": ["null", "integer"]
+          },
+          "updatedAt": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "admin_graphql_api_id": {
+            "type": ["null", "string"]
+          }
+        }
+      }
     }
   }
 }
