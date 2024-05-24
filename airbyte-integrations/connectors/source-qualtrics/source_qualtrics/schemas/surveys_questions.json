@@ -164,6 +164,12 @@
           }
         }
       }
+    },
+    "survey_id": {
+      "type": [
+        "string",
+        "null"
+      ]
     }
   }
 }

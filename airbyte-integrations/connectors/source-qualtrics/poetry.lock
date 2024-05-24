@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "0.89.0"
+version = "0.90.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "airbyte_cdk-0.89.0-py3-none-any.whl", hash = "sha256:6a17ad7c0469d0800b900e8799a34b9de8268dcbc7779e514fa5df64c2820d1b"},
-    {file = "airbyte_cdk-0.89.0.tar.gz", hash = "sha256:7ac2c7ec4519255ce3fa5a62d72c1f223f71668e3cc2e1b30daa8875ff558c46"},
+    {file = "airbyte_cdk-0.90.0-py3-none-any.whl", hash = "sha256:bd0aa5843cdc4901f2e482f0e86695ca4e6db83b65c5017799255dd20535cf56"},
+    {file = "airbyte_cdk-0.90.0.tar.gz", hash = "sha256:25cefc010718bada5cce3f87e7ae93068630732c0d34ce5145f8ddf7457d4d3c"},
 ]
 
 [package.dependencies]
@@ -42,13 +42,13 @@ vector-db-based = ["cohere (==4.21)", "langchain (==0.1.16)", "openai[embeddings
 
 [[package]]
 name = "airbyte-protocol-models"
-version = "0.10.0"
+version = "0.11.0"
 description = "Declares the Airbyte Protocol."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "airbyte_protocol_models-0.10.0-py3-none-any.whl", hash = "sha256:84447b00492193d2852e90898b56c0eeb8387a7cdb0b033860a606cee30451be"},
-    {file = "airbyte_protocol_models-0.10.0.tar.gz", hash = "sha256:03835e75104ca6feb82fa86a69afa5e970a7ddf8fd6c2d4494ff4b5a64e05c07"},
+    {file = "airbyte_protocol_models-0.11.0-py3-none-any.whl", hash = "sha256:2157757c1af8c13e471ab6a0304fd2f9a2a6af8cc9173937be1348a9553f7c32"},
+    {file = "airbyte_protocol_models-0.11.0.tar.gz", hash = "sha256:1c7e46251b0d5a292b4aa382df24f415ac2a2a2b4719361b3c0f76368a043c23"},
 ]
 
 [package.dependencies]

@@ -64,6 +64,12 @@ definitions:
     name: "surveys_questions"
     $parameters:
       path: "survey-definitions/{{ stream_partition.id }}/questions"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - survey_id
+            value: "{{ stream_partition.id }}"
     retriever:
       type: SimpleRetriever
       record_selector:
