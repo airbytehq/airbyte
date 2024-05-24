@@ -39,7 +39,7 @@ class WaitUntilTimeFromHeaderBackoffStrategy(BackoffStrategy):
         if not isinstance(self.min_wait, InterpolatedString):
             self.min_wait = InterpolatedString.create(str(self.min_wait), parameters=parameters)
 
-    def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
+    def backoff_time(self, response: requests.Response, attempt_count: int) -> Optional[float]:
         now = time.time()
         header = self.header.eval(self.config)  # type: ignore # header is always cast to an interpolated string
         if self.regex:
