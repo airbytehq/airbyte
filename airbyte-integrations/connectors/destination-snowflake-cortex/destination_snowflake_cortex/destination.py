@@ -3,9 +3,9 @@
 #
 
 
+from logging import Logger
 from typing import Any, Iterable, Mapping, Optional
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.destinations.vector_db_based.embedder import Embedder, create_from_config
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
@@ -15,9 +15,9 @@ from airbyte_cdk.models import (
     AirbyteMessage,
     ConfiguredAirbyteCatalog,
     ConnectorSpecification,
+    DestinationSyncMode,
     Status,
 )
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 
 from destination_snowflake_cortex.config import ConfigModel
 from destination_snowflake_cortex.indexer import SnowflakeCortexIndexer
@@ -59,7 +59,8 @@ class DestinationSnowflakeCortex(Destination):
         )
         yield from writer.write(configured_catalog, input_messages)
 
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+        _ = logger  # Unused
         try:
             parsed_config = ConfigModel.parse_obj(config)
             self._init_indexer(parsed_config)

@@ -4,11 +4,15 @@
 from __future__ import annotations
 
 import copy
+import tempfile
 import uuid
+from pathlib import Path
+from tempfile import tempdir
 from typing import TYPE_CHECKING, Any, Optional
 
 import dpath.util
 from airbyte._processors.sql.snowflake import SnowflakeSqlProcessor
+from airbyte.secrets import SecretString
 from airbyte.strategies import WriteStrategy
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.models import (
@@ -22,9 +26,12 @@ from airbyte_cdk.models import (
     Type,
 )
 
+from destination_snowflake_cortex.common import catalog
+from destination_snowflake_cortex.common.catalog.catalog_providers import CatalogProvider
 from destination_snowflake_cortex.config import SnowflakeCortexIndexingModel
 from destination_snowflake_cortex.cortex_processor import (
     SnowflakeCortexConfig,
+    SnowflakeCortexSqlProcessor,
 )
 from destination_snowflake_cortex.globals import (
     CHUNK_ID_COLUMN,
@@ -55,12 +62,12 @@ class SnowflakeCortexIndexer(Indexer):
             warehouse=config.warehouse,
             database=config.database,
             username=config.username,
-            password=config.credentials.password,
+            password=SecretString(config.credentials.password),
             schema_name=config.default_schema,
             vector_length=embedding_dimensions,
         )
         self.embedding_dimensions = embedding_dimensions
-        self.catalog = configured_catalog
+        self.catalog: ConfiguredAirbyteCatalog = configured_catalog
         self._init_db_connection()
 
     def _init_db_connection(self):
@@ -68,7 +75,12 @@ class SnowflakeCortexIndexer(Indexer):
         Initialize default snowflake connection for checking the connection. We are not initializing the cortex
         process here because that needs a catalog.
         """
-        self.default_processor = SnowflakeSqlProcessor(cache=self.cache)
+        self.default_processor = SnowflakeSqlProcessor(
+            sql_config=self.sql_config,
+            catalog_provider=CatalogProvider(configured_catalog=catalog),
+            temp_file_cleanup=True,
+            temp_dir=Path(tempfile.mkdtemp()),
+        )
 
     def _get_airbyte_messages_from_chunks(
         self,
@@ -172,28 +184,26 @@ class SnowflakeCortexIndexer(Indexer):
                     return WriteStrategy.MERGE
         return WriteStrategy.AUTO
 
-    # TODO: Fix this:
-    # def index(self, document_chunks: Iterable[Any], namespace: str, stream: str):
-    #     cortex_processor.process_airbyte_messages(airbyte_messages, self.get_write_strategy(stream))
-    #     # get list of airbyte messages from the document chunks
-    #     airbyte_messages = self._get_airbyte_messages_from_chunks(document_chunks)
-    #     # todo: remove state messages and see if things still work
-    #     airbyte_messages.append(self._create_state_message(stream, namespace, {}))
+    def index(self, document_chunks: Iterable[Any], namespace: str, stream: str):
+        # get list of airbyte messages from the document chunks
+        airbyte_messages = self._get_airbyte_messages_from_chunks(document_chunks)
+        # todo: remove state messages and see if things still work
+        airbyte_messages.append(self._create_state_message(stream, namespace, {}))
 
-    #     # update catalog to match all columns in the airbyte messages
-    #     if airbyte_messages is not None and len(airbyte_messages) > 0:
-    #         updated_catalog = self._get_updated_catalog()
-    #         cortex_processor = SnowflakeCortexSqlProcessor(
-    #             sql_config=self.sql_config,
-    #             catalog_provider=updated_catalog,
-    #             stream_names=[stream],
-    #         )
-    #         cortex_processor.process_airbyte_messages(
-    #             messages=airbyte_messages,
-    #             write_strategy=self.get_write_strategy(
-    #                 stream,
-    #             ),
-    #         )
+        # update catalog to match all columns in the airbyte messages
+        if airbyte_messages is not None and len(airbyte_messages) > 0:
+            updated_catalog = self._get_updated_catalog()
+            cortex_processor = SnowflakeCortexSqlProcessor(
+                sql_config=self.sql_config,
+                catalog_provider=updated_catalog,
+                stream_names=[stream],
+            )
+            cortex_processor.process_airbyte_messages(
+                messages=airbyte_messages,
+                write_strategy=self.get_write_strategy(
+                    stream,
+                ),
+            )
 
     def delete(self, delete_ids: list[str], namespace: str, stream: str):
         # this delete is specific to vector stores, hence not implemented here

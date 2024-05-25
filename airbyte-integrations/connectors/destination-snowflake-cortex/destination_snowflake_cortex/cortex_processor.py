@@ -152,7 +152,17 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
         ]
         files_list = ", ".join([f"'{f.name}'" for f in files])
         columns_list_str: str = indent("\n, ".join(columns_list), " " * 12)
-        variant_cols_str: str = ("\n" + " " * 21 + ", ").join([f"$1:{col}" for col in columns_list])
+
+        # following block is different from SnowflakeSqlProcessor
+        vector_suffix = f"::Vector(Float, {self.sql_config.vector_length})"
+        variant_cols_str: str = ("\n" + " " * 21 + ", ").join([
+            f"$1:{self.normalizer.normalize(col)}{vector_suffix if 'embedding' in col else ''}"
+            for col in columns_list
+        ])
+        if self.sql_config.cortex_embedding_model:
+            # WARNING: This is untested and may not work as expected.
+            variant_cols_str += f"snowflake.cortex.embed('{self.sql_config.cortex_embedding_model}', $1:{DOCUMENT_CONTENT_COLUMN})"
+
         copy_statement = dedent(
             f"""
             COPY INTO {temp_table_name}
@@ -188,62 +198,6 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
             MULTI_STATEMENT_COUNT = 0
             """
         )
-
-    @overrides
-    def _write_files_to_new_table(
-        self,
-        files: list[Path],
-        stream_name: str,
-        batch_id: str,
-    ) -> str:
-        """Write files to a new table."""
-        temp_table_name = self._create_table_for_loading(
-            stream_name=stream_name,
-            batch_id=batch_id,
-        )
-        internal_sf_stage_name = f"@%{temp_table_name}"
-
-        def path_str(path: Path) -> str:
-            return str(path.absolute()).replace("\\", "\\\\")
-
-        put_files_statements = "\n".join([
-            f"PUT 'file://{path_str(file_path)}' {internal_sf_stage_name};" for file_path in files
-        ])
-        self._execute_sql(put_files_statements)
-        columns_list = [
-            self._quote_identifier(c)
-            for c in list(self._get_sql_column_definitions(stream_name).keys())
-        ]
-        files_list = ", ".join([f"'{f.name}'" for f in files])
-        columns_list_str: str = indent("\n, ".join(columns_list), " " * 12)
-
-        # following block is different from SnowflakeSqlProcessor
-        vector_suffix = f"::Vector(Float, {self.sql_config.vector_length})"
-        variant_cols_str: str = ("\n" + " " * 21 + ", ").join([
-            f"$1:{self.normalizer.normalize(col)}{vector_suffix if 'embedding' in col else ''}"
-            for col in columns_list
-        ])
-        if self.sql_config.cortex_embedding_model:
-            # WARNING: This is untested and may not work as expected.
-            variant_cols_str += f"snowflake.cortex.embed('{self.sql_config.cortex_embedding_model}', $1:{DOCUMENT_CONTENT_COLUMN})"
-
-        copy_statement = dedent(
-            f"""
-            COPY INTO {temp_table_name}
-            (
-                {columns_list_str}
-            )
-            FROM (
-                SELECT {variant_cols_str}
-                FROM {internal_sf_stage_name}
-            )
-            FILES = ( {files_list} )
-            FILE_FORMAT = ( TYPE = JSON )
-            ;
-            """
-        )
-        self._execute_sql(copy_statement)
-        return temp_table_name
 
     def _emulated_merge_temp_table_to_final_table(
         self,
