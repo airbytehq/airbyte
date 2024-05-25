@@ -12,7 +12,7 @@ The first step in creating a new connector is to choose the tools you’ll use t
 
 After building and testing your connector, you’ll need to publish it. This makes it available in your workspace. At that point, you can use the connector you’ve built to move some data! 
 
-If you want to contribute what you’ve built to the catalog of publicly available connectors, follow the steps provided in the [contribution guide for submitting new connectors](../contributing-to-airbyte/submit-new-connector.md). 
+If you want to contribute what you’ve built to the Airbyte Cloud and OSS connector catalog, follow the steps provided in the [contribution guide for submitting new connectors](../contributing-to-airbyte/submit-new-connector.md). 
 
 ### Connector development options
 | Tool                   | Description                                                                                                                                                                                                      |
