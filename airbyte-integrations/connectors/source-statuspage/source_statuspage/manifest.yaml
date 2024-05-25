@@ -410,7 +410,7 @@ spec:
   type: Spec
   connection_specification:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: https://json-schema.org/draft-07/schema#
     required:
       - api_key
     properties:
@@ -437,7 +437,7 @@ metadata:
 schemas:
   pages:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     description: Get a page
     properties:
@@ -669,7 +669,7 @@ schemas:
           - boolean
   subscribers:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     description: Get an incident subscriber
     properties:
@@ -708,7 +708,7 @@ schemas:
           - "null"
           - string
         description: The URL where a webhook subscriber elects to receive updates.
-        example: http://example.com/
+        example: https://example.com/
       id:
         type:
           - "null"
@@ -780,13 +780,13 @@ schemas:
         example: Atlassian
   subscribers_histogram_by_state:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     description: Get a histogram of subscribers by type and then state
     properties:
       email:
         type: object
-        $schema: http://json-schema.org/schema#
+        $schema: https://json-schema.org/schema#
         properties:
           active:
             type: integer
@@ -806,7 +806,7 @@ schemas:
             format: int32
       integration_partner:
         type: object
-        $schema: http://json-schema.org/schema#
+        $schema: https://json-schema.org/schema#
         properties:
           active:
             type: integer
@@ -826,7 +826,7 @@ schemas:
             format: int32
       slack:
         type: object
-        $schema: http://json-schema.org/schema#
+        $schema: https://json-schema.org/schema#
         properties:
           active:
             type: integer
@@ -846,7 +846,7 @@ schemas:
             format: int32
       sms:
         type: object
-        $schema: http://json-schema.org/schema#
+        $schema: https://json-schema.org/schema#
         properties:
           active:
             type: integer
@@ -866,7 +866,7 @@ schemas:
             format: int32
       webhook:
         type: object
-        $schema: http://json-schema.org/schema#
+        $schema: https://json-schema.org/schema#
         properties:
           active:
             type: integer
@@ -886,7 +886,7 @@ schemas:
             format: int32
   incident_templates:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     description: Get a list of templates
     properties:
@@ -902,7 +902,7 @@ schemas:
         description: Affected components
         items:
           type: object
-          $schema: http://json-schema.org/schema#
+          $schema: https://json-schema.org/schema#
           description: Add page access groups to a component
           properties:
             automation_email:
@@ -1031,7 +1031,7 @@ schemas:
           selecting this template
   incidents:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     description: Get an incident
     properties:
@@ -1074,7 +1074,7 @@ schemas:
         description: Incident components
         items:
           type: object
-          $schema: http://json-schema.org/schema#
+          $schema: https://json-schema.org/schema#
           description: Add page access groups to a component
           properties:
             automation_email:
@@ -1189,7 +1189,7 @@ schemas:
         description: The incident updates for incident.
         items:
           type: object
-          $schema: http://json-schema.org/schema#
+          $schema: https://json-schema.org/schema#
           description: Update a previous incident update
           properties:
             affected_components:
@@ -1411,7 +1411,7 @@ schemas:
           - "null"
           - string
         description: Incident Shortlink.
-        example: http://stspg.io/803310a12
+        example: https://stspg.io/803310a12
       status:
         type:
           - "null"
@@ -1439,7 +1439,7 @@ schemas:
         format: date-time
   components:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     description: Add page access groups to a component
     properties:
@@ -1522,7 +1522,7 @@ schemas:
         format: date-time
   metrics:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     description: Create a metric for a metric provider
     properties:
