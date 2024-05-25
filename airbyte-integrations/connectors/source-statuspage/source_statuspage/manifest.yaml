@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /pages
           http_method: GET
           request_headers:
@@ -56,7 +56,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/pages'
+          $ref: "#/schemas/pages"
     subscribers:
       type: DeclarativeStream
       name: subscribers
@@ -65,7 +65,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /pages/{{ stream_slice.page_id }}/subscribers
           http_method: GET
           request_headers:
@@ -108,11 +108,11 @@ definitions:
                 parent_key: id
                 partition_field: page_id
                 stream:
-                  $ref: '#/definitions/streams/pages'
+                  $ref: "#/definitions/streams/pages"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/subscribers'
+          $ref: "#/schemas/subscribers"
     subscribers_histogram_by_state:
       type: DeclarativeStream
       name: subscribers_histogram_by_state
@@ -121,7 +121,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /pages/{{ stream_slice.page_id }}/subscribers/histogram_by_state
           http_method: GET
           request_headers:
@@ -164,11 +164,11 @@ definitions:
                 parent_key: id
                 partition_field: page_id
                 stream:
-                  $ref: '#/definitions/streams/pages'
+                  $ref: "#/definitions/streams/pages"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/subscribers_histogram_by_state'
+          $ref: "#/schemas/subscribers_histogram_by_state"
     incident_templates:
       type: DeclarativeStream
       name: incident_templates
@@ -177,7 +177,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /pages/{{ stream_slice.page_id }}/incident_templates
           http_method: GET
           request_headers:
@@ -220,11 +220,11 @@ definitions:
                 parent_key: id
                 partition_field: page_id
                 stream:
-                  $ref: '#/definitions/streams/pages'
+                  $ref: "#/definitions/streams/pages"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/incident_templates'
+          $ref: "#/schemas/incident_templates"
     incidents:
       type: DeclarativeStream
       name: incidents
@@ -233,7 +233,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /pages/{{ stream_slice.page_id }}/incidents
           http_method: GET
           request_headers:
@@ -276,11 +276,11 @@ definitions:
                 parent_key: id
                 partition_field: page_id
                 stream:
-                  $ref: '#/definitions/streams/pages'
+                  $ref: "#/definitions/streams/pages"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/incidents'
+          $ref: "#/schemas/incidents"
     components:
       type: DeclarativeStream
       name: components
@@ -289,7 +289,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /pages/{{ stream_slice.page_id }}/components
           http_method: GET
           request_headers:
@@ -332,11 +332,11 @@ definitions:
                 parent_key: id
                 partition_field: page_id
                 stream:
-                  $ref: '#/definitions/streams/pages'
+                  $ref: "#/definitions/streams/pages"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/components'
+          $ref: "#/schemas/components"
     metrics:
       type: DeclarativeStream
       name: metrics
@@ -345,7 +345,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /pages/{{ stream_slice.page_id }}/metrics
           http_method: GET
           request_headers:
@@ -388,23 +388,23 @@ definitions:
                 parent_key: id
                 partition_field: page_id
                 stream:
-                  $ref: '#/definitions/streams/pages'
+                  $ref: "#/definitions/streams/pages"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/metrics'
+          $ref: "#/schemas/metrics"
   base_requester:
     type: HttpRequester
     url_base: https://api.statuspage.io/v1
 
 streams:
-  - $ref: '#/definitions/streams/pages'
-  - $ref: '#/definitions/streams/subscribers'
-  - $ref: '#/definitions/streams/subscribers_histogram_by_state'
-  - $ref: '#/definitions/streams/incident_templates'
-  - $ref: '#/definitions/streams/incidents'
-  - $ref: '#/definitions/streams/components'
-  - $ref: '#/definitions/streams/metrics'
+  - $ref: "#/definitions/streams/pages"
+  - $ref: "#/definitions/streams/subscribers"
+  - $ref: "#/definitions/streams/subscribers_histogram_by_state"
+  - $ref: "#/definitions/streams/incident_templates"
+  - $ref: "#/definitions/streams/incidents"
+  - $ref: "#/definitions/streams/components"
+  - $ref: "#/definitions/streams/metrics"
 
 spec:
   type: Spec
@@ -446,168 +446,168 @@ schemas:
         format: float
       allow_email_subscribers:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Can your users choose to receive notifications via email
       allow_incident_subscribers:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Can your users subscribe to notifications for a single incident
       allow_page_subscribers:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Can your users subscribe to all notifications on the page
       allow_rss_atom_feeds:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: >-
           Can your users choose to access incident feeds via RSS/Atom (not
           functional on Audience-Specific pages)
       allow_sms_subscribers:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Can your users choose to receive notifications via SMS
       allow_webhook_subscribers:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Can your users choose to receive notifications via Webhooks
       branding:
         type:
-          - 'null'
+          - "null"
           - string
         description: The main template your statuspage will use
       city:
         type:
-          - 'null'
+          - "null"
           - string
       country:
         type:
-          - 'null'
+          - "null"
           - string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Timestamp the record was created
         format: date-time
       css_blues:
         type:
-          - 'null'
+          - "null"
           - string
         description: CSS Color
       css_body_background_color:
         type:
-          - 'null'
+          - "null"
           - string
         description: CSS Color
       css_border_color:
         type:
-          - 'null'
+          - "null"
           - string
         description: CSS Color
       css_font_color:
         type:
-          - 'null'
+          - "null"
           - string
         description: CSS Color
       css_graph_color:
         type:
-          - 'null'
+          - "null"
           - string
         description: CSS Color
       css_greens:
         type:
-          - 'null'
+          - "null"
           - string
         description: CSS Color
       css_light_font_color:
         type:
-          - 'null'
+          - "null"
           - string
         description: CSS Color
       css_link_color:
         type:
-          - 'null'
+          - "null"
           - string
         description: CSS Color
       css_no_data:
         type:
-          - 'null'
+          - "null"
           - string
         description: CSS Color
       css_oranges:
         type:
-          - 'null'
+          - "null"
           - string
         description: CSS Color
       css_reds:
         type:
-          - 'null'
+          - "null"
           - string
         description: CSS Color
       css_yellows:
         type:
-          - 'null'
+          - "null"
           - string
         description: CSS Color
       domain:
         type:
-          - 'null'
+          - "null"
           - string
         description: CNAME alias for your status page
         example: status.mycompany.com
       email_logo:
         type:
-          - 'null'
+          - "null"
           - object
       favicon_logo:
         type:
-          - 'null'
+          - "null"
           - object
       headline:
         type:
-          - 'null'
+          - "null"
           - string
       hero_cover:
         type:
-          - 'null'
+          - "null"
           - object
       hidden_from_search:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Should your page hide itself from search engines
       id:
         type:
-          - 'null'
+          - "null"
           - string
         description: Page identifier
         example: j7m9j8brdt3h
       ip_restrictions:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Name of your page to be displayed
         example: My Company Status
       notifications_email_footer:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           Allows you to customize the footer appearing on your notification
           emails.  Accepts Markdown for formatting
       notifications_from_email:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           Allows you to customize the email address your page notifications come
@@ -615,49 +615,49 @@ schemas:
         example: no-reply@status.mycompany.com
       page_description:
         type:
-          - 'null'
+          - "null"
           - string
       state:
         type:
-          - 'null'
+          - "null"
           - string
       subdomain:
         type:
-          - 'null'
+          - "null"
           - string
         description: Subdomain at which to access your status page
         example: your-subdomain.statuspage.io
       support_url:
         type:
-          - 'null'
+          - "null"
           - string
       time_zone:
         type:
-          - 'null'
+          - "null"
           - string
         description: Timezone configured for your page
         example: UTC
       transactional_logo:
         type:
-          - 'null'
+          - "null"
           - object
       twitter_logo:
         type:
-          - 'null'
+          - "null"
           - object
       twitter_username:
         type:
-          - 'null'
+          - "null"
           - string
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Timestamp the record was last updated
         format: date-time
       url:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           Website of your page.  Clicking on your statuspage image will link
@@ -665,7 +665,7 @@ schemas:
         example: https://www.mycompany.com
       viewers_must_be_team_members:
         type:
-          - 'null'
+          - "null"
           - boolean
   subscribers:
     type: object
@@ -675,7 +675,7 @@ schemas:
     properties:
       components:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           The components for which the subscriber has elected to receive
@@ -684,12 +684,12 @@ schemas:
           - vp5sp4b1rl2l
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       display_phone_number:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           A formatted version of the phone_number and phone_country pair, nicely
@@ -697,7 +697,7 @@ schemas:
         example: +1 (202) 555-0105
       email:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           The email address to use to contact the subscriber. Used for Email and
@@ -705,31 +705,31 @@ schemas:
         example: foo@example2.com
       endpoint:
         type:
-          - 'null'
+          - "null"
           - string
         description: The URL where a webhook subscriber elects to receive updates.
         example: http://example.com/
       id:
         type:
-          - 'null'
+          - "null"
           - string
         description: Subscriber Identifier
         example: x2wy916b0s4l
       mode:
         type:
-          - 'null'
+          - "null"
           - string
         description: The communication mode of the subscriber.
         example: email
       obfuscated_channel_name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Obfuscated slack channel name
-        example: '#*******an'
+        example: "#*******an"
       page_access_user_id:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           The Page Access user this subscriber belongs to (only for
@@ -737,7 +737,7 @@ schemas:
         example: pwq31gns60j3
       phone_country:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           The two-character country code representing the country of which the
@@ -745,13 +745,13 @@ schemas:
         example: US
       phone_number:
         type:
-          - 'null'
+          - "null"
           - string
         description: The phone number used to contact an SMS subscriber
         example: 202-555-0105
       purge_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           The timestamp when a quarantined subscriber will be purged
@@ -759,7 +759,7 @@ schemas:
         format: date-time
       quarantined_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           The timestamp when the subscriber was quarantined due to an issue
@@ -767,14 +767,14 @@ schemas:
         format: date-time
       skip_confirmation_notification:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: >-
           If this is true, do not notify the user with changes to their
           subscription.
       workspace_name:
         type:
-          - 'null'
+          - "null"
           - string
         description: The workspace name of the slack subscriber.
         example: Atlassian
@@ -892,7 +892,7 @@ schemas:
     properties:
       body:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           Body of the incident or maintenance update to be applied when
@@ -907,47 +907,47 @@ schemas:
           properties:
             automation_email:
               type:
-                - 'null'
+                - "null"
                 - string
               description: Requires a special feature flag to be enabled
             created_at:
               type:
-                - 'null'
+                - "null"
                 - string
               format: date-time
             description:
               type:
-                - 'null'
+                - "null"
                 - string
               description: More detailed description for component
             group:
               type:
-                - 'null'
+                - "null"
                 - boolean
               description: Is this component a group
             group_id:
               type:
-                - 'null'
+                - "null"
                 - string
               description: Component Group identifier
             id:
               type:
-                - 'null'
+                - "null"
                 - string
               description: Identifier for component
             name:
               type:
-                - 'null'
+                - "null"
                 - string
               description: Display name for component
             only_show_if_degraded:
               type:
-                - 'null'
+                - "null"
                 - boolean
               description: Requires a special feature flag to be enabled
             page_id:
               type:
-                - 'null'
+                - "null"
                 - string
               description: Page identifier
             position:
@@ -956,18 +956,18 @@ schemas:
               format: int32
             showcase:
               type:
-                - 'null'
+                - "null"
                 - boolean
               description: Should this component be showcased
             start_date:
               type:
-                - 'null'
+                - "null"
                 - string
               description: The date this component started being used
               format: date
             status:
               type:
-                - 'null'
+                - "null"
                 - string
               description: Status of component
               enum:
@@ -976,55 +976,55 @@ schemas:
                 - degraded_performance
                 - partial_outage
                 - major_outage
-                - ''
+                - ""
             updated_at:
               type:
-                - 'null'
+                - "null"
                 - string
               format: date-time
       group_id:
         type:
-          - 'null'
+          - "null"
           - string
         description: Identifier of Template Group this template belongs to
         example: mntdyll6bk4c
       id:
         type:
-          - 'null'
+          - "null"
           - string
         description: Incident Template Identifier
         example: p08qyqtz4fnq
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           Name of the template, as shown in the list on the "Templates" tab of
           the "Incidents" page
       should_send_notifications:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: >-
           Whether the "deliver notifications" checkbox should be selected when
           selecting this template
       should_tweet:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: >-
           Whether the "tweet update" checkbox should be selected when selecting
           this template
       title:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           Title to be applied to the incident or maintenance when selecting this
           template
       update_status:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           The status the incident or maintenance should transition to when
@@ -1043,28 +1043,28 @@ schemas:
             issue_id: value
       auto_transition_deliver_notifications_at_end:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: >-
           Controls whether send notification when scheduled maintenances auto
           transition to completed.
       auto_transition_deliver_notifications_at_start:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: >-
           Controls whether send notification when scheduled maintenances auto
           transition to started.
       auto_transition_to_maintenance_state:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: >-
           Controls whether change components status to under_maintenance once
           scheduled maintenance is in progress.
       auto_transition_to_operational_state:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: >-
           Controls whether change components status to operational once
@@ -1079,47 +1079,47 @@ schemas:
           properties:
             automation_email:
               type:
-                - 'null'
+                - "null"
                 - string
               description: Requires a special feature flag to be enabled
             created_at:
               type:
-                - 'null'
+                - "null"
                 - string
               format: date-time
             description:
               type:
-                - 'null'
+                - "null"
                 - string
               description: More detailed description for component
             group:
               type:
-                - 'null'
+                - "null"
                 - boolean
               description: Is this component a group
             group_id:
               type:
-                - 'null'
+                - "null"
                 - string
               description: Component Group identifier
             id:
               type:
-                - 'null'
+                - "null"
                 - string
               description: Identifier for component
             name:
               type:
-                - 'null'
+                - "null"
                 - string
               description: Display name for component
             only_show_if_degraded:
               type:
-                - 'null'
+                - "null"
                 - boolean
               description: Requires a special feature flag to be enabled
             page_id:
               type:
-                - 'null'
+                - "null"
                 - string
               description: Page identifier
             position:
@@ -1128,18 +1128,18 @@ schemas:
               format: int32
             showcase:
               type:
-                - 'null'
+                - "null"
                 - boolean
               description: Should this component be showcased
             start_date:
               type:
-                - 'null'
+                - "null"
                 - string
               description: The date this component started being used
               format: date
             status:
               type:
-                - 'null'
+                - "null"
                 - string
               description: Status of component
               enum:
@@ -1148,27 +1148,27 @@ schemas:
                 - degraded_performance
                 - partial_outage
                 - major_outage
-                - ''
+                - ""
             updated_at:
               type:
-                - 'null'
+                - "null"
                 - string
               format: date-time
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: The timestamp when the incident was created at.
         format: date-time
       id:
         type:
-          - 'null'
+          - "null"
           - string
         description: Incident Identifier
         example: p31zjtct2jer
       impact:
         type:
-          - 'null'
+          - "null"
           - string
         description: The impact of the incident.
         enum:
@@ -1180,7 +1180,7 @@ schemas:
         example: critical
       impact_override:
         type:
-          - 'null'
+          - "null"
           - object
         description: value to override calculated impact value
         example: minor
@@ -1194,49 +1194,49 @@ schemas:
           properties:
             affected_components:
               type:
-                - 'null'
+                - "null"
                 - array
               description: Affected components associated with the incident update.
             body:
               type:
-                - 'null'
+                - "null"
                 - string
               description: Incident update body.
             created_at:
               type:
-                - 'null'
+                - "null"
                 - string
               description: The timestamp when the incident update was created at.
               format: date-time
             custom_tweet:
               type:
-                - 'null'
+                - "null"
                 - string
               description: An optional customized tweet message for incident postmortem.
             deliver_notifications:
               type:
-                - 'null'
+                - "null"
                 - boolean
               description: Controls whether to delivery notifications.
             display_at:
               type:
-                - 'null'
+                - "null"
                 - string
               description: Timestamp when incident update is happened.
               format: date-time
             id:
               type:
-                - 'null'
+                - "null"
                 - string
               description: Incident Update Identifier.
             incident_id:
               type:
-                - 'null'
+                - "null"
                 - string
               description: Incident Identifier.
             status:
               type:
-                - 'null'
+                - "null"
                 - string
               description: >-
                 The incident status. For realtime incidents, valid values are
@@ -1254,46 +1254,46 @@ schemas:
                 - completed
             tweet_id:
               type:
-                - 'null'
+                - "null"
                 - string
               description: Tweet identifier associated to this incident update.
             twitter_updated_at:
               type:
-                - 'null'
+                - "null"
                 - string
               description: The timestamp when twitter updated at.
               format: date-time
             updated_at:
               type:
-                - 'null'
+                - "null"
                 - string
               description: The timestamp when the incident update is updated.
               format: date-time
             wants_twitter_update:
               type:
-                - 'null'
+                - "null"
                 - boolean
               description: Controls whether to create twitter update.
       monitoring_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: The timestamp when incident entered monitoring state.
         format: date-time
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Incident Name
         example: Data Layer Migration
       page_id:
         type:
-          - 'null'
+          - "null"
           - string
         description: Incident Page Identifier
       postmortem_body:
         type:
-          - 'null'
+          - "null"
           - string
         description: Body of the Postmortem.
         example: >
@@ -1337,84 +1337,84 @@ schemas:
           incident on this status site, and via a blog post.
       postmortem_body_last_updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: The timestamp when the incident postmortem body was last updated at.
         format: date-time
       postmortem_ignored:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Controls whether the incident will have postmortem.
       postmortem_notified_subscribers:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates whether subscribers are already notificed about postmortem.
       postmortem_notified_twitter:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Controls whether to decide if notify postmortem on twitter.
       postmortem_published_at:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: The timestamp when the postmortem was published.
       resolved_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: The timestamp when incident was resolved.
         format: date-time
       scheduled_auto_completed:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: >-
           Controls whether the incident is scheduled to automatically change to
           complete.
       scheduled_auto_in_progress:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: >-
           Controls whether the incident is scheduled to automatically change to
           in progress.
       scheduled_for:
         type:
-          - 'null'
+          - "null"
           - string
         description: The timestamp the incident is scheduled for.
-        example: '2013-05-07T03:00:00.007Z'
+        example: "2013-05-07T03:00:00.007Z"
         format: date-time
       scheduled_remind_prior:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Controls whether to remind subscribers prior to scheduled incidents.
       scheduled_reminded_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: The timestamp when the scheduled incident reminder was sent at.
         format: date-time
       scheduled_until:
         type:
-          - 'null'
+          - "null"
           - string
         description: The timestamp the incident is scheduled until.
-        example: '2013-05-07T06:00:00.007Z'
+        example: "2013-05-07T06:00:00.007Z"
         format: date-time
       shortlink:
         type:
-          - 'null'
+          - "null"
           - string
         description: Incident Shortlink.
         example: http://stspg.io/803310a12
       status:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           The incident status. For realtime incidents, valid values are
@@ -1433,7 +1433,7 @@ schemas:
         example: scheduled
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: The timestamp when the incident was updated at.
         format: date-time
@@ -1445,47 +1445,47 @@ schemas:
     properties:
       automation_email:
         type:
-          - 'null'
+          - "null"
           - string
         description: Requires a special feature flag to be enabled
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       description:
         type:
-          - 'null'
+          - "null"
           - string
         description: More detailed description for component
       group:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Is this component a group
       group_id:
         type:
-          - 'null'
+          - "null"
           - string
         description: Component Group identifier
       id:
         type:
-          - 'null'
+          - "null"
           - string
         description: Identifier for component
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Display name for component
       only_show_if_degraded:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Requires a special feature flag to be enabled
       page_id:
         type:
-          - 'null'
+          - "null"
           - string
         description: Page identifier
       position:
@@ -1494,18 +1494,18 @@ schemas:
         format: int32
       showcase:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Should this component be showcased
       start_date:
         type:
-          - 'null'
+          - "null"
           - string
         description: The date this component started being used
         format: date
       status:
         type:
-          - 'null'
+          - "null"
           - string
         description: Status of component
         enum:
@@ -1514,10 +1514,10 @@ schemas:
           - degraded_performance
           - partial_outage
           - major_outage
-          - ''
+          - ""
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
   metrics:
@@ -1531,11 +1531,11 @@ schemas:
         format: int32
       backfilled:
         type:
-          - 'null'
+          - "null"
           - boolean
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       decimal_places:
@@ -1543,62 +1543,62 @@ schemas:
         format: int32
       display:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Should the metric be displayed
       id:
         type:
-          - 'null'
+          - "null"
           - string
         description: Metric identifier
       last_fetched_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       metric_identifier:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           Metric Display identifier used to look up the metric data from the
           provider
       metrics_provider_id:
         type:
-          - 'null'
+          - "null"
           - string
         description: Metric Provider identifier
       most_recent_data_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Name of metric
       reference_name:
         type:
-          - 'null'
+          - "null"
           - string
       suffix:
         type:
-          - 'null'
+          - "null"
           - string
         description: Suffix to describe the units on the graph
       tooltip_description:
         type:
-          - 'null'
+          - "null"
           - string
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       y_axis_hidden:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Should the values on the y axis be hidden on render
       y_axis_max:
