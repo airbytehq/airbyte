@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - ${company}.hellobaton.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-hellobaton
   registries:
     oss:
       enabled: true
@@ -21,8 +25,17 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/hellobaton
   tags:
-    - language:low-code
+    - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-HELLOBATON__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

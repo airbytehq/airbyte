@@ -3,7 +3,7 @@ repos:
     hooks:
       - id: format-fix-all-on-push
         always_run: true
-        entry: airbyte-ci format fix all
+        entry: airbyte-ci --disable-update-check format fix all
         language: system
         name: Run airbyte-ci format fix on git push (~30s)
         pass_filenames: false

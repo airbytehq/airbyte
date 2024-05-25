@@ -8,18 +8,22 @@ data:
   icon: courier.svg
   license: MIT
   name: Courier
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-courier
   registries:
     cloud:
       enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/courier
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100
-  supportLevel: community
+  supportLevel: archived
 metadataSpecVersion: "1.0"

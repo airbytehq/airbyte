@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - api.serpstat.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-serpstat
   registries:
     oss:
       enabled: true
@@ -18,5 +22,14 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/serpstat
   tags:
-    - language:lowcode
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SERPSTAT__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

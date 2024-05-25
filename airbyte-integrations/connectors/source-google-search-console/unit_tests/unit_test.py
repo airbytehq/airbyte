@@ -231,14 +231,14 @@ def test_check_connection(config_gen, config, mocker, requests_mock):
             lazy_fixture("config"),
             (
                 False,
-                "UnauthorizedOauthError('Unable to connect with privided OAuth credentials. The `access token` or `refresh token` is expired. Please re-authrenticate using valid account credenials.')",
+                "UnauthorizedOauthError('Unable to connect with provided OAuth credentials. The `access token` or `refresh token` is expired. Please re-authrenticate using valid account credenials.')",
             ),
         ),
         (
             lazy_fixture("service_account_config"),
             (
                 False,
-                "UnauthorizedServiceAccountError('Unable to connect with privided Service Account credentials. Make sure the `sevice account crdentials` povided is valid.')",
+                "UnauthorizedServiceAccountError('Unable to connect with provided Service Account credentials. Make sure the `sevice account credentials` provided are valid.')",
             ),
         ),
     ],

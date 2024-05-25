@@ -1,0 +1,31 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "2.5.12"
+name = "source-salesforce"
+description = "Source implementation for Salesforce."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "ELv2"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/salesforce"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_salesforce"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+pandas = "2.2.1"
+airbyte-cdk = "0.88.4"
+
+[tool.poetry.scripts]
+source-salesforce = "source_salesforce.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest-mock = "^3.6"
+pytest = "^6.1"
+pytest-timeout = "^2.2.0"
+requests-mock = "^1.9.3"
+freezegun = "^1.4.0"

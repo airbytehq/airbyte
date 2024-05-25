@@ -15,6 +15,10 @@ data:
   icon: woocommerce.svg
   license: MIT
   name: WooCommerce
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-woocommerce
   registries:
     cloud:
       enabled: true
@@ -23,6 +27,14 @@ data:
   releaseStage: beta
   supportLevel: community
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-WOOCOMMERCE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

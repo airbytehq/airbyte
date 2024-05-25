@@ -8,6 +8,11 @@ data:
   icon: gnews.svg
   license: MIT
   name: GNews
+  remoteRegistries:
+    pypi:
+      enabled: false
+      # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
+      packageName: airbyte-source-gnews
   registries:
     cloud:
       enabled: true
@@ -16,10 +21,19 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/gnews
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-GNEWS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

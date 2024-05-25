@@ -64,6 +64,7 @@ single_jsonl_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -158,6 +159,7 @@ multi_jsonl_with_different_keys_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -269,6 +271,7 @@ multi_jsonl_stream_n_file_exceeds_limit_for_inference = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -380,6 +383,7 @@ multi_jsonl_stream_n_bytes_exceeds_limit_for_inference = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -480,19 +484,14 @@ invalid_jsonl_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
     )
-    .set_expected_records(
-        [
-            {
-                "data": {"col1": "val1", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a.jsonl"},
-                "stream": "stream1",
-            },
-        ]
-    )
+    .set_expected_records([])
     .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_expected_read_error(AirbyteTracedException, "Please check the logged errors for more information.")
     .set_expected_logs(
         {
             "read": [
@@ -571,6 +570,7 @@ jsonl_multi_stream_scenario = (
                     },
                     "name": "stream1",
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                     "source_defined_cursor": True,
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                 },
@@ -591,6 +591,7 @@ jsonl_multi_stream_scenario = (
                     "source_defined_cursor": True,
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 },
             ]
         }
@@ -694,6 +695,7 @@ schemaless_jsonl_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -799,6 +801,7 @@ schemaless_jsonl_multi_stream_scenario = (
                     },
                     "name": "stream1",
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                     "source_defined_cursor": True,
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                 },
@@ -819,6 +822,7 @@ schemaless_jsonl_multi_stream_scenario = (
                     "source_defined_cursor": True,
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 },
             ]
         }
@@ -907,6 +911,7 @@ jsonl_user_input_schema_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }

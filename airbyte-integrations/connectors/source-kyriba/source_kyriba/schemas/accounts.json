@@ -1,461 +1,346 @@
 {
-  "type": "object",
-  "required": [
-    "bank",
-    "branch",
-    "calendar",
-    "code",
-    "company",
-    "countryCode",
-    "currency",
-    "uuid"
-  ],
-  "properties": {
-    "accountCategory1": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": ["null", "string"],
-          "example": "CODE_ID",
-          "description": "Code identifier."
-        },
-        "uuid": {
-          "type": ["null", "string"],
-          "format": "uuid",
-          "example": "123e4567-e89b-12d3-a456-426655440001",
-          "description": "UUID identifier. Has priority over the code"
-        }
-      },
-      "title": "ReferenceModel",
-      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
-    },
-    "accountCategory2": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": ["null", "string"],
-          "example": "CODE_ID",
-          "description": "Code identifier."
-        },
-        "uuid": {
-          "type": ["null", "string"],
-          "format": "uuid",
-          "example": "123e4567-e89b-12d3-a456-426655440001",
-          "description": "UUID identifier. Has priority over the code"
-        }
-      },
-      "title": "ReferenceModel",
-      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
-    },
-    "accountCategory3": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": ["null", "string"],
-          "example": "CODE_ID",
-          "description": "Code identifier."
-        },
-        "uuid": {
-          "type": ["null", "string"],
-          "format": "uuid",
-          "example": "123e4567-e89b-12d3-a456-426655440001",
-          "description": "UUID identifier. Has priority over the code"
-        }
-      },
-      "title": "ReferenceModel",
-      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
-    },
-    "accountCategory4": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": ["null", "string"],
-          "example": "CODE_ID",
-          "description": "Code identifier."
-        },
-        "uuid": {
-          "type": ["null", "string"],
-          "format": "uuid",
-          "example": "123e4567-e89b-12d3-a456-426655440001",
-          "description": "UUID identifier. Has priority over the code"
-        }
-      },
-      "title": "ReferenceModel",
-      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
-    },
-    "accountCategory5": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": ["null", "string"],
-          "example": "CODE_ID",
-          "description": "Code identifier."
-        },
-        "uuid": {
-          "type": ["null", "string"],
-          "format": "uuid",
-          "example": "123e4567-e89b-12d3-a456-426655440001",
-          "description": "UUID identifier. Has priority over the code"
-        }
-      },
-      "title": "ReferenceModel",
-      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
-    },
-    "accountCategory6": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": ["null", "string"],
-          "example": "CODE_ID",
-          "description": "Code identifier."
-        },
-        "uuid": {
-          "type": ["null", "string"],
-          "format": "uuid",
-          "example": "123e4567-e89b-12d3-a456-426655440001",
-          "description": "UUID identifier. Has priority over the code"
-        }
-      },
-      "title": "ReferenceModel",
-      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
-    },
-    "accountCategory7": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": ["null", "string"],
-          "example": "CODE_ID",
-          "description": "Code identifier."
-        },
-        "uuid": {
-          "type": ["null", "string"],
-          "format": "uuid",
-          "example": "123e4567-e89b-12d3-a456-426655440001",
-          "description": "UUID identifier. Has priority over the code"
-        }
-      },
-      "title": "ReferenceModel",
-      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
-    },
-    "accountCategory8": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": ["null", "string"],
-          "example": "CODE_ID",
-          "description": "Code identifier."
-        },
-        "uuid": {
-          "type": ["null", "string"],
-          "format": "uuid",
-          "example": "123e4567-e89b-12d3-a456-426655440001",
-          "description": "UUID identifier. Has priority over the code"
-        }
-      },
-      "title": "ReferenceModel",
-      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
-    },
-    "accountCategory9": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": ["null", "string"],
-          "example": "CODE_ID",
-          "description": "Code identifier."
-        },
-        "uuid": {
-          "type": ["null", "string"],
-          "format": "uuid",
-          "example": "123e4567-e89b-12d3-a456-426655440001",
-          "description": "UUID identifier. Has priority over the code"
-        }
-      },
-      "title": "ReferenceModel",
-      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
-    },
-    "accountCategory10": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": ["null", "string"],
-          "example": "CODE_ID",
-          "description": "Code identifier."
-        },
-        "uuid": {
-          "type": ["null", "string"],
-          "format": "uuid",
-          "example": "123e4567-e89b-12d3-a456-426655440001",
-          "description": "UUID identifier. Has priority over the code"
-        }
-      },
-      "title": "ReferenceModel",
-      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
-    },
-    "accountAvailableForPayments": {
-      "type": "boolean",
-      "example": true,
-      "description": "Flag to show if account is available for payments (true) or no (false)."
-    },
-    "accountType": {
-      "type": "string",
-      "example": "BANK_ACCOUNT",
-      "description": "Account type",
-      "enum": [
-        "BANK_ACCOUNT",
-        "INTERCOMPANY_ACCOUNT",
-        "OTHER_ACCOUNT",
-        "SHARED_ACCOUNT"
-      ]
-    },
-    "activeStatus": {
-      "type": "string",
-      "example": "OPENED",
-      "description": "Account status.",
-      "enum": ["OPENED", "CLOSED"]
-    },
-    "attachments": {
-      "type": "boolean",
-      "description": "Attachments"
-    },
-    "banCode": {
-      "type": "string",
-      "description": "Account BAN code"
-    },
-    "bank": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "string",
-          "example": "CODE_ID",
-          "description": "Code identifier."
-        },
-        "uuid": {
-          "type": "string",
-          "format": "uuid",
-          "example": "123e4567-e89b-12d3-a456-426655440001",
-          "description": "UUID identifier. Has priority over the code"
-        }
-      },
-      "title": "ReferenceModel",
-      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
-    },
-    "branch": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "string",
-          "example": "CODE_ID",
-          "description": "Code identifier."
-        },
-        "uuid": {
-          "type": "string",
-          "format": "uuid",
-          "example": "123e4567-e89b-12d3-a456-426655440001",
-          "description": "UUID identifier. Has priority over the code"
-        }
-      },
-      "title": "ReferenceModel",
-      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
-    },
-    "branchDescription": {
-      "type": ["null", "string"],
-      "description": "Account branch description"
-    },
-    "calendar": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "string",
-          "example": "CODE_ID",
-          "description": "Code identifier."
-        },
-        "uuid": {
-          "type": "string",
-          "format": "uuid",
-          "example": "123e4567-e89b-12d3-a456-426655440001",
-          "description": "UUID identifier. Has priority over the code"
-        }
-      },
-      "title": "ReferenceModel",
-      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
-    },
-    "closedAccount": {
-      "type": "boolean",
-      "example": false,
-      "description": "Is account closed. Default value false"
-    },
-    "closingDate": {
-      "type": ["null", "string"],
-      "format": "date",
-      "example": "2020-06-23",
-      "description": "Closing date"
-    },
-    "code": {
-      "type": "string",
-      "example": "COMPANYCODE",
-      "description": "Account code."
-    },
-    "company": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "string",
-          "example": "CODE_ID",
-          "description": "Code identifier."
-        },
-        "uuid": {
-          "type": "string",
-          "format": "uuid",
-          "example": "123e4567-e89b-12d3-a456-426655440001",
-          "description": "UUID identifier. Has priority over the code"
-        }
-      },
-      "title": "ReferenceModel",
-      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
-    },
-    "countryCode": {
-      "type": "string",
-      "description": "Account country code"
-    },
-    "creationDate": {
-      "type": "string",
-      "format": "date",
-      "example": "2020-06-21",
-      "description": "Creation date"
-    },
-    "currency": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "string",
-          "example": "CODE_ID",
-          "description": "Code identifier."
-        },
-        "uuid": {
-          "type": "string",
-          "format": "uuid",
-          "example": "123e4567-e89b-12d3-a456-426655440001",
-          "description": "UUID identifier. Has priority over the code"
-        }
-      },
-      "title": "ReferenceModel",
-      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
-    },
-    "defaultGroup": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": ["null", "string"],
-          "example": "CODE_ID",
-          "description": "Code identifier."
-        },
-        "uuid": {
-          "type": ["null", "string"],
-          "format": "uuid",
-          "example": "123e4567-e89b-12d3-a456-426655440001",
-          "description": "UUID identifier. Has priority over the code"
-        }
-      },
-      "title": "ReferenceModel",
-      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
-    },
-    "description": {
-      "type": ["null", "string"],
-      "example": "Some description",
-      "description": "Account description."
-    },
-    "description2": {
-      "type": ["null", "string"],
-      "example": "Some description2",
-      "description": "Account description2."
-    },
-    "documents": {
-      "type": "boolean",
-      "description": "Documents."
-    },
-    "glAccount": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": ["null", "string"],
-          "example": "CODE_ID",
-          "description": "Code identifier."
-        },
-        "uuid": {
-          "type": ["null", "string"],
-          "format": "uuid",
-          "example": "123e4567-e89b-12d3-a456-426655440001",
-          "description": "UUID identifier. Has priority over the code"
-        }
-      },
-      "title": "ReferenceModel",
-      "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
-    },
-    "ibanCode": {
-      "type": ["null", "string"],
-      "description": "Account IBAN code"
-    },
-    "internalAccountCode": {
-      "type": ["null", "string"],
-      "description": "Internal account code"
-    },
-    "marker1": {
-      "type": "boolean",
-      "example": false,
-      "description": "Marker1."
-    },
-    "marker2": {
-      "type": "boolean",
-      "example": false,
-      "description": "Marker2."
-    },
-    "marker3": {
-      "type": "boolean",
-      "example": false,
-      "description": "Marker3."
-    },
-    "signatoryUsers": {
-      "type": "integer",
-      "format": "int64",
-      "description": "Signatory users."
-    },
-    "statementIdentifier": {
-      "type": ["null", "string"],
-      "description": "Account statement identifier"
-    },
-    "status": {
-      "type": "string",
-      "example": "CREATION_TO_VALIDATE",
-      "description": "Account status",
-      "enum": [
-        "STANDARD",
-        "CREATION_TO_VALIDATE",
-        "CREATION_VALIDATED",
-        "AVAILABLE_FOR_BANK_INTEGRATION",
-        "CLOSURE_REQUESTED",
-        "CLOSURE_VALIDATE",
-        "BANK_CONTRACT_TO_INACTIVATE",
-        "CLOSED"
-      ]
-    },
-    "updateDate": {
-      "type": ["null", "string"],
-      "format": "date",
-      "example": "2020-06-22",
-      "description": "Update date"
-    },
-    "uuid": {
-      "type": "string",
-      "format": "uuid",
-      "example": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-      "description": "UUID of the account."
-    },
-    "zbaIdentifier": {
-      "type": ["null", "string"],
-      "description": "Account ZBA identifier"
-    }
-  },
+  "type": ["object", "null"],
   "title": "AccountSearchModel",
   "description": "Account search",
-  "$schema": "http://json-schema.org/schema#"
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "accountCategory1": {
+      "description": "Represents account category 1 data",
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "description": "Code for the first account category",
+          "type": ["null", "string"]
+        },
+        "uuid": {
+          "description": "UUID for the first account category",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "accountCategory2": {
+      "description": "Represents account category 2 data",
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "description": "Code for the second account category",
+          "type": ["null", "string"]
+        },
+        "uuid": {
+          "description": "UUID for the second account category",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "accountCategory3": {
+      "description": "Represents account category 3 data",
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "description": "Code for the third account category",
+          "type": ["null", "string"]
+        },
+        "uuid": {
+          "description": "UUID for the third account category",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "accountCategory4": {
+      "description": "Represents account category 4 data",
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "description": "Code for the fourth account category",
+          "type": ["null", "string"]
+        },
+        "uuid": {
+          "description": "UUID for the fourth account category",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "accountCategory5": {
+      "description": "Represents account category 5 data",
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "description": "Code for the fifth account category",
+          "type": ["null", "string"]
+        },
+        "uuid": {
+          "description": "UUID for the fifth account category",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "accountCategory6": {
+      "description": "Represents account category 6 data",
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "description": "Code for the sixth account category",
+          "type": ["null", "string"]
+        },
+        "uuid": {
+          "description": "UUID for the sixth account category",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "accountCategory7": {
+      "description": "Represents account category 7 data",
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "description": "Code for the seventh account category",
+          "type": ["null", "string"]
+        },
+        "uuid": {
+          "description": "UUID for the seventh account category",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "accountCategory8": {
+      "description": "Represents account category 8 data",
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "description": "Code for the eighth account category",
+          "type": ["null", "string"]
+        },
+        "uuid": {
+          "description": "UUID for the eighth account category",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "accountCategory9": {
+      "description": "Represents account category 9 data",
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "description": "Code for the ninth account category",
+          "type": ["null", "string"]
+        },
+        "uuid": {
+          "description": "UUID for the ninth account category",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "accountCategory10": {
+      "description": "Represents account category 10 data",
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "description": "Code for the tenth account category",
+          "type": ["null", "string"]
+        },
+        "uuid": {
+          "description": "UUID for the tenth account category",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "accountAvailableForPayments": {
+      "description": "Indicates if the account is available for payments",
+      "type": ["boolean", "null"]
+    },
+    "accountType": {
+      "description": "Type of the account",
+      "type": ["string", "null"]
+    },
+    "activeStatus": {
+      "description": "Status indicating if the account is active",
+      "type": ["string", "null"]
+    },
+    "attachments": {
+      "description": "Attachments associated with the account",
+      "type": ["boolean", "null"]
+    },
+    "banCode": {
+      "description": "Bank account number (BAN) code",
+      "type": ["string", "null"]
+    },
+    "bank": {
+      "description": "Represents bank data",
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "description": "Code for the bank associated with the account",
+          "type": ["string", "null"]
+        },
+        "uuid": {
+          "description": "UUID for the bank associated with the account",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "branch": {
+      "description": "Represents branch data",
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "description": "Branch code associated with the account",
+          "type": ["string", "null"]
+        },
+        "uuid": {
+          "description": "UUID for the branch associated with the account",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "branchDescription": {
+      "description": "Description of the branch associated with the account",
+      "type": ["null", "string"]
+    },
+    "calendar": {
+      "description": "Represents calendar data",
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "description": "Code for the calendar linked to the account",
+          "type": ["string", "null"]
+        },
+        "uuid": {
+          "description": "UUID for the calendar linked to the account",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "closedAccount": {
+      "description": "Indicates if the account is closed",
+      "type": ["boolean", "null"]
+    },
+    "closingDate": {
+      "description": "Date when the account was closed",
+      "type": ["null", "string"]
+    },
+    "code": {
+      "description": "Account code",
+      "type": ["string", "null"]
+    },
+    "company": {
+      "description": "Represents company data",
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "description": "Code for the company associated with the account",
+          "type": ["string", "null"]
+        },
+        "uuid": {
+          "description": "UUID for the company associated with the account",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "countryCode": {
+      "description": "Country code of the account",
+      "type": ["string", "null"]
+    },
+    "creationDate": {
+      "description": "Date when the account was created",
+      "type": ["string", "null"]
+    },
+    "currency": {
+      "description": "Represents currency data",
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "description": "Currency code of the account",
+          "type": ["string", "null"]
+        },
+        "uuid": {
+          "description": "UUID for the currency of the account",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "defaultGroup": {
+      "description": "Represents default group data",
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "description": "Code for the default group of the account",
+          "type": ["null", "string"]
+        },
+        "uuid": {
+          "description": "UUID for the default group of the account",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "description": {
+      "description": "Brief description of the account",
+      "type": ["null", "string"]
+    },
+    "description2": {
+      "description": "Additional description field for the account",
+      "type": ["null", "string"]
+    },
+    "documents": {
+      "description": "Documents associated with the account",
+      "type": ["boolean", "null"]
+    },
+    "glAccount": {
+      "description": "Represents general ledger account data",
+      "type": ["object", "null"],
+      "properties": {
+        "code": {
+          "description": "General ledger (GL) account code",
+          "type": ["null", "string"]
+        },
+        "uuid": {
+          "description": "UUID for the GL account linked to the account",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "ibanCode": {
+      "description": "International Bank Account Number (IBAN) code",
+      "type": ["null", "string"]
+    },
+    "internalAccountCode": {
+      "description": "Internal code for the account",
+      "type": ["null", "string"]
+    },
+    "marker1": {
+      "description": "Custom marker 1 for the account",
+      "type": ["boolean", "null"]
+    },
+    "marker2": {
+      "description": "Custom marker 2 for the account",
+      "type": ["boolean", "null"]
+    },
+    "marker3": {
+      "description": "Custom marker 3 for the account",
+      "type": ["boolean", "null"]
+    },
+    "signatoryUsers": {
+      "description": "Users authorized as signatories for the account",
+      "type": ["integer", "null"]
+    },
+    "statementIdentifier": {
+      "description": "Identifier for the account statement",
+      "type": ["null", "string"]
+    },
+    "status": {
+      "description": "Status of the account",
+      "type": ["string", "null"]
+    },
+    "updateDate": {
+      "description": "Date when the account was last updated",
+      "type": ["null", "string"]
+    },
+    "uuid": {
+      "description": "Unique identifier for the account",
+      "type": ["string", "null"]
+    },
+    "zbaIdentifier": {
+      "description": "Zero balance account (ZBA) identifier",
+      "type": ["null", "string"]
+    }
+  }
 }

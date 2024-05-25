@@ -15,7 +15,13 @@ TEST_FILES_FOLDER = Path(__file__).resolve().parent.parent.joinpath("sample_file
 class SourceTest(unittest.TestCase):
     def setUp(self) -> None:
         self._stream_reader = Mock(spec=SourceS3StreamReader)
-        self._source = SourceS3(self._stream_reader, Config, str(TEST_FILES_FOLDER.joinpath("catalog.json")))
+        self._source = SourceS3(
+            self._stream_reader,
+            Config,
+            SourceS3.read_catalog(str(TEST_FILES_FOLDER.joinpath("catalog.json"))),
+            SourceS3.read_config(str(TEST_FILES_FOLDER.joinpath("v3_config.json"))),
+            None,
+        )
 
     @patch("source_s3.v4.source.emit_configuration_as_airbyte_control_message")
     def test_given_config_is_v3_when_read_config_then_emit_new_config(self, emit_config_mock) -> None:

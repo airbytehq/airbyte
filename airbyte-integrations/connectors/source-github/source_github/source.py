@@ -3,14 +3,14 @@
 #
 
 from os import getenv
-from typing import Any, Dict, List, Mapping, MutableMapping, Tuple
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urlparse
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import MultipleTokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import MultipleTokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
 
@@ -61,8 +61,13 @@ from .utils import read_full_refresh
 
 
 class SourceGithub(AbstractSource):
+
+    continue_sync_on_stream_failure = True
+
     @staticmethod
-    def _get_org_repositories(config: Mapping[str, Any], authenticator: MultipleTokenAuthenticator) -> Tuple[List[str], List[str]]:
+    def _get_org_repositories(
+        config: Mapping[str, Any], authenticator: MultipleTokenAuthenticator
+    ) -> Tuple[List[str], List[str], Optional[str]]:
         """
         Parse config/repositories and produce two lists: organizations, repositories.
         Args:
@@ -75,16 +80,19 @@ class SourceGithub(AbstractSource):
         organizations = set()
         unchecked_repos = set()
         unchecked_orgs = set()
+        pattern = None
 
         for org_repos in config_repositories:
-            org, _, repos = org_repos.partition("/")
-            if repos == "*":
-                unchecked_orgs.add(org)
+            _, _, repos = org_repos.partition("/")
+            if "*" in repos:
+                unchecked_orgs.add(org_repos)
             else:
                 unchecked_repos.add(org_repos)
 
         if unchecked_orgs:
-            stream = Repositories(authenticator=authenticator, organizations=unchecked_orgs, api_url=config.get("api_url"))
+            org_names = [org.split("/")[0] for org in unchecked_orgs]
+            pattern = "|".join([f"({org.replace('*', '.*')})" for org in unchecked_orgs])
+            stream = Repositories(authenticator=authenticator, organizations=org_names, api_url=config.get("api_url"), pattern=pattern)
             for record in read_full_refresh(stream):
                 repositories.add(record["full_name"])
                 organizations.add(record["organization"])
@@ -93,7 +101,7 @@ class SourceGithub(AbstractSource):
         if unchecked_repos:
             stream = RepositoryStats(
                 authenticator=authenticator,
-                repositories=unchecked_repos,
+                repositories=list(unchecked_repos),
                 api_url=config.get("api_url"),
                 # This parameter is deprecated and in future will be used sane default, page_size: 10
                 page_size_for_large_streams=config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM),
@@ -104,7 +112,7 @@ class SourceGithub(AbstractSource):
                 if organization:
                     organizations.add(organization)
 
-        return list(organizations), list(repositories)
+        return list(organizations), list(repositories), pattern
 
     @staticmethod
     def get_access_token(config: Mapping[str, Any]):
@@ -123,14 +131,7 @@ class SourceGithub(AbstractSource):
     def _get_authenticator(self, config: Mapping[str, Any]):
         _, token = self.get_access_token(config)
         tokens = [t.strip() for t in token.split(constants.TOKEN_SEPARATOR)]
-        requests_per_hour = config.get("requests_per_hour")
-        if requests_per_hour:
-            return MultipleTokenAuthenticatorWithRateLimiter(
-                tokens=tokens,
-                auth_method="token",
-                requests_per_hour=requests_per_hour,
-            )
-        return MultipleTokenAuthenticator(tokens=tokens, auth_method="token")
+        return MultipleTokenAuthenticatorWithRateLimiter(tokens=tokens)
 
     def _validate_and_transform_config(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         config = self._ensure_default_values(config)
@@ -173,45 +174,6 @@ class SourceGithub(AbstractSource):
     def _is_http_allowed() -> bool:
         return getenv("DEPLOYMENT_MODE", "").upper() != "CLOUD"
 
-    @staticmethod
-    def _get_branches_data(
-        selected_branches: List, full_refresh_args: Dict[str, Any] = None
-    ) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
-        selected_branches = set(selected_branches)
-
-        # Get the default branch for each repository
-        default_branches = {}
-        repository_stats_stream = RepositoryStats(**full_refresh_args)
-        for stream_slice in repository_stats_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-            default_branches.update(
-                {
-                    repo_stats["full_name"]: repo_stats["default_branch"]
-                    for repo_stats in repository_stats_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
-                }
-            )
-
-        all_branches = []
-        branches_stream = Branches(**full_refresh_args)
-        for stream_slice in branches_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-            for branch in branches_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
-                all_branches.append(f"{branch['repository']}/{branch['name']}")
-
-        # Create mapping of repository to list of branches to pull commits for
-        # If no branches are specified for a repo, use its default branch
-        branches_to_pull: Dict[str, List[str]] = {}
-        for repo in full_refresh_args["repositories"]:
-            repo_branches = []
-            for branch in selected_branches:
-                branch_parts = branch.split("/", 2)
-                if "/".join(branch_parts[:2]) == repo and branch in all_branches:
-                    repo_branches.append(branch_parts[-1])
-            if not repo_branches:
-                repo_branches = [default_branches[repo]]
-
-            branches_to_pull[repo] = repo_branches
-
-        return default_branches, branches_to_pull
-
     def user_friendly_error_message(self, message: str) -> str:
         user_message = ""
         if "404 Client Error: Not Found for url: https://api.github.com/repos/" in message:
@@ -233,7 +195,7 @@ class SourceGithub(AbstractSource):
         config = self._validate_and_transform_config(config)
         try:
             authenticator = self._get_authenticator(config)
-            _, repositories = self._get_org_repositories(config=config, authenticator=authenticator)
+            _, repositories, _ = self._get_org_repositories(config=config, authenticator=authenticator)
             if not repositories:
                 return (
                     False,
@@ -250,7 +212,7 @@ class SourceGithub(AbstractSource):
         authenticator = self._get_authenticator(config)
         config = self._validate_and_transform_config(config)
         try:
-            organizations, repositories = self._get_org_repositories(config=config, authenticator=authenticator)
+            organizations, repositories, pattern = self._get_org_repositories(config=config, authenticator=authenticator)
         except Exception as e:
             message = repr(e)
             user_message = self.user_friendly_error_message(message)
@@ -295,7 +257,6 @@ class SourceGithub(AbstractSource):
         }
         repository_args_with_start_date = {**repository_args, "start_date": start_date}
 
-        default_branches, branches_to_pull = self._get_branches_data(config.get("branch", []), repository_args)
         pull_requests_stream = PullRequests(**repository_args_with_start_date)
         projects_stream = Projects(**repository_args_with_start_date)
         project_columns_stream = ProjectColumns(projects_stream, **repository_args_with_start_date)
@@ -311,7 +272,7 @@ class SourceGithub(AbstractSource):
             Comments(**repository_args_with_start_date),
             CommitCommentReactions(**repository_args_with_start_date),
             CommitComments(**repository_args_with_start_date),
-            Commits(**repository_args_with_start_date, branches_to_pull=branches_to_pull, default_branches=default_branches),
+            Commits(**repository_args_with_start_date, branches_to_pull=config.get("branches", [])),
             ContributorActivity(**repository_args),
             Deployments(**repository_args_with_start_date),
             Events(**repository_args_with_start_date),
@@ -331,7 +292,7 @@ class SourceGithub(AbstractSource):
             ProjectsV2(**repository_args_with_start_date),
             pull_requests_stream,
             Releases(**repository_args_with_start_date),
-            Repositories(**organization_args_with_start_date),
+            Repositories(**organization_args_with_start_date, pattern=pattern),
             ReviewComments(**repository_args_with_start_date),
             Reviews(**repository_args_with_start_date),
             Stargazers(**repository_args_with_start_date),

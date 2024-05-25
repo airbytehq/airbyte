@@ -6,8 +6,9 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Optional
 
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import StreamSlice
 from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.types import StreamState
 
 
 @dataclass

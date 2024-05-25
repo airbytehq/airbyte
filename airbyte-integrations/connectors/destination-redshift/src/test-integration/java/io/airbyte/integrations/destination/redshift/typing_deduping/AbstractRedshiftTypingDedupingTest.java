@@ -4,39 +4,35 @@
 
 package io.airbyte.integrations.destination.redshift.typing_deduping;
 
+import static io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSuperLimitationTransformer.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.cdk.db.factory.DataSourceFactory;
-import io.airbyte.cdk.db.jdbc.JdbcDatabase;
-import io.airbyte.cdk.integrations.base.JavaBaseConstants;
-import io.airbyte.commons.io.IOs;
+import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
+import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcTypingDedupingTest;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
-import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.redshift.RedshiftInsertDestination;
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGeneratorIntegrationTest.RedshiftSourceOperations;
-import java.nio.file.Path;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.List;
+import java.util.Random;
 import javax.sql.DataSource;
 import org.jooq.DSLContext;
 import org.jooq.conf.Settings;
 import org.jooq.impl.DSL;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-/**
- * This class is basically the same as
- * {@link io.airbyte.integrations.destination.snowflake.typing_deduping.AbstractSnowflakeTypingDedupingTest}.
- * But (a) it uses jooq to construct the sql statements, and (b) it doesn't need to upcase anything.
- * At some point we might (?) want to do a refactor to combine them. At the very least, this class
- * is probably useful for other JDBC destination implementations.
- */
-public abstract class AbstractRedshiftTypingDedupingTest extends BaseTypingDedupingTest {
+public abstract class AbstractRedshiftTypingDedupingTest extends JdbcTypingDedupingTest {
 
-  private JdbcDatabase database;
-  private DataSource dataSource;
-
-  protected abstract String getConfigPath();
+  private static final Random RANDOM = new Random();
 
   @Override
   protected String getImageName() {
@@ -44,50 +40,18 @@ public abstract class AbstractRedshiftTypingDedupingTest extends BaseTypingDedup
   }
 
   @Override
-  protected JsonNode generateConfig() {
-    final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of(getConfigPath())));
-    ((ObjectNode) config).put("schema", "typing_deduping_default_schema" + getUniqueSuffix());
-    final RedshiftInsertDestination insertDestination = new RedshiftInsertDestination();
-    dataSource = insertDestination.getDataSource(config);
-    database = insertDestination.getDatabase(dataSource, new RedshiftSourceOperations());
-    return config;
+  protected DataSource getDataSource(final JsonNode config) {
+    return new RedshiftInsertDestination().getDataSource(config);
   }
 
   @Override
-  protected List<JsonNode> dumpRawTableRecords(String streamNamespace, final String streamName) throws Exception {
-    if (streamNamespace == null) {
-      streamNamespace = getDefaultSchema();
-    }
-    final String tableName = StreamId.concatenateRawTableName(streamNamespace, streamName);
-    final String schema = getRawSchema();
-    return database.queryJsons(DSL.selectFrom(DSL.name(schema, tableName)).getSQL());
+  protected JdbcCompatibleSourceOperations<?> getSourceOperations() {
+    return new RedshiftSourceOperations();
   }
 
   @Override
-  protected List<JsonNode> dumpFinalTableRecords(String streamNamespace, final String streamName) throws Exception {
-    if (streamNamespace == null) {
-      streamNamespace = getDefaultSchema();
-    }
-    return database.queryJsons(DSL.selectFrom(DSL.name(streamNamespace, streamName)).getSQL());
-  }
-
-  @Override
-  protected void teardownStreamAndNamespace(String streamNamespace, final String streamName) throws Exception {
-    if (streamNamespace == null) {
-      streamNamespace = getDefaultSchema();
-    }
-    database.execute(DSL.dropTableIfExists(DSL.name(getRawSchema(), StreamId.concatenateRawTableName(streamNamespace, streamName))).getSQL());
-    database.execute(DSL.dropSchemaIfExists(DSL.name(streamNamespace)).cascade().getSQL());
-  }
-
-  @Override
-  protected void globalTeardown() throws Exception {
-    DataSourceFactory.close(dataSource);
-  }
-
-  @Override
-  protected SqlGenerator<?> getSqlGenerator() {
-    return new RedshiftSqlGenerator(new RedshiftSQLNameTransformer()) {
+  protected SqlGenerator getSqlGenerator() {
+    return new RedshiftSqlGenerator(new RedshiftSQLNameTransformer(), false) {
 
       // Override only for tests to print formatted SQL. The actual implementation should use unformatted
       // to save bytes.
@@ -99,15 +63,128 @@ public abstract class AbstractRedshiftTypingDedupingTest extends BaseTypingDedup
     };
   }
 
-  /**
-   * Subclasses using a config with a nonstandard raw table schema should override this method.
-   */
-  protected String getRawSchema() {
-    return JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
+  @Test
+  @Disabled("Redshift connector 2.4.3 and below are rendered useless with "
+      + "Redshift cluster version https://docs.aws.amazon.com/redshift/latest/mgmt/cluster-versions.html#cluster-version-181 "
+      + "due to metadata calls hanging. We cannot run this test anymore")
+  public void testRawTableMetaMigration_append() throws Exception {
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(new AirbyteStream()
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
+                .withJsonSchema(getSchema()))));
+
+    // First sync without _airbyte_meta
+    final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages_before_meta.jsonl");
+    runSync(catalog, messages1, "airbyte/destination-redshift:2.1.10");
+    // Second sync
+    final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages_after_meta.jsonl");
+    runSync(catalog, messages2);
+
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_mixed_meta_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_mixed_meta_final.jsonl");
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
   }
 
-  private String getDefaultSchema() {
-    return getConfig().get("schema").asText();
+  @Test
+  @Disabled("Redshift connector 2.4.3 and below are rendered useless with "
+      + "Redshift cluster version https://docs.aws.amazon.com/redshift/latest/mgmt/cluster-versions.html#cluster-version-181 "
+      + "due to metadata calls hanging. We cannot run this test anymore")
+  public void testRawTableMetaMigration_incrementalDedupe() throws Exception {
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(List.of("updated_at"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+            .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
+            .withStream(new AirbyteStream()
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
+                .withJsonSchema(getSchema()))));
+
+    // First sync without _airbyte_meta
+    final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages_before_meta.jsonl");
+    runSync(catalog, messages1, "airbyte/destination-redshift:2.1.10");
+    // Second sync
+    final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages_after_meta.jsonl");
+    runSync(catalog, messages2);
+
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_mixed_meta_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_meta_final.jsonl");
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
+  }
+
+  @Test
+  public void testRawTableLoadWithSuperVarcharLimitation() throws Exception {
+    final String record1 = """
+                           {"type": "RECORD",
+                             "record":{
+                               "emitted_at": 1000,
+                               "data": {
+                                 "id1": 1,
+                                 "id2": 200,
+                                 "updated_at": "2000-01-01T00:00:00Z",
+                                 "_ab_cdc_deleted_at": null,
+                                 "name": "PLACE_HOLDER",
+                                 "address": {"city": "San Francisco", "state": "CA"}}
+                             }
+                           }
+                           """;
+    final String record2 = """
+                           {"type": "RECORD",
+                             "record":{
+                               "emitted_at": 1000,
+                               "data": {
+                                 "id1": 2,
+                                 "id2": 201,
+                                 "updated_at": "2000-01-01T00:00:00Z",
+                                 "_ab_cdc_deleted_at": null,
+                                 "name": "PLACE_HOLDER",
+                                 "address": {"city": "New York", "state": "NY"}}
+                             }
+                           }
+                           """;
+    final String largeString1 = generateRandomString(REDSHIFT_VARCHAR_MAX_BYTE_SIZE);
+    final String largeString2 = generateRandomString(REDSHIFT_VARCHAR_MAX_BYTE_SIZE + 2);
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+            .withStream(new AirbyteStream()
+                .withNamespace(getStreamNamespace())
+                .withName(getStreamName())
+                .withJsonSchema(getSchema()))));
+    final AirbyteMessage message1 = Jsons.deserialize(record1, AirbyteMessage.class);
+    message1.getRecord().setNamespace(getStreamNamespace());
+    message1.getRecord().setStream(getStreamName());
+    ((ObjectNode) message1.getRecord().getData()).put("name", largeString1);
+    final AirbyteMessage message2 = Jsons.deserialize(record2, AirbyteMessage.class);
+    message2.getRecord().setNamespace(getStreamNamespace());
+    message2.getRecord().setStream(getStreamName());
+    ((ObjectNode) message2.getRecord().getData()).put("name", largeString2);
+
+    // message1 should be preserved which is just on limit, message2 should be nulled.
+    runSync(catalog, List.of(message1, message2));
+
+    // Add verification.
+    final List<JsonNode> expectedRawRecords = readRecords("dat/sync1_recordnull_expectedrecords_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords = readRecords("dat/sync1_recordnull_expectedrecords_final.jsonl");
+    // Only replace for first record, second record should be nulled by transformer.
+    ((ObjectNode) expectedRawRecords.get(0).get("_airbyte_data")).put("name", largeString1);
+    ((ObjectNode) expectedFinalRecords.get(0)).put("name", largeString1);
+    verifySyncResult(expectedRawRecords, expectedFinalRecords, disableFinalTableComparison());
+
+  }
+
+  protected String generateRandomString(final int totalLength) {
+    return RANDOM
+        .ints('a', 'z' + 1)
+        .limit(totalLength)
+        .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+        .toString();
   }
 
 }

@@ -7,13 +7,13 @@
 from __future__ import annotations
 
 from datetime import datetime
+from pathlib import Path
 from types import TracebackType
 from typing import TYPE_CHECKING
 
 import yaml  # type: ignore
-from anyio import Path
 from asyncer import asyncify
-from dagger import Directory, Platform, Secret
+from dagger import Directory, Platform
 from github import PullRequest
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.consts import BUILD_PLATFORMS
@@ -24,6 +24,7 @@ from pipelines.helpers.github import update_commit_status_check
 from pipelines.helpers.slack import send_message_to_webhook
 from pipelines.helpers.utils import METADATA_FILE_NAME
 from pipelines.models.contexts.pipeline_context import PipelineContext
+from pipelines.models.secrets import LocalDirectorySecretStore, Secret, SecretStore
 
 if TYPE_CHECKING:
     from pathlib import Path as NativePath
@@ -42,12 +43,13 @@ class ConnectorContext(PipelineContext):
         is_local: bool,
         git_branch: str,
         git_revision: str,
+        diffed_branch: str,
+        git_repo_url: str,
         report_output_prefix: str,
-        use_remote_secrets: bool = True,
         ci_report_bucket: Optional[str] = None,
-        ci_gcs_credentials: Optional[str] = None,
+        ci_gcp_credentials: Optional[Secret] = None,
         ci_git_user: Optional[str] = None,
-        ci_github_access_token: Optional[str] = None,
+        ci_github_access_token: Optional[Secret] = None,
         connector_acceptance_test_image: str = DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE,
         gha_workflow_run_url: Optional[str] = None,
         dagger_logs_url: Optional[str] = None,
@@ -61,13 +63,14 @@ class ConnectorContext(PipelineContext):
         use_local_cdk: bool = False,
         use_host_gradle_dist_tar: bool = False,
         enable_report_auto_open: bool = True,
-        docker_hub_username: Optional[str] = None,
-        docker_hub_password: Optional[str] = None,
-        s3_build_cache_access_key_id: Optional[str] = None,
-        s3_build_cache_secret_key: Optional[str] = None,
+        docker_hub_username: Optional[Secret] = None,
+        docker_hub_password: Optional[Secret] = None,
+        s3_build_cache_access_key_id: Optional[Secret] = None,
+        s3_build_cache_secret_key: Optional[Secret] = None,
         concurrent_cat: Optional[bool] = False,
         run_step_options: RunStepOptions = RunStepOptions(),
         targeted_platforms: Sequence[Platform] = BUILD_PLATFORMS,
+        secret_stores: Dict[str, SecretStore] | None = None,
     ) -> None:
         """Initialize a connector context.
 
@@ -76,8 +79,9 @@ class ConnectorContext(PipelineContext):
             is_local (bool): Whether the context is for a local run or a CI run.
             git_branch (str): The current git branch name.
             git_revision (str): The current git revision, commit hash.
+            diffed_branch: str: The branch to compare the current branch against.
+            git_repo_url: str: The URL of the git repository.
             report_output_prefix (str): The S3 key to upload the test report to.
-            use_remote_secrets (bool, optional): Whether to download secrets for GSM or use the local secrets. Defaults to True.
             connector_acceptance_test_image (Optional[str], optional): The image to use to run connector acceptance tests. Defaults to DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE.
             gha_workflow_run_url (Optional[str], optional): URL to the github action workflow run. Only valid for CI run. Defaults to None.
             dagger_logs_url (Optional[str], optional): URL to the dagger logs. Only valid for CI run. Defaults to None.
@@ -89,17 +93,16 @@ class ConnectorContext(PipelineContext):
             code_tests_only (bool, optional): Whether to ignore non-code tests like QA and metadata checks. Defaults to False.
             use_host_gradle_dist_tar (bool, optional): Used when developing java connectors with gradle. Defaults to False.
             enable_report_auto_open (bool, optional): Open HTML report in browser window. Defaults to True.
-            docker_hub_username (Optional[str], optional): Docker Hub username to use to read registries. Defaults to None.
-            docker_hub_password (Optional[str], optional): Docker Hub password to use to read registries. Defaults to None.
-            s3_build_cache_access_key_id (Optional[str], optional): Gradle S3 Build Cache credentials. Defaults to None.
-            s3_build_cache_secret_key (Optional[str], optional): Gradle S3 Build Cache credentials. Defaults to None.
+            docker_hub_username (Optional[Secret], optional): Docker Hub username to use to read registries. Defaults to None.
+            docker_hub_password (Optional[Secret], optional): Docker Hub password to use to read registries. Defaults to None.
+            s3_build_cache_access_key_id (Optional[Secret], optional): Gradle S3 Build Cache credentials. Defaults to None.
+            s3_build_cache_secret_key (Optional[Secret], optional): Gradle S3 Build Cache credentials. Defaults to None.
             concurrent_cat (bool, optional): Whether to run the CAT tests in parallel. Defaults to False.
             targeted_platforms (Optional[Iterable[Platform]], optional): The platforms to build the connector image for. Defaults to BUILD_PLATFORMS.
         """
 
         self.pipeline_name = pipeline_name
         self.connector = connector
-        self.use_remote_secrets = use_remote_secrets
         self.connector_acceptance_test_image = connector_acceptance_test_image
         self._secrets_dir: Optional[Directory] = None
         self._updated_secrets_dir: Optional[Directory] = None
@@ -114,14 +117,14 @@ class ConnectorContext(PipelineContext):
         self.s3_build_cache_access_key_id = s3_build_cache_access_key_id
         self.s3_build_cache_secret_key = s3_build_cache_secret_key
         self.concurrent_cat = concurrent_cat
-        self._connector_secrets: Optional[Dict[str, Secret]] = None
         self.targeted_platforms = targeted_platforms
-
         super().__init__(
             pipeline_name=pipeline_name,
             is_local=is_local,
             git_branch=git_branch,
             git_revision=git_revision,
+            diffed_branch=diffed_branch,
+            git_repo_url=git_repo_url,
             report_output_prefix=report_output_prefix,
             gha_workflow_run_url=gha_workflow_run_url,
             dagger_logs_url=dagger_logs_url,
@@ -131,24 +134,13 @@ class ConnectorContext(PipelineContext):
             reporting_slack_channel=reporting_slack_channel,
             pull_request=pull_request,
             ci_report_bucket=ci_report_bucket,
-            ci_gcs_credentials=ci_gcs_credentials,
+            ci_gcp_credentials=ci_gcp_credentials,
             ci_git_user=ci_git_user,
             ci_github_access_token=ci_github_access_token,
             run_step_options=run_step_options,
             enable_report_auto_open=enable_report_auto_open,
+            secret_stores=secret_stores,
         )
-
-    @property
-    def s3_build_cache_access_key_id_secret(self) -> Optional[Secret]:
-        if self.s3_build_cache_access_key_id:
-            return self.dagger_client.set_secret("s3_build_cache_access_key_id", self.s3_build_cache_access_key_id)
-        return None
-
-    @property
-    def s3_build_cache_secret_key_secret(self) -> Optional[Secret]:
-        if self.s3_build_cache_access_key_id and self.s3_build_cache_secret_key:
-            return self.dagger_client.set_secret("s3_build_cache_secret_key", self.s3_build_cache_secret_key)
-        return None
 
     @property
     def modified_files(self) -> FrozenSet[NativePath]:
@@ -175,8 +167,12 @@ class ConnectorContext(PipelineContext):
         return self.get_repo_dir("airbyte-integrations/bases/connector-acceptance-test")
 
     @property
+    def live_tests_dir(self) -> Directory:
+        return self.get_repo_dir("airbyte-ci/connectors/live-tests")
+
+    @property
     def should_save_updated_secrets(self) -> bool:
-        return self.use_remote_secrets and self.updated_secrets_dir is not None
+        return self.ci_gcp_credentials is not None and self.updated_secrets_dir is not None
 
     @property
     def host_image_export_dir_path(self) -> str:
@@ -203,21 +199,15 @@ class ConnectorContext(PipelineContext):
         return f"{self.docker_repository}:{self.docker_image_tag}"
 
     @property
-    def docker_hub_username_secret(self) -> Optional[Secret]:
-        if self.docker_hub_username is None:
-            return None
-        return self.dagger_client.set_secret("docker_hub_username", self.docker_hub_username)
+    def local_secret_store_name(self) -> str:
+        return f"{self.connector.technical_name}-local"
 
     @property
-    def docker_hub_password_secret(self) -> Optional[Secret]:
-        if self.docker_hub_password is None:
-            return None
-        return self.dagger_client.set_secret("docker_hub_password", self.docker_hub_password)
-
-    async def get_connector_secrets(self) -> Dict[str, Secret]:
-        if self._connector_secrets is None:
-            self._connector_secrets = await secrets.get_connector_secrets(self)
-        return self._connector_secrets
+    def local_secret_store(self) -> Optional[LocalDirectorySecretStore]:
+        connector_secrets_path = self.connector.code_directory / "secrets"
+        if connector_secrets_path.is_dir():
+            return LocalDirectorySecretStore(connector_secrets_path)
+        return None
 
     async def get_connector_dir(self, exclude: Optional[List[str]] = None, include: Optional[List[str]] = None) -> Directory:
         """Get the connector under test source code directory.

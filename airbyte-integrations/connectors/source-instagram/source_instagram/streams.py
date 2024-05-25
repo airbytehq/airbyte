@@ -373,8 +373,8 @@ class Media(DatetimeTransformerMixin, InstagramStream):
 class MediaInsights(Media):
     """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights"""
 
-    MEDIA_METRICS = ["total_interactions", "impressions", "reach", "saved", "video_views", "likes", "comments", "shares"]
-    CAROUSEL_ALBUM_METRICS = ["total_interactions", "impressions", "reach", "saved", "video_views"]
+    MEDIA_METRICS = ["impressions", "reach", "saved", "video_views", "likes", "comments", "shares"]
+    CAROUSEL_ALBUM_METRICS = ["impressions", "reach", "saved", "video_views"]
 
     REELS_METRICS = [
         "comments",
@@ -385,7 +385,6 @@ class MediaInsights(Media):
         "reach",
         "saved",
         "shares",
-        "total_interactions",
     ]
 
     def read_records(

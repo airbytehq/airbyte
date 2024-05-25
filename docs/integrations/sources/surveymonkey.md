@@ -9,20 +9,24 @@ OAuth for Survey Monkey is officially supported only for the US. We are testing 
 :::
 
 <!-- env:oss -->
+
 ## Prerequisites
 
 **For Airbyte Open Source:**
 
-* Access Token
+- Access Token
 <!-- /env:oss -->
 
 ## Setup guide
+
 ### Step 1: Set up SurveyMonkey
+
 Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-started). Register your application [here](https://developer.surveymonkey.com/apps/) Then go to Settings and copy your access token
 
 ### Step 2: Set up the source connector in Airbyte
 
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
@@ -35,6 +39,7 @@ Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-start
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
@@ -47,26 +52,32 @@ Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-start
 
 ## Supported streams and sync modes
 
-* [Surveys](https://developer.surveymonkey.com/api/v3/#surveys) \(Incremental\)
-* [SurveyPages](https://developer.surveymonkey.com/api/v3/#surveys-id-pages)
-* [SurveyQuestions](https://developer.surveymonkey.com/api/v3/#surveys-id-pages-id-questions)
-* [SurveyResponses](https://developer.surveymonkey.com/api/v3/#survey-responses) \(Incremental\)
-* [SurveyCollectors](https://developer.surveymonkey.com/api/v3/#api-endpoints-get-surveys-id-collectors)
+- [Surveys](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys) \(Incremental\)
+- [SurveyPages](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys-survey_id-pages)
+- [SurveyQuestions](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys-survey_id-pages-page_id-questions)
+- [SurveyResponses](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys-id-responses-bulk) \(Incremental\)
+- [SurveyCollectors](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys-survey_id-collectors)
+- [Collectors](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-collectors-collector_id-)
 
 ### Performance considerations
 
 The SurveyMonkey API applies heavy API quotas for default private apps, which have the following limits:
 
-* 125 requests per minute
-* 500 requests per day
+- 125 requests per minute
+- 500 requests per day
 
 To cover more data from this source we use caching.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                          |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------|
-| 0.2.3 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------- |
+| 0.3.3   | 2024-05-22 | [38559](https://github.com/airbytehq/airbyte/pull/38559) | Migrate Python stream authenticator to `requests_native_auth` package            |
+| 0.3.2   | 2024-05-20 | [38244](https://github.com/airbytehq/airbyte/pull/38244) | Replace AirbyteLogger with logging.Logger and upgrade base image                 |
+| 0.3.1   | 2024-04-24 | [36664](https://github.com/airbytehq/airbyte/pull/36664) | Schema descriptions and CDK 0.80.0                                               |
+| 0.3.0   | 2024-02-22 | [35561](https://github.com/airbytehq/airbyte/pull/35561) | Migrate connector to low-code                                                    |
+| 0.2.4   | 2024-02-12 | [35168](https://github.com/airbytehq/airbyte/pull/35168) | Manage dependencies with Poetry                                                  |
+| 0.2.3   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image  |
 | 0.2.2   | 2023-05-12 | [26024](https://github.com/airbytehq/airbyte/pull/26024) | Fix dependencies conflict                                                        |
 | 0.2.1   | 2023-04-27 | [25109](https://github.com/airbytehq/airbyte/pull/25109) | Fix add missing params to stream `SurveyResponses`                               |
 | 0.2.0   | 2023-04-18 | [23721](https://github.com/airbytehq/airbyte/pull/23721) | Add `SurveyCollectors` and `Collectors` stream                                   |
@@ -75,7 +86,7 @@ To cover more data from this source we use caching.
 | 0.1.14  | 2023-01-27 | [22024](https://github.com/airbytehq/airbyte/pull/22024) | Set `AvailabilityStrategy` for streams explicitly to `None`                      |
 | 0.1.13  | 2022-11-29 | [19868](https://github.com/airbytehq/airbyte/pull/19868) | Fix OAuth flow urls                                                              |
 | 0.1.12  | 2022-10-13 | [17964](https://github.com/airbytehq/airbyte/pull/17964) | Add OAuth for Eu and Ca                                                          |
-| 0.1.11  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                    |
+| 0.1.11  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states                                                     |
 | 0.1.10  | 2022-09-14 | [16706](https://github.com/airbytehq/airbyte/pull/16706) | Fix 404 error when handling nonexistent surveys                                  |
 | 0.1.9   | 2022-07-28 | [13046](https://github.com/airbytehq/airbyte/pull/14998) | Fix state for response stream, fixed backoff behaviour, added unittest           |
 | 0.1.8   | 2022-05-20 | [13046](https://github.com/airbytehq/airbyte/pull/13046) | Fix incremental streams                                                          |

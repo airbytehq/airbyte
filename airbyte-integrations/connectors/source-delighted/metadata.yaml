@@ -5,10 +5,12 @@ data:
   allowedHosts:
     hosts:
       - api.delighted.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: cc88c43f-6f53-4e8a-8c4d-b284baaf9635
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.8
   dockerRepository: airbyte/source-delighted
   documentationUrl: https://docs.airbyte.com/integrations/sources/delighted
   githubIssueLabel: source-delighted
@@ -21,8 +23,20 @@ data:
     oss:
       enabled: true
   releaseStage: beta
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-delighted
   supportLevel: community
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-DELIGHTED__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

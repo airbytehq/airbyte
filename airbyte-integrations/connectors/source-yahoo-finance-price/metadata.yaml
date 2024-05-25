@@ -1,9 +1,15 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: 09a517d3-803f-448d-97bf-0b1ee64b90ef
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.4
   dockerRepository: airbyte/source-yahoo-finance-price
+  documentationUrl: https://docs.airbyte.com/integrations/sources/yahoo-finance-price
   githubIssueLabel: source-yahoo-finance-price
   icon: yahoo-finance-price.svg
   license: MIT
@@ -14,11 +20,20 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/yahoo-finance-price
-  tags:
-    - language:low-code
-  ab_internal:
-    sl: 100
-    ql: 100
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-yahoo-finance-price
   supportLevel: community
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-YAHOO-FINANCE-PRICES__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

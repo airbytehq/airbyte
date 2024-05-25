@@ -8,6 +8,10 @@ data:
   icon: weatherstack.svg
   license: MIT
   name: Weatherstack
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-weatherstack
   registries:
     cloud:
       enabled: false
@@ -17,8 +21,18 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/weatherstack
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-WEATHERSTACK__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

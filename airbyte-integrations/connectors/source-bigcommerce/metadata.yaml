@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - api.bigcommerce.com
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-bigcommerce
   registries:
     oss:
       enabled: false
@@ -21,8 +25,17 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:low-code
+    - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 200
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-BIGCOMMERCE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

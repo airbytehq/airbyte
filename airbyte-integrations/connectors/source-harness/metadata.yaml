@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - api.harness.io
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-harness
   registries:
     oss:
       enabled: false
@@ -21,5 +25,64 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/harness
   tags:
-    - language:lowcode
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-HARNESS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_HARNESS_1M_CREDENTIALS
+          fileName: source-postgres_1m_credentials.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_HARNESS_20M_CREDENTIALS
+          fileName: source-postgres_20m_credentials.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_HARNESS_2B_CREDENTIALS
+          fileName: source-postgres_2b_credentials.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_HARNESS_BOTTLENECK_STREAM1_CREDENTIALS
+          fileName: source-postgres_bottleneck_stream1_credentials.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_HARNESS_CREDENTIALS
+          fileName: source-postgres_10m_credentials.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_HARNESS_SOURCE-MYSQL_10M_CREDENTIALS
+          fileName: source-mysql_10m_credentials.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_HARNESS_SOURCE-MYSQL_1M_CREDENTIALS
+          fileName: source-mysql_1m_credentials.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_HARNESS_SOURCE-MYSQL_20M_CREDENTIALS
+          fileName: source-mysql_20m_credentials.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_HARNESS_SOURCE-MYSQL_BOTTLENECK_STREAM1_CREDENTIALS
+          fileName: source-mysql_bottleneck_stream1_credentials.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_MONGODB_HARNESS_1M_CREDENTIALS
+          fileName: source-mongodb-v2_1m_credentials.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

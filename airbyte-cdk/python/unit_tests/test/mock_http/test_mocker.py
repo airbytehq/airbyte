@@ -15,6 +15,7 @@ _ANOTHER_RESPONSE_BODY = "another body"
 _A_RESPONSE = HttpResponse("any response")
 _SOME_QUERY_PARAMS = {"q1": "query value"}
 _SOME_HEADERS = {"h1": "header value"}
+_OTHER_HEADERS = {"h2": "another header value"}
 _SOME_REQUEST_BODY_MAPPING = {"first_field": "first_value", "second_field": 2}
 _SOME_REQUEST_BODY_STR = "some_request_body"
 
@@ -24,13 +25,27 @@ class HttpMockerTest(TestCase):
     def test_given_get_request_match_when_decorate_then_return_response(self, http_mocker):
         http_mocker.get(
             HttpRequest(_A_URL, _SOME_QUERY_PARAMS, _SOME_HEADERS),
-            HttpResponse(_A_RESPONSE_BODY, 474),
+            HttpResponse(_A_RESPONSE_BODY, 474, _OTHER_HEADERS),
         )
 
         response = requests.get(_A_URL, params=_SOME_QUERY_PARAMS, headers=_SOME_HEADERS)
 
         assert response.text == _A_RESPONSE_BODY
         assert response.status_code == 474
+        assert response.headers == _OTHER_HEADERS
+
+    @HttpMocker()
+    def test_given_delete_request_match_when_decorate_then_return_response(self, http_mocker):
+        http_mocker.delete(
+            HttpRequest(_A_URL, headers=_SOME_HEADERS),
+            HttpResponse(_A_RESPONSE_BODY, 204, _OTHER_HEADERS),
+        )
+
+        response = requests.delete(_A_URL, headers=_SOME_HEADERS)
+
+        assert response.text == _A_RESPONSE_BODY
+        assert response.status_code == 204
+        assert response.headers == _OTHER_HEADERS
 
     @HttpMocker()
     def test_given_loose_headers_matching_when_decorate_then_match(self, http_mocker):
@@ -62,6 +77,21 @@ class HttpMockerTest(TestCase):
 
         first_response = requests.get(_A_URL, params=_SOME_QUERY_PARAMS, headers=_SOME_HEADERS)
         second_response = requests.get(_A_URL, params=_SOME_QUERY_PARAMS, headers=_SOME_HEADERS)
+
+        assert first_response.text == _A_RESPONSE_BODY
+        assert first_response.status_code == 1
+        assert second_response.text == _ANOTHER_RESPONSE_BODY
+        assert second_response.status_code == 2
+
+    @HttpMocker()
+    def test_given_multiple_responses_when_decorate_delete_request_then_return_response(self, http_mocker):
+        http_mocker.delete(
+            HttpRequest(_A_URL, headers=_SOME_HEADERS),
+            [HttpResponse(_A_RESPONSE_BODY, 1), HttpResponse(_ANOTHER_RESPONSE_BODY, 2)],
+        )
+
+        first_response = requests.delete(_A_URL, headers=_SOME_HEADERS)
+        second_response = requests.delete(_A_URL, headers=_SOME_HEADERS)
 
         assert first_response.text == _A_RESPONSE_BODY
         assert first_response.status_code == 1

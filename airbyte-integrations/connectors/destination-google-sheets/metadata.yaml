@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: destination
   definitionId: a4cbd2d1-8dbe-4818-b8bc-b90ad782d12a
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.5
   dockerRepository: airbyte/destination-google-sheets
   githubIssueLabel: destination-google-sheets
   icon: google-sheets.svg
@@ -17,8 +17,20 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/destinations/google-sheets
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 200
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-GOOGLE_SHEETS_OAUTH_CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
 metadataSpecVersion: "1.0"

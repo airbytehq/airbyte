@@ -19,9 +19,9 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_han
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpMethod, HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
-from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
+from airbyte_cdk.sources.types import Config
 from requests import PreparedRequest
 from requests_cache import CachedResponse
 
@@ -386,6 +386,42 @@ def test_send_request_params(provider_params, param_params, authenticator_params
             "k=%7B%27updatedDateFrom%27%3A+%272023-08-20T00%3A00%3A00Z%27%2C+%27updatedDateTo%27%3A+%272023-08-20T23%3A59%3A59Z%27%7D",
             id="test-request-parameter-from-config-object",
         ),
+        pytest.param(
+            {"k": "[1,2]"},
+            {},
+            "k=1&k=2",
+            id="test-request-parameter-list-of-numbers",
+        ),
+        pytest.param(
+            {"k": '["a", "b"]'},
+            {},
+            "k=a&k=b",
+            id="test-request-parameter-list-of-strings",
+        ),
+        pytest.param(
+            {"k": '{{ config["k"] }}'},
+            {"k": [1, 2]},
+            "k=1&k=2",
+            id="test-request-parameter-from-config-list-of-numbers",
+        ),
+        pytest.param(
+            {"k": '{{ config["k"] }}'},
+            {"k": ["a", "b"]},
+            "k=a&k=b",
+            id="test-request-parameter-from-config-list-of-strings",
+        ),
+        pytest.param(
+            {"k": '{{ config["k"] }}'},
+            {"k": ["a,b"]},
+            "k=a%2Cb",
+            id="test-request-parameter-from-config-comma-separated-strings",
+        ),
+        pytest.param(
+            {'["a", "b"]': '{{ config["k"] }}'},
+            {"k": [1, 2]},
+            "%5B%22a%22%2C+%22b%22%5D=1&%5B%22a%22%2C+%22b%22%5D=2",
+            id="test-key-with-list-to-be-interpolated",
+        )
     ],
 )
 def test_request_param_interpolation(request_parameters, config, expected_query_params):
@@ -407,46 +443,10 @@ def test_request_param_interpolation(request_parameters, config, expected_query_
     "request_parameters, config, invalid_value_for_key",
     [
         pytest.param(
-            {"k": "[1,2]"},
-            {},
-            "k",
-            id="test-request-parameter-list-of-numbers",
-        ),
-        pytest.param(
             {"k": {"updatedDateFrom": "2023-08-20T00:00:00Z", "updatedDateTo": "2023-08-20T23:59:59Z"}},
             {},
             "k",
             id="test-request-parameter-object-of-the-updated-info",
-        ),
-        pytest.param(
-            {"k": '["a", "b"]'},
-            {},
-            "k",
-            id="test-request-parameter-list-of-strings",
-        ),
-        pytest.param(
-            {"k": '{{ config["k"] }}'},
-            {"k": [1, 2]},
-            "k",
-            id="test-request-parameter-from-config-list-of-numbers",
-        ),
-        pytest.param(
-            {"k": '{{ config["k"] }}'},
-            {"k": ["a", "b"]},
-            "k",
-            id="test-request-parameter-from-config-list-of-strings",
-        ),
-        pytest.param(
-            {"k": '{{ config["k"] }}'},
-            {"k": ["a,b"]},
-            "k",
-            id="test-request-parameter-from-config-comma-separated-strings",
-        ),
-        pytest.param(
-            {'["a", "b"]': '{{ config["k"] }}'},
-            {"k": [1, 2]},
-            '["a", "b"]',
-            id="test-key-with-list-is-not-interpolated",
         ),
         pytest.param(
             {"a": '{{ config["k"] }}', "b": {"end_timestamp": 1699109113}},
@@ -471,7 +471,7 @@ def test_request_param_interpolation_with_incorrect_values(request_parameters, c
 
     assert (
         error.value.args[0]
-        == f"Invalid value for `{invalid_value_for_key}` parameter. The values of request params cannot be an array or object."
+        == f"Invalid value for `{invalid_value_for_key}` parameter. The values of request params cannot be an object."
     )
 
 

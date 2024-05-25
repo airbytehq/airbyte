@@ -1,63 +1,45 @@
 {
   "type": "object",
-  "required": ["account", "bankBalance"],
   "properties": {
     "account": {
-      "type": "object",
+      "description": "Details of the account associated with the bank balance",
+      "type": ["object", "null"],
       "properties": {
         "code": {
-          "type": "string",
-          "example": "ACCOUNT001",
-          "description": "Code that represents the account.",
-          "minLength": 1,
-          "maxLength": 12
+          "description": "The unique code identifying the account",
+          "type": ["string", "null"]
         },
         "statementIdentifier": {
-          "type": ["null", "string"],
-          "example": "Statement identifier",
-          "description": "Account Statement Identifier of the account.",
-          "minLength": 0,
-          "maxLength": 50
+          "description": "Identifier for the statement associated with the account",
+          "type": ["null", "string"]
         },
         "uuid": {
-          "type": "string",
-          "format": "uuid",
-          "example": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-          "description": "Unique internal identifier that represents the account."
+          "description": "UUID (Universally Unique Identifier) of the account",
+          "type": ["string", "null"]
         }
-      },
-      "title": "BK-BankAccountModel"
+      }
     },
     "bankBalance": {
-      "type": "object",
+      "description": "The end-of-day bank balance for the account",
+      "type": ["object", "null"],
       "properties": {
         "amount": {
-          "type": "number",
-          "format": "double",
-          "example": 1.123,
-          "description": "End of day balance value."
+          "description": "The balance amount of the account",
+          "type": ["number", "null"]
         },
         "balanceDate": {
-          "type": "string",
-          "format": "date",
-          "example": "2019-11-11",
-          "description": "Date of the end of day balance."
+          "description": "The date when the balance was recorded",
+          "type": ["string", "null"]
         },
         "currencyCode": {
-          "type": "string",
-          "example": "EUR",
-          "description": "Account currency code.",
-          "minLength": 1,
-          "maxLength": 3
+          "description": "The currency code of the balance amount",
+          "type": ["string", "null"]
         },
         "lastKnownBalanceDate": {
-          "type": ["null", "string"],
-          "format": "date",
-          "example": "2019-11-11",
-          "description": "Date of last known balance within the last 365 days."
+          "description": "The date of the last known balance for the account",
+          "type": ["null", "string"]
         }
-      },
-      "title": "BK-BalanceModel"
+      }
     }
   },
   "title": "BK-BankStatementBalanceModel",

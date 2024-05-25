@@ -4,6 +4,12 @@ products: oss-*
 
 # Transformations with Airbyte (Part 3/3)
 
+:::warning
+Normalization and Custom Transformation are deprecated features.
+Destinations using Normalization will be replaced by [Typing and Deduping](/using-airbyte/core-concepts/typing-deduping.md).
+Custom Transformation will be removed on March 31. For more information, visit [here](https://github.com/airbytehq/airbyte/discussions/34860).
+:::
+
 This tutorial will describe how to push a custom dbt transformation project back to Airbyte to use during syncs.
 
 This guide is the last part of the tutorial series on transformations, following [Transformations with SQL](transformations-with-sql.md) and [connecting EL with T using dbt](transformations-with-dbt.md).
@@ -34,9 +40,9 @@ Now, let's connect my mono-repo Business Intelligence project stored in a privat
 
 Note that if you need to connect to a private git repository, the recommended way to do so is to generate a `Personal Access Token` that can be used instead of a password. Then, you'll be able to include the credentials in the git repository url:
 
-* [GitHub - Personal Access Tokens](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token)
-* [Gitlab - Personal Access Tokens](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html)
-* [Azure DevOps - Personal Access Tokens](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate)
+- [GitHub - Personal Access Tokens](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+- [Gitlab - Personal Access Tokens](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html)
+- [Azure DevOps - Personal Access Tokens](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate)
 
 And then use it for cloning:
 
@@ -69,11 +75,10 @@ According to the dbt documentation, I can configure the [packages folder](https:
 
 ```yaml
 # dbt_project.yml
-packages-install-path: '../dbt_packages'
+packages-install-path: "../dbt_packages"
 ```
 
 > If I want to chain **dbt deps** and **dbt run**, I may use **[dbt build](https://docs.getdbt.com/reference/commands/build)** instead, which is not equivalent to the two previous commands, but will remove the need to alter the configuration of dbt.
-
 
 ### Refresh models partially
 
@@ -81,7 +86,7 @@ Since I am using a mono-repo from my organization, other team members or departm
 
 The whole warehouse is scheduled for full refresh on a different orchestration tool, or as part of the git repository CI. However, here, I want to partially refresh some small relevant tables when attaching this operation to a specific Airbyte sync, in this case, the Covid dataset.
 
-Therefore, I can restrict the execution of models to a particular tag or folder by specifying in the dbt cli arguments, in this case whatever is related to "covid\_api":
+Therefore, I can restrict the execution of models to a particular tag or folder by specifying in the dbt cli arguments, in this case whatever is related to "covid_api":
 
 ```text
 run --models tag:covid_api opendata.base.*
@@ -101,4 +106,4 @@ This string must have no space. There is a [Github issue](https://github.com/air
 
 ### DBT Profile
 
-There is no need to specify `--profiles-dir`. By default AirByte based on the destination type. For example, if you're using Postgres as your destination, Airbyte will create a profile configuration based on that destination. This means you don't need to specify the credentials. If you specify a custom `profile` file, you are responsible for securely managing the credentials. Currently, we don't have a way to manage and pass secrets and it's recommended you let Airbyte pass this to dbt. 
+There is no need to specify `--profiles-dir`. By default AirByte based on the destination type. For example, if you're using Postgres as your destination, Airbyte will create a profile configuration based on that destination. This means you don't need to specify the credentials. If you specify a custom `profile` file, you are responsible for securely managing the credentials. Currently, we don't have a way to manage and pass secrets and it's recommended you let Airbyte pass this to dbt.

@@ -9,6 +9,7 @@ An API token is required to get hold of reports from the Adjust reporting API. S
 As Adjust allows you to setup custom events etc that are specific to your apps, only a subset of available metrics are made pre-selectable. To list all metrics that are available, query the filters data endpoint. Information about available metrics are available in the [Datascape metrics glossary](https://help.adjust.com/en/article/datascape-metrics-glossary).
 
 ### Full Metrics Listing
+
 Take a look at the [filters data endpoint documentation](https://help.adjust.com/en/article/filters-data-endpoint) to see available filters. The example below shows how to obtain the events that are defined for your apps (replace the `API_KEY` with the key obtained in the previous step):
 
 ```sh
@@ -36,6 +37,7 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Description      |
-|---------|------------|----------------------------------------------------------|------------------|
-| 0.1.0   | 2022-08-26 | [16051](https://github.com/airbytehq/airbyte/pull/16051) | Initial version. |
+| Version | Date       | Pull Request                                             | Subject          |
+| ------- | ---------- | -------------------------------------------------------- | ---------------- |
+| 0.1.1 | 2024-05-20 | [38373](https://github.com/airbytehq/airbyte/pull/38373) | [autopull] base image + poetry + up_to_date |
+| 0.1.0 | 2022-08-26 | [16051](https://github.com/airbytehq/airbyte/pull/16051) | Initial version. |

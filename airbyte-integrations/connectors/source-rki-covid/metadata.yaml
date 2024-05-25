@@ -8,6 +8,10 @@ data:
   icon: rki.svg
   license: MIT
   name: RKI Covid
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-rki-covid
   registries:
     cloud:
       enabled: true
@@ -17,8 +21,18 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/rki-covid
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-RKI-COVID__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

@@ -8,7 +8,7 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.types import StreamSlice, StreamState
 
 
 @dataclass
@@ -44,7 +44,7 @@ class CartesianProductStreamSlicer(StreamSlicer):
     ) -> Mapping[str, Any]:
         return dict(
             ChainMap(
-                *[
+                *[  # type: ignore # ChainMap expects a MutableMapping[Never, Never] for reasons
                     s.get_request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
                     for s in self.stream_slicers
                 ]
@@ -60,7 +60,7 @@ class CartesianProductStreamSlicer(StreamSlicer):
     ) -> Mapping[str, Any]:
         return dict(
             ChainMap(
-                *[
+                *[  # type: ignore # ChainMap expects a MutableMapping[Never, Never] for reasons
                     s.get_request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
                     for s in self.stream_slicers
                 ]
@@ -76,7 +76,7 @@ class CartesianProductStreamSlicer(StreamSlicer):
     ) -> Mapping[str, Any]:
         return dict(
             ChainMap(
-                *[
+                *[  # type: ignore # ChainMap expects a MutableMapping[Never, Never] for reasons
                     s.get_request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
                     for s in self.stream_slicers
                 ]
@@ -89,10 +89,10 @@ class CartesianProductStreamSlicer(StreamSlicer):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping]:
+    ) -> Mapping[str, Any]:
         return dict(
             ChainMap(
-                *[
+                *[  # type: ignore # ChainMap expects a MutableMapping[Never, Never] for reasons
                     s.get_request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
                     for s in self.stream_slicers
                 ]
@@ -101,4 +101,14 @@ class CartesianProductStreamSlicer(StreamSlicer):
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         sub_slices = (s.stream_slices() for s in self.stream_slicers)
-        return (dict(ChainMap(*a)) for a in itertools.product(*sub_slices))
+        product = itertools.product(*sub_slices)
+        for stream_slice_tuple in product:
+            partition = dict(ChainMap(*[s.partition for s in stream_slice_tuple]))  # type: ignore # ChainMap expects a MutableMapping[Never, Never] for reasons
+            cursor_slices = [s.cursor_slice for s in stream_slice_tuple if s.cursor_slice]
+            if len(cursor_slices) > 1:
+                raise ValueError(f"There should only be a single cursor slice. Found {cursor_slices}")
+            if cursor_slices:
+                cursor_slice = cursor_slices[0]
+            else:
+                cursor_slice = {}
+            yield StreamSlice(partition=partition, cursor_slice=cursor_slice)

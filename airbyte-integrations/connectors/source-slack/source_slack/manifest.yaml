@@ -1,0 +1,260 @@
+version: 0.73.0
+type: DeclarativeSource
+
+definitions:
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_slack/schemas/{{ parameters['name'] }}.json"
+
+  default_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: cursor
+    page_size_option:
+      type: RequestOption
+      field_name: limit
+      inject_into: request_parameter
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 1000
+      cursor_value: '{{ response.get("response_metadata", {}).get("next_cursor", {}) }}'
+      stop_condition: >-
+        {{ not response.get("response_metadata", {}).get("next_cursor", {})
+        }}
+
+  api_token_auth:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['api_token'] }}"
+  access_token_auth:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['access_token'] }}"
+
+  requester:
+    type: HttpRequester
+    url_base: https://slack.com/api/
+    path: "{{ parameters['path'] }}"
+    http_method: GET
+    request_parameters: {}
+    request_headers: {}
+    authenticator:
+      type: SelectiveAuthenticator
+      authenticator_selection_path: ["credentials", "option_title"]
+      authenticators:
+        Default OAuth2.0 authorization: "#/definitions/access_token_auth"
+        API Token Credentials: "#/definitions/api_token_auth"
+    request_body_json: {}
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - error_message_contains: "invalid_auth"
+          action: FAIL
+          error_message: Authentication has failed, please update your credentials.
+        - http_codes: [429]
+          action: RETRY
+          error_message: Failed to perform a request due to rate limits.
+        - http_codes: [500, 503]
+          action: RETRY
+          error_message: Failed to perform a request due to internal server error.
+
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - "{{ parameters['field_path'] }}"
+
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/requester"
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      $ref: "#/definitions/default_paginator"
+    partition_router: []
+
+  stream_base:
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+
+  users_stream:
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - error_message_contains: "invalid_auth"
+              action: FAIL
+              error_message: Authentication has failed, please update your credentials.
+            - http_codes: [429]
+              action: RETRY
+              error_message: Failed to perform a request due to rate limits.
+            - http_codes: [403, 400]
+              action: FAIL
+              error_message: Got an exception while trying to set up the connection. Most probably, there are no users in the given Slack instance or your token is incorrect.
+            - http_codes: [500, 503]
+              action: RETRY
+              error_message: Failed to perform a request due to internal server error.
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router: []
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    $parameters:
+      name: users
+      path: users.list
+      field_path: members
+
+  channels_stream:
+    primary_key: "id"
+    $parameters:
+      name: channels
+      path: conversations.list
+      field_path: channels
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    retriever:
+      class_name: "source_slack.components.join_channels.ChannelsRetriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          types: "{{ 'public_channel,private_channel' if config['include_private_channels'] == true else 'public_channel' }}"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.name in config.channel_filter or not config.channel_filter }}"
+        $parameters:
+          transformations: [[]]
+      paginator:
+        $ref: "#/definitions/default_paginator"
+        $parameters:
+          url_base: https://slack.com/api/
+      partition_router: []
+
+  channels_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - type: ParentStreamConfig
+        parent_key: id
+        request_option:
+          type: RequestOption
+          field_name: channel
+          inject_into: request_parameter
+        partition_field: channel_id
+        stream: "#/definitions/channels_stream"
+
+  channel_members_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: channel_members
+      path: conversations.members
+      field_path: members
+    primary_key:
+      - member_id
+      - channel_id
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        $ref: "#/definitions/channels_partition_router"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          class_name: "source_slack.components.channel_members_extractor.ChannelMembersExtractor"
+          field_path: ["members"]
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - channel_id
+            value: "{{ stream_partition.get('channel_id') }}"
+
+  channel_messages_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: channel_messages
+      path: conversations.history
+      field_path: messages
+    primary_key:
+      - channel_id
+      - ts
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          inclusive: "True"
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/channels_stream"
+              $parameters:
+                name: channels
+                path: conversations.list
+                field_path: channels
+            parent_key: id
+            partition_field: channel
+            request_option:
+              field_name: "channel"
+              inject_into: "request_parameter"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: float_ts
+      cursor_datetime_formats:
+        - "%s"
+      step: P100D
+      cursor_granularity: PT1S
+      lookback_window: "P{{ config.get('lookback_window', 0) }}D"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        inject_into: request_parameter
+        field_name: oldest
+        type: RequestOption
+      end_time_option:
+        inject_into: request_parameter
+        field_name: latest
+        type: RequestOption
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - float_ts
+            value: "{{ record.ts|float }}"
+          - path:
+              - channel_id
+            value: "{{ stream_partition.get('channel') }}"
+
+streams:
+  - "#/definitions/users_stream"
+  - "#/definitions/channels_stream"
+  - "#/definitions/channel_members_stream"
+  - "#/definitions/channel_messages_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - users

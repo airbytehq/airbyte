@@ -1,11 +1,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-import json
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 from unittest import TestCase
 
 import freezegun
+from airbyte_cdk.sources.source import TState
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
@@ -18,7 +18,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_protocol.models import AirbyteStateBlob, AirbyteStreamState, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
 from integration.config import ConfigBuilder
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
@@ -48,8 +48,8 @@ def _catalog(sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
     return CatalogBuilder().with_stream(_STREAM_NAME, sync_mode).build()
 
 
-def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any]) -> SourceStripe:
-    return SourceStripe(catalog, config)
+def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any], state: Optional[TState]) -> SourceStripe:
+    return SourceStripe(catalog, config, state)
 
 
 def _a_record() -> RecordBuilder:
@@ -73,7 +73,7 @@ def _read(
 ) -> EntrypointOutput:
     catalog = _catalog(sync_mode)
     config = config_builder.build()
-    return read(_source(catalog, config), config, catalog, state, expecting_exception)
+    return read(_source(catalog, config, state), config, catalog, state, expecting_exception)
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -230,7 +230,9 @@ class IncrementalTest(TestCase):
             _a_response().with_record(_a_record().with_cursor(cursor_value)).build(),
         )
         output = self._read(_config().with_start_date(_A_START_DATE), _NO_STATE)
-        assert output.most_recent_state == {"events": {"created": cursor_value}}
+        most_recent_state = output.most_recent_state
+        assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
+        assert most_recent_state.stream_state == AirbyteStateBlob(created=int(_NOW.timestamp()))
 
     @HttpMocker()
     def test_given_state_when_read_then_use_state_for_query_params(self, http_mocker: HttpMocker) -> None:
@@ -254,6 +256,10 @@ class IncrementalTest(TestCase):
 
     @HttpMocker()
     def test_given_state_more_recent_than_cursor_when_read_then_return_state_based_on_cursor_field(self, http_mocker: HttpMocker) -> None:
+        """
+        We do not see exactly how this case can happen in a real life scenario but it is used to see if at least one state message
+        would be populated given that no partitions were created.
+        """
         cursor_value = int(_A_START_DATE.timestamp()) + 1
         more_recent_than_record_cursor = int(_NOW.timestamp()) - 1
         http_mocker.get(
@@ -266,7 +272,9 @@ class IncrementalTest(TestCase):
             StateBuilder().with_stream_state("events", {"created": more_recent_than_record_cursor}).build()
         )
 
-        assert output.most_recent_state == {"events": {"created": more_recent_than_record_cursor}}
+        most_recent_state = output.most_recent_state
+        assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
+        assert most_recent_state.stream_state == AirbyteStateBlob(created=more_recent_than_record_cursor)
 
     def _read(self, config: ConfigBuilder, state: Optional[Dict[str, Any]], expecting_exception: bool = False) -> EntrypointOutput:
         return _read(config, SyncMode.incremental, state, expecting_exception)

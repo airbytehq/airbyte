@@ -2,6 +2,10 @@ data:
   allowedHosts:
     hosts:
       - https://api.customer.io/v1/
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-customer-io
   registries:
     oss:
       enabled: false
@@ -21,5 +25,14 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/customer-io
   tags:
-    - language:lowcode
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-CUSTOMERIO__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

@@ -1,0 +1,29 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "3.0.2"
+name = "source-notion"
+description = "Source implementation for Notion."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/notion"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_notion"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "0.80.0"
+
+[tool.poetry.scripts]
+source-notion = "source_notion.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "^1.11.0"
+pytest-mock = "^3.6.1"
+freezegun = "^1.4.0"
+pytest = "^6.1"

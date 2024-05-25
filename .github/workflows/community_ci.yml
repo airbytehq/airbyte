@@ -1,0 +1,250 @@
+name: Community CI
+
+concurrency:
+  # This is the name of the concurrency group. It is used to prevent concurrent runs of the same workflow.
+  #
+  # - github.head_ref is only defined on PR runs, it makes sure that the concurrency group is unique for pull requests
+  #  ensuring that only one run per pull request is active at a time.
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+on:
+  # The pull request target event is triggered on PR open and synchronize events.
+  # The executed workflow code is the one from the target branch.
+  # It guarantees that the workflow logic is not altered by the PR.
+  pull_request_target:
+    types: [opened, synchronize]
+
+jobs:
+  fail_on_protected_path_changes:
+    name: "Check fork do not change protected paths"
+    if: github.event.pull_request.head.repo.fork == true
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    steps:
+      - name: Check for changes in protected paths
+        id: check_for_changes_in_protected_paths
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            protected_paths:
+              - '.github/**'
+              - 'airbyte-ci/**'
+
+      - name: Fail if changes in protected paths
+        if: steps.check_for_changes_in_protected_paths.outputs.protected_paths == 'true'
+        run: |
+          echo "The fork has changes in protected paths. This is not allowed."
+          exit 1
+
+  format_check:
+    # IMPORTANT: This name must match the require check name on the branch protection settings
+    name: "Check for formatting errors"
+    if: github.event.pull_request.head.repo.fork == true
+    environment: community-ci-auto
+    runs-on: community-tooling-test-small
+    needs: fail_on_protected_path_changes
+    timeout-minutes: 30
+    env:
+      MAIN_BRANCH_NAME: "master"
+    steps:
+      # This checkouts a fork which can contain untrusted code
+      # It's deemed safe as the formatter are not executing any checked out code
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+
+      # This will sync the .github folder of the main repo with the fork
+      # This allows us to use up to date actions and CI logic from the main repo
+      - name: Pull .github folder and internal packages from main repository
+        id: pull_github_folder
+        run: |
+          git remote add main https://github.com/airbytehq/airbyte.git
+          git fetch main ${MAIN_BRANCH_NAME}
+          git checkout main/${MAIN_BRANCH_NAME} -- .github
+          git checkout main/${MAIN_BRANCH_NAME} -- airbyte-ci
+
+      - name: Run airbyte-ci format check all
+        # This path refers to the fork .github folder.
+        # We make sure its content is in sync with the main repo .github folder by pulling it in the previous step
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "pull_request"
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          subcommand: "format check all"
+          is_fork: "true"
+  connectors_early_ci:
+    name: Run connectors early CI on fork
+    if: github.event.pull_request.head.repo.fork == true
+    needs: fail_on_protected_path_changes
+    environment: community-ci-auto
+    runs-on: community-tooling-test-small
+    timeout-minutes: 10
+    env:
+      MAIN_BRANCH_NAME: "master"
+    permissions:
+      statuses: write
+    steps:
+      # This checkouts a fork which can contain untrusted code
+      # It's deemed safe as the static checks are not executing any checked out code
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+
+      # This will sync the .github folder of the main repo with the fork
+      # This allows us to use up to date actions and CI logic from the main repo
+      - name: Pull .github folder from main repository
+        id: pull_github_folder
+        run: |
+          git remote add main https://github.com/airbytehq/airbyte.git
+          git fetch main ${MAIN_BRANCH_NAME}
+          git checkout main/${MAIN_BRANCH_NAME} -- .github
+          git checkout main/${MAIN_BRANCH_NAME} -- airbyte-ci
+
+      - name: Run airbyte-ci static checks and version increment checks on modified connectors
+        # This path refers to the fork .github folder.
+        # We make sure its content is in sync with the main repo .github folder by pulling it in the previous step
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "pull_request"
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          subcommand: "connectors --modified test --only-step=qa_checks --only-step=version_inc_check --global-status-check-context='Connectors early CI checks' --global-status-check-description='Running early CI checks on connectors'"
+          is_fork: "true"
+          git_repo_url: ${{ github.event.pull_request.head.repo.clone_url }}
+          git_branch: ${{ github.head_ref }}
+          git_revision: ${{ github.event.pull_request.head.sha }}
+          github_token: ${{ github.token }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+      - name: Upload pipeline reports
+        id: upload-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: early-ci-pipeline-reports
+          path: /home/runner/work/airbyte/airbyte/airbyte-ci/connectors/pipelines/pipeline_reports/airbyte-ci/connectors/test/pull_request/**/output.html
+          retention-days: 7
+
+  connectors_full_ci:
+    name: Run connectors full CI on fork
+    if: github.event.pull_request.head.repo.fork == true
+    # Deployment of jobs on the community-ci environment requires manual approval
+    # This is something we set up in the GitHub environment settings:
+    # https://github.com/airbytehq/airbyte/settings/environments/2091483613/edit
+    # This is a safety measure to make sure the code running on our infrastructure has been reviewed before running on it
+    needs: fail_on_protected_path_changes
+    environment: community-ci
+    runs-on: community-connector-test-large
+    timeout-minutes: 180 # 3 hours
+    permissions:
+      statuses: write
+    env:
+      MAIN_BRANCH_NAME: "master"
+
+    steps:
+      # This checkouts a fork which can contain untrusted code
+      # It's deemed safe as the community-ci environment requires manual reviewer approval to run
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+
+      # This will sync the .github folder of the main repo with the fork
+      # This allows us to use up to date actions and CI logic from the main repo
+      - name: Pull .github folder from main repository
+        id: pull_github_folder
+        run: |
+          git remote add main https://github.com/airbytehq/airbyte.git
+          git fetch main ${MAIN_BRANCH_NAME}
+          git checkout main/${MAIN_BRANCH_NAME} -- .github
+          git checkout main/${MAIN_BRANCH_NAME} -- airbyte-ci
+
+      - name: Run airbyte-ci connectors test
+        # This path refers to the fork .github folder.
+        # We make sure its content is in sync with the main repo .github folder by pulling it in the previous step
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "pull_request"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          git_repo_url: ${{ github.event.pull_request.head.repo.clone_url }}
+          git_branch: ${{ github.head_ref }}
+          git_revision: ${{ github.event.pull_request.head.sha }}
+          github_token: ${{ github.token }}
+          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          subcommand: "connectors --modified test"
+          is_fork: "true"
+      - name: Upload pipeline reports
+        id: upload-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-reports
+          path: /home/runner/work/airbyte/airbyte/airbyte-ci/connectors/pipelines/pipeline_reports/airbyte-ci/connectors/test/pull_request/**/output.html
+          retention-days: 7
+
+  internal_poetry_packages_ci:
+    name: Internal Poetry packages CI
+    if: github.event.pull_request.head.repo.fork == true
+    # Deployment of jobs on the community-ci environment requires manual approval
+    # This is something we set up in the GitHub environment settings:
+    # https://github.com/airbytehq/airbyte/settings/environments/2091483613/edit
+    # This is a safety measure to make sure the code running on our infrastructure has been reviewed before running on it
+    needs: fail_on_protected_path_changes
+    environment: community-ci
+    runs-on: community-tooling-test-small
+    timeout-minutes: 180 # 3 hours
+    permissions:
+      statuses: write
+    env:
+      MAIN_BRANCH_NAME: "master"
+
+    steps:
+      # This checkouts a fork which can contain untrusted code
+      # It's deemed safe as the community-ci environment requires manual reviewer approval to run
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+
+      # This will sync the .github folder of the main repo with the fork
+      # This allows us to use up to date actions and CI logic from the main repo
+      - name: Pull .github folder from main repository
+        id: pull_github_folder
+        run: |
+          git remote add main https://github.com/airbytehq/airbyte.git
+          git fetch main ${MAIN_BRANCH_NAME}
+          git checkout main/${MAIN_BRANCH_NAME} -- .github
+          git checkout main/${MAIN_BRANCH_NAME} -- airbyte-ci
+
+      - name: Run poe tasks for modified internal packages [PULL REQUEST]
+        # This path refers to the fork .github folder.
+        # We make sure its content is in sync with the main repo .github folder by pulling it in the previous step
+        id: run-airbyte-ci-test-pr
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "pull_request"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          git_repo_url: ${{ github.event.pull_request.head.repo.clone_url }}
+          git_branch: ${{ github.head_ref }}
+          git_revision: ${{ github.event.pull_request.head.sha }}
+          github_token: ${{ github.token }}
+          subcommand: "test --modified"
+          is_fork: "true"

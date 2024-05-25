@@ -8,6 +8,10 @@ data:
   icon: alpha-vantage.svg
   license: MIT
   name: Alpha Vantage
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-alpha-vantage
   registries:
     cloud:
       enabled: false
@@ -16,10 +20,19 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/alpha-vantage
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-ALPHA-VANTAGE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

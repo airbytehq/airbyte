@@ -1,0 +1,31 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "1.7.4"
+name = "source-github"
+description = "Source implementation for GitHub."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/github"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_github"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "0.80.0"
+sgqlc = "==16.3"
+
+[tool.poetry.scripts]
+source-github = "source_github.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "^1.9.3"
+freezegun = "^1.2"
+pytest-mock = "^3.6.1"
+pytest = "^6.2"
+responses = "^0.23.1"

@@ -12,6 +12,10 @@ data:
   icon: activecampaign.svg
   license: MIT
   name: ActiveCampaign
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-activecampaign
   registries:
     cloud:
       enabled: false
@@ -20,6 +24,14 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-ACTIVECAMPAIGN__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

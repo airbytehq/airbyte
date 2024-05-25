@@ -1,24 +1,50 @@
 data:
+  allowedHosts:
+    hosts:
+      - sandbox-lever.auth0.com
+      - api.sandbox.lever.co
+      - api.lever.co
+      - auth.lever.co
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-lever-hiring
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/python-connector-base:1.0.0@sha256:dd17e347fbda94f7c3abff539be298a65af2d7fc27a307d89297df1081a45c27
   connectorSubtype: api
   connectorType: source
   definitionId: 3981c999-bd7d-4afc-849b-e53dea90c948
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-lever-hiring
   githubIssueLabel: source-lever-hiring
-  icon: leverhiring.svg
+  icon: icon.svg
   license: MIT
   name: Lever Hiring
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
+  releaseDate: 2021-09-22
   releaseStage: alpha
+  supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/lever-hiring
   tags:
     - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100
-  supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-LEVER-HIRING__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

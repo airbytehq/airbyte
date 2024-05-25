@@ -8,6 +8,10 @@ data:
   icon: googledirectory.svg
   license: MIT
   name: Google Directory
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-google-directory
   registries:
     cloud:
       dockerImageTag: 0.2.1
@@ -18,8 +22,23 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-directory
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-GOOGLE-DIRECTORY_OAUTH__CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-GOOGLE-DIRECTORY__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

@@ -7,19 +7,27 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
-  dockerImageTag: 0.2.0
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/destination-mssql-strict-encrypt
   githubIssueLabel: destination-mssql
   icon: mssql.svg
   license: ELv2
   name: MS SQL Server
-  normalizationConfig:
-    normalizationIntegrationType: mssql
-    normalizationRepository: airbyte/normalization-mssql
-    normalizationTag: 0.4.1
   releaseStage: alpha
+  releases:
+    breakingChanges:
+      1.0.0:
+        upgradeDeadline: "2024-05-25"
+        message: >
+          This version removes the option to use "normalization" with MSSQL. It also changes
+          the schema and database of Airbyte's "raw" tables to be compatible with the new
+          [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2)
+          format. These changes will likely require updates to downstream dbt / SQL models.
+          Selecting `Upgrade` will upgrade **all** connections using this destination at their next sync.
   documentationUrl: https://docs.airbyte.com/integrations/destinations/mssql
   supportsDbt: true
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

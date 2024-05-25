@@ -10,13 +10,17 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6c504e48-14aa-4221-9a72-19cf5ff1ae78
-  dockerImageTag: 0.5.1
+  dockerImageTag: 0.5.2
   dockerRepository: airbyte/source-auth0
   documentationUrl: https://docs.airbyte.com/integrations/sources/auth0
   githubIssueLabel: source-auth0
   icon: auth0.svg
   license: MIT
   name: Auth0
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-auth0
   registries:
     cloud:
       enabled: true
@@ -26,5 +30,14 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:lowcode
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-AUTH0__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

@@ -1,0 +1,32 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.5"
+name = "destination-typesense"
+description = "Destination Implementation for Typesense."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/destination/typesense"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "destination_typesense"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "==0.74.0"
+typesense = "^0.14.0"
+
+
+[tool.poetry.scripts]
+destination-typesense = "destination_typesense.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "^1.9.3"
+typesense = "^0.14.0"
+pytest-mock = "^3.6.1"
+pytest = "^6.1"
+

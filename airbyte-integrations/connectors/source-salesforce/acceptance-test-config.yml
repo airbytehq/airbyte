@@ -33,12 +33,6 @@ acceptance_tests:
             bypass_reason: "impossible to fill the stream with data because it is an organic traffic"
           - name: "Describe"
             bypass_reason: "Data is not permanent"
-        ignored_fields:
-          accounts:
-            - name: LastViewedDate
-              bypass_reason: The fields is being updated after any manipulations with account
-            - name: LastReferencedDate
-              bypass_reason: The fields is being updated after any manipulations with account
         fail_on_extra_columns: false
         timeout_seconds: 7200
   incremental:
@@ -48,6 +42,8 @@ acceptance_tests:
         future_state:
           future_state_path: "integration_tests/future_state.json"
         timeout_seconds: 7200
+        # skip incremental tests as filter condition greater than or equal is used, so last record for any stream state is duplicated
+        skip_comprehensive_incremental_tests: true
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

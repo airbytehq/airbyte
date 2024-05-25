@@ -8,6 +8,10 @@ data:
   icon: microsoftdataverse.svg
   license: MIT
   name: Microsoft Dataverse
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-microsoft-dataverse
   registries:
     cloud:
       enabled: false
@@ -17,8 +21,11 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-dataverse
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
 metadataSpecVersion: "1.0"

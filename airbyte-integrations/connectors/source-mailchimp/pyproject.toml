@@ -1,0 +1,29 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "2.0.3"
+name = "source-mailchimp"
+description = "Source implementation for Mailchimp."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/mailchimp"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_mailchimp"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "0.85.0"
+pytest = "==6.2.5"
+
+[tool.poetry.scripts]
+source-mailchimp = "source_mailchimp.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest-mock = "^3.6.1"
+requests-mock = "^1.9.3"
+freezegun = "^1.4.0"

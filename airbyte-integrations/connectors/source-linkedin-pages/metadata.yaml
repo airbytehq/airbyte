@@ -12,6 +12,10 @@ data:
   icon: linkedin.svg
   license: MIT
   name: LinkedIn Pages
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-linkedin-pages
   registries:
     cloud:
       enabled: true
@@ -21,4 +25,13 @@ data:
   supportLevel: community
   tags:
     - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-LINKEDIN-PAGES__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

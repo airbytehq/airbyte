@@ -4,7 +4,7 @@
 from dagster import Definitions, EnvVar, ScheduleDefinition, load_assets_from_modules
 from dagster_slack import SlackResource
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
-from orchestrator.assets import connector_test_report, github, metadata, registry, registry_entry, registry_report, specs_secrets_mask
+from orchestrator.assets import connector_test_report, github, metadata, registry, registry_entry, registry_report, specs_secrets_mask, slack
 from orchestrator.config import (
     CI_MASTER_TEST_OUTPUT_REGEX,
     CI_TEST_REPORT_PREFIX,
@@ -22,6 +22,7 @@ from orchestrator.jobs.connector_test_report import generate_connector_test_summ
 from orchestrator.jobs.metadata import generate_stale_gcs_latest_metadata_file
 from orchestrator.jobs.registry import (
     add_new_metadata_partitions,
+    remove_stale_metadata_partitions,
     generate_cloud_registry,
     generate_oss_registry,
     generate_registry_entry,
@@ -41,6 +42,7 @@ from orchestrator.sensors.registry import registry_updated_sensor
 
 ASSETS = load_assets_from_modules(
     [
+        slack,
         github,
         specs_secrets_mask,
         metadata,
@@ -113,13 +115,18 @@ REGISTRY_ENTRY_RESOURCE_TREE = {
     ),
 }
 
-CONNECTOR_TEST_REPORT_RESOURCE_TREE = {
-    **SLACK_RESOURCE_TREE,
-    **GITHUB_RESOURCE_TREE,
+CONNECTOR_TEST_REPORT_SENSOR_RESOURCE_TREE = {
     **GCS_RESOURCE_TREE,
     "latest_nightly_complete_file_blobs": gcs_directory_blobs.configured(
         {"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": NIGHTLY_FOLDER, "match_regex": f".*{NIGHTLY_COMPLETE_REPORT_FILE_NAME}$"}
     ),
+}
+
+CONNECTOR_TEST_REPORT_RESOURCE_TREE = {
+    **SLACK_RESOURCE_TREE,
+    **GITHUB_RESOURCE_TREE,
+    **GCS_RESOURCE_TREE,
+    **CONNECTOR_TEST_REPORT_SENSOR_RESOURCE_TREE,
     "latest_nightly_test_output_file_blobs": gcs_directory_blobs.configured(
         {
             "gcs_bucket": {"env": "CI_REPORT_BUCKET"},
@@ -155,14 +162,19 @@ SENSORS = [
     ),
     new_gcs_blobs_sensor(
         job=generate_nightly_reports,
-        resources_def=CONNECTOR_TEST_REPORT_RESOURCE_TREE,
+        resources_def=CONNECTOR_TEST_REPORT_SENSOR_RESOURCE_TREE,
         gcs_blobs_resource_key="latest_nightly_complete_file_blobs",
         interval=(1 * 60 * 60),
     ),
 ]
 
 SCHEDULES = [
-    ScheduleDefinition(job=add_new_metadata_partitions, cron_schedule="*/5 * * * *", tags={"dagster/priority": HIGH_QUEUE_PRIORITY}),
+    ScheduleDefinition(job=add_new_metadata_partitions, cron_schedule="*/2 * * * *", tags={"dagster/priority": HIGH_QUEUE_PRIORITY}),
+    ScheduleDefinition(
+        cron_schedule="0 1 * * *",  # Daily at 1am US/Pacific
+        execution_timezone="US/Pacific",
+        job=remove_stale_metadata_partitions,
+    ),
     ScheduleDefinition(job=generate_connector_test_summary_reports, cron_schedule="@hourly"),
     ScheduleDefinition(
         cron_schedule="0 8 * * *",  # Daily at 8am US/Pacific
@@ -178,6 +190,7 @@ JOBS = [
     generate_registry_entry,
     generate_nightly_reports,
     add_new_metadata_partitions,
+    remove_stale_metadata_partitions,
     generate_stale_gcs_latest_metadata_file,
 ]
 

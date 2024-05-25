@@ -1,11 +1,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-import json
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from unittest import TestCase
 
 import freezegun
+from airbyte_cdk.sources.source import TState
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -19,7 +19,15 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_protocol.models import (
+    AirbyteStateBlob,
+    AirbyteStateMessage,
+    AirbyteStreamState,
+    ConfiguredAirbyteCatalog,
+    FailureType,
+    StreamDescriptor,
+    SyncMode,
+)
 from integration.config import ConfigBuilder
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
@@ -55,8 +63,8 @@ def _catalog(sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
     return CatalogBuilder().with_stream(_STREAM_NAME, sync_mode).build()
 
 
-def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any]) -> SourceStripe:
-    return SourceStripe(catalog, config)
+def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any], state: Optional[List[AirbyteStateMessage]]) -> SourceStripe:
+    return SourceStripe(catalog, config, state)
 
 
 def _an_event() -> RecordBuilder:
@@ -110,12 +118,12 @@ def _given_events_availability_check(http_mocker: HttpMocker) -> None:
 def _read(
     config_builder: ConfigBuilder,
     sync_mode: SyncMode,
-    state: Optional[Dict[str, Any]] = None,
+    state: Optional[List[AirbyteStateMessage]] = None,
     expecting_exception: bool = False
 ) -> EntrypointOutput:
     catalog = _catalog(sync_mode)
     config = config_builder.build()
-    return read(_source(catalog, config), config, catalog, state, expecting_exception)
+    return read(_source(catalog, config, state), config, catalog, state, expecting_exception)
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -276,7 +284,9 @@ class IncrementalTest(TestCase):
             _application_fees_response().with_record(_an_application_fee().with_cursor(cursor_value)).build(),
         )
         output = self._read(_config().with_start_date(_A_START_DATE), _NO_STATE)
-        assert output.most_recent_state == {_STREAM_NAME: {"updated": cursor_value}}
+        most_recent_state = output.most_recent_state
+        assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
+        assert most_recent_state.stream_state == AirbyteStateBlob(updated=cursor_value)
 
     @HttpMocker()
     def test_given_state_when_read_then_query_events_using_types_and_state_value_plus_1(self, http_mocker: HttpMocker) -> None:
@@ -298,7 +308,9 @@ class IncrementalTest(TestCase):
             StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build(),
         )
 
-        assert output.most_recent_state == {_STREAM_NAME: {"updated": cursor_value}}
+        most_recent_state = output.most_recent_state
+        assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
+        assert most_recent_state.stream_state == AirbyteStateBlob(updated=cursor_value)
 
     @HttpMocker()
     def test_given_state_and_pagination_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
@@ -372,5 +384,5 @@ class IncrementalTest(TestCase):
     def _an_application_fee_event(self) -> RecordBuilder:
         return _an_event().with_field(_DATA_FIELD, _an_application_fee().build())
 
-    def _read(self, config: ConfigBuilder, state: Optional[Dict[str, Any]], expecting_exception: bool = False) -> EntrypointOutput:
+    def _read(self, config: ConfigBuilder, state: Optional[List[AirbyteStateMessage]], expecting_exception: bool = False) -> EntrypointOutput:
         return _read(config, SyncMode.incremental, state, expecting_exception)

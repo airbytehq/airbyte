@@ -1,0 +1,35 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 64a2f99c-542f-4af8-9a6f-355f1217b436
+  # This version should not be updated manually - it is updated by the CDK release workflow.
+  dockerImageTag: 1.1.0
+  dockerRepository: airbyte/source-declarative-manifest
+  # This page is hidden from the docs for now, since the connector is not in any Airbyte registries.
+  documentationUrl: https://docs.airbyte.com/integrations/sources/low-code
+  githubIssueLabel: source-declarative-manifest
+  license: MIT
+  name: Low-Code Source
+  registries:
+    # The path for using this source in the Airbyte UI is still with the connector builder for now.
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
+  releaseDate: 2023-03-01
+  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-declarative-manifest
+  supportLevel: community
+  tags:
+    - language:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+metadataSpecVersion: "1.0"

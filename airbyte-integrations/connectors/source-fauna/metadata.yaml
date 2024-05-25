@@ -8,6 +8,10 @@ data:
   icon: fauna.svg
   license: MIT
   name: Fauna
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-fauna
   registries:
     cloud:
       enabled: true
@@ -17,8 +21,23 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/fauna
   tags:
     - language:python
+    - cdk:python
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-FAUNA_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-FAUNA_DELETION_CREDS
+          fileName: config-deletions.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

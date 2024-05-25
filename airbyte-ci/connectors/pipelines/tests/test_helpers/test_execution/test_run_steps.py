@@ -8,14 +8,22 @@ from pipelines.helpers.execution.run_steps import InvalidStepConfiguration, RunS
 from pipelines.models.contexts.pipeline_context import PipelineContext
 from pipelines.models.steps import Step, StepResult, StepStatus
 
-test_context = PipelineContext(pipeline_name="test", is_local=True, git_branch="test", git_revision="test", report_output_prefix="test")
+test_context = PipelineContext(
+    pipeline_name="test",
+    is_local=True,
+    git_branch="test",
+    git_revision="test",
+    diffed_branch="test",
+    git_repo_url="test",
+    report_output_prefix="test",
+)
 
 
 class TestStep(Step):
     title = "Test Step"
 
     async def _run(self, result_status=StepStatus.SUCCESS) -> StepResult:
-        return StepResult(self, result_status)
+        return StepResult(step=self, status=result_status)
 
 
 @pytest.mark.anyio
@@ -215,7 +223,7 @@ async def test_run_steps_concurrent():
         async def _run(self, name, sleep) -> StepResult:
             await anyio.sleep(sleep)
             ran_at[name] = time.time()
-            return StepResult(self, StepStatus.SUCCESS)
+            return StepResult(step=self, status=StepStatus.SUCCESS)
 
     steps = [
         StepToRun(id="step1", step=SleepStep(test_context), args={"name": "step1", "sleep": 2}),
@@ -242,7 +250,7 @@ async def test_run_steps_concurrency_of_1():
         async def _run(self, name, sleep) -> StepResult:
             ran_at[name] = time.time()
             await anyio.sleep(sleep)
-            return StepResult(self, StepStatus.SUCCESS)
+            return StepResult(step=self, status=StepStatus.SUCCESS)
 
     steps = [
         StepToRun(id="step1", step=SleepStep(test_context), args={"name": "step1", "sleep": 1}),
@@ -269,7 +277,7 @@ async def test_run_steps_sequential():
         async def _run(self, name, sleep) -> StepResult:
             await anyio.sleep(sleep)
             ran_at[name] = time.time()
-            return StepResult(self, StepStatus.SUCCESS)
+            return StepResult(step=self, status=StepStatus.SUCCESS)
 
     steps = [
         [StepToRun(id="step1", step=SleepStep(test_context), args={"name": "step1", "sleep": 1})],
@@ -299,7 +307,7 @@ async def test_run_steps_passes_results():
         StepToRun(
             id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
             step=AcceptanceTests(context, True),
-            args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
+            args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
             depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
         ),
 
@@ -309,23 +317,23 @@ async def test_run_steps_passes_results():
         title = "Test Step"
 
         async def _run(self, arg1, arg2) -> StepResult:
-            output_artifact = f"{arg1}:{arg2}"
-            return StepResult(self, StepStatus.SUCCESS, output_artifact=output_artifact)
+            output = f"{arg1}:{arg2}"
+            return StepResult(step=self, status=StepStatus.SUCCESS, output=output)
 
     async def async_args(results):
-        return {"arg1": results["step2"].output_artifact, "arg2": "4"}
+        return {"arg1": results["step2"].output, "arg2": "4"}
 
     steps = [
         [StepToRun(id="step1", step=Simple(test_context), args={"arg1": "1", "arg2": "2"})],
-        [StepToRun(id="step2", step=Simple(test_context), args=lambda results: {"arg1": results["step1"].output_artifact, "arg2": "3"})],
+        [StepToRun(id="step2", step=Simple(test_context), args=lambda results: {"arg1": results["step1"].output, "arg2": "3"})],
         [StepToRun(id="step3", step=Simple(test_context), args=async_args)],
     ]
 
     results = await run_steps(steps)
 
-    assert results["step1"].output_artifact == "1:2"
-    assert results["step2"].output_artifact == "1:2:3"
-    assert results["step3"].output_artifact == "1:2:3:4"
+    assert results["step1"].output == "1:2"
+    assert results["step2"].output == "1:2:3"
+    assert results["step3"].output == "1:2:3:4"
 
 
 @pytest.mark.anyio
@@ -359,3 +367,66 @@ async def test_run_steps_with_params():
     TestStep.accept_extra_params = True
     await run_steps(steps, options=options)
     assert steps[0].step.params_as_cli_options == ["--param1=value1"]
+
+
+class TestRunStepOptions:
+    def test_init(self):
+        options = RunStepOptions()
+        assert options.fail_fast is True
+        assert options.concurrency == 10
+        assert options.skip_steps == []
+        assert options.step_params == {}
+
+        options = RunStepOptions(fail_fast=False, concurrency=1, skip_steps=["step1"], step_params={"step1": {"--param1": ["value1"]}})
+        assert options.fail_fast is False
+        assert options.concurrency == 1
+        assert options.skip_steps == ["step1"]
+        assert options.step_params == {"step1": {"--param1": ["value1"]}}
+
+        with pytest.raises(ValueError):
+            RunStepOptions(skip_steps=["step1"], keep_steps=["step2"])
+
+    @pytest.mark.parametrize(
+        "step_tree, options, expected_skipped_ids",
+        [
+            (
+                [
+                    [StepToRun(id="step1", step=TestStep(test_context)), StepToRun(id="step2", step=TestStep(test_context))],
+                    StepToRun(id="step3", step=TestStep(test_context)),
+                    StepToRun(id="step4", step=TestStep(test_context), depends_on=["step3", "step1"]),
+                    StepToRun(id="step5", step=TestStep(test_context)),
+                ],
+                RunStepOptions(keep_steps=["step4"]),
+                {"step2", "step5"},
+            ),
+            (
+                [
+                    [StepToRun(id="step1", step=TestStep(test_context)), StepToRun(id="step2", step=TestStep(test_context))],
+                    StepToRun(id="step3", step=TestStep(test_context)),
+                    [
+                        StepToRun(id="step4", step=TestStep(test_context), depends_on=["step1"]),
+                        StepToRun(id="step6", step=TestStep(test_context), depends_on=["step4", "step5"]),
+                    ],
+                    StepToRun(id="step5", step=TestStep(test_context), depends_on=["step3"]),
+                ],
+                RunStepOptions(keep_steps=["step6"]),
+                {"step2"},
+            ),
+            (
+                [
+                    [StepToRun(id="step1", step=TestStep(test_context)), StepToRun(id="step2", step=TestStep(test_context))],
+                    StepToRun(id="step3", step=TestStep(test_context)),
+                    [
+                        StepToRun(id="step4", step=TestStep(test_context), depends_on=["step1"]),
+                        StepToRun(id="step6", step=TestStep(test_context), depends_on=["step4", "step5"]),
+                    ],
+                    StepToRun(id="step5", step=TestStep(test_context), depends_on=["step3"]),
+                ],
+                RunStepOptions(skip_steps=["step1"]),
+                {"step1"},
+            ),
+        ],
+    )
+    def test_get_step_ids_to_skip(self, step_tree, options, expected_skipped_ids):
+        skipped_ids = options.get_step_ids_to_skip(step_tree)
+        assert set(skipped_ids) == expected_skipped_ids

@@ -1,28 +1,43 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   allowedHosts:
     hosts:
       - https://coda.io/
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: true
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: 27f910fd-f832-4b2e-bcfd-6ab342e434d8
-  dockerImageTag: 1.2.0
+  dockerImageTag: 1.2.1
   dockerRepository: airbyte/source-coda
+  documentationUrl: https://docs.airbyte.com/integrations/sources/coda
   githubIssueLabel: source-coda
   icon: coda.svg
   license: MIT
   name: Coda
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseDate: 2023-08-19
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-coda
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/coda
   tags:
-    - language:low-code
-  ab_internal:
-    sl: 100
-    ql: 100
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-CODA__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

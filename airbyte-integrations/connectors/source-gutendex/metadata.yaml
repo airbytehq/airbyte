@@ -7,6 +7,10 @@ data:
   githubIssueLabel: source-gutendex
   license: MIT
   name: Gutendex
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-gutendex
   registries:
     cloud:
       enabled: false
@@ -15,10 +19,18 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/gutendex
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-GUTENDEX__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

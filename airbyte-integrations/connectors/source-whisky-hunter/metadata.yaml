@@ -8,6 +8,10 @@ data:
   icon: whiskyhunter.svg
   license: MIT
   name: Whisky Hunter
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-whisky-hunter
   registries:
     cloud:
       enabled: true
@@ -16,10 +20,18 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/whisky-hunter
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-WHISKY-HUNTER__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

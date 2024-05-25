@@ -15,6 +15,10 @@ data:
   icon: salesloft.svg
   license: MIT
   name: SalesLoft
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-salesloft
   registries:
     cloud:
       enabled: true
@@ -24,4 +28,19 @@ data:
   supportLevel: community
   tags:
     - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SALESLOFT_OAUTH__CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SALESLOFT__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

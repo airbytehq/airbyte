@@ -40,24 +40,26 @@ public class MssqlCdcHelper {
 
   @VisibleForTesting
   static boolean isCdc(final JsonNode config) {
-    // new replication method config since version 0.4.0
-    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
-      final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
-      return ReplicationMethod.valueOf(replicationConfig.get(METHOD_FIELD).asText()) == ReplicationMethod.CDC;
-    }
-    // legacy replication method config before version 0.4.0
-    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isTextual()) {
-      return ReplicationMethod.valueOf(config.get(LEGACY_REPLICATION_FIELD).asText()) == ReplicationMethod.CDC;
-    }
-    if (config.hasNonNull(REPLICATION_FIELD)) {
-      final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
-      return ReplicationMethod.valueOf(replicationConfig.get(REPLICATION_TYPE_FIELD).asText()) == ReplicationMethod.CDC;
+    if (config != null) {
+      // new replication method config since version 0.4.0
+      if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
+        final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
+        return ReplicationMethod.valueOf(replicationConfig.get(METHOD_FIELD).asText()) == ReplicationMethod.CDC;
+      }
+      // legacy replication method config before version 0.4.0
+      if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isTextual()) {
+        return ReplicationMethod.valueOf(config.get(LEGACY_REPLICATION_FIELD).asText()) == ReplicationMethod.CDC;
+      }
+      if (config.hasNonNull(REPLICATION_FIELD)) {
+        final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
+        return ReplicationMethod.valueOf(replicationConfig.get(REPLICATION_TYPE_FIELD).asText()) == ReplicationMethod.CDC;
+      }
     }
 
     return false;
   }
 
-  static Properties getDebeziumProperties(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final boolean isSnapshot) {
+  public static Properties getDebeziumProperties(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final boolean isSnapshot) {
     final JsonNode config = database.getSourceConfig();
     final JsonNode dbConfig = database.getDatabaseConfig();
 
@@ -94,14 +96,13 @@ public class MssqlCdcHelper {
             ? HEARTBEAT_INTERVAL_IN_TESTS
             : HEARTBEAT_INTERVAL;
     props.setProperty("heartbeat.interval.ms", Long.toString(heartbeatInterval.toMillis()));
-    // TODO: enable heartbeats in MS SQL Server.
-    props.setProperty("heartbeat.interval.ms", "0");
 
     if (config.has("ssl_method")) {
       final JsonNode sslConfig = config.get("ssl_method");
       final String sslMethod = sslConfig.get("ssl_method").asText();
       if ("unencrypted".equals(sslMethod)) {
         props.setProperty("database.encrypt", "false");
+        props.setProperty("driver.trustServerCertificate", "true");
       } else if ("encrypted_trust_server_certificate".equals(sslMethod)) {
         props.setProperty("driver.encrypt", "true");
         props.setProperty("driver.trustServerCertificate", "true");
@@ -120,6 +121,8 @@ public class MssqlCdcHelper {
           props.setProperty("database.hostNameInCertificate", dbConfig.get("hostNameInCertificate").asText());
         }
       }
+    } else {
+      props.setProperty("driver.trustServerCertificate", "true");
     }
 
     return props;

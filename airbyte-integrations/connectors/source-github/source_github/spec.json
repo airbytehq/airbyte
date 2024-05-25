@@ -38,7 +38,7 @@
               },
               "client_secret": {
                 "type": "string",
-                "title": "Client ssecret",
+                "title": "Client secret",
                 "description": "OAuth Client secret",
                 "airbyte_secret": true
               }
@@ -81,18 +81,19 @@
         "type": "array",
         "items": {
           "type": "string",
-          "pattern": "^([\\w.-]+/(\\*|[\\w.-]+(?<!\\.git))\\s+)*[\\w.-]+/(\\*|[\\w.-]+(?<!\\.git))$"
+          "pattern": "^[\\w.-]+/(([\\w.-]*\\*)|[\\w.-]+(?<!\\.git))$"
         },
         "minItems": 1,
         "examples": [
-          "airbytehq/airbyte airbytehq/another-repo",
+          "airbytehq/airbyte",
+          "airbytehq/another-repo",
           "airbytehq/*",
-          "airbytehq/airbyte"
+          "airbytehq/a*"
         ],
         "title": "GitHub Repositories",
-        "description": "List of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/airbyte airbytehq/another-repo` for multiple repositories.",
+        "description": "List of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/a* for matching multiple repositories by pattern.",
         "order": 1,
-        "pattern_descriptor": "org/repo org/another-repo org/*"
+        "pattern_descriptor": "org/repo org/another-repo org/* org/a*"
       },
       "start_date": {
         "type": "string",
@@ -126,17 +127,10 @@
           "type": "string"
         },
         "title": "Branches",
-        "examples": ["airbytehq/airbyte/master airbytehq/airbyte/my-branch"],
+        "examples": ["airbytehq/airbyte/master", "airbytehq/airbyte/my-branch"],
         "description": "List of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled.",
         "order": 4,
         "pattern_descriptor": "org/repo/branch1 org/repo/branch2"
-      },
-      "requests_per_hour": {
-        "type": "integer",
-        "title": "Max requests per hour",
-        "description": "The GitHub API allows for a maximum of 5000 requests per hour (15000 for Github Enterprise). You can specify a lower value to limit your use of the API quota.",
-        "minimum": 1,
-        "order": 5
       }
     }
   },

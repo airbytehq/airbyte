@@ -5,24 +5,39 @@ data:
   allowedHosts:
     hosts:
       - ${subdomain}.atlassian.net
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: true
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: cf40a7f8-71f8-45ce-a7fa-fca053e4028c
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.4
   dockerRepository: airbyte/source-confluence
   documentationUrl: https://docs.airbyte.com/integrations/sources/confluence
   githubIssueLabel: source-confluence
   icon: confluence.svg
   license: MIT
   name: Confluence
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseDate: 2021-11-05
   releaseStage: beta
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-confluence
   supportLevel: community
   tags:
-    - language:low-code
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-CONFLUENCE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
