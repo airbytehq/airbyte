@@ -21,7 +21,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /customfields
           http_method: GET
         record_selector:
@@ -38,11 +38,11 @@ definitions:
             field_name: nextPageToken
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ last_record[''nextPageToken''] }}'
+            cursor_value: "{{ last_record['nextPageToken'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/customfields'
+          $ref: "#/schemas/customfields"
     contacts:
       type: DeclarativeStream
       name: contacts
@@ -51,7 +51,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /contacts
           http_method: GET
         record_selector:
@@ -68,11 +68,11 @@ definitions:
             field_name: nextPageToken
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ last_record[''nextPageToken''] }}'
+            cursor_value: "{{ last_record['nextPageToken'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/contacts'
+          $ref: "#/schemas/contacts"
     workflows:
       type: DeclarativeStream
       name: workflows
@@ -81,7 +81,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /workflows
           http_method: GET
         record_selector:
@@ -98,11 +98,11 @@ definitions:
             field_name: nextPageToken
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ last_record[''nextPageToken''] }}'
+            cursor_value: "{{ last_record['nextPageToken'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/workflows'
+          $ref: "#/schemas/workflows"
     comments:
       type: DeclarativeStream
       name: comments
@@ -111,7 +111,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /comments
           http_method: GET
         record_selector:
@@ -128,11 +128,11 @@ definitions:
             field_name: nextPageToken
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ last_record[''nextPageToken''] }}'
+            cursor_value: "{{ last_record['nextPageToken'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/comments'
+          $ref: "#/schemas/comments"
     folders:
       type: DeclarativeStream
       name: folders
@@ -141,7 +141,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /folders
           http_method: GET
         record_selector:
@@ -158,11 +158,11 @@ definitions:
             field_name: nextPageToken
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ last_record[''nextPageToken''] }}'
+            cursor_value: "{{ last_record['nextPageToken'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/folders'
+          $ref: "#/schemas/folders"
     tasks:
       type: DeclarativeStream
       name: tasks
@@ -171,7 +171,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /tasks
           http_method: GET
         record_selector:
@@ -188,25 +188,25 @@ definitions:
             field_name: nextPageToken
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ last_record[''nextPageToken''] }}'
+            cursor_value: "{{ last_record['nextPageToken'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/tasks'
+          $ref: "#/schemas/tasks"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['wrike_instance'] }}/api/v4
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config[''access_token''] }}'
+      api_token: "{{ config['access_token'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/customfields'
-  - $ref: '#/definitions/streams/contacts'
-  - $ref: '#/definitions/streams/workflows'
-  - $ref: '#/definitions/streams/comments'
-  - $ref: '#/definitions/streams/folders'
-  - $ref: '#/definitions/streams/tasks'
+  - $ref: "#/definitions/streams/customfields"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/workflows"
+  - $ref: "#/definitions/streams/comments"
+  - $ref: "#/definitions/streams/folders"
+  - $ref: "#/definitions/streams/tasks"
 
 spec:
   type: Spec
@@ -240,7 +240,7 @@ spec:
           UTC date and time in the format 2017-01-25T00:00:00Z. Only comments
           after this date will be replicated.
         examples:
-          - '2017-01-25T00:00:00Z'
+          - "2017-01-25T00:00:00Z"
         order: 2
     additionalProperties: true
 
@@ -257,367 +257,367 @@ schemas:
   customfields:
     type:
       - object
-      - 'null'
+      - "null"
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
           - string
-          - 'null'
+          - "null"
       accountId:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type:
           - string
-          - 'null'
+          - "null"
       settings:
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           aggregation:
             type:
               - string
-              - 'null'
+              - "null"
           allowOtherValues:
             type:
               - boolean
-              - 'null'
+              - "null"
           allowTime:
             type:
               - boolean
-              - 'null'
+              - "null"
           currency:
             type:
               - string
-              - 'null'
+              - "null"
           decimalPlaces:
             type:
               - integer
-              - 'null'
+              - "null"
           inheritanceType:
             type:
               - string
-              - 'null'
+              - "null"
           readOnly:
             type:
               - boolean
-              - 'null'
+              - "null"
           useThousandsSeparator:
             type:
               - boolean
-              - 'null'
+              - "null"
           values:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - string
                 - integer
                 - number
                 - boolean
-                - 'null'
+                - "null"
       sharedIds:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - string
-            - 'null'
+            - "null"
       spaceId:
         type:
-          - 'null'
+          - "null"
           - string
       title:
         type:
           - string
-          - 'null'
+          - "null"
   contacts:
     type:
       - object
-      - 'null'
+      - "null"
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
           - string
-          - 'null'
+          - "null"
       avatarUrl:
         type:
           - string
-          - 'null'
+          - "null"
       companyName:
         type:
-          - 'null'
+          - "null"
           - string
       deleted:
         type:
           - boolean
-          - 'null'
+          - "null"
       firstName:
         type:
           - string
-          - 'null'
+          - "null"
       id:
         type:
           - string
-          - 'null'
+          - "null"
       lastName:
         type:
           - string
-          - 'null'
+          - "null"
       locale:
         type:
           - string
-          - 'null'
+          - "null"
       me:
         type:
-          - 'null'
+          - "null"
           - boolean
       memberIds:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - string
-            - 'null'
+            - "null"
       myTeam:
         type:
-          - 'null'
+          - "null"
           - boolean
       phone:
         type:
-          - 'null'
+          - "null"
           - string
       profiles:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - object
-            - 'null'
+            - "null"
           properties:
             accountId:
               type:
                 - string
-                - 'null'
+                - "null"
             admin:
               type:
                 - boolean
-                - 'null'
+                - "null"
             email:
               type:
                 - string
-                - 'null'
+                - "null"
             external:
               type:
                 - boolean
-                - 'null'
+                - "null"
             owner:
               type:
                 - boolean
-                - 'null'
+                - "null"
             role:
               type:
                 - string
-                - 'null'
+                - "null"
       timezone:
         type:
           - string
-          - 'null'
+          - "null"
       title:
         type:
-          - 'null'
+          - "null"
           - string
   workflows:
     type:
       - object
-      - 'null'
+      - "null"
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       customStatuses:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - object
-            - 'null'
+            - "null"
           properties:
             color:
               type:
                 - string
-                - 'null'
+                - "null"
             group:
               type:
                 - string
-                - 'null'
+                - "null"
             hidden:
               type:
                 - boolean
-                - 'null'
+                - "null"
             id:
               type:
                 - string
-                - 'null'
+                - "null"
             name:
               type:
                 - string
-                - 'null'
+                - "null"
             standard:
               type:
                 - boolean
-                - 'null'
+                - "null"
             standardName:
               type:
                 - boolean
-                - 'null'
+                - "null"
       hidden:
         type:
           - boolean
-          - 'null'
+          - "null"
       id:
         type:
           - string
-          - 'null'
+          - "null"
       name:
         type:
           - string
-          - 'null'
+          - "null"
       standard:
         type:
           - boolean
-          - 'null'
+          - "null"
       title:
         type:
           - string
-          - 'null'
+          - "null"
   comments:
     type:
       - object
-      - 'null'
+      - "null"
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       authorId:
         type:
           - string
-          - 'null'
+          - "null"
       createdDate:
         type:
           - string
-          - 'null'
+          - "null"
         format: date-time
       id:
         type:
           - string
-          - 'null'
+          - "null"
       taskId:
         type:
           - string
-          - 'null'
+          - "null"
       text:
         type:
           - string
-          - 'null'
+          - "null"
       updatedDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
   folders:
     type:
       - object
-      - 'null'
+      - "null"
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       childIds:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - string
-            - 'null'
+            - "null"
       createdDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       id:
         type:
           - string
-          - 'null'
+          - "null"
       project:
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           authorId:
             type:
               - string
-              - 'null'
+              - "null"
           createdDate:
             type:
-              - 'null'
+              - "null"
               - string
             format: date-time
           customStatusId:
             type:
               - string
-              - 'null'
+              - "null"
           ownerIds:
             type:
               - array
-              - 'null'
+              - "null"
             items:
               type:
                 - string
-                - 'null'
+                - "null"
       scope:
         type:
           - string
-          - 'null'
+          - "null"
       space:
         type:
           - boolean
-          - 'null'
+          - "null"
       title:
         type:
           - string
-          - 'null'
+          - "null"
   tasks:
     type:
       - object
-      - 'null'
+      - "null"
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       accountId:
         type:
           - string
-          - 'null'
+          - "null"
       authorIds:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - string
-            - 'null'
+            - "null"
       briefDescription:
         type:
-          - 'null'
+          - "null"
           - string
       completedDate:
         type: string
@@ -625,94 +625,94 @@ schemas:
       createdDate:
         type:
           - string
-          - 'null'
+          - "null"
         format: date-time
       customFields:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - object
-            - 'null'
+            - "null"
           properties:
             id:
               type:
                 - string
-                - 'null'
+                - "null"
             value:
               type:
                 - string
-                - 'null'
+                - "null"
       customStatusId:
         type:
           - string
-          - 'null'
+          - "null"
       dates:
         type:
           - object
-          - 'null'
+          - "null"
         properties:
           type:
             type:
               - string
-              - 'null'
+              - "null"
       description:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
           - string
-          - 'null'
+          - "null"
       importance:
         type:
           - string
-          - 'null'
+          - "null"
       parentIds:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - string
-            - 'null'
+            - "null"
       permalink:
         type:
           - string
-          - 'null'
+          - "null"
       priority:
         type:
           - string
-          - 'null'
+          - "null"
       responsibleIds:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - string
-            - 'null'
+            - "null"
       scope:
         type:
           - string
-          - 'null'
+          - "null"
       status:
         type:
           - string
-          - 'null'
+          - "null"
       superTaskIds:
         type:
           - array
-          - 'null'
+          - "null"
         items:
           type:
             - string
-            - 'null'
+            - "null"
       title:
         type:
           - string
-          - 'null'
+          - "null"
       updatedDate:
         type: string
         format: date-time
