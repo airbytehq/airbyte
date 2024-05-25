@@ -8,7 +8,7 @@ If you need support along the way, visit the [Slack channel](https://airbytehq.s
 
 ### Process overview
 
-The first step in creating a new connector is to choose the tools you’ll use to build it. There are three basic approaches Airbyte provides to start developing a connector. To understand which approach you should take, review the [compatibility guide](./connector-builder-ui/connector-builder-compatibility.md).  [The Airbyte community also maintains some CDKs](#community-maintained-cdks) suitable for certain use cases.
+The first step in creating a new connector is to choose the tools you’ll use to build it. There are three basic approaches Airbyte provides to start developing a connector. To understand which approach you should take, review the [compatibility guide](./connector-builder-ui/connector-builder-compatibility.md).
 
 After building and testing your connector, you’ll need to publish it. This makes it available in your workspace. At that point, you can use the connector you’ve built to move some data! 
 
