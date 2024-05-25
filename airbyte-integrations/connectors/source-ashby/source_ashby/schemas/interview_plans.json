@@ -10,7 +10,7 @@
       "type": ["null", "string"]
     },
     "isArchived": {
-       "type": ["null", "boolean"]
+      "type": ["null", "boolean"]
     }
   }
 }

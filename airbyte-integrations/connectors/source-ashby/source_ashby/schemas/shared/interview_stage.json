@@ -10,13 +10,13 @@
       "type": ["null", "string"]
     },
     "type": {
-       "type": ["null", "string"]
+      "type": ["null", "string"]
     },
     "orderInInterviewPlan": {
-        "type": ["null", "integer"]
+      "type": ["null", "integer"]
     },
     "interviewPlanId": {
-        "type": ["null", "string"]
+      "type": ["null", "string"]
     }
   }
 }

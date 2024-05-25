@@ -10,13 +10,13 @@
       "type": ["null", "string"]
     },
     "isArchived": {
-       "type": ["null", "boolean"]
+      "type": ["null", "boolean"]
     },
     "instructionsHtml": {
-        "type": ["null", "string"]
+      "type": ["null", "string"]
     },
     "instructionsPlain": {
-        "type": ["null", "string"]
+      "type": ["null", "string"]
     },
     "jobId": {
       "type": ["null", "string"]
