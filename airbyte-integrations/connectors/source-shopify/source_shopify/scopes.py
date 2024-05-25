@@ -83,16 +83,14 @@ class ShopifyScopes:
     logger = logging.getLogger("airbyte")
 
     def __init__(self, config: Mapping[str, Any]) -> None:
+        self.permitted_streams: List[str] = list(ALWAYS_PERMITTED_STREAMS)
+        self.not_permitted_streams: List[set[str, str]] = []
         self.user_scopes = self.get_user_scopes(config)
         # for each stream check the authenticated user has all scopes required
         self.get_streams_from_user_scopes()
         # log if there are streams missing scopes and should be omitted
         self.emit_missing_scopes()
 
-    # the list of validated streams
-    permitted_streams: List[str] = ALWAYS_PERMITTED_STREAMS
-    # the list of not permitted streams
-    not_permitted_streams: List[set[str, str]] = []
     # template for the log message
     missing_scope_message: str = (
         "The stream `{stream}` could not be synced without the `{scope}` scope. Please check the `{scope}` is granted."

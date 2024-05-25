@@ -648,7 +648,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         # overide the default job slice size, if provided (it's auto-adjusted, later on)
         self.bulk_window_in_days = config.get("bulk_window_in_days")
         if self.bulk_window_in_days:
-            self.job_manager._job_size = self.bulk_window_in_days
+            self.job_manager.job_size = self.bulk_window_in_days
         # define Record Producer instance
         self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(self.query)
 
