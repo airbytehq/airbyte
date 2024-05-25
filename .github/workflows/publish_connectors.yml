@@ -16,9 +16,7 @@ on:
         default: "--pre-release"
       airbyte_ci_binary_url:
         description: "URL to the airbyte-ci binary to use for the action. If not provided, the action will use the latest release of airbyte-ci."
-        # Pinning to 4.15.0 as 4.15.1 has a bug:
-        # https://github.com/airbytehq/airbyte/actions/runs/9211856191/job/25342184646
-        default: "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/4.15.0/airbyte-ci"
+        default: "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci"
 jobs:
   publish_connectors:
     name: Publish connectors
