@@ -93,8 +93,8 @@ class SourceSalesforce(ConcurrentSourceAdapter):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
         self._validate_stream_slice_step(config.get("stream_slice_step"))
         try:
-            salesforce = self._get_sf_object(config)
-            salesforce.describe()
+            with self._get_sf_object(config) as salesforce:
+                salesforce.describe()
         except exceptions.HTTPError as error:
             error_msg = f"An error occurred: {error.response.text}"
             try:
@@ -234,10 +234,10 @@ class SourceSalesforce(ConcurrentSourceAdapter):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         if not config.get("start_date"):
             config["start_date"] = (datetime.now() - relativedelta(years=self.START_DATE_OFFSET_IN_YEARS)).strftime(self.DATETIME_FORMAT)
-        sf = self._get_sf_object(config)
-        stream_objects = sf.get_validated_streams(config=config, catalog=self.catalog)
-        streams = self.generate_streams(config, stream_objects, sf)
-        return streams
+        with self._get_sf_object(config) as sf:
+            stream_objects = sf.get_validated_streams(config=config, catalog=self.catalog)
+            streams = self.generate_streams(config, stream_objects, sf)
+            return streams
 
     def _create_stream_slicer_cursor(
         self, config: Mapping[str, Any], state_manager: ConnectorStateManager, stream: Stream
