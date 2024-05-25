@@ -6,7 +6,6 @@ import textwrap
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
-import yaml  # type: ignore
 from base_images import version_registry  # type: ignore
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from dagger import Directory
