@@ -3,7 +3,7 @@
 connector_image: airbyte/source-looker:dev
 tests:
   spec:
-    - spec_path: "source_looker/spec.json"
+    - spec_path: "source_looker/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
@@ -20,6 +20,17 @@ tests:
           "user_attribute_group_values",
           "user_login_lockouts",
           "user_sessions",
+          "content_metadata",
+          "content_metadata_access",
+          "dashboard_elements",
+          "dashboard_filters",
+          "dashboard_layout_components",
+          "dashboard_layouts",
+          "folder_ancestors",
+          "git_branches",
+          "project_files",
+          "role_groups",
+          "run_looks"
         ]
   full_refresh:
     # test streams except "run_looks"
