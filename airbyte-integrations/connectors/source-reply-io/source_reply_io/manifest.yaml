@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /campaigns
           http_method: GET
           error_handler:
@@ -30,7 +30,7 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: RETRY
-                    predicate: '{{ ''Too much requests'' in response }}'
+                    predicate: "{{ 'Too much requests' in response }}"
                     http_codes: []
         record_selector:
           type: RecordSelector
@@ -40,7 +40,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/campaigns'
+          $ref: "#/schemas/campaigns"
     email_accounts:
       type: DeclarativeStream
       name: email_accounts
@@ -49,7 +49,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /emailAccounts
           http_method: GET
           error_handler:
@@ -62,7 +62,7 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: RETRY
-                    predicate: '{{ ''Too much requests'' in response }}'
+                    predicate: "{{ 'Too much requests' in response }}"
                     http_codes: []
         record_selector:
           type: RecordSelector
@@ -72,7 +72,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/email_accounts'
+          $ref: "#/schemas/email_accounts"
     people:
       type: DeclarativeStream
       name: people
@@ -81,7 +81,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /people
           http_method: GET
           error_handler:
@@ -94,7 +94,7 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: RETRY
-                    predicate: '{{ ''Too much requests'' in response }}'
+                    predicate: "{{ 'Too much requests' in response }}"
                     http_codes: []
         record_selector:
           type: RecordSelector
@@ -118,7 +118,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/people'
+          $ref: "#/schemas/people"
     templates:
       type: DeclarativeStream
       name: templates
@@ -127,7 +127,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /templates
           http_method: GET
           error_handler:
@@ -140,7 +140,7 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: RETRY
-                    predicate: '{{ ''Too much requests'' in response }}'
+                    predicate: "{{ 'Too much requests' in response }}"
                     http_codes: []
         record_selector:
           type: RecordSelector
@@ -151,23 +151,23 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/templates'
+          $ref: "#/schemas/templates"
   base_requester:
     type: HttpRequester
     url_base: https://api.reply.io/v1
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
       inject_into:
         type: RequestOption
         inject_into: header
         field_name: x-api-key
 
 streams:
-  - $ref: '#/definitions/streams/campaigns'
-  - $ref: '#/definitions/streams/email_accounts'
-  - $ref: '#/definitions/streams/people'
-  - $ref: '#/definitions/streams/templates'
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/email_accounts"
+  - $ref: "#/definitions/streams/people"
+  - $ref: "#/definitions/streams/templates"
 
 spec:
   type: Spec
@@ -200,60 +200,60 @@ schemas:
     properties:
       bouncesCount:
         type:
-          - 'null'
+          - "null"
           - integer
       created:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       deliveriesCount:
         type:
-          - 'null'
+          - "null"
           - integer
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       name:
         type:
-          - 'null'
+          - "null"
           - string
       opensCount:
         type:
-          - 'null'
+          - "null"
           - integer
       optOutsCount:
         type:
-          - 'null'
+          - "null"
           - integer
       outOfOfficeCount:
         type:
-          - 'null'
+          - "null"
           - integer
       ownerEmail:
         type:
-          - 'null'
+          - "null"
           - string
       peopleActive:
         type:
-          - 'null'
+          - "null"
           - integer
       peopleCount:
         type:
-          - 'null'
+          - "null"
           - integer
       peopleFinished:
         type:
-          - 'null'
+          - "null"
           - integer
       peoplePaused:
         type:
-          - 'null'
+          - "null"
           - integer
       repliesCount:
         type:
-          - 'null'
+          - "null"
           - integer
   email_accounts:
     type: object
@@ -262,19 +262,19 @@ schemas:
     properties:
       emailAddress:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       senderName:
         type:
-          - 'null'
+          - "null"
           - string
       signature:
         type:
-          - 'null'
+          - "null"
           - string
   people:
     type: object
@@ -283,64 +283,64 @@ schemas:
     properties:
       addingDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       city:
         type:
-          - 'null'
+          - "null"
           - string
       company:
         type:
-          - 'null'
+          - "null"
           - string
       country:
         type:
-          - 'null'
+          - "null"
           - string
       customFields:
         type:
-          - 'null'
+          - "null"
           - array
       email:
         type:
-          - 'null'
+          - "null"
           - string
       firstName:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       lastName:
         type:
-          - 'null'
+          - "null"
           - string
       linkedInProfile:
         type:
-          - 'null'
+          - "null"
           - string
       phone:
         type:
-          - 'null'
+          - "null"
           - string
       phoneStatus:
         type:
-          - 'null'
+          - "null"
           - string
       state:
         type:
-          - 'null'
+          - "null"
           - string
       timeZoneId:
         type:
-          - 'null'
+          - "null"
           - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
   templates:
     type: object
@@ -349,21 +349,21 @@ schemas:
     properties:
       body:
         type:
-          - 'null'
+          - "null"
           - string
       categoryId:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - integer
       name:
         type:
-          - 'null'
+          - "null"
           - string
       subject:
         type:
-          - 'null'
+          - "null"
           - string
