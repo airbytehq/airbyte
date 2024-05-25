@@ -36,6 +36,7 @@ This Source is capable of syncing the following core Streams:
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                       |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------- |
-| 0.1.0   | 2022-10-22 | [18844](https://github.com/airbytehq/airbyte/pull/18844) | Add Reply.io Source Connector |
+| Version | Date       | Pull Request                                             | Subject                                |
+| :------ | :--------- | :------------------------------------------------------- |:---------------------------------------|
+| 0.1.1   | 2024-05-26 | [38661](https://github.com/airbytehq/airbyte/pull/38661) | Make connector compatible with Builder |
+| 0.1.0   | 2022-10-22 | [18844](https://github.com/airbytehq/airbyte/pull/18844) | Add Reply.io Source Connector          |
