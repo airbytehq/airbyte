@@ -129,12 +129,14 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector_empty_dpath"
         record_filter:
-          condition: "{{ record['created'] >= stream_state.created if stream_state.created else true }}"
+          condition: "{{ record.created >= stream_interval.start_time }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: created
       cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S"
         - "%Y-%m-%d %H:%M:%S"
+        - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S%z"
       datetime_format: "%Y-%m-%d %H:%M:%S"
       start_datetime:
@@ -173,7 +175,7 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
         record_filter:
-          condition: "{{ record['$properties']['$last_seen'] >= stream_state.last_seen if stream_state.last_seen else true }}"
+          condition: "{{ record['$properties']['$last_seen'] >= stream_interval.start_time }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: last_seen
@@ -191,7 +193,7 @@ definitions:
         fields:
           - path:
               - browser_version
-            value: "{{ record.browser_version | string }}"
+            value: "{{ record.browser_version | string if record.browser_version else '' }}"
     schema_loader:
       type: CustomSchemaLoader
       class_name: "source_mixpanel.components.EngageJsonFileSchemaLoader"
@@ -199,6 +201,9 @@ definitions:
 
   cohort_members_stream:
     $ref: "#/definitions/engage_stream"
+    primary_key:
+      - distinct_id
+      - cohort_id
     $parameters:
       name: cohort_members
       path: 2.0/engage
@@ -210,6 +215,10 @@ definitions:
         http_method: POST
       paginator:
         $ref: "#/definitions/paginator"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record['$properties']['$last_seen'] >= stream_interval.start_time }}"
       partition_router:
         class_name: "source_mixpanel.components.CohortMembersSubstreamPartitionRouter"
         parent_stream_configs:
@@ -232,7 +241,7 @@ definitions:
         fields:
           - path:
               - browser_version
-            value: "{{ record.browser_version | string }}"
+            value: "{{ record.browser_version | string if record.browser_version else '' }}"
 
   # No API docs! build based on singer source
   revenue_stream:
