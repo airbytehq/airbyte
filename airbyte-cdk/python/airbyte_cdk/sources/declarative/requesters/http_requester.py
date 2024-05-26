@@ -54,12 +54,22 @@ class HttpRequester(Requester):
     """
 
     name: str
+    url_base: Union[InterpolatedString, str]
+    path: Union[InterpolatedString, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
+    authenticator: Optional[DeclarativeAuthenticator] = None
+    http_method: Union[str, HttpMethod] = HttpMethod.GET
     request_options_provider: Optional[InterpolatedRequestOptionsProvider] = None
-    error_handler: Optional[PatrickErrorHandler] = None
+    error_handler: Optional[ErrorHandler] = None
+    disable_retries: bool = False
     message_repository: MessageRepository = NoopMessageRepository()
-    client: PatrickClient
+    use_cache: bool = False
+    stream_response: bool = False
+
+    _DEFAULT_MAX_RETRY = 5
+    _DEFAULT_RETRY_FACTOR = 5
+    _DEFAULT_MAX_TIME = 60 * 10
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._url_base = InterpolatedString.create(self.url_base, parameters=parameters)
@@ -527,6 +537,7 @@ class HttpRequester(Requester):
             self.logger.debug("Receiving response, but not logging it as it is a stream response", extra={"headers": response.headers, "status": response.status_code})
         else:
             self.logger.debug("Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text})
+        self.logger.debug("Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text})
         if log_formatter:
             formatter = log_formatter
             self.message_repository.log_message(
