@@ -6,7 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_fullstory import SourceFullstory
+
+from .source import SourceFullstory
 
 
 def run():

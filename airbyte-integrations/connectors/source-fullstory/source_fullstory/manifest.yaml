@@ -15,7 +15,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /operations/v1
           http_method: GET
           request_headers:
@@ -39,18 +39,18 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/operations'
+          $ref: "#/schemas/operations"
     sessions:
       type: DeclarativeStream
       name: sessions
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /sessions/v2
           http_method: GET
           request_parameters:
-            uid: '{{ config[''uid''] }}'
+            uid: "{{ config['uid'] }}"
           request_headers:
             Authorization: Basic {{ config['api_key'] }}
         record_selector:
@@ -72,14 +72,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/sessions'
+          $ref: "#/schemas/sessions"
     segments:
       type: DeclarativeStream
       name: segments
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /segments/v1
           http_method: GET
           request_headers:
@@ -103,14 +103,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/segments'
+          $ref: "#/schemas/segments"
     blockrules:
       type: DeclarativeStream
       name: blockrules
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /settings/recording/v1/blocking
           http_method: GET
           request_headers:
@@ -134,14 +134,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/blockrules'
+          $ref: "#/schemas/blockrules"
     domainsettings:
       type: DeclarativeStream
       name: domainsettings
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /settings/recording/v1/domain
           http_method: GET
           request_headers:
@@ -165,14 +165,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/domainsettings'
+          $ref: "#/schemas/domainsettings"
     geosettings:
       type: DeclarativeStream
       name: geosettings
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /settings/recording/v1/geo
           http_method: GET
           request_headers:
@@ -196,14 +196,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/geosettings'
+          $ref: "#/schemas/geosettings"
     recordingfeatures:
       type: DeclarativeStream
       name: recordingfeatures
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /settings/recording/v1/features
           http_method: GET
           request_headers:
@@ -227,14 +227,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/recordingfeatures'
+          $ref: "#/schemas/recordingfeatures"
     sessionTargetingRules:
       type: DeclarativeStream
       name: sessionTargetingRules
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /settings/recording/v1/targeting
           http_method: GET
           request_headers:
@@ -258,14 +258,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/sessionTargetingRules'
+          $ref: "#/schemas/sessionTargetingRules"
     webhooks:
       type: DeclarativeStream
       name: webhooks
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /webhooks/v1/endpoints
           http_method: GET
           request_headers:
@@ -289,14 +289,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/webhooks'
+          $ref: "#/schemas/webhooks"
     eventDefs:
       type: DeclarativeStream
       name: eventDefs
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /webhooks/v1/event-types
           http_method: GET
           request_headers:
@@ -320,22 +320,22 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/eventDefs'
+          $ref: "#/schemas/eventDefs"
   base_requester:
     type: HttpRequester
     url_base: https://api.fullstory.com
 
 streams:
-  - $ref: '#/definitions/streams/operations'
-  - $ref: '#/definitions/streams/sessions'
-  - $ref: '#/definitions/streams/segments'
-  - $ref: '#/definitions/streams/blockrules'
-  - $ref: '#/definitions/streams/domainsettings'
-  - $ref: '#/definitions/streams/geosettings'
-  - $ref: '#/definitions/streams/recordingfeatures'
-  - $ref: '#/definitions/streams/sessionTargetingRules'
-  - $ref: '#/definitions/streams/webhooks'
-  - $ref: '#/definitions/streams/eventDefs'
+  - $ref: "#/definitions/streams/operations"
+  - $ref: "#/definitions/streams/sessions"
+  - $ref: "#/definitions/streams/segments"
+  - $ref: "#/definitions/streams/blockrules"
+  - $ref: "#/definitions/streams/domainsettings"
+  - $ref: "#/definitions/streams/geosettings"
+  - $ref: "#/definitions/streams/recordingfeatures"
+  - $ref: "#/definitions/streams/sessionTargetingRules"
+  - $ref: "#/definitions/streams/webhooks"
+  - $ref: "#/definitions/streams/eventDefs"
 
 spec:
   type: Spec
@@ -381,45 +381,45 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       details:
         type:
-          - 'null'
+          - "null"
           - object
       errorDetails:
         type:
-          - 'null'
+          - "null"
           - string
       estimatePctComplete:
         type:
-          - 'null'
+          - "null"
           - integer
       finishedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       id:
         type:
-          - 'null'
+          - "null"
           - string
       results:
         type:
-          - 'null'
+          - "null"
           - object
       state:
         type:
-          - 'null'
+          - "null"
           - string
       step:
         type:
-          - 'null'
+          - "null"
           - string
     title: Operations Schema
   sessions:
@@ -429,21 +429,21 @@ schemas:
     properties:
       createdTime:
         type:
-          - 'null'
+          - "null"
           - integer
           - string
       fsUrl:
         type:
-          - 'null'
+          - "null"
           - string
       sessionId:
         type:
-          - 'null'
+          - "null"
           - integer
           - string
       userId:
         type:
-          - 'null'
+          - "null"
           - integer
           - string
     title: Sessions Schema
@@ -454,23 +454,23 @@ schemas:
     properties:
       created:
         type:
-          - 'null'
+          - "null"
           - string
       creator:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       url:
         type:
-          - 'null'
+          - "null"
           - string
     title: Segments Schema
   blockrules:
@@ -480,19 +480,19 @@ schemas:
     properties:
       blockedAppIds:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: string
       blockedIps:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: string
       blockedUas:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: string
@@ -504,24 +504,24 @@ schemas:
     properties:
       domains:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             disabled:
               type:
-                - 'null'
+                - "null"
                 - boolean
             domain:
               type:
-                - 'null'
+                - "null"
                 - string
       onlyRecordKnownDomains:
         type:
-          - 'null'
+          - "null"
           - boolean
     title: DomainSettings Schema
   geosettings:
@@ -531,11 +531,11 @@ schemas:
     properties:
       record_geo_mode:
         type:
-          - 'null'
+          - "null"
           - string
       record_geo_zones:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: string
@@ -547,23 +547,23 @@ schemas:
     properties:
       ajaxWatcher:
         type:
-          - 'null'
+          - "null"
           - boolean
       consoleWatcher:
         type:
-          - 'null'
+          - "null"
           - boolean
       enabled:
         type:
-          - 'null'
+          - "null"
           - boolean
       recordingShutoff:
         type:
-          - 'null'
+          - "null"
           - boolean
       resourceUploading:
         type:
-          - 'null'
+          - "null"
           - boolean
     title: RecordingFeatures Schema
   sessionTargetingRules:
@@ -573,83 +573,83 @@ schemas:
     properties:
       session_targeting_rules:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             children:
               type:
-                - 'null'
+                - "null"
                 - array
               items:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   id:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   join_previous:
                     type:
-                      - 'null'
+                      - "null"
                       - string
             conditions:
               type:
-                - 'null'
+                - "null"
                 - array
               items:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   attr:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   join_previous:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   op:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   values:
                     type:
-                      - 'null'
+                      - "null"
                       - array
                     items:
                       type:
-                        - 'null'
+                        - "null"
                         - object
                       properties:
                         int_val:
                           type:
-                            - 'null'
+                            - "null"
                             - integer
                         str_val:
                           type:
-                            - 'null'
+                            - "null"
                             - string
                         version_val:
                           type:
-                            - 'null'
+                            - "null"
                             - object
             id:
               type:
-                - 'null'
+                - "null"
                 - string
             notes:
               type:
-                - 'null'
+                - "null"
                 - string
             scope:
               type:
-                - 'null'
+                - "null"
                 - string
     title: TargetRules Schema
   webhooks:
@@ -659,49 +659,49 @@ schemas:
     properties:
       endpoints:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             created:
               type:
-                - 'null'
+                - "null"
                 - string
             enabled:
               type:
-                - 'null'
+                - "null"
                 - boolean
             event_types:
               type:
-                - 'null'
+                - "null"
                 - array
               items:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   event_name:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   subcategory:
                     type:
-                      - 'null'
+                      - "null"
                       - string
             id:
               type:
-                - 'null'
+                - "null"
                 - string
             modified:
               type:
-                - 'null'
+                - "null"
                 - string
             url:
               type:
-                - 'null'
+                - "null"
                 - string
     title: Webhooks Schema
   eventDefs:
@@ -711,14 +711,14 @@ schemas:
     properties:
       displayName:
         type:
-          - 'null'
+          - "null"
           - string
       eventName:
         type:
-          - 'null'
+          - "null"
           - string
       hasSubcategories:
         type:
-          - 'null'
+          - "null"
           - boolean
     title: EventTypes Schema
