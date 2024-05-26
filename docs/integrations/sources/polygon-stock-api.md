@@ -47,9 +47,10 @@ The following fields are required fields for the connector to work:
 - (optional) `limit`: Limits the number of base aggregates queried to create the aggregate results. Max 50000 and Default 5000. Read more about how limit is used to calculate aggregate results in our article on Aggregate Data API Improvements [Find-more](https://polygon.io/blog/aggs-api-updates/).
 
 ## Changelog
-
+38665
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.6   | 2024-04-25 | [37230](https://github.com/airbytehq/airbyte/pull/37230) | Make connector compatible with Builder                                                         |
 | 0.1.5   | 2024-04-19 | [37230](https://github.com/airbytehq/airbyte/pull/37230) | Updating to 0.80.0 CDK                                                          |
 | 0.1.4   | 2024-04-18 | [37230](https://github.com/airbytehq/airbyte/pull/37230) | Manage dependencies with Poetry.                                                |
 | 0.1.3   | 2024-04-15 | [37230](https://github.com/airbytehq/airbyte/pull/37230) | Base image migration: remove Dockerfile and use the python-connector-base image |
