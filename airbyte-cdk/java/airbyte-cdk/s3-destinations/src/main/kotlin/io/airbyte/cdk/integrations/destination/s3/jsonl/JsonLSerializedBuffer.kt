@@ -89,7 +89,7 @@ class JsonLSerializedBuffer(
         ): BufferCreateFunction {
             return BufferCreateFunction {
                 _: AirbyteStreamNameNamespacePair?,
-                _: ConfiguredAirbyteCatalog? ->
+                _: ConfiguredAirbyteCatalog ->
                 val compressionType =
                     if (config == null) S3DestinationConstants.DEFAULT_COMPRESSION_TYPE
                     else config.compressionType
