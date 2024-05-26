@@ -1,21 +1,19 @@
-# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
+from dataclasses import dataclass
+from typing import Any, Mapping, Optional
+from urllib.parse import urlencode, urljoin
+
+import requests
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
     RequestInput,
 )
-from dataclasses import dataclass
-from typing import Any, Mapping, Optional
-from urllib.parse import urljoin
-
-import requests
-from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
-    InterpolatedRequestOptionsProvider,
-)
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
-from urllib.parse import urlencode
 
 
 @dataclass
@@ -29,6 +27,7 @@ class SafeEncodeHttpRequester(HttpRequester):
         request_parameters: Optional parameters for the request.
         request_body_data: Optional data body for the request.
     """
+
     request_body_json: Optional[RequestInput] = None
     request_headers: Optional[RequestInput] = None
     request_parameters: Optional[RequestInput] = None
@@ -46,12 +45,12 @@ class SafeEncodeHttpRequester(HttpRequester):
         super().__post_init__(parameters)
 
     def _create_prepared_request(
-            self,
-            path: str,
-            headers: Optional[Mapping[str, str]] = None,
-            params: Optional[Mapping[str, Any]] = None,
-            json: Any = None,
-            data: Any = None,
+        self,
+        path: str,
+        headers: Optional[Mapping[str, str]] = None,
+        params: Optional[Mapping[str, Any]] = None,
+        json: Any = None,
+        data: Any = None,
     ) -> requests.PreparedRequest:
         url = urljoin(self.get_url_base(), path)
         http_method = str(self._http_method.value)

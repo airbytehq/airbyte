@@ -17,13 +17,13 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: adAccounts
           http_method: GET
           request_parameters:
             q: search
           request_headers:
-            Linkedin-Version: '202404'
+            Linkedin-Version: "202404"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -66,7 +66,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/accounts'
+          $ref: "#/schemas/accounts"
     account_users:
       type: DeclarativeStream
       name: account_users
@@ -76,15 +76,15 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: adAccountUsers
           http_method: GET
           request_parameters:
             q: accounts
-            count: '500'
+            count: "500"
             accounts: urn:li:sponsoredAccount:{{stream_slice.get('account_id')}}
           request_headers:
-            Linkedin-Version: '202404'
+            Linkedin-Version: "202404"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -130,17 +130,17 @@ definitions:
               parent_key: id
               partition_field: account_id
               stream:
-                $ref: '#/definitions/streams/accounts'
+                $ref: "#/definitions/streams/accounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: lastModified
         cursor_datetime_formats:
-          - '%ms'
-        datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+          - "%ms"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
         - type: AddFields
           fields:
@@ -158,7 +158,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/account_users'
+          $ref: "#/schemas/account_users"
     campaigns:
       type: DeclarativeStream
       name: campaigns
@@ -178,7 +178,7 @@ definitions:
             search: "(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))"
 
           request_headers:
-            Linkedin-Version: '202404'
+            Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
           error_handler:
             type: CompositeErrorHandler
@@ -223,17 +223,17 @@ definitions:
               parent_key: id
               partition_field: account_id
               stream:
-                $ref: '#/definitions/streams/accounts'
+                $ref: "#/definitions/streams/accounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: lastModified
         cursor_datetime_formats:
-          - '%ms'
-        datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+          - "%ms"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
         - type: AddFields
           fields:
@@ -251,7 +251,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/campaign_groups'
+          $ref: "#/schemas/campaign_groups"
     campaign_groups:
       type: DeclarativeStream
       name: campaign_groups
@@ -271,7 +271,7 @@ definitions:
             search: "(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))"
 
           request_headers:
-            Linkedin-Version: '202404'
+            Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
           error_handler:
             type: CompositeErrorHandler
@@ -316,21 +316,21 @@ definitions:
               parent_key: id
               partition_field: account_id
               stream:
-                $ref: '#/definitions/streams/accounts'
+                $ref: "#/definitions/streams/accounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: lastModified
         cursor_datetime_formats:
-          - '%ms'
-        datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+          - "%ms"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/campaign_groups'
+          $ref: "#/schemas/campaign_groups"
     creatives:
       type: DeclarativeStream
       name: creatives
@@ -339,13 +339,13 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: adAccounts/{{stream_slice.get('account_id')}}/creatives
           http_method: GET
           request_parameters:
             q: criteria
           request_headers:
-            Linkedin-Version: '202404'
+            Linkedin-Version: "202404"
             X-RestLi-Method: FINDER
           error_handler:
             type: CompositeErrorHandler
@@ -390,21 +390,21 @@ definitions:
               parent_key: id
               partition_field: account_id
               stream:
-                $ref: '#/definitions/streams/accounts'
+                $ref: "#/definitions/streams/accounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: lastModifiedAt
         cursor_datetime_formats:
-          - '%ms'
-        datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+          - "%ms"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/creatives'
+          $ref: "#/schemas/creatives"
     conversions:
       type: DeclarativeStream
       name: conversions
@@ -413,15 +413,15 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: conversions
           http_method: GET
           request_parameters:
             q: account
             account: urn:li:sponsoredAccount:{{stream_slice.get('account_id')}}
-            count: '500'
+            count: "500"
           request_headers:
-            Linkedin-Version: '202404'
+            Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
           error_handler:
             type: CompositeErrorHandler
@@ -469,21 +469,21 @@ definitions:
               parent_key: id
               partition_field: account_id
               stream:
-                $ref: '#/definitions/streams/accounts'
+                $ref: "#/definitions/streams/accounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: lastModified
         cursor_datetime_formats:
-          - '%ms'
-        datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+          - "%ms"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') }}"
-          datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/conversions'
+          $ref: "#/schemas/conversions"
   base_requester:
     type: HttpRequester
     url_base: https://api.linkedin.com/rest/
@@ -494,7 +494,7 @@ definitions:
     api_token: "{{ config['credentials']['access_token'] }}"
   oauth_authenticator:
     type: OAuthAuthenticator
-    refresh_request_body: { }
+    refresh_request_body: {}
     token_refresh_endpoint: https://www.linkedin.com/oauth/v2/accessToken
     grant_type: refresh_token
     client_id: '{{ config["credentials"]["client_id"] }}'
@@ -502,17 +502,17 @@ definitions:
     refresh_token: '{{ config["credentials"]["refresh_token"] }}'
   authenticator:
     type: SelectiveAuthenticator
-    authenticator_selection_path: [ "credentials", "auth_method" ]
+    authenticator_selection_path: ["credentials", "auth_method"]
     authenticators:
       oAuth2.0: "#/definitions/oauth_authenticator"
       access_token: "#/definitions/bearer_authenticator"
 streams:
-  - $ref: '#/definitions/streams/accounts'
-  - $ref: '#/definitions/streams/account_users'
-  - $ref: '#/definitions/streams/campaigns'
-  - $ref: '#/definitions/streams/campaign_groups'
-  - $ref: '#/definitions/streams/creatives'
-  - $ref: '#/definitions/streams/conversions'
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/account_users"
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/campaign_groups"
+  - $ref: "#/definitions/streams/creatives"
+  - $ref: "#/definitions/streams/conversions"
 
 spec:
   type: Spec
@@ -571,17 +571,17 @@ spec:
         pattern_descriptor: YYYY-MM-DD
         description: "UTC date in the format YYYY-MM-DD. Any data before this date will not be replicated."
         examples:
-          - '2021-05-17'
+          - "2021-05-17"
         format: date
       account_ids:
         title: Account IDs
         type: array
-        description: "Specify the account IDs to pull data from, separated by a space. Leave this field empty if you want to pull the data from all accounts accessible by the authenticated user. See the <a href=\"https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details?lang=en\">LinkedIn docs</a> to locate these IDs."
+        description: 'Specify the account IDs to pull data from, separated by a space. Leave this field empty if you want to pull the data from all accounts accessible by the authenticated user. See the <a href="https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details?lang=en">LinkedIn docs</a> to locate these IDs.'
         items:
           type: integer
         examples:
           - 123456789
-        default: [ ]
+        default: []
         ad_analytics_reports:
           title: Custom Ad Analytics Reports
           type: array
@@ -633,7 +633,7 @@ spec:
                   - DAILY
                   - MONTHLY
                   - YEARLY
-          default: [ ]
+          default: []
     additionalProperties: true
   advanced_auth:
     auth_flow_type: oauth2.0

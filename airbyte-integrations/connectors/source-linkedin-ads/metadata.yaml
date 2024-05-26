@@ -66,12 +66,16 @@ data:
               - "ad_member_region_analytics"
               - "ad_member_company_analytics"
       3.0.0:
-        message: This upgrade changes primary key for AccountUsers streams from account to account, users so that fix deduplication for this stream.
+        message: This release introduces updated format of state for incremental streams and changes primary key for AccountUsers streams from account to account. Users will need to reset affected streams after upgrading. Please see migration guide for more details.
         upgradeDeadline: "2024-06-17"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
               - "account_users"
+              - "campaigns"
+              - "creatives"
+              - "campaign_groups"
+              - "conversions"
   suggestedStreams:
     streams:
       - accounts
@@ -84,6 +88,7 @@ data:
   supportLevel: certified
   tags:
     - language:python
+    - cdk:low-code
     - cdk:python
   connectorTestSuitesOptions:
     - suite: unitTests

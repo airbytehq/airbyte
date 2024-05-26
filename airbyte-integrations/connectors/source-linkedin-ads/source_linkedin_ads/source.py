@@ -6,6 +6,7 @@
 import logging
 from typing import Any, List, Mapping, Optional, Tuple, Union
 
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
@@ -23,9 +24,6 @@ from source_linkedin_ads.analytics_streams import (
     AdMemberRegionAnalytics,
     AdMemberSeniorityAnalytics,
 )
-
-
-from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
 """
 This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
@@ -94,19 +92,21 @@ class SourceLinkedinAds(YamlDeclarativeSource):
         config["authenticator"] = self.get_authenticator(config)
 
         streams = super().streams(config=config)
-        streams.extend([
-            AdCampaignAnalytics(config=config),
-            AdCreativeAnalytics(config=config),
-            AdImpressionDeviceAnalytics(config=config),
-            AdMemberCompanySizeAnalytics(config=config),
-            AdMemberCountryAnalytics(config=config),
-            AdMemberJobFunctionAnalytics(config=config),
-            AdMemberJobTitleAnalytics(config=config),
-            AdMemberIndustryAnalytics(config=config),
-            AdMemberSeniorityAnalytics(config=config),
-            AdMemberRegionAnalytics(config=config),
-            AdMemberCompanyAnalytics(config=config)
-        ])
+        streams.extend(
+            [
+                AdCampaignAnalytics(config=config),
+                AdCreativeAnalytics(config=config),
+                AdImpressionDeviceAnalytics(config=config),
+                AdMemberCompanySizeAnalytics(config=config),
+                AdMemberCountryAnalytics(config=config),
+                AdMemberJobFunctionAnalytics(config=config),
+                AdMemberJobTitleAnalytics(config=config),
+                AdMemberIndustryAnalytics(config=config),
+                AdMemberSeniorityAnalytics(config=config),
+                AdMemberRegionAnalytics(config=config),
+                AdMemberCompanyAnalytics(config=config),
+            ]
+        )
 
         return streams + self.get_custom_ad_analytics_reports(config)
 
