@@ -17,11 +17,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /applications.list
           http_method: POST
           request_body_json:
-            createdAfter: '{{ timestamp(config[''start_date'']) * 1000 }}'
+            createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -41,11 +41,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.nextCursor }}'
+            cursor_value: "{{ response.nextCursor }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/applications'
+          $ref: "#/schemas/applications"
     archive_reasons:
       type: DeclarativeStream
       name: archive_reasons
@@ -54,7 +54,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /archiveReason.list
           http_method: POST
         record_selector:
@@ -76,11 +76,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.nextCursor }}'
+            cursor_value: "{{ response.nextCursor }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/archive_reasons'
+          $ref: "#/schemas/archive_reasons"
     candidate_tags:
       type: DeclarativeStream
       name: candidate_tags
@@ -89,7 +89,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /candidateTag.list
           http_method: POST
         record_selector:
@@ -111,11 +111,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.nextCursor }}'
+            cursor_value: "{{ response.nextCursor }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/candidate_tags'
+          $ref: "#/schemas/candidate_tags"
     candidates:
       type: DeclarativeStream
       name: candidates
@@ -124,7 +124,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /candidate.list
           http_method: POST
         record_selector:
@@ -146,11 +146,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.nextCursor }}'
+            cursor_value: "{{ response.nextCursor }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/candidates'
+          $ref: "#/schemas/candidates"
     custom_fields:
       type: DeclarativeStream
       name: custom_fields
@@ -159,7 +159,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /customField.list
           http_method: POST
         record_selector:
@@ -181,11 +181,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.nextCursor }}'
+            cursor_value: "{{ response.nextCursor }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/custom_fields'
+          $ref: "#/schemas/custom_fields"
     departments:
       type: DeclarativeStream
       name: departments
@@ -194,7 +194,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /department.list
           http_method: POST
         record_selector:
@@ -216,11 +216,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.nextCursor }}'
+            cursor_value: "{{ response.nextCursor }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/departments'
+          $ref: "#/schemas/departments"
     feedback_form_definitions:
       type: DeclarativeStream
       name: feedback_form_definitions
@@ -229,7 +229,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /feedbackFormDefinition.list
           http_method: POST
         record_selector:
@@ -251,11 +251,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.nextCursor }}'
+            cursor_value: "{{ response.nextCursor }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/feedback_form_definitions'
+          $ref: "#/schemas/feedback_form_definitions"
     interview_schedules:
       type: DeclarativeStream
       name: interview_schedules
@@ -264,11 +264,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /interviewSchedule.list
           http_method: POST
           request_body_json:
-            createdAfter: '{{ timestamp(config[''start_date'']) * 1000 }}'
+            createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -288,11 +288,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.nextCursor }}'
+            cursor_value: "{{ response.nextCursor }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/interview_schedules'
+          $ref: "#/schemas/interview_schedules"
     job_postings:
       type: DeclarativeStream
       name: job_postings
@@ -301,7 +301,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /jobPosting.list
           http_method: POST
         record_selector:
@@ -323,11 +323,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.nextCursor }}'
+            cursor_value: "{{ response.nextCursor }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/job_postings'
+          $ref: "#/schemas/job_postings"
     jobs:
       type: DeclarativeStream
       name: jobs
@@ -336,7 +336,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /job.list
           http_method: POST
         record_selector:
@@ -358,11 +358,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.nextCursor }}'
+            cursor_value: "{{ response.nextCursor }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/jobs'
+          $ref: "#/schemas/jobs"
     locations:
       type: DeclarativeStream
       name: locations
@@ -371,7 +371,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /location.list
           http_method: POST
         record_selector:
@@ -393,11 +393,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.nextCursor }}'
+            cursor_value: "{{ response.nextCursor }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/locations'
+          $ref: "#/schemas/locations"
     offers:
       type: DeclarativeStream
       name: offers
@@ -406,7 +406,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /offer.list
           http_method: POST
         record_selector:
@@ -428,11 +428,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.nextCursor }}'
+            cursor_value: "{{ response.nextCursor }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/offers'
+          $ref: "#/schemas/offers"
     sources:
       type: DeclarativeStream
       name: sources
@@ -441,7 +441,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /source.list
           http_method: POST
         record_selector:
@@ -463,11 +463,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.nextCursor }}'
+            cursor_value: "{{ response.nextCursor }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/sources'
+          $ref: "#/schemas/sources"
     users:
       type: DeclarativeStream
       name: users
@@ -476,7 +476,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /user.list
           http_method: POST
         record_selector:
@@ -498,34 +498,34 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: '{{ response.nextCursor }}'
+            cursor_value: "{{ response.nextCursor }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/users'
+          $ref: "#/schemas/users"
   base_requester:
     type: HttpRequester
     url_base: https://api.ashbyhq.com
     authenticator:
       type: BasicHttpAuthenticator
-      username: '{{ config[''api_key''] }}'
-      password: '{{ config[''api_key''] }}'
+      username: "{{ config['api_key'] }}"
+      password: "{{ config['api_key'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/applications'
-  - $ref: '#/definitions/streams/archive_reasons'
-  - $ref: '#/definitions/streams/candidate_tags'
-  - $ref: '#/definitions/streams/candidates'
-  - $ref: '#/definitions/streams/custom_fields'
-  - $ref: '#/definitions/streams/departments'
-  - $ref: '#/definitions/streams/feedback_form_definitions'
-  - $ref: '#/definitions/streams/interview_schedules'
-  - $ref: '#/definitions/streams/job_postings'
-  - $ref: '#/definitions/streams/jobs'
-  - $ref: '#/definitions/streams/locations'
-  - $ref: '#/definitions/streams/offers'
-  - $ref: '#/definitions/streams/sources'
-  - $ref: '#/definitions/streams/users'
+  - $ref: "#/definitions/streams/applications"
+  - $ref: "#/definitions/streams/archive_reasons"
+  - $ref: "#/definitions/streams/candidate_tags"
+  - $ref: "#/definitions/streams/candidates"
+  - $ref: "#/definitions/streams/custom_fields"
+  - $ref: "#/definitions/streams/departments"
+  - $ref: "#/definitions/streams/feedback_form_definitions"
+  - $ref: "#/definitions/streams/interview_schedules"
+  - $ref: "#/definitions/streams/job_postings"
+  - $ref: "#/definitions/streams/jobs"
+  - $ref: "#/definitions/streams/locations"
+  - $ref: "#/definitions/streams/offers"
+  - $ref: "#/definitions/streams/sources"
+  - $ref: "#/definitions/streams/users"
 
 spec:
   type: Spec
@@ -553,7 +553,7 @@ spec:
           UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
           this date will not be replicated.
         examples:
-          - '2017-01-25T00:00:00Z'
+          - "2017-01-25T00:00:00Z"
         order: 1
     additionalProperties: true
 
@@ -582,48 +582,48 @@ schemas:
     properties:
       archiveReason:
         type:
-          - 'null'
+          - "null"
           - string
       candidate:
         type:
-          - 'null'
+          - "null"
           - object
       createdAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       creditedToUser:
         type:
-          - 'null'
+          - "null"
           - object
       currentInterviewStage:
         type:
-          - 'null'
+          - "null"
           - object
       customFields:
         type:
-          - 'null'
+          - "null"
           - array
       hiringTeam:
         type:
-          - 'null'
+          - "null"
           - array
       id:
         type:
-          - 'null'
+          - "null"
           - string
       job:
         type:
-          - 'null'
+          - "null"
           - object
       status:
         type:
-          - 'null'
+          - "null"
           - string
       updatedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
   archive_reasons:
@@ -633,19 +633,19 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       isArchived:
         type:
-          - 'null'
+          - "null"
           - boolean
       reasonType:
         type:
-          - 'null'
+          - "null"
           - string
       text:
         type:
-          - 'null'
+          - "null"
           - string
   candidate_tags:
     type: object
@@ -654,15 +654,15 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       isArchived:
         type:
-          - 'null'
+          - "null"
           - boolean
       title:
         type:
-          - 'null'
+          - "null"
           - string
   candidates:
     type: object
@@ -671,59 +671,59 @@ schemas:
     properties:
       applicationIds:
         type:
-          - 'null'
+          - "null"
           - array
       company:
         type:
-          - 'null'
+          - "null"
           - string
       customFields:
         type:
-          - 'null'
+          - "null"
           - array
       emailAddresses:
         type:
-          - 'null'
+          - "null"
           - array
       fileHandles:
         type:
-          - 'null'
+          - "null"
           - array
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       phoneNumbers:
         type:
-          - 'null'
+          - "null"
           - array
       position:
         type:
-          - 'null'
+          - "null"
           - string
       primaryEmailAddress:
         type:
-          - 'null'
+          - "null"
           - object
       resumeFileHandle:
         type:
-          - 'null'
+          - "null"
           - object
       school:
         type:
-          - 'null'
+          - "null"
           - string
       socialLinks:
         type:
-          - 'null'
+          - "null"
           - array
       tags:
         type:
-          - 'null'
+          - "null"
           - array
   custom_fields:
     type: object
@@ -732,23 +732,23 @@ schemas:
     properties:
       fieldType:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       isArchived:
         type:
-          - 'null'
+          - "null"
           - boolean
       objectType:
         type:
-          - 'null'
+          - "null"
           - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
   departments:
     type: object
@@ -757,19 +757,19 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       isArchived:
         type:
-          - 'null'
+          - "null"
           - boolean
       name:
         type:
-          - 'null'
+          - "null"
           - string
       parentId:
         type:
-          - 'null'
+          - "null"
           - string
   feedback_form_definitions:
     type: object
@@ -778,31 +778,31 @@ schemas:
     properties:
       formDefinition:
         type:
-          - 'null'
+          - "null"
           - object
       id:
         type:
-          - 'null'
+          - "null"
           - string
       interviewId:
         type:
-          - 'null'
+          - "null"
           - string
       isArchived:
         type:
-          - 'null'
+          - "null"
           - boolean
       isDefaultForm:
         type:
-          - 'null'
+          - "null"
           - boolean
       organizationId:
         type:
-          - 'null'
+          - "null"
           - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
   interview_schedules:
     type: object
@@ -811,19 +811,19 @@ schemas:
     properties:
       applicationId:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       interviewStageId:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
   job_postings:
     type: object
@@ -832,48 +832,48 @@ schemas:
     properties:
       departmentName:
         type:
-          - 'null'
+          - "null"
           - string
       employmentType:
         type:
-          - 'null'
+          - "null"
           - string
       externalLink:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       isListed:
         type:
-          - 'null'
+          - "null"
           - boolean
       jobId:
         type:
-          - 'null'
+          - "null"
           - string
       locationIds:
         type:
-          - 'null'
+          - "null"
           - object
       locationName:
         type:
-          - 'null'
+          - "null"
           - string
       publishedDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       teamName:
         type:
-          - 'null'
+          - "null"
           - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
   jobs:
     type: object
@@ -882,55 +882,55 @@ schemas:
     properties:
       confidential:
         type:
-          - 'null'
+          - "null"
           - boolean
       customFields:
         type:
-          - 'null'
+          - "null"
           - array
       customRequisitionId:
         type:
-          - 'null'
+          - "null"
           - string
       defaultInterviewPlanId:
         type:
-          - 'null'
+          - "null"
           - string
       departmentId:
         type:
-          - 'null'
+          - "null"
           - string
       employmentType:
         type:
-          - 'null'
+          - "null"
           - string
       hiringTeam:
         type:
-          - 'null'
+          - "null"
           - array
       id:
         type:
-          - 'null'
+          - "null"
           - string
       interviewPlanIds:
         type:
-          - 'null'
+          - "null"
           - array
       jobPostingIds:
         type:
-          - 'null'
+          - "null"
           - array
       locationId:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
   locations:
     type: object
@@ -939,23 +939,23 @@ schemas:
     properties:
       address:
         type:
-          - 'null'
+          - "null"
           - object
       id:
         type:
-          - 'null'
+          - "null"
           - string
       isArchived:
         type:
-          - 'null'
+          - "null"
           - boolean
       isRemote:
         type:
-          - 'null'
+          - "null"
           - boolean
       name:
         type:
-          - 'null'
+          - "null"
           - string
   offers:
     type: object
@@ -964,24 +964,24 @@ schemas:
     properties:
       acceptanceStatus:
         type:
-          - 'null'
+          - "null"
           - string
       applicationId:
         type:
-          - 'null'
+          - "null"
           - string
       decidedAt:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       id:
         type:
-          - 'null'
+          - "null"
           - string
       latestVersion:
         type:
-          - 'null'
+          - "null"
           - object
   sources:
     type: object
@@ -990,15 +990,15 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       isArchived:
         type:
-          - 'null'
+          - "null"
           - boolean
       title:
         type:
-          - 'null'
+          - "null"
           - string
   users:
     type: object
@@ -1007,17 +1007,17 @@ schemas:
     properties:
       email:
         type:
-          - 'null'
+          - "null"
           - string
       firstName:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       lastName:
         type:
-          - 'null'
+          - "null"
           - string
