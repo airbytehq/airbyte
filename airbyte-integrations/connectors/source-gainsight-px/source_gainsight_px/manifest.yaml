@@ -18,7 +18,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /accounts
           http_method: GET
         record_selector:
@@ -30,7 +30,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/accounts'
+          $ref: "#/schemas/accounts"
     admin_attributes:
       type: DeclarativeStream
       name: admin_attributes
@@ -39,7 +39,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /admin/model/account/attributes
           http_method: GET
         record_selector:
@@ -56,11 +56,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 5
-            cursor_value: '{{ last_record[''scrollId''] }}'
+            cursor_value: "{{ last_record['scrollId'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/admin_attributes'
+          $ref: "#/schemas/admin_attributes"
     articles:
       type: DeclarativeStream
       name: articles
@@ -69,7 +69,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /articles
           http_method: GET
         record_selector:
@@ -81,7 +81,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/articles'
+          $ref: "#/schemas/articles"
     feature:
       type: DeclarativeStream
       name: feature
@@ -90,7 +90,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /feature
           http_method: GET
         record_selector:
@@ -102,7 +102,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/feature'
+          $ref: "#/schemas/feature"
     segments:
       type: DeclarativeStream
       name: segments
@@ -111,7 +111,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /segment
           http_method: GET
         record_selector:
@@ -123,7 +123,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/segments'
+          $ref: "#/schemas/segments"
     kcbot:
       type: DeclarativeStream
       name: kcbot
@@ -132,7 +132,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /kcbot
           http_method: GET
         record_selector:
@@ -144,7 +144,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/kcbot'
+          $ref: "#/schemas/kcbot"
     user_attributes:
       type: DeclarativeStream
       name: user_attributes
@@ -153,7 +153,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /admin/model/user/attributes
           http_method: GET
         record_selector:
@@ -170,11 +170,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 5
-            cursor_value: '{{ last_record[''scrollId''] }}'
+            cursor_value: "{{ last_record['scrollId'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/user_attributes'
+          $ref: "#/schemas/user_attributes"
     users:
       type: DeclarativeStream
       name: users
@@ -183,7 +183,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /users
           http_method: GET
         record_selector:
@@ -195,27 +195,27 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/users'
+          $ref: "#/schemas/users"
   base_requester:
     type: HttpRequester
     url_base: https://api.aptrinsic.com/v1
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
       inject_into:
         type: RequestOption
         inject_into: header
         field_name: X-APTRINSIC-API-KEY
 
 streams:
-  - $ref: '#/definitions/streams/accounts'
-  - $ref: '#/definitions/streams/admin_attributes'
-  - $ref: '#/definitions/streams/articles'
-  - $ref: '#/definitions/streams/feature'
-  - $ref: '#/definitions/streams/segments'
-  - $ref: '#/definitions/streams/kcbot'
-  - $ref: '#/definitions/streams/user_attributes'
-  - $ref: '#/definitions/streams/users'
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/admin_attributes"
+  - $ref: "#/definitions/streams/articles"
+  - $ref: "#/definitions/streams/feature"
+  - $ref: "#/definitions/streams/segments"
+  - $ref: "#/definitions/streams/kcbot"
+  - $ref: "#/definitions/streams/user_attributes"
+  - $ref: "#/definitions/streams/users"
 
 spec:
   type: Spec
@@ -249,273 +249,273 @@ metadata:
 schemas:
   accounts:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       createDate:
         type:
-          - 'null'
+          - "null"
           - string
       customAttributes:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
       dunsNumber:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       industry:
         type:
-          - 'null'
+          - "null"
           - string
       lastModifiedDate:
         type:
-          - 'null'
+          - "null"
           - string
       lastSeenDate:
         type:
-          - 'null'
+          - "null"
           - string
       location:
         type:
-          - 'null'
+          - "null"
           - string
       naicsCode:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       numberOfEmployees:
         type:
-          - 'null'
+          - "null"
           - string
       numberOfUsers:
         type:
-          - 'null'
+          - "null"
           - string
       parentGroupId:
         type:
-          - 'null'
+          - "null"
           - string
       plan:
         type:
-          - 'null'
+          - "null"
           - string
       propertyKeys:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           location:
             type:
-              - 'null'
+              - "null"
               - string
       sfdcId:
         type:
-          - 'null'
+          - "null"
           - string
       sicCode:
         type:
-          - 'null'
+          - "null"
           - string
       trackedSubscriptionId:
         type:
-          - 'null'
+          - "null"
           - string
       website:
         type:
-          - 'null'
+          - "null"
           - string
     title: Accounts Schema
   admin_attributes:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       apiName:
         type:
-          - 'null'
+          - "null"
           - string
       createdDate:
         type:
-          - 'null'
+          - "null"
           - number
       defaultValue:
         type:
-          - 'null'
+          - "null"
           - string
       description:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       internalName:
         type:
-          - 'null'
+          - "null"
           - string
       modifiedDate:
         type:
-          - 'null'
+          - "null"
           - number
       name:
         type:
-          - 'null'
+          - "null"
           - string
       origin:
         type:
-          - 'null'
+          - "null"
           - string
       state:
         type:
-          - 'null'
+          - "null"
           - string
     title: User Attributes Schema
   articles:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       articleKCs:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           additionalProperties: true
           properties:
             kcId:
               type:
-                - 'null'
+                - "null"
                 - string
             kcName:
               type:
-                - 'null'
+                - "null"
                 - string
       articleName:
         type:
-          - 'null'
+          - "null"
           - string
       author:
         type:
-          - 'null'
+          - "null"
           - string
       createdDate:
         type:
-          - 'null'
+          - "null"
           - number
       id:
         type:
-          - 'null'
+          - "null"
           - string
       modifiedBy:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
       modifiedDate:
         type:
-          - 'null'
+          - "null"
           - number
       productId:
         type:
-          - 'null'
+          - "null"
           - string
       productName:
         type:
-          - 'null'
+          - "null"
           - string
       releaseDate:
         type:
-          - 'null'
+          - "null"
           - string
       viewType:
         type:
-          - 'null'
+          - "null"
           - string
     title: Articles Schema
   feature:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
         enum:
           - FEATURE
           - MODULE
       featureLabels:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           color:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       parentFeatureId:
         type:
-          - 'null'
+          - "null"
           - string
       propertyKey:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
         enum:
           - ACTIVATED
@@ -523,162 +523,162 @@ schemas:
     title: Feature Schema
   segments:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
     title: Segment Schema
   kcbot:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       createdBy:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
       createdDate:
         type:
-          - 'null'
+          - "null"
           - number
       description:
         type:
-          - 'null'
+          - "null"
           - string
       environments:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       modifiedBy:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
       modifiedDate:
         type:
-          - 'null'
+          - "null"
           - number
       name:
         type:
-          - 'null'
+          - "null"
           - string
       priority:
         type:
-          - 'null'
+          - "null"
           - number
       productId:
         type:
-          - 'null'
+          - "null"
           - string
       productName:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
     title: KCBot Schema
   user_attributes:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       apiName:
         type:
-          - 'null'
+          - "null"
           - string
       createdDate:
         type:
-          - 'null'
+          - "null"
           - number
       defaultValue:
         type:
-          - 'null'
+          - "null"
           - string
       description:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       internalName:
         type:
-          - 'null'
+          - "null"
           - string
       modifiedDate:
         type:
-          - 'null'
+          - "null"
           - number
       name:
         type:
-          - 'null'
+          - "null"
           - string
       origin:
         type:
-          - 'null'
+          - "null"
           - string
       state:
         type:
-          - 'null'
+          - "null"
           - string
     title: User Attributes Schema
   users:
     type:
-      - 'null'
+      - "null"
       - object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
         enum:
           - LEAD
@@ -687,33 +687,33 @@ schemas:
           - EMPTY_USER_TYPE
       accountId:
         type:
-          - 'null'
+          - "null"
           - string
       aptrinsicId:
         type:
-          - 'null'
+          - "null"
           - string
       createDate:
         type:
-          - 'null'
+          - "null"
           - integer
         format: int64
       email:
         type:
-          - 'null'
+          - "null"
           - string
       firstName:
         type:
-          - 'null'
+          - "null"
           - string
       firstVisitDate:
         type:
-          - 'null'
+          - "null"
           - integer
         format: int64
       gender:
         type:
-          - 'null'
+          - "null"
           - string
         enum:
           - MALE
@@ -722,178 +722,178 @@ schemas:
           - EMPTY_GENDER
       globalUnsubscribe:
         type:
-          - 'null'
+          - "null"
           - boolean
       id:
         type:
-          - 'null'
+          - "null"
           - string
         description: Synonym for identifyId, output only, not filterable
       identifyId:
         type:
-          - 'null'
+          - "null"
           - string
       lastInferredLocation:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           city:
             type:
-              - 'null'
+              - "null"
               - string
           continent:
             type:
-              - 'null'
+              - "null"
               - string
           coordinates:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               latitude:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               longitude:
                 type:
-                  - 'null'
+                  - "null"
                   - number
           countryCode:
             type:
-              - 'null'
+              - "null"
               - string
           countryName:
             type:
-              - 'null'
+              - "null"
               - string
           postalCode:
             type:
-              - 'null'
+              - "null"
               - string
           regionName:
             type:
-              - 'null'
+              - "null"
               - string
           stateCode:
             type:
-              - 'null'
+              - "null"
               - string
           stateName:
             type:
-              - 'null'
+              - "null"
               - string
           street:
             type:
-              - 'null'
+              - "null"
               - string
           timeZone:
             type:
-              - 'null'
+              - "null"
               - string
       lastModifiedDate:
         type:
-          - 'null'
+          - "null"
           - integer
         format: int64
       lastName:
         type:
-          - 'null'
+          - "null"
           - string
       lastSeenDate:
         type:
-          - 'null'
+          - "null"
           - integer
         format: int64
       lastVisitedUserAgentData:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           propertyKey:
             type:
-              - 'null'
+              - "null"
               - string
           userAgent:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             properties:
               browserType:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               browserVersion:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               device:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               platformType:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               platformVersion:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               rawUserAgent:
                 type:
-                  - 'null'
+                  - "null"
                   - string
       location:
         type:
-          - 'null'
+          - "null"
           - string
       numberOfVisits:
         type:
-          - 'null'
+          - "null"
           - integer
         format: int32
       phone:
         type:
-          - 'null'
+          - "null"
           - string
       propertyKeys:
         type:
-          - 'null'
+          - "null"
           - array
         description: Aptrinsic Tag Key, at least one is required
         examples:
           - - AP-XXXXXXXXXX-2
         items:
           type:
-            - 'null'
+            - "null"
             - string
       role:
         type:
-          - 'null'
+          - "null"
           - string
       score:
         type:
-          - 'null'
+          - "null"
           - integer
         format: int64
       sfdcContactId:
         type:
-          - 'null'
+          - "null"
           - string
       signUpDate:
         type:
-          - 'null'
+          - "null"
           - integer
         format: int64
       subscriptionId:
         type:
-          - 'null'
+          - "null"
           - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
     title: Users Schema
