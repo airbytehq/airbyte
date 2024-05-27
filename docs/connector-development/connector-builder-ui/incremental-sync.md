@@ -108,9 +108,9 @@ The "No filter (data feed)" option can only be used if the data is sorted from n
 ### No filter (client side)
 
 Select (client side) if data is ordered from oldest to newest.
-All Data is loaded into the source and older records are filtered out after that.
+All Data is loaded into the source, but older records are filtered out.
 
-The `/events` endpoint of the [GitHub API](https://docs.github.com/en/rest/activity/events?apiVersion=2022-11-28#list-repository-events) is such an API.
+The `/events` endpoint of the [GitHub API](https://docs.github.com/en/rest/activity/events?apiVersion=2022-11-28#list-repository-events) is an example of such API.
 By configuring pagination and setting time filtering capabilities to the "No filter (client side)" option, the connector will automatically read all records and emit only new data from the Source. This is done by comparing the cursor value of the records with the either the configured start date or the latest cursor value that was encountered in a previous sync. The latest cursor value is saved as part of the connection and used as the cutoff date for the next sync.
 
 ## Advanced settings
