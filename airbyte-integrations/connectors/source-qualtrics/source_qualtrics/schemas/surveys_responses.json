@@ -1,0 +1,132 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "Delighted Browser": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "Delighted Device Type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "Delighted Operating System": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "Delighted Source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "DelightedPersonID": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "DelightedResponseID": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "Locale": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "QID1": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "QID1_NPS_GROUP": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "Uid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "_lastModifiedDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "_recordId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "delighted_email_subject": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "endDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "finished": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "recipientEmail": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "recordedDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "response_id": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "startDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "survey_id": {
+      "type": [
+        "number",
+        "null"
+      ]
+    }
+  },
+  "type": "object"
+}

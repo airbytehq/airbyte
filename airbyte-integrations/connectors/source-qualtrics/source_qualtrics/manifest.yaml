@@ -85,10 +85,67 @@ definitions:
             parent_key: "id"
             partition_field: "id"
 
+  surveys_responses_requester:
+    type: CustomRequester
+    class_name: "source_qualtrics.component.CustomRequester" 
+    url_base: "https://fra1.qualtrics.com/API/v3"
+    http_method: "GET"
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: '{{ config[''api_key''] }}'
+      inject_into:
+        type: RequestOption
+        inject_into: header
+        field_name: X-API-TOKEN
+
+  surveys_responses:
+      $ref: "#/definitions/base_stream"
+      name: "surveys_responses"
+      $parameters:
+        path: ""
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - survey_id
+              value: "{{ stream_partition.id }}"
+      retriever:
+        type: SimpleRetriever
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - responses
+              - '*'
+              - values
+        requester:
+          $ref: "#/definitions/surveys_responses_requester"
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - stream: "#/definitions/surveys"
+              parent_key: "id"
+              partition_field: "id"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: _lastModifiedDate
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%S.%fZ'
+          - '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+
 streams:
   - "#/definitions/groups"
   - "#/definitions/surveys"
   - "#/definitions/surveys_questions"
+  - "#/definitions/surveys_responses"
 
 check:
   type: CheckStream
@@ -105,12 +162,18 @@ spec:
     type: object
     required:
       - api_key
+      - start_date
     properties:
       api_key:
         type: string
         title: API Key
         airbyte_secret: true
         order: 0
+      start_date:
+        type: string
+        title: Start date
+        # pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
     additionalProperties: true
   
 metadata:
@@ -118,3 +181,4 @@ metadata:
     groups: true
     surveys: true
     surveys_questions: true
+    surveys_responses: true
