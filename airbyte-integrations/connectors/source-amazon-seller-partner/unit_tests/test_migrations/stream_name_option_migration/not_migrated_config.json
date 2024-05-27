@@ -10,8 +10,7 @@
       "stream_name": "GET_REPORT",
       "options_list": [
         { "option_name": "reportPeriod", "option_value": "WEEK" }
-      ],
-      "report_name": "GET_REPORT"
+      ]
     }
   ]
 }
