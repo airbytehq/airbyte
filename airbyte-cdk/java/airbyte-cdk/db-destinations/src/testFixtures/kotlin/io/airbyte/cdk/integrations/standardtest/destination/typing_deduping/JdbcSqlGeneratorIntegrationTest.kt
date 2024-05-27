@@ -56,34 +56,28 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         var insert =
             dslContext.insertInto(
                 DSL.table(tableName),
-                columnNames
-                    .stream()
-                    .map { columnName: String? -> DSL.field(DSL.quotedName(columnName)) }
-                    .toList()
+                columnNames.map { columnName: String -> DSL.field(DSL.quotedName(columnName)) }
             )
         for (record in records) {
             insert =
                 insert.values(
-                    columnNames
-                        .stream()
-                        .map { fieldName: String ->
-                            // Convert this field to a string. Pretty naive implementation.
-                            val column = record[fieldName]
-                            val columnAsString =
-                                if (column == null) {
-                                    null
-                                } else if (column.isTextual) {
-                                    column.asText()
-                                } else {
-                                    column.toString()
-                                }
-                            if (Arrays.asList(*columnsToParseJson).contains(fieldName)) {
-                                return@map toJsonValue(columnAsString)
+                    columnNames.map { fieldName: String ->
+                        // Convert this field to a string. Pretty naive implementation.
+                        val column = record[fieldName]
+                        val columnAsString =
+                            if (column == null) {
+                                null
+                            } else if (column.isTextual) {
+                                column.asText()
                             } else {
-                                return@map DSL.`val`(columnAsString)
+                                column.toString()
                             }
+                        if (Arrays.asList(*columnsToParseJson).contains(fieldName)) {
+                            return@map toJsonValue(columnAsString)
+                        } else {
+                            return@map DSL.`val`(columnAsString)
                         }
-                        .toList()
+                    }
                 )
         }
         database.execute(insert.getSQL(ParamType.INLINED))

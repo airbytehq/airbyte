@@ -18,7 +18,7 @@ There are three major components to know in Airbyte:
 
 Airbyte is suitable for a wide range of data integration use cases, including AI data infrastructure and EL(T) workloads. Airbyte is also [embeddable](https://airbyte.com/product/powered-by-airbyte) within your own application or platform to power your product.
 
-<Arcade id="0k75Pa9c9EvrJb8zFsuU" title="Airbyte Demo" />
+<Arcade id="0k75Pa9c9EvrJb8zFsuU" title="Airbyte Demo" paddingBottom="calc(61.416666666666664% + 41px)" />
 
 ## For Airbyte Cloud users
 
@@ -30,7 +30,7 @@ Next, check out the [step-by-step tutorial](/using-airbyte/getting-started) to s
 
 Browse the [connector catalog](/integrations/) to find the connector you want. If the connector is not yet supported on Airbyte Open Source, [build your own connector](/connector-development/).
 
-Next, check out the [Airbyte Open Source QuickStart](/deploying-airbyte/local-deployment). Then learn how to [deploy](/deploying-airbyte/local-deployment) and [manage](/operator-guides/upgrading-airbyte) Airbyte Open Source in your cloud infrastructure.
+Next, check out the [Airbyte Open Source QuickStart](/deploying-airbyte/quickstart). Then learn how to [deploy](/deploying-airbyte/quickstart) and [manage](/operator-guides/upgrading-airbyte) Airbyte Open Source in your cloud infrastructure.
 
 ## For Airbyte contributors
 
