@@ -5,6 +5,8 @@
 
 import pytest
 import requests
+from airbyte_protocol.models import SyncMode
+
 from source_shopify.shopify_graphql.bulk.exceptions import ShopifyBulkExceptions
 from source_shopify.shopify_graphql.bulk.status import ShopifyBulkJobStatus
 from source_shopify.streams.streams import (
@@ -70,7 +72,7 @@ def test_retry_on_concurrent_job(request, requests_mock, auth_config) -> None:
     ],
     ids=[
         "regular concurrent request",
-        "max atttempt reached",
+        "max attempt reached",
     ]
 )
 def test_job_retry_on_concurrency(request, requests_mock, bulk_job_response, concurrent_max_retry, error_type, auth_config, expected) -> None:
@@ -105,7 +107,7 @@ def test_job_process_created(request, requests_mock, bulk_job_response, auth_con
     requests_mock.get(stream.job_manager.base_url, json=request.getfixturevalue(bulk_job_response))
     test_response = requests.get(stream.job_manager.base_url)
     # process the job with id (typically CREATED one)
-    stream.job_manager.job_process_created(test_response)
+    stream.job_manager._job_process_created(test_response)
     assert stream.job_manager._job_id == expected
 
 
@@ -304,12 +306,10 @@ def test_bulk_stream_parse_response(
     test_result_url = bulk_job_completed_response.get("data").get("node").get("url")
     # mocking the result url with jsonl content
     requests_mock.post(stream.job_manager.base_url, json=bulk_job_completed_response)
-    # getting mock response
-    test_bulk_response: requests.Response = requests.post(stream.job_manager.base_url)
     # mocking nested api call to get data from result url
     requests_mock.get(test_result_url, text=request.getfixturevalue(json_content_example))
     # parsing result from completed job
-    test_records = list(stream.parse_response(test_bulk_response))
+    test_records = list(stream.read_records(SyncMode.full_refresh, stream_slice={}))
     expected_result = request.getfixturevalue(expected)
     if isinstance(expected_result, dict):
         assert test_records == [expected_result]
@@ -376,8 +376,6 @@ def test_expand_stream_slices_job_size(
     test_result_url = bulk_job_completed_response.get("data").get("node").get("url")
     # mocking the result url with jsonl content
     requests_mock.post(stream.job_manager.base_url, json=bulk_job_completed_response)
-    # getting mock response
-    test_bulk_response: requests.Response = requests.post(stream.job_manager.base_url)
     # mocking nested api call to get data from result url
     requests_mock.get(test_result_url, text=request.getfixturevalue(json_content_example))
 
@@ -388,6 +386,8 @@ def test_expand_stream_slices_job_size(
     if last_job_elapsed_time:
         stream.job_manager._job_last_elapsed_time = last_job_elapsed_time
     # parsing result from completed job
-    list(stream.parse_response(test_bulk_response))
+
+    first_slice = next(stream.stream_slices())
+    list(stream.read_records(SyncMode.incremental, stream_slice=first_slice))
     # check the next slice
     assert stream.job_manager.job_size == adjusted_slice_size

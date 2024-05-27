@@ -1,14 +1,15 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+from requests.exceptions import ConnectionError
 from datetime import datetime, timedelta
 from typing import Any, Dict
 from unittest import TestCase
 
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.request import HttpRequest
-from airbyte_protocol.models import FailureType, SyncMode
+from airbyte_protocol.models import SyncMode
 from freezegun import freeze_time
 from source_shopify import SourceShopify
 from unit_tests.integration.api.authentication import grant_all_scopes, set_up_shop
@@ -16,6 +17,7 @@ from unit_tests.integration.api.bulk import (
     JobCreationResponseBuilder,
     JobStatusResponseBuilder,
     MetafieldOrdersJobResponseBuilder,
+    create_job_creation_body,
     create_job_creation_request,
     create_job_status_request,
 )
@@ -84,12 +86,20 @@ class GraphQlBulkStreamTest(TestCase):
             "POST",
             _URL_GRAPHQL,
             [{"exc": ConnectionError("ConnectionError")}, {"text": JobCreationResponseBuilder().with_bulk_operation_id(_BULK_OPERATION_ID).build().body, "status_code": 200}],
+            additional_matcher=lambda request: request.text == create_job_creation_body(_JOB_START_DATE, _JOB_END_DATE)
+        )
+        self._http_mocker.post(
+            create_job_status_request(_SHOP_NAME, _BULK_OPERATION_ID),
+            JobStatusResponseBuilder().with_completed_status(_BULK_OPERATION_ID, _JOB_RESULT_URL).build(),
+        )
+        self._http_mocker.get(
+            HttpRequest(_JOB_RESULT_URL),
+            MetafieldOrdersJobResponseBuilder().with_record().with_record().build(),
         )
 
         output = self._read(_get_config(_JOB_START_DATE))
 
-        assert list(map(lambda error: error.trace.error.failure_type, output.errors)) == [FailureType.system_error, FailureType.config_error]  # The actual error followed by the error that crashes the python app
-        assert "ConnectionError" in output.errors[0].__str__()
+        assert output.errors == []
 
     def _read(self, config):
         catalog = CatalogBuilder().with_stream(_BULK_STREAM, SyncMode.full_refresh).build()

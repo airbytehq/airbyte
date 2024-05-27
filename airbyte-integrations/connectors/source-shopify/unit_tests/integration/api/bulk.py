@@ -12,7 +12,7 @@ def _create_job_url(shop_name: str) -> str:
     return f"https://{shop_name}.myshopify.com/admin/api/{ShopifyStream.api_version}/graphql.json"
 
 
-def create_job_creation_request(shop_name: str, lower_boundary: datetime, upper_boundary: datetime) -> HttpRequest:
+def create_job_creation_body(lower_boundary: datetime, upper_boundary: datetime):
     outer_query = """mutation {
                 bulkOperationRunQuery(
                     query: \"\"\"
@@ -61,10 +61,13 @@ def create_job_creation_request(shop_name: str, lower_boundary: datetime, upper_
     inner_query = inner_query.replace("%LOWER_BOUNDARY_TOKEN%", lower_boundary.isoformat())
     inner_query = inner_query.replace("%UPPER_BOUNDARY_TOKEN%", upper_boundary.isoformat())
     outer_query = outer_query.replace("%INNER_QUERY_TOKEN%", inner_query)
+    return json.dumps({"query": outer_query})
 
+
+def create_job_creation_request(shop_name: str, lower_boundary: datetime, upper_boundary: datetime) -> HttpRequest:
     return HttpRequest(
         url=_create_job_url(shop_name),
-        body=json.dumps({"query": outer_query})
+        body=create_job_creation_body(lower_boundary, upper_boundary)
     )
 
 
