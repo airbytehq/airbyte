@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import static io.airbyte.integrations.base.destination.typing_deduping.Sql.separately;
 import static io.airbyte.integrations.base.destination.typing_deduping.Sql.transactionally;
-import static io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeTransaction.SOFT_RESET_SUFFIX;
+import static io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.SOFT_RESET_SUFFIX;
 import static java.util.stream.Collectors.joining;
 
 import com.google.cloud.bigquery.StandardSQLTypeName;
@@ -183,13 +183,12 @@ public class BigQuerySqlGenerator implements SqlGenerator {
   // the SQLGenerator?
   public static StandardSQLTypeName toDialectType(final AirbyteProtocolType airbyteProtocolType) {
     return switch (airbyteProtocolType) {
-      case STRING -> StandardSQLTypeName.STRING;
+      case STRING, TIME_WITH_TIMEZONE -> StandardSQLTypeName.STRING;
       case NUMBER -> StandardSQLTypeName.NUMERIC;
       case INTEGER -> StandardSQLTypeName.INT64;
       case BOOLEAN -> StandardSQLTypeName.BOOL;
       case TIMESTAMP_WITH_TIMEZONE -> StandardSQLTypeName.TIMESTAMP;
       case TIMESTAMP_WITHOUT_TIMEZONE -> StandardSQLTypeName.DATETIME;
-      case TIME_WITH_TIMEZONE -> StandardSQLTypeName.STRING;
       case TIME_WITHOUT_TIMEZONE -> StandardSQLTypeName.TIME;
       case DATE -> StandardSQLTypeName.DATE;
       case UNKNOWN -> StandardSQLTypeName.JSON;
