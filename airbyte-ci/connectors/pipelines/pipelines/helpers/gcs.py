@@ -36,7 +36,7 @@ def upload_to_gcs(file_path: Path, bucket_name: str, object_name: str, credentia
     return gcs_uri, public_url
 
 
-def sanitize_gcs_credentials(raw_value: str) -> str:
+def sanitize_gcp_credentials(raw_value: str) -> str:
     """Try to parse the raw string input that should contain a json object with the GCS credentials.
     It will raise an exception if the parsing fails and help us to fail fast on invalid credentials input.
 
