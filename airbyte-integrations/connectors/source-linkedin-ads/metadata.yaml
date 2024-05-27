@@ -89,7 +89,6 @@ data:
   tags:
     - language:python
     - cdk:low-code
-    - cdk:python
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: acceptanceTests
