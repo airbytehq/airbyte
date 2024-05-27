@@ -98,12 +98,16 @@ class IncrementalStream(CommcareStream, IncrementalMixin):
 
     @property
     def state(self) -> Mapping[str, Any]:
-        if self._cursor_value:
-            return {self.cursor_field: self._cursor_value}
+        return {self.cursor_field: self._cursor_value}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = datetime.strptime(value[self.cursor_field], self.dateformat)
+        if self.cursor_field in value:
+            if "Z" in value[self.cursor_field]:
+                date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+            else:
+                date_format = "%Y-%m-%dT%H:%M:%S.%f"
+            self._cursor_value = datetime.strptime(value[self.cursor_field], date_format)
 
     @property
     def sync_mode(self):
@@ -140,7 +144,6 @@ class IncrementalStream(CommcareStream, IncrementalMixin):
 
 
 class Case(IncrementalStream):
-
     """
     docs: https://www.commcarehq.org/a/[domain]/api/[version]/case/
     """
