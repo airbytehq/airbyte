@@ -17,7 +17,7 @@ from source_shopify.utils import ShopifyRateLimiter as limiter
 
 from ...http_request import ShopifyErrorHandler
 from .exceptions import AirbyteTracedException, ShopifyBulkExceptions
-from .query import ShopifyBulkTemplates, ShopifyBulkQuery
+from .query import ShopifyBulkQuery, ShopifyBulkTemplates
 from .retry import bulk_retry_on_exception
 from .status import ShopifyBulkJobStatus
 from .tools import END_OF_FILE, BulkTools

@@ -6,7 +6,6 @@
 import pytest
 import requests
 from airbyte_protocol.models import SyncMode
-
 from source_shopify.shopify_graphql.bulk.exceptions import ShopifyBulkExceptions
 from source_shopify.shopify_graphql.bulk.status import ShopifyBulkJobStatus
 from source_shopify.streams.streams import (

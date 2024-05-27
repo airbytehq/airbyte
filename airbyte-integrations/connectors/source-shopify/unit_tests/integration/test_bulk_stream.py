@@ -1,6 +1,5 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from requests.exceptions import ConnectionError
 from datetime import datetime, timedelta
 from typing import Any, Dict
 from unittest import TestCase
@@ -11,6 +10,7 @@ from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.request import HttpRequest
 from airbyte_protocol.models import SyncMode
 from freezegun import freeze_time
+from requests.exceptions import ConnectionError
 from source_shopify import SourceShopify
 from unit_tests.integration.api.authentication import grant_all_scopes, set_up_shop
 from unit_tests.integration.api.bulk import (

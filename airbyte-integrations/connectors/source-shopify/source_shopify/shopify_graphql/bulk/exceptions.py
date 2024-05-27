@@ -49,4 +49,5 @@ class ShopifyBulkExceptions:
 
     class BulkJobConcurrentError(BaseBulkException):
         """Raised when BULK Job could not be created, since the 1 Bulk job / shop quota is exceeded."""
+
         failure_type: FailureType = FailureType.transient_error

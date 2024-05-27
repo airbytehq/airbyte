@@ -4,7 +4,6 @@ from typing import Optional, Union
 
 import requests
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, ResponseAction
-
 from airbyte_protocol.models import FailureType
 from requests import exceptions
 
@@ -22,7 +21,7 @@ TRANSIENT_EXCEPTIONS = (
     exceptions.SSLError,
 ) + RESPONSE_CONSUMPTION_EXCEPTIONS
 
-_NO_ERROR_RESOLUTION = ErrorResolution(ResponseAction.IGNORE, None, None)
+_NO_ERROR_RESOLUTION = ErrorResolution(ResponseAction.SUCCESS, None, None)
 
 
 class ShopifyErrorHandler(ErrorHandler):
