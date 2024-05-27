@@ -5,14 +5,14 @@ package io.airbyte.cdk.integrations.base
 
 import com.google.common.base.Preconditions
 import io.airbyte.commons.cli.Clis
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.util.*
 import org.apache.commons.cli.Option
 import org.apache.commons.cli.OptionGroup
 import org.apache.commons.cli.Options
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 // todo (cgardens) - use argparse4j.github.io instead of org.apache.commons.cli to leverage better
 // sub-parser support.
 /** Parses command line args to a type safe config object for each command type. */
@@ -23,7 +23,6 @@ class IntegrationCliParser {
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(IntegrationCliParser::class.java)
 
         private val COMMAND_GROUP: OptionGroup
 
@@ -142,7 +141,7 @@ class IntegrationCliParser {
             for (option in parsed.options) {
                 argsMap[option.longOpt] = option.value
             }
-            LOGGER.info("integration args: {}", argsMap)
+            LOGGER.info { "integration args: $argsMap" }
 
             return when (command) {
                 Command.SPEC -> {
