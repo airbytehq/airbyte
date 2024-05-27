@@ -12,7 +12,6 @@ import io.airbyte.commons.stream.MoreStreams
 import java.io.*
 import java.nio.charset.StandardCharsets
 import java.util.*
-import java.util.stream.Collectors
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -111,8 +110,8 @@ internal class YamlsTest {
                 Assertions.assertEquals(
                     classes,
                     MoreStreams.toStream(iterator)
-                        .map { e: JsonNode? -> Jsons.`object`(e, ToClass::class.java) }
-                        .collect(Collectors.toList())
+                        .map { e: JsonNode -> Jsons.`object`(e, ToClass::class.java) }
+                        .toList()
                 )
             }
         } catch (e: Exception) {
