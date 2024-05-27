@@ -15,11 +15,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: billingRate
           http_method: GET
           request_parameters:
-            limit: '100'
+            limit: "100"
         record_selector:
           type: RecordSelector
           extractor:
@@ -37,18 +37,18 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/billing_rates'
+          $ref: "#/schemas/billing_rates"
     bookings:
       type: DeclarativeStream
       name: bookings
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: booking
           http_method: GET
           request_parameters:
-            limit: '100'
+            limit: "100"
         record_selector:
           type: RecordSelector
           extractor:
@@ -66,18 +66,18 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/bookings'
+          $ref: "#/schemas/bookings"
     clients:
       type: DeclarativeStream
       name: clients
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: client
           http_method: GET
           request_parameters:
-            limit: '100'
+            limit: "100"
         record_selector:
           type: RecordSelector
           extractor:
@@ -95,18 +95,18 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/clients'
+          $ref: "#/schemas/clients"
     events:
       type: DeclarativeStream
       name: events
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: event
           http_method: GET
           request_parameters:
-            limit: '100'
+            limit: "100"
         record_selector:
           type: RecordSelector
           extractor:
@@ -124,18 +124,18 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/events'
+          $ref: "#/schemas/events"
     holidays:
       type: DeclarativeStream
       name: holidays
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: holiday
           http_method: GET
           request_parameters:
-            limit: '100'
+            limit: "100"
         record_selector:
           type: RecordSelector
           extractor:
@@ -153,18 +153,18 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/holidays'
+          $ref: "#/schemas/holidays"
     projects:
       type: DeclarativeStream
       name: projects
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: project
           http_method: GET
           request_parameters:
-            limit: '100'
+            limit: "100"
         record_selector:
           type: RecordSelector
           extractor:
@@ -182,18 +182,18 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/projects'
+          $ref: "#/schemas/projects"
     resources:
       type: DeclarativeStream
       name: resources
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: resource
           http_method: GET
           request_parameters:
-            limit: '100'
+            limit: "100"
         record_selector:
           type: RecordSelector
           extractor:
@@ -211,26 +211,26 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/resources'
+          $ref: "#/schemas/resources"
   base_requester:
     type: HttpRequester
     url_base: https://api.hubplanner.com/v1
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
       inject_into:
         type: RequestOption
         field_name: Authorization
         inject_into: header
 
 streams:
-  - $ref: '#/definitions/streams/billing_rates'
-  - $ref: '#/definitions/streams/bookings'
-  - $ref: '#/definitions/streams/clients'
-  - $ref: '#/definitions/streams/events'
-  - $ref: '#/definitions/streams/holidays'
-  - $ref: '#/definitions/streams/projects'
-  - $ref: '#/definitions/streams/resources'
+  - $ref: "#/definitions/streams/billing_rates"
+  - $ref: "#/definitions/streams/bookings"
+  - $ref: "#/definitions/streams/clients"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/holidays"
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/resources"
 
 spec:
   type: Spec
@@ -268,15 +268,15 @@ schemas:
     properties:
       metadata:
         type:
-          - 'null'
+          - "null"
           - string
       _id:
         type:
-          - 'null'
+          - "null"
           - string
       createdDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       currency:
@@ -285,11 +285,11 @@ schemas:
         type: string
       rate:
         type:
-          - 'null'
+          - "null"
           - number
       updatedDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
   bookings:
@@ -299,86 +299,86 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       metadata:
         type:
-          - 'null'
+          - "null"
           - string
       _id:
         type:
-          - 'null'
+          - "null"
           - string
       allDay:
         type:
-          - 'null'
+          - "null"
           - boolean
       backgroundColor:
         type:
-          - 'null'
+          - "null"
           - string
       billable:
         type:
-          - 'null'
+          - "null"
           - boolean
       bookingCreatorId:
         type:
-          - 'null'
+          - "null"
           - string
       bookingRate:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           external:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               defaultRateId:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
           internal:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               defaultRateId:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
       categoryName:
         type:
-          - 'null'
+          - "null"
           - string
       categoryTemplateId:
         type:
-          - 'null'
+          - "null"
           - string
       createdDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       customFields:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             _id:
               type: string
             choices:
               type:
-                - 'null'
+                - "null"
                 - array
               items:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   _id:
@@ -387,66 +387,66 @@ schemas:
                     type: string
                   value:
                     type:
-                      - 'null'
+                      - "null"
                       - string
             templateId:
               type: string
             templateLabel:
               type:
-                - 'null'
+                - "null"
                 - string
             templateType:
               type: string
             value:
               type:
-                - 'null'
+                - "null"
                 - string
       deletedById:
         type:
-          - 'null'
+          - "null"
           - string
       details:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           bookedMinutes:
             type:
-              - 'null'
+              - "null"
               - integer
           budgetBookedAmount:
             type:
-              - 'null'
+              - "null"
               - integer
           holidayCount:
             type:
-              - 'null'
+              - "null"
               - integer
           offDaysCount:
             type:
-              - 'null'
+              - "null"
               - integer
           workDaysCount:
             type:
-              - 'null'
+              - "null"
               - integer
           workWeekDetails:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - integer
       end:
         type: string
       lastUpdatedById:
         type:
-          - 'null'
+          - "null"
           - string
       note:
         type:
-          - 'null'
+          - "null"
           - string
       project:
         type: string
@@ -454,25 +454,25 @@ schemas:
         type: string
       scale:
         type:
-          - 'null'
+          - "null"
           - string
       start:
         type: string
       state:
         type:
-          - 'null'
+          - "null"
           - string
       stateValue:
         type:
-          - 'null'
+          - "null"
           - integer
       title:
         type:
-          - 'null'
+          - "null"
           - string
       updatedDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
   clients:
@@ -482,30 +482,30 @@ schemas:
     properties:
       __v:
         type:
-          - 'null'
+          - "null"
           - integer
       _id:
         type:
-          - 'null'
+          - "null"
           - string
       company:
         type:
-          - 'null'
+          - "null"
           - string
       createdDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       deleted:
         type:
-          - 'null'
+          - "null"
           - boolean
       name:
         type: string
       updatedDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
   events:
@@ -515,19 +515,19 @@ schemas:
     properties:
       metadata:
         type:
-          - 'null'
+          - "null"
           - string
       _id:
         type:
-          - 'null'
+          - "null"
           - string
       backgroundColor:
         type:
-          - 'null'
+          - "null"
           - string
       createdDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       label:
@@ -536,7 +536,7 @@ schemas:
         type: string
       updatedDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
   holidays:
@@ -546,27 +546,27 @@ schemas:
     properties:
       metadata:
         type:
-          - 'null'
+          - "null"
           - string
       _id:
         type:
-          - 'null'
+          - "null"
           - string
       createdDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       date:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       name:
         type: string
       updatedDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
   projects:
@@ -576,131 +576,131 @@ schemas:
     properties:
       metadata:
         type:
-          - 'null'
+          - "null"
           - string
       _id:
         type:
-          - 'null'
+          - "null"
           - string
       backgroundColor:
         type:
-          - 'null'
+          - "null"
           - string
       billable:
         type:
-          - 'null'
+          - "null"
           - boolean
       budget:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           cashAmount:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               active:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               amount:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               billingRate:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   id:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   rate:
                     type:
-                      - 'null'
+                      - "null"
                       - number
                   useDefault:
                     type:
-                      - 'null'
+                      - "null"
                       - boolean
               currency:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           hasBudget:
             type:
-              - 'null'
+              - "null"
               - boolean
           projectHours:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               active:
                 type:
-                  - 'null'
+                  - "null"
                   - boolean
               hours:
                 type:
-                  - 'null'
+                  - "null"
                   - number
       budgetCashAmount:
         type:
-          - 'null'
+          - "null"
           - number
       budgetCategories:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
       budgetCurrency:
         type:
-          - 'null'
+          - "null"
           - string
       budgetHours:
         type:
-          - 'null'
+          - "null"
           - number
       categoryGroups:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       companyBillingRateId:
         type:
-          - 'null'
+          - "null"
           - string
       createdDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       customFields:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             _id:
               type: string
             choices:
               type:
-                - 'null'
+                - "null"
                 - array
               items:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   _id:
@@ -709,229 +709,229 @@ schemas:
                     type: string
                   value:
                     type:
-                      - 'null'
+                      - "null"
                       - string
             templateId:
               type: string
             templateLabel:
               type:
-                - 'null'
+                - "null"
                 - string
             templateType:
               type: string
             value:
               type:
-                - 'null'
+                - "null"
                 - string
       customers:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       defaultCategory:
         type:
-          - 'null'
+          - "null"
           - string
       end:
         type:
-          - 'null'
+          - "null"
           - string
       fixedCosts:
         type:
-          - 'null'
+          - "null"
           - array
       includeBookedTimeGrid:
         type:
-          - 'null'
+          - "null"
           - boolean
       includeBookedTimeReports:
         type:
-          - 'null'
+          - "null"
           - boolean
       links:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
       name:
         type: string
       note:
         type:
-          - 'null'
+          - "null"
           - string
       notes:
         type:
-          - 'null'
+          - "null"
           - string
       private:
         type:
-          - 'null'
+          - "null"
           - boolean
       projectCode:
         type:
-          - 'null'
+          - "null"
           - string
       projectManagers:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       projectRate:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           external:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               customRates:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     _id:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     id:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     resourceId:
                       type:
-                        - 'null'
+                        - "null"
                         - string
               defaultRateId:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           internal:
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               customRates:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - object
                   properties:
                     _id:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     id:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     resourceId:
                       type:
-                        - 'null'
+                        - "null"
                         - string
               defaultRateId:
                 type:
-                  - 'null'
+                  - "null"
                   - string
       resourceRates:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             companyBillingRate:
               type:
-                - 'null'
+                - "null"
                 - number
             companyBillingRateId:
               type:
-                - 'null'
+                - "null"
                 - string
             resource:
               type:
-                - 'null'
+                - "null"
                 - string
       resources:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       start:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
       tags:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
       timeEntryApproval:
         type:
-          - 'null'
+          - "null"
           - boolean
       timeEntryEnabled:
         type:
-          - 'null'
+          - "null"
           - boolean
       timeEntryLocked:
         type:
-          - 'null'
+          - "null"
           - boolean
       timeEntryNoteRequired:
         type:
-          - 'null'
+          - "null"
           - boolean
       updatedDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       useProjectDays:
         type:
-          - 'null'
+          - "null"
           - boolean
       useProjectDuration:
         type:
-          - 'null'
+          - "null"
           - boolean
       useStatusColor:
         type:
-          - 'null'
+          - "null"
           - boolean
       workDays:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - boolean
   resources:
     type: object
@@ -940,60 +940,60 @@ schemas:
     properties:
       metadata:
         type:
-          - 'null'
+          - "null"
           - string
       _id:
         type:
-          - 'null'
+          - "null"
           - string
       billable:
         type:
-          - 'null'
+          - "null"
           - boolean
       billing:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           rate:
             type:
-              - 'null'
+              - "null"
               - number
           useDefault:
             type:
-              - 'null'
+              - "null"
               - boolean
       calendarIds:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - string
       createdDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       customFields:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             _id:
               type: string
             choices:
               type:
-                - 'null'
+                - "null"
                 - array
               items:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   _id:
@@ -1002,92 +1002,92 @@ schemas:
                     type: string
                   value:
                     type:
-                      - 'null'
+                      - "null"
                       - string
             templateId:
               type: string
             templateLabel:
               type:
-                - 'null'
+                - "null"
                 - string
             templateType:
               type: string
             value:
               type:
-                - 'null'
+                - "null"
                 - string
       email:
         type:
-          - 'null'
+          - "null"
           - string
       firstName:
         type: string
       isApprover:
         type:
-          - 'null'
+          - "null"
           - boolean
       isProjectManager:
         type:
-          - 'null'
+          - "null"
           - boolean
       lastName:
         type:
-          - 'null'
+          - "null"
           - string
       links:
         type:
-          - 'null'
+          - "null"
           - object
         properties: {}
       note:
         type:
-          - 'null'
+          - "null"
           - string
       resourceRates:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           external:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties: {}
           internal:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties: {}
       role:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type:
-          - 'null'
+          - "null"
           - string
       tags:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
       updatedDate:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       useCustomAvailability:
         type:
-          - 'null'
+          - "null"
           - boolean
