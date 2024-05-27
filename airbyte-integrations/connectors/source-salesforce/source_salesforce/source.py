@@ -92,21 +92,8 @@ class SourceSalesforce(ConcurrentSourceAdapter):
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
         self._validate_stream_slice_step(config.get("stream_slice_step"))
-        try:
-            salesforce = self._get_sf_object(config)
-            salesforce.describe()
-        except exceptions.HTTPError as error:
-            error_msg = f"An error occurred: {error.response.text}"
-            try:
-                error_data = error.response.json()[0]
-            except (KeyError, requests.exceptions.JSONDecodeError):
-                pass
-            else:
-                error_code = error_data.get("errorCode")
-                if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
-                    logger.warn(f"API Call limit is exceeded. Error message: '{error_data.get('message')}'")
-                    error_msg = "API Call limit is exceeded. Make sure that you have enough API allocation for your organization needs or retry later. For more information, see https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm"
-            return False, error_msg
+        salesforce = self._get_sf_object(config)
+        salesforce.describe()
         return True, None
 
     @classmethod
