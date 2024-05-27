@@ -9,6 +9,7 @@ import os
 import time
 from abc import ABC, abstractmethod
 from enum import Enum
+from functools import lru_cache
 from io import StringIO
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
@@ -16,7 +17,6 @@ import dateparser
 import pendulum
 import requests
 import xmltodict
-from functools import lru_cache
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class

@@ -57,6 +57,7 @@ from source_amazon_seller_partner.streams import (
     OrderReportDataShipping,
     Orders,
     RapidRetailAnalyticsInventoryReport,
+    ReportsAmazonSPStream,
     RestockInventoryReports,
     SellerAnalyticsSalesAndTrafficReports,
     SellerFeedbackReports,
@@ -69,7 +70,6 @@ from source_amazon_seller_partner.streams import (
     VendorSalesReports,
     VendorTrafficReport,
     XmlAllOrdersDataByOrderDataGeneral,
-    ReportsAmazonSPStream
 )
 from source_amazon_seller_partner.utils import AmazonConfigException
 
