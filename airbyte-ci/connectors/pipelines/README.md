@@ -305,7 +305,7 @@ flowchart TD
 | `--code-tests-only`                                     | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development. |
 | `--concurrent-cat`                                      | False    | False         | Make CAT tests run concurrently using pytest-xdist. Be careful about source or destination API rate limits.                                                                                              |
 | `--<step-id>.<extra-parameter>=<extra-parameter-value>` | True     |               | You can pass extra parameters for specific test steps. More details in the extra parameters section below                                                                                                |
-| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. 
+| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use.
 
 Note:
 
@@ -488,6 +488,7 @@ Get source-openweather up to date. If there are changes, bump the version and ad
 - `airbyte-ci connectors --name=source-openweather up_to_date --dev`: forces update if there are only dev changes
 - `airbyte-ci connectors --name=source-openweather up_to_date --dep pytest@^8.10 --dep airbyte-cdk@0.80.0`: allows update to toml files as well
 - `airbyte-ci connectors --name=source-openweather up_to_date --pull`: make a pull request for it
+- `airbyte-ci connectors --name=source-openweather up_to_date --no-bump`: don't change the version or changelog
 
 ### Other things it could do
 
@@ -538,6 +539,7 @@ Modify the selected connector metadata to use the latest base image version.
 
 Upgrade the base image for source-openweather:
 `airbyte-ci connectors --name=source-openweather upgrade_base_image`
+`airbyte-ci connectors --name=source-openweather upgrade_base_image --changelog --bump patch --pull-request-number 123`
 
 ### Options
 
@@ -569,6 +571,7 @@ Migrate connectors the poetry package manager.
 
 Migrate source-openweather to use the base image:
 `airbyte-ci connectors --name=source-openweather migrate-to-poetry`
+`airbyte-ci connectors --name=source-openweather migrate-to-poetry --changelog --bump patch`
 
 ### <a id="connectors-migrate_to_inline_schemas"></a>`connectors migrate_to_inline_schemas` command
 
@@ -616,7 +619,7 @@ Options:
 #### Examples
 
 Make a PR for all changes, bump the version and make a changelog in those PRs. They will be on the branch ci_update/round2/<connector-name>:
-`airbyte-ci connectors pull_request -m "upgrading connectors" -b ci_update/round2 --bump patch --changelog`
+`airbyte-ci connectors --modified pull_request -m "upgrading connectors" -b ci_update/round2 --bump patch --changelog`
 
 Do it just for a few connectors:
 `airbyte-ci connectors --name source-aha --name source-quickbooks pull_request -m "upgrading connectors" -b ci_update/round2 --bump patch --changelog`
@@ -744,7 +747,13 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                  |
-|---------|------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
+| ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.15.4  | [#38646](https://github.com/airbytehq/airbyte/pull/38646)      | Make airbyte-ci able to test external repos.                                                                                 |
+| 4.15.3  | [#38645](https://github.com/airbytehq/airbyte/pull/38645)  | Fix typo preventing correct secret mounting on Python connectors integration tests.                                          |
+| 4.15.2  | [#38628](https://github.com/airbytehq/airbyte/pull/38628)  | Introduce ConnectorTestContext to avoid trying fetching connector secret in the PublishContext.                              |
+| 4.15.1  | [#38615](https://github.com/airbytehq/airbyte/pull/38615)  | Do not eagerly fetch connector secrets.                                                                                      |
+| 4.15.0  | [#38322](https://github.com/airbytehq/airbyte/pull/38322)  | Introduce a SecretStore abstraction to fetch connector secrets from metadata files.                                          |
+| 4.14.1  | [#38582](https://github.com/airbytehq/airbyte/pull/38582)  | Fixed bugs in `up_to_date` flags, `pull_request` version change logic.                                                       |
 | 4.14.0  | [#38281](https://github.com/airbytehq/airbyte/pull/38281)  | Conditionally run test suites according to `connectorTestSuitesOptions` in metadata files.                                   |
 | 4.13.3  | [#38221](https://github.com/airbytehq/airbyte/pull/38221)  | Add dagster cloud dev deployment pipeline opitions                                                                           |
 | 4.13.2  | [#38246](https://github.com/airbytehq/airbyte/pull/38246)  | Remove invalid connector test step options.                                                                                  |

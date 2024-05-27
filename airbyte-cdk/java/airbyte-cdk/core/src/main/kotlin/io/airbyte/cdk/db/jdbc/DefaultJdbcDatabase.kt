@@ -8,14 +8,14 @@ import io.airbyte.cdk.db.JdbcCompatibleSourceOperations
 import io.airbyte.commons.exceptions.ConnectionErrorException
 import io.airbyte.commons.functional.CheckedConsumer
 import io.airbyte.commons.functional.CheckedFunction
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.*
 import java.util.*
 import java.util.function.Function
 import java.util.stream.Stream
 import javax.sql.DataSource
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * Database object for interacting with a JDBC connection. Can be used for any JDBC compliant db.
  */
@@ -26,14 +26,14 @@ constructor(
     sourceOperations: JdbcCompatibleSourceOperations<*>? = JdbcUtils.defaultSourceOperations
 ) : JdbcDatabase(sourceOperations) {
     @Throws(SQLException::class)
-    override fun execute(query: CheckedConsumer<Connection, SQLException?>) {
+    override fun execute(query: CheckedConsumer<Connection, SQLException>) {
         dataSource.connection.use { connection -> query.accept(connection) }
     }
 
     @Throws(SQLException::class)
     override fun <T> bufferedResultSetQuery(
-        query: CheckedFunction<Connection, ResultSet, SQLException?>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+        query: CheckedFunction<Connection, ResultSet, SQLException>,
+        recordTransform: CheckedFunction<ResultSet, T, SQLException>
     ): List<T> {
         dataSource.connection.use { connection ->
             toUnsafeStream<T>(query.apply(connection), recordTransform).use { results ->
@@ -45,20 +45,18 @@ constructor(
     @MustBeClosed
     @Throws(SQLException::class)
     override fun <T> unsafeResultSetQuery(
-        query: CheckedFunction<Connection, ResultSet, SQLException?>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+        query: CheckedFunction<Connection, ResultSet, SQLException>,
+        recordTransform: CheckedFunction<ResultSet, T, SQLException>
     ): Stream<T> {
         val connection = dataSource.connection
         return JdbcDatabase.Companion.toUnsafeStream<T>(query.apply(connection), recordTransform)
-            .onClose(
-                Runnable {
-                    try {
-                        connection.close()
-                    } catch (e: SQLException) {
-                        throw RuntimeException(e)
-                    }
+            .onClose {
+                try {
+                    connection.close()
+                } catch (e: SQLException) {
+                    throw RuntimeException(e)
                 }
-            )
+            }
     }
 
     @get:Throws(SQLException::class)
@@ -80,7 +78,7 @@ constructor(
             }
         }
 
-    override fun <T> executeMetadataQuery(query: Function<DatabaseMetaData?, T>): T {
+    override fun <T> executeMetadataQuery(query: Function<DatabaseMetaData, T>): T {
         try {
             dataSource.connection.use { connection ->
                 val metaData = connection.metaData
@@ -114,8 +112,8 @@ constructor(
     @MustBeClosed
     @Throws(SQLException::class)
     override fun <T> unsafeQuery(
-        statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException?>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+        statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException>,
+        recordTransform: CheckedFunction<ResultSet, T, SQLException>
     ): Stream<T> {
         val connection = dataSource.connection
         return JdbcDatabase.Companion.toUnsafeStream<T>(
@@ -125,16 +123,12 @@ constructor(
             .onClose(
                 Runnable {
                     try {
-                        LOGGER.info("closing connection")
+                        LOGGER.info { "closing connection" }
                         connection.close()
                     } catch (e: SQLException) {
                         throw RuntimeException(e)
                     }
                 }
             )
-    }
-
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(DefaultJdbcDatabase::class.java)
     }
 }
