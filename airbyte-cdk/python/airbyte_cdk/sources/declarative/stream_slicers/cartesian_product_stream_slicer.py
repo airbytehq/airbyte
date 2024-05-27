@@ -112,3 +112,53 @@ class CartesianProductStreamSlicer(StreamSlicer):
             else:
                 cursor_slice = {}
             yield StreamSlice(partition=partition, cursor_slice=cursor_slice)
+
+    def set_parent_state(self, stream_state: StreamState) -> None:
+        """
+        Set the state of the parent streams.
+
+        This method tries to set the parent state for every stream slicer. If a stream slicer does not have parent streams,
+        this will be skipped due to the default StreamSlicer implementation.
+
+        Args:
+            stream_state (StreamState): The state of the streams to be set. If `parent_state` exists in the
+            stream_state, it will update the state of each parent stream with the corresponding state from the stream_state.
+
+        Example of state format:
+        {
+            "parent_state": {
+                "parent_stream_name_1": {
+                    "last_updated": "2023-05-27T00:00:00Z"
+                },
+                "parent_stream_name_2": {
+                    "last_updated": "2023-05-27T00:00:00Z"
+                }
+            }
+        }
+        """
+        for stream_slicer in self.stream_slicers:
+            stream_slicer.set_parent_state(stream_state)
+
+    def get_parent_state(self) -> Optional[Mapping[str, StreamState]]:
+        """
+        Get the state of the parent streams.
+
+        This method returns the combined parent states from all stream slicers. If a stream slicer does not have parent streams,
+        this will be skipped due to the default StreamSlicer implementation.
+
+        Returns:
+            Optional[Mapping[str, StreamState]]: The current state of the parent streams in a dictionary format.
+                                                 The returned format will be:
+                                                 {
+                                                     "parent_stream_name1": {
+                                                         "last_updated": "2023-05-27T00:00:00Z"
+                                                     },
+                                                     "parent_stream_name2": {
+                                                         "last_updated": "2023-05-27T00:00:00Z"
+                                                     }
+                                                 }
+        """
+        combined_state = {}
+        for s in self.stream_slicers:
+            combined_state.update(s.get_parent_state())
+        return combined_state

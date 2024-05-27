@@ -80,12 +80,42 @@ class PerPartitionCursor(DeclarativeCursor):
                 yield StreamSlice(partition=partition, cursor_slice=cursor_slice)
 
     def set_initial_state(self, stream_state: StreamState) -> None:
+        """
+        Set the initial state for the cursors.
+
+        This method initializes the state for each partition cursor using the provided stream state.
+        If a partition state is provided in the stream state, it will update the corresponding partition cursor with this state.
+
+        Additionally, it sets the parent state for partition routers that are based on parent streams. If a partition router
+        does not have parent streams, this step will be skipped due to the default StreamSlicer implementation.
+
+        Args:
+            stream_state (StreamState): The state of the streams to be set. The format of the stream state should be:
+                                        {
+                                            "states": [
+                                                {
+                                                    "partition": {
+                                                        "partition_key": "value"
+                                                    },
+                                                    "cursor": {
+                                                        "last_updated": "2023-05-27T00:00:00Z"
+                                                    }
+                                                }
+                                            ],
+                                            "parent_state": {
+                                                "parent_stream_name": {
+                                                    "last_updated": "2023-05-27T00:00:00Z"
+                                                }
+                                            }
+                                        }
+        """
         if not stream_state:
             return
 
         for state in stream_state["states"]:
             self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
 
+        # Set parent state for partition routers based on parent streams
         self._partition_router.set_parent_state(stream_state)
 
     def observe(self, stream_slice: StreamSlice, record: Record) -> None:

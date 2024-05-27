@@ -164,13 +164,25 @@ class SubstreamPartitionRouter(StreamSlicer):
 
                     yield from stream_slices_for_parent
 
-    def set_parent_state(self, stream_state: Optional[StreamState]) -> None:
+    def set_parent_state(self, stream_state: StreamState) -> None:
         """
         Set the state of the parent streams.
 
         Args:
-            stream_state (Optional[StreamState]): The state of the streams to be set. If `parent_state` exists in the
+            stream_state (StreamState): The state of the streams to be set. If `parent_state` exists in the
             stream_state, it will update the state of each parent stream with the corresponding state from the stream_state.
+
+        Example of state format:
+        {
+            "parent_state": {
+                "parent_stream_name1": {
+                    "last_updated": "2023-05-27T00:00:00Z"
+                },
+                "parent_stream_name2": {
+                    "last_updated": "2023-05-27T00:00:00Z"
+                }
+            }
+        }
         """
         if not stream_state:
             return
@@ -183,12 +195,21 @@ class SubstreamPartitionRouter(StreamSlicer):
             if parent_config.incremental_dependency:
                 parent_config.stream.state = parent_state.get(parent_config.stream.name, {})
 
-    def get_parent_state(self) -> StreamState:
+    def get_parent_state(self) -> Optional[Mapping[str, StreamState]]:
         """
         Get the state of the parent streams.
 
         Returns:
             StreamState: The current state of the parent streams.
+
+        Example of state format:
+        {
+            "parent_stream_name1": {
+                "last_updated": "2023-05-27T00:00:00Z"
+            },
+            "parent_stream_name2": {
+                "last_updated": "2023-05-27T00:00:00Z"
+            }
+        }
         """
-        parent_stream_name = self.parent_stream_configs[0].stream.name if self.parent_stream_configs else None
         return self._parent_state
