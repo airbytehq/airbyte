@@ -28,7 +28,6 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
-import java.util.stream.Collectors
 import kotlin.jvm.optionals.getOrNull
 import org.jetbrains.annotations.VisibleForTesting
 
@@ -160,18 +159,11 @@ constructor(
         bufferManager.close()
 
         val streamSyncSummaries =
-            streamNames
-                .stream()
-                .collect(
-                    Collectors.toMap(
-                        { streamDescriptor: StreamDescriptor -> streamDescriptor },
-                        { streamDescriptor: StreamDescriptor ->
-                            StreamSyncSummary(
-                                Optional.of(getRecordCounter(streamDescriptor).get()),
-                            )
-                        },
-                    ),
+            streamNames.associateWith { streamDescriptor: StreamDescriptor ->
+                StreamSyncSummary(
+                    Optional.of(getRecordCounter(streamDescriptor).get()),
                 )
+            }
         onClose.accept(hasFailed, streamSyncSummaries)
 
         // as this throws an exception, we need to be after all other close functions.
