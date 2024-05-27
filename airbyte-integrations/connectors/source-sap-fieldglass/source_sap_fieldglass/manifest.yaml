@@ -15,7 +15,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /Active Worker Download
           http_method: GET
         record_selector:
@@ -26,20 +26,20 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/data'
+          $ref: "#/schemas/data"
   base_requester:
     type: HttpRequester
     url_base: https://sandbox.api.sap.com/fieldglass/api/vc/connector
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
       inject_into:
         type: RequestOption
         inject_into: header
         field_name: apikey
 
 streams:
-  - $ref: '#/definitions/streams/data'
+  - $ref: "#/definitions/streams/data"
 
 spec:
   type: Spec
@@ -216,7 +216,7 @@ schemas:
               type: string
               description: 14-character alphanumeric SAP Fieldglass Worker ID.
               maxLength: 14
-            '[c]Buyer or Supplier custom fields':
+            "[c]Buyer or Supplier custom fields":
               type: string
               description: |-
                 Custom fields found on the supplier. (For supplier side
@@ -229,7 +229,7 @@ schemas:
                 underscore, followed by the custom field name text as
                 defined by users in the SAP Fieldglass application.)
               maxLength: 4000
-            '[c]Work Order Custom Fields':
+            "[c]Work Order Custom Fields":
               type: string
               description: |-
                 Custom fields found on the work order/work order revision. 
@@ -240,7 +240,7 @@ schemas:
                 underscore, followed by the custom field name text as
                 defined by users in the SAP Fieldglass application.)
               maxLength: 4000
-            '[c]Worker Custom Fields':
+            "[c]Worker Custom Fields":
               type: string
               description: |-
                 Custom fields found on the worker.
@@ -251,7 +251,7 @@ schemas:
                 underscore, followed by the custom field name text as
                 defined by users in the SAP Fieldglass application.)
               maxLength: 4000
-            '[c]Worker User Person Custom Fields':
+            "[c]Worker User Person Custom Fields":
               type: string
               description: |-
                 Custom fields found on the worker user person
