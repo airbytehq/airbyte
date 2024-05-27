@@ -706,7 +706,12 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         Override for _send_request CDK method to send HTTP request to Shopify BULK Operatoions.
         https://shopify.dev/docs/api/usage/bulk-operations/queries#bulk-query-overview
         """
-        return {"query": ShopifyBulkTemplates.prepare(stream_slice.get("query"))}
+        if stream_slice:
+            query = self.query.get(self.filter_field, stream_slice["start"], stream_slice["end"])
+        else:
+            query = self.query.get()
+
+        return {"query": ShopifyBulkTemplates.prepare(query)}
 
     def get_updated_state(
         self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
@@ -761,12 +766,12 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
                 self.job_manager.job_size_normalize(start, end)
                 slice_end = self.job_manager.get_adjusted_job_start(start)
                 self.emit_slice_message(start, slice_end)
-                yield {"query": self.query.get(self.filter_field, start.to_rfc3339_string(), slice_end.to_rfc3339_string())}
+                yield {"start": start.to_rfc3339_string(), "end": slice_end.to_rfc3339_string()}
                 # increment the end of the slice or reduce the next slice
                 start = self.job_manager.get_adjusted_job_end(start, slice_end)
         else:
             # for the streams that don't support filtering
-            yield {"query": self.query.get()}
+            yield {}
 
     def process_bulk_results(
         self,

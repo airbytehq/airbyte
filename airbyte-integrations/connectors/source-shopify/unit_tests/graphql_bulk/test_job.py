@@ -318,13 +318,13 @@ def test_bulk_stream_parse_response(
 
 
 @pytest.mark.parametrize(
-    "stream, stream_state, with_start_date, expected",
+    "stream, stream_state, with_start_date, expected_start",
     [
-        (DiscountCodes, {}, True, "updated_at:>='2023-01-01T00:00:00+00:00'"),
+        (DiscountCodes, {}, True, "2023-01-01T00:00:00+00:00"),
         # here the config migration is applied and the value should be "2020-01-01"
-        (DiscountCodes, {}, False, "updated_at:>='2020-01-01T00:00:00+00:00'"),
-        (DiscountCodes, {"updated_at": "2022-01-01T00:00:00Z"}, True, "updated_at:>='2022-01-01T00:00:00+00:00'"),
-        (DiscountCodes, {"updated_at": "2021-01-01T00:00:00Z"}, False, "updated_at:>='2021-01-01T00:00:00+00:00'"),
+        (DiscountCodes, {}, False, "2020-01-01T00:00:00+00:00"),
+        (DiscountCodes, {"updated_at": "2022-01-01T00:00:00Z"}, True, "2022-01-01T00:00:00+00:00"),
+        (DiscountCodes, {"updated_at": "2021-01-01T00:00:00Z"}, False, "2021-01-01T00:00:00+00:00"),
     ],
     ids=[
         "No State, but Start Date",
@@ -338,7 +338,7 @@ def test_stream_slices(
     stream, 
     stream_state, 
     with_start_date, 
-    expected, 
+    expected_start,
 ) -> None:
     # simulating `None` for `start_date` and `config migration`
     if not with_start_date:
@@ -347,8 +347,7 @@ def test_stream_slices(
     stream = stream(auth_config)
     stream.job_manager.job_size = 1000
     test_result = list(stream.stream_slices(stream_state=stream_state))
-    test_query_from_slice = test_result[0].get("query")
-    assert expected in test_query_from_slice
+    assert test_result[0].get("start") == expected_start
 
     
 @pytest.mark.parametrize(
