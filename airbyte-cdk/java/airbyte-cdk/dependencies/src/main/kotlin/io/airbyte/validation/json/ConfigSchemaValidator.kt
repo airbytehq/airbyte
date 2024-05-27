@@ -6,7 +6,7 @@ package io.airbyte.validation.json
 import com.fasterxml.jackson.databind.JsonNode
 
 interface ConfigSchemaValidator<T : Enum<T>> {
-    fun validate(configType: T, objectJson: JsonNode): Set<String?>?
+    fun validate(configType: T, objectJson: JsonNode): Set<String>?
 
     fun test(configType: T, objectJson: JsonNode): Boolean
 
