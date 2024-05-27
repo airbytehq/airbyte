@@ -5,10 +5,11 @@ from datetime import datetime
 from random import randint
 
 from airbyte_cdk.test.mock_http import HttpRequest, HttpResponse
+from source_shopify.streams.base_streams import ShopifyStream
 
 
 def _create_job_url(shop_name: str) -> str:
-    return f"https://{shop_name}.myshopify.com/admin/api/2024-04/graphql.json"
+    return f"https://{shop_name}.myshopify.com/admin/api/{ShopifyStream.api_version}/graphql.json"
 
 
 def create_job_creation_request(shop_name: str, lower_boundary: datetime, upper_boundary: datetime) -> HttpRequest:
