@@ -6,15 +6,14 @@ package io.airbyte.cdk.integrations.base.adaptive
 import io.airbyte.cdk.integrations.base.IntegrationRunner
 import io.airbyte.cdk.integrations.base.Source
 import io.airbyte.commons.features.EnvVariableFeatureFlags
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.function.Supplier
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * This class launches different variants of a source connector based on where Airbyte is deployed.
  */
 object AdaptiveSourceRunner {
-    private val LOGGER: Logger = LoggerFactory.getLogger(AdaptiveSourceRunner::class.java)
 
     const val DEPLOYMENT_MODE_KEY: String = EnvVariableFeatureFlags.DEPLOYMENT_MODE
     const val CLOUD_MODE: String = "CLOUD"
@@ -46,12 +45,12 @@ object AdaptiveSourceRunner {
     ) {
         private val source: Source
             get() {
-                LOGGER.info("Running source under deployment mode: {}", deploymentMode)
+                LOGGER.info { "Running source under deployment mode: $deploymentMode" }
                 if (deploymentMode != null && deploymentMode == CLOUD_MODE) {
                     return cloudSourceSupplier.get()
                 }
                 if (deploymentMode == null) {
-                    LOGGER.warn("Deployment mode is null, default to OSS mode")
+                    LOGGER.warn { "Deployment mode is null, default to OSS mode" }
                 }
                 return ossSourceSupplier.get()
             }
@@ -59,9 +58,9 @@ object AdaptiveSourceRunner {
         @Throws(Exception::class)
         fun run(args: Array<String>) {
             val source = source
-            LOGGER.info("Starting source: {}", source.javaClass.name)
+            LOGGER.info { "Starting source: ${source.javaClass.name}" }
             IntegrationRunner(source).run(args)
-            LOGGER.info("Completed source: {}", source.javaClass.name)
+            LOGGER.info { "Completed source: ${source.javaClass.name}" }
         }
     }
 }
