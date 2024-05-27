@@ -29,6 +29,6 @@ You need a n8n instance or use cloud version
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
-| 0.1.2 | 2024-05-30 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Make connetor compatible with builder |
+| 0.1.2 | 2024-05-30 | [38683](https://github.com/airbytehq/airbyte/pull/38683) | Make connetor compatible with builder |
 | 0.1.1 | 2024-05-21 | [38482](https://github.com/airbytehq/airbyte/pull/38482) | [autopull] base image + poetry + up_to_date |
 | 0.1.0 | 2022-11-08 | [18745](https://github.com/airbytehq/airbyte/pull/18745) | 🎉 New Source: N8n [low-code cdk] |
