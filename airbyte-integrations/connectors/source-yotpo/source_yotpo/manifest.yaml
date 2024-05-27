@@ -20,11 +20,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /emails/{{ config['app_key'] }}/emails_sent
           http_method: GET
           request_parameters:
-            utoken: '{{ config[''access_token''] }}'
+            utoken: "{{ config['access_token'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -34,18 +34,18 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/email_analytics'
+          $ref: "#/schemas/email_analytics"
     raw_data:
       type: DeclarativeStream
       name: raw_data
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /emails/{{ config['app_key'] }}/export/raw_data
           http_method: GET
           request_parameters:
-            utoken: '{{ config[''access_token''] }}'
+            utoken: "{{ config['access_token'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -55,7 +55,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/raw_data'
+          $ref: "#/schemas/raw_data"
     reviews:
       type: DeclarativeStream
       name: reviews
@@ -64,11 +64,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /apps/{{ config['app_key'] }}/reviews
           http_method: GET
           request_parameters:
-            utoken: '{{ config[''access_token''] }}'
+            utoken: "{{ config['access_token'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -96,33 +96,33 @@ definitions:
         path: /apps/{{ config['app_key'] }}/reviews
         requesterUrl: https://api.yotpo.com/v1
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%S.%f%z'
-        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ today_utc() }}'
-          datetime_format: '%Y-%m-%d'
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
         step: P1M
         cursor_granularity: PT0.000001S
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/reviews'
+          $ref: "#/schemas/reviews"
     webhooks:
       type: DeclarativeStream
       name: webhooks
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /apps/{{ config['app_key'] }}/webhooks
           http_method: GET
           request_parameters:
-            utoken: '{{ config[''access_token''] }}'
+            utoken: "{{ config['access_token'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -133,18 +133,18 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/webhooks'
+          $ref: "#/schemas/webhooks"
     unsubscribers:
       type: DeclarativeStream
       name: unsubscribers
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /apps/{{ config['app_key'] }}/unsubscribers
           http_method: GET
           request_parameters:
-            utoken: '{{ config[''access_token''] }}'
+            utoken: "{{ config['access_token'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -168,18 +168,18 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/unsubscribers'
+          $ref: "#/schemas/unsubscribers"
     webhook_events:
       type: DeclarativeStream
       name: webhook_events
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /webhook_events
           http_method: GET
           request_parameters:
-            utoken: '{{ config[''access_token''] }}'
+            utoken: "{{ config['access_token'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -190,18 +190,18 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/webhook_events'
+          $ref: "#/schemas/webhook_events"
   base_requester:
     type: HttpRequester
     url_base: https://api.yotpo.com
 
 streams:
-  - $ref: '#/definitions/streams/email_analytics'
-  - $ref: '#/definitions/streams/raw_data'
-  - $ref: '#/definitions/streams/reviews'
-  - $ref: '#/definitions/streams/webhooks'
-  - $ref: '#/definitions/streams/unsubscribers'
-  - $ref: '#/definitions/streams/webhook_events'
+  - $ref: "#/definitions/streams/email_analytics"
+  - $ref: "#/definitions/streams/raw_data"
+  - $ref: "#/definitions/streams/reviews"
+  - $ref: "#/definitions/streams/webhooks"
+  - $ref: "#/definitions/streams/unsubscribers"
+  - $ref: "#/definitions/streams/webhook_events"
 
 spec:
   type: Spec
@@ -244,7 +244,7 @@ spec:
           from.
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$
         examples:
-          - '2022-03-01T00:00:00.000Z'
+          - "2022-03-01T00:00:00.000Z"
         format: date-time
         order: 3
     additionalProperties: true
@@ -266,20 +266,20 @@ schemas:
     properties:
       since:
         type:
-          - 'null'
+          - "null"
           - string
       until:
         type:
-          - 'null'
+          - "null"
           - string
       values:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           done:
             type:
-              - 'null'
+              - "null"
               - boolean
     title: Email Analytics
   raw_data:
@@ -289,87 +289,87 @@ schemas:
     properties:
       arrived_early_timestamp:
         type:
-          - 'null'
+          - "null"
           - string
       clicked_through_timestamp:
         type:
-          - 'null'
+          - "null"
           - string
       content_creation_timestamp:
         type:
-          - 'null'
+          - "null"
           - string
       coupon_code:
         type:
-          - 'null'
+          - "null"
           - number
       email_address:
         type:
-          - 'null'
+          - "null"
           - string
       email_sent_timestamp:
         type:
-          - 'null'
+          - "null"
           - string
       email_type:
         type:
-          - 'null'
+          - "null"
           - string
       failed_timestamp:
         type:
-          - 'null'
+          - "null"
           - string
       invalid_address_timestamp:
         type:
-          - 'null'
+          - "null"
           - string
       marked_spam_timestamp:
         type:
-          - 'null'
+          - "null"
           - string
       opened_timestamp:
         type:
-          - 'null'
+          - "null"
           - string
       order_id:
         type:
-          - 'null'
+          - "null"
           - string
       order_timestamp:
         type:
-          - 'null'
+          - "null"
           - string
       platform:
         type:
-          - 'null'
+          - "null"
           - string
       product_id:
         type:
-          - 'null'
+          - "null"
           - string
       reminder_num:
         type:
-          - 'null'
+          - "null"
           - number
       review_type:
         type:
-          - 'null'
+          - "null"
           - string
       sku:
         type:
-          - 'null'
+          - "null"
           - number
       trr_bundle_id:
         type:
-          - 'null'
+          - "null"
           - string
       trr_bundle_subject:
         type:
-          - 'null'
+          - "null"
           - string
       unsubscribed_timestamp:
         type:
-          - 'null'
+          - "null"
           - string
     title: Raw Data Schema
   reviews:
@@ -379,82 +379,82 @@ schemas:
     properties:
       archived:
         type:
-          - 'null'
+          - "null"
           - boolean
       content:
         type:
-          - 'null'
+          - "null"
           - string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       deleted:
         type:
-          - 'null'
+          - "null"
           - boolean
       email:
         type:
-          - 'null'
+          - "null"
           - string
       escalated:
         type:
-          - 'null'
+          - "null"
           - boolean
       id:
         type:
-          - 'null'
+          - "null"
           - number
       incentive_type:
         type:
-          - 'null'
+          - "null"
           - string
       is_incentivized:
         type:
-          - 'null'
+          - "null"
           - boolean
       name:
         type:
-          - 'null'
+          - "null"
           - string
       reviewer_type:
         type:
-          - 'null'
+          - "null"
           - string
       score:
         type:
-          - 'null'
+          - "null"
           - number
       sentiment:
         type:
-          - 'null'
+          - "null"
           - number
       sku:
         type:
-          - 'null'
+          - "null"
           - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       votes_down:
         type:
-          - 'null'
+          - "null"
           - number
       votes_up:
         type:
-          - 'null'
+          - "null"
           - number
     title: Reviews Schema
   webhooks:
     type:
-      - 'null'
+      - "null"
       - object
     $parameters:
       extractorPath: |
@@ -469,23 +469,23 @@ schemas:
     properties:
       version:
         type:
-          - 'null'
+          - "null"
           - number
       id:
         type:
-          - 'null'
+          - "null"
           - number
       url:
         type:
-          - 'null'
+          - "null"
           - string
       webhook_event_id:
         type:
-          - 'null'
+          - "null"
           - number
       webhook_event_name:
         type:
-          - 'null'
+          - "null"
           - string
     requesterUrl: https://api.yotpo.com
     title: Webhooks Schema
@@ -496,19 +496,19 @@ schemas:
     properties:
       email_type_id:
         type:
-          - 'null'
+          - "null"
           - number
       id:
         type:
-          - 'null'
+          - "null"
           - number
       unsubscribed_by_name:
         type:
-          - 'null'
+          - "null"
           - string
       user_email:
         type:
-          - 'null'
+          - "null"
           - string
     title: Unsubscribers Schema
   webhook_events:
@@ -518,10 +518,10 @@ schemas:
     properties:
       description:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
     title: Webhook events Schema
