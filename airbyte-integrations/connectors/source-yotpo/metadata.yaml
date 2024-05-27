@@ -16,7 +16,7 @@ data:
   icon: yotpo.svg
   license: MIT
   name: Yotpo
-  releaseDate: TODO
+  releaseDate: 2023-04-14
   remoteRegistries:
     pypi:
       enabled: true
