@@ -22,28 +22,21 @@ Custom Insights Reports now have updated schema for following breakdowns:
 | `video_asset`          | string   | object   | `{"video_id": "2412334234", "url": "http://url", "thumbnail_url: "http://url", "video_name": "Video Name", "id": "12653412653" }` |
 
 
-### Refresh affected Custom Insights Report above and reset data if it uses breakdowns 
+### Refresh affected Custom Insights Report above and clear data if it uses breakdowns 
 
 1. Select **Connections** in the main navbar.
     1. Select the connection(s) affected by the update.
-2. Select the **Replication** tab.
+2. Select the **Schema** tab.
     1. Select **Refresh source schema**.
     2. Select **OK*
+    3. Select **Save changes** at the bottom of the page.
 :::note
 Any detected schema changes will be listed for your review.
 :::
 
-3. Select **Save changes** at the bottom of the page.
-    1. Ensure the **Reset affected streams** option is checked.
-:::note
-Depending on destination type you may not be prompted to reset your data.
-:::
-4. Select **Save connection**. 
-:::note
-This will reset the data in your destination and initiate a fresh sync.
-:::
+3.  Navigate to a connection's **Settings** tab and click **Clear data** to clear all streams, this action will clear data for all streams in the connection. To clear data for a single stream navigate to **Status** tab and click the **three grey dots** next to affected stream and select **Clear data**, do this action for all affected streams in the connection.
 
-For more information on resetting your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
+For more information on clearing your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
 
 
 ## Upgrading to 2.0.0
