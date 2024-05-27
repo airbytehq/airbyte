@@ -78,6 +78,10 @@ workflows:
           context:
             - github-voodoo-bender
             - VOODOO_INFRA_TOOLS
+          filters:
+            tags:
+              only:
+                - /^dev.*$/
 
       - dependencies_applovin:
           context:
@@ -136,6 +140,9 @@ workflows:
             branches:
               only:
                 - voodoo_master
+            tags:
+              only:
+                - /^dev.*$/
 
       - aws-ecr/build-and-push-image:
           path: airbyte-integrations/connectors/source-applovin/

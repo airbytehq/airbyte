@@ -7,6 +7,7 @@ from typing import Any, List, Mapping, Optional, Tuple, Type
 
 import facebook_business
 import pendulum
+import requests
 from airbyte_cdk.models import (
     AdvancedAuth,
     AuthFlowType,
@@ -20,7 +21,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
 from source_facebook_marketing.api import API
-from source_facebook_marketing.spec import ConnectorConfig
+from source_facebook_marketing.spec import ConnectorConfig, LookupConfig
 from source_facebook_marketing.streams import (
     Activities,
     AdAccounts,
@@ -61,6 +62,23 @@ logger = logging.getLogger("airbyte")
 UNSUPPORTED_FIELDS = {"unique_conversions", "unique_ctr", "unique_clicks"}
 
 
+def fetch(lookup: LookupConfig):
+    res = (
+        requests
+        .request(
+            method=lookup.method,
+            url=lookup.url,
+            headers={
+                "Authorization": f"Bearer {lookup.bearer_token}",
+                **lookup.headers.dict()
+            },
+            json=lookup.payload.dict(),
+        )
+    )
+    res.raise_for_status()
+    return list(set(res.json()[lookup.path]))
+
+
 class SourceFacebookMarketing(AbstractSource):
     # Skip exceptions on missing streams
     raise_exception_on_missing_stream = False
@@ -71,7 +89,7 @@ class SourceFacebookMarketing(AbstractSource):
         if config.get("end_date") == "":
             config.pop("end_date")
 
-        config = ConnectorConfig.parse_obj(config)
+        config: ConnectorConfig = ConnectorConfig.parse_obj(config)
 
         if config.start_date:
             config.start_date = pendulum.instance(config.start_date)
@@ -80,6 +98,8 @@ class SourceFacebookMarketing(AbstractSource):
             config.end_date = pendulum.instance(config.end_date)
 
         config.account_ids = list(config.account_ids)
+        if config.account_id_lookup:
+            config.account_ids = fetch(config.account_id_lookup)
 
         return config
 
@@ -131,7 +151,6 @@ class SourceFacebookMarketing(AbstractSource):
         if config.start_date:
             config.start_date = validate_start_date(config.start_date)
             config.end_date = validate_end_date(config.start_date, config.end_date)
-
         api = API(access_token=config.access_token, page_size=config.page_size)
         # Default to all visible accounts if account list is empty
         config.account_ids = config.account_ids or [act.get_id().lstrip("act_") for act in api.get_visible_accounts()]
@@ -149,9 +168,11 @@ class SourceFacebookMarketing(AbstractSource):
             parallelism=config.parallelism
         )
         streams = [
-            AdAccounts(api=api,
-                       account_ids=config.account_ids,
-                       parallelism=config.parallelism),
+            AdAccounts(
+                api=api,
+                account_ids=config.account_ids,
+                parallelism=config.parallelism
+            ),
             AdSets(
                 api=api,
                 account_ids=config.account_ids,
