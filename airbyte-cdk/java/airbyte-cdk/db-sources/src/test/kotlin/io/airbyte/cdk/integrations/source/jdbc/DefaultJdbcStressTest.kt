@@ -15,6 +15,7 @@ import io.airbyte.cdk.testutils.PostgreSQLContainerHelper.runSqlScript
 import io.airbyte.commons.io.IOs
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.string.Strings
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.JDBCType
 import java.util.*
 import java.util.function.Supplier
@@ -22,10 +23,10 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.MountableFile
+
+private val LOGGER = KotlinLogging.logger {}
 
 /**
  * Runs the stress tests in the source-jdbc test module. We want this module to run these tests
@@ -119,7 +120,6 @@ internal class DefaultJdbcStressTest : JdbcStressTest() {
             setOf("information_schema", "pg_catalog", "pg_internal", "catalog_history")
 
         companion object {
-            private val LOGGER: Logger = LoggerFactory.getLogger(PostgresTestSource::class.java)
 
             val DRIVER_CLASS: String = DatabaseDriver.POSTGRESQL.driverClassName
 
@@ -127,9 +127,9 @@ internal class DefaultJdbcStressTest : JdbcStressTest() {
             @JvmStatic
             fun main(args: Array<String>) {
                 val source: Source = PostgresTestSource()
-                LOGGER.info("starting source: {}", PostgresTestSource::class.java)
+                LOGGER.info { "starting source: ${PostgresTestSource::class.java}" }
                 IntegrationRunner(source).run(args)
-                LOGGER.info("completed source: {}", PostgresTestSource::class.java)
+                LOGGER.info { "completed source: ${PostgresTestSource::class.java}" }
             }
         }
     }
