@@ -18,16 +18,16 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /news
           http_method: GET
           request_parameters:
-            country: '{{ '',''.join(config[''country'']) }}'
-            language: '{{ '',''.join(config[''language'']) }}'
-            category: '{{ '',''.join(config[''category'']) }}'
-            q: '{{ config[''query''] | urlencode }}'
-            qInTitle: '{{ config[''query_in_title''] | urlencode }}'
-            domain: '{{ '',''.join(config[''domain'']) }}'
+            country: "{{ ','.join(config['country']) }}"
+            language: "{{ ','.join(config['language']) }}"
+            category: "{{ ','.join(config['category']) }}"
+            q: "{{ config['query'] | urlencode }}"
+            qInTitle: "{{ config['query_in_title'] | urlencode }}"
+            domain: "{{ ','.join(config['domain']) }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -47,11 +47,11 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 10
-            cursor_value: '{{ response[''nextPage''] }}'
+            cursor_value: "{{ response['nextPage'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/latest'
+          $ref: "#/schemas/latest"
     sources:
       type: DeclarativeStream
       name: sources
@@ -60,13 +60,13 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /sources
           http_method: GET
           request_parameters:
-            country: '{{ config[''country''][0] }}'
-            language: '{{ config[''language''][0] }}'
-            category: '{{ config[''category''][0] }}'
+            country: "{{ config['country'][0] }}"
+            language: "{{ config['language'][0] }}"
+            category: "{{ config['category'][0] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -76,21 +76,21 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/sources'
+          $ref: "#/schemas/sources"
   base_requester:
     type: HttpRequester
     url_base: https://newsdata.io/api/1
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
       inject_into:
         type: RequestOption
         field_name: X-ACCESS-KEY
         inject_into: header
 
 streams:
-  - $ref: '#/definitions/streams/latest'
-  - $ref: '#/definitions/streams/sources'
+  - $ref: "#/definitions/streams/latest"
+  - $ref: "#/definitions/streams/sources"
 
 spec:
   type: Spec
@@ -170,7 +170,7 @@ spec:
             - nz
             - ng
             - kp
-            - 'no'
+            - "no"
             - pk
             - pe
             - ph
@@ -255,7 +255,7 @@ spec:
             - lv
             - lt
             - ms
-            - 'no'
+            - "no"
             - pl
             - pt
             - ro
@@ -309,81 +309,81 @@ schemas:
     properties:
       category:
         type:
-          - 'null'
+          - "null"
           - array
         description: The category or topic of the news article
         items:
           type: string
       content:
         type:
-          - 'null'
+          - "null"
           - string
         description: The main content or text of the news article
       country:
         type:
-          - 'null'
+          - "null"
           - array
         description: The country where the news article originated
         items:
           type:
-            - 'null'
+            - "null"
             - string
       creator:
         type:
-          - 'null'
+          - "null"
           - array
         description: The creator or author of the news article
         items:
           type:
-            - 'null'
+            - "null"
             - string
       description:
         type:
-          - 'null'
+          - "null"
           - string
         description: A brief summary or description of the news article
       image_url:
         type:
-          - 'null'
+          - "null"
           - string
         description: URL of the image associated with the news article
       keywords:
         type:
-          - 'null'
+          - "null"
           - array
         description: Keywords or tags associated with the news article
         items:
           type:
-            - 'null'
+            - "null"
             - string
       language:
         type:
-          - 'null'
+          - "null"
           - string
         description: The language in which the news article is written
       link:
         type:
-          - 'null'
+          - "null"
           - string
         description: URL link to the full news article
       pubDate:
         type:
-          - 'null'
+          - "null"
           - string
         description: The publication date of the news article
       source_id:
         type:
-          - 'null'
+          - "null"
           - string
         description: Unique identifier of the news source
       title:
         type:
-          - 'null'
+          - "null"
           - string
         description: The title or headline of the news article
       video_url:
         type:
-          - 'null'
+          - "null"
           - string
         description: URL of any video associated with the news article
     additionalProperties: true
@@ -393,48 +393,48 @@ schemas:
     properties:
       category:
         type:
-          - 'null'
+          - "null"
           - array
         description: >-
           The category of the news source, e.g., business, entertainment,
           general, health, science, sports, technology, etc.
         items:
           type:
-            - 'null'
+            - "null"
             - string
       country:
         type:
-          - 'null'
+          - "null"
           - array
         description: The country in which the news source is based or covers primarily.
         items:
           type:
-            - 'null'
+            - "null"
             - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
         description: The unique identifier of the news source.
       language:
         type:
-          - 'null'
+          - "null"
           - array
         description: >-
           The language in which the news source publishes its content, e.g., en,
           fr, de, es, etc.
         items:
           type:
-            - 'null'
+            - "null"
             - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: The name of the news source.
       url:
         type:
-          - 'null'
+          - "null"
           - string
         description: The URL of the news source.
     additionalProperties: true
