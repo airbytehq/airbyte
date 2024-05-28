@@ -21,7 +21,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /api2/projects/{{ config['project_id'] }}/keys
           http_method: GET
         record_selector:
@@ -46,7 +46,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/keys'
+          $ref: "#/schemas/keys"
     languages:
       type: DeclarativeStream
       name: languages
@@ -55,7 +55,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /api2/projects/{{ config['project_id'] }}/languages
           http_method: GET
         record_selector:
@@ -80,7 +80,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/languages'
+          $ref: "#/schemas/languages"
     comments:
       type: DeclarativeStream
       name: comments
@@ -89,7 +89,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /api2/projects/{{ config['project_id'] }}/comments
           http_method: GET
         record_selector:
@@ -114,7 +114,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/comments'
+          $ref: "#/schemas/comments"
     contributors:
       type: DeclarativeStream
       name: contributors
@@ -123,7 +123,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /api2/projects/{{ config['project_id'] }}/contributors
           http_method: GET
         record_selector:
@@ -148,7 +148,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/contributors'
+          $ref: "#/schemas/contributors"
     translations:
       type: DeclarativeStream
       name: translations
@@ -157,7 +157,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /api2/projects/{{ config['project_id'] }}/translations
           http_method: GET
         record_selector:
@@ -182,24 +182,24 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/translations'
+          $ref: "#/schemas/translations"
   base_requester:
     type: HttpRequester
     url_base: https://api.lokalise.com
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
       inject_into:
         type: RequestOption
         inject_into: header
         field_name: X-Api-Token
 
 streams:
-  - $ref: '#/definitions/streams/keys'
-  - $ref: '#/definitions/streams/languages'
-  - $ref: '#/definitions/streams/comments'
-  - $ref: '#/definitions/streams/contributors'
-  - $ref: '#/definitions/streams/translations'
+  - $ref: "#/definitions/streams/keys"
+  - $ref: "#/definitions/streams/languages"
+  - $ref: "#/definitions/streams/comments"
+  - $ref: "#/definitions/streams/contributors"
+  - $ref: "#/definitions/streams/translations"
 
 spec:
   type: Spec
@@ -246,7 +246,7 @@ schemas:
         type: number
       comments:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: object
@@ -267,36 +267,36 @@ schemas:
         type: string
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
       created_at_timestamp:
         type:
-          - 'null'
+          - "null"
           - number
       custom_attributes:
         type: string
       description:
         type:
-          - 'null'
+          - "null"
           - string
       filenames:
         type: object
         properties:
           android:
             type:
-              - 'null'
+              - "null"
               - string
           ios:
             type:
-              - 'null'
+              - "null"
               - string
           other:
             type:
-              - 'null'
+              - "null"
               - string
           web:
             type:
-              - 'null'
+              - "null"
               - string
       is_archived:
         type: boolean
@@ -306,26 +306,26 @@ schemas:
         type: boolean
       key_id:
         type:
-          - 'null'
+          - "null"
           - number
       key_name:
         type: object
         properties:
           android:
             type:
-              - 'null'
+              - "null"
               - string
           ios:
             type:
-              - 'null'
+              - "null"
               - string
           other:
             type:
-              - 'null'
+              - "null"
               - string
           web:
             type:
-              - 'null'
+              - "null"
               - string
       modified_at:
         type: string
@@ -333,7 +333,7 @@ schemas:
         type: number
       platforms:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: string
@@ -341,28 +341,28 @@ schemas:
         type: string
       screenshots:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: object
           properties:
             created_at:
               type:
-                - 'null'
+                - "null"
                 - string
             created_at_timestamp:
               type:
-                - 'null'
+                - "null"
                 - number
             description:
               type: string
             height:
               type:
-                - 'null'
+                - "null"
                 - number
             key_ids:
               type:
-                - 'null'
+                - "null"
                 - array
               items:
                 type: number
@@ -370,7 +370,7 @@ schemas:
               type: number
             screenshot_tags:
               type:
-                - 'null'
+                - "null"
                 - array
               items:
                 type: string
@@ -380,17 +380,17 @@ schemas:
               type: string
             width:
               type:
-                - 'null'
+                - "null"
                 - number
       tags:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: string
       translations:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: object
@@ -434,23 +434,23 @@ schemas:
     properties:
       is_rtl:
         type:
-          - 'null'
+          - "null"
           - boolean
       lang_id:
         type:
-          - 'null'
+          - "null"
           - number
       lang_iso:
         type:
-          - 'null'
+          - "null"
           - string
       lang_name:
         type:
-          - 'null'
+          - "null"
           - string
       plural_forms:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type: string
@@ -539,7 +539,7 @@ schemas:
       segment_number:
         type: integer
       task_id:
-        type: 'null'
+        type: "null"
       translation:
         type: string
       translation_id:
