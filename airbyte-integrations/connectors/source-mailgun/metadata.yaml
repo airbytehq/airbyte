@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5b9cb09e-1003-4f9c-983d-5779d1b2cd51
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.2.7
   dockerRepository: airbyte/source-mailgun
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailgun
   githubIssueLabel: source-mailgun
