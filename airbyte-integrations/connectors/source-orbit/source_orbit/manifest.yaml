@@ -17,11 +17,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: workspaces/{{config['workspace']}}
           http_method: GET
           request_parameters:
-            start_date: '{{ config.get(''start_date'') }}'
+            start_date: "{{ config.get('start_date') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -31,7 +31,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/workspace'
+          $ref: "#/schemas/workspace"
     members:
       type: DeclarativeStream
       name: members
@@ -40,11 +40,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
-          path: '{{config[''workspace'']}}/members'
+          $ref: "#/definitions/base_requester"
+          path: "{{config['workspace']}}/members"
           http_method: GET
           request_parameters:
-            start_date: '{{ config.get(''start_date'') }}'
+            start_date: "{{ config.get('start_date') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -68,17 +68,17 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/members'
+          $ref: "#/schemas/members"
   base_requester:
     type: HttpRequester
     url_base: https://app.orbit.love/api/v1/
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config[''api_token''] }}'
+      api_token: "{{ config['api_token'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/workspace'
-  - $ref: '#/definitions/streams/members'
+  - $ref: "#/definitions/streams/workspace"
+  - $ref: "#/definitions/streams/members"
 
 spec:
   type: Spec
@@ -127,56 +127,56 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
         description: The type of entity, in this case, it's 'workspace'
       attributes:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         description: Attributes related to the workspace
         properties:
           activities_count:
             type:
-              - 'null'
+              - "null"
               - integer
             description: The total number of activities in the workspace
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
             description: Date and time when the workspace was created
           members_count:
             type:
-              - 'null'
+              - "null"
               - integer
             description: The total number of members in the workspace
           name:
             type:
-              - 'null'
+              - "null"
               - string
             description: The name of the workspace
           slug:
             type:
-              - 'null'
+              - "null"
               - string
             description: A unique identifier for the workspace
           tags:
             type:
-              - 'null'
+              - "null"
               - object
             additionalProperties: true
             description: Tags associated with the workspace
             properties: {}
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
             description: Date and time when the workspace was last updated
       id:
         type:
-          - 'null'
+          - "null"
           - string
         description: The unique identifier for the workspace
       relationships:
@@ -185,35 +185,35 @@ schemas:
         properties:
           last_activity:
             type:
-              - 'null'
+              - "null"
               - object
             description: Information about the last activity in the workspace
             properties:
               data:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 description: Details of the last activity
           last_member:
             type:
-              - 'null'
+              - "null"
               - object
             description: Information about the last member who joined the workspace
             properties:
               data:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 description: Details of the last member
           repositories:
             type:
-              - 'null'
+              - "null"
               - object
             description: List of repositories associated with the workspace
             properties:
               data:
                 type:
-                  - 'null'
+                  - "null"
                   - array
                 description: Details of the repositories
   members:
@@ -223,250 +223,250 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
         description: Type of entity, in this case, the member
       attributes:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         description: Contains the main attributes data of the member
         properties:
           activities_count:
             type:
-              - 'null'
+              - "null"
               - integer
             description: Total number of activities performed by the member
           activities_score:
             type:
-              - 'null'
+              - "null"
               - number
             description: Score calculated based on the member's activities
           avatar_url:
             type:
-              - 'null'
+              - "null"
               - string
             description: URL of the member's avatar image
           bio:
             type:
-              - 'null'
+              - "null"
               - string
             description: Member's biography or description
           birthday:
             type:
-              - 'null'
+              - "null"
               - string
             description: Date of birth of the member
           company:
             type:
-              - 'null'
+              - "null"
               - string
             description: Name of the company the member is associated with
           created:
             type:
-              - 'null'
+              - "null"
               - boolean
             description: Creation timestamp of the member
           created_at:
             type:
-              - 'null'
+              - "null"
               - string
             description: Timestamp when the member was created
           deleted_at:
             type:
-              - 'null'
+              - "null"
               - string
             description: Timestamp when the member was deleted, if applicable
           devto:
             type:
-              - 'null'
+              - "null"
               - string
             description: DEV.TO profile link of the member
           discord:
             type:
-              - 'null'
+              - "null"
               - string
             description: Discord profile link of the member
           discourse:
             type:
-              - 'null'
+              - "null"
               - string
             description: Discourse profile link of the member
           email:
             type:
-              - 'null'
+              - "null"
               - string
             description: Email address of the member
           first_activity_occurred_at:
             type:
-              - 'null'
+              - "null"
               - string
             description: Timestamp of the first activity performed by the member
           github:
             type:
-              - 'null'
+              - "null"
               - string
             description: GitHub profile link of the member
           github_followers:
             type:
-              - 'null'
+              - "null"
               - integer
             description: Number of followers on GitHub
           id:
             type:
-              - 'null'
+              - "null"
               - string
             description: Unique identifier for the member
           languages:
             type:
-              - 'null'
+              - "null"
               - array
             description: List of programming languages known by the member
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           last_activity_occurred_at:
             type:
-              - 'null'
+              - "null"
               - string
             description: Timestamp of the last activity performed by the member
           linkedin:
             type:
-              - 'null'
+              - "null"
               - string
             description: LinkedIn profile link of the member
           location:
             type:
-              - 'null'
+              - "null"
               - string
             description: Current location of the member
           love:
             type:
-              - 'null'
+              - "null"
               - string
             description: >-
               Measure of appreciation or positive feedback received by the
               member
           merged_at:
             type:
-              - 'null'
+              - "null"
               - string
             description: Timestamp when the member's data was merged
           name:
             type:
-              - 'null'
+              - "null"
               - string
             description: Full name of the member
           orbit_level:
             type:
-              - 'null'
+              - "null"
               - integer
             description: Level of engagement with Orbit platform
           orbit_url:
             type:
-              - 'null'
+              - "null"
               - string
             description: URL to access the member's Orbit profile
           pronouns:
             type:
-              - 'null'
+              - "null"
               - string
             description: Preferred pronouns of the member
           reach:
             type:
-              - 'null'
+              - "null"
               - integer
             description: Extent of influence or reach the member has
           shipping_address:
             type:
-              - 'null'
+              - "null"
               - string
             description: Shipping address details of the member
           slug:
             type:
-              - 'null'
+              - "null"
               - string
             description: Unique string used in URLs to identify the member
           source:
             type:
-              - 'null'
+              - "null"
               - string
             description: Source or platform from which the member originated
           tag_list:
             type:
-              - 'null'
+              - "null"
               - array
             description: List of tags associated with the member
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           tags:
             type:
-              - 'null'
+              - "null"
               - array
             description: Additional tags associated with the member for categorization
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           teammate:
             type: boolean
             description: Indicates if the member is a teammate within an organization
           title:
             type:
-              - 'null'
+              - "null"
               - string
             description: Job title or role of the member
           topics:
             type:
-              - 'null'
+              - "null"
               - array
             description: List of topics of interest to the member
             items:
               type:
-                - 'null'
+                - "null"
                 - string
           tshirt:
             type:
-              - 'null'
+              - "null"
               - string
             description: T-shirt size preference of the member
           twitter:
             type:
-              - 'null'
+              - "null"
               - string
             description: Twitter profile link of the member
           twitter_followers:
             type:
-              - 'null'
+              - "null"
               - integer
             description: Number of followers on Twitter
           updated_at:
             type:
-              - 'null'
+              - "null"
               - string
             description: Timestamp of the last update to the member profile
           url:
             type:
-              - 'null'
+              - "null"
               - string
             description: URL of the member profile
       fake:
         type:
-          - 'null'
+          - "null"
           - string
         description: Indicates if the member data is fake or real
       id:
         type:
-          - 'null'
+          - "null"
           - string
         description: Unique identifier for the member
       relationships:
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         description: Contains the relationship data of the member
