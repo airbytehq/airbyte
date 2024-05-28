@@ -18,11 +18,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /campaigns
           http_method: GET
           request_parameters:
-            api_key: '{{ config[''api_key''] }}'
+            api_key: "{{ config['api_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -54,7 +54,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/campaigns'
+          $ref: "#/schemas/campaigns"
     lists:
       type: DeclarativeStream
       name: lists
@@ -63,11 +63,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /lists
           http_method: GET
           request_parameters:
-            api_key: '{{ config[''api_key''] }}'
+            api_key: "{{ config['api_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -94,14 +94,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/lists'
+          $ref: "#/schemas/lists"
   base_requester:
     type: HttpRequester
     url_base: https://emailoctopus.com/api/1.6
 
 streams:
-  - $ref: '#/definitions/streams/campaigns'
-  - $ref: '#/definitions/streams/lists'
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/lists"
 
 spec:
   type: Spec
@@ -156,7 +156,7 @@ schemas:
       name:
         type:
           - string
-          - 'null'
+          - "null"
         description: The name of the campaign.
         title: Campaign Name
       sent_at:
@@ -170,7 +170,7 @@ schemas:
       subject:
         type:
           - string
-          - 'null'
+          - "null"
         description: The subject of the campaign.
         title: Subject
       to:
@@ -219,7 +219,7 @@ schemas:
             description: The type of the field - can be NUMBER, TEXT or DATE.
             title: Type
           fallback:
-            type: 'null'
+            type: "null"
             description: >-
               A default value for the field, used when there is no other value
               available.
