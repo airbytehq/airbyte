@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
 import org.apache.commons.lang3.ThreadUtils
-import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
