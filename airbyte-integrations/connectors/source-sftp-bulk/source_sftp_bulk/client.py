@@ -2,14 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 import io
 import logging
 from typing import Optional
 
 import backoff
 import paramiko
-from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
+from airbyte_cdk import AirbyteTracedException, FailureType
 from paramiko.ssh_exception import AuthenticationException
 
 # set default timeout to 300 seconds

@@ -371,6 +371,46 @@
     "deleted_description": {
       "description": "Description of the reason for deletion.",
       "type": ["null", "string"]
+    },
+    "description": {
+      "description": "The product's description.",
+      "type": ["null", "string"]
+    },
+    "description_html": {
+      "description": "The product's description in HTML format.",
+      "type": ["null", "string"]
+    },
+    "is_gift_card": {
+      "description": "Indicates whether the product is a gift card.",
+      "type": ["null", "boolean"]
+    },
+    "legacy_resource_id": {
+      "description": "The legacy resource ID of the product.",
+      "type": ["null", "string"]
+    },
+    "media_count": {
+      "description": "The total count of media (images/videos) associated with the product.",
+      "type": ["null", "integer"]
+    },
+    "online_store_preview_url": {
+      "description": "The URL for previewing the product on the online store.",
+      "type": ["null", "string"]
+    },
+    "online_store_url": {
+      "description": "The URL of the product on the online store.",
+      "type": ["null", "string"]
+    },
+    "total_inventory": {
+      "description": "The total inventory count of the product.",
+      "type": ["null", "integer"]
+    },
+    "total_variants": {
+      "description": "The total number of variants available for the product.",
+      "type": ["null", "integer"]
+    },
+    "tracks_inventory": {
+      "description": "Indicates whether inventory tracking is enabled for the product.",
+      "type": ["null", "boolean"]
     }
   }
 }
