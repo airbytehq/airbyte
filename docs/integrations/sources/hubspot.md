@@ -333,9 +333,10 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 4.1.5   | 2024-05-17 | [38243](https://github.com/airbytehq/airbyte/pull/38243) | Replace AirbyteLogger with logging.Logger |
-| 4.1.4   | 2024-05-16 | [38286](https://github.com/airbytehq/airbyte/pull/38286) | Added default schema normalization for the  `Tickets` stream, to ensure the data types |
+|:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.0   | 2024-05-24 | [38049](https://github.com/airbytehq/airbyte/pull/38049) | Add resumable full refresh support to `contacts_form_submissions` and `contacts_merged_audit` streams                                                                            |
+| 4.1.5   | 2024-05-17 | [38243](https://github.com/airbytehq/airbyte/pull/38243) | Replace AirbyteLogger with logging.Logger                                                                                                                                        |
+| 4.1.4   | 2024-05-16 | [38286](https://github.com/airbytehq/airbyte/pull/38286) | Added default schema normalization for the  `Tickets` stream, to ensure the data types                                                                                           |
 | 4.1.3   | 2024-05-13 | [38128](https://github.com/airbytehq/airbyte/pull/38128) | contacts_list_memberships as semi-incremental stream                                                                                                                             |
 | 4.1.2   | 2024-04-24 | [36642](https://github.com/airbytehq/airbyte/pull/36642) | Schema descriptions and CDK 0.80.0                                                                                                                                               |
 | 4.1.1   | 2024-04-11 | [35945](https://github.com/airbytehq/airbyte/pull/35945) | Add integration tests                                                                                                                                                            |
