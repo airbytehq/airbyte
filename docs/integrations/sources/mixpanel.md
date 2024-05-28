@@ -55,6 +55,7 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 |:--------|:-----------| :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
+| 3.0.1   | 2024-05-28 | [38710](https://github.com/airbytehq/airbyte/pull/38710) | Update authenticator CDK package                                                                            |
 | 3.0.0   | 2024-05-22 | [38066](https://github.com/airbytehq/airbyte/pull/38066) | Changed key to distinct_id, cohort_id and changed state to per-patition format for `CohortMembers` stream; fixed pagination for `Engage` stream; fixed incorrect client-side filtering for semi-incremental streams when data comes not in chronological order; semi-incremental `Cohorts`, `CohortMembers` and `Engage` streams with client-side filtering extract records since user provided or default (1 year old) start_date |
 | 2.3.1   | 2024-05-20 | [38267](https://github.com/airbytehq/airbyte/pull/38267) | Replace AirbyteLogger with logging.Logger |
 | 2.3.0   | 2024-04-12 | [36724](https://github.com/airbytehq/airbyte/pull/36724) | Connector migrated to low-code |
