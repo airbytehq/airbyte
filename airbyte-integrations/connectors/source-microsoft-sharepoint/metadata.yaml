@@ -20,7 +20,7 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 59353119-f0f2-4e5a-a8ba-15d887bc34f6
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   dockerRepository: airbyte/source-microsoft-sharepoint
   githubIssueLabel: source-microsoft-sharepoint
   icon: microsoft-sharepoint.svg
