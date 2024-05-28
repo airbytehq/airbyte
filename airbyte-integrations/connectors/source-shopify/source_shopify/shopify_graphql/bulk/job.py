@@ -85,7 +85,7 @@ class ShopifyBulkManager:
     _job_last_elapsed_time: float = field(init=False, default=2.0)
 
     def __post_init__(self):
-        self._http_client = HttpClient(self.stream_name, self.logger, ShopifyErrorHandler())
+        self._http_client = HttpClient(self.stream_name, self.logger, ShopifyErrorHandler(), session=self.session)
 
     @property
     def _tools(self) -> BulkTools:
