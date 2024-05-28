@@ -23,7 +23,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-            - data
+              - data
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -68,13 +68,13 @@ schemas:
     additionalProperties: true
     properties:
       Bill Rate:
-        type: integer
+        type: number
         description: |-
           Worker?s Bill Rate that is associated to the Rate
           Category/UOM listed in the previous field.
         format: float
       Billable Per Diem:
-        type: integer
+        type: number
         format: float
       Business Unit Code:
         type: string
@@ -103,7 +103,6 @@ schemas:
       End Date:
         type: string
         description: Work order end date.
-        format: date
       First Name:
         type: string
         description: First name of the Worker as defined in SAP Fieldglass.
@@ -121,7 +120,7 @@ schemas:
         description: Last name of the Worker as defined in SAP Fieldglass.
         maxLength: 100
       Pay Rate:
-        type: integer
+        type: number
         description: |-
           Worker?s Pay Rate that is associated to the Rate Category/UOM
           listed in the previous field. 
@@ -179,7 +178,6 @@ schemas:
       Start Date:
         type: string
         description: Work order start date.
-        format: date
       Status:
         type: string
         description: Status of the worker.
@@ -272,7 +270,6 @@ schemas:
       - Last Name
       - Pay Rate
       - Rate Category /UOM
-      - Sequence
       - Site Code
       - Site Name
       - Start Date
