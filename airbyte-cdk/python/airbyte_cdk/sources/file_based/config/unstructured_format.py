@@ -60,7 +60,7 @@ class APIProcessingConfigModel(BaseModel):
 
 class UnstructuredFormat(BaseModel):
     class Config(OneOfOptionConfig):
-        title = "Document File Type Format (Experimental)"
+        title = "Unstructured Document Format"
         description = "Extract text from document formats (.pdf, .docx, .md, .pptx) and emit as one record per file."
         discriminator = "filetype"
 
