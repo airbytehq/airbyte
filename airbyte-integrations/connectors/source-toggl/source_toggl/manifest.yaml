@@ -17,12 +17,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /api/v9/me/time_entries
           http_method: GET
           request_parameters:
-            start_date: '{{ config[''start_date''] }}'
-            end_date: '{{ config[''end_date''] }}'
+            start_date: "{{ config['start_date'] }}"
+            end_date: "{{ config['end_date'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -31,7 +31,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/time_entries'
+          $ref: "#/schemas/time_entries"
     organizations:
       type: DeclarativeStream
       name: organizations
@@ -40,12 +40,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /api/v9/organizations/{{ config['organization_id'] }}
           http_method: GET
           request_parameters:
-            start_date: '{{ config[''start_date''] }}'
-            end_date: '{{ config[''end_date''] }}'
+            start_date: "{{ config['start_date'] }}"
+            end_date: "{{ config['end_date'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -54,7 +54,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/organizations'
+          $ref: "#/schemas/organizations"
     organizations_users:
       type: DeclarativeStream
       name: organizations_users
@@ -63,12 +63,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /api/v9/organizations/{{ config['organization_id'] }}/users
           http_method: GET
           request_parameters:
-            start_date: '{{ config[''start_date''] }}'
-            end_date: '{{ config[''end_date''] }}'
+            start_date: "{{ config['start_date'] }}"
+            end_date: "{{ config['end_date'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -77,7 +77,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/organizations_users'
+          $ref: "#/schemas/organizations_users"
     organizations_groups:
       type: DeclarativeStream
       name: organizations_groups
@@ -86,12 +86,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /api/v9/organizations/{{ config['organization_id'] }}/groups
           http_method: GET
           request_parameters:
-            start_date: '{{ config[''start_date''] }}'
-            end_date: '{{ config[''end_date''] }}'
+            start_date: "{{ config['start_date'] }}"
+            end_date: "{{ config['end_date'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -100,19 +100,19 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/organizations_groups'
+          $ref: "#/schemas/organizations_groups"
     workspace:
       type: DeclarativeStream
       name: workspace
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /api/v9/workspaces/{{ config['workspace_id'] }}/statistics
           http_method: GET
           request_parameters:
-            start_date: '{{ config[''start_date''] }}'
-            end_date: '{{ config[''end_date''] }}'
+            start_date: "{{ config['start_date'] }}"
+            end_date: "{{ config['end_date'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -121,7 +121,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/workspace'
+          $ref: "#/schemas/workspace"
     workspace_clients:
       type: DeclarativeStream
       name: workspace_clients
@@ -130,12 +130,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /api/v9/workspaces/{{ config['workspace_id'] }}/clients
           http_method: GET
           request_parameters:
-            start_date: '{{ config[''start_date''] }}'
-            end_date: '{{ config[''end_date''] }}'
+            start_date: "{{ config['start_date'] }}"
+            end_date: "{{ config['end_date'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -144,7 +144,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/workspace_clients'
+          $ref: "#/schemas/workspace_clients"
     workspace_projects:
       type: DeclarativeStream
       name: workspace_projects
@@ -153,12 +153,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /api/v9/workspaces/{{ config['workspace_id'] }}/projects
           http_method: GET
           request_parameters:
-            start_date: '{{ config[''start_date''] }}'
-            end_date: '{{ config[''end_date''] }}'
+            start_date: "{{ config['start_date'] }}"
+            end_date: "{{ config['end_date'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -167,7 +167,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/workspace_projects'
+          $ref: "#/schemas/workspace_projects"
     workspace_tasks:
       type: DeclarativeStream
       name: workspace_tasks
@@ -176,7 +176,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /api/v9/workspaces/{{ config['workspace_id'] }}/tasks
           http_method: GET
         record_selector:
@@ -201,24 +201,24 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/workspace_tasks'
+          $ref: "#/schemas/workspace_tasks"
   base_requester:
     type: HttpRequester
     url_base: https://api.track.toggl.com
     authenticator:
       type: BasicHttpAuthenticator
-      username: '{{ config[''api_token''] }}'
-      password: 'api_token'
+      username: "{{ config['api_token'] }}"
+      password: "api_token"
 
 streams:
-  - $ref: '#/definitions/streams/time_entries'
-  - $ref: '#/definitions/streams/organizations'
-  - $ref: '#/definitions/streams/organizations_users'
-  - $ref: '#/definitions/streams/organizations_groups'
-  - $ref: '#/definitions/streams/workspace'
-  - $ref: '#/definitions/streams/workspace_clients'
-  - $ref: '#/definitions/streams/workspace_projects'
-  - $ref: '#/definitions/streams/workspace_tasks'
+  - $ref: "#/definitions/streams/time_entries"
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/organizations_users"
+  - $ref: "#/definitions/streams/organizations_groups"
+  - $ref: "#/definitions/streams/workspace"
+  - $ref: "#/definitions/streams/workspace_clients"
+  - $ref: "#/definitions/streams/workspace_projects"
+  - $ref: "#/definitions/streams/workspace_tasks"
 
 spec:
   type: Spec
@@ -270,7 +270,6 @@ spec:
         examples:
           - YYYY-MM-DD
 
-
 metadata:
   autoImportSchema:
     time_entries: false
@@ -294,7 +293,7 @@ schemas:
         type: boolean
       description:
         type:
-          - 'null'
+          - "null"
           - string
       duration:
         type: integer
@@ -306,11 +305,11 @@ schemas:
         type: integer
       project_id:
         type:
-          - 'null'
+          - "null"
           - integer
       server_deleted_at:
         type:
-          - 'null'
+          - "null"
           - string
       start:
         type: string
@@ -318,15 +317,15 @@ schemas:
         type: string
       tag_ids:
         type:
-          - 'null'
+          - "null"
           - array
       tags:
         type:
-          - 'null'
+          - "null"
           - array
       task_id:
         type:
-          - 'null'
+          - "null"
           - integer
       tid:
         type: integer
@@ -369,11 +368,11 @@ schemas:
         type: integer
       server_deleted_at:
         type:
-          - 'null'
+          - "null"
           - string
       suspended_at:
         type:
-          - 'null'
+          - "null"
           - string
       trial_info:
         type: object
@@ -394,7 +393,7 @@ schemas:
         type: string
       groups:
         type:
-          - 'null'
+          - "null"
           - array
       id:
         type: integer
@@ -402,7 +401,7 @@ schemas:
         type: boolean
       invitation_code:
         type:
-          - 'null'
+          - "null"
           - string
       joined:
         type: boolean
@@ -427,7 +426,7 @@ schemas:
         type: string
       users:
         type:
-          - 'null'
+          - "null"
           - array
       workspaces:
         type: array
@@ -468,25 +467,25 @@ schemas:
         type: boolean
       actual_hours:
         type:
-          - 'null'
+          - "null"
           - integer
       at:
         type: string
       auto_estimates:
         type:
-          - 'null'
+          - "null"
           - boolean
       billable:
         type:
-          - 'null'
+          - "null"
           - boolean
       cid:
         type:
-          - 'null'
+          - "null"
           - integer
       client_id:
         type:
-          - 'null'
+          - "null"
           - integer
       color:
         type: string
@@ -494,21 +493,21 @@ schemas:
         type: string
       currency:
         type:
-          - 'null'
+          - "null"
           - string
       current_period:
         type:
-          - 'null'
+          - "null"
           - object
       estimated_hours:
         type:
-          - 'null'
+          - "null"
           - integer
       first_time_entry:
         type: string
       fixed_fee:
         type:
-          - 'null'
+          - "null"
           - number
       id:
         type: integer
@@ -518,25 +517,25 @@ schemas:
         type: string
       rate:
         type:
-          - 'null'
+          - "null"
           - number
       rate_last_updated:
         type:
-          - 'null'
+          - "null"
           - string
       recurring:
         type: boolean
       recurring_parameters:
         type:
-          - 'null'
+          - "null"
           - array
       server_deleted_at:
         type:
-          - 'null'
+          - "null"
           - string
       template:
         type:
-          - 'null'
+          - "null"
           - boolean
       wid:
         type: integer
@@ -553,7 +552,7 @@ schemas:
         type: string
       estimated_seconds:
         type:
-          - 'null'
+          - "null"
           - integer
       id:
         type: integer
@@ -565,13 +564,13 @@ schemas:
         type: boolean
       server_deleted_at:
         type:
-          - 'null'
+          - "null"
           - string
       tracked_seconds:
         type: integer
       user_id:
         type:
-          - 'null'
+          - "null"
           - integer
       workspace_id:
         type: integer
