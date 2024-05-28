@@ -15,13 +15,13 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /wa-api/searchBooking
           http_method: POST
           request_parameters:
-            date: '{{ config[''start_date''] }}'
-            auth_hash: '{{ config[''auth_hash''] }}'
-            restid: '{{ config[''restid''] }}'
+            date: "{{ config['start_date'] }}"
+            auth_hash: "{{ config['auth_hash'] }}"
+            restid: "{{ config['restid'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -30,13 +30,13 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/booking'
+          $ref: "#/schemas/booking"
   base_requester:
     type: HttpRequester
     url_base: https://app.waiteraid.com
 
 streams:
-  - $ref: '#/definitions/streams/booking'
+  - $ref: "#/definitions/streams/booking"
 
 spec:
   type: Spec
@@ -82,193 +82,193 @@ schemas:
     properties:
       all_seated:
         type:
-          - 'null'
+          - "null"
           - number
       amount:
         type:
-          - 'null'
+          - "null"
           - number
       arrived:
         type:
-          - 'null'
+          - "null"
           - number
       booking_date:
         type:
-          - 'null'
+          - "null"
           - number
       children_amount:
         type:
-          - 'null'
+          - "null"
           - number
       comment:
         type:
-          - 'null'
+          - "null"
           - string
       confirmed:
         type:
-          - 'null'
+          - "null"
           - number
       date:
         type:
-          - 'null'
+          - "null"
           - string
       end:
         type:
-          - 'null'
+          - "null"
           - number
       guest:
         type: object
         properties:
           address:
             type:
-              - 'null'
+              - "null"
               - string
           city:
             type:
-              - 'null'
+              - "null"
               - string
           comment:
             type:
-              - 'null'
+              - "null"
               - string
           company:
             type:
-              - 'null'
+              - "null"
               - string
           email:
             type:
-              - 'null'
+              - "null"
               - string
           firstname:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - number
           lastname:
             type:
-              - 'null'
+              - "null"
               - string
           mobile:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           other_contact:
             type:
-              - 'null'
+              - "null"
               - string
           postalcode:
             type:
-              - 'null'
+              - "null"
               - string
           restaurant_newsletter:
             type:
-              - 'null'
+              - "null"
               - boolean
           telephone:
             type:
-              - 'null'
+              - "null"
               - string
       guest_left:
         type:
-          - 'null'
+          - "null"
           - number
       has_message:
         type:
-          - 'null'
+          - "null"
           - number
       id:
         type:
-          - 'null'
+          - "null"
           - number
       internet_booking:
         type:
-          - 'null'
+          - "null"
           - number
       internet_booking_confirmed:
         type:
-          - 'null'
+          - "null"
           - number
       langid:
         type:
-          - 'null'
+          - "null"
           - number
       length:
         type:
-          - 'null'
+          - "null"
           - number
       meal:
         type:
-          - 'null'
+          - "null"
           - string
       meal_abbr:
         type:
-          - 'null'
+          - "null"
           - string
       paid:
         type:
-          - 'null'
+          - "null"
           - number
       payActivated:
         type:
-          - 'null'
+          - "null"
           - boolean
       payCharged:
         type:
-          - 'null'
+          - "null"
           - boolean
       payClosed:
         type:
-          - 'null'
+          - "null"
           - boolean
       payStarted:
         type:
-          - 'null'
+          - "null"
           - boolean
       placed:
         type:
-          - 'null'
+          - "null"
           - number
       placed_manually:
         type:
-          - 'null'
+          - "null"
           - number
       products:
         type:
-          - 'null'
+          - "null"
           - number
       start:
         type:
-          - 'null'
+          - "null"
           - number
       status:
         type:
-          - 'null'
+          - "null"
           - string
       table_ids:
         type:
-          - 'null'
+          - "null"
           - number
       tables:
         type:
-          - 'null'
+          - "null"
           - number
       time:
         type:
-          - 'null'
+          - "null"
           - string
       waitinbar:
         type:
-          - 'null'
+          - "null"
           - number
       waitinlist:
         type:
-          - 'null'
+          - "null"
           - number
     additionalProperties: true
