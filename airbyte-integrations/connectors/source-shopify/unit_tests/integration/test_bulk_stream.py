@@ -90,10 +90,6 @@ class GraphQlBulkStreamTest(TestCase):
         self._http_mocker.assert_number_of_calls(job_creation_request, 1)
 
     def test_given_response_is_not_json_on_job_creation_when_read_then_retry(self) -> None:
-        """
-        TODO confirm this behavior with @baz. This seems to be an error as the retry mechanism only reprocess the same response without
-        actually doing the query again
-        """
         job_creation_request = create_job_creation_request(_SHOP_NAME, _JOB_START_DATE, _JOB_END_DATE)
         self._http_mocker.post(
             job_creation_request,
@@ -103,9 +99,19 @@ class GraphQlBulkStreamTest(TestCase):
             ]
         )
 
-        self._read(_get_config(_JOB_START_DATE))
+        self._http_mocker.post(
+            create_job_status_request(_SHOP_NAME, _BULK_OPERATION_ID),
+            JobStatusResponseBuilder().with_completed_status(_BULK_OPERATION_ID, _JOB_RESULT_URL).build(),
+        )
+        self._http_mocker.get(
+            HttpRequest(_JOB_RESULT_URL),
+            MetafieldOrdersJobResponseBuilder().with_record().with_record().build(),
+        )
 
-        self._http_mocker.assert_number_of_calls(job_creation_request, 1)
+        output = self._read(_get_config(_JOB_START_DATE))
+
+        assert output.errors == []
+        assert len(output.records) == 2
 
     def test_given_connection_error_on_job_creation_when_read_then_retry_job_creation(self) -> None:
         inner_mocker = self._http_mocker.__getattribute__("_mocker")
@@ -129,9 +135,6 @@ class GraphQlBulkStreamTest(TestCase):
         assert output.errors == []
 
     def test_given_retryable_error_on_first_get_job_status_when_read_then_retry(self) -> None:
-        """
-        TODO confirm this behavior with @baz. More specifically, why don't we call `_job_update_state` during `_job_process_created`?
-        """
         self._http_mocker.post(
             create_job_creation_request(_SHOP_NAME, _JOB_START_DATE, _JOB_END_DATE),
             JobCreationResponseBuilder().with_bulk_operation_id(_BULK_OPERATION_ID).build(),
@@ -150,7 +153,8 @@ class GraphQlBulkStreamTest(TestCase):
 
         output = self._read(_get_config(_JOB_START_DATE))
 
-        assert output.errors
+        assert output.errors == []
+        assert len(output.records) == 2
 
     def test_given_retryable_error_on_get_job_status_when_read_then_retry(self) -> None:
         self._http_mocker.post(

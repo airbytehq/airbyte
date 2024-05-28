@@ -37,8 +37,6 @@ class ShopifyBulkManager:
     _retrieve_chunk_size: Final[int] = 1024 * 1024 * 10
     _job_max_retries: Final[int] = 6
     _job_backoff_time: int = 5
-    # saved latest request
-    _request: Optional[requests.Request] = None
 
     # running job logger constrain, every 100-ish message will be printed
     _log_job_msg_frequency: Final[int] = 100
@@ -147,9 +145,6 @@ class ShopifyBulkManager:
 
     def _reduce_job_size(self) -> None:
         self.job_size /= self._job_size_adjusted_reduce_factor
-
-    def _save_latest_request(self, response: requests.Response) -> None:
-        self._request = response.request
 
     def _job_size_reduce_next(self) -> None:
         # revert the flag
@@ -304,42 +299,27 @@ class ShopifyBulkManager:
             )
 
     def _job_healthcheck(self, response: requests.Response) -> Optional[Exception]:
-        # save the latest request to retry
-        self._save_latest_request(response)
-
-        # get the errors, if occurred
         errors = self._collect_bulk_errors(response)
 
-        # when the concurrent job takes place,
-        # another job could not be created
-        # we typically need to wait and retry, but no longer than 10 min.
-        if self._has_running_concurrent_job(errors):
-            return self._job_retry_on_concurrency()
-
-        # when the job was already created and the error appears in the middle
         if self._job_state and errors:
             self._on_job_with_errors(errors)
 
-        # when the job was not created because of some errors
-        if not self._job_state and errors:
-            self._on_non_handable_job_error(errors)
-
     def _job_track_running(self) -> None:
-        _, job_state_response = self._http_client.send_request(
+        _, response = self._http_client.send_request(
             http_method="POST",
             url=self.base_url,
             data=ShopifyBulkTemplates.status(self._job_id),
             headers={"Content-Type": "application/graphql"},
             request_kwargs={},
         )
-        self._job_healthcheck(job_state_response)
+        self._job_healthcheck(response)
 
-        self._job_update_state(job_state_response)
-        self._job_state_to_fn_map.get(self._job_state)(response=job_state_response)
+        self._job_update_state(response)
+        self._job_state_to_fn_map.get(self._job_state)(response=response)
 
     def _has_running_concurrent_job(self, errors: Optional[Iterable[Mapping[str, Any]]] = None) -> bool:
         """
-        When concurent BULK Job is already running for the same SHOP we receive:
+        When concurrent BULK Job is already running for the same SHOP we receive:
         Error example:
         [
             {
@@ -349,42 +329,17 @@ class ShopifyBulkManager:
         ]
         """
 
-        concurent_job_pattern = "A bulk query operation for this app and shop is already in progress"
+        concurrent_job_pattern = "A bulk query operation for this app and shop is already in progress"
         # the errors are handled in `job_job_check_for_errors`
         if errors:
             for error in errors:
                 message = error.get("message", "") if isinstance(error, dict) else ""
-                if concurent_job_pattern in message:
+                if concurrent_job_pattern in message:
                     return True
-        # reset the `_concurrent_attempt` counter, once there is no concurrent job error
-        self._concurrent_attempt = 0
         return False
 
     def _has_reached_max_concurrency(self) -> bool:
         return self._concurrent_attempt == self._concurrent_max_retry
-
-    def _job_retry_request(self) -> Optional[requests.Response]:
-        with self.session.send(self._request) as retried_request:
-            return retried_request
-
-    def _job_retry_concurrent(self) -> Optional[requests.Response]:
-        self._concurrent_attempt += 1
-        self.logger.warning(
-            f"Stream: `{self.stream_name}`, the BULK concurrency limit has reached. Waiting {self._concurrent_interval} sec before retry, attempt: {self._concurrent_attempt}.",
-        )
-        sleep(self._concurrent_interval)
-        retried_response = self._job_retry_request()
-        return self._job_process_created(retried_response)
-
-    def _job_retry_on_concurrency(self) -> Optional[requests.Response]:
-        if self._has_reached_max_concurrency():
-            # indicate we're out of attempts to retry with job creation
-            message = f"The BULK Job couldn't be created at this time, since another job is running."
-            self.logger.error(message)
-            # raise AibyteTracebackException with `INCOMPLETE` status
-            raise ShopifyBulkExceptions.BulkJobConcurrentError(message)
-        else:
-            return self._job_retry_concurrent()
 
     @bulk_retry_on_exception(logger)
     def _job_check_state(self) -> None:
@@ -394,6 +349,7 @@ class ShopifyBulkManager:
             else:
                 self._job_track_running()
 
+    @bulk_retry_on_exception(logger)
     def create_job(self, stream_slice: Mapping[str, str], filter_field: str) -> None:
         if stream_slice:
             query = self.query.get(filter_field, stream_slice["start"], stream_slice["end"])
@@ -406,20 +362,30 @@ class ShopifyBulkManager:
             json={"query": ShopifyBulkTemplates.prepare(query)},
             request_kwargs={},
         )
+
+        errors = self._collect_bulk_errors(response)
+        if self._has_running_concurrent_job(errors):
+            # when the concurrent job takes place, another job could not be created
+            # we typically need to wait and retry, but no longer than 10 min. (see retry in `bulk_retry_on_exception`)
+            raise ShopifyBulkExceptions.BulkJobCreationFailedConcurrentError(f"Failed to create job for stream {self.stream_name}")
+        else:
+            # There were no concurrent error for this job so even if there were other errors, we can reset this
+            self._concurrent_attempt = 0
+
+        if errors:
+            self._on_non_handable_job_error(errors)
+
         self._job_process_created(response)
 
-    @bulk_retry_on_exception(logger)
     def _job_process_created(self, response: requests.Response) -> None:
         """
         The Bulk Job with CREATED status, should be processed, before we move forward with Job Status Checks.
-
-        This method is annotated with bulk_retry_on_exception because `_job_healthcheck` might perform the query again
         """
-        self._job_healthcheck(response)
         bulk_response = response.json().get("data", {}).get("bulkOperationRunQuery", {}).get("bulkOperation", {}) if response else None
         if bulk_response and bulk_response.get("status") == ShopifyBulkJobStatus.CREATED.value:
             self._job_id = bulk_response.get("id")
             self._job_created_at = bulk_response.get("createdAt")
+            self._job_state = ShopifyBulkJobStatus.CREATED.value
             self.logger.info(f"Stream: `{self.stream_name}`, the BULK Job: `{self._job_id}` is {ShopifyBulkJobStatus.CREATED.value}")
 
     def job_size_normalize(self, start: datetime, end: datetime) -> datetime:

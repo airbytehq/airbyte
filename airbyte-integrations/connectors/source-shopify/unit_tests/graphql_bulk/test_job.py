@@ -23,6 +23,9 @@ from source_shopify.streams.streams import (
     TransactionsGraphql,
 )
 
+_ANY_SLICE = {}
+_ANY_FILTER_FIELD = "any_filter_field"
+
 
 def test_get_errors_from_response_invalid_response(auth_config) -> None:
     expected = "Couldn't check the `response` for `errors`"
@@ -39,7 +42,7 @@ def test_retry_on_concurrent_job(request, requests_mock, auth_config) -> None:
     stream = MetafieldOrders(auth_config)
     stream.job_manager._concurrent_interval = 0
     # mocking responses
-    requests_mock.get(
+    requests_mock.post(
         stream.job_manager.base_url,
         [
             # concurrent request is running (3 - retries)
@@ -50,8 +53,7 @@ def test_retry_on_concurrent_job(request, requests_mock, auth_config) -> None:
             {"json": request.getfixturevalue("bulk_successful_response")},
         ])
     
-    test_response = requests.get(stream.job_manager.base_url)
-    stream.job_manager._job_healthcheck(test_response)
+    stream.job_manager.create_job(_ANY_SLICE, _ANY_FILTER_FIELD)
     # call count should be 4 (3 retries, 1 - succeeded)
     assert requests_mock.call_count == 4
 
@@ -59,38 +61,34 @@ def test_retry_on_concurrent_job(request, requests_mock, auth_config) -> None:
 @pytest.mark.parametrize(
     "bulk_job_response, concurrent_max_retry, error_type, expected",
     [
-        # method should return this response fixture, once retried.
-        ("bulk_successful_completed_response", 2, None, "gid://shopify/BulkOperation/4046733967549"),
         # method should raise AirbyteTracebackException, because the concurrent BULK Job is in progress
         (
-            "bulk_error_with_concurrent_job", 
-            1, 
-            ShopifyBulkExceptions.BulkJobConcurrentError, 
+            "bulk_error_with_concurrent_job",
+            1,
+            ShopifyBulkExceptions.BulkJobConcurrentError,
             "The BULK Job couldn't be created at this time, since another job is running",
         ),
     ],
     ids=[
-        "regular concurrent request",
         "max attempt reached",
     ]
 )
 def test_job_retry_on_concurrency(request, requests_mock, bulk_job_response, concurrent_max_retry, error_type, auth_config, expected) -> None:
     stream = MetafieldOrders(auth_config)
-    # patching concurent settings
+    # patching concurrent settings
     stream.job_manager._concurrent_max_retry = concurrent_max_retry
     stream.job_manager._concurrent_interval = 1
     
-    requests_mock.get(stream.job_manager.base_url, json=request.getfixturevalue(bulk_job_response))
-    stream.job_manager._request = requests.get(stream.job_manager.base_url).request
-    
+    requests_mock.post(stream.job_manager.base_url, json=request.getfixturevalue(bulk_job_response))
+
     if error_type:
         with pytest.raises(error_type) as error:
-            stream.job_manager._job_retry_on_concurrency()
+            stream.job_manager.create_job(_ANY_SLICE, _ANY_FILTER_FIELD)
         assert expected in repr(error.value) and requests_mock.call_count == 2
     else:
         # simulate the real job_id from created job
         stream.job_manager._job_id = expected
-        stream.job_manager._job_retry_on_concurrency()
+        stream.job_manager.create_job(_ANY_SLICE, _ANY_FILTER_FIELD)
         assert requests_mock.call_count == 2
 
 
@@ -167,15 +165,6 @@ def test_job_check_for_completion(mocker, request, requests_mock, job_response, 
         ),
         # Should be retried
         (
-            "bulk_successful_response_with_errors",
-            True,
-            ShopifyBulkExceptions.BulkJobError,
-            2,
-            "Could not validate the status of the BULK Job",
-            3,
-        ),
-        # Should be retried
-        (
             None,
             False,
             ShopifyBulkExceptions.BulkJobBadResponse,
@@ -186,11 +175,10 @@ def test_job_check_for_completion(mocker, request, requests_mock, job_response, 
     ],
     ids=[
         "BulkJobNonHandableError",
-        "BulkJobError",
         "BulkJobBadResponse",
     ],
 )
-def test_retry_on_job_exception(mocker, request, requests_mock, job_response, auth_config, job_state, error_type, max_retry, call_count_expected, expected_msg) -> None:
+def test_retry_on_job_creation_exception(request, requests_mock, auth_config, job_response, job_state, error_type, max_retry, call_count_expected, expected_msg) -> None:
     stream = MetafieldOrders(auth_config)
     stream.job_manager._job_backoff_time = 0
     stream.job_manager._job_max_retries = max_retry
@@ -208,7 +196,7 @@ def test_retry_on_job_exception(mocker, request, requests_mock, job_response, au
     
     # testing raised exception and backoff
     with pytest.raises(error_type) as error:
-        stream.job_manager._job_check_state()
+        stream.job_manager.create_job(_ANY_SLICE, _ANY_FILTER_FIELD)
         
     # we expect different call_count, because we set the different max_retries
     assert expected_msg in repr(error.value) and requests_mock.call_count == call_count_expected
