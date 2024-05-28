@@ -149,7 +149,10 @@ object ConnectorExceptionUtil {
 
     private fun isTransientSQLException(e: Throwable?): Boolean {
         return (e is SQLException) &&
-            e.message!!.lowercase().contains("An I/O error occurred while sending to the backend")
+            (e.message!!
+                .lowercase()
+                .contains("An I/O error occurred while sending to the backend") ||
+                e.message!!.lowercase().contains("temporary file size exceeds temp_file_limit"))
     }
 
     private fun isRecoveryConnectionException(e: Throwable?): Boolean {
