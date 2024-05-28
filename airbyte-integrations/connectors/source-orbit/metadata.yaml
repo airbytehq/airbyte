@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 95bcc041-1d1a-4c2e-8802-0ca5b1bfa36a
-  dockerImageTag: 0.3.4
+  dockerImageTag: 0.3.5
   dockerRepository: airbyte/source-orbit
   documentationUrl: https://docs.airbyte.com/integrations/sources/orbit
   githubIssueLabel: source-orbit
