@@ -8,9 +8,11 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
+from airbyte_cdk.sources.streams.checkpoint import Cursor
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.types import Config, StreamSlice
 
@@ -156,4 +158,9 @@ class DeclarativeStream(Stream):
         * Updating the state once every record would generate issues for data feed stop conditions or semi-incremental syncs where the
             important state is the one at the beginning of the slice
         """
+        return None
+
+    def get_cursor(self) -> Optional[Cursor]:
+        if self.retriever and isinstance(self.retriever, SimpleRetriever):
+            return self.retriever.cursor
         return None
