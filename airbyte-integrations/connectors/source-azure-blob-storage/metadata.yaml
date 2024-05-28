@@ -12,7 +12,7 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: fdaaba68-4875-4ed9-8fcd-4ae1e0a25093
-  dockerImageTag: 0.4.2
+  dockerImageTag: 0.4.3
   dockerRepository: airbyte/source-azure-blob-storage
   documentationUrl: https://docs.airbyte.com/integrations/sources/azure-blob-storage
   githubIssueLabel: source-azure-blob-storage
