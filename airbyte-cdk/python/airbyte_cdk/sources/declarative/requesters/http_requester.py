@@ -6,7 +6,6 @@ import logging
 import os
 import urllib
 from dataclasses import InitVar, dataclass
-from functools import lru_cache
 from pathlib import Path
 from typing import Any, Callable, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urljoin
@@ -16,7 +15,6 @@ import requests_cache
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
@@ -221,57 +219,6 @@ class HttpRequester(Requester):
     @property
     def logger(self) -> logging.Logger:
         return logging.getLogger(f"airbyte.HttpRequester.{self.name}")
-
-    def _should_retry(self, response: requests.Response) -> bool:
-        """
-        Specifies conditions for backoff based on the response from the server.
-
-        By default, back off on the following HTTP response statuses:
-         - 429 (Too Many Requests) indicating rate limiting
-         - 500s to handle transient server errors
-
-        Unexpected but transient exceptions (connection timeout, DNS resolution failed, etc..) are retried by default.
-        """
-        if self.error_handler is None:
-            return response.status_code == 429 or 500 <= response.status_code < 600
-
-        if self.use_cache:
-            interpret_response_status = self.interpret_response_status
-        else:
-            # Use a tiny cache to limit the memory footprint. It doesn't have to be large because we mostly
-            # only care about the status of the last response received
-            # Cache the result because the HttpStream first checks if we should retry before looking at the backoff time
-            interpret_response_status = lru_cache(maxsize=10)(self.interpret_response_status)
-
-        return bool(interpret_response_status(response).action == ResponseAction.RETRY)
-
-    def _backoff_time(self, response: requests.Response) -> Optional[float]:
-        """
-        Specifies backoff time.
-
-         This method is called only if should_backoff() returns True for the input request.
-
-         :param response:
-         :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
-         to the default backoff behavior (e.g using an exponential algorithm).
-        """
-        if self.error_handler is None:
-            return None
-        error_resolution = self.interpret_response_status(response)
-        should_retry = error_resolution.response_action == ResponseAction.RETRY
-        if not should_retry:
-            raise ValueError(f"backoff_time can only be applied on retriable response action. Got {error_resolution.response_action}")
-        assert error_resolution.repsonse_action == ResponseAction.RETRY
-        return should_retry.retry_in
-
-    def _error_message(self, response: requests.Response) -> str:
-        """
-        Constructs an error message which can incorporate the HTTP response received from the partner API.
-
-        :param response: The incoming HTTP response from the partner API
-        :return The error message string to be emitted
-        """
-        return self.interpret_response_status(response).error_message
 
     def _get_request_options(
         self,
@@ -561,7 +508,7 @@ class HttpRequester(Requester):
             self.logger.info(error_resolution.error_message or log_message)
 
         elif error_resolution.response_action == ResponseAction.RETRY:
-            custom_backoff_time = self.error_handler.backoff_time(response)
+            custom_backoff_time = self.error_handler.backoff_time(response) if self.error_handler is not None else None
             error_message = (
                 error_resolution.error_message
                 or f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action}."
@@ -570,11 +517,11 @@ class HttpRequester(Requester):
                 raise UserDefinedBackoffException(
                     backoff=custom_backoff_time,
                     request=request,
-                    response=(response),
+                    response=response,
                     error_message=error_message,
                 )
             else:
-                raise DefaultBackoffException(request=request, response=(response), error_message=error_message)
+                raise DefaultBackoffException(request=request, response=response, error_message=error_message)
 
         elif response:
             try:

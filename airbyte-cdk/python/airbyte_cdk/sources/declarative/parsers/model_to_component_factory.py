@@ -685,13 +685,8 @@ class ModelToComponentFactory:
         if model.response_filters:
             for response_filter_model in model.response_filters:
                 response_filters.append(self._create_component_from_model(model=response_filter_model, config=config))
-        # else:
-        #     response_filters.append(
-        #         HttpResponseFilter(
-        #             config=config,
-        #             parameters=model.parameters or {},
-        #         )
-        #     )
+        else:
+            response_filters.append(HttpResponseFilter(config=config, parameters=model.parameters or {}))
 
         return DefaultErrorHandler(
             backoff_strategies=backoff_strategies,
@@ -787,7 +782,7 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_http_response_filter(model: HttpResponseFilterModel, config: Config, **kwargs: Any) -> HttpResponseFilter:
-        action = ResponseAction(model.action.value)
+        action = ResponseAction(model.action.value) or None
         http_codes = (
             set(model.http_codes) if model.http_codes else set()
         )  # JSON schema notation has no set data type. The schema enforces an array of unique elements

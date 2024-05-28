@@ -40,8 +40,8 @@ class HttpResponseFilter:
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
 
-        if self.http_codes is not None and self.action is None:
-            raise ValueError("HttpResponseFilter requires a prescribed action if http_codes are specified")
+        if self.action is not None and (self.http_codes is None and self.predicate is None and self.error_message_contains is None):
+            raise ValueError("HttpResponseFilter requires a filter condition if an action is specified")
 
         if self.action is not None and isinstance(self.action, str):
             self.action = ResponseAction[self.action]
@@ -50,6 +50,8 @@ class HttpResponseFilter:
             self.predicate = InterpolatedBoolean(condition=self.predicate, parameters=parameters)
         self.error_message = InterpolatedString.create(string_or_interpolated=self.error_message, parameters=parameters)
 
+        self._error_message_parser = JsonErrorMessageParser()
+
     def matches(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> Optional[ErrorResolution]:
         filter_action = self._matches_filter(response_or_exception)
         mapped_key = (
@@ -57,9 +59,14 @@ class HttpResponseFilter:
         )
 
         if filter_action is not None:
-            error_message = self._create_error_message(response_or_exception)
             default_mapped_error_resolution = self._match_default_error_mapping(mapped_key)
+            error_message = (
+                default_mapped_error_resolution.error_message
+                if default_mapped_error_resolution
+                else self._create_error_message(response_or_exception)
+            )
             failure_type = default_mapped_error_resolution.failure_type if default_mapped_error_resolution else FailureType.system_error
+
             return ErrorResolution(
                 response_action=filter_action,
                 failure_type=failure_type,
@@ -112,5 +119,5 @@ class HttpResponseFilter:
         if not self.error_message_contains:
             return False
         else:
-            error_message = JsonErrorMessageParser.parse_response_error_message(response)
+            error_message = self._error_message_parser.parse_response_error_message(response=response)
             return bool(error_message and self.error_message_contains in error_message)

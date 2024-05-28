@@ -6,19 +6,13 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, List, Mapping, MutableMapping, Optional, Union
 
 import requests
-from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
     ExponentialBackoffStrategy,
 )
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import (
-    DEFAULT_ERROR_RESOLUTION,
-    SUCCESS_RESOLUTION,
-    ErrorResolution,
-    ResponseAction,
-)
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import DEFAULT_ERROR_RESOLUTION, SUCCESS_RESOLUTION, ErrorResolution
 from airbyte_cdk.sources.types import Config
 
 
@@ -105,9 +99,9 @@ class DefaultErrorHandler(ErrorHandler):
     backoff_strategies: Optional[List[BackoffStrategy]] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        self.response_filters = self.response_filters or []
 
-        self.response_filters.append(HttpResponseFilter(config=self.config, parameters={}))
+        if not self.response_filters:
+            self.response_filters = [HttpResponseFilter(config=self.config, parameters={})]
 
         if not self.backoff_strategies:
             self.backoff_strategies = [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY(parameters=parameters, config=self.config)]
@@ -117,8 +111,6 @@ class DefaultErrorHandler(ErrorHandler):
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
 
         if isinstance(response_or_exception, requests.Response):
-            if response_or_exception.ok:
-                return SUCCESS_RESOLUTION
 
             request = response_or_exception.request
 
@@ -128,9 +120,12 @@ class DefaultErrorHandler(ErrorHandler):
                 self._last_request_to_attempt_count[request] += 1
             if self.response_filters:
                 for response_filter in self.response_filters:
-                    matched_status = response_filter.matches(response=response_or_exception)
-                    if matched_status is not None:
-                        return matched_status
+                    matched_error_resolution = response_filter.matches(response_or_exception=response_or_exception)
+                    if matched_error_resolution is not None:
+                        return matched_error_resolution
+
+            if response_or_exception.ok:
+                return SUCCESS_RESOLUTION
         # Return default error resolution (retry)
         return DEFAULT_ERROR_RESOLUTION
 
