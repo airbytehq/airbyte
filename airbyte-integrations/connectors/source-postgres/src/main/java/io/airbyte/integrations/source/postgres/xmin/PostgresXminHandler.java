@@ -16,6 +16,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
+import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -29,8 +30,6 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta;
 import io.airbyte.protocol.models.v0.AirbyteStream;
-import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage;
-import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -115,7 +114,8 @@ public class PostgresXminHandler {
 
         iteratorList.add(augmentWithLogs(recordAndMessageIterator, pair, streamName));
         iteratorList.add(
-            new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatus.COMPLETE)));      }
+            new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatus.COMPLETE)));
+      }
     }
 
     return iteratorList;

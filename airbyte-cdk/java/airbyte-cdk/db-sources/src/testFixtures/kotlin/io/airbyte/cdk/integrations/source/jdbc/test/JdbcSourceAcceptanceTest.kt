@@ -476,9 +476,9 @@ abstract class JdbcSourceAcceptanceTest<S : Source, T : TestDatabase<*, T, *>> {
         Assertions.assertTrue(actualMessages.containsAll(expectedMessages))
     }
 
-    private fun removeStateMessage(airbyteMessages: List<AirbyteMessage>) : List<AirbyteMessage> {
+    private fun removeStateMessage(airbyteMessages: List<AirbyteMessage>): List<AirbyteMessage> {
         var mutableListMessages = airbyteMessages.toMutableList()
-        mutableListMessages.removeIf{message -> message.type == AirbyteMessage.Type.STATE}
+        mutableListMessages.removeIf { message -> message.type == AirbyteMessage.Type.STATE }
         return mutableListMessages
     }
 
