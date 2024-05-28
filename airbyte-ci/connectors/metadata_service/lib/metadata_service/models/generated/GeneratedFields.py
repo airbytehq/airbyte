@@ -4,9 +4,10 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional, Union
 
 from pydantic import BaseModel, Extra, Field
+from typing_extensions import Literal
 
 
 class GitInfo(BaseModel):
@@ -27,6 +28,22 @@ class SourceFileInfo(BaseModel):
     registry_entry_generated_at: Optional[str] = None
 
 
+class ConnectorMetrics(BaseModel):
+    all: Optional[Any] = None
+    cloud: Optional[Any] = None
+    oss: Optional[Any] = None
+
+
+class ConnectorMetric(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    usage: Optional[Union[str, Literal["low", "medium", "high"]]] = None
+    sync_success_rate: Optional[Union[str, Literal["low", "medium", "high"]]] = None
+    connector_version: Optional[str] = None
+
+
 class GeneratedFields(BaseModel):
     git: Optional[GitInfo] = None
     source_file_info: Optional[SourceFileInfo] = None
+    metrics: Optional[ConnectorMetrics] = None
