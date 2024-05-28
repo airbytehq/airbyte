@@ -462,7 +462,7 @@ definitions:
         - string_of_pivot_values
         - end_date
       retriever:
-        type: SimpleRetriever
+        class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -519,13 +519,13 @@ definitions:
             type: OffsetIncrement
             page_size: 500
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: campaign_id
-              stream:
-                $ref: "#/definitions/streams/campaigns"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: campaign_id
+                stream:
+                  $ref: "#/definitions/streams/campaigns"
       incremental_sync:
         type: CustomIncrementalSync
         class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor

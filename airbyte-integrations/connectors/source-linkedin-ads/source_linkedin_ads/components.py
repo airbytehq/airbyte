@@ -15,11 +15,12 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
     InterpolatedRequestOptionsProvider,
     RequestInput,
 )
-from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
-from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+
 from isodate import Duration, parse_duration
 
 from .utils import transform_data
@@ -235,6 +236,7 @@ class AnalyticsDatetimeBasedCursor(DatetimeBasedCursor):
                 )
             dates.append(StreamSlice(partition={}, cursor_slice={"field_date_chunks": date_slice_with_fields}))
             start = next_start
+        print(dates)
         return dates
 
 
@@ -266,6 +268,7 @@ class LinkedInAdsCustomRetriever(SimpleRetriever):
         records_schema: Mapping[str, Any],
         stream_slice: Optional[StreamSlice] = None,
     ) -> Iterable[StreamData]:
+
         merged_records = defaultdict(dict)
         for field_slice in stream_slice.get("field_date_chunks", []):
             print(field_slice)
