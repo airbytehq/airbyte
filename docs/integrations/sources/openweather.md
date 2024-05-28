@@ -35,6 +35,7 @@ The free plan allows 60 calls per minute and 1,000,000 calls per month, you won'
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.4   | 2024-05-25 | [38601](https://github.com/airbytehq/airbyte/pull/38601) | Make compatible with the builder.                                               |
 | 0.2.3   | 2024-04-19 | [37209](https://github.com/airbytehq/airbyte/pull/37209) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry.                      |
 | 0.2.2   | 2024-04-15 | [37209](https://github.com/airbytehq/airbyte/pull/37209) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.1   | 2024-04-12 | [37209](https://github.com/airbytehq/airbyte/pull/37209) | schema descriptions                                                             |
