@@ -206,6 +206,7 @@ allprojects {
         testImplementation "org.junit.jupiter:junit-jupiter-params:${vJUnit}"
         testImplementation "org.mockito:mockito-junit-jupiter:${vJUnitJupiter}"
         testImplementation "org.assertj:assertj-core:${vAssertJ}"
+        testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
 
         testRuntimeOnly platform("org.junit:junit-bom:${vJUnit}")
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${vJUnit}"
