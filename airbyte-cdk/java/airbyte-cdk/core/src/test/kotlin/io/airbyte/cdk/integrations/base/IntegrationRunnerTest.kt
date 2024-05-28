@@ -221,7 +221,7 @@ internal class IntegrationRunnerTest {
         Mockito.verify(jsonSchemaValidator).validate(any(), any())
     }
 
-    /*@Test
+    @Test
     @Throws(Exception::class)
     fun testReadException() {
         val intConfig = IntegrationConfig.read(configPath, configuredCatalogPath, statePath)
@@ -248,7 +248,7 @@ internal class IntegrationRunnerTest {
                     AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
             )
         Mockito.verify(jsonSchemaValidator).validate(any(), any())
-    }*/
+    }
 
     @Test
     @Throws(Exception::class)
