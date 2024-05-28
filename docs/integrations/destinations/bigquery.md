@@ -220,6 +220,8 @@ tutorials:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.1   | 2024-05-22 | [38591](https://github.com/airbytehq/airbyte/pull/38591)   | Bugfix to include forward-slash when cleaning up stage                                                                                                          |
+| 2.5.0   | 2024-05-22 | [38132](https://github.com/airbytehq/airbyte/pull/38132)   | Major rewrite of existing code, Adapting to CDK changes introduced in [38107](https://github.com/airbytehq/airbyte/pull/38107)                                  |
 | 2.4.20  | 2024-05-13 | [38131](https://github.com/airbytehq/airbyte/pull/38131)   | Cleanup `BigQueryWriteConfig` and reuse `StreamConfig`; Adapt to `StreamConfig` signature changes                                                               |
 | 2.4.19  | 2024-05-10 | [38125](https://github.com/airbytehq/airbyte/pull/38125)   | adopt latest CDK code                                                                                                                                           |
 | 2.4.18  | 2024-05-10 | [38111](https://github.com/airbytehq/airbyte/pull/38111)   | No functional changes, deleting unused code                                                                                                                     |
