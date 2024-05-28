@@ -108,14 +108,15 @@ public class PostgresCtidHandler implements InitialLoadHandler<PostgresType> {
     final AutoCloseableIterator<AirbyteMessageWithCtid> recordIterator =
         getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
     final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream);
-    final AutoCloseableIterator<AirbyteMessage> logIterators = augmentWithLogs(recordAndMessageIterator, pair, streamName);
-    return augmentWithStreamStatus(airbyteStream, logIterators);
+    return augmentWithLogs(recordAndMessageIterator, pair, streamName);
   }
 
   public List<AutoCloseableIterator<AirbyteMessage>> getInitialSyncCtidIterator(
                                                                                 final ConfiguredAirbyteCatalog catalog,
                                                                                 final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
-                                                                                final Instant emmitedAt) {
+                                                                                final Instant emmitedAt,
+      final boolean decorateWithStartedStatus,
+      final boolean decorateWithCompletedStatus) {
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
@@ -127,11 +128,23 @@ public class PostgresCtidHandler implements InitialLoadHandler<PostgresType> {
         continue;
       }
       if (airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL)) {
+
+        final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamName, namespace);
+        if (decorateWithStartedStatus) {
+          iteratorList.add(
+              new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)));
+        }
+
         // Grab the selected fields to sync
         final TableInfo<CommonField<PostgresType>> table = tableNameToTable
             .get(fullyQualifiedTableName);
         final var iterator = getIteratorForStream(airbyteStream, table, emmitedAt);
         iteratorList.add(iterator);
+
+        if (decorateWithCompletedStatus) {
+          iteratorList.add(new StreamStatusTraceEmitterIterator(
+              new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
+        }
       }
     }
     return iteratorList;
@@ -170,17 +183,6 @@ public class PostgresCtidHandler implements InitialLoadHandler<PostgresType> {
 
   private boolean isMetaChangesEmptyOrNull(AirbyteRecordMessageMeta meta) {
     return meta == null || meta.getChanges() == null || meta.getChanges().isEmpty();
-  }
-
-  public static AutoCloseableIterator<AirbyteMessage> augmentWithStreamStatus(final ConfiguredAirbyteStream airbyteStream,
-      final AutoCloseableIterator<AirbyteMessage> streamIterator) {
-    final var pair =
-        new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
-    final var starterStatus =
-        new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED));
-    final var completeStatus =
-        new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE));
-    return AutoCloseableIterators.concatWithEagerClose(starterStatus, streamIterator, completeStatus);
   }
 
   // Augments the given iterator with record count logs.

@@ -528,7 +528,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final PostgresXminHandler xminHandler = new PostgresXminHandler(database, sourceOperations, getQuoteString(), xminStatus, xminStateManager);
 
       final List<AutoCloseableIterator<AirbyteMessage>> initialSyncCtidIterators = new ArrayList<>(ctidHandler.getInitialSyncCtidIterator(
-          new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid), tableNameToTable, emittedAt));
+          new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid), tableNameToTable, emittedAt, true, true));
       final List<AutoCloseableIterator<AirbyteMessage>> xminIterators = new ArrayList<>(xminHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(xminStreams.streamsForXminSync()), tableNameToTable, emittedAt));
 
@@ -572,7 +572,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final List<AutoCloseableIterator<AirbyteMessage>> initialSyncCtidIterators = new ArrayList<>(
           cursorBasedCtidHandler.getInitialSyncCtidIterator(new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid),
               tableNameToTable,
-              emittedAt));
+              emittedAt, true, true));
       final List<AutoCloseableIterator<AirbyteMessage>> cursorBasedIterators = new ArrayList<>(super.getIncrementalIterators(database,
           new ConfiguredAirbyteCatalog().withStreams(
               cursorBasedStreamsCategorised.remainingStreams()
@@ -944,7 +944,13 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   @Override
   public AutoCloseableIterator<AirbyteMessage> augmentWithStreamStatus(final ConfiguredAirbyteStream airbyteStream,
       final AutoCloseableIterator<AirbyteMessage> streamIterator) {
-    return PostgresCtidHandler.augmentWithStreamStatus(airbyteStream, streamIterator);
+    final var pair =
+        new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
+    final var starterStatus =
+        new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED));
+    final var completeStatus =
+        new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE));
+    return AutoCloseableIterators.concatWithEagerClose(starterStatus, streamIterator, completeStatus);
   }
 
   private List<JsonNode> getFullTableEstimate(final JdbcDatabase database,
