@@ -17,14 +17,14 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: accounts
           http_method: GET
           request_parameters:
-            pagesize: '1000'
+            pagesize: "1000"
           request_headers:
-            X-AppSecretToken: '{{config[''app_secret_token'']}}'
-            X-AgreementGrantToken: '{{config[''agreement_grant_token'']}}'
+            X-AppSecretToken: "{{config['app_secret_token']}}"
+            X-AgreementGrantToken: "{{config['agreement_grant_token']}}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -37,11 +37,11 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response[''pagination''][''nextPage''] }}'
+            cursor_value: "{{ response['pagination']['nextPage'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/accounts'
+          $ref: "#/schemas/accounts"
     customers:
       type: DeclarativeStream
       name: customers
@@ -50,14 +50,14 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: customers
           http_method: GET
           request_parameters:
-            pagesize: '1000'
+            pagesize: "1000"
           request_headers:
-            X-AppSecretToken: '{{config[''app_secret_token'']}}'
-            X-AgreementGrantToken: '{{config[''agreement_grant_token'']}}'
+            X-AppSecretToken: "{{config['app_secret_token']}}"
+            X-AgreementGrantToken: "{{config['agreement_grant_token']}}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -70,11 +70,11 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response[''pagination''][''nextPage''] }}'
+            cursor_value: "{{ response['pagination']['nextPage'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/customers'
+          $ref: "#/schemas/customers"
     products:
       type: DeclarativeStream
       name: products
@@ -83,14 +83,14 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: products
           http_method: GET
           request_parameters:
-            pagesize: '1000'
+            pagesize: "1000"
           request_headers:
-            X-AppSecretToken: '{{config[''app_secret_token'']}}'
-            X-AgreementGrantToken: '{{config[''agreement_grant_token'']}}'
+            X-AppSecretToken: "{{config['app_secret_token']}}"
+            X-AgreementGrantToken: "{{config['agreement_grant_token']}}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -103,25 +103,25 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response[''pagination''][''nextPage''] }}'
+            cursor_value: "{{ response['pagination']['nextPage'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/products'
+          $ref: "#/schemas/products"
     invoices_total:
       type: DeclarativeStream
       name: invoices_total
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: invoices/totals
           http_method: GET
           request_parameters:
-            pagesize: '1000'
+            pagesize: "1000"
           request_headers:
-            X-AppSecretToken: '{{config[''app_secret_token'']}}'
-            X-AgreementGrantToken: '{{config[''agreement_grant_token'']}}'
+            X-AppSecretToken: "{{config['app_secret_token']}}"
+            X-AgreementGrantToken: "{{config['agreement_grant_token']}}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -130,7 +130,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/invoices_total'
+          $ref: "#/schemas/invoices_total"
     invoices_paid:
       type: DeclarativeStream
       name: invoices_paid
@@ -139,14 +139,14 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: invoices/paid
           http_method: GET
           request_parameters:
-            pagesize: '1000'
+            pagesize: "1000"
           request_headers:
-            X-AppSecretToken: '{{config[''app_secret_token'']}}'
-            X-AgreementGrantToken: '{{config[''agreement_grant_token'']}}'
+            X-AppSecretToken: "{{config['app_secret_token']}}"
+            X-AgreementGrantToken: "{{config['agreement_grant_token']}}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -159,11 +159,11 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response[''pagination''][''nextPage''] }}'
+            cursor_value: "{{ response['pagination']['nextPage'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/invoices_paid'
+          $ref: "#/schemas/invoices_paid"
     invoices_booked:
       type: DeclarativeStream
       name: invoices_booked
@@ -172,14 +172,14 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: invoices/booked
           http_method: GET
           request_parameters:
-            pagesize: '1000'
+            pagesize: "1000"
           request_headers:
-            X-AppSecretToken: '{{config[''app_secret_token'']}}'
-            X-AgreementGrantToken: '{{config[''agreement_grant_token'']}}'
+            X-AppSecretToken: "{{config['app_secret_token']}}"
+            X-AgreementGrantToken: "{{config['agreement_grant_token']}}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -192,11 +192,11 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response[''pagination''][''nextPage''] }}'
+            cursor_value: "{{ response['pagination']['nextPage'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/invoices_booked'
+          $ref: "#/schemas/invoices_booked"
     invoices_booked_document:
       type: DeclarativeStream
       name: invoices_booked_document
@@ -205,14 +205,14 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: invoices/booked/{{ stream_slice.parent_id }}
           http_method: GET
           request_parameters:
-            pagesize: '1000'
+            pagesize: "1000"
           request_headers:
-            X-AppSecretToken: '{{config[''app_secret_token'']}}'
-            X-AgreementGrantToken: '{{config[''agreement_grant_token'']}}'
+            X-AppSecretToken: "{{config['app_secret_token']}}"
+            X-AgreementGrantToken: "{{config['agreement_grant_token']}}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -225,23 +225,23 @@ definitions:
                 parent_key: bookedInvoiceNumber
                 partition_field: parent_id
                 stream:
-                  $ref: '#/definitions/streams/invoices_booked'
+                  $ref: "#/definitions/streams/invoices_booked"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/invoices_booked_document'
+          $ref: "#/schemas/invoices_booked_document"
   base_requester:
     type: HttpRequester
     url_base: https://restapi.e-conomic.com/
 
 streams:
-  - $ref: '#/definitions/streams/accounts'
-  - $ref: '#/definitions/streams/customers'
-  - $ref: '#/definitions/streams/products'
-  - $ref: '#/definitions/streams/invoices_total'
-  - $ref: '#/definitions/streams/invoices_paid'
-  - $ref: '#/definitions/streams/invoices_booked'
-  - $ref: '#/definitions/streams/invoices_booked_document'
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/invoices_total"
+  - $ref: "#/definitions/streams/invoices_paid"
+  - $ref: "#/definitions/streams/invoices_booked"
+  - $ref: "#/definitions/streams/invoices_booked_document"
 
 spec:
   type: Spec
@@ -366,12 +366,12 @@ schemas:
         sortable: true
       department:
         type:
-          - 'null'
+          - "null"
           - object
         description: The department associated with this account
       departmentalDistribution:
         type:
-          - 'null'
+          - "null"
           - object
         description: The distribution of the account by department
       draftBalance:
@@ -387,7 +387,7 @@ schemas:
         sortable: true
       openingAccount:
         type:
-          - 'null'
+          - "null"
           - object
         description: Information about the opening account
         properties:
@@ -539,7 +539,7 @@ schemas:
         format: uri
       dueAmount:
         type:
-          - 'null'
+          - "null"
           - number
         description: The total amount that the customer owes
       eInvoicingDisabledByDefault:
@@ -866,7 +866,7 @@ schemas:
         sortable: true
       minimumStock:
         type:
-          - 'null'
+          - "null"
           - number
         description: >-
           The minimum quantity of this product that should be kept in stock to
@@ -879,7 +879,7 @@ schemas:
         sortable: true
       pricing:
         type:
-          - 'null'
+          - "null"
           - object
         description: >-
           Pricing information for the product including cost, selling price, and
@@ -1404,7 +1404,7 @@ schemas:
         type: string
         description: The ISO 4217 currency code of the invoice.
         filterable: true
-        pattern: '[a-zA-Z]{3}'
+        pattern: "[a-zA-Z]{3}"
         sortable: true
       customer:
         type: object
@@ -1496,7 +1496,7 @@ schemas:
         pattern: \d{4}-\d{2}-\d{2}
       exchangeRate:
         type:
-          - 'null'
+          - "null"
           - number
         description: The exchange rate used for currency conversion, if applicable.
       grossAmount:
@@ -1508,7 +1508,7 @@ schemas:
         maxDecimal: 2
       grossAmountInBaseCurrency:
         type:
-          - 'null'
+          - "null"
           - number
         description: The total gross amount of the invoice in the base currency.
       layout:
@@ -1564,7 +1564,7 @@ schemas:
             sortable: true
       orderNumber:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The unique order number associated with the invoice.
       paymentTerms:
@@ -1817,7 +1817,7 @@ schemas:
         type: string
         description: The ISO 4217 currency code of the invoice.
         filterable: true
-        pattern: '[a-zA-Z]{3}'
+        pattern: "[a-zA-Z]{3}"
         sortable: true
       customer:
         type: object
@@ -1973,7 +1973,7 @@ schemas:
             sortable: true
       orderNumber:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The unique order number associated with the invoice.
       paymentTerms:
@@ -2224,7 +2224,7 @@ schemas:
         type: string
         description: The ISO 4217 currency code of the invoice.
         filterable: true
-        pattern: '[a-zA-Z]{3}'
+        pattern: "[a-zA-Z]{3}"
         sortable: true
       customer:
         type: object
@@ -2490,7 +2490,7 @@ schemas:
             sortable: true
       orderNumber:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The order number related to the invoice
       paymentTerms:
