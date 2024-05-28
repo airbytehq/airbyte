@@ -44,6 +44,22 @@ data:
     - cdk:python
   connectorTestSuitesOptions:
     - suite: unitTests
+      testSecrets:
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_SANDBOX_CREDS
+          fileName: sandbox_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_PROD_CREDS
+          fileName: prod_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-TIKTOK-MARKETING_CREDS
