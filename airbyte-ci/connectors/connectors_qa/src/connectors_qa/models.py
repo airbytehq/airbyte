@@ -30,6 +30,7 @@ class CheckCategory(Enum):
     ASSETS = "💼 Assets"
     SECURITY = "🔒 Security"
     METADATA = "📝 Metadata"
+    TESTING = "🧪 Testing"
 
 
 class CheckStatus(Enum):
