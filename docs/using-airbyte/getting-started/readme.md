@@ -28,7 +28,7 @@ When self-managing Airbyte, your data never leaves your premises. Get started im
 
 With Airbyte Self-Managed Community (Open Source), you can use one of the following options in your infrastructure:
 
-- [Local Deployment](/deploying-airbyte/local-deployment.md) (recommended when trying out Airbyte)
+- [Local Deployment](/deploying-airbyte/quickstart.md) (recommended when trying out Airbyte)
 - [On AWS](/deploying-airbyte/on-aws-ec2.md)
 - [On Azure VM Cloud Shell](/deploying-airbyte/on-azure-vm-cloud-shell.md)
 - [On Digital Ocean Droplet](/deploying-airbyte/on-digitalocean-droplet.md)

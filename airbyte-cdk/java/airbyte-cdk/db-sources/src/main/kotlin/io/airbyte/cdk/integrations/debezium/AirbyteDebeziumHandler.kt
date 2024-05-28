@@ -16,14 +16,14 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
 import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * This class acts as the bridge between Airbyte DB connectors and debezium. If a DB connector wants
  * to use debezium for CDC, it should use this class
@@ -46,11 +46,9 @@ class AirbyteDebeziumHandler<T>(
                     Duration.between(lastReport, Instant.now())
                         .compareTo(Companion.REPORT_DURATION) > 0
             ) {
-                LOGGER.info(
-                    "CDC events queue size: {}. remaining {}",
-                    this.size,
-                    this.remainingCapacity()
-                )
+                LOGGER.info {
+                    "CDC events queue size: ${this.size}. remaining ${this.remainingCapacity()}"
+                }
                 synchronized(this) { lastReport = Instant.now() }
             }
         }
@@ -73,11 +71,10 @@ class AirbyteDebeziumHandler<T>(
         cdcSavedInfoFetcher: CdcSavedInfoFetcher,
         cdcStateHandler: CdcStateHandler
     ): AutoCloseableIterator<AirbyteMessage> {
-        LOGGER.info("Using CDC: {}", true)
-        LOGGER.info(
-            "Using DBZ version: {}",
-            DebeziumEngine::class.java.getPackage().implementationVersion
-        )
+        LOGGER.info { "Using CDC: true" }
+        LOGGER.info {
+            "Using DBZ version: ${DebeziumEngine::class.java.getPackage().implementationVersion}"
+        }
         val offsetManager: AirbyteFileOffsetBackingStore =
             AirbyteFileOffsetBackingStore.Companion.initializeState(
                 cdcSavedInfoFetcher.savedOffset,
@@ -87,7 +84,7 @@ class AirbyteDebeziumHandler<T>(
             )
         val schemaHistoryManager: Optional<AirbyteSchemaHistoryStorage> =
             if (trackSchemaHistory)
-                Optional.of<AirbyteSchemaHistoryStorage?>(
+                Optional.of<AirbyteSchemaHistoryStorage>(
                     AirbyteSchemaHistoryStorage.Companion.initializeDBHistory(
                         cdcSavedInfoFetcher.savedSchemaHistory,
                         cdcStateHandler.compressSchemaHistoryForState()
@@ -142,7 +139,7 @@ class AirbyteDebeziumHandler<T>(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(AirbyteDebeziumHandler::class.java)
+
         private val REPORT_DURATION: Duration = Duration.of(10, ChronoUnit.SECONDS)
 
         /**
@@ -155,9 +152,8 @@ class AirbyteDebeziumHandler<T>(
         @JvmStatic
         fun isAnyStreamIncrementalSyncMode(catalog: ConfiguredAirbyteCatalog): Boolean {
             return catalog.streams
-                .stream()
                 .map { obj: ConfiguredAirbyteStream -> obj.syncMode }
-                .anyMatch { syncMode: SyncMode -> syncMode == SyncMode.INCREMENTAL }
+                .any { syncMode: SyncMode -> syncMode == SyncMode.INCREMENTAL }
         }
     }
 }

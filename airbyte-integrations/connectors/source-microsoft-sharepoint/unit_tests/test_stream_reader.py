@@ -1,11 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
+
 from datetime import datetime
 from unittest.mock import MagicMock, Mock, PropertyMock, call, patch
 
 import pytest
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_cdk import AirbyteTracedException
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 from source_microsoft_sharepoint.stream_reader import (
     FileReadMode,
