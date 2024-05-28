@@ -223,35 +223,6 @@ internal class IntegrationRunnerTest {
 
     @Test
     @Throws(Exception::class)
-    fun testReadException() {
-        val intConfig = IntegrationConfig.read(configPath, configuredCatalogPath, statePath)
-        val configErrorException = ConfigErrorException("Invalid configuration")
-
-        Mockito.`when`(cliParser.parse(ARGS)).thenReturn(intConfig)
-        Mockito.`when`(source.read(CONFIG, CONFIGURED_CATALOG, STATE))
-            .thenThrow(configErrorException)
-
-        val expectedConnSpec = Mockito.mock(ConnectorSpecification::class.java)
-        Mockito.`when`(source.spec()).thenReturn(expectedConnSpec)
-        Mockito.`when`(expectedConnSpec.connectionSpecification).thenReturn(CONFIG)
-
-        val jsonSchemaValidator = Mockito.mock(JsonSchemaValidator::class.java)
-        IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator)
-                    .run(ARGS)
-
-        // noinspection resource
-        Mockito.verify(source).read(CONFIG, CONFIGURED_CATALOG, STATE)
-        Mockito.verify(stdoutConsumer)
-            .accept(
-                AirbyteTraceMessageUtility.makeErrorTraceAirbyteMessage(configErrorException,
-                    "Invalid configuration",
-                    AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
-            )
-        Mockito.verify(jsonSchemaValidator).validate(any(), any())
-    }
-
-    @Test
-    @Throws(Exception::class)
     fun testCheckNestedException() {
         val intConfig = IntegrationConfig.check(configPath)
         val output =

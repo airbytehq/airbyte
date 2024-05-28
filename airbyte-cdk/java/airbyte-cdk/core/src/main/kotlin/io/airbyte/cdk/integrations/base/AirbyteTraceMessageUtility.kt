@@ -96,7 +96,7 @@ object AirbyteTraceMessageUtility {
         outputRecordCollector.accept(message)
     }
 
-    fun makeErrorTraceAirbyteMessage(
+    private fun makeErrorTraceAirbyteMessage(
         e: Throwable,
         displayMessage: String?,
         failureType: AirbyteErrorTraceMessage.FailureType
