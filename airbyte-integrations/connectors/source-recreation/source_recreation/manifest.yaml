@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /organizations
           http_method: GET
           request_parameters:
@@ -44,7 +44,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/organizations'
+          $ref: "#/schemas/organizations"
     media:
       type: DeclarativeStream
       name: media
@@ -53,7 +53,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /media
           http_method: GET
           request_parameters:
@@ -80,7 +80,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/media'
+          $ref: "#/schemas/media"
     links:
       type: DeclarativeStream
       name: links
@@ -89,7 +89,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /links
           http_method: GET
           request_parameters:
@@ -116,7 +116,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/links'
+          $ref: "#/schemas/links"
     facilityaddresses:
       type: DeclarativeStream
       name: facilityaddresses
@@ -125,7 +125,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /facilityaddresses
           http_method: GET
           request_parameters:
@@ -152,7 +152,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/facilityaddresses'
+          $ref: "#/schemas/facilityaddresses"
     facilities:
       type: DeclarativeStream
       name: facilities
@@ -161,7 +161,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /facilities
           http_method: GET
           request_parameters:
@@ -188,7 +188,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/facilities'
+          $ref: "#/schemas/facilities"
     events:
       type: DeclarativeStream
       name: events
@@ -197,7 +197,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /events
           http_method: GET
           request_parameters:
@@ -224,7 +224,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/events'
+          $ref: "#/schemas/events"
     activities:
       type: DeclarativeStream
       name: activities
@@ -233,7 +233,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /activities
           http_method: GET
           request_parameters:
@@ -260,7 +260,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/activities'
+          $ref: "#/schemas/activities"
     campsites:
       type: DeclarativeStream
       name: campsites
@@ -269,7 +269,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /campsites
           http_method: GET
           request_parameters:
@@ -296,7 +296,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/campsites'
+          $ref: "#/schemas/campsites"
     permits:
       type: DeclarativeStream
       name: permits
@@ -305,7 +305,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /permits
           http_method: GET
           request_parameters:
@@ -332,7 +332,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/permits'
+          $ref: "#/schemas/permits"
     recreationareaaddresses:
       type: DeclarativeStream
       name: recreationareaaddresses
@@ -341,7 +341,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /recareaaddresses
           http_method: GET
           request_parameters:
@@ -368,7 +368,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/recreationareaaddresses'
+          $ref: "#/schemas/recreationareaaddresses"
     recreationareas:
       type: DeclarativeStream
       name: recreationareas
@@ -377,7 +377,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /recareas
           http_method: GET
           request_parameters:
@@ -404,7 +404,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/recreationareas'
+          $ref: "#/schemas/recreationareas"
     tours:
       type: DeclarativeStream
       name: tours
@@ -413,7 +413,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /tours
           http_method: GET
           request_parameters:
@@ -440,31 +440,31 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/tours'
+          $ref: "#/schemas/tours"
   base_requester:
     type: HttpRequester
     url_base: https://ridb.recreation.gov/api/v1/
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''apikey''] }}'
+      api_token: "{{ config['apikey'] }}"
       inject_into:
         type: RequestOption
         field_name: apikey
         inject_into: header
 
 streams:
-  - $ref: '#/definitions/streams/organizations'
-  - $ref: '#/definitions/streams/media'
-  - $ref: '#/definitions/streams/links'
-  - $ref: '#/definitions/streams/facilityaddresses'
-  - $ref: '#/definitions/streams/facilities'
-  - $ref: '#/definitions/streams/events'
-  - $ref: '#/definitions/streams/activities'
-  - $ref: '#/definitions/streams/campsites'
-  - $ref: '#/definitions/streams/permits'
-  - $ref: '#/definitions/streams/recreationareaaddresses'
-  - $ref: '#/definitions/streams/recreationareas'
-  - $ref: '#/definitions/streams/tours'
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/media"
+  - $ref: "#/definitions/streams/links"
+  - $ref: "#/definitions/streams/facilityaddresses"
+  - $ref: "#/definitions/streams/facilities"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/activities"
+  - $ref: "#/definitions/streams/campsites"
+  - $ref: "#/definitions/streams/permits"
+  - $ref: "#/definitions/streams/recreationareaaddresses"
+  - $ref: "#/definitions/streams/recreationareas"
+  - $ref: "#/definitions/streams/tours"
 
 spec:
   type: Spec
@@ -795,13 +795,13 @@ schemas:
           COORDINATES:
             type:
               - array
-              - 'null'
+              - "null"
             description: Geographical coordinates of the facility.
             items:
               type:
                 - string
                 - number
-                - 'null'
+                - "null"
           TYPE:
             type: string
             description: Type of the GeoJSON data (e.g., Point, Polygon).
@@ -1374,13 +1374,13 @@ schemas:
           COORDINATES:
             type:
               - array
-              - 'null'
+              - "null"
             description: Coordinates data.
             items:
               type:
                 - string
                 - number
-                - 'null'
+                - "null"
           TYPE:
             type: string
             description: Type of GeoJSON data.
@@ -1672,7 +1672,7 @@ schemas:
         description: Date when the tour data was last updated.
       MEMBERTOURS:
         type:
-          - 'null'
+          - "null"
           - array
         description: >-
           Contains information about specific tours offered by different members
@@ -1684,7 +1684,7 @@ schemas:
               type:
                 - string
                 - integer
-                - 'null'
+                - "null"
               description: Unique identifier for the member tour.
       TourAccessible:
         type: boolean
