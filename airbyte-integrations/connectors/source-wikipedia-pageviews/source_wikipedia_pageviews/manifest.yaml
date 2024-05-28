@@ -16,7 +16,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: >-
             /per-article/{{config.project}}/{{config.access}}/{{config.agent}}/{{config.article}}/daily/{{stream_slice.start_time}}/{{stream_slice.end_time}}
           http_method: GET
@@ -33,29 +33,29 @@ definitions:
         cursor_field: timestamp
         name: per-article
         cursor_datetime_formats:
-          - '%Y%m%d'
-        datetime_format: '%Y%m%d'
+          - "%Y%m%d"
+        datetime_format: "%Y%m%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{config.start}}'
-          datetime_format: '%Y%m%d'
+          datetime: "{{config.start}}"
+          datetime_format: "%Y%m%d"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{config.end}}'
-          datetime_format: '%Y%m%d'
+          datetime: "{{config.end}}"
+          datetime_format: "%Y%m%d"
         step: P1D
         cursor_granularity: P1D
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/per-article'
+          $ref: "#/schemas/per-article"
     top:
       type: DeclarativeStream
       name: top
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: >-
             /top/{{config.project}}/{{config.access}}/{{stream_slice.start_time}}
           http_method: GET
@@ -72,29 +72,29 @@ definitions:
         cursor_field: timestamp
         name: top
         cursor_datetime_formats:
-          - '%Y/%m/%d'
-        datetime_format: '%Y/%m/%d'
+          - "%Y/%m/%d"
+        datetime_format: "%Y/%m/%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{config.start}}'
-          datetime_format: '%Y%m%d'
+          datetime: "{{config.start}}"
+          datetime_format: "%Y%m%d"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{config.start}}'
-          datetime_format: '%Y%m%d'
+          datetime: "{{config.start}}"
+          datetime_format: "%Y%m%d"
         step: P1D
         cursor_granularity: P1D
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/top'
+          $ref: "#/schemas/top"
   base_requester:
     type: HttpRequester
     url_base: https://wikimedia.org/api/rest_v1/metrics/pageviews
 
 streams:
-  - $ref: '#/definitions/streams/per-article'
-  - $ref: '#/definitions/streams/top'
+  - $ref: "#/definitions/streams/per-article"
+  - $ref: "#/definitions/streams/top"
 
 spec:
   type: Spec
