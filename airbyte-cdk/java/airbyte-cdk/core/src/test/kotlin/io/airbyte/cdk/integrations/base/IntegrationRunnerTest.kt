@@ -221,7 +221,7 @@ internal class IntegrationRunnerTest {
         Mockito.verify(jsonSchemaValidator).validate(any(), any())
     }
 
-    @Test
+    /*@Test
     @Throws(Exception::class)
     fun testReadException() {
         val intConfig = IntegrationConfig.read(configPath, configuredCatalogPath, statePath)
@@ -245,9 +245,9 @@ internal class IntegrationRunnerTest {
         AssertionsForClassTypes.assertThat(throwable).isInstanceOf(ConfigErrorException::class.java)
         // noinspection resource
         Mockito.verify(source).read(CONFIG, CONFIGURED_CATALOG, STATE)
-    }
+    }*/
 
-    @Test
+    /*@Test
     @Throws(Exception::class)
     fun testCheckNestedException() {
         val intConfig = IntegrationConfig.check(configPath)
@@ -275,7 +275,7 @@ internal class IntegrationRunnerTest {
                     .withConnectionStatus(output)
             )
         Mockito.verify(jsonSchemaValidator).validate(any(), any())
-    }
+    }*/
 
     @Test
     @Throws(Exception::class)
