@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /pypi/{{ config['project_name'] }}/json
           http_method: GET
           request_headers:
@@ -31,14 +31,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/project'
+          $ref: "#/schemas/project"
     release:
       type: DeclarativeStream
       name: release
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /pypi/{{ config['project_name'] }}/{{ config['version'] }}/json
           http_method: GET
           request_headers:
@@ -52,14 +52,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/release'
+          $ref: "#/schemas/release"
     stats:
       type: DeclarativeStream
       name: stats
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /stats
           http_method: GET
           request_headers:
@@ -73,15 +73,15 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/stats'
+          $ref: "#/schemas/stats"
   base_requester:
     type: HttpRequester
     url_base: https://pypi.org
 
 streams:
-  - $ref: '#/definitions/streams/project'
-  - $ref: '#/definitions/streams/release'
-  - $ref: '#/definitions/streams/stats'
+  - $ref: "#/definitions/streams/project"
+  - $ref: "#/definitions/streams/release"
+  - $ref: "#/definitions/streams/stats"
 
 spec:
   type: Spec
@@ -141,7 +141,7 @@ schemas:
           bugtrack_url:
             type:
               - string
-              - 'null'
+              - "null"
             description: URL to find issues and bugs for the project
           classifiers:
             type: array
@@ -158,23 +158,23 @@ schemas:
           description_content_type:
             type:
               - string
-              - 'null'
+              - "null"
             description: >-
               Corresponds to
               https://packaging.python.org/specifications/core-metadata/#description-content-type
           docs_url:
             type:
               - string
-              - 'null'
+              - "null"
             description: URL to the project's documentation
           download_url:
             type:
               - string
-              - 'null'
-            description: '[DEPRECATED]'
+              - "null"
+            description: "[DEPRECATED]"
           downloads:
             type: object
-            description: '[DEPRECATED]'
+            description: "[DEPRECATED]"
           home_page:
             type: string
             description: URL to project home page
@@ -184,17 +184,17 @@ schemas:
           license:
             type:
               - string
-              - 'null'
+              - "null"
             description: Project's open source license
           maintainer:
             type:
               - string
-              - 'null'
+              - "null"
             description: Project maintainer name
           maintainer_email:
             type:
               - string
-              - 'null'
+              - "null"
             description: Project maintainer email address
           name:
             type: string
@@ -204,9 +204,9 @@ schemas:
             description: URL to the project page
           platform:
             type:
-              - 'null'
+              - "null"
               - string
-            description: '[DEPRECATED]'
+            description: "[DEPRECATED]"
           project_url:
             type: string
             description: URL to the project page
@@ -217,7 +217,7 @@ schemas:
             patternProperties:
               .*:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           release_url:
             type: string
@@ -225,7 +225,7 @@ schemas:
           requires_dist:
             type:
               - array
-              - 'null'
+              - "null"
             description: >-
               Calculated project dependencies. Corresponds to
               https://packaging.python.org/specifications/core-metadata/#requires-dist-multiple-use
@@ -234,14 +234,14 @@ schemas:
           requires_python:
             type:
               - string
-              - 'null'
+              - "null"
             description: >-
               Python runtime version required for project. Corresponds to
               https://packaging.python.org/specifications/core-metadata/#requires-python
           summary:
             type:
               - string
-              - 'null'
+              - "null"
             description: >-
               A one-line summary of what the distribution does.. Corresponds to
               https://packaging.python.org/specifications/core-metadata/#summary
@@ -251,7 +251,7 @@ schemas:
           yanked_reason:
             type:
               - string
-              - 'null'
+              - "null"
             description: Reason for applying PEP 592 version yank
         required:
           - author
@@ -283,7 +283,7 @@ schemas:
                   properties:
                     comment_text:
                       type: string
-                      description: '[DEPRECATED]'
+                      description: "[DEPRECATED]"
                     digests:
                       type: object
                       description: The file checksums
@@ -296,7 +296,7 @@ schemas:
                           description: The SHA256 checksum of the release file
                     downloads:
                       type: integer
-                      description: '[DEPRECATED]'
+                      description: "[DEPRECATED]"
                     filename:
                       type: string
                       description: Full filename (including extension)
@@ -307,10 +307,10 @@ schemas:
                         was provided
                     md5_digest:
                       type: string
-                      description: '[DEPRECATED]'
+                      description: "[DEPRECATED]"
                     packagetype:
                       type: string
-                      description: 'Release file type: ''sdist'', ''bdist_wheel'', etc'
+                      description: "Release file type: 'sdist', 'bdist_wheel', etc"
                     python_version:
                       type: string
                       description: >-
@@ -319,7 +319,7 @@ schemas:
                     requires_python:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                       description: >-
                         Python runtime version required for project. Corresponds
                         to
@@ -344,7 +344,7 @@ schemas:
                     yanked_reason:
                       type:
                         - string
-                        - 'null'
+                        - "null"
                       description: PEP 592 reason for yanking release file
                   required:
                     - digests
@@ -365,7 +365,7 @@ schemas:
             properties:
               comment_text:
                 type: string
-                description: '[DEPRECATED]'
+                description: "[DEPRECATED]"
               digests:
                 type: object
                 description: The file checksums
@@ -378,7 +378,7 @@ schemas:
                     description: The SHA256 checksum of the release file
               downloads:
                 type: integer
-                description: '[DEPRECATED]'
+                description: "[DEPRECATED]"
               filename:
                 type: string
                 description: Full filename (including extension)
@@ -389,10 +389,10 @@ schemas:
                   provided
               md5_digest:
                 type: string
-                description: '[DEPRECATED]'
+                description: "[DEPRECATED]"
               packagetype:
                 type: string
-                description: 'Release file type: ''sdist'', ''bdist_wheel'', etc'
+                description: "Release file type: 'sdist', 'bdist_wheel', etc"
               python_version:
                 type: string
                 description: >-
@@ -401,7 +401,7 @@ schemas:
               requires_python:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 description: >-
                   Python runtime version required for project. Corresponds to
                   https://packaging.python.org/specifications/core-metadata/#requires-python
@@ -425,7 +425,7 @@ schemas:
               yanked_reason:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 description: PEP 592 reason for yanking release file
             required:
               - digests
@@ -445,34 +445,34 @@ schemas:
             aliases:
               type:
                 - array
-                - 'null'
+                - "null"
               description: A list of CVE vulns
               items:
                 type: string
             details:
               type:
                 - string
-                - 'null'
+                - "null"
               description: A description of the vulnerability
             fixed_in:
               type:
                 - array
-                - 'null'
+                - "null"
               description: A list of versions that are fixed
               items:
                 type: string
             id:
               type:
                 - string
-                - 'null'
+                - "null"
             link:
               type:
                 - string
-                - 'null'
+                - "null"
             source:
               type:
                 - string
-                - 'null'
+                - "null"
     required:
       - info
       - last_serial
@@ -503,7 +503,7 @@ schemas:
           bugtrack_url:
             type:
               - string
-              - 'null'
+              - "null"
             description: URL to find issues and bugs for the project
           classifiers:
             type: array
@@ -520,23 +520,23 @@ schemas:
           description_content_type:
             type:
               - string
-              - 'null'
+              - "null"
             description: >-
               Corresponds to
               https://packaging.python.org/specifications/core-metadata/#description-content-type
           docs_url:
             type:
               - string
-              - 'null'
+              - "null"
             description: URL to the project's documentation
           download_url:
             type:
               - string
-              - 'null'
-            description: '[DEPRECATED]'
+              - "null"
+            description: "[DEPRECATED]"
           downloads:
             type: object
-            description: '[DEPRECATED]'
+            description: "[DEPRECATED]"
           home_page:
             type: string
             description: URL to project home page
@@ -546,17 +546,17 @@ schemas:
           license:
             type:
               - string
-              - 'null'
+              - "null"
             description: Project's open source license
           maintainer:
             type:
               - string
-              - 'null'
+              - "null"
             description: Project maintainer name
           maintainer_email:
             type:
               - string
-              - 'null'
+              - "null"
             description: Project maintainer email address
           name:
             type: string
@@ -566,9 +566,9 @@ schemas:
             description: URL to the project page
           platform:
             type:
-              - 'null'
+              - "null"
               - string
-            description: '[DEPRECATED]'
+            description: "[DEPRECATED]"
           project_url:
             type: string
             description: URL to the project page
@@ -579,7 +579,7 @@ schemas:
             patternProperties:
               .*:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           release_url:
             type: string
@@ -587,7 +587,7 @@ schemas:
           requires_dist:
             type:
               - array
-              - 'null'
+              - "null"
             description: >-
               Calculated project dependencies. Corresponds to
               https://packaging.python.org/specifications/core-metadata/#requires-dist-multiple-use
@@ -596,14 +596,14 @@ schemas:
           requires_python:
             type:
               - string
-              - 'null'
+              - "null"
             description: >-
               Python runtime version required for project. Corresponds to
               https://packaging.python.org/specifications/core-metadata/#requires-python
           summary:
             type:
               - string
-              - 'null'
+              - "null"
             description: >-
               A one-line summary of what the distribution does.. Corresponds to
               https://packaging.python.org/specifications/core-metadata/#summary
@@ -613,7 +613,7 @@ schemas:
           yanked_reason:
             type:
               - string
-              - 'null'
+              - "null"
             description: Reason for applying PEP 592 version yank
         required:
           - author
@@ -639,7 +639,7 @@ schemas:
             properties:
               comment_text:
                 type: string
-                description: '[DEPRECATED]'
+                description: "[DEPRECATED]"
               digests:
                 type: object
                 description: The file checksums
@@ -652,7 +652,7 @@ schemas:
                     description: The SHA256 checksum of the release file
               downloads:
                 type: integer
-                description: '[DEPRECATED]'
+                description: "[DEPRECATED]"
               filename:
                 type: string
                 description: Full filename (including extension)
@@ -663,10 +663,10 @@ schemas:
                   provided
               md5_digest:
                 type: string
-                description: '[DEPRECATED]'
+                description: "[DEPRECATED]"
               packagetype:
                 type: string
-                description: 'Release file type: ''sdist'', ''bdist_wheel'', etc'
+                description: "Release file type: 'sdist', 'bdist_wheel', etc"
               python_version:
                 type: string
                 description: >-
@@ -675,7 +675,7 @@ schemas:
               requires_python:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 description: >-
                   Python runtime version required for project. Corresponds to
                   https://packaging.python.org/specifications/core-metadata/#requires-python
@@ -699,7 +699,7 @@ schemas:
               yanked_reason:
                 type:
                   - string
-                  - 'null'
+                  - "null"
                 description: PEP 592 reason for yanking release file
             required:
               - digests
@@ -719,34 +719,34 @@ schemas:
             aliases:
               type:
                 - array
-                - 'null'
+                - "null"
               description: A list of CVE vulns
               items:
                 type: string
             details:
               type:
                 - string
-                - 'null'
+                - "null"
               description: A description of the vulnerability
             fixed_in:
               type:
                 - array
-                - 'null'
+                - "null"
               description: A list of versions that are fixed
               items:
                 type: string
             id:
               type:
                 - string
-                - 'null'
+                - "null"
             link:
               type:
                 - string
-                - 'null'
+                - "null"
             source:
               type:
                 - string
-                - 'null'
+                - "null"
     required:
       - info
       - last_serial
@@ -766,7 +766,7 @@ schemas:
             properties:
               size:
                 type:
-                  - 'null'
+                  - "null"
                   - integer
                 description: Size of the package in bytes
             required:
