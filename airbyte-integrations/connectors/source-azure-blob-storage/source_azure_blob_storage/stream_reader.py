@@ -1,15 +1,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+
 import logging
 from io import IOBase
 from typing import Iterable, List, Optional, Union
 
 import pytz
+from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
-from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 from azure.core.credentials import AccessToken
 from azure.core.exceptions import ResourceNotFoundError
 from azure.storage.blob import BlobServiceClient, ContainerClient
