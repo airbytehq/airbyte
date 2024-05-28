@@ -140,7 +140,7 @@ readonly telemetryURL="https://api.segment.io/v1/track"
 TelemetrySendTrap()
 {
   if $telemetrySuccess; then
-    # due to how traps work, we don't want to send a failure for exiting docker after we sent a success,
+    # due to how traps work, we don't want to send a failure for exiting docker after we sent a success
     return
   fi
 
