@@ -51,8 +51,8 @@ class YandexMetrikaRawDataStream(YandexMetrikaStream, ABC):
         self,
         authenticator: TokenAuthenticator,
         counter_id: int,
-        date_from: str,
-        date_to: str,
+        date_from: datetime,
+        date_to: datetime,
         split_range_days_count: Mapping[str, any],
         log_source: str,
         fields: list[str],
@@ -145,14 +145,11 @@ class YandexMetrikaRawDataStream(YandexMetrikaStream, ABC):
         logger.info(f"end of parse_response")
         return [filename]
 
-    def should_retry(self, response: requests.Response) -> bool:
-        return super().should_retry(response)
-
     def stream_slices(self, *args, **kwargs) -> Iterable[Mapping[str, any] | None]:
         if not self.split_range_days_count:
             slices = [{"date_from": self.date_from, "date_to": self.date_to}]
         elif self.split_range_days_count:
             slices = daterange_days_list(self.date_from, self.date_to, self.split_range_days_count)
         else:
-            pass
+            slices = None
         return slices

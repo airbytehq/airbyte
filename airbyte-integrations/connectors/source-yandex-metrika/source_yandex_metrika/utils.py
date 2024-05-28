@@ -1,18 +1,18 @@
-from datetime import datetime, timedelta
 import random
 import string
+from datetime import datetime, timedelta
 
 DATE_FORMAT = "%Y-%m-%d"
 
 
-def daterange_days_list(date_from: str, date_to: str, days_delta: int = 1) -> list[str]:
-    cursor_date = datetime.strptime(date_from, DATE_FORMAT)
-    date_to = datetime.strptime(date_to, DATE_FORMAT)
+def daterange_days_list(date_from: datetime, date_to: datetime, days_delta: int = 1) -> list[str]:
+    cursor_date = date_from
+    date_to = date_to
+
     ranges = []
     while cursor_date <= date_to:
         if cursor_date + timedelta(days=days_delta) > date_to:
-            ranges.append({"date_from": cursor_date.strftime(
-                DATE_FORMAT), "date_to": date_to.strftime(DATE_FORMAT)})
+            ranges.append({"date_from": cursor_date.strftime(DATE_FORMAT), "date_to": date_to.strftime(DATE_FORMAT)})
             break
         ranges.append(
             {
@@ -33,11 +33,11 @@ def today_minus_n_days_date(n_days: int) -> str:
 
 
 def random_output_filename() -> str:
-    return f'output/{random_str(20)}.csv'
+    return f"output/{random_str(20)}.csv"
 
 
 def random_str(n: int) -> str:
-    return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(n))
+    return "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(n))
 
 
 def partition_list(lst, n):

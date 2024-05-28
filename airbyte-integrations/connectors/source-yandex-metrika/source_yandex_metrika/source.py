@@ -207,7 +207,6 @@ class SourceYandexMetrika(AbstractSource):
                         multithreading_threads_count=stream_instance_kwargs["multithreading_threads_count"],
                         timer=timer,
                         completed_chunks_observer=completed_chunks_observer,
-                        field_name_map=self.field_name_map,
                     )
                     logger.info("Threads controller created")
                     logger.info("Run threads process, get into main loop")
