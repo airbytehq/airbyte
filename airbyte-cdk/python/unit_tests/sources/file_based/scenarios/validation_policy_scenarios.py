@@ -70,6 +70,7 @@ _base_single_stream_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -164,6 +165,7 @@ _base_multi_stream_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 },
                 {
                     "json_schema": {
@@ -183,6 +185,7 @@ _base_multi_stream_scenario = (
                     "name": "stream2",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 },
             ]
         }
