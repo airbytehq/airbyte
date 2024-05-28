@@ -47,7 +47,7 @@ class InsightConfig(BaseModel):
 
     fields: Optional[List[ValidFields]] = Field(
         title="Fields",
-        description="A list of chosen fields for fields parameter",
+        description="A list of chosen fields for fields parameters",
         default=[],
     )
 
