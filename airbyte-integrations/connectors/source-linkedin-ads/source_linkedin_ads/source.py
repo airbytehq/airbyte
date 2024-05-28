@@ -94,7 +94,6 @@ class SourceLinkedinAds(YamlDeclarativeSource):
         streams = super().streams(config=config)
         streams.extend(
             [
-                AdCampaignAnalytics(config=config),
                 AdCreativeAnalytics(config=config),
                 AdImpressionDeviceAnalytics(config=config),
                 AdMemberCompanySizeAnalytics(config=config),
