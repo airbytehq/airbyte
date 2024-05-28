@@ -67,6 +67,7 @@ definitions:
     pagination_strategy:
       type: "PageIncrement"
       page_size: 100
+      start_from_page: 1
     page_token_option:
       type: "RequestOption"
       inject_into: "request_parameter"
@@ -135,6 +136,7 @@ definitions:
         pagination_strategy:
           type: "PageIncrement"
           page_size: '{{ parameters.get("page_size", 1000) }}'
+          start_from_page: 1
       partition_router:
         $ref: "#/definitions/single_id_partition_router"
     incremental_sync:
@@ -437,6 +439,7 @@ definitions:
       pagination_strategy:
         type: "PageIncrement"
         page_size: 1000
+        start_from_page: 1
     partition_router:
       $ref: "#/definitions/single_id_partition_router"
 
@@ -531,6 +534,7 @@ definitions:
         pagination_strategy:
           type: "PageIncrement"
           page_size: 1000
+          start_from_page: 1
       record_selector:
         $ref: "#/definitions/record_selector"
       partition_router:
@@ -709,6 +713,7 @@ definitions:
       pagination_strategy:
         type: "PageIncrement"
         page_size: 1000
+        start_from_page: 1
     partition_router:
       $ref: "#/definitions/single_id_partition_router"
 
@@ -1522,6 +1527,7 @@ definitions:
         pagination_strategy:
           type: "PageIncrement"
           page_size: 1000
+          start_from_page: 1
       partition_router:
         $ref: "#/definitions/single_id_partition_router"
 
