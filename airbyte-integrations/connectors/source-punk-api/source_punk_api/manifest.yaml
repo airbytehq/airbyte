@@ -1,74 +1,993 @@
-version: "0.29.0"
+version: 0.79.1
 
-definitions:
-  selector:
-    extractor:
-      field_path: []
-  requester:
-    url_base: "https://api.punkapi.com/v2/"
-    http_method: "GET"
-    request_parameters:
-      id: |
-        {{
-          config['id']
-          if parameters['name'] == 'beers_with_id'
-          else ''
-        }}
-
-  retriever:
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: NoPagination
-    requester:
-      $ref: "#/definitions/requester"
-
-  base_stream:
-    schema_loader:
-      type: JsonFileSchemaLoader
-      file_path: "./source_punk_api/schemas/{{ parameters['name'] }}.json"
-    retriever:
-      $ref: "#/definitions/retriever"
-
-  page_stream:
-    schema_loader:
-      type: JsonFileSchemaLoader
-      file_path: "./source_punk_api/schemas/{{ parameters['name'] }}.json"
-    retriever:
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        type: "DefaultPaginator"
-        pagination_strategy:
-          type: "PageIncrement"
-          page_size: 25
-        page_token_option:
-          type: RequestOption
-          inject_into: "request_parameter"
-          field_name: "page"
-        page_size_option:
-          inject_into: "request_parameter"
-          field_name: "per_page"
-      requester:
-        $ref: "#/definitions/requester"
-
-  beers_stream:
-    $ref: "#/definitions/page_stream"
-    $parameters:
-      name: "beers"
-      path: "/beers"
-
-  beers_with_id_stream:
-    $ref: "#/definitions/page_stream"
-    $parameters:
-      name: "beers_with_id"
-      path: "/beers?{{ config['brewed_after'] }}"
-
-streams:
-  - "#/definitions/beers_stream"
-  - "#/definitions/beers_with_id_stream"
+type: DeclarativeSource
 
 check:
+  type: CheckStream
   stream_names:
-    - "beers"
-    - "beers_with_id"
+    - beers
+    - beers_with_id
+
+definitions:
+  streams:
+    beers:
+      type: DeclarativeStream
+      name: beers
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /beers
+          http_method: GET
+          request_parameters:
+            id: |
+              {{
+                config['id']
+                if parameters['name'] == 'beers_with_id'
+                else ''
+              }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/beers'
+    beers_with_id:
+      type: DeclarativeStream
+      name: beers_with_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /beers?{{ config['brewed_after'] }}
+          http_method: GET
+          request_parameters:
+            id: |
+              {{
+                config['id']
+                if parameters['name'] == 'beers_with_id'
+                else ''
+              }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/beers_with_id'
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.punkapi.com/v2/
+
+streams:
+  - $ref: '#/definitions/streams/beers'
+  - $ref: '#/definitions/streams/beers_with_id'
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - brewed_after
+      - brewed_before
+    properties:
+      brewed_after:
+        type: string
+        title: Brewed after data to get incremental reads
+        description: To extract specific data with Unique ID
+        pattern: ^[0-9]{2}-[0-9]{4}$
+        examples:
+          - MM-YYYY
+        order: 0
+      brewed_before:
+        type: string
+        title: Brewed before data to get incremental reads
+        description: To extract specific data with Unique ID
+        pattern: ^[0-9]{2}-[0-9]{4}$
+        examples:
+          - MM-YYYY
+        order: 1
+      id:
+        type: string
+        title: Beers with specific ID
+        description: To extract specific data with Unique ID
+        examples:
+          - 1
+          - 22
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    beers: false
+    beers_with_id: false
+
+schemas:
+  beers:
+    type: object
+    $id: https://example.com/object1667227839.json
+    $schema: http://json-schema.org/draft-07/schema#
+    default: []
+    items:
+      type:
+        - 'null'
+        - object
+      $id: '#root/items'
+      properties:
+        abv:
+          type: number
+          $id: '#root/items/abv'
+          default: 0
+          title: Abv
+        attenuation_level:
+          type:
+            - 'null'
+            - number
+            - integer
+            - string
+          $id: '#root/items/attenuation_level'
+          default: 0
+          title: Attenuation_level
+        boil_volume:
+          type:
+            - 'null'
+            - object
+          $id: '#root/items/boil_volume'
+          properties:
+            unit:
+              type:
+                - 'null'
+                - array
+                - object
+                - string
+              $id: '#root/items/boil_volume/unit'
+              pattern: ^.*$
+              title: Unit
+            value:
+              type:
+                - 'null'
+                - number
+                - integer
+              $id: '#root/items/boil_volume/value'
+              default: 0
+              title: Value
+          title: Boil_volume
+        brewers_tips:
+          type:
+            - 'null'
+            - array
+            - object
+            - string
+          $id: '#root/items/brewers_tips'
+          pattern: ^.*$
+          title: Brewers_tips
+        contributed_by:
+          type:
+            - 'null'
+            - array
+            - object
+            - string
+          $id: '#root/items/contributed_by'
+          pattern: ^.*$
+          title: Contributed_by
+        description:
+          type:
+            - 'null'
+            - array
+            - object
+            - string
+          $id: '#root/items/description'
+          pattern: ^.*$
+          title: Description
+        ebc:
+          type:
+            - 'null'
+            - number
+            - integer
+            - string
+          $id: '#root/items/ebc'
+          default: 0
+          title: Ebc
+        first_brewed:
+          type:
+            - 'null'
+            - array
+            - object
+            - string
+          $id: '#root/items/first_brewed'
+          pattern: ^.*$
+          title: First_brewed
+        food_pairing:
+          type:
+            - 'null'
+            - array
+            - object
+          $id: '#root/items/food_pairing'
+          default: []
+          items:
+            type:
+              - 'null'
+              - array
+              - object
+              - string
+            $id: '#root/items/food_pairing/items'
+            pattern: ^.*$
+            title: Items
+          title: Food_pairing
+        ibu:
+          type:
+            - 'null'
+            - number
+            - integer
+          $id: '#root/items/ibu'
+          default: 0
+          title: Ibu
+        id:
+          type:
+            - 'null'
+            - integer
+            - number
+          $id: '#root/items/id'
+          default: 0
+          title: Id
+        image_url:
+          type:
+            - 'null'
+            - array
+            - object
+            - string
+          $id: '#root/items/image_url'
+          pattern: ^.*$
+          title: Image_url
+        ingredients:
+          type:
+            - 'null'
+            - object
+          $id: '#root/items/ingredients'
+          properties:
+            hops:
+              type:
+                - 'null'
+                - array
+                - object
+              $id: '#root/items/ingredients/hops'
+              default: []
+              items:
+                type:
+                  - 'null'
+                  - object
+                $id: '#root/items/ingredients/hops/items'
+                properties:
+                  add:
+                    type:
+                      - 'null'
+                      - array
+                      - object
+                      - string
+                    $id: '#root/items/ingredients/hops/items/add'
+                    pattern: ^.*$
+                    title: Add
+                  amount:
+                    type:
+                      - 'null'
+                      - object
+                    $id: '#root/items/ingredients/hops/items/amount'
+                    properties:
+                      unit:
+                        type: string
+                        $id: '#root/items/ingredients/hops/items/amount/unit'
+                        pattern: ^.*$
+                        title: Unit
+                      value:
+                        type:
+                          - 'null'
+                          - number
+                          - integer
+                        $id: '#root/items/ingredients/hops/items/amount/value'
+                        default: 0
+                        title: Value
+                    title: Amount
+                  attribute:
+                    type:
+                      - 'null'
+                      - array
+                      - object
+                      - string
+                    $id: '#root/items/ingredients/hops/items/attribute'
+                    pattern: ^.*$
+                    title: Attribute
+                  name:
+                    type:
+                      - 'null'
+                      - array
+                      - object
+                      - string
+                    $id: '#root/items/ingredients/hops/items/name'
+                    pattern: ^.*$
+                    title: Name
+                title: Items
+              title: Hops
+            malt:
+              type:
+                - 'null'
+                - array
+                - object
+              $id: '#root/items/ingredients/malt'
+              default: []
+              items:
+                type:
+                  - 'null'
+                  - object
+                $id: '#root/items/ingredients/malt/items'
+                properties:
+                  amount:
+                    type:
+                      - 'null'
+                      - object
+                    $id: '#root/items/ingredients/malt/items/amount'
+                    properties:
+                      unit:
+                        type:
+                          - 'null'
+                          - array
+                          - object
+                          - string
+                        $id: '#root/items/ingredients/malt/items/amount/unit'
+                        pattern: ^.*$
+                        title: Unit
+                      value:
+                        type: number
+                        $id: '#root/items/ingredients/malt/items/amount/value'
+                        default: 0
+                        title: Value
+                    title: Amount
+                  name:
+                    type: string
+                    $id: '#root/items/ingredients/malt/items/name'
+                    pattern: ^.*$
+                    title: Name
+                title: Items
+              title: Malt
+            yeast:
+              type:
+                - 'null'
+                - array
+                - object
+                - string
+              $id: '#root/items/ingredients/yeast'
+              pattern: ^.*$
+              title: Yeast
+          title: Ingredients
+        method:
+          type:
+            - 'null'
+            - object
+          $id: '#root/items/method'
+          properties:
+            fermentation:
+              type:
+                - 'null'
+                - object
+              $id: '#root/items/method/fermentation'
+              properties:
+                temp:
+                  type:
+                    - 'null'
+                    - object
+                  $id: '#root/items/method/fermentation/temp'
+                  properties:
+                    unit:
+                      type:
+                        - 'null'
+                        - array
+                        - object
+                        - string
+                      $id: '#root/items/method/fermentation/temp/unit'
+                      pattern: ^.*$
+                      title: Unit
+                    value:
+                      type:
+                        - 'null'
+                        - integer
+                        - number
+                      $id: '#root/items/method/fermentation/temp/value'
+                      default: 0
+                      title: Value
+                  title: Temp
+              title: Fermentation
+            mash_temp:
+              type:
+                - 'null'
+                - array
+                - object
+              $id: '#root/items/method/mash_temp'
+              default: []
+              items:
+                type:
+                  - 'null'
+                  - object
+                $id: '#root/items/method/mash_temp/items'
+                properties:
+                  duration:
+                    type:
+                      - 'null'
+                      - number
+                      - integer
+                    $id: '#root/items/method/mash_temp/items/duration'
+                    default: 0
+                    title: Duration
+                  temp:
+                    type:
+                      - 'null'
+                      - object
+                    $id: '#root/items/method/mash_temp/items/temp'
+                    properties:
+                      unit:
+                        type:
+                          - 'null'
+                          - array
+                          - object
+                          - string
+                        $id: '#root/items/method/mash_temp/items/temp/unit'
+                        pattern: ^.*$
+                        title: Unit
+                      value:
+                        type:
+                          - 'null'
+                          - integer
+                          - number
+                        $id: '#root/items/method/mash_temp/items/temp/value'
+                        default: 0
+                        title: Value
+                    title: Temp
+                title: Items
+              title: Mash_temp
+            twist:
+              type:
+                - 'null'
+                - number
+                - integer
+                - string
+              $id: '#root/items/method/twist'
+              default: null
+              title: Twist
+          title: Method
+        name:
+          type:
+            - 'null'
+            - array
+            - object
+            - string
+          $id: '#root/items/name'
+          pattern: ^.*$
+          title: Name
+        ph:
+          type:
+            - 'null'
+            - number
+            - integer
+            - string
+          $id: '#root/items/ph'
+          default: 0
+          title: Ph
+        srm:
+          type:
+            - 'null'
+            - number
+            - integer
+            - string
+          $id: '#root/items/srm'
+          default: 0
+          title: Srm
+        tagline:
+          type:
+            - 'null'
+            - array
+            - object
+            - string
+          $id: '#root/items/tagline'
+          pattern: ^.*$
+          title: Tagline
+        target_fg:
+          type:
+            - 'null'
+            - integer
+            - number
+          $id: '#root/items/target_fg'
+          default: 0
+          title: Target_fg
+        target_og:
+          type:
+            - 'null'
+            - number
+            - integer
+          $id: '#root/items/target_og'
+          default: 0
+          title: Target_og
+        volume:
+          type:
+            - 'null'
+            - object
+          $id: '#root/items/volume'
+          properties:
+            unit:
+              type:
+                - 'null'
+                - array
+                - object
+                - string
+              $id: '#root/items/volume/unit'
+              pattern: ^.*$
+              title: Unit
+            value:
+              type:
+                - 'null'
+                - number
+                - integer
+              $id: '#root/items/volume/value'
+              default: 0
+              title: Value
+          title: Volume
+      title: Items
+    title: Root
+    additionalProperties: true
+  beers_with_id:
+    type: object
+    $id: https://example.com/object1667227839.json
+    $schema: http://json-schema.org/draft-07/schema#
+    default: []
+    items:
+      type:
+        - 'null'
+        - object
+      $id: '#root/items'
+      properties:
+        abv:
+          type: number
+          $id: '#root/items/abv'
+          default: 0
+          title: Abv
+        attenuation_level:
+          type:
+            - 'null'
+            - number
+            - integer
+            - string
+          $id: '#root/items/attenuation_level'
+          default: 0
+          title: Attenuation_level
+        boil_volume:
+          type:
+            - 'null'
+            - object
+          $id: '#root/items/boil_volume'
+          properties:
+            unit:
+              type:
+                - 'null'
+                - array
+                - object
+                - string
+              $id: '#root/items/boil_volume/unit'
+              pattern: ^.*$
+              title: Unit
+            value:
+              type:
+                - 'null'
+                - number
+                - integer
+              $id: '#root/items/boil_volume/value'
+              default: 0
+              title: Value
+          title: Boil_volume
+        brewers_tips:
+          type:
+            - 'null'
+            - array
+            - object
+            - string
+          $id: '#root/items/brewers_tips'
+          pattern: ^.*$
+          title: Brewers_tips
+        contributed_by:
+          type:
+            - 'null'
+            - array
+            - object
+            - string
+          $id: '#root/items/contributed_by'
+          pattern: ^.*$
+          title: Contributed_by
+        description:
+          type:
+            - 'null'
+            - array
+            - object
+            - string
+          $id: '#root/items/description'
+          pattern: ^.*$
+          title: Description
+        ebc:
+          type:
+            - 'null'
+            - number
+            - integer
+            - string
+          $id: '#root/items/ebc'
+          default: 0
+          title: Ebc
+        first_brewed:
+          type:
+            - 'null'
+            - array
+            - object
+            - string
+          $id: '#root/items/first_brewed'
+          pattern: ^.*$
+          title: First_brewed
+        food_pairing:
+          type:
+            - 'null'
+            - array
+            - object
+          $id: '#root/items/food_pairing'
+          default: []
+          items:
+            type:
+              - 'null'
+              - array
+              - object
+              - string
+            $id: '#root/items/food_pairing/items'
+            pattern: ^.*$
+            title: Items
+          title: Food_pairing
+        ibu:
+          type:
+            - 'null'
+            - number
+            - integer
+          $id: '#root/items/ibu'
+          default: 0
+          title: Ibu
+        id:
+          type:
+            - 'null'
+            - integer
+            - number
+          $id: '#root/items/id'
+          default: 0
+          title: Id
+        image_url:
+          type:
+            - 'null'
+            - array
+            - object
+            - string
+          $id: '#root/items/image_url'
+          pattern: ^.*$
+          title: Image_url
+        ingredients:
+          type:
+            - 'null'
+            - object
+          $id: '#root/items/ingredients'
+          properties:
+            hops:
+              type:
+                - 'null'
+                - array
+                - object
+              $id: '#root/items/ingredients/hops'
+              default: []
+              items:
+                type:
+                  - 'null'
+                  - object
+                $id: '#root/items/ingredients/hops/items'
+                properties:
+                  add:
+                    type:
+                      - 'null'
+                      - array
+                      - object
+                      - string
+                    $id: '#root/items/ingredients/hops/items/add'
+                    pattern: ^.*$
+                    title: Add
+                  amount:
+                    type:
+                      - 'null'
+                      - object
+                    $id: '#root/items/ingredients/hops/items/amount'
+                    properties:
+                      unit:
+                        type: string
+                        $id: '#root/items/ingredients/hops/items/amount/unit'
+                        pattern: ^.*$
+                        title: Unit
+                      value:
+                        type:
+                          - 'null'
+                          - number
+                          - integer
+                        $id: '#root/items/ingredients/hops/items/amount/value'
+                        default: 0
+                        title: Value
+                    title: Amount
+                  attribute:
+                    type:
+                      - 'null'
+                      - array
+                      - object
+                      - string
+                    $id: '#root/items/ingredients/hops/items/attribute'
+                    pattern: ^.*$
+                    title: Attribute
+                  name:
+                    type:
+                      - 'null'
+                      - array
+                      - object
+                      - string
+                    $id: '#root/items/ingredients/hops/items/name'
+                    pattern: ^.*$
+                    title: Name
+                title: Items
+              title: Hops
+            malt:
+              type:
+                - 'null'
+                - array
+                - object
+              $id: '#root/items/ingredients/malt'
+              default: []
+              items:
+                type:
+                  - 'null'
+                  - object
+                $id: '#root/items/ingredients/malt/items'
+                properties:
+                  amount:
+                    type:
+                      - 'null'
+                      - object
+                    $id: '#root/items/ingredients/malt/items/amount'
+                    properties:
+                      unit:
+                        type:
+                          - 'null'
+                          - array
+                          - object
+                          - string
+                        $id: '#root/items/ingredients/malt/items/amount/unit'
+                        pattern: ^.*$
+                        title: Unit
+                      value:
+                        type: number
+                        $id: '#root/items/ingredients/malt/items/amount/value'
+                        default: 0
+                        title: Value
+                    title: Amount
+                  name:
+                    type: string
+                    $id: '#root/items/ingredients/malt/items/name'
+                    pattern: ^.*$
+                    title: Name
+                title: Items
+              title: Malt
+            yeast:
+              type:
+                - 'null'
+                - array
+                - object
+                - string
+              $id: '#root/items/ingredients/yeast'
+              pattern: ^.*$
+              title: Yeast
+          title: Ingredients
+        method:
+          type:
+            - 'null'
+            - object
+          $id: '#root/items/method'
+          properties:
+            fermentation:
+              type:
+                - 'null'
+                - object
+              $id: '#root/items/method/fermentation'
+              properties:
+                temp:
+                  type:
+                    - 'null'
+                    - object
+                  $id: '#root/items/method/fermentation/temp'
+                  properties:
+                    unit:
+                      type:
+                        - 'null'
+                        - array
+                        - object
+                        - string
+                      $id: '#root/items/method/fermentation/temp/unit'
+                      pattern: ^.*$
+                      title: Unit
+                    value:
+                      type:
+                        - 'null'
+                        - integer
+                        - number
+                      $id: '#root/items/method/fermentation/temp/value'
+                      default: 0
+                      title: Value
+                  title: Temp
+              title: Fermentation
+            mash_temp:
+              type:
+                - 'null'
+                - array
+                - object
+              $id: '#root/items/method/mash_temp'
+              default: []
+              items:
+                type:
+                  - 'null'
+                  - object
+                $id: '#root/items/method/mash_temp/items'
+                properties:
+                  duration:
+                    type:
+                      - 'null'
+                      - number
+                      - integer
+                    $id: '#root/items/method/mash_temp/items/duration'
+                    default: 0
+                    title: Duration
+                  temp:
+                    type:
+                      - 'null'
+                      - object
+                    $id: '#root/items/method/mash_temp/items/temp'
+                    properties:
+                      unit:
+                        type:
+                          - 'null'
+                          - array
+                          - object
+                          - string
+                        $id: '#root/items/method/mash_temp/items/temp/unit'
+                        pattern: ^.*$
+                        title: Unit
+                      value:
+                        type:
+                          - 'null'
+                          - integer
+                          - number
+                        $id: '#root/items/method/mash_temp/items/temp/value'
+                        default: 0
+                        title: Value
+                    title: Temp
+                title: Items
+              title: Mash_temp
+            twist:
+              type:
+                - 'null'
+                - number
+                - integer
+                - string
+              $id: '#root/items/method/twist'
+              default: null
+              title: Twist
+          title: Method
+        name:
+          type:
+            - 'null'
+            - array
+            - object
+            - string
+          $id: '#root/items/name'
+          pattern: ^.*$
+          title: Name
+        ph:
+          type:
+            - 'null'
+            - number
+            - integer
+            - string
+          $id: '#root/items/ph'
+          default: 0
+          title: Ph
+        srm:
+          type:
+            - 'null'
+            - number
+            - integer
+            - string
+          $id: '#root/items/srm'
+          default: 0
+          title: Srm
+        tagline:
+          type:
+            - 'null'
+            - array
+            - object
+            - string
+          $id: '#root/items/tagline'
+          pattern: ^.*$
+          title: Tagline
+        target_fg:
+          type:
+            - 'null'
+            - integer
+            - number
+          $id: '#root/items/target_fg'
+          default: 0
+          title: Target_fg
+        target_og:
+          type:
+            - 'null'
+            - number
+            - integer
+          $id: '#root/items/target_og'
+          default: 0
+          title: Target_og
+        volume:
+          type:
+            - 'null'
+            - object
+          $id: '#root/items/volume'
+          properties:
+            unit:
+              type:
+                - 'null'
+                - array
+                - object
+                - string
+              $id: '#root/items/volume/unit'
+              pattern: ^.*$
+              title: Unit
+            value:
+              type:
+                - 'null'
+                - number
+                - integer
+              $id: '#root/items/volume/value'
+              default: 0
+              title: Value
+          title: Volume
+      title: Items
+    title: Root
+    additionalProperties: true
