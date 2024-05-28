@@ -57,6 +57,7 @@ from source_amazon_seller_partner.streams import (
     OrderReportDataShipping,
     Orders,
     RapidRetailAnalyticsInventoryReport,
+    ReportsAmazonSPStream,
     RestockInventoryReports,
     SellerAnalyticsSalesAndTrafficReports,
     SellerFeedbackReports,
@@ -205,7 +206,15 @@ class SourceAmazonSellerPartner(AbstractSource):
             stream_list += brand_analytics_reports
 
         for stream in stream_list:
-            streams.append(stream(**stream_kwargs, report_options=self.get_stream_report_options_list(stream.name, config)))
+            if not issubclass(stream, ReportsAmazonSPStream):
+                streams.append(stream(**stream_kwargs))
+                continue
+            report_kwargs = list(self.get_stream_report_kwargs(stream.report_name, config))
+            if not report_kwargs:
+                report_kwargs.append((stream.report_name, {}))
+            for name, options in report_kwargs:
+                kwargs = {"stream_name": name, "report_options": options, **stream_kwargs}
+                streams.append(stream(**kwargs))
         return streams
 
     def spec(self, logger: Logger) -> ConnectorSpecification:
@@ -221,7 +230,7 @@ class SourceAmazonSellerPartner(AbstractSource):
                 "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
                 "GET_VENDOR_TRAFFIC_REPORT",
             ]
-            spec.connectionSpecification["properties"]["report_options_list"]["items"]["properties"]["stream_name"]["enum"].extend(
+            spec.connectionSpecification["properties"]["report_options_list"]["items"]["properties"]["report_name"]["enum"].extend(
                 oss_only_streams
             )
 
@@ -238,19 +247,21 @@ class SourceAmazonSellerPartner(AbstractSource):
 
     @staticmethod
     def validate_stream_report_options(config: Mapping[str, Any]) -> None:
-        if len([x.get("stream_name") for x in config.get("report_options_list", [])]) != len(
-            set(x.get("stream_name") for x in config.get("report_options_list", []))
-        ):
+        options_list = config.get("report_options_list", [])
+        stream_names = [x.get("stream_name") for x in options_list]
+        if len(stream_names) != len(set(stream_names)):
             raise AmazonConfigException(message="Stream name should be unique among all Report options list")
-        for stream_report_option in config.get("report_options_list", []):
-            if len([x.get("option_name") for x in stream_report_option.get("options_list")]) != len(
-                set(x.get("option_name") for x in stream_report_option.get("options_list"))
-            ):
+
+        for report_option in options_list:
+            option_names = [x.get("option_name") for x in report_option.get("options_list")]
+            if len(option_names) != len(set(option_names)):
                 raise AmazonConfigException(
-                    message=f"Option names should be unique for `{stream_report_option.get('stream_name')}` report options"
+                    message=f"Option names should be unique for `{report_option.get('stream_name')}` report options"
                 )
 
     @staticmethod
-    def get_stream_report_options_list(report_name: str, config: Mapping[str, Any]) -> Optional[List[Mapping[str, Any]]]:
-        if any(x for x in config.get("report_options_list", []) if x.get("stream_name") == report_name):
-            return [x.get("options_list") for x in config.get("report_options_list") if x.get("stream_name") == report_name][0]
+    def get_stream_report_kwargs(report_name: str, config: Mapping[str, Any]) -> List[Tuple[str, Optional[List[Mapping[str, Any]]]]]:
+        options_list = config.get("report_options_list", [])
+        for x in options_list:
+            if x.get("report_name") == report_name:
+                yield x.get("stream_name"), x.get("options_list")
