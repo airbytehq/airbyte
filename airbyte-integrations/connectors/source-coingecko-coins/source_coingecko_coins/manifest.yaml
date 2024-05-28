@@ -18,13 +18,13 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /market_chart
           http_method: GET
           request_parameters:
-            days: '{{ config[''days''] }}'
-            vs_currency: '{{ config[''vs_currency''] }}'
-            x_cg_pro_api_key: '{{ config[''api_key''] }}'
+            days: "{{ config['days'] }}"
+            vs_currency: "{{ config['vs_currency'] }}"
+            x_cg_pro_api_key: "{{ config['api_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -33,20 +33,20 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/market_chart'
+          $ref: "#/schemas/market_chart"
     history:
       type: DeclarativeStream
       name: history
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /history
           http_method: GET
           request_parameters:
-            days: '{{ config[''days''] }}'
-            vs_currency: '{{ config[''vs_currency''] }}'
-            x_cg_pro_api_key: '{{ config[''api_key''] }}'
+            days: "{{ config['days'] }}"
+            vs_currency: "{{ config['vs_currency'] }}"
+            x_cg_pro_api_key: "{{ config['api_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -58,20 +58,20 @@ definitions:
         path: /history
         cursor_field: date
         cursor_datetime_formats:
-          - '%d-%m-%Y'
-        datetime_format: '%d-%m-%Y'
+          - "%d-%m-%Y"
+        datetime_format: "%d-%m-%Y"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''start_date''] }}'
-          datetime_format: '%d-%m-%Y'
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%d-%m-%Y"
         start_time_option:
           type: RequestOption
           field_name: date
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config[''end_date''] or now_utc().strftime(''%d-%m-%Y'') }}'
-          datetime_format: '%d-%m-%Y'
+          datetime: "{{ config['end_date'] or now_utc().strftime('%d-%m-%Y') }}"
+          datetime_format: "%d-%m-%Y"
         step: P1D
         cursor_granularity: P1D
       transformations:
@@ -79,11 +79,11 @@ definitions:
           fields:
             - path:
                 - date
-              value: '{{ stream_slice[''start_time''] }}'
+              value: "{{ stream_slice['start_time'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/history'
+          $ref: "#/schemas/history"
   base_requester:
     type: HttpRequester
     url_base: >-
@@ -91,8 +91,8 @@ definitions:
       }}.coingecko.com/api/v3/coins/{{ config['coin_id'] }}
 
 streams:
-  - $ref: '#/definitions/streams/market_chart'
-  - $ref: '#/definitions/streams/history'
+  - $ref: "#/definitions/streams/market_chart"
+  - $ref: "#/definitions/streams/history"
 
 spec:
   type: Spec
@@ -124,16 +124,16 @@ spec:
       days:
         type: string
         enum:
-          - '1'
-          - '7'
-          - '14'
-          - '30'
-          - '90'
-          - '180'
-          - '365'
+          - "1"
+          - "7"
+          - "14"
+          - "30"
+          - "90"
+          - "180"
+          - "365"
           - max
         order: 3
-        default: '30'
+        default: "30"
         description: |
           The number of days of data for market chart.
       start_date:
@@ -193,19 +193,19 @@ schemas:
           reddit_accounts_active_48h:
             type:
               - string
-              - 'null'
+              - "null"
           reddit_average_comments_48h:
             type:
               - number
-              - 'null'
+              - "null"
           reddit_average_posts_48h:
             type:
               - number
-              - 'null'
+              - "null"
           reddit_subscribers:
             type:
               - number
-              - 'null'
+              - "null"
           twitter_followers: {}
       developer_data:
         type: object
@@ -213,200 +213,200 @@ schemas:
           closed_issues:
             type:
               - number
-              - 'null'
+              - "null"
           code_additions_deletions_4_weeks:
             type: object
             properties:
               additions:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               deletions:
                 type:
                   - number
-                  - 'null'
+                  - "null"
           commit_count_4_weeks:
             type:
               - number
-              - 'null'
+              - "null"
           forks:
             type:
               - number
-              - 'null'
+              - "null"
           pull_request_contributors:
             type:
               - number
-              - 'null'
+              - "null"
           pull_requests_merged:
             type:
               - number
-              - 'null'
+              - "null"
           stars:
             type:
               - number
-              - 'null'
+              - "null"
           subscribers:
             type:
               - number
-              - 'null'
+              - "null"
           total_issues:
             type:
               - number
-              - 'null'
+              - "null"
       id:
         type:
           - string
-          - 'null'
+          - "null"
       image:
         type: object
         properties:
           small:
             type:
               - string
-              - 'null'
+              - "null"
           thumb:
             type:
               - string
-              - 'null'
+              - "null"
       localization:
         type: object
         properties:
           ar:
             type:
               - string
-              - 'null'
+              - "null"
           bg:
             type:
               - string
-              - 'null'
+              - "null"
           cs:
             type:
               - string
-              - 'null'
+              - "null"
           da:
             type:
               - string
-              - 'null'
+              - "null"
           de:
             type:
               - string
-              - 'null'
+              - "null"
           el:
             type:
               - string
-              - 'null'
+              - "null"
           en:
             type:
               - string
-              - 'null'
+              - "null"
           es:
             type:
               - string
-              - 'null'
+              - "null"
           fi:
             type:
               - string
-              - 'null'
+              - "null"
           fr:
             type:
               - string
-              - 'null'
+              - "null"
           he:
             type:
               - string
-              - 'null'
+              - "null"
           hi:
             type:
               - string
-              - 'null'
+              - "null"
           hr:
             type:
               - string
-              - 'null'
+              - "null"
           hu:
             type:
               - string
-              - 'null'
+              - "null"
           id:
             type:
               - string
-              - 'null'
+              - "null"
           it:
             type:
               - string
-              - 'null'
+              - "null"
           ja:
             type:
               - string
-              - 'null'
+              - "null"
           ko:
             type:
               - string
-              - 'null'
+              - "null"
           lt:
             type:
               - string
-              - 'null'
+              - "null"
           nl:
             type:
               - string
-              - 'null'
-          'no':
+              - "null"
+          "no":
             type:
               - string
-              - 'null'
+              - "null"
           pl:
             type:
               - string
-              - 'null'
+              - "null"
           pt:
             type:
               - string
-              - 'null'
+              - "null"
           ro:
             type:
               - string
-              - 'null'
+              - "null"
           ru:
             type:
               - string
-              - 'null'
+              - "null"
           sk:
             type:
               - string
-              - 'null'
+              - "null"
           sl:
             type:
               - string
-              - 'null'
+              - "null"
           sv:
             type:
               - string
-              - 'null'
+              - "null"
           th:
             type:
               - string
-              - 'null'
+              - "null"
           tr:
             type:
               - string
-              - 'null'
+              - "null"
           uk:
             type:
               - string
-              - 'null'
+              - "null"
           vi:
             type:
               - string
-              - 'null'
+              - "null"
           zh:
             type:
               - string
-              - 'null'
+              - "null"
           zh-tw:
             type:
               - string
-              - 'null'
+              - "null"
       market_data:
         type: object
         properties:
@@ -416,745 +416,745 @@ schemas:
               aed:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               ars:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               aud:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               bch:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               bdt:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               bhd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               bits:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               bmd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               bnb:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               brl:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               btc:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               cad:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               chf:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               clp:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               cny:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               czk:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               dkk:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               dot:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               eos:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               eth:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               eur:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               gbp:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               hkd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               huf:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               idr:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               ils:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               inr:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               jpy:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               krw:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               kwd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               link:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               lkr:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               ltc:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               mmk:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               mxn:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               myr:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               ngn:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               nok:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               nzd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               php:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               pkr:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               pln:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               rub:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               sar:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               sats:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               sek:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               sgd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               thb:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               try:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               twd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               uah:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               usd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               vef:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               vnd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               xag:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               xau:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               xdr:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               xlm:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               xrp:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               yfi:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               zar:
                 type:
                   - number
-                  - 'null'
+                  - "null"
           market_cap:
             type: object
             properties:
               aed:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               ars:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               aud:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               bch:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               bdt:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               bhd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               bits:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               bmd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               bnb:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               brl:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               btc:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               cad:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               chf:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               clp:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               cny:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               czk:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               dkk:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               dot:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               eos:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               eth:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               eur:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               gbp:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               hkd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               huf:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               idr:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               ils:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               inr:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               jpy:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               krw:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               kwd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               link:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               lkr:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               ltc:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               mmk:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               mxn:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               myr:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               ngn:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               nok:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               nzd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               php:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               pkr:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               pln:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               rub:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               sar:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               sats:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               sek:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               sgd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               thb:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               try:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               twd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               uah:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               usd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               vef:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               vnd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               xag:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               xau:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               xdr:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               xlm:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               xrp:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               yfi:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               zar:
                 type:
                   - number
-                  - 'null'
+                  - "null"
           total_volume:
             type: object
             properties:
               aed:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               ars:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               aud:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               bch:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               bdt:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               bhd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               bits:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               bmd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               bnb:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               brl:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               btc:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               cad:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               chf:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               clp:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               cny:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               czk:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               dkk:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               dot:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               eos:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               eth:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               eur:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               gbp:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               hkd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               huf:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               idr:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               ils:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               inr:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               jpy:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               krw:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               kwd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               link:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               lkr:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               ltc:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               mmk:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               mxn:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               myr:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               ngn:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               nok:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               nzd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               php:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               pkr:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               pln:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               rub:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               sar:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               sats:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               sek:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               sgd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               thb:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               try:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               twd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               uah:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               usd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               vef:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               vnd:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               xag:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               xau:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               xdr:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               xlm:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               xrp:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               yfi:
                 type:
                   - number
-                  - 'null'
+                  - "null"
               zar:
                 type:
                   - number
-                  - 'null'
+                  - "null"
       name:
         type:
           - string
-          - 'null'
+          - "null"
       public_interest_stats:
         type: object
         properties:
@@ -1163,4 +1163,4 @@ schemas:
       symbol:
         type:
           - string
-          - 'null'
+          - "null"
