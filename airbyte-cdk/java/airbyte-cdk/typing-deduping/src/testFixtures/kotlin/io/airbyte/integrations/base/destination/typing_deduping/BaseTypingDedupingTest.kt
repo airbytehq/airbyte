@@ -1111,10 +1111,10 @@ abstract class BaseTypingDedupingTest {
         return Companion.readRecords(filename)
     }
 
-    protected val schema: JsonNode = SCHEMA
+    val schema: JsonNode = SCHEMA
 
     companion object {
-        @JvmField protected val SCHEMA: JsonNode
+        @JvmStatic protected val SCHEMA: JsonNode
 
         init {
             try {
