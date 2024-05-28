@@ -28,7 +28,7 @@ dependencies {
     api 'org.apache.logging.log4j:log4j-slf4j2-impl:2.21.1'
     api 'org.slf4j:log4j-over-slf4j:2.0.11'
     api 'org.slf4j:slf4j-api:2.0.11'
-    api 'io.github.oshai:kotlin-logging-jvm:5.1.0'
+    api 'io.github.oshai:kotlin-logging-jvm:6.0.9'
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0'
 
 

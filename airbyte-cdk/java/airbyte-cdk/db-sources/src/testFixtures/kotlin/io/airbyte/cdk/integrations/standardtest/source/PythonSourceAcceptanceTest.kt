@@ -13,6 +13,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConnectorSpecification
 import io.airbyte.workers.TestHarnessUtils
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -20,8 +21,8 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import org.junit.jupiter.api.Assertions
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 /**
  * Extends TestSource such that it can be called using resources pulled from the file system. Will
@@ -35,7 +36,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
         get() = runExecutable(Command.GET_SPEC, ConnectorSpecification::class.java)
 
     @get:Throws(IOException::class)
-    override val config: JsonNode?
+    override val config: JsonNode
         get() = runExecutable(Command.GET_CONFIG)
 
     @get:Throws(IOException::class)
@@ -43,7 +44,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
         get() = runExecutable(Command.GET_CONFIGURED_CATALOG, ConfiguredAirbyteCatalog::class.java)
 
     @get:Throws(IOException::class)
-    override val state: JsonNode?
+    override val state: JsonNode
         get() = runExecutable(Command.GET_STATE)
 
     @Throws(IOException::class)
@@ -52,21 +53,17 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
             Streams.stream(
                     runExecutable(Command.GET_REGEX_TESTS).withArray<JsonNode>("tests").elements()
                 )
+                .toList()
                 .map { obj: JsonNode -> obj.textValue() }
-                .toList()
+
         val stringMessages =
-            allMessages!!
-                .stream()
-                .map { `object`: AirbyteMessage -> Jsons.serialize(`object`) }
-                .toList()
+            allMessages.map { `object`: AirbyteMessage -> Jsons.serialize(`object`) }
         LOGGER.info("Running " + regexTests.size + " regex tests...")
         regexTests.forEach(
             Consumer { regex: String ->
                 LOGGER.info("Looking for [$regex]")
                 Assertions.assertTrue(
-                    stringMessages.stream().anyMatch { line: String ->
-                        line.matches(regex.toRegex())
-                    },
+                    stringMessages.any { line: String -> line.matches(regex.toRegex()) },
                     "Failed to find regex: $regex"
                 )
             }
@@ -119,7 +116,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
     @Throws(IOException::class)
     private fun runExecutableInternal(cmd: Command): Path {
         LOGGER.info("testRoot = $testRoot")
-        val dockerCmd: List<String?> =
+        val dockerCmd: List<String> =
             Lists.newArrayList(
                 "docker",
                 "run",
@@ -138,8 +135,8 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
             )
 
         val process = ProcessBuilder(dockerCmd).start()
-        LineGobbler.gobble(process.errorStream, { msg: String? -> LOGGER.error(msg) })
-        LineGobbler.gobble(process.inputStream, { msg: String? -> LOGGER.info(msg) })
+        LineGobbler.gobble(process.errorStream, { msg: String -> LOGGER.error(msg) })
+        LineGobbler.gobble(process.inputStream, { msg: String -> LOGGER.info(msg) })
 
         TestHarnessUtils.gentleClose(process, 1, TimeUnit.MINUTES)
 
@@ -152,7 +149,7 @@ class PythonSourceAcceptanceTest : SourceAcceptanceTest() {
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(PythonSourceAcceptanceTest::class.java)
+
         private const val OUTPUT_FILENAME = "output.json"
 
         var IMAGE_NAME: String = "dummy_image_name"
