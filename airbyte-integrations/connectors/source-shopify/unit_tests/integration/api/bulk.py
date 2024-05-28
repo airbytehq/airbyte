@@ -5,6 +5,8 @@ from datetime import datetime
 from random import randint
 
 from airbyte_cdk.test.mock_http import HttpRequest, HttpResponse
+
+from source_shopify.shopify_graphql.bulk.query import ShopifyBulkTemplates
 from source_shopify.streams.base_streams import ShopifyStream
 
 
@@ -13,26 +15,9 @@ def _create_job_url(shop_name: str) -> str:
 
 
 def create_job_creation_request(shop_name: str, lower_boundary: datetime, upper_boundary: datetime) -> HttpRequest:
-    outer_query = """mutation {
-                bulkOperationRunQuery(
-                    query: \"\"\"
-                     %INNER_QUERY_TOKEN%
-                    \"\"\"
-                ) {
-                    bulkOperation {
-                        id
-                        status
-                        createdAt
-                    }
-                    userErrors {
-                        field
-                        message
-                    }
-                }
-            }"""
-    inner_query = """{
+    query = """ {
   orders(
-    query: \"updated_at:>='%LOWER_BOUNDARY_TOKEN%' AND updated_at:<='%UPPER_BOUNDARY_TOKEN%'\"
+    query: "updated_at:>='%LOWER_BOUNDARY_TOKEN%' AND updated_at:<='%UPPER_BOUNDARY_TOKEN%'"
     sortKey: UPDATED_AT
   ) {
     edges {
@@ -58,13 +43,11 @@ def create_job_creation_request(shop_name: str, lower_boundary: datetime, upper_
     }
   }
 }"""
-    inner_query = inner_query.replace("%LOWER_BOUNDARY_TOKEN%", lower_boundary.isoformat())
-    inner_query = inner_query.replace("%UPPER_BOUNDARY_TOKEN%", upper_boundary.isoformat())
-    outer_query = outer_query.replace("%INNER_QUERY_TOKEN%", inner_query)
-
+    query = query.replace("%LOWER_BOUNDARY_TOKEN%", lower_boundary.isoformat()).replace("%UPPER_BOUNDARY_TOKEN%", upper_boundary.isoformat())
+    prepared_query = ShopifyBulkTemplates.prepare(query)
     return HttpRequest(
         url=_create_job_url(shop_name),
-        body=json.dumps({"query": outer_query})
+        body=json.dumps({"query": prepared_query})
     )
 
 
