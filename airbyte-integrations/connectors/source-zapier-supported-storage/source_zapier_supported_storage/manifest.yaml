@@ -15,11 +15,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /records
           http_method: GET
           request_parameters:
-            secret: '{{ config[''secret''] }}'
+            secret: "{{ config['secret'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -28,13 +28,13 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/zapier_supported_storage'
+          $ref: "#/schemas/zapier_supported_storage"
   base_requester:
     type: HttpRequester
     url_base: https://store.zapier.com/api
 
 streams:
-  - $ref: '#/definitions/streams/zapier_supported_storage'
+  - $ref: "#/definitions/streams/zapier_supported_storage"
 
 spec:
   type: Spec
