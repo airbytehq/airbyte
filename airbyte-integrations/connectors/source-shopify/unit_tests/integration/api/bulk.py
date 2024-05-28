@@ -144,6 +144,19 @@ class JobStatusResponseBuilder:
             }
         }
 
+    def with_running_status(self, bulk_operation_id: str) -> "JobStatusResponseBuilder":
+        self._template["data"]["node"] = {
+          "id": bulk_operation_id,
+          "status": "RUNNING",
+          "errorCode": None,
+          "createdAt": "2024-05-28T18:57:54Z",
+          "objectCount": "10",
+          "fileSize": None,
+          "url": None,
+          "partialDataUrl": None,
+        }
+        return self
+
     def with_completed_status(self, bulk_operation_id: str, job_result_url: str) -> "JobStatusResponseBuilder":
         self._template["data"]["node"] = {
             "id": bulk_operation_id,
