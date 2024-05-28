@@ -756,8 +756,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                 modelsSchema(),
             )
         } else {
-            // RFR count has been disabled.
-            // assertExpectedStateMessageCountMatches(stateMessages1, MODEL_RECORDS.size.toLong())
+            assertExpectedStateMessageCountMatches(stateMessages1, MODEL_RECORDS.size.toLong())
 
             // Expect state and record message from MODEL_RECORDS_2.
             assertStreamStatusTraceMessageIndex(

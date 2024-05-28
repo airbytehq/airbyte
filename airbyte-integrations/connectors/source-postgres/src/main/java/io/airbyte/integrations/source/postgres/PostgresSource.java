@@ -943,7 +943,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   @Override
   public AutoCloseableIterator<AirbyteMessage> augmentWithStreamStatus(final ConfiguredAirbyteStream airbyteStream,
-      final AutoCloseableIterator<AirbyteMessage> streamIterator) {
+                                                                       final AutoCloseableIterator<AirbyteMessage> streamIterator) {
     final var pair =
         new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
     final var starterStatus =

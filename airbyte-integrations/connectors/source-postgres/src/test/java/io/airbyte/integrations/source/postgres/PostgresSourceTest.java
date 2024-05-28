@@ -278,7 +278,8 @@ class PostgresSourceTest {
     final Set<AirbyteMessage> actualMessages =
         MoreIterators.toSet(source().read(anotherUserConfig, CONFIGURED_CATALOG, null));
     setEmittedAtToNull(actualMessages);
-    // expect 6 records, 3 state messages and 4 stream status messages. (view does not have its own state message because it goes
+    // expect 6 records, 3 state messages and 4 stream status messages. (view does not have its own
+    // state message because it goes
     // to non resumable full refresh path).
     assertEquals(13, actualMessages.size());
     final var actualRecordMessages = filterRecords(actualMessages);
@@ -503,7 +504,8 @@ class PostgresSourceTest {
         MoreIterators.toSet(source.read(getConfig(), configuredCatalog, state));
     setEmittedAtToNull(nextSyncMessages);
 
-    // An extra state message is emitted, in addition to the record messages, along with 2 stream status messages.
+    // An extra state message is emitted, in addition to the record messages, along with 2 stream status
+    // messages.
     assertEquals(nextSyncMessages.size(), 4);
     assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "5.0", "name", "piccolo", "power", 100.0))));
   }
@@ -533,7 +535,8 @@ class PostgresSourceTest {
 
     setEmittedAtToNull(actualMessages);
 
-    // Assert that the correct number of messages are emitted - final state message and 2 stream status messages
+    // Assert that the correct number of messages are emitted - final state message and 2 stream status
+    // messages
     assertEquals(3, actualMessages.size());
     assertEquals(1, stateAfterFirstBatch.size());
 
@@ -590,7 +593,8 @@ class PostgresSourceTest {
         MoreIterators.toSet(source.read(getConfig(), configuredCatalog, state));
     setEmittedAtToNull(nextSyncMessages);
 
-    // A state message is emitted, in addition to the new record messages, along with 2 stream status messages.
+    // A state message is emitted, in addition to the new record messages, along with 2 stream status
+    // messages.
     assertEquals(4, nextSyncMessages.size());
     assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "5.0", "name", "piccolo", "power", 100.0))));
   }

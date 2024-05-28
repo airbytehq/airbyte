@@ -261,7 +261,8 @@ public class PostgresCdcCtidInitializer {
       // We finish the current CDC once the initial snapshot is complete and the next sync starts
       // processing the WAL
       return Stream
-          .of(initialSyncCtidIterators, Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)), allStreamsCompleteStatusEmitters)
+          .of(initialSyncCtidIterators, Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
+              allStreamsCompleteStatusEmitters)
           .flatMap(Collection::stream)
           .collect(Collectors.toList());
     } else {
