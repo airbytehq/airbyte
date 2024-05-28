@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /contacts
           http_method: GET
         record_selector:
@@ -42,7 +42,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/contacts'
+          $ref: "#/schemas/contacts"
     contact_lists:
       type: DeclarativeStream
       name: contact_lists
@@ -51,7 +51,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /contact_lists
           http_method: GET
         record_selector:
@@ -76,7 +76,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/contact_lists'
+          $ref: "#/schemas/contact_lists"
     questions:
       type: DeclarativeStream
       name: questions
@@ -85,7 +85,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /questions
           http_method: GET
         record_selector:
@@ -109,7 +109,7 @@ definitions:
             page_size: 50
         partition_router:
           - type: ListPartitionRouter
-            values: '{{ config.get(''survey_id'') }}'
+            values: "{{ config.get('survey_id') }}"
             cursor_field: survey_id
             request_option:
               type: RequestOption
@@ -118,7 +118,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/questions'
+          $ref: "#/schemas/questions"
     responses:
       type: DeclarativeStream
       name: responses
@@ -127,7 +127,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /responses
           http_method: GET
         record_selector:
@@ -151,7 +151,7 @@ definitions:
             page_size: 50
         partition_router:
           - type: ListPartitionRouter
-            values: '{{ config.get(''survey_id'') }}'
+            values: "{{ config.get('survey_id') }}"
             cursor_field: survey_id
             request_option:
               type: RequestOption
@@ -160,7 +160,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/responses'
+          $ref: "#/schemas/responses"
     roles:
       type: DeclarativeStream
       name: roles
@@ -169,7 +169,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /roles
           http_method: GET
         record_selector:
@@ -194,7 +194,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/roles'
+          $ref: "#/schemas/roles"
     surveys:
       type: DeclarativeStream
       name: surveys
@@ -203,7 +203,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /surveys
           http_method: GET
         record_selector:
@@ -228,7 +228,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/surveys'
+          $ref: "#/schemas/surveys"
     survey_folders:
       type: DeclarativeStream
       name: survey_folders
@@ -237,7 +237,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /survey_folders
           http_method: GET
         record_selector:
@@ -262,7 +262,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/survey_folders'
+          $ref: "#/schemas/survey_folders"
     users:
       type: DeclarativeStream
       name: users
@@ -271,7 +271,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /users
           http_method: GET
         record_selector:
@@ -296,23 +296,23 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/users'
+          $ref: "#/schemas/users"
   base_requester:
     type: HttpRequester
-    url_base: '{{ config[''region''][''url_base''] }}'
+    url_base: "{{ config['region']['url_base'] }}"
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config[''access_token''] }}'
+      api_token: "{{ config['access_token'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/contacts'
-  - $ref: '#/definitions/streams/contact_lists'
-  - $ref: '#/definitions/streams/questions'
-  - $ref: '#/definitions/streams/responses'
-  - $ref: '#/definitions/streams/roles'
-  - $ref: '#/definitions/streams/surveys'
-  - $ref: '#/definitions/streams/survey_folders'
-  - $ref: '#/definitions/streams/users'
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/contact_lists"
+  - $ref: "#/definitions/streams/questions"
+  - $ref: "#/definitions/streams/responses"
+  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/surveys"
+  - $ref: "#/definitions/streams/survey_folders"
+  - $ref: "#/definitions/streams/users"
 
 spec:
   type: Spec
@@ -382,52 +382,52 @@ schemas:
     properties:
       active:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates whether the contact is currently active or not.
       createddate:
         type:
-          - 'null'
+          - "null"
           - string
         description: The date when the contact was created.
       email:
         type:
-          - 'null'
+          - "null"
           - string
         description: The email address of the contact.
       first_name:
         type:
-          - 'null'
+          - "null"
           - string
         description: The first name of the contact.
       id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Unique identifier for the contact.
       job_title:
         type:
-          - 'null'
+          - "null"
           - string
         description: The job title of the contact.
       last_name:
         type:
-          - 'null'
+          - "null"
           - string
         description: The last name of the contact.
       mobile:
         type:
-          - 'null'
+          - "null"
           - string
         description: The mobile phone number of the contact.
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: The full name of the contact.
       unsubscribed:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates whether the contact has unsubscribed from communications.
   contact_lists:
@@ -437,23 +437,23 @@ schemas:
     properties:
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: The date and time when the contact list was created.
         format: date-time
       description:
         type:
-          - 'null'
+          - "null"
           - string
         description: The description or details about the contact list.
       id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The unique identifier for the contact list.
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: The name or title of the contact list.
   questions:
@@ -463,89 +463,89 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
         description: Type of question such as multiple choice, text, etc.
       annotations:
         type:
-          - 'null'
+          - "null"
           - array
         description: Additional information or notes related to the question
       choices:
         type:
-          - 'null'
+          - "null"
           - array
         description: Options that can be selected for the question
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Date and time when the question was created
         format: date-time
       id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Unique identifier for the question
       is_required:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the question is required to be answered
       multiple_answers:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Allows multiple answers to the question
       parent_question_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the parent question in case of a dependent question
       position:
         type:
-          - 'null'
+          - "null"
           - string
         description: Order in which the question appears in the survey
       properties:
         type:
-          - 'null'
+          - "null"
           - object
         description: Additional properties related to the question
         properties:
           clone:
             type:
-              - 'null'
+              - "null"
               - object
             description: Indicates if the question is a clone of another question
           data:
             type:
-              - 'null'
+              - "null"
               - object
             description: Custom data associated with the question
       rtxt:
         type:
-          - 'null'
+          - "null"
           - string
         description: Text input for the question
       scale_points:
         type:
-          - 'null'
+          - "null"
           - array
         description: Points on a scale used for the question
       section:
         type:
-          - 'null'
+          - "null"
           - object
         description: Section to which the question belongs
       tags:
         type:
-          - 'null'
+          - "null"
           - array
         description: Keywords or tags associated with the question
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: Date and time when the question was last updated
         format: date-time
@@ -556,66 +556,66 @@ schemas:
     properties:
       answers:
         type:
-          - 'null'
+          - "null"
           - array
         description: Responses provided by the respondent for the survey questions.
       channel:
         type:
-          - 'null'
+          - "null"
           - object
         description: Name of the channel through which the survey was conducted.
       channel_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the channel used for conducting the survey.
       completed_time:
         type:
-          - 'null'
+          - "null"
           - string
         description: Timestamp indicating when the respondent completed the survey.
         format: date-time
       contact:
         type:
-          - 'null'
+          - "null"
           - string
         description: Contact information of the respondent who took the survey.
       expressions:
         type:
-          - 'null'
+          - "null"
           - array
         description: >-
           Emotions or sentiments expressed by the respondent while answering the
           survey.
       id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Unique identifier for the response data.
       language:
         type:
-          - 'null'
+          - "null"
           - string
         description: Language used in the survey responses.
       start_time:
         type:
-          - 'null'
+          - "null"
           - string
         description: Timestamp indicating when the respondent started the survey.
         format: date-time
       state:
         type:
-          - 'null'
+          - "null"
           - string
         description: Current state of the response data (e.g., in progress, completed).
       survey_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: ID of the survey to which the response data belongs.
       variables:
         type:
-          - 'null'
+          - "null"
           - array
         description: Any additional variables or data associated with the response.
   roles:
@@ -625,44 +625,44 @@ schemas:
     properties:
       account_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The unique identifier for the account to which the role belongs.
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: The date and time when the role was created.
         format: date-time
       deleted_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: The date and time when the role was deleted.
         format: date-time
       description:
         type:
-          - 'null'
+          - "null"
           - string
         description: A brief description of the role and its responsibilities.
       id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The unique identifier for the role.
       label:
         type:
-          - 'null'
+          - "null"
           - string
         description: The label or name used to identify the role.
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: The name of the role.
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: The date and time when the role was last updated.
         format: date-time
@@ -673,28 +673,28 @@ schemas:
     properties:
       archived:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Flag indicating if the survey is archived or active.
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: DateTime when the survey was created.
         format: date-time
       id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The unique identifier for the survey.
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Name or title of the survey.
       survey_type:
         type:
-          - 'null'
+          - "null"
           - string
         description: Type of survey such as customer satisfaction, feedback, etc.
   survey_folders:
@@ -704,14 +704,14 @@ schemas:
     properties:
       auto_created:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: >-
           Indicates if the survey folder was auto-created by the system or
           manually created by a user.
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           Timestamp indicating the date and time when the survey folder was
@@ -719,22 +719,22 @@ schemas:
         format: date-time
       description:
         type:
-          - 'null'
+          - "null"
           - string
         description: A text description or summary of the survey folder content.
       id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: Unique identifier for the survey folder.
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: Name or title of the survey folder.
       visibility:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           Defines the visibility settings for the survey folder, such as public,
@@ -746,52 +746,52 @@ schemas:
     properties:
       admin:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the user is an admin or not.
       agency_owner:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the user is an agency owner.
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         description: The timestamp when the user account was created.
         format: date-time
       email:
         type:
-          - 'null'
+          - "null"
           - string
         description: The email address of the user.
       id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The unique identifier of the user.
       name:
         type:
-          - 'null'
+          - "null"
           - string
         description: The name of the user.
       owner:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the user is an owner.
       phone:
         type:
-          - 'null'
+          - "null"
           - string
         description: The phone number of the user.
       role_id:
         type:
-          - 'null'
+          - "null"
           - integer
         description: The role identifier associated with the user.
       verified:
         type:
-          - 'null'
+          - "null"
           - boolean
         description: Indicates if the user account is verified.
