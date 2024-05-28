@@ -117,8 +117,8 @@ definitions:
             type: DpathExtractor
             field_path:
               - responses
-              - '*'
-              - values
+              # - '*'
+              # - values
         requester:
           $ref: "#/definitions/surveys_responses_requester"
         paginator:

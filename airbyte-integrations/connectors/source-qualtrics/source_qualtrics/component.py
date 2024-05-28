@@ -8,6 +8,7 @@ from typing import Any, Mapping, Optional
 import requests
 import time
 import logging
+import json
 
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
@@ -60,13 +61,26 @@ class CustomRequester(HttpRequester):
             if response.status_code == 200 and response.json()["result"]["status"] == "complete":
                 self.logger.info("fileId retrieval succeeded")
                 self.fileId = response.json()["result"]["fileId"]
-            elif attempt < 20:
+            elif attempt < 100:
                 self.logger.info(f"Attempt {attempt}: In Progress")
                 attempt = attempt + 1
-                time.sleep(2)
+                time.sleep(10)
                 self._check_progress(survey_id, export_id, attempt)
             else:
                 raise self.logger.error(f"Reach maximum retry limit")
         except requests.exceptions.RequestException as e:
             raise self.logger.error(f"Error export : {e}")
         
+    def _validate_response(
+        self,
+        response: requests.Response,
+    ):
+        response_dict = response.json()
+        new_response_dict = dict()
+        new_response_dict["responses"]=list()
+        for e in response_dict["responses"]:
+            e["_lastModifiedDate"]= e["values"]["_lastModifiedDate"]
+            new_response_dict["responses"].append(e) 
+        response._content = json.dumps(new_response_dict).encode('utf-8')
+        return response
+    
