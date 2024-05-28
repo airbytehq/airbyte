@@ -13,11 +13,11 @@ import io.airbyte.api.client.model.generated.SourceIdRequestBody
 import io.airbyte.api.client.model.generated.SourceUpdate
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.Config
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.charset.StandardCharsets
 import java.util.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * Helper class for workers to persist updates to Source/Destination configs emitted from
  * AirbyteControlMessages.
@@ -101,7 +101,5 @@ class ConnectorConfigUpdater(
         )
     }
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(ConnectorConfigUpdater::class.java)
-    }
+    companion object {}
 }

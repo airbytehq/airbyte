@@ -10,7 +10,7 @@ from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
-from pendulum import parse, today
+from pendulum import duration, parse, today
 
 from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
@@ -151,6 +151,13 @@ class SourceGoogleAds(AbstractSource):
         time_segment_in_select, time_segment_in_where = ["segments.date" in clause for clause in [query.fields, query.where]]
         return time_segment_in_select and not time_segment_in_where
 
+    @staticmethod
+    def set_retention_period_and_slice_duration(stream: IncrementalCustomQuery, query: GAQL) -> IncrementalCustomQuery:
+        if query.resource_name == "click_view":
+            stream.days_of_data_storage = 90
+            stream.slice_duration = duration(days=0)
+        return stream
+
     def create_custom_query_stream(
         self,
         google_api: GoogleAds,
@@ -173,7 +180,8 @@ class SourceGoogleAds(AbstractSource):
             incremental_config = non_manager_incremental_config
 
         if is_incremental:
-            return IncrementalCustomQuery(config=single_query_config, **incremental_config)
+            incremental_query_stream = IncrementalCustomQuery(config=single_query_config, **incremental_config)
+            return self.set_retention_period_and_slice_duration(incremental_query_stream, query)
         else:
             return CustomQuery(config=single_query_config, api=google_api, customers=customers)
 
@@ -199,12 +207,19 @@ class SourceGoogleAds(AbstractSource):
                     continue
 
                 # Add segments.date to where clause of incremental custom queries if they are not present.
-                # The same will be done during read, but with start and end date from config
+                # The same will be done during read, but with start and end date from config.
                 if self.is_custom_query_incremental(query):
-                    query = IncrementalCustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
+                    # Set default date value 1 month ago, as some tables have a limited lookback time frame.
+                    month_back = today().subtract(months=1).to_date_string()
+                    start_date = config.get("start_date", month_back)
+
+                    query_date = month_back if start_date > month_back else start_date
+
+                    query = IncrementalCustomQuery.insert_segments_date_expr(query, query_date, query_date)
 
                 query = query.set_limit(1)
                 try:
+                    logger.info(f"Running the query for account {customer.id}: {query}")
                     response = google_api.send_request(
                         str(query),
                         customer_id=customer.id,
