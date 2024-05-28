@@ -60,6 +60,6 @@ class NoPagination(Paginator):
     def next_page_token(self, response: requests.Response, last_page_size: int, last_record: Optional[Record]) -> Mapping[str, Any]:
         return {}
 
-    def reset(self) -> None:
+    def reset(self, reset_value: Optional[Any] = None) -> None:
         # No state to reset
         pass
