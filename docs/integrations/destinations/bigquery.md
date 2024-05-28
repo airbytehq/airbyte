@@ -220,6 +220,7 @@ tutorials:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.7.0   | 2024-05-28 | [38713](https://github.com/airbytehq/airbyte/pull/38713)   | Support for refreshes and resumable full refresh. WARNING: You must upgrade to platform X.Y.Z before upgrading to this connector version.                       |
 | 2.6.2   | 2024-05-30 | [38331](https://github.com/airbytehq/airbyte/pull/38331)   | Internal code changes in preparation for future feature release                                                                                                 |
 | 2.6.1   | 2024-05-29 | [38770](https://github.com/airbytehq/airbyte/pull/38770)   | Internal code change (switch to CDK artifact)                                                                                                                   |
 | 2.6.0   | 2024-05-28 | [38359](https://github.com/airbytehq/airbyte/pull/38359)   | Propagate airbyte_meta from sources; add generation_id column                                                                                                   |

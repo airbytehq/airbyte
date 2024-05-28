@@ -10,7 +10,6 @@ import com.google.cloud.bigquery.FormatOptions
 import com.google.cloud.bigquery.Job
 import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.LoadJobConfiguration
-import com.google.cloud.bigquery.TableId
 import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig
 import io.airbyte.cdk.integrations.destination.gcs.GcsNameTransformer
 import io.airbyte.cdk.integrations.destination.gcs.GcsStorageOperations
@@ -21,7 +20,6 @@ import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import org.joda.time.DateTime
@@ -46,9 +44,10 @@ class BigQueryGcsStorageOperation(
     ) {
     private val connectionId = UUID.randomUUID()
     private val syncDateTime = DateTime.now(DateTimeZone.UTC)
-    override fun prepareStage(streamId: StreamId, destinationSyncMode: DestinationSyncMode) {
-        super.prepareStage(streamId, destinationSyncMode)
+    override fun prepareStage(streamId: StreamId, suffix: String, replace: Boolean) {
+        super.prepareStage(streamId, suffix, replace)
         // prepare staging bucket
+        // TODO should this also use the suffix?
         log.info { "Creating bucket ${gcsConfig.bucketName}" }
         gcsStorageOperations.createBucketIfNotExists()
     }
@@ -75,7 +74,7 @@ class BigQueryGcsStorageOperation(
     }
 
     private fun copyIntoTableFromStage(streamId: StreamId, stagedFileName: String) {
-        val tableId = TableId.of(streamId.rawNamespace, streamId.rawName)
+        val tableId = tableId(streamId)
         val stagingPath = stagingFullPath(streamId)
         val fullFilePath = "gs://${gcsConfig.bucketName}/$stagingPath$stagedFileName"
         log.info { "Uploading records from file $fullFilePath to target Table $tableId" }
