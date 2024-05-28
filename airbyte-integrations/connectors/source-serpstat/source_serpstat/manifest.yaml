@@ -17,21 +17,21 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /
           http_method: POST
           request_headers:
             X-request-sender: Airbyte
           request_body_json:
-            id: '{{ now_utc() }}'
+            id: "{{ now_utc() }}"
             method: SerpstatDomainProcedure.getDomainsHistory
             params:
-              se: '{{config[''region_id'']}}'
-              page: '{{(next_page_token[''next_page_token''] or 0) + 1}}'
-              size: '{{config[''page_size'']}}'
+              se: "{{config['region_id']}}"
+              page: "{{(next_page_token['next_page_token'] or 0) + 1}}"
+              size: "{{config['page_size']}}"
               sort:
                 date: desc
-              domain: '{{config[''domain'']}}'
+              domain: "{{config['domain']}}"
               during_all_time: true
           error_handler:
             type: CompositeErrorHandler
@@ -43,7 +43,7 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: RETRY
-                    predicate: '{{response.error.code == 32000}}'
+                    predicate: "{{response.error.code == 32000}}"
                     error_message: >-
                       You are sending more requests per second then available
                       for your Serpstat plan
@@ -62,14 +62,14 @@ definitions:
             field_name: X-page
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{response.result.summary_info.page}}'
+            cursor_value: "{{response.result.summary_info.page}}"
             stop_condition: >-
               {{response.result.summary_info.page > config['pages_to_fetch'] -
               1}}
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/Domain history'
+          $ref: "#/schemas/Domain history"
     Domains summary:
       type: DeclarativeStream
       name: Domains summary
@@ -78,17 +78,17 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /
           http_method: POST
           request_headers:
             X-request-sender: Airbyte
           request_body_json:
-            id: '{{ now_utc() }}'
+            id: "{{ now_utc() }}"
             method: SerpstatDomainProcedure.getDomainsInfo
             params:
-              se: '{{config[''region_id'']}}'
-              domains: '{{config[''domains'']}}'
+              se: "{{config['region_id']}}"
+              domains: "{{config['domains']}}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -96,11 +96,11 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: FAIL
-                    predicate: '{{ ''Invalid token'' in response.error.message }}'
+                    predicate: "{{ 'Invalid token' in response.error.message }}"
                     error_message: Invalid Token
                   - type: HttpResponseFilter
                     action: RETRY
-                    predicate: '{{ ''Too Many Requests'' in response.error.message }}'
+                    predicate: "{{ 'Too Many Requests' in response.error.message }}"
                     error_message: >-
                       You are sending more requests per second then available
                       for your Serpstat plan
@@ -117,7 +117,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/Domains summary'
+          $ref: "#/schemas/Domains summary"
     Domain keywords:
       type: DeclarativeStream
       name: Domain keywords
@@ -126,23 +126,23 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /
           http_method: POST
           request_headers:
             X-request-sender: Airbyte
           request_body_json:
-            id: '{{ now_utc() }}'
+            id: "{{ now_utc() }}"
             method: SerpstatDomainProcedure.getDomainKeywords
             params:
-              se: '{{config[''region_id'']}}'
-              page: '{{(next_page_token[''next_page_token''] or 0) + 1}}'
-              size: '{{config[''page_size'']}}'
+              se: "{{config['region_id']}}"
+              page: "{{(next_page_token['next_page_token'] or 0) + 1}}"
+              size: "{{config['page_size']}}"
               sort:
-                '{{config[''sort_by'']}}': '{{config[''sort_value'']}}'
-              domain: '{{config[''domain'']}}'
+                "{{config['sort_by']}}": "{{config['sort_value']}}"
+              domain: "{{config['domain']}}"
               filters:
-                '{{config[''filter_by'']}}': '{{config[''filter_value'']}}'
+                "{{config['filter_by']}}": "{{config['filter_value']}}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -153,7 +153,7 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: RETRY
-                    predicate: '{{response.error.code == 32000}}'
+                    predicate: "{{response.error.code == 32000}}"
                     error_message: >-
                       You are sending more requests per second then available
                       for your Serpstat plan
@@ -172,14 +172,14 @@ definitions:
             field_name: X-page
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{response.result.summary_info.page}}'
+            cursor_value: "{{response.result.summary_info.page}}"
             stop_condition: >-
               {{response.result.summary_info.page > config['pages_to_fetch'] -
               1}}
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/Domain keywords'
+          $ref: "#/schemas/Domain keywords"
     Domain keywords by region:
       type: DeclarativeStream
       name: Domain keywords by region
@@ -188,18 +188,18 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /
           http_method: POST
           request_headers:
             X-request-sender: Airbyte
           request_body_json:
-            id: '{{ now_utc() }}'
+            id: "{{ now_utc() }}"
             method: SerpstatDomainProcedure.getRegionsCount
             params:
-              sort: '{{config[''sort_by'']}}'
-              order: '{{config[''sort_value'']}}'
-              domain: '{{config[''domain'']}}'
+              sort: "{{config['sort_by']}}"
+              order: "{{config['sort_value']}}"
+              domain: "{{config['domain']}}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -210,7 +210,7 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: RETRY
-                    predicate: '{{response.error.code == 32000}}'
+                    predicate: "{{response.error.code == 32000}}"
                     error_message: >-
                       You are sending more requests per second then available
                       for your Serpstat plan
@@ -224,7 +224,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/Domain keywords by region'
+          $ref: "#/schemas/Domain keywords by region"
     Domain competitors:
       type: DeclarativeStream
       name: Domain competitors
@@ -233,20 +233,20 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /
           http_method: POST
           request_headers:
             X-request-sender: Airbyte
           request_body_json:
-            id: '{{ now_utc() }}'
+            id: "{{ now_utc() }}"
             method: SerpstatDomainProcedure.getCompetitors
             params:
-              se: '{{config[''region_id'']}}'
-              size: '{{config[''page_size'']}}'
+              se: "{{config['region_id']}}"
+              size: "{{config['page_size']}}"
               sort:
-                '{{config[''sort_by'']}}': '{{config[''sort_value'']}}'
-              domain: '{{config[''domain'']}}'
+                "{{config['sort_by']}}": "{{config['sort_value']}}"
+              domain: "{{config['domain']}}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -257,7 +257,7 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: RETRY
-                    predicate: '{{response.error.code == 32000}}'
+                    predicate: "{{response.error.code == 32000}}"
                     error_message: >-
                       You are sending more requests per second then available
                       for your Serpstat plan
@@ -271,30 +271,30 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/Domain competitors'
+          $ref: "#/schemas/Domain competitors"
     Domain top pages:
       type: DeclarativeStream
       name: Domain top pages
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /
           http_method: POST
           request_headers:
             X-request-sender: Airbyte
           request_body_json:
-            id: '{{ now_utc() }}'
+            id: "{{ now_utc() }}"
             method: SerpstatDomainProcedure.getTopUrls
             params:
-              se: '{{config[''region_id'']}}'
-              page: '{{(next_page_token[''next_page_token''] or 0) + 1}}'
-              size: '{{config[''page_size'']}}'
+              se: "{{config['region_id']}}"
+              page: "{{(next_page_token['next_page_token'] or 0) + 1}}"
+              size: "{{config['page_size']}}"
               sort:
-                '{{config[''sort_by'']}}': '{{config[''sort_value'']}}'
-              domain: '{{config[''domain'']}}'
+                "{{config['sort_by']}}": "{{config['sort_value']}}"
+              domain: "{{config['domain']}}"
               filters:
-                '{{config[''filter_by'']}}': '{{config[''filter_value'']}}'
+                "{{config['filter_by']}}": "{{config['filter_value']}}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -305,7 +305,7 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: RETRY
-                    predicate: '{{response.error.code == 32000}}'
+                    predicate: "{{response.error.code == 32000}}"
                     error_message: >-
                       You are sending more requests per second then available
                       for your Serpstat plan
@@ -324,32 +324,32 @@ definitions:
             field_name: X-page
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{response.result.summary_info.page}}'
+            cursor_value: "{{response.result.summary_info.page}}"
             stop_condition: >-
               {{response.result.summary_info.page > config['pages_to_fetch'] -
               1}}
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/Domain top pages'
+          $ref: "#/schemas/Domain top pages"
   base_requester:
     type: HttpRequester
     url_base: https://api.serpstat.com/v4/
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
       inject_into:
         type: RequestOption
         field_name: token
         inject_into: header
 
 streams:
-  - $ref: '#/definitions/streams/Domain history'
-  - $ref: '#/definitions/streams/Domains summary'
-  - $ref: '#/definitions/streams/Domain keywords'
-  - $ref: '#/definitions/streams/Domain keywords by region'
-  - $ref: '#/definitions/streams/Domain competitors'
-  - $ref: '#/definitions/streams/Domain top pages'
+  - $ref: "#/definitions/streams/Domain history"
+  - $ref: "#/definitions/streams/Domains summary"
+  - $ref: "#/definitions/streams/Domain keywords"
+  - $ref: "#/definitions/streams/Domain keywords by region"
+  - $ref: "#/definitions/streams/Domain competitors"
+  - $ref: "#/definitions/streams/Domain top pages"
 
 spec:
   type: Spec
@@ -532,7 +532,7 @@ schemas:
         type: string
       dynamic:
         type:
-          - 'null'
+          - "null"
           - number
       found_results:
         type: number
@@ -550,7 +550,7 @@ schemas:
         type: number
       subdomain:
         type:
-          - 'null'
+          - "null"
           - string
       traff:
         type: number
