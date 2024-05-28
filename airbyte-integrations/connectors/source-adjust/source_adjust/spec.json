@@ -232,6 +232,34 @@
               "title" : "Additional metrics for ingestion",
               "type" : "array"
             },
+            "filters" : {
+              "description" : "Adjust filters. Add filter key and value from official docs to filter data (https://help.adjust.com/en/article/reports-endpoint)",
+              "items" : {
+                "type" : "object",
+                "properties" : {
+                  "field" : {
+                    "type" : "string",
+                    "title" : "Name of field to filter by",
+                    "examples": ["reattributed", "os_name"]
+                  },
+                  "value" : {
+                    "type" : "string",
+                    "title" : "Filter by value",
+                    "description" : "Filter by value from docs. The same format as docs uses",
+                    "examples": ["true", "ios,android"]
+                  }
+                },
+                "required" : [
+                  "field",
+                  "value"
+                ]
+              },
+              "order" : 4,
+              "default" : [],
+              "title" : "Filters",
+              "type" : "array"
+            },
+
             "field_name_map" : {
               "description" : "Rename fields to avoid name collisions. For example - From = \"goal12345\", To = \"goal\". In this case, the field \"goal12345\" will be renamed to \"goal\" in output stream schema.",
               "items" : {
@@ -253,7 +281,7 @@
                   "new_value"
                 ]
               },
-              "order" : 4,
+              "order" : 5,
               "default" : [],
               "title" : "Rename fields",
               "type" : "array"

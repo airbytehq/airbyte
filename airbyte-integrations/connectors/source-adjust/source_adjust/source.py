@@ -41,6 +41,7 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
         attribution_source: Optional[str] = None,
         utc_offset: Optional[str] = None,
         field_name_map: Optional[dict[str, str]] = None,
+        filters: list[dict[str, str]] | None = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -51,6 +52,7 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
         self._prepared_date_range: dict[str, any] = prepared_date_range
         self._adjust_account_id: Optional[int] = adjust_account_id
         self._field_name_map: dict[str, str] = field_name_map if field_name_map is not None else {}
+        self._filters: list[dict[str, str]] = filters if filters is not None else []
 
         self._dimensions: list[str] = dimensions
         self._metrics: list[str] = metrics
@@ -150,6 +152,10 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
         if self._attribution_type is not None:
             params["attribution_type"] = self._attribution_type
 
+        if self._filters is not None:
+            for filter_dict in self._filters:
+                params[filter_dict["field"]] = filter_dict["value"]
+
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -179,6 +185,7 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
 
             return row
 
+        self.logger.info(response.request.url)
         body = response.json()
         return (reshape(row) for row in body["rows"])
 
@@ -233,6 +240,7 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
 
         # Replace required fields in list
         schema["required"] = [self._field_name_map.get(required_field, required_field) for required_field in required]
+        self.logger.info(schema)
         return schema
 
     @property
@@ -403,6 +411,7 @@ class SourceAdjust(AbstractSource):
                     attribution_type=config.get("attribution_type"),
                     attribution_source=config.get("attribution_source"),
                     utc_offset=config.get("utc_offset"),
+                    filters=report_config.get("filters"),
                 ),
             )
         return streams
