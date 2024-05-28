@@ -130,7 +130,7 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
     ) -> Mapping[str, Any]:
         stream_slice = kwargs["stream_slice"]
         start_date = self.get_start_date(stream_state, account_id)
-        end_date = self.get_end_date(stream_state, account_id)
+        end_date = self.client.reports_end_date
 
         reporting_service = self.client.get_service("ReportingService")
         request_time_zone = reporting_service.factory.create("ReportTimeZone")
@@ -162,14 +162,6 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
                 return pendulum.parse(stream_state[account_id][self.cursor_field])
 
         return self.client.reports_start_date
-    
-    def get_end_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
-        if stream_state and account_id:
-            if stream_state.get(account_id, {}).get(self.cursor_field):
-                return pendulum.from_timestamp(stream_state[account_id][self.cursor_field])
-
-        return self.client.reports_end_date
-
     def get_updated_state(
         self,
         current_stream_state: MutableMapping[str, Any],
