@@ -154,6 +154,7 @@ public class MongoDbSource extends BaseConnector implements Source {
           iterators
               .addAll(cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, incrementalStreams, stateManager, emittedAt, sourceConfig));
         }
+        LOGGER.info("*** iterators: {}", iterators);
         return AutoCloseableIterators.concatWithEagerClose(iterators, AirbyteTraceMessageUtility::emitStreamStatusTrace);
       } catch (final Exception e) {
         mongoClient.close();
@@ -182,7 +183,9 @@ public class MongoDbSource extends BaseConnector implements Source {
         streams,
         stateManager,
         mongoClient.getDatabase(sourceConfig.getDatabaseName()),
-        sourceConfig);
+        sourceConfig,
+            true,
+    true);
 
     return fullRefreshIterators;
   }
