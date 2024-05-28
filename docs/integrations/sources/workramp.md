@@ -35,6 +35,7 @@ The Workramp connector should not run into Workramp API limitations under normal
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                       |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------- |
-| 0.1.0   | 2022-01-02 | [18843](https://github.com/airbytehq/airbyte/pull/18843) | Add Workramp Source Connector |
+| Version | Date       | Pull Request                                             | Subject                                |
+| :------ | :--------- | :------------------------------------------------------- |:---------------------------------------|
+| 0.1.1   | 2024-05-29 | [38741](https://github.com/airbytehq/airbyte/pull/38741) | Make connector compatible with Builder |
+| 0.1.0   | 2022-01-02 | [18843](https://github.com/airbytehq/airbyte/pull/18843) | Add Workramp Source Connector          |
