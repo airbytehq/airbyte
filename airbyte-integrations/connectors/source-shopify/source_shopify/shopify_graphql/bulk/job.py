@@ -54,7 +54,7 @@ class ShopifyBulkManager:
 
     # currents: _job_id, _job_state, _job_created_at, _job_self_canceled
     _job_id: Optional[str] = field(init=False, default=None)
-    _job_state: ShopifyBulkJobStatus = field(init=False, default=None)
+    _job_state: str = field(init=False, default=None)  # this string is based on ShopifyBulkJobStatus
     # completed and saved Bulk Job result filename
     _job_result_filename: Optional[str] = field(init=False, default=None)
     # date-time when the Bulk Job was created on the server
@@ -307,7 +307,7 @@ class ShopifyBulkManager:
         # save the latest request to retry
         self._save_latest_request(response)
 
-        # get the errors, if occured
+        # get the errors, if occurred
         errors = self._collect_bulk_errors(response)
 
         # when the concurrent job takes place,
@@ -387,14 +387,12 @@ class ShopifyBulkManager:
             return self._job_retry_concurrent()
 
     @bulk_retry_on_exception(logger)
-    def _job_check_state(self) -> Optional[str]:
+    def _job_check_state(self) -> None:
         while not self._job_completed():
             if self._job_canceled():
                 break
             else:
                 self._job_track_running()
-
-    # external method to be used within other components
 
     def create_job(self, stream_slice: Mapping[str, str], filter_field: str) -> None:
         if stream_slice:
