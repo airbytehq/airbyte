@@ -10,5 +10,5 @@ abstract class SqlDatabase : AbstractDatabase() {
     @Throws(Exception::class) abstract fun execute(sql: String?)
 
     @Throws(Exception::class)
-    abstract fun unsafeQuery(sql: String?, vararg params: String?): Stream<JsonNode>
+    abstract fun unsafeQuery(sql: String?, vararg params: String): Stream<JsonNode>
 }
