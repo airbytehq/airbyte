@@ -5,7 +5,6 @@ from datetime import datetime
 from random import randint
 
 from airbyte_cdk.test.mock_http import HttpRequest, HttpResponse
-
 from source_shopify.shopify_graphql.bulk.query import ShopifyBulkTemplates
 from source_shopify.streams.base_streams import ShopifyStream
 
