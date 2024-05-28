@@ -580,7 +580,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: [ "articles" ]
+          field_path: ["articles"]
     $parameters:
       name: "articles"
       path: "help_center/incremental/articles"

@@ -158,7 +158,9 @@ class CartesianProductStreamSlicer(StreamSlicer):
                                                      }
                                                  }
         """
-        combined_state = {}
+        combined_state: dict[str, StreamState] = {}
         for s in self.stream_slicers:
-            combined_state.update(s.get_parent_state())
+            parent_state = s.get_parent_state()
+            if parent_state:
+                combined_state.update(parent_state)
         return combined_state

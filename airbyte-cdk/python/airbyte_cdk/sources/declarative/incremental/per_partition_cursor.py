@@ -145,7 +145,7 @@ class PerPartitionCursor(DeclarativeCursor):
                         "cursor": cursor_state,
                     }
                 )
-        state = {"states": states}
+        state: dict[str, Any] = {"states": states}
 
         parent_state = self._partition_router.get_parent_state()
         if parent_state:

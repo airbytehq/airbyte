@@ -1244,7 +1244,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "issueId" ]
+          - path: ["issueId"]
             value_type: string
             value: "{{ stream_slice.issue_id }}"
     $parameters:
@@ -1269,7 +1269,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "issueId" ]
+          - path: ["issueId"]
             value_type: string
             value: "{{ stream_slice.issue_id }}"
     $parameters:
