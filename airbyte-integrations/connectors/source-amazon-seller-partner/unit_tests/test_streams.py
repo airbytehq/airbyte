@@ -19,11 +19,11 @@ from source_amazon_seller_partner.streams import (
 
 
 class SomeReportStream(ReportsAmazonSPStream):
-    name = "GET_TEST_REPORT"
+    report_name = "GET_TEST_REPORT"
 
 
 class SomeIncrementalReportStream(IncrementalReportsAmazonSPStream):
-    name = "GET_TEST_INCREMENTAL_REPORT"
+    report_name = "GET_TEST_INCREMENTAL_REPORT"
     cursor_field = "dataEndTime"
 
 
@@ -269,11 +269,11 @@ class TestVendorFulfillment:
             ("2022-08-01T00:00:00Z", "2022-08-05T00:00:00Z", {"createdBefore": "2022-08-06T00:00:00Z"}, []),
         ),
     )
-    def test_stream_slices(self, report_init_kwargs, start_date, end_date, stream_state, expected_slices):
-        report_init_kwargs["replication_start_date"] = start_date
-        report_init_kwargs["replication_end_date"] = end_date
+    def test_stream_slices(self, init_kwargs, start_date, end_date, stream_state, expected_slices):
+        init_kwargs["replication_start_date"] = start_date
+        init_kwargs["replication_end_date"] = end_date
 
-        stream = VendorDirectFulfillmentShipping(**report_init_kwargs)
+        stream = VendorDirectFulfillmentShipping(**init_kwargs)
         with patch("pendulum.now", return_value=pendulum.parse("2022-09-05T00:00:00Z")):
             assert list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state=stream_state)) == expected_slices
 
@@ -298,6 +298,6 @@ class TestVendorFulfillment:
             (None, None, {}),
         ),
     )
-    def test_request_params(self, report_init_kwargs, stream_slice, next_page_token, expected_params):
-        stream = VendorDirectFulfillmentShipping(**report_init_kwargs)
+    def test_request_params(self, init_kwargs, stream_slice, next_page_token, expected_params):
+        stream = VendorDirectFulfillmentShipping(**init_kwargs)
         assert stream.request_params(stream_state={}, stream_slice=stream_slice, next_page_token=next_page_token) == expected_params
