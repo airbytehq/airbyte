@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ec5f3102-fb31-4916-99ae-864faf8e7e25
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   dockerRepository: airbyte/source-sap-fieldglass
   githubIssueLabel: source-sap-fieldglass
   icon: sapfieldglass.svg
