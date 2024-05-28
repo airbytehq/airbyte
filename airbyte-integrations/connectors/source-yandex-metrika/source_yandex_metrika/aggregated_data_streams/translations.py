@@ -14,6 +14,7 @@ attribution_translations = {
     "Последний источник со всех устройств": "cross_device_last",
     "Последний значимый источник со всех устройств": "cross_device_last_significant",
     "Последний переход из Директа со всех устройств": "cross_device_last_yandex_direct_click",
+    "Автоматический": "automatic",
 }
 preset_name_translations = {
     "Пользовательский отчёт": "custom_report",
