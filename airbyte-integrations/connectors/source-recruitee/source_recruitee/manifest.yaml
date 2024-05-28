@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /candidates
           http_method: GET
         record_selector:
@@ -29,7 +29,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/candidates'
+          $ref: "#/schemas/candidates"
     offers:
       type: DeclarativeStream
       name: offers
@@ -38,7 +38,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /offers
           http_method: GET
         record_selector:
@@ -50,7 +50,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/offers'
+          $ref: "#/schemas/offers"
     departments:
       type: DeclarativeStream
       name: departments
@@ -59,7 +59,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /departments
           http_method: GET
         record_selector:
@@ -71,18 +71,18 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/departments'
+          $ref: "#/schemas/departments"
   base_requester:
     type: HttpRequester
     url_base: https://api.recruitee.com/c/{{ config.company_id }}
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
 
 streams:
-  - $ref: '#/definitions/streams/candidates'
-  - $ref: '#/definitions/streams/offers'
-  - $ref: '#/definitions/streams/departments'
+  - $ref: "#/definitions/streams/candidates"
+  - $ref: "#/definitions/streams/offers"
+  - $ref: "#/definitions/streams/departments"
 
 spec:
   type: Spec
@@ -125,11 +125,11 @@ schemas:
     properties:
       admin_id:
         type:
-          - 'null'
+          - "null"
           - integer
       adminapp_url:
         type:
-          - 'null'
+          - "null"
           - string
       created_at:
         type: string
@@ -147,15 +147,15 @@ schemas:
         type: integer
       initials:
         type:
-          - 'null'
+          - "null"
           - string
       last_message_at:
         type:
-          - 'null'
+          - "null"
           - string
       my_last_rating:
         type:
-          - 'null'
+          - "null"
           - string
       my_pending_result_request:
         type: boolean
@@ -173,7 +173,7 @@ schemas:
           type: string
       photo_thumb_url:
         type:
-          - 'null'
+          - "null"
           - string
       placements:
         type: array
@@ -182,70 +182,70 @@ schemas:
           properties:
             candidate_id:
               type:
-                - 'null'
+                - "null"
                 - integer
             created_at:
               type: string
             hired_at:
               type:
-                - 'null'
+                - "null"
                 - string
             id:
               type: integer
             job_starts_at:
               type:
-                - 'null'
+                - "null"
                 - string
             language:
               type:
-                - 'null'
+                - "null"
                 - string
             offer_id:
               type: integer
             overdue_at:
               type:
-                - 'null'
+                - "null"
                 - string
             overdue_diff:
               type:
-                - 'null'
+                - "null"
                 - string
             position:
               type:
-                - 'null'
+                - "null"
                 - integer
             positive_ratings:
               type:
-                - 'null'
+                - "null"
                 - integer
             ratings:
               type: object
             stage_id:
               type:
-                - 'null'
+                - "null"
                 - integer
             updated_at:
               type: string
       positive_ratings:
         type:
-          - 'null'
+          - "null"
           - integer
       rating:
         type: integer
       ratings:
         type: object
         properties:
-          'yes':
+          "yes":
             type: integer
       ratings_count:
         type: integer
       referrer:
         type:
-          - 'null'
+          - "null"
           - string
       source:
         type:
-          - 'null'
+          - "null"
           - string
       tasks_count:
         type: integer
@@ -264,7 +264,7 @@ schemas:
     properties:
       adminapp_url:
         type:
-          - 'null'
+          - "null"
           - string
       candidates_count:
         type: integer
@@ -272,21 +272,21 @@ schemas:
         type: string
       city:
         type:
-          - 'null'
+          - "null"
           - string
       closed_at:
         type:
-          - 'null'
+          - "null"
           - string
       country_code:
         type:
-          - 'null'
+          - "null"
           - string
       created_at:
         type: string
       department:
         type:
-          - 'null'
+          - "null"
           - string
       department_id:
         type: integer
@@ -294,11 +294,11 @@ schemas:
         type: integer
       eeo_settings:
         type:
-          - 'null'
+          - "null"
           - string
       employment_type:
         type:
-          - 'null'
+          - "null"
           - string
       enabled_for_referrals:
         type: boolean
@@ -327,13 +327,13 @@ schemas:
         type: integer
       hiring_manager_id:
         type:
-          - 'null'
+          - "null"
           - integer
       id:
         type: integer
       job_scheduler:
         type:
-          - 'null'
+          - "null"
           - string
       kind:
         type: string
@@ -341,11 +341,11 @@ schemas:
         type: string
       mailbox_email:
         type:
-          - 'null'
+          - "null"
           - string
       number_of_openings:
         type:
-          - 'null'
+          - "null"
           - integer
       offer_tags:
         type: array
@@ -353,41 +353,41 @@ schemas:
         type: boolean
       pipeline_template:
         type:
-          - 'null'
+          - "null"
           - object
       position:
         type:
-          - 'null'
+          - "null"
           - integer
       postal_code:
         type:
-          - 'null'
+          - "null"
           - string
       published_at:
         type:
-          - 'null'
+          - "null"
           - string
       qualified_candidates_count:
         type: integer
       recruiter_id:
         type:
-          - 'null'
+          - "null"
           - integer
       slug:
         type: string
       state_code:
         type:
-          - 'null'
+          - "null"
           - string
       state_name:
         type:
-          - 'null'
+          - "null"
           - string
       status:
         type: string
       street:
         type:
-          - 'null'
+          - "null"
           - string
       title:
         type: string
@@ -416,5 +416,5 @@ schemas:
         type: integer
       status:
         type:
-          - 'null'
+          - "null"
           - string
