@@ -15,7 +15,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /catalog
           http_method: GET
           request_body_json:
@@ -28,20 +28,20 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/catalogs'
+          $ref: "#/schemas/catalogs"
   base_requester:
     type: HttpRequester
-    url_base: '{{ config[''base_url'']}}/api/v3'
+    url_base: "{{ config['base_url']}}/api/v3"
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '_dremio{{ config[''api_key''] }}'
+      api_token: "_dremio{{ config['api_key'] }}"
       inject_into:
         type: RequestOption
         field_name: Authorization
         inject_into: header
 
 streams:
-  - $ref: '#/definitions/streams/catalogs'
+  - $ref: "#/definitions/streams/catalogs"
 
 spec:
   type: Spec
