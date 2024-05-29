@@ -1,7 +1,27 @@
 import React from "react";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 import styles from "./HeaderDecoration.module.css";
 import { Chip } from "./Chip";
 import { Callout } from "./Callout";
+
+// Extend Day.js with the relativeTime plugin
+dayjs.extend(relativeTime);
+
+/**
+ * Convert a string to a boolean
+ *
+ * Why? Because MDX doesn't support passing boolean values properly.
+ */
+const boolStringToBool = (boolString) => {
+  // if value is a boolean, return it
+  if (typeof boolString === "boolean") return boolString;
+
+  if (boolString?.toUpperCase() === "TRUE") return true;
+  if (boolString?.toUpperCase === "FALSE") return false;
+
+  return null;
+};
 
 const CHECK_ICON = (
   <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">
@@ -34,7 +54,20 @@ const EnabledIcon = ({ isEnabled }) => {
   return isEnabled ? CHECK_ICON : CROSS_ICON;
 };
 
-const ConnectorMetadataCallout = ({ isCloud, isOss, isPypiPublished, supportLevel, github_url, dockerImageTag }) => (
+const ConnectorMetadataCallout = ({
+  isCloud,
+  isOss,
+  isPypiPublished,
+  supportLevel,
+  github_url,
+  dockerImageTag,
+  cdkVersion,
+  isLatestCDK,
+  cdkVersionUrl,
+  syncSuccessRate,
+  usageRate,
+  lastUpdated,
+}) => (
   <Callout className={styles.connectorMetadataCallout}>
     <dl className={styles.connectorMetadata}>
       <MetadataStat label="Availability">
@@ -60,8 +93,33 @@ const ConnectorMetadataCallout = ({ isCloud, isOss, isPypiPublished, supportLeve
           <a href={github_url} target="_blank">
             {dockerImageTag}
           </a>
+          {lastUpdated && <span className={styles.deemphasizeText}>{`(Last updated ${dayjs(lastUpdated).fromNow()})`}</span>}
         </MetadataStat>
       )}
+      {
+        cdkVersion && (
+          <MetadataStat label="CDK Version">
+            <a target="_blank" href={cdkVersionUrl}>
+              {cdkVersion}
+            </a>
+            {isLatestCDK && <span className={styles.deemphasizeText}>{"(Latest)"}</span>}
+          </MetadataStat>
+        )
+      }
+      {
+        syncSuccessRate && (
+          <MetadataStat label="Sync Success Rate">
+            <Chip>{syncSuccessRate}</Chip>
+          </MetadataStat>
+        )
+      }
+      {
+        usageRate && (
+          <MetadataStat label="Usage Rate">
+            <Chip>{usageRate}</Chip>
+          </MetadataStat>
+        )
+      }
     </dl>
   </Callout>
 );
@@ -91,11 +149,19 @@ export const HeaderDecoration = ({
   originalTitle,
   originalId,
   github_url,
+  cdkVersion,
+  isLatestCDKString,
+  cdkVersionUrl,
+  syncSuccessRate,
+  usageRate,
+  lastUpdated,
 }) => {
-  const isOss = isOssString.toUpperCase() === "TRUE";
-  const isCloud = isCloudString.toUpperCase() === "TRUE";
-  const isPypiPublished = isPypiPublishedString.toUpperCase() === "TRUE";
-  const isArchived = supportLevel.toUpperCase() === "ARCHIVED";
+  const isOss = boolStringToBool(isOssString);
+  const isCloud = boolStringToBool(isCloudString);
+  const isPypiPublished = boolStringToBool(isPypiPublishedString);
+  const isLatestCDK = boolStringToBool(isLatestCDKString);
+  const isArchived = supportLevel?.toUpperCase() === "ARCHIVED";
+
 
   return (
     <>
@@ -112,6 +178,12 @@ export const HeaderDecoration = ({
         supportLevel={supportLevel}
         github_url={github_url}
         dockerImageTag={dockerImageTag}
+        cdkVersion={cdkVersion}
+        cdkVersionUrl={cdkVersionUrl}
+        isLatestCDK={isLatestCDK}
+        syncSuccessRate={syncSuccessRate}
+        usageRate={usageRate}
+        lastUpdated={lastUpdated}
       />
     </>
   );

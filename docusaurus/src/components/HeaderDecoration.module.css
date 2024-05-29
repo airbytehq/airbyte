@@ -36,6 +36,11 @@ div.connectorMetadataCallout  {
   display: inline-flex;
   align-items: center;
   margin: 0;
+  gap: 5px;
+}
+
+.deemphasizeText {
+  color: var(--color-grey-400);
 }
 
 .metadataStatValue > * {
