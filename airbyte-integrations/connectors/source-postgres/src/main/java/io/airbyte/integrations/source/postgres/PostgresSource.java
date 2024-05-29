@@ -40,6 +40,7 @@ import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.reclass
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.postgresql.PGProperty.ADAPTIVE_FETCH;
+import static org.postgresql.PGProperty.ADAPTIVE_FETCH_MAXIMUM;
 import static org.postgresql.PGProperty.CURRENT_SCHEMA;
 import static org.postgresql.PGProperty.DEFAULT_ROW_FETCH_SIZE;
 import static org.postgresql.PGProperty.MAX_RESULT_BUFFER;
@@ -157,7 +158,15 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       PREPARE_THRESHOLD, "0",
       DEFAULT_ROW_FETCH_SIZE, "1",
       ADAPTIVE_FETCH, "true",
-      MAX_RESULT_BUFFER, "10percent");
+      MAX_RESULT_BUFFER, "10percent",
+      // The implementation of adaptive fetching in the PG JDBC driver is very optimistic in its
+      // predictions. It determines the fetchSize by taking the maxResultBuffer value and dividing
+      // it by the largest row byte size encountered so far. This fails spectacularly when
+      // streaming from a table whose initial rows are smaller than the rest and therefore requires
+      // setting an upper bound on the fetchSize. Consequently, this adaptive fetching scheme is
+      // only useful to us to avoid OOMing when streaming from tables with particularly large rows,
+      // an edge case where we need to read less than 1000 rows at a time.
+      ADAPTIVE_FETCH_MAXIMUM, "1000");
 
   private List<String> schemas;
 
