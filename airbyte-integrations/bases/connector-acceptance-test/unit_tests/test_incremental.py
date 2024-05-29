@@ -397,7 +397,7 @@ async def test_per_stream_read_with_multiple_states(mocker, first_records, subse
 
 
 @pytest.mark.parametrize(
-    "non_unique_states, expected_unique_states",
+    "non_unique_states, expected_unique_states, expected_record_count_per_state",
     [
         pytest.param(
             [
@@ -405,9 +405,8 @@ async def test_per_stream_read_with_multiple_states(mocker, first_records, subse
                 {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
                 {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}}
             ],
-            [
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}}
-            ],
+            [],
+            [],
             id="combine_three_duplicates_into_a_single_state_message"
         ),
         pytest.param(
@@ -418,6 +417,7 @@ async def test_per_stream_read_with_multiple_states(mocker, first_records, subse
             [
                 {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 2.0}}
             ],
+            [0.0],
             id="multiple_equal_states_with_different_sourceStats_considered_to_be_equal"
         ),
         pytest.param(
@@ -433,15 +433,15 @@ async def test_per_stream_read_with_multiple_states(mocker, first_records, subse
                 {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 3.0}}
             ],
             [
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
                 {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 2.0}},
                 {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-10"}, "sourceStats": {"recordCount": 7.0}},
                 {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 3.0}}
-            ]
+            ],
+            [10.0, 3.0, 0.0]
         )
     ],
 )
-async def test_get_unique_state_messages(non_unique_states, expected_unique_states):
+async def test_get_unique_state_messages(non_unique_states, expected_unique_states, expected_record_count_per_state):
     non_unique_states = [
         build_per_stream_state_message(
             descriptor=StreamDescriptor(name=state["name"]), stream_state=state["stream_state"], data=state.get("data", None), source_stats=state.get("sourceStats")
@@ -454,47 +454,14 @@ async def test_get_unique_state_messages(non_unique_states, expected_unique_stat
         )
         for state in expected_unique_states
     ]
-    actual_unique_states = _TestIncremental()._get_unique_state_messages(non_unique_states)
+    actual_unique_states = _TestIncremental()._get_unique_state_messages_with_record_count(non_unique_states)
     assert len(actual_unique_states) == len(expected_unique_states)
 
     if len(expected_unique_states):
-        for actual_state, expected_state in zip(actual_unique_states, expected_unique_states):
+        for actual_state_data, expected_state, expected_record_count in zip(actual_unique_states, expected_unique_states, expected_record_count_per_state):
+            actual_state, actual_record_count = actual_state_data
             assert actual_state == expected_state
-
-
-@pytest.mark.parametrize(
-    "unique_states, expected_record_count_per_state",
-    [
-        pytest.param(
-            [
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-01"}, "sourceStats": {"recordCount": 5.0}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 2.0}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-10"}, "sourceStats": {"recordCount": 7.0}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 3.0}}
-            ],
-            [17, 12, 10, 3, 0]
-        )
-    ],
-)
-async def test_get_expected_record_count_per_state(unique_states, expected_record_count_per_state):
-    unique_states = [
-        build_per_stream_state_message(
-            descriptor=StreamDescriptor(name=state["name"]), stream_state=state["stream_state"], data=state.get("data", None), source_stats=state.get("sourceStats")
-        )
-        for state in unique_states
-    ]
-
-    actual_unique_states = _TestIncremental()._get_states_with_expected_record_count_per_state(unique_states)
-
-    get_state = operator.attrgetter("state.stream.stream_state")
-    get_record_count = operator.attrgetter("state.sourceStats.recordCount")
-
-    for idx, actual_data in enumerate(actual_unique_states):
-        actual_state, actual_record_count = actual_data
-        assert get_state(actual_state) == get_state(unique_states[idx])
-        assert get_record_count(actual_state) == get_record_count(unique_states[idx])
-        assert actual_record_count == expected_record_count_per_state[idx]
+            assert actual_record_count == expected_record_count
 
 
 async def test_config_skip_test(mocker):

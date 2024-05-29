@@ -216,7 +216,6 @@ class TestIncremental(BaseTest):
                 assert (
                     # We assume that the output may be empty when we read the latest state, or it must produce some data if we are in the middle of our progression
                     len(records_N) >= expected_records_count
-                    or idx == len(states_with_expected_record_count) - 1
                 ), f"Read {idx + 1} of {len(states_with_expected_record_count)} should produce at least one record.\n\n state: {state_input} \n\n records_{idx + 1}: {records_N}"
 
                 diff = naive_diff_records(records_1, records_N)
@@ -265,7 +264,7 @@ class TestIncremental(BaseTest):
     def _get_record_count(airbyte_message: AirbyteMessage) -> float:
         return airbyte_message.state.sourceStats.recordCount
 
-    def _get_unique_state_messages(self, states: List[AirbyteMessage]) -> List[AirbyteMessage]:
+    def _get_unique_state_messages_with_record_count(self, states: List[AirbyteMessage]) -> List[Tuple[AirbyteMessage, float]]:
         """
         Validates a list of state messages to ensure that consecutive messages with the same stream state are represented by only the first message, while subsequent duplicates are ignored.
         """
@@ -293,94 +292,18 @@ class TestIncremental(BaseTest):
                 unique_state_messages.append(states[next_idx])
             current_idx = next_idx
 
-        return unique_state_messages
+        # Drop all states with a record count of 0.0
+        unique_non_zero_state_messages = list(filter(self._get_record_count, unique_state_messages))
 
-    def _get_states_with_expected_record_count_per_state(self, states: List[AirbyteMessage]) -> List[Tuple[AirbyteMessage, float]]:
-        """
-        Calculates the expected record count per state based on the total record count and distribution across states.
-        The expected record count is the number of records we expect to receive when applying a specific state checkpoint.
+        total_record_count = sum(map(self._get_record_count, unique_non_zero_state_messages))
 
-        This function takes a list of state objects, calculates the total record count, and then
-        returns the expected record count for each state in reverse cumulative order. The expected
-        record count for each state is the total record count minus the sum of record counts of all
-        previous states in the list.
-
-        Args:
-            states (list): A non-empty list of state objects.
-
-        Returns:
-            tuple: A tuple containing a state object and its expected record count.
-
-        Raises:
-            Exception: If the 'states' list is empty.
-        """
-        if not states:
-            # Raise an exception if the 'states' list is empty
-            raise Exception("`states` expected to be a non empty list.")
-
-        # Calculate the total record count from all states
-        total_record_count = sum(map(self._get_record_count, states))
-
-        # Create an iterator of states and their reverse cumulative expected record counts
-        states_with_expected_record_count = zip(
-            states, [total_record_count - sum(map(self._get_record_count, states[: idx + 1])) for idx in range(len(states))]
+        # Calculates the expected record count per state based on the total record count and distribution across states.
+        # The expected record count is the number of records we expect to receive when applying a specific state checkpoint.
+        unique_non_zero_state_messages_with_record_count = zip(
+            unique_non_zero_state_messages, [total_record_count - sum(map(self._get_record_count, unique_non_zero_state_messages[: idx + 1])) for idx in range(len(unique_non_zero_state_messages))]
         )
 
-        # Return expected record counts using the helper function
-        return list(self._get_states_with_expected_record_count_per_state_helper(states_with_expected_record_count, total_record_count))
-
-    def _get_states_with_expected_record_count_per_state_helper(
-        self,
-        states_with_expected_record_count: Iterator[Tuple[AirbyteMessage, float]],
-        total_count: float,
-        current_state_with_expected_record_count: Optional[Tuple[AirbyteMessage, float]] = None,
-    ) -> Iterator[Tuple[AirbyteMessage, float]]:
-        """
-        Helper generator function to yield the expected record count per state.
-
-        This function is a recursive generator that processes the states and their respective
-        record counts, yielding them one by one and ensures that the states are yielded only when
-        their expected record count changes from the total record count.
-
-        Why do we need this:
-            When two or more consecutive expected record counts have the same value despite their states being different,
-            it means no records were produced for all of their respective states except the last one.
-            Applying those states will result in the same set of records during stream reading, leading to a test failure (diff check). That is why such states are skipped.
-
-        Args:
-            expected_record_count_per_state (iterator): An iterator of tuples, where each tuple contains a state object and its expected record count.
-            total_count (int): The total record count from all states combined.
-            current_record_count_and_state (tuple, optional): A tuple containing the current state object and its record count. Defaults to None.
-
-        Yields:
-            tuple: A tuple containing a state object and its expected record count.
-        """
-        if current_state_with_expected_record_count is None:
-            # Initialize the current record count and state if not provided
-            current_state_with_expected_record_count = next(states_with_expected_record_count)
-
-        state, record_count = current_state_with_expected_record_count
-
-        while record_count == total_count:
-            # Loop until the record count is different from the total count
-            try:
-                # Get the next state and its record count
-                next_state, next_record_count = next(states_with_expected_record_count)
-            except StopIteration:
-                # If there are no more states, yield the current state and record count and return
-                yield state, record_count
-                return
-            else:
-                # If the next record count is different from the total count, yield the current state and record count
-                if next_record_count != total_count:
-                    yield state, record_count
-                # Update the state and record count to the next state and record count
-                state, record_count = next_state, next_record_count
-
-        # Recursively call the function to yield the next expected record counts
-        yield from self._get_states_with_expected_record_count_per_state_helper(
-            states_with_expected_record_count, record_count, (state, record_count)
-        )
+        return list(unique_non_zero_state_messages_with_record_count)
 
     def _states_with_expected_record_count_batch_selector(
         self, unique_state_messages_with_record_count: List[Tuple[AirbyteMessage, float]]
@@ -422,7 +345,5 @@ class TestIncremental(BaseTest):
         return states_with_expected_record_count_batch
 
     def _state_messages_selector(self, state_messages: List[AirbyteMessage]) -> List[Tuple[AirbyteMessage, float]]:
-        unique_state_messages = self._get_unique_state_messages(state_messages)
-        unique_state_messages_with_record_count = self._get_states_with_expected_record_count_per_state(unique_state_messages)
-
+        unique_state_messages_with_record_count = self._get_unique_state_messages_with_record_count(state_messages)
         return self._states_with_expected_record_count_batch_selector(unique_state_messages_with_record_count)
