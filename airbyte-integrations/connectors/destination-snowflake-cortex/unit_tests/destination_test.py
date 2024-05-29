@@ -5,8 +5,10 @@
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
+from airbyte.strategies import WriteStrategy
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification, Status
+
 from destination_snowflake_cortex.config import ConfigModel
 from destination_snowflake_cortex.destination import DestinationSnowflakeCortex
 
@@ -59,19 +61,14 @@ class TestDestinationSnowflakeCortex(unittest.TestCase):
         self.assertEqual(result.status, Status.FAILED)
         mock_processor.sql_config.connect.assert_called_once()
 
-    @patch("destination_snowflake_cortex.destination.Writer")
-    @patch("destination_snowflake_cortex.destination.SnowflakeCortexIndexer")
-    @patch("destination_snowflake_cortex.destination.create_from_config")
-    def test_write(self, MockedEmbedder, MockedSnowflakeCortexIndexer, MockedWriter):
-        mock_embedder = Mock()
-        mock_indexer = Mock()
-        MockedEmbedder.return_value = mock_embedder
-        mock_writer = Mock()
-
-        MockedSnowflakeCortexIndexer.return_value = mock_indexer
-        MockedWriter.return_value = mock_writer
-
-        mock_writer.write.return_value = []
+    @patch("destination_snowflake_cortex.cortex_processor.SnowflakeCortexSqlProcessor")
+    def test_write(
+        self,
+        MockedSnowflakeCortexProcessor,
+    ):
+        mock_processor = Mock()
+        MockedSnowflakeCortexProcessor.return_value = mock_processor
+        mock_processor.process_airbyte_messages_as_generator.return_value = []
 
         configured_catalog = MagicMock()
         input_messages = []
@@ -79,11 +76,7 @@ class TestDestinationSnowflakeCortex(unittest.TestCase):
         destination = DestinationSnowflakeCortex()
         list(destination.write(self.config, configured_catalog, input_messages))
 
-        MockedWriter.assert_called_once_with(
-            self.config_model.processing,
-            mock_indexer,
-            mock_embedder,
-            batch_size=150,
-            omit_raw_text=False,
+        mock_processor.process_airbyte_messages_as_generator.assert_called_once_with(
+            messages=input_messages,
+            write_strategy=WriteStrategy.AUTO,
         )
-        mock_writer.write.assert_called_once_with(configured_catalog, input_messages)
