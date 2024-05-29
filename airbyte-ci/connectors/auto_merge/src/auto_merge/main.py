@@ -120,6 +120,6 @@ def auto_merge() -> None:
             back_off_if_rate_limited(gh_client)
             if merged_pr := process_pr(repo, pr, required_passing_contexts, dry_run):
                 merged_prs.append(merged_pr)
-        if os.environ["GITHUB_STEP_SUMMARY"]:
+        if "GITHUB_STEP_SUMMARY" in os.environ:
             job_summary_path = Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(generate_job_summary_as_markdown(merged_prs))
             logger.info(f"Job summary written to {job_summary_path}")
