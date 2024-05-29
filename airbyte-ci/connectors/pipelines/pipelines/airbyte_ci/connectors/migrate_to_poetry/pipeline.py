@@ -12,7 +12,6 @@ import requests
 import toml
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from jinja2 import Environment, PackageLoader, select_autoescape
-from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, SetConnectorVersion, get_bumped_version
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
@@ -34,7 +33,6 @@ class CheckIsMigrationCandidate(Step):
     """Check if the connector is a candidate for migration to poetry.
     Candidate conditions:
     - The connector is a Python connector.
-    - The connector is a source connector.
     - The connector has a setup.py file.
     - The connector has a base image defined in the metadata.
     - The connector has not been migrated to poetry yet.
@@ -52,12 +50,6 @@ class CheckIsMigrationCandidate(Step):
                 step=self,
                 status=StepStatus.SKIPPED,
                 stderr="The connector is not a Python connector.",
-            )
-        if self.context.connector.connector_type != "source":
-            return StepResult(
-                step=self,
-                status=StepStatus.SKIPPED,
-                stderr="The connector is not a source connector.",
             )
         if "poetry.lock" in connector_dir_entries and "pyproject.toml" in connector_dir_entries:
             return StepResult(
@@ -94,7 +86,7 @@ class PoetryInit(Step):
         "build-backend": "poetry.core.masonry.api",
     }
 
-    def __init__(self, context: PipelineContext, new_version: str) -> None:
+    def __init__(self, context: PipelineContext, new_version: str | None) -> None:
         super().__init__(context)
         self.new_version = new_version
 
@@ -231,10 +223,14 @@ class PoetryInit(Step):
                 status=StepStatus.FAILURE,
                 stderr=str(e),
             )
-        with_new_version = await with_poetry_lock.with_exec(["poetry", "version", self.new_version])
-        await with_new_version.file("pyproject.toml").export(f"{self.context.connector.code_directory}/pyproject.toml")
+
+        dir = with_poetry_lock
+        if self.new_version:
+            dir = await dir.with_exec(["poetry", "version", self.new_version])
+
+        await dir.file("pyproject.toml").export(f"{self.context.connector.code_directory}/pyproject.toml")
         self.logger.info(f"Generated pyproject.toml for {self.context.connector.technical_name}")
-        await with_new_version.file("poetry.lock").export(f"{self.context.connector.code_directory}/poetry.lock")
+        await dir.file("poetry.lock").export(f"{self.context.connector.code_directory}/poetry.lock")
         self.logger.info(f"Generated poetry.lock for {self.context.connector.technical_name}")
         return StepResult(step=self, status=StepStatus.SUCCESS, output=(dependencies, dev_dependencies))
 
@@ -405,72 +401,102 @@ class UpdateReadMe(Step):
         )
 
 
-async def run_connector_migration_to_poetry_pipeline(context: ConnectorContext, semaphore: "Semaphore") -> Report:
+async def run_connector_migration_to_poetry_pipeline(
+    context: ConnectorContext, semaphore: "Semaphore", changelog: bool, bump: str | None
+) -> Report:
     restore_original_state = RestorePoetryState(context)
-    new_version = get_bumped_version(context.connector.version, "patch")
+    if bump:
+        new_version = get_bumped_version(context.connector.version, bump)
+    else:
+        new_version = None
     context.targeted_platforms = [LOCAL_BUILD_PLATFORM]
-    steps_to_run: STEP_TREE = [
-        [StepToRun(id=CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_CHECK_MIGRATION_CANDIDATE, step=CheckIsMigrationCandidate(context))],
+    steps_to_run: STEP_TREE = []
+
+    steps_to_run.append(
+        [StepToRun(id=CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_CHECK_MIGRATION_CANDIDATE, step=CheckIsMigrationCandidate(context))]
+    )
+
+    steps_to_run.append(
         [
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_POETRY_INIT,
                 step=PoetryInit(context, new_version),
                 depends_on=[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_CHECK_MIGRATION_CANDIDATE],
             )
-        ],
+        ]
+    )
+
+    steps_to_run.append(
         [
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_DELETE_SETUP_PY,
                 step=DeleteSetUpPy(context),
                 depends_on=[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_POETRY_INIT],
             )
-        ],
-        [
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.BUILD,
-                step=BuildConnectorImages(context),
-                depends_on=[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_DELETE_SETUP_PY],
-            )
-        ],
-        [
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_REGRESSION_TEST,
-                step=RegressionTest(context),
-                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
-                args=lambda results: {
-                    "new_connector_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM],
-                    "original_dependencies": results[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_POETRY_INIT].output[0],
-                    "original_dev_dependencies": results[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_POETRY_INIT].output[1],
-                },
-            )
-        ],
-        [
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.SET_CONNECTOR_VERSION,
-                step=SetConnectorVersion(context, new_version),
-                depends_on=[CONNECTOR_TEST_STEP_ID.REGRESSION_TEST],
-            )
-        ],
-        [
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.ADD_CHANGELOG_ENTRY,
-                step=AddChangelogEntry(
-                    context,
-                    new_version,
-                    "Manage dependencies with Poetry.",
-                    "0",
-                ),
-                depends_on=[CONNECTOR_TEST_STEP_ID.REGRESSION_TEST],
-            )
-        ],
+        ]
+    )
+
+    # steps_to_run.append(
+    #     [
+    #         StepToRun(
+    #             id=CONNECTOR_TEST_STEP_ID.BUILD,
+    #             step=BuildConnectorImages(context),
+    #             depends_on=[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_DELETE_SETUP_PY],
+    #         )
+    #     ]
+    # )
+
+    # steps_to_run.append(
+    #     [
+    #         StepToRun(
+    #             id=CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_REGRESSION_TEST,
+    #             step=RegressionTest(context),
+    #             depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+    #             args=lambda results: {
+    #                 "new_connector_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM],
+    #                 "original_dependencies": results[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_POETRY_INIT].output[0],
+    #                 "original_dev_dependencies": results[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_POETRY_INIT].output[1],
+    #             },
+    #         )
+    #     ]
+    # )
+
+    if new_version:
+        steps_to_run.append(
+            [
+                StepToRun(
+                    id=CONNECTOR_TEST_STEP_ID.SET_CONNECTOR_VERSION,
+                    step=SetConnectorVersion(context, new_version),
+                    depends_on=[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_DELETE_SETUP_PY],
+                )
+            ]
+        )
+
+    if new_version and changelog:
+        steps_to_run.append(
+            [
+                StepToRun(
+                    id=CONNECTOR_TEST_STEP_ID.ADD_CHANGELOG_ENTRY,
+                    step=AddChangelogEntry(
+                        context,
+                        new_version,
+                        "Manage dependencies with Poetry.",
+                        "0",
+                    ),
+                    depends_on=[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_REGRESSION_TEST],
+                )
+            ]
+        )
+
+    steps_to_run.append(
         [
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_UPDATE_README,
                 step=UpdateReadMe(context),
-                depends_on=[CONNECTOR_TEST_STEP_ID.REGRESSION_TEST],
+                depends_on=[CONNECTOR_TEST_STEP_ID.MIGRATE_POETRY_DELETE_SETUP_PY],
             )
-        ],
-    ]
+        ]
+    )
     async with semaphore:
         async with context:
             try:

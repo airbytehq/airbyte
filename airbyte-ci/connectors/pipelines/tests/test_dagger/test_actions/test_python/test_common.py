@@ -46,7 +46,6 @@ def context_with_setup(dagger_client, python_connector_with_setup_not_latest_cdk
         git_repo_url="test",
         report_output_prefix="test",
         is_local=True,
-        use_remote_secrets=False,
         pipeline_start_timestamp=datetime.datetime.now().isoformat(),
     )
     context.dagger_client = dagger_client
