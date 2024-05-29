@@ -9,15 +9,12 @@ import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
-import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage;
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteRecordMessage;
 import io.airbyte.commons.json.Jsons;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The class formats incoming JsonSchema and AirbyteRecord in order to be inline with a
@@ -30,13 +27,8 @@ public class BigQueryRecordFormatter {
       Field.of(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, StandardSQLTypeName.TIMESTAMP),
       Field.of(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, StandardSQLTypeName.TIMESTAMP),
       Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING));
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryRecordFormatter.class);
 
-  protected final StandardNameTransformer namingResolver;
-
-  public BigQueryRecordFormatter(final StandardNameTransformer namingResolver) {
-    this.namingResolver = namingResolver;
-  }
+  public BigQueryRecordFormatter() {}
 
   public String formatRecord(PartialAirbyteMessage recordMessage) {
     // Map.of has a @NonNull requirement, so creating a new Hash map
