@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
@@ -147,6 +146,7 @@ def test_default_error_handler_with_custom_response_filter(test_name, http_statu
     assert actual_error_resolution.failure_type == failure_type
     assert actual_error_resolution.error_message == error_message
 
+
 @pytest.mark.parametrize(
         "http_status_code, expected_response_action",
         [
@@ -208,6 +208,7 @@ def test_default_error_handler_with_constant_backoff_strategy():
     error_handler = DefaultErrorHandler(config={}, parameters={}, backoff_strategies=[ConstantBackoffStrategy(SOME_BACKOFF_TIME, config={}, parameters={})])
     assert error_handler.backoff_time(response_or_exception=response_mock, attempt_count=0) == SOME_BACKOFF_TIME
 
+
 @pytest.mark.parametrize(
     "attempt_count",
     [
@@ -218,6 +219,7 @@ def test_default_error_handler_with_exponential_backoff_strategy(attempt_count):
     response_mock = create_response(429)
     error_handler = DefaultErrorHandler(config={}, parameters={}, backoff_strategies=[ExponentialBackoffStrategy(factor=1, config={}, parameters={})])
     assert error_handler.backoff_time(response_or_exception=response_mock, attempt_count=attempt_count) == (1 * 2**attempt_count)
+
 
 def create_response(status_code: int, headers=None, json_body=None):
     url = "https://airbyte.io"

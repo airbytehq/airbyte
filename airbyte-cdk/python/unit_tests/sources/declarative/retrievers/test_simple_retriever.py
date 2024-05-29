@@ -59,7 +59,6 @@ def test_simple_retriever_full(mock_http_stream):
     requester.get_path.return_value = path
     http_method = HttpMethod.GET
     requester.get_method.return_value = http_method
-    backoff_time = 60
     should_retry = True
     requester.interpret_response_status.return_value = should_retry
     request_body_json = {"body": "json"}

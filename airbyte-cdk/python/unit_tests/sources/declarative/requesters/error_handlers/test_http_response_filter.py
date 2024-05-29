@@ -72,9 +72,10 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Erro
             "",
             {"status_code": 403, "json": {"error": "REQUEST_DENIED"}},
             ErrorResolution(
-            response_action=ResponseAction.FAIL,
-            failure_type=FailureType.config_error,
-            error_message="Forbidden. You don't have permission to access this resource."),
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.config_error,
+                error_message="Forbidden. You don't have permission to access this resource."
+            ),
             id="test_predicate_matches_headers",
         ),
         pytest.param(
@@ -85,9 +86,10 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Erro
             "",
             {"status_code": 403, "headers": {"error": "authentication_error"}, "json": {"reason": "permission denied"}},
             ErrorResolution(
-            response_action=ResponseAction.FAIL,
-            failure_type=FailureType.config_error,
-            error_message="Forbidden. You don't have permission to access this resource."),
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.config_error,
+                error_message="Forbidden. You don't have permission to access this resource."
+            ),
             id="test_response_does_not_match_filter",
         ),
     ],

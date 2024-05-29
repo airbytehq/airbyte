@@ -11,7 +11,6 @@ from urllib.parse import parse_qs, urlparse
 import pytest as pytest
 import requests
 import requests_cache
-from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -21,7 +20,6 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler imp
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpMethod, HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.message import MessageRepository
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.types import Config
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -706,7 +704,6 @@ def test_raise_on_http_errors_off_429(mocker):
     req = requests.Response()
     req.status_code = 429
     requester._session.send.return_value = req
-
 
     with pytest.raises(DefaultBackoffException, match="Request to https://example.com/deals failed"):
         requester.send_request()
