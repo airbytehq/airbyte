@@ -25,6 +25,9 @@ import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.bson.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,16 +84,17 @@ public class InitialSnapshotHandler {
               new SourceStateIterator<>(recordIterator, airbyteStream, stateManager, new StateEmitFrequency(checkpointInterval,
                   MongoConstants.CHECKPOINT_DURATION));
           final var iterator = AutoCloseableIterators.fromIterator(stateIterator, recordIterator::close, null);
-          List<AutoCloseableIterator<AirbyteMessage>> itList = List.of(iterator);
+
+          List<AutoCloseableIterator<AirbyteMessage>> itList = Stream.of(iterator).collect(Collectors.toList());
           if (decorateWithStartedStatus) {
               itList.addFirst(new StreamStatusTraceEmitterIterator(
-                      new AirbyteStreamStatusHolder(new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(collectionName, namespace)
+                      new AirbyteStreamStatusHolder(new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(collectionName, namespace),
                       AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)));
           }
 
             if (decorateWithCompletedStatus) {
                 itList.addLast(new StreamStatusTraceEmitterIterator(
-                        new AirbyteStreamStatusHolder(new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(collectionName, namespace)
+                        new AirbyteStreamStatusHolder(new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(collectionName, namespace),
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
             }
           return (itList.size() == 1) ? iterator : AutoCloseableIterators.concatWithEagerClose(itList);
