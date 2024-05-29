@@ -9,6 +9,7 @@ import pytest
 import requests
 from source_shopify.source import ConnectionCheckTest, SourceShopify
 from source_shopify.streams.streams import BalanceTransactions, DiscountCodes, FulfillmentOrders, PriceRules
+from source_shopify.utils import ShopifyAccessScopesError
 
 
 def test_get_next_page_token(requests_mock, auth_config):
@@ -34,10 +35,11 @@ def test_get_next_page_token(requests_mock, auth_config):
 
 
 @pytest.mark.parametrize(
-    "fetch_transactions_user_id, expected",
+    "fetch_transactions_user_id, granted_scopes, expected",
     [
         (
             True,
+            [{"handle": "read_orders"}],
             [
                 "abandoned_checkouts",
                 "fulfillments",
@@ -54,6 +56,7 @@ def test_get_next_page_token(requests_mock, auth_config):
         ),
         (
             False,
+            [{"handle": "read_orders"}],
             [
                 "abandoned_checkouts",
                 "fulfillments",
@@ -68,19 +71,33 @@ def test_get_next_page_token(requests_mock, auth_config):
                 "countries",
             ],
         ),
+        (
+            False,
+            None,
+            "Scopes are not available, make sure you're using the correct `Shopify Store` name. Actual response: {'access_scopes': None}",
+        ),
     ],
 )
-def test_privileges_validation(requests_mock, fetch_transactions_user_id, basic_config, expected):
+def test_privileges_validation(requests_mock, fetch_transactions_user_id, granted_scopes, basic_config, expected):
     requests_mock.get(
         "https://test_shop.myshopify.com/admin/oauth/access_scopes.json",
-        json={"access_scopes": [{"handle": "read_orders"}]},
+        json={"access_scopes": granted_scopes},
     )
     basic_config["fetch_transactions_user_id"] = fetch_transactions_user_id
     # mock the get_shop_id method
     with patch.object(ConnectionCheckTest, "get_shop_id", return_value=123) as mock:
-        source = SourceShopify()
-        streams = source.streams(basic_config)
-    assert [stream.name for stream in streams] == expected
+        # when the scopes are available
+        if granted_scopes:
+            source = SourceShopify()
+            streams = source.streams(basic_config)
+            assert [stream.name for stream in streams] == expected
+        else:
+            # when the scopes are not available, we expect the error is raised
+            with pytest.raises(ShopifyAccessScopesError) as scopes_error:
+                source = SourceShopify()
+                streams = source.streams(basic_config)
+            assert expected in repr(scopes_error.value)
+            
 
 
 @pytest.mark.parametrize(

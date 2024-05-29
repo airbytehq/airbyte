@@ -105,7 +105,8 @@ class ShopifyScopes:
         headers = config["authenticator"].get_auth_header()
         try:
             response = session.get(url, headers=headers).json()
-            access_scopes = [scope.get("handle") for scope in response.get("access_scopes")]
+            granted_scopes = response.get("access_scopes") or []
+            access_scopes = [scope.get("handle") for scope in granted_scopes]
         except InvalidURL:
             raise ShopifyWrongShopNameError(url)
         except JSONDecodeError as json_error:
