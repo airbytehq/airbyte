@@ -263,9 +263,10 @@ class XminPostgresSourceTest {
         .get("xmin_raw_value").asLong());
   }
 
-  // Assert that the state message is the last message to be emitted.
+  // Assert that the trace message is the last message to be emitted.
   protected static void assertMessageSequence(final List<AirbyteMessage> messages) {
-    assertEquals(Type.STATE, messages.get(messages.size() - 1).getType());
+    assertEquals(Type.TRACE, messages.get(messages.size() - 1).getType());
+    assertEquals(Type.STATE, messages.get(messages.size() - 2).getType());
   }
 
   private static ConfiguredAirbyteCatalog toConfiguredXminCatalog(final AirbyteCatalog catalog) {
