@@ -174,11 +174,8 @@ corresponds to that version.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-<<<<<<< akash/config-error
-| 0.35.15 | 2024-05-28 | [\#38538](https://github.com/airbytehq/airbyte/pull/38357) | Exit connector when encountering a config error.                                                                                                               |
-=======
+| 0.36.1 | 2024-05-29 | [\#38538](https://github.com/airbytehq/airbyte/pull/38357) | Exit connector when encountering a config error.                                                                                                               |
 | 0.36.0  | 2024-05-29 | [\#38358](https://github.com/airbytehq/airbyte/pull/38358) | Plumb generation_id / sync_id to destinations code                                                                                                             |
->>>>>>> master
 | 0.35.14 | 2024-05-28 | [\#38738](https://github.com/airbytehq/airbyte/pull/38738) | make ThreadCreationInfo cast as nullable                                                                                                                       |
 | 0.35.13 | 2024-05-28 | [\#38632](https://github.com/airbytehq/airbyte/pull/38632) | minor changes to allow conversion of snowflake tests to kotlin                                                                                                 |
 | 0.35.12 | 2024-05-23 | [\#38638](https://github.com/airbytehq/airbyte/pull/38638) | Minor change to support Snowflake conversion to Kotlin                                                                                                         |
