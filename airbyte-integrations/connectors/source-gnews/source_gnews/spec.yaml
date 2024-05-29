@@ -201,7 +201,7 @@ connectionSpecification:
       type: string
       title: Top Headlines Topic
       description: This parameter allows you to change the category for the request.
-      order: 9
+      order: 10
       enum:
         - breaking-news
         - world
