@@ -9,6 +9,7 @@ import logging
 from airbyte_cdk.destinations.vector_db_based.embedder import FakeEmbedder, FakeEmbeddingConfigModel
 from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
 from airbyte_cdk.models import DestinationSyncMode, Status
+from airbyte_protocol.models.airbyte_protocol import AirbyteMessage
 from snowflake import connector
 
 from destination_snowflake_cortex.destination import DestinationSnowflakeCortex
@@ -142,7 +143,7 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         self._delete_table("mystream")
         catalog = self._get_configured_catalog(DestinationSyncMode.overwrite)
         first_state_message = self._state({"state": "1"})
-        first_record = [
+        first_five_records = [
             self._record(
                 stream="mystream",
                 str_value=f"Dogs are number {i}",
@@ -157,7 +158,7 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
             destination.write(
                 config=self.config,
                 configured_catalog=catalog,
-                input_messages=[*first_record, first_state_message],
+                input_messages=[*first_five_records, first_state_message],
             )
         )
         assert self._get_record_count("mystream") == 5
@@ -185,6 +186,8 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
                 ],
             )
         )
+
+        # TODO: FIXME: This should be 6, but it's 7 because the deduplication is not working
         assert self._get_record_count("mystream") == 6
 
         # comment the following so we can use fake for testing
