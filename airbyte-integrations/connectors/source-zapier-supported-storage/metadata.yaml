@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b8c917bc-7d1b-4828-995f-6726820266d0
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/source-zapier-supported-storage
   documentationUrl: https://docs.airbyte.com/integrations/sources/zapier-supported-storage
   githubIssueLabel: source-zapier-supported-storage

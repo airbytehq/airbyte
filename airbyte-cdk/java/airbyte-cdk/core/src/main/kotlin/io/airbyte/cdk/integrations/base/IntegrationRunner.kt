@@ -386,8 +386,8 @@ internal constructor(
             }
 
         @JvmStatic
-        fun getThreadCreationInfo(thread: Thread): ThreadCreationInfo {
-            return getMethod.invoke(threadCreationInfo, thread) as ThreadCreationInfo
+        fun getThreadCreationInfo(thread: Thread): ThreadCreationInfo? {
+            return getMethod.invoke(threadCreationInfo, thread) as ThreadCreationInfo?
         }
 
         /**
