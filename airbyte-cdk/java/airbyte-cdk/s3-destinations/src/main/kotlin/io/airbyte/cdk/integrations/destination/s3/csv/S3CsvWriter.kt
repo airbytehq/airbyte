@@ -16,6 +16,7 @@ import io.airbyte.cdk.integrations.destination.s3.writer.BaseS3Writer
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
@@ -24,8 +25,8 @@ import java.util.*
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 import org.apache.commons.csv.QuoteMode
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class S3CsvWriter
 private constructor(
@@ -63,12 +64,9 @@ private constructor(
             )
         this.outputPath = java.lang.String.join("/", outputPrefix, outputFilename)
 
-        LOGGER.info(
-            "Full S3 path for stream '{}': s3://{}/{}",
-            stream.name,
-            config.bucketName,
-            outputPath
-        )
+        LOGGER.info {
+            "Full S3 path for stream '${stream.name}': s3://${config.bucketName}/$outputPath"
+        }
         fileLocation = String.format("gs://%s/%s", config.bucketName, outputPath)
 
         this.uploadManager =
@@ -83,7 +81,7 @@ private constructor(
             localCsvSettings =
                 @Suppress("deprecation")
                 localCsvSettings.withHeader(
-                    *csvSheetGenerator.getHeaderRow().toTypedArray<String?>()
+                    *csvSheetGenerator.getHeaderRow().toTypedArray<String>()
                 )
         }
         this.csvPrinter =
@@ -179,7 +177,5 @@ private constructor(
         csvPrinter.printRecord(csvSheetGenerator.getDataRow(formattedData))
     }
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(S3CsvWriter::class.java)
-    }
+    companion object {}
 }
