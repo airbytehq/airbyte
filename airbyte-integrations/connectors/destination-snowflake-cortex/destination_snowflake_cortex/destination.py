@@ -52,7 +52,6 @@ class DestinationSnowflakeCortex(Destination):
                 schema_name=config.indexing.default_schema,
                 username=config.indexing.username,
                 password=SecretString(config.indexing.credentials.password),
-                vector_length=config.embedding.dimensions,
             ),
             splitter_config=config.processing,
             embedder_config=config.embedding,
@@ -86,7 +85,7 @@ class DestinationSnowflakeCortex(Destination):
             parsed_config = ConfigModel.parse_obj(config)
             self._init_sql_processor(config=parsed_config)
             _ = self.sql_processor.get_sql_engine()
-            # self.indexer.check()
+            self.sql_processor.sql_config.connect()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(

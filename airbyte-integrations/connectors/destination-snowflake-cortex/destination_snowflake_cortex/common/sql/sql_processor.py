@@ -91,6 +91,21 @@ class SqlConfig(BaseModel, abc.ABC):
         """Return the name of the database."""
         ...
 
+    def connect(self) -> None:
+        """Attempt to connect, and raise `AirbyteConnectionError` if the connection fails.
+
+        TODO: Move this method to the `SqlConfig` base class.
+        """
+        engine = self.get_sql_engine()
+        try:
+            connection = engine.connect()
+            connection.close()
+        except Exception as ex:
+            raise exc.AirbyteConnectionError(
+                message="Could not connect to the database.",
+                guidance="Check the connection settings and try again.",
+            ) from ex
+
     def get_sql_engine(self) -> Engine:
         """Return a new SQL engine to use."""
         return create_engine(

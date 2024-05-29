@@ -44,8 +44,6 @@ if TYPE_CHECKING:
 class SnowflakeCortexConfig(SqlConfig):
     """A Snowflake configuration for use with Cortex functions."""
 
-    vector_length: int
-
     host: str
     username: str
     password: SecretString
@@ -169,7 +167,7 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
             CHUNK_ID_COLUMN: self.type_converter_class.get_string_type(),
             METADATA_COLUMN: self.type_converter_class.get_json_type(),
             DOCUMENT_CONTENT_COLUMN: self.type_converter_class.get_json_type(),
-            EMBEDDING_COLUMN: f"VECTOR(FLOAT, {self.sql_config.vector_length})",
+            EMBEDDING_COLUMN: f"VECTOR(FLOAT, {self.embedding_dimensions})",
         }
 
     @overrides
@@ -206,7 +204,7 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
         columns_list_str: str = indent("\n, ".join(columns_list), " " * 12)
 
         # following block is different from SnowflakeSqlProcessor
-        vector_suffix = f"::Vector(Float, {self.sql_config.vector_length})"
+        vector_suffix = f"::Vector(Float, {self.embedding_dimensions})"
         variant_cols_str: str = ("\n" + " " * 21 + ", ").join([
             f"$1:{self.normalizer.normalize(col)}{vector_suffix if 'embedding' in col else ''}"
             for col in columns_list
@@ -368,6 +366,11 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
             embedding_config=self.embedder_config,
             processing_config=self.splitter_config,
         )
+
+    @property
+    def embedding_dimensions(self) -> int:
+        """Return the number of dimensions for the embeddings."""
+        return self.embedder.embedding_dimensions
 
     @property
     def splitter(self) -> DocumentSplitter:

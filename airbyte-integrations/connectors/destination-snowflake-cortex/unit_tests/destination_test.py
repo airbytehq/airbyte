@@ -35,29 +35,29 @@ class TestDestinationSnowflakeCortex(unittest.TestCase):
 
         self.assertIsInstance(result, ConnectorSpecification)
 
-    @patch("destination_snowflake_cortex.destination.SnowflakeCortexIndexer")
-    def test_check(self, MockedSnowflakeCortexIndexer):
-        mock_indexer = Mock()
-        MockedSnowflakeCortexIndexer.return_value = mock_indexer
+    @patch("destination_snowflake_cortex.cortex_processor.SnowflakeCortexSqlProcessor")
+    def test_check(self, MockedSnowflakeCortexSqlProcessor):
+        mock_processor = Mock()
+        MockedSnowflakeCortexSqlProcessor.return_value = mock_processor
 
         destination = DestinationSnowflakeCortex()
         result = destination.check(self.logger, self.config)
 
         self.assertEqual(result.status, Status.SUCCEEDED)
-        mock_indexer.check.assert_called_once()
+        mock_processor.sql_config.connect.assert_called_once()
 
-    @patch("destination_snowflake_cortex.destination.SnowflakeCortexIndexer")
-    def test_check_with_errors(self, MockedSnowflakeCortexIndexer):
-        mock_indexer = Mock()
-        MockedSnowflakeCortexIndexer.return_value = mock_indexer
+    @patch("destination_snowflake_cortex.cortex_processor.SnowflakeCortexSqlProcessor")
+    def test_check_with_errors(self, MockedSnowflakeCortexSqlProcessor):
+        mock_processor = Mock()
+        MockedSnowflakeCortexSqlProcessor.return_value = mock_processor
 
         indexer_error_message = "Indexer Error"
-        mock_indexer.check.side_effect = Exception(indexer_error_message)
+        mock_processor.sql_config.connect.side_effect = Exception(indexer_error_message)
 
         destination = DestinationSnowflakeCortex()
         result = destination.check(self.logger, self.config)
         self.assertEqual(result.status, Status.FAILED)
-        mock_indexer.check.assert_called_once()
+        mock_processor.sql_config.connect.assert_called_once()
 
     @patch("destination_snowflake_cortex.destination.Writer")
     @patch("destination_snowflake_cortex.destination.SnowflakeCortexIndexer")
