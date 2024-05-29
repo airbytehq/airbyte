@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.6"
+version = "0.2.7"
 name = "source-mailgun"
 description = "Source implementation for Mailgun."
 authors = [ "Airbyte <contact@airbyte.io>",]
