@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import static io.airbyte.integrations.base.destination.typing_deduping.Sql.separately;
 import static io.airbyte.integrations.base.destination.typing_deduping.Sql.transactionally;
-import static io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeTransaction.SOFT_RESET_SUFFIX;
+import static io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.SOFT_RESET_SUFFIX;
 import static java.util.stream.Collectors.joining;
 
 import com.google.cloud.bigquery.StandardSQLTypeName;
@@ -183,13 +183,12 @@ public class BigQuerySqlGenerator implements SqlGenerator {
   // the SQLGenerator?
   public static StandardSQLTypeName toDialectType(final AirbyteProtocolType airbyteProtocolType) {
     return switch (airbyteProtocolType) {
-      case STRING -> StandardSQLTypeName.STRING;
+      case STRING, TIME_WITH_TIMEZONE -> StandardSQLTypeName.STRING;
       case NUMBER -> StandardSQLTypeName.NUMERIC;
       case INTEGER -> StandardSQLTypeName.INT64;
       case BOOLEAN -> StandardSQLTypeName.BOOL;
       case TIMESTAMP_WITH_TIMEZONE -> StandardSQLTypeName.TIMESTAMP;
       case TIMESTAMP_WITHOUT_TIMEZONE -> StandardSQLTypeName.DATETIME;
-      case TIME_WITH_TIMEZONE -> StandardSQLTypeName.STRING;
       case TIME_WITHOUT_TIMEZONE -> StandardSQLTypeName.TIME;
       case DATE -> StandardSQLTypeName.DATE;
       case UNKNOWN -> StandardSQLTypeName.JSON;
@@ -216,6 +215,7 @@ public class BigQuerySqlGenerator implements SqlGenerator {
               _airbyte_raw_id STRING NOT NULL,
               _airbyte_extracted_at TIMESTAMP NOT NULL,
               _airbyte_meta JSON NOT NULL,
+              _airbyte_generation_id INTEGER,
             ${column_declarations}
             )
             PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
@@ -311,7 +311,8 @@ public class BigQuerySqlGenerator implements SqlGenerator {
             ${column_list}
               _airbyte_meta,
               _airbyte_raw_id,
-              _airbyte_extracted_at
+              _airbyte_extracted_at,
+              _airbyte_generation_id
             )
             ${extractNewRawRecords};""");
   }
@@ -398,17 +399,20 @@ public class BigQuerySqlGenerator implements SqlGenerator {
               ${columnAssignments}
               _airbyte_meta = new_record._airbyte_meta,
               _airbyte_raw_id = new_record._airbyte_raw_id,
-              _airbyte_extracted_at = new_record._airbyte_extracted_at
+              _airbyte_extracted_at = new_record._airbyte_extracted_at,
+              _airbyte_generation_id = new_record._airbyte_generation_id
             WHEN NOT MATCHED ${cdcSkipInsertClause} THEN INSERT (
               ${column_list}
               _airbyte_meta,
               _airbyte_raw_id,
-              _airbyte_extracted_at
+              _airbyte_extracted_at,
+              _airbyte_generation_id
             ) VALUES (
               ${newRecordColumnList}
               new_record._airbyte_meta,
               new_record._airbyte_raw_id,
-              new_record._airbyte_extracted_at
+              new_record._airbyte_extracted_at,
+              new_record._airbyte_generation_id
             );""");
   }
 
@@ -439,7 +443,7 @@ public class BigQuerySqlGenerator implements SqlGenerator {
                     WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"') IS NOT NULL)
                       AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"')) != 'null')
                       AND (${json_extract} IS NULL)
-                      THEN 'Problem with `${raw_col_name}`'
+                      THEN JSON '{"field":"${raw_col_name}","change":"NULLED","reason":"DESTINATION_TYPECAST_ERROR"}'
                     ELSE NULL
                   END"""))
           .collect(joining(",\n")) + "]";
@@ -489,7 +493,9 @@ public class BigQuerySqlGenerator implements SqlGenerator {
               ${column_casts}
                 ${column_errors} AS column_errors,
                 _airbyte_raw_id,
-                _airbyte_extracted_at
+                _airbyte_extracted_at,
+                _airbyte_meta,
+                _airbyte_generation_id
                 FROM ${project_id}.${raw_table_id}
                 WHERE (
                     _airbyte_loaded_at IS NULL
@@ -498,9 +504,18 @@ public class BigQuerySqlGenerator implements SqlGenerator {
               ), new_records AS (
                 SELECT
                 ${column_list}
-                  to_json(struct(COALESCE((SELECT ARRAY_AGG(unnested_column_errors IGNORE NULLS) FROM UNNEST(column_errors) unnested_column_errors), []) AS errors)) AS _airbyte_meta,
+                  to_json(json_set(
+                    coalesce(parse_json(_airbyte_meta), JSON'{}'),
+                    '$.changes',
+                    json_array_append(
+                      coalesce(json_query(parse_json(_airbyte_meta), '$.changes'), JSON'[]'),
+                      '$',
+                      COALESCE((SELECT ARRAY_AGG(unnested_column_errors IGNORE NULLS) FROM UNNEST(column_errors) unnested_column_errors), [])
+                     )
+                  )) as _airbyte_meta,
                   _airbyte_raw_id,
-                  _airbyte_extracted_at
+                  _airbyte_extracted_at,
+                  _airbyte_generation_id
                 FROM intermediate_data
               ), numbered_rows AS (
                 SELECT *, row_number() OVER (
@@ -508,7 +523,7 @@ public class BigQuerySqlGenerator implements SqlGenerator {
                 ) AS row_number
                 FROM new_records
               )
-              SELECT ${column_list} _airbyte_meta, _airbyte_raw_id, _airbyte_extracted_at
+              SELECT ${column_list} _airbyte_meta, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_generation_id
               FROM numbered_rows
               WHERE row_number = 1""");
     } else {
@@ -528,7 +543,9 @@ public class BigQuerySqlGenerator implements SqlGenerator {
               ${column_casts}
                 ${column_errors} AS column_errors,
                 _airbyte_raw_id,
-                _airbyte_extracted_at
+                _airbyte_extracted_at,
+                _airbyte_meta,
+                _airbyte_generation_id
                 FROM ${project_id}.${raw_table_id}
                 WHERE
                   _airbyte_loaded_at IS NULL
@@ -536,9 +553,18 @@ public class BigQuerySqlGenerator implements SqlGenerator {
               )
               SELECT
               ${column_list}
-                to_json(struct(COALESCE((SELECT ARRAY_AGG(unnested_column_errors IGNORE NULLS) FROM UNNEST(column_errors) unnested_column_errors), []) AS errors)) AS _airbyte_meta,
+                to_json(json_set(
+                    coalesce(parse_json(_airbyte_meta), JSON'{}'),
+                    '$.changes',
+                    json_array_append(
+                      coalesce(json_query(parse_json(_airbyte_meta), '$.changes'), JSON'[]'),
+                      '$',
+                      COALESCE((SELECT ARRAY_AGG(unnested_column_errors IGNORE NULLS) FROM UNNEST(column_errors) unnested_column_errors), [])
+                     )
+                  )) as _airbyte_meta,
                 _airbyte_raw_id,
-                _airbyte_extracted_at
+                _airbyte_extracted_at,
+                _airbyte_generation_id
               FROM intermediate_data""");
     }
   }
@@ -600,7 +626,9 @@ public class BigQuerySqlGenerator implements SqlGenerator {
               _airbyte_raw_id STRING,
               _airbyte_data STRING,
               _airbyte_extracted_at TIMESTAMP,
-              _airbyte_loaded_at TIMESTAMP
+              _airbyte_loaded_at TIMESTAMP,
+              _airbyte_meta STRING,
+              _airbyte_generation_id INTEGER
             )
             PARTITION BY DATE(_airbyte_extracted_at)
             CLUSTER BY _airbyte_extracted_at
@@ -609,7 +637,9 @@ public class BigQuerySqlGenerator implements SqlGenerator {
                     _airbyte_ab_id AS _airbyte_raw_id,
                     _airbyte_data AS _airbyte_data,
                     _airbyte_emitted_at AS _airbyte_extracted_at,
-                    CAST(NULL AS TIMESTAMP) AS _airbyte_loaded_at
+                    CAST(NULL AS TIMESTAMP) AS _airbyte_loaded_at,
+                    '{"sync_id": 0, "changes": []}' AS _airbyte_meta,
+                    0 as _airbyte_generation_id
                 FROM ${project_id}.${v1_raw_table}
             );
             """));
@@ -627,8 +657,8 @@ public class BigQuerySqlGenerator implements SqlGenerator {
     return stringContents
         // Consider the JSON blob {"foo\\bar": 42}.
         // This is an object with key foo\bar.
-        // The JSONPath for this is (something like...?) $."foo\\bar" (i.e. 2 backslashes).
-        // TODO is that jsonpath correct?
+        // The JSONPath for this is $."foo\\bar" (i.e. 2 backslashes to represent the single
+        // backslash in the key).
         // When we represent that path as a SQL string, the backslashes are doubled (to 4): '$."foo\\\\bar"'
         // And we're writing that in a Java string, so we have to type out 8 backslashes:
         // "'$.\"foo\\\\\\\\bar\"'"
@@ -638,7 +668,7 @@ public class BigQuerySqlGenerator implements SqlGenerator {
         // which is \\" in a SQL string: '$."foo\\"bar"'
         // The backslashes become \\\\ in java, and the quote becomes \": "'$.\"foo\\\\\"bar\"'"
         .replace("\"", "\\\\\"")
-        // Here we're escaping a SQL string, so we only need a single backslash (which is 2, beacuse Java).
+        // Here we're escaping a SQL string, so we only need a single backslash (which is 2, because Java).
         .replace("'", "\\'");
   }
 

@@ -12,11 +12,12 @@ from typing import TYPE_CHECKING, Optional
 from connector_ops.utils import console  # type: ignore
 from pipelines import main_logger
 from pipelines.consts import CIContext
+from pipelines.models.secrets import Secret
 
 if TYPE_CHECKING:
     from logging import Logger
 
-from github import Github, PullRequest
+from github import Auth, Github, PullRequest
 
 AIRBYTE_GITHUB_REPO = "airbytehq/airbyte"
 
@@ -56,7 +57,7 @@ def update_commit_status_check(
 
     safe_log(logger, f"Attempting to create {state} status for commit {sha} on Github in {context} context.")
     try:
-        github_client = Github(os.environ["CI_GITHUB_ACCESS_TOKEN"])
+        github_client = Github(auth=Auth.Token(os.environ["CI_GITHUB_ACCESS_TOKEN"]))
         airbyte_repo = github_client.get_repo(AIRBYTE_GITHUB_REPO)
     except Exception as e:
         if logger:
@@ -82,16 +83,16 @@ def update_commit_status_check(
     safe_log(logger, f"Created {state} status for commit {sha} on Github in {context} context with desc: {description}.")
 
 
-def get_pull_request(pull_request_number: int, github_access_token: str) -> PullRequest.PullRequest:
+def get_pull_request(pull_request_number: int, github_access_token: Secret) -> PullRequest.PullRequest:
     """Get a pull request object from its number.
 
     Args:
         pull_request_number (str): The number of the pull request to get.
-        github_access_token (str): The GitHub access token to use to authenticate.
+        github_access_token (Secret): The GitHub access token to use to authenticate.
     Returns:
         PullRequest: The pull request object.
     """
-    github_client = Github(github_access_token)
+    github_client = Github(auth=Auth.Token(github_access_token.value))
     airbyte_repo = github_client.get_repo(AIRBYTE_GITHUB_REPO)
     return airbyte_repo.get_pull(pull_request_number)
 
