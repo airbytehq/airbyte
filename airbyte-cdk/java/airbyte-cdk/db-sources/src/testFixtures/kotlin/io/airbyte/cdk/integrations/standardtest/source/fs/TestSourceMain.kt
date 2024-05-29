@@ -8,15 +8,12 @@ import java.nio.file.Path
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * Parse command line arguments and inject them into the test class before running the test. Then
  * runs the tests.
  */
 object TestSourceMain {
-    private val LOGGER: Logger = LoggerFactory.getLogger(TestSourceMain::class.java)
 
     @JvmStatic
     fun main(args: Array<String>) {
