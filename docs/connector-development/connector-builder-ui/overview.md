@@ -39,7 +39,7 @@ Follow [the tutorial](./tutorial.mdx) for an example of what this looks like in 
 ## Exporting the connector
 
 :::info
-If you choose to contribute your connector to the Airbyte connector catalog, making it publicly availavle outside of your workspace, you'll need to export it and go through the process of submitting it for review. 
+If you choose to contribute your connector to the Airbyte connector catalog, making it publicly available outside of your workspace, you'll need to export it and go through the process of submitting it for review. 
 :::
 
 The connector builder leverages the [low-code CDK](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/yaml-overview) under the hood, turning all configurations into the YAML format. Typically, it's not necessary to interact with the YAML representation. However, you can export the connector specification into a file and build a docker image containing the connector which can be shared more widely:
