@@ -326,7 +326,19 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
                 data=new_data,
                 emitted_at=record_msg.emitted_at,
             ),
-            stream_schema=stream_schema,
+            stream_schema={
+                "type": "object",
+                "properties": {
+                    DOCUMENT_ID_COLUMN: {"type": "string"},
+                    CHUNK_ID_COLUMN: {"type": "string"},
+                    METADATA_COLUMN: {"type": "object"},
+                    DOCUMENT_CONTENT_COLUMN: {"type": "string"},
+                    EMBEDDING_COLUMN: {
+                        "type": "array",
+                        "items": {"type": "float"},
+                    },
+                },
+            },
         )
 
     def _get_table_by_name(

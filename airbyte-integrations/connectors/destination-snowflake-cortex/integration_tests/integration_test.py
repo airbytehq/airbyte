@@ -259,13 +259,13 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
             "DOCUMENT_CONTENT",
             "EMBEDDING",
         ]
-
+        assert first_written_record.pop("EMBEDDING")
+        assert first_written_record.pop("METADATA")
         assert first_written_record == {
             "DOCUMENT_ID": "1",
             "CHUNK_ID": 0,
             "METADATA": '{"int_col": 0}',
             "DOCUMENT_CONTENT": "Dogs are number 1",
-            "EMBEDDING": None,
         }
 
         ["STR_COL"] == "Dogs are number 3"
