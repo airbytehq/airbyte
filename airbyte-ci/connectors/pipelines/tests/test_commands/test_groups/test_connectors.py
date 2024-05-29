@@ -296,7 +296,7 @@ async def test_commands_do_not_override_connector_selection(
 
     mocker.patch.object(click, "confirm")
     mock_connector_context = mocker.MagicMock()
-    mocker.patch.object(connectors_test_command, "ConnectorContext", mock_connector_context)
+    mocker.patch.object(connectors_test_command, "ConnectorTestContext", mock_connector_context)
     mocker.patch.object(connectors_build_command, "ConnectorContext", mock_connector_context)
     mocker.patch.object(connectors_publish_command, "PublishConnectorContext", mock_connector_context)
     await runner.invoke(command, command_args, catch_exceptions=False, obj=click_context_obj)

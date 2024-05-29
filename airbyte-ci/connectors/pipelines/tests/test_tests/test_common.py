@@ -43,6 +43,9 @@ class TestAcceptanceTests:
 
     @pytest.fixture
     def test_context_ci(self, current_platform, dagger_client):
+        secret_store = InMemorySecretStore()
+        secret_store.add_secret("SECRET_SOURCE-FAKER_CREDS", "bar")
+
         context = ConnectorContext(
             pipeline_name="test",
             connector=ConnectorWithModifiedFiles("source-faker", frozenset()),
@@ -53,6 +56,7 @@ class TestAcceptanceTests:
             report_output_prefix="test",
             is_local=False,
             targeted_platforms=[current_platform],
+            secret_stores={"airbyte-connector-testing-secret-store": secret_store},
         )
         context.dagger_client = dagger_client
         return context

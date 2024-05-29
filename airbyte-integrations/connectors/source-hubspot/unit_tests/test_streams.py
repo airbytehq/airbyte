@@ -129,6 +129,7 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
             }
         }
     ]
+
     properties_response = [
         {
             "json": [
@@ -138,7 +139,8 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
             "status_code": 200,
         }
     ]
-    contact_reponse = [
+
+    contact_response = [
         {
             "json": {
                 stream.data_field: [
@@ -147,6 +149,7 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
             }
         }
     ]
+
     read_batch_contact_v1_response = [
         {
             "json": {
@@ -155,13 +158,26 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
             "status_code": 200,
         }
     ]
+
+    contact_lists_v1_response = [
+        {
+            "json": {
+                "contacts": [
+                    {"vid": "test_id", "merge-audits": [{"canonical-vid": 2, "vid-to-merge": 5608, "timestamp": 1653322839932}]}
+                ]
+            },
+            "status_code": 200,
+        }
+    ]
+
     is_form_submission = isinstance(stream, FormSubmissions)
     stream._sync_mode = SyncMode.full_refresh
     stream_url = stream.url + "/test_id" if is_form_submission else stream.url
     stream._sync_mode = None
 
     requests_mock.register_uri("GET", stream_url, responses)
-    requests_mock.register_uri("GET", "/crm/v3/objects/contact", contact_reponse)
+    requests_mock.register_uri("GET", "/crm/v3/objects/contact", contact_response)
+    requests_mock.register_uri("GET", "/contacts/v1/lists/all/contacts/all", contact_lists_v1_response)
     requests_mock.register_uri("GET", "/marketing/v3/forms", responses)
     requests_mock.register_uri("GET", "/email/public/v1/campaigns/test_id", responses)
     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
