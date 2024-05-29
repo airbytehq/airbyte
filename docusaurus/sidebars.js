@@ -396,8 +396,8 @@ const deployAirbyte = {
   items: [
     {
       type: "doc",
-      label: "On your local machine",
-      id: "deploying-airbyte/local-deployment",
+      label: "Quickstart",
+      id: "deploying-airbyte/quickstart",
     },
     {
       type: "doc",

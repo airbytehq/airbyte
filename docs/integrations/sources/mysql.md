@@ -229,7 +229,8 @@ Any database or table encoding combination of charset and collation is supported
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
-| :------ | :--------- | :--------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------| :--------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.5   | 2024-05-23 | [38198](https://github.com/airbytehq/airbyte/pull/38198)   | Sync sending trace status messages indicating progress.                                                                                         |
 | 3.4.4   | 2024-05-15 | [38208](https://github.com/airbytehq/airbyte/pull/38208)   | disable counts in full refresh stream in state message.                                                                                         |
 | 3.4.3   | 2024-05-13 | [38104](https://github.com/airbytehq/airbyte/pull/38104)   | Handle transient error messages.                                                                                                                |
 | 3.4.2   | 2024-05-07 | [38046](https://github.com/airbytehq/airbyte/pull/38046)   | Resumeable refresh should run only if there is source defined pk.                                                                               |
