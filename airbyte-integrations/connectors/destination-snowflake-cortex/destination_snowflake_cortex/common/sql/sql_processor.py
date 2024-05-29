@@ -25,6 +25,7 @@ from airbyte.constants import (
 from airbyte.progress import progress
 from airbyte.strategies import WriteStrategy
 from airbyte.types import SQLTypeConverter
+from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode
 from pandas import Index
 from pydantic import BaseModel
 from sqlalchemy import (
@@ -713,7 +714,18 @@ class SqlProcessorBase(RecordProcessorBase):
             )
 
         if write_strategy == WriteStrategy.AUTO:
-            if has_pks:
+            configured_destination_sync_mode: DestinationSyncMode = (
+                self.catalog_provider.get_destination_sync_mode(stream_name)
+            )
+            if configured_destination_sync_mode == DestinationSyncMode.overwrite:
+                write_strategy = WriteStrategy.REPLACE
+            elif configured_destination_sync_mode == DestinationSyncMode.append:
+                write_strategy = WriteStrategy.APPEND
+            elif configured_destination_sync_mode == DestinationSyncMode.append_dedup:
+                write_strategy = WriteStrategy.MERGE
+
+            # TODO: Consider removing the rest of these cases if they are dead code.
+            elif has_pks:
                 write_strategy = WriteStrategy.MERGE
             elif has_incremental_key:
                 write_strategy = WriteStrategy.APPEND

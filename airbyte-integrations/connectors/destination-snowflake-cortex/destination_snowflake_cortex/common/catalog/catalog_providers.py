@@ -11,7 +11,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, final
 
 from airbyte import exceptions as exc
-
+from airbyte_protocol.models import DestinationSyncMode
 
 if TYPE_CHECKING:
     from airbyte_protocol.models import (
@@ -98,3 +98,10 @@ class CatalogProvider:
     ) -> dict[str, dict]:
         """Return the names of the top-level properties for the given stream."""
         return self.get_stream_json_schema(stream_name)["properties"]
+
+    def get_destination_sync_mode(
+        self,
+        stream_name: str,
+    ) -> DestinationSyncMode:
+        """Return the destination sync mode for the given stream."""
+        return self.get_configured_stream_info(stream_name).destination_sync_mode
