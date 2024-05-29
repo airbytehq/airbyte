@@ -308,8 +308,8 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
-|---------|------------| -------------------------------------------------------- |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.4.8   | 2024-05-20 | [38538](https://github.com/airbytehq/airbyte/pull/38538) | Exit connector when encountering a config error.                                                                                                                           |
+|---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.8   | 2024-05-28 | [38716](https://github.com/airbytehq/airbyte/pull/38716) | Stream status for postgres                                                                                                                                                 |
 | 3.4.7   | 2024-05-20 | [38365](https://github.com/airbytehq/airbyte/pull/38365) | Rollback a previously version (3.4.6)                                                                                                                                      |
 | 3.4.5   | 2024-05-16 | [38303](https://github.com/airbytehq/airbyte/pull/38303) | Streams not in the CDC publication still have a cursor and PK.                                                                                                             |
 | 3.4.4   | 2024-05-15 | [38208](https://github.com/airbytehq/airbyte/pull/38208) | disable counts in full refresh stream in state message.                                                                                                                    |
