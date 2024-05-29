@@ -208,7 +208,8 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2.1.5   | 2024-05-27 | [38084](https://github.com/airbytehq/airbyte/pull/38084) | Add some mock server tests |
+| 2.2.1   | 2024-06-03 | [38084](https://github.com/airbytehq/airbyte/pull/38084) | Add some mock server tests |
+| 2.2.0   | 2024-05-29 | [38746](https://github.com/airbytehq/airbyte/pull/38746) | Updated countries schema |
 | 2.1.4   | 2024-05-24 | [38610](https://github.com/airbytehq/airbyte/pull/38610) | Updated the source `API Version` to `2024-04` |
 | 2.1.3   | 2024-05-23 | [38464](https://github.com/airbytehq/airbyte/pull/38464) | Added missing fields to `Products` stream |
 | 2.1.2   | 2024-05-23 | [38352](https://github.com/airbytehq/airbyte/pull/38352) | Migrated `Order Risks` stream to `GraphQL BULK` |
