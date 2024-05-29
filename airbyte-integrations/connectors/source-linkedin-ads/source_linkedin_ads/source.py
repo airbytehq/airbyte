@@ -8,10 +8,7 @@ from typing import Any, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.requests_native_auth import (
-    Oauth2Authenticator,
-    TokenAuthenticator,
-)
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
 from source_linkedin_ads.analytics_streams import (
@@ -27,15 +24,7 @@ from source_linkedin_ads.analytics_streams import (
     AdMemberRegionAnalytics,
     AdMemberSeniorityAnalytics,
 )
-from source_linkedin_ads.streams import (
-    Accounts,
-    AccountUsers,
-    CampaignGroups,
-    Campaigns,
-    Conversions,
-    Creatives,
-    AdPosts,
-)
+from source_linkedin_ads.streams import Accounts, AccountUsers, AdPosts, CampaignGroups, Campaigns, Conversions, Creatives
 
 logger = logging.getLogger("airbyte")
 
@@ -48,9 +37,7 @@ class SourceLinkedinAds(AbstractSource):
     """
 
     @classmethod
-    def get_authenticator(
-        cls, config: Mapping[str, Any]
-    ) -> Union[TokenAuthenticator, Oauth2Authenticator]:
+    def get_authenticator(cls, config: Mapping[str, Any]) -> Union[TokenAuthenticator, Oauth2Authenticator]:
         """
         Validate input parameters and generate a necessary Authentication object
         This connectors support 2 auth methods:
@@ -61,11 +48,7 @@ class SourceLinkedinAds(AbstractSource):
         auth_method = config.get("credentials", {}).get("auth_method")
         if not auth_method or auth_method == "access_token":
             # support of backward compatibility with old exists configs
-            access_token = (
-                config["credentials"]["access_token"]
-                if auth_method
-                else config["access_token"]
-            )
+            access_token = config["credentials"]["access_token"] if auth_method else config["access_token"]
             return TokenAuthenticator(token=access_token)
         elif auth_method == "oAuth2.0":
             return Oauth2Authenticator(
@@ -76,9 +59,7 @@ class SourceLinkedinAds(AbstractSource):
             )
         raise Exception("incorrect input parameters")
 
-    def check_connection(
-        self, logger: logging.Logger, config: Mapping[str, Any]
-    ) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
         Testing connection availability for the connector.
         :: for this check method the Customer must have the "r_liteprofile" scope enabled.
@@ -122,9 +103,7 @@ class SourceLinkedinAds(AbstractSource):
 
         return streams + self.get_custom_ad_analytics_reports(config)
 
-    def get_custom_ad_analytics_reports(
-        self, config: Mapping[str, Any]
-    ) -> List[Stream]:
+    def get_custom_ad_analytics_reports(self, config: Mapping[str, Any]) -> List[Stream]:
         streams = []
 
         for ad_report in config.get("ad_analytics_reports", []):
@@ -143,6 +122,4 @@ class SourceLinkedinAds(AbstractSource):
         if len(report_names) != len(set(report_names)):
             report_names = [x["name"] for x in config.get("ad_analytics_reports")]
             message = f"Stream names for Custom Ad Analytics reports should be unique, duplicated streams: {set(name for name in report_names if report_names.count(name) > 1)}"
-            raise AirbyteTracedException(
-                message=message, failure_type=FailureType.config_error
-            )
+            raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)

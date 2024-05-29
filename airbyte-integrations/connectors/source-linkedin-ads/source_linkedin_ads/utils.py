@@ -14,9 +14,7 @@ import pendulum as pdm
 DESTINATION_RESERVED_KEYWORDS: list = ["pivot"]
 
 
-def get_parent_stream_values(
-    record: Mapping[str, Any], key_value_map: Mapping[str, str]
-) -> Mapping[str, Any]:
+def get_parent_stream_values(record: Mapping[str, Any], key_value_map: Mapping[str, str]) -> Mapping[str, Any]:
     """
     :param record: Mapping[str, Any]
     :param key_value_map: Mapping[str, str] {<slice_key_name>: <key inside record>}
@@ -56,9 +54,7 @@ def transform_change_audit_stamps(
     for prop in props:
         # Update dict with flatten key:value
         for field in fields:
-            record[prop] = pdm.from_timestamp(
-                target_dict.get(prop).get(field) / 1000
-            ).to_datetime_string()
+            record[prop] = pdm.from_timestamp(target_dict.get(prop).get(field) / 1000).to_datetime_string()
     record.pop(dict_key)
 
     return record
@@ -141,9 +137,7 @@ def transform_date_range(
     return record
 
 
-def transform_targeting_criteria(
-    record: Dict, dict_key: str = "targetingCriteria"
-) -> Mapping[str, Any]:
+def transform_targeting_criteria(record: Dict, dict_key: str = "targetingCriteria") -> Mapping[str, Any]:
     """
     :: EXAMPLE `targetingCriteria` input structure:
         {
@@ -309,9 +303,7 @@ def transform_variables(record: Dict, dict_key: str = "variables") -> Mapping[st
         record["variables"]["values"] = []
         for key, value in params.items():
             # convert various datatypes of values into the string
-            record["variables"]["values"].append(
-                {"key": key, "value": json.dumps(value, ensure_ascii=True)}
-            )
+            record["variables"]["values"].append({"key": key, "value": json.dumps(value, ensure_ascii=True)})
         # Clean the nested structure
         record["variables"].pop("data")
     return record

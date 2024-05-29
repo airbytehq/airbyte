@@ -51,5 +51,21 @@
       }
     }
   },
-  "required": ["lifecycleState", "lastModifiedAt", "visibility", "publishedAt", "author", "contentCallToActionLabel", "distribution", "content", "contentLandingPage", "lifecycleStateInfo", "isReshareDisabledByAuthor", "createdAt", "id", "commentary", "adContext"]
+  "required": [
+    "lifecycleState",
+    "lastModifiedAt",
+    "visibility",
+    "publishedAt",
+    "author",
+    "contentCallToActionLabel",
+    "distribution",
+    "content",
+    "contentLandingPage",
+    "lifecycleStateInfo",
+    "isReshareDisabledByAuthor",
+    "createdAt",
+    "id",
+    "commentary",
+    "adContext"
+  ]
 }

@@ -40,9 +40,7 @@ class LinkedinAdsStream(HttpStream, ABC):
         Get all properties from schema with format: 'date-time'
         """
         schema = self.get_json_schema()
-        return [
-            k for k, v in schema["properties"].items() if v.get("format") == "date-time"
-        ]
+        return [k for k, v in schema["properties"].items() if v.get("format") == "date-time"]
 
     @property
     def accounts(self):
@@ -64,9 +62,7 @@ class LinkedinAdsStream(HttpStream, ABC):
         """Returns the API endpoint path for stream, from `endpoint` class attribute."""
         return self.endpoint
 
-    def next_page_token(
-        self, response: requests.Response
-    ) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         Cursor based pagination using the pageSize and pageToken parameters.
         """
@@ -107,18 +103,14 @@ class LinkedinAdsStream(HttpStream, ABC):
             params.update(**next_page_token)
         return params
 
-    def parse_response(
-        self, response: requests.Response, **kwargs
-    ) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         We need to get out the nested complex data structures for further normalization, so the transform_data method is applied.
         """
         for record in transform_data(response.json().get("elements")):
             yield self._date_time_to_rfc3339(record)
 
-    def _date_time_to_rfc3339(
-        self, record: MutableMapping[str, Any]
-    ) -> MutableMapping[str, Any]:
+    def _date_time_to_rfc3339(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
         Transform 'date-time' items to RFC3339 format
         """
@@ -154,9 +146,7 @@ class OffsetPaginationMixin:
             params.update(**next_page_token)
         return params
 
-    def next_page_token(
-        self, response: requests.Response
-    ) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         To paginate through results, begin with a start value of 0 and a count value of N.
         To get the next page, set start value to N, while the count value stays the same.
@@ -164,9 +154,7 @@ class OffsetPaginationMixin:
         https://docs.microsoft.com/en-us/linkedin/shared/api-guide/concepts/pagination?context=linkedin/marketing/context
         """
         parsed_response = response.json()
-        is_elements_less_than_limit = (
-            len(parsed_response.get("elements")) < self.records_limit
-        )
+        is_elements_less_than_limit = len(parsed_response.get("elements")) < self.records_limit
 
         # Note: The API might return fewer records than requested within the limits during pagination.
         # This behavior is documented at: https://github.com/airbytehq/airbyte/issues/34164
@@ -191,9 +179,7 @@ class Accounts(LinkedinAdsStream):
     endpoint = "adAccounts"
     use_cache = True
 
-    def request_headers(
-        self, stream_state: Mapping[str, Any], **kwargs
-    ) -> Mapping[str, Any]:
+    def request_headers(self, stream_state: Mapping[str, Any], **kwargs) -> Mapping[str, Any]:
         """
         If account_ids are specified as user's input from configuration,
         we must use MODIFIED header: {'X-RestLi-Protocol-Version': '2.0.0'}
@@ -217,10 +203,7 @@ class Accounts(LinkedinAdsStream):
         params = super().request_params(stream_state, stream_slice, next_page_token)
         if self.accounts:
             # Construct the URN for each account ID
-            accounts = [
-                f"urn:li:sponsoredAccount:{account_id}"
-                for account_id in self.config.get("account_ids")
-            ]
+            accounts = [f"urn:li:sponsoredAccount:{account_id}" for account_id in self.config.get("account_ids")]
 
             # Join the URNs into a single string, separated by commas, and URL encode only this part
             encoded_accounts = quote(",".join(accounts), safe=",")
@@ -258,11 +241,7 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
-        current_stream_state = (
-            {self.cursor_field: self.config.get("start_date")}
-            if not current_stream_state
-            else current_stream_state
-        )
+        current_stream_state = {self.cursor_field: self.config.get("start_date")} if not current_stream_state else current_stream_state
         return {
             self.cursor_field: max(
                 latest_record.get(self.cursor_field),
@@ -309,9 +288,7 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream, ABC):
                 stream_slice=get_parent_stream_values(record, self.parent_values_map),
                 **kwargs,
             )
-            yield from self.filter_records_newer_than_state(
-                stream_state=stream_state, records_slice=child_stream_slice
-            )
+            yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=child_stream_slice)
 
 
 class AccountUsers(OffsetPaginationMixin, LinkedInAdsStreamSlicing):
@@ -333,9 +310,7 @@ class AccountUsers(OffsetPaginationMixin, LinkedInAdsStreamSlicing):
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
         params["q"] = self.search_param
-        params[
-            "accounts"
-        ] = f"urn:li:sponsoredAccount:{stream_slice.get('account_id')}"  # accounts=
+        params["accounts"] = f"urn:li:sponsoredAccount:{stream_slice.get('account_id')}"  # accounts=
         return urlencode(params, safe="():,%")
 
 
@@ -373,9 +348,7 @@ class CampaignGroups(LinkedInAdsStreamSlicing):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
-        params[
-            "search"
-        ] = "(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))"
+        params["search"] = "(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))"
         return urlencode(params, safe="():,%")
 
 
@@ -414,9 +387,7 @@ class Campaigns(LinkedInAdsStreamSlicing):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
-        params[
-            "search"
-        ] = "(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))"
+        params["search"] = "(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))"
         #
         return urlencode(params, safe="():,%")
 
@@ -469,11 +440,7 @@ class Creatives(LinkedInAdsStreamSlicing):
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
         current_stream_state = (
-            {
-                self.cursor_field: pendulum.parse(self.config.get("start_date")).format(
-                    "x"
-                )
-            }
+            {self.cursor_field: pendulum.parse(self.config.get("start_date")).format("x")}
             if not current_stream_state
             else current_stream_state
         )
@@ -510,9 +477,7 @@ class AdPosts(LinkedInAdsStreamSlicing):
             page_size_param="count",
             records_limit=100,
         )
-        params[
-            "dscAdAccount"
-        ] = f'urn:li:sponsoredAccount:{stream_slice.get("account_id")}'
+        params["dscAdAccount"] = f'urn:li:sponsoredAccount:{stream_slice.get("account_id")}'
         params["q"] = self.search_param
         return params
 
@@ -522,11 +487,7 @@ class AdPosts(LinkedInAdsStreamSlicing):
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
         current_stream_state = (
-            {
-                self.cursor_field: pendulum.parse(self.config.get("start_date")).format(
-                    "x"
-                )
-            }
+            {self.cursor_field: pendulum.parse(self.config.get("start_date")).format("x")}
             if not current_stream_state
             else current_stream_state
         )
@@ -565,9 +526,7 @@ class Conversions(OffsetPaginationMixin, LinkedInAdsStreamSlicing):
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params["q"] = self.search_param
-        params[
-            "account"
-        ] = f"urn%3Ali%3AsponsoredAccount%3A{stream_slice.get('account_id')}"
+        params["account"] = f"urn%3Ali%3AsponsoredAccount%3A{stream_slice.get('account_id')}"
 
         return urlencode(params, safe="():,%")
 
@@ -577,11 +536,7 @@ class Conversions(OffsetPaginationMixin, LinkedInAdsStreamSlicing):
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
         current_stream_state = (
-            {
-                self.cursor_field: pendulum.parse(self.config.get("start_date")).format(
-                    "x"
-                )
-            }
+            {self.cursor_field: pendulum.parse(self.config.get("start_date")).format("x")}
             if not current_stream_state
             else current_stream_state
         )
