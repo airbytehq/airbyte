@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.4.0"
+version = "0.4.1"
 name = "source-gcs"
 description = "Source implementation for Gcs."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -20,7 +20,7 @@ python = "^3.9,<3.12"
 pytz = "==2024.1"
 google-cloud-storage = "==2.12.0"
 smart-open = {extras = ["gcs"], version = "==5.1.0"}
-airbyte-cdk = {extras = ["file-based"], version = "^0"}
+airbyte-cdk = {extras = ["file-based"], version = "^1"}
 
 [tool.poetry.scripts]
 source-gcs = "source_gcs.run:run"
