@@ -49,6 +49,7 @@ For more information about the api see the [E-conomic REST API Documentation](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.5   | 2024-05-28 | [38691](https://github.com/airbytehq/airbyte/pull/38691) | Make compatibility with builder                                                 |
 | 0.2.4   | 2024-04-19 | [37283](https://github.com/airbytehq/airbyte/pull/37283) | Updating to 0.80.0 CDK                                                          |
 | 0.2.3   | 2024-04-18 | [37283](https://github.com/airbytehq/airbyte/pull/37283) | Manage dependencies with Poetry.                                                |
 | 0.2.2   | 2024-04-15 | [37283](https://github.com/airbytehq/airbyte/pull/37283) | Base image migration: remove Dockerfile and use the python-connector-base image |
