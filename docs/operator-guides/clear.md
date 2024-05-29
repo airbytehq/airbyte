@@ -4,15 +4,25 @@ products: all
 
 # Clearing your data
 
-From time-to-time, you may want to erase all of the data that Airbyte has created in your destination. This can be accomplished by clearing your data. In order to backfill all historical data, a sync should be initiated after your clear succeeds.
+:::info
+
+As of Airbyte v1.0.0, the term "Clear" has replaced "Reset" in the Airbyte UI and documentation. The functionality described on this page is the new "Clear" functionality. Prior to Airbyte 1.0, "Reset" was used to describe similar functionality, including a mandatory re-sync of the data, which has been removed.
+
+:::
+
+From time-to-time, you may want to erase all of the data that Airbyte has created in your destination. This can be accomplished with a Clear sync - either clearing a single stream, or all streams.
+
+![Are you sure you want to clear data](../.gitbook/assets/clear/are-you-sure-you-want-to-clear.png)
 
 Note that there is no way to recover from a clear sync, so please be certain that you wish to erase all the data in your destination.
 
 :::warning
-Not all sources keep their history forever. If you clear your data, and your source does not retain all of its records, this may lead to data loss.
+Not all sources keep their history forever. If you perform a Clear Sync, and your source does not retain all of its records, this may lead to data loss.
 :::
 
 A Clear can be triggered either from the UI or Airbyte API. Airbyte allows you to clear all streams in the connection or only a single stream through the UI. You may also be prompted to clear some streams when making configuration changes that apply to multiple streams. Airbyte additionally supports the clearing of multiple streams through the API.
+
+Clear syncs create data downtime, meaning that your final tables will be empty once the Clear Sync is complete. Clear Syncs also block the running of regularly-scheduled syncs until they are complete. If you choose to run a Clear Sync while another sync is running, it will enqueue, and start at the end of the currently running sync.
 
 ## Steps to Clear Data
 
