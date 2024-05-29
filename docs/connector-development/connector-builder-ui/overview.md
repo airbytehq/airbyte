@@ -22,7 +22,7 @@ Generally, you can build a connector with the Connector Builder if you want to c
 
 ## Getting started
 
-The step-by-step process for using the connector builder is as follows:
+The high-level process for using the connector builder is as follows:
 
 1. Access the connector builder in the Airbyte web app by selecting "Builder" in the left-hand sidebar. 
 2. Iterate on your low-code connector by providing details for global configuration and user inputs. User inputs are the variables your connector will ask an end-user to provide when they configure a connector for use in a connection. 
