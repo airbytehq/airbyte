@@ -31,6 +31,19 @@ definitions:
             to: "{{ config['end_date'] }}"
             language: "{{ config['language'] }}"
             sortBy: "{{ config['sort_by'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 426
+                    error_message_contains: requested too many results
+                    error_message: >-
+                      Number of requests exceeded. Please upgrade your plan to
+                      get more number of requests per sync.
         record_selector:
           type: RecordSelector
           extractor:
@@ -77,6 +90,19 @@ definitions:
             sortBy: "{{ config['sort_by'] }}"
             country: "{{ config['country'] if not config.get('sources') else None }}"
             category: "{{ config['category'] if not config.get('sources') else None }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 426
+                    error_message_contains: requested too many results
+                    error_message: >-
+                      Number of requests exceeded. Please upgrade your plan to
+                      get more number of requests per sync.
         record_selector:
           type: RecordSelector
           extractor:
