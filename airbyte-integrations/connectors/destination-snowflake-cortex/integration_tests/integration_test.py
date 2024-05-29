@@ -197,11 +197,18 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         self._delete_table("mystream")
         catalog = self._get_configured_catalog(DestinationSyncMode.overwrite)
         first_state_message = self._state({"state": "1"})
-        first_record_chunk = [self._record("mystream", f"Dogs are number {i}", i) for i in range(4)]
+        first_four_records = [
+            self._record(
+                stream="mystream",
+                str_value=f"Dogs are number {i}",
+                int_value=i,
+            )
+            for i in range(4)
+        ]
 
         # initial sync with replace
         destination = DestinationSnowflakeCortex()
-        list(destination.write(self.config, catalog, [*first_record_chunk, first_state_message]))
+        list(destination.write(self.config, catalog, [*first_four_records, first_state_message]))
         assert self._get_record_count("mystream") == 4
 
         # following should replace existing records
