@@ -6,7 +6,7 @@ package io.airbyte.commons.concurrency
 import java.util.concurrent.Callable
 
 @FunctionalInterface
-fun interface VoidCallable : Callable<Void?> {
+fun interface VoidCallable : Callable<Void> {
     @Throws(Exception::class)
     override fun call(): Void? {
         voidCall()
