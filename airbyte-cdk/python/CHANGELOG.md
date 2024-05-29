@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.1
+Fix bug so that RFR streams don't resync successful streams on subsequent attempts
+
 ## 1.1.0
 low-code: Add RFR support automatically for non-substreams
 
