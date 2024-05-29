@@ -9,6 +9,7 @@ import io.airbyte.cdk.integrations.debezium.CdcTargetPosition
 import io.airbyte.commons.lang.MoreBooleans
 import io.airbyte.commons.util.AutoCloseableIterator
 import io.debezium.engine.ChangeEvent
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.lang.reflect.Field
 import java.time.Duration
 import java.time.LocalDateTime
@@ -16,9 +17,8 @@ import java.util.*
 import java.util.concurrent.*
 import java.util.function.Supplier
 import org.apache.kafka.connect.source.SourceRecord
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * The record iterator is the consumer (in the producer / consumer relationship with debezium)
  * responsible for 1. making sure every record produced by the record publisher is processed 2.
@@ -85,7 +85,7 @@ class DebeziumRecordIterator<T>(
                         )
                     )
                 }
-                LOGGER.info("no record found. polling again.")
+                LOGGER.info { "no record found. polling again." }
                 maxInstanceOfNoRecordsFound++
                 continue
             }
@@ -131,7 +131,7 @@ class DebeziumRecordIterator<T>(
         }
 
         if (!signalledDebeziumEngineShutdown) {
-            LOGGER.warn("Debezium engine has not been signalled to shutdown, this is unexpected")
+            LOGGER.warn { "Debezium engine has not been signalled to shutdown, this is unexpected" }
         }
 
         // Read the records that Debezium might have fetched right at the time we called shutdown
@@ -190,10 +190,9 @@ class DebeziumRecordIterator<T>(
         }
         val timeElapsedSinceLastHeartbeatTs =
             Duration.between(this.tsLastHeartbeat, LocalDateTime.now())
-        LOGGER.info(
-            "Time since last hb_pos change {}s",
-            timeElapsedSinceLastHeartbeatTs.toSeconds()
-        )
+        LOGGER.info {
+            "Time since last hb_pos change ${timeElapsedSinceLastHeartbeatTs.toSeconds()}s"
+        }
         // wait time for no change in heartbeat position is half of initial waitTime
         return timeElapsedSinceLastHeartbeatTs.compareTo(firstRecordWaitTime.dividedBy(2)) > 0
     }
@@ -202,7 +201,7 @@ class DebeziumRecordIterator<T>(
         if (signalledDebeziumEngineShutdown) {
             return
         }
-        LOGGER.info(closeLogMessage)
+        LOGGER.info { closeLogMessage }
         debeziumShutdownProcedure.initiateShutdownProcedure()
         signalledDebeziumEngineShutdown = true
     }
@@ -230,25 +229,22 @@ class DebeziumRecordIterator<T>(
                 heartbeatEventSourceField[eventClass] = f
 
                 if (heartbeatEventSourceField.size > 1) {
-                    LOGGER.warn(
-                        "Field Cache size growing beyond expected size of 1, size is " +
-                            heartbeatEventSourceField.size
-                    )
+                    LOGGER.warn {
+                        "Field Cache size growing beyond expected size of 1, size is ${heartbeatEventSourceField.size}"
+                    }
                 }
             }
 
             val sr = f!![heartbeatEvent] as SourceRecord
             return targetPosition.extractPositionFromHeartbeatOffset(sr.sourceOffset())
         } catch (e: NoSuchFieldException) {
-            LOGGER.info("failed to get heartbeat source offset")
+            LOGGER.info { "failed to get heartbeat source offset" }
             throw RuntimeException(e)
         } catch (e: IllegalAccessException) {
-            LOGGER.info("failed to get heartbeat source offset")
+            LOGGER.info { "failed to get heartbeat source offset" }
             throw RuntimeException(e)
         }
     }
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(DebeziumRecordIterator::class.java)
-    }
+    companion object {}
 }
