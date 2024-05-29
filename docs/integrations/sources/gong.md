@@ -36,6 +36,7 @@ By default Gong limits your company's access to the service to 3 API calls per s
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.6   | 2024-05-28 | [38596](https://github.com/airbytehq/airbyte/pull/38596) | Make connector compatible with builder                                          |
 | 0.1.5   | 2024-04-19 | [37169](https://github.com/airbytehq/airbyte/pull/37169) | Updating to 0.80.0 CDK                                                          |
 | 0.1.4   | 2024-04-18 | [37169](https://github.com/airbytehq/airbyte/pull/37169) | Manage dependencies with Poetry.                                                |
 | 0.1.3   | 2024-04-15 | [37169](https://github.com/airbytehq/airbyte/pull/37169) | Base image migration: remove Dockerfile and use the python-connector-base image |
