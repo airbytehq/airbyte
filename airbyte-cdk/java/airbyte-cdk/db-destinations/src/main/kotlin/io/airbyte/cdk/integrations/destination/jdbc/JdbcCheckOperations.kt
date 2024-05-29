@@ -39,7 +39,7 @@ object JdbcCheckOperations {
     @JvmStatic
     @Throws(Exception::class)
     fun attemptTableOperations(
-        outputSchema: String?,
+        outputSchema: String,
         database: JdbcDatabase,
         namingResolver: NamingConventionTransformer,
         sqlOps: SqlOperations,
