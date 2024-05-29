@@ -16,7 +16,6 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import (
     DEFAULT_ERROR_RESOLUTION,
     SUCCESS_RESOLUTION,
     ErrorResolution,
-    ResponseAction,
 )
 from airbyte_cdk.sources.types import Config
 
@@ -125,36 +124,17 @@ class DefaultErrorHandler(ErrorHandler):
                 self._last_request_to_attempt_count[request] += 1
             if self.response_filters:
 
-                optimal_error_resolution = None
-
                 for response_filter in self.response_filters:
                     matched_error_resolution = response_filter.matches(response_or_exception=response_or_exception)
 
-                    if matched_error_resolution is not None and self._new_error_resolution_is_preferred(
-                        new_error_resolution=matched_error_resolution, current_error_resolution=optimal_error_resolution
-                    ):
-                        optimal_error_resolution = matched_error_resolution
+                    if matched_error_resolution is not None:
+                        return matched_error_resolution
 
             if response_or_exception.ok:
                 return SUCCESS_RESOLUTION
 
-            if optimal_error_resolution is not None:
-                return optimal_error_resolution
         # Return default error resolution (retry)
         return DEFAULT_ERROR_RESOLUTION
-
-    def _new_error_resolution_is_preferred(
-        self, new_error_resolution: Optional[ErrorResolution], current_error_resolution: Optional[ErrorResolution]
-    ) -> bool:
-        if new_error_resolution is None:
-            return False
-
-        if current_error_resolution is None:
-            return True
-
-        priority = {ResponseAction.FAIL: 0, ResponseAction.RETRY: 1, ResponseAction.IGNORE: 2, ResponseAction.SUCCESS: 3}
-
-        return priority[new_error_resolution.response_action] > priority[current_error_resolution.response_action]
 
     def backoff_time(
         self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], attempt_count: int
