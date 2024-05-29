@@ -387,13 +387,18 @@ async def dagger_client(
 
 
 @pytest.fixture(scope="session")
-async def control_connector(dagger_client: dagger.Client, connector_image: str, control_version: str) -> ConnectorUnderTest:
-    return await ConnectorUnderTest.from_image_name(dagger_client, f"{connector_image}:{control_version}", TargetOrControl.CONTROL)
+async def is_ci(pytestconfig: Config) -> bool:
+    return pytestconfig.stash.get(stash_keys.RUN_IN_AIRBYTE_CI, False) or pytestconfig.stash.get(stash_keys.IS_PRODUCTION_CI, False)
 
 
 @pytest.fixture(scope="session")
-async def target_connector(dagger_client: dagger.Client, connector_image: str, target_version: str) -> ConnectorUnderTest:
-    return await ConnectorUnderTest.from_image_name(dagger_client, f"{connector_image}:{target_version}", TargetOrControl.TARGET)
+async def control_connector(dagger_client: dagger.Client, is_ci: bool, connector_image: str, control_version: str) -> ConnectorUnderTest:
+    return await ConnectorUnderTest.from_image_name(dagger_client, f"{connector_image}:{control_version}", is_ci, TargetOrControl.CONTROL)
+
+
+@pytest.fixture(scope="session")
+async def target_connector(dagger_client: dagger.Client, is_ci: bool, connector_image: str, target_version: str) -> ConnectorUnderTest:
+    return await ConnectorUnderTest.from_image_name(dagger_client, f"{connector_image}:{target_version}", is_ci, TargetOrControl.TARGET)
 
 
 @pytest.fixture(scope="session")
