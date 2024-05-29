@@ -10,32 +10,30 @@ class TestingCheck(Check):
     category = CheckCategory.TESTING
 
 
-class IntegrationTestsEnabledCheck(TestingCheck):
-    name = "Medium to High Use Connectors must enable integration tests"
-    description = "Medium to High Use Connectors must enable integration tests via the `connectorTestSuitesOptions.suite:integrationTests` in their respective metadata.yaml file to ensure that the connector is working as expected."
+class AcceptanceTestsEnabledCheck(TestingCheck):
+    applies_to_connector_cloud_usage = ["medium", "high"]
+    name = "Medium to High Use Connectors must enable acceptance tests"
+    description = "Medium to High Use Connectors must enable acceptance tests via the `connectorTestSuitesOptions.suite:acceptanceTests` in their respective metadata.yaml file to ensure that the connector is working as expected."
+    test_suite_name = "acceptanceTests"
 
-    def must_have_sandbox_config(self, connector: Connector) -> bool:
-        return connector.cloud_usage in ["medium", "high"]
-
-    def does_not_have_integration_enabled(self, connector: Connector) -> bool:
+    def does_not_have_acceptance_tests_enabled(self, connector: Connector) -> bool:
         metadata = connector.metadata
-        connectorTestSuitesOptions = metadata.get("connectorTestSuitesOptions", [])
-        integrationTests = find(connectorTestSuitesOptions, {"suite": "integrationTests"})
-        return not integrationTests
+        connector_test_suites_options = metadata.get("connectorTestSuitesOptions", [])
+        acceptance_tests_suite = find(connector_test_suites_options, {"suite": self.test_suite_name})
+        return bool(acceptance_tests_suite) is False
 
     def _run(self, connector: Connector) -> CheckResult:
-        if self.must_have_sandbox_config(connector) and self.does_not_have_integration_enabled(connector):
+        if self.does_not_have_acceptance_tests_enabled(connector):
             return self.create_check_result(
                 connector=connector,
                 passed=False,
-                message="Integration tests for medium/high use connectors require a sandbox config. Please provide a sandbox config in the metadata.yaml file.",
+                message=f"The {self.test_suite_name} test suite must be enabled for medium/high use connectors. Please enable this test suite in the connectorTestSuitesOptions field of the metadata.yaml file.",
             )
-
         return self.create_check_result(
             connector=connector,
             passed=True,
-            message="Integration tests for medium/high use connectors have a sandbox config.",
+            message=f"{connector.cloud_usage} cloud usage connector has enabled {self.test_suite_name}.",
         )
 
 
-ENABLED_CHECKS = [IntegrationTestsEnabledCheck()]
+ENABLED_CHECKS = [AcceptanceTestsEnabledCheck()]
