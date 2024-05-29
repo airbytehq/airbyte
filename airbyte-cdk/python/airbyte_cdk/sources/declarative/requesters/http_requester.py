@@ -509,10 +509,7 @@ class HttpRequester(Requester):
 
         elif error_resolution.response_action == ResponseAction.RETRY:
             custom_backoff_time = self.error_handler.backoff_time(response) if self.error_handler is not None else None
-            error_message = (
-                error_resolution.error_message
-                or f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action}."
-            )
+            error_message = f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action} with message: {error_resolution.error_message if error_resolution.error_message else None}"
             if custom_backoff_time:
                 raise UserDefinedBackoffException(
                     backoff=custom_backoff_time,

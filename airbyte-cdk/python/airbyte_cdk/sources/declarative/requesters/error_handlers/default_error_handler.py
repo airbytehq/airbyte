@@ -133,7 +133,7 @@ class DefaultErrorHandler(ErrorHandler):
         return DEFAULT_ERROR_RESOLUTION
 
     def backoff_time(
-        self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], attempt_count: int
+        self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], attempt_count: int = 0
     ) -> Optional[float]:
         backoff = None
         if self.backoff_strategies:

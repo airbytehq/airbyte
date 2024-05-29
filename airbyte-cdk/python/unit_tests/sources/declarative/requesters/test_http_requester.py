@@ -11,17 +11,20 @@ from urllib.parse import parse_qs, urlparse
 import pytest as pytest
 import requests
 import requests_cache
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
-from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ConstantBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpMethod, HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.message import MessageRepository
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.types import Config
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import PreparedRequest
 from requests_cache import CachedResponse
 
@@ -191,7 +194,7 @@ def create_requester(
 def test_basic_send_request():
     options_provider = MagicMock()
     options_provider.get_request_headers.return_value = {"my_header": "my_value"}
-    requester = create_requester()
+    requester = create_requester(error_handler=DefaultErrorHandler(parameters={}, config={}))
     requester._request_options_provider = options_provider
     requester.send_request()
     sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
@@ -243,7 +246,7 @@ def test_send_request_data_json(
     authenticator = MagicMock()
     authenticator.get_request_body_data.return_value = authenticator_data
     authenticator.get_request_body_json.return_value = authenticator_json
-    requester = create_requester(authenticator=authenticator)
+    requester = create_requester(authenticator=authenticator, error_handler=DefaultErrorHandler(parameters={}, config={}))
     requester._request_options_provider = options_provider
     if expected_exception is not None:
         with pytest.raises(expected_exception):
@@ -278,7 +281,7 @@ def test_send_request_string_data(provider_data, param_data, authenticator_data,
     options_provider.get_request_body_data.return_value = provider_data
     authenticator = MagicMock()
     authenticator.get_request_body_data.return_value = authenticator_data
-    requester = create_requester(authenticator=authenticator)
+    requester = create_requester(authenticator=authenticator, error_handler=DefaultErrorHandler(parameters={}, config={}))
     requester._request_options_provider = options_provider
     if expected_exception is not None:
         with pytest.raises(expected_exception):
@@ -316,7 +319,7 @@ def test_send_request_headers(provider_headers, param_headers, authenticator_hea
     options_provider.get_request_headers.return_value = provider_headers
     authenticator = MagicMock()
     authenticator.get_auth_header.return_value = authenticator_headers or {}
-    requester = create_requester(authenticator=authenticator)
+    requester = create_requester(authenticator=authenticator, error_handler=DefaultErrorHandler(parameters={}, config={}))
     requester._request_options_provider = options_provider
     if expected_exception is not None:
         with pytest.raises(expected_exception):
@@ -345,7 +348,7 @@ def test_send_request_params(provider_params, param_params, authenticator_params
     options_provider.get_request_params.return_value = provider_params
     authenticator = MagicMock()
     authenticator.get_request_params.return_value = authenticator_params
-    requester = create_requester(authenticator=authenticator)
+    requester = create_requester(authenticator=authenticator, error_handler=DefaultErrorHandler(parameters={}, config={}))
     requester._request_options_provider = options_provider
     if expected_exception is not None:
         with pytest.raises(expected_exception):
@@ -432,7 +435,7 @@ def test_request_param_interpolation(request_parameters, config, expected_query_
         request_headers={},
         parameters={},
     )
-    requester = create_requester()
+    requester = create_requester(error_handler=DefaultErrorHandler(parameters={}, config={}))
     requester._request_options_provider = options_provider
     requester.send_request()
     sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
@@ -557,7 +560,7 @@ def test_request_body_interpolation(request_body_data, config, expected_request_
         request_headers={},
         parameters={},
     )
-    requester = create_requester()
+    requester = create_requester(error_handler=DefaultErrorHandler(parameters={}, config={}))
     requester._request_options_provider = options_provider
     requester.send_request()
     sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
@@ -578,7 +581,7 @@ def test_request_body_interpolation(request_body_data, config, expected_request_
     ],
 )
 def test_send_request_path(requester_path, param_path, expected_path):
-    requester = create_requester(config={"config_key": "config_value"}, path=requester_path, parameters={"param_key": "param_value"})
+    requester = create_requester(config={"config_key": "config_value"}, path=requester_path, parameters={"param_key": "param_value"}, error_handler=DefaultErrorHandler(parameters={}, config={}))
     requester.send_request(stream_slice={"start": "2012"}, next_page_token={"next_page_token": "pagetoken"}, path=param_path)
     sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
     parsed_url = urlparse(sent_request.url)
@@ -590,6 +593,7 @@ def test_send_request_url_base():
         url_base="https://example.org/{{ config.config_key }}/{{ parameters.param_key }}",
         config={"config_key": "config_value"},
         parameters={"param_key": "param_value"},
+        error_handler=DefaultErrorHandler(parameters={}, config={}),
     )
     requester.send_request()
     sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
@@ -598,7 +602,7 @@ def test_send_request_url_base():
 
 def test_send_request_stream_slice_next_page_token():
     options_provider = MagicMock()
-    requester = create_requester()
+    requester = create_requester(error_handler=DefaultErrorHandler(parameters={}, config={}))
     requester._request_options_provider = options_provider
     stream_slice = {"id": "1234"}
     next_page_token = {"next_page_token": "next_page_token"}
@@ -634,7 +638,7 @@ def test_stub_custom_backoff_http_stream(mocker):
     req = requests.Response()
     req.status_code = 429
 
-    requester = create_requester()
+    requester = create_requester(error_handler=DefaultErrorHandler(parameters={}, config={}))
     requester._backoff_time = lambda _: 0.5
 
     requester._session.send.return_value = req
@@ -653,7 +657,7 @@ def test_stub_custom_backoff_http_stream_retries(mocker, retries):
     req.status_code = HTTPStatus.TOO_MANY_REQUESTS
     requester._session.send.return_value = req
 
-    with pytest.raises(UserDefinedBackoffException, match="Request URL: https://example.com/deals, Response Code: 429") as excinfo:
+    with pytest.raises(UserDefinedBackoffException, match="Request to https://example.com/deals failed") as excinfo:
         requester.send_request()
     assert isinstance(excinfo.value.request, requests.PreparedRequest)
     assert isinstance(excinfo.value.response, requests.Response)
@@ -690,24 +694,29 @@ def test_4xx_error_codes_http_stream(mocker, http_code):
     req.status_code = http_code
     requester._session.send.return_value = req
 
-    with pytest.raises(ReadException):
+    with pytest.raises(AirbyteTracedException):
         requester.send_request()
 
 
 def test_raise_on_http_errors_off_429(mocker):
-    requester = create_requester()
+    mocked_backoff_strategy = MagicMock(spec=ConstantBackoffStrategy)
+    mocked_backoff_strategy.backoff_time.return_value = 0
+    requester = create_requester(error_handler=DefaultErrorHandler(parameters={}, config={}, max_retries=0, backoff_strategies=[mocked_backoff_strategy]))
     requester._DEFAULT_RETRY_FACTOR = 0.01
     req = requests.Response()
     req.status_code = 429
     requester._session.send.return_value = req
 
-    with pytest.raises(DefaultBackoffException, match="Request URL: https://example.com/deals, Response Code: 429"):
+
+    with pytest.raises(DefaultBackoffException, match="Request to https://example.com/deals failed"):
         requester.send_request()
 
 
 @pytest.mark.parametrize("status_code", [500, 501, 503, 504])
 def test_raise_on_http_errors_off_5xx(mocker, status_code):
-    requester = create_requester()
+    mocked_backoff_strategy = MagicMock(spec=ConstantBackoffStrategy)
+    mocked_backoff_strategy.backoff_time.return_value = 0
+    requester = create_requester(error_handler=DefaultErrorHandler(parameters={}, config={}, max_retries=0, backoff_strategies=[mocked_backoff_strategy]))
     req = requests.Response()
     req.status_code = status_code
     requester._session.send.return_value = req
@@ -718,16 +727,16 @@ def test_raise_on_http_errors_off_5xx(mocker, status_code):
     assert requester._session.send.call_count == requester.max_retries + 1
 
 
-@pytest.mark.parametrize("status_code", [400, 401, 402, 403, 416])
+@pytest.mark.parametrize("status_code", [400, 401, 403])
 def test_raise_on_http_errors_off_non_retryable_4xx(mocker, status_code):
-    requester = create_requester()
+    requester = create_requester(error_handler=DefaultErrorHandler(parameters={}, config={}, max_retries=0))
     req = requests.Response()
     req.status_code = status_code
     requester._session.send.return_value = req
     requester._DEFAULT_RETRY_FACTOR = 0.01
 
-    response = requester.send_request()
-    assert response.status_code == status_code
+    with pytest.raises(AirbyteTracedException):
+        requester.send_request()
 
 
 @pytest.mark.parametrize(
@@ -820,6 +829,7 @@ def test_join_url(test_name, base_url, path, expected_full_url):
         request_options_provider=None,
         config={},
         parameters={},
+        error_handler=DefaultErrorHandler(parameters={}, config={}),
     )
     requester._session.send = MagicMock()
     response = requests.Response()
@@ -890,18 +900,20 @@ def test_duplicate_request_params_are_deduped(path, params, expected_url):
 
 
 @pytest.mark.parametrize(
-    "should_log, status_code, should_throw",
+    "should_log, status_code, should_retry, should_throw",
     [
-        (True, 200, False),
-        (True, 400, False),
-        (True, 500, True),
-        (False, 200, False),
-        (False, 400, False),
-        (False, 500, True),
+        (True, 200, False, False),
+        (True, 400, False, True),
+        (True, 500, True, False),
+        (False, 200, False, False),
+        (False, 400, False, True),
+        (False, 500, True, False),
     ],
 )
-def test_log_requests(should_log, status_code, should_throw):
+def test_log_requests(should_log, status_code, should_retry, should_throw):
     repository = MagicMock()
+    mocked_backoff_strategy = MagicMock(spec=ConstantBackoffStrategy)
+    mocked_backoff_strategy.backoff_time.return_value = 0
     requester = HttpRequester(
         name="name",
         url_base="https://test_base_url.com",
@@ -912,6 +924,7 @@ def test_log_requests(should_log, status_code, should_throw):
         parameters={},
         message_repository=repository,
         disable_retries=True,
+        error_handler=DefaultErrorHandler(parameters={}, config={}, backoff_strategies=[mocked_backoff_strategy]),
     )
     requester._session.send = MagicMock()
     response = requests.Response()
@@ -919,8 +932,11 @@ def test_log_requests(should_log, status_code, should_throw):
     requester._session.send.return_value = response
     formatter = MagicMock()
     formatter.return_value = "formatted_response"
-    if should_throw:
+    if should_retry:
         with pytest.raises(DefaultBackoffException):
+            requester.send_request(log_formatter=formatter if should_log else None)
+    elif should_throw:
+        with pytest.raises(AirbyteTracedException):
             requester.send_request(log_formatter=formatter if should_log else None)
     else:
         requester.send_request(log_formatter=formatter if should_log else None)
@@ -955,7 +971,7 @@ def test_caching_session_with_enable_use_cache(http_requester_factory):
 
 
 def test_response_caching_with_enable_use_cache(http_requester_factory, requests_mock):
-    http_requester = http_requester_factory(use_cache=True)
+    http_requester = http_requester_factory(use_cache=True, error_handler=DefaultErrorHandler(parameters={}, config={}))
 
     requests_mock.register_uri("GET", http_requester.url_base, json=[{"id": 12, "title": "test_record"}])
     http_requester.clear_cache()
