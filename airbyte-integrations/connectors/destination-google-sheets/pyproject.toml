@@ -1,0 +1,30 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.2.5"
+name = "destination-google-sheets"
+description = "Destination implementation for Google Sheets."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "ELv2"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/destinations/google-sheets"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "destination_google_sheets"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+google-auth-oauthlib = "==0.5.1"
+google-api-python-client = "==2.47.0"
+airbyte-cdk = "==0.51.21"
+pygsheets = "==2.0.5"
+
+[tool.poetry.scripts]
+destination-google-sheets = "destination_google_sheets.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "^1.12.1"
+pytest = "^6.1"
