@@ -190,11 +190,12 @@ public class PostgresCdcCtidInitializer {
         savedOffsetAfterReplicationSlotLSN);
     final List<AutoCloseableIterator<AirbyteMessage>> initialSyncCtidIterators = new ArrayList<>();
     final List<AirbyteStreamNameNamespacePair> streamsUnderVacuum = new ArrayList<>();
+    List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid = new ArrayList<>();
     if (!ctidStreams.streamsForCtidSync().isEmpty()) {
       streamsUnderVacuum.addAll(streamsUnderVacuum(database,
           ctidStreams.streamsForCtidSync(), quoteString).result());
 
-      List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
+      finalListOfStreamsToBeSyncedViaCtid =
           streamsUnderVacuum.isEmpty() ? ctidStreams.streamsForCtidSync()
               : ctidStreams.streamsForCtidSync().stream()
                   .filter(c -> !streamsUnderVacuum.contains(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(c)))
@@ -242,6 +243,15 @@ public class PostgresCdcCtidInitializer {
     final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
         propertiesManager, eventConverter, new PostgresCdcSavedInfoFetcher(stateToBeUsed), postgresCdcStateHandler);
 
+    final List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtidInLambda = finalListOfStreamsToBeSyncedViaCtid;
+    final List<AutoCloseableIterator<AirbyteMessage>> cdcStreamsStartStatusEmitters = catalog.getStreams().stream()
+        .filter(stream -> !finalListOfStreamsToBeSyncedViaCtidInLambda.contains(stream))
+        .map(stream -> (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(
+            new AirbyteStreamStatusHolder(
+                new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)))
+        .toList();
+
     final List<AutoCloseableIterator<AirbyteMessage>> allStreamsCompleteStatusEmitters = catalog.getStreams().stream()
         .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
         .map(stream -> (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(
@@ -251,7 +261,8 @@ public class PostgresCdcCtidInitializer {
         .toList();
 
     if (initialSyncCtidIterators.isEmpty()) {
-      return Stream.of(Collections.singletonList(incrementalIteratorSupplier.get()), allStreamsCompleteStatusEmitters).flatMap(Collection::stream)
+      return Stream.of(cdcStreamsStartStatusEmitters, Collections.singletonList(incrementalIteratorSupplier.get()), allStreamsCompleteStatusEmitters)
+          .flatMap(Collection::stream)
           .collect(Collectors.toList());
     }
 
@@ -261,13 +272,14 @@ public class PostgresCdcCtidInitializer {
       // We finish the current CDC once the initial snapshot is complete and the next sync starts
       // processing the WAL
       return Stream
-          .of(initialSyncCtidIterators, Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
+          .of(initialSyncCtidIterators, cdcStreamsStartStatusEmitters,
+              Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
               allStreamsCompleteStatusEmitters)
           .flatMap(Collection::stream)
           .collect(Collectors.toList());
     } else {
       LOGGER.warn("Streams are under vacuuming, not going to process WAL");
-      return Stream.of(initialSyncCtidIterators, allStreamsCompleteStatusEmitters).flatMap(Collection::stream)
+      return Stream.of(initialSyncCtidIterators, cdcStreamsStartStatusEmitters, allStreamsCompleteStatusEmitters).flatMap(Collection::stream)
           .collect(Collectors.toList());
     }
   }

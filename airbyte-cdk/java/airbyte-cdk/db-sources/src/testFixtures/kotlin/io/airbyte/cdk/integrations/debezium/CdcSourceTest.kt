@@ -111,7 +111,11 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         expectedStreamStatus: AirbyteStreamStatusTraceMessage
     ) {
         var actualMessage = allMessages[idx]
-        Assertions.assertEquals(AirbyteMessage.Type.TRACE, actualMessage.type)
+        Assertions.assertEquals(
+            AirbyteMessage.Type.TRACE,
+            actualMessage.type,
+            "[Debug] all Message: $allMessages"
+        )
         var traceMessage = actualMessage.trace
         Assertions.assertNotNull(traceMessage.streamStatus)
         Assertions.assertEquals(expectedStreamStatus, traceMessage.streamStatus)
@@ -575,6 +579,25 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         val state = Jsons.jsonNode(listOf(stateAfterFirstBatch[stateAfterFirstBatch.size - 1]))
         val secondBatchIterator = source().read(config()!!, configuredCatalog, state)
         val dataFromSecondBatch = AutoCloseableIterators.toListAndClose(secondBatchIterator)
+
+        assertStreamStatusTraceMessageIndex(
+            0,
+            dataFromSecondBatch,
+            createAirbteStreanStatusTraceMessage(
+                modelsSchema(),
+                MODELS_STREAM_NAME,
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED
+            )
+        )
+        assertStreamStatusTraceMessageIndex(
+            dataFromSecondBatch.size - 1,
+            dataFromSecondBatch,
+            createAirbteStreanStatusTraceMessage(
+                modelsSchema(),
+                MODELS_STREAM_NAME,
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+            )
+        )
 
         val stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch)
         assertExpectedStateMessagesFromIncrementalSync(stateAfterSecondBatch)
