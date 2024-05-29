@@ -1,13 +1,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 from http import HTTPStatus
 
-from airbyte_cdk.models import FailureType
+from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 class SearchScope(Enum):

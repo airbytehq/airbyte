@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
 from pydantic import AnyUrl, BaseModel, Extra, Field, constr
@@ -93,6 +93,21 @@ class SourceFileInfo(BaseModel):
     registry_entry_generated_at: Optional[str] = None
 
 
+class ConnectorMetrics(BaseModel):
+    all: Optional[Any] = None
+    cloud: Optional[Any] = None
+    oss: Optional[Any] = None
+
+
+class ConnectorMetric(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    usage: Optional[Union[str, Literal["low", "medium", "high"]]] = None
+    sync_success_rate: Optional[Union[str, Literal["low", "medium", "high"]]] = None
+    connector_version: Optional[str] = None
+
+
 class ConnectorPackageInfo(BaseModel):
     cdk_version: Optional[str] = None
 
@@ -112,6 +127,7 @@ class BreakingChangeScope(BaseModel):
 class GeneratedFields(BaseModel):
     git: Optional[GitInfo] = None
     source_file_info: Optional[SourceFileInfo] = None
+    metrics: Optional[ConnectorMetrics] = None
 
 
 class ActorDefinitionResourceRequirements(BaseModel):
