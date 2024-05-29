@@ -275,6 +275,10 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
+### 0.17.3
+
+Pin requests dependency.
+
 ### 0.17.2
 
 Fix duckdb dependency.

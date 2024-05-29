@@ -34,7 +34,7 @@ pytest-sugar = "^1.0.0"
 asyncer = "^0.0.5"
 rich = "^13.7.1"
 mitmproxy = "^10.2.4"
-requests = "^2.31.0"
+requests = "<=2.31.1"  # Pinned due to this issue https://github.com/docker/docker-py/issues/3256#issuecomment-2127688011
 pyyaml = "^6.0.1"
 dpath = "^2.1.6"
 genson = "^1.2.2"
