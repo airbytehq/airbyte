@@ -31,8 +31,6 @@ extend-exclude = """
     | unit_tests
     | generated
     | airbyte-cdk/python/airbyte_cdk/sources/declarative/models
-    | airbyte-cdk/python/airbyte_cdk/destinations
-    | airbyte-cdk/python/airbyte_cdk/sql
     | invalid
     | non_formatted_code
 )/
@@ -84,8 +82,6 @@ force_grid_wrap = 0
 use_parentheses = true
 skip_glob = [
     "airbyte-cdk/python/airbyte_cdk/sources/declarative/models/**",
-    "airbyte-cdk/python/airbyte_cdk/destinations/**",
-    "airbyte-cdk/python/airbyte_cdk/sql/**",
     "**/invalid/**",
     "**/non_formatted_code/**",
     "**/connector_builder/generated/**",
