@@ -9,8 +9,7 @@
       "type": ["null", "string"]
     },
     "email": {
-      "type": ["null", "string"],
-      "format": "email"
+      "type": ["null", "string"]
     },
     "phone": {
       "type": ["null", "string"]
