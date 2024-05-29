@@ -47,7 +47,7 @@ private val LOGGER = KotlinLogging.logger {}
  */
 @Execution(ExecutionMode.CONCURRENT)
 abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestinationState> {
-    protected var DIFFER: RecordDiffer? = null
+    protected var DIFFER: RecordDiffer = mock()
 
     /** Subclasses may use these four StreamConfigs in their tests. */
     protected var incrementalDedupStream: StreamConfig = mock()
